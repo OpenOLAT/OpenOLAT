@@ -26,7 +26,6 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-
 /**
  * 
  * @author Christian Guretzki
@@ -40,6 +39,15 @@ public class FlexiTableDataModelFactory {
 	 */
 	public static FlexiTableColumnModel createFlexiTableColumnModel() {
 		return new FlexiTableColumnModelImpl();
+	}
+
+	/**
+	 * Get the CSS header for the more / action menu as used in almost all tables. 
+	 * Usage: defaultFlexiColumnModel.setIconHeader(FlexiTableDataModelFactory.getColumnModelMoreMenuIconCSS());
+	 * @return the CSS classes used as icon header
+	 */
+	public static String getColumnModelMoreMenuIconCSS() {
+		return "o_icon o_icon-lg o_icon_commands";
 	}
 
 }

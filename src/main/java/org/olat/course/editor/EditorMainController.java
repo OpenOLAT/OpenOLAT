@@ -37,7 +37,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.badge.Badge.Level;
 import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
@@ -320,11 +320,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				deleteNodeLink.setElementCssClass("o_sel_course_editor_delete_node");
 				deleteNodeLink.setVisible(!rootNode);
 				
-				cmdsDropDown = new Dropdown("cmds", null, false, getTranslator());
-				cmdsDropDown.setCarretIconCSS("o_icon o_icon_commands");
+				cmdsDropDown = DropdownUIFactory.createMoreDropdown("cmds", getTranslator());
 				cmdsDropDown.setButton(true);
 				cmdsDropDown.setEmbbeded(true);
-				cmdsDropDown.setOrientation(DropdownOrientation.right);
 				cmdsDropDown.setElementCssClass("o_sel_course_editor_change_node");
 				cmdsDropDown.setVisible(!rootNode);
 				main.put("cmds", cmdsDropDown);

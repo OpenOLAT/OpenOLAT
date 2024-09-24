@@ -24,7 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
@@ -121,12 +121,10 @@ public class SurveyRunController extends BasicController {
 		mainVC.clear();
 		
 		if (secCallback.canResetAll()) {
-			Dropdown dropdown = new Dropdown("cmds", null, false, getTranslator());
-			dropdown.setCarretIconCSS("o_icon o_icon_commands");
+			Dropdown dropdown = DropdownUIFactory.createMoreDropdown("cmds", getTranslator());
 			dropdown.setButton(true);
 			dropdown.setButtonSize(ButtonSize.small);
 			dropdown.setEmbbeded(true);
-			dropdown.setOrientation(DropdownOrientation.right);
 			mainVC.put("cmds", dropdown);
 			
 			resetLink = LinkFactory.createLink("run.reset", mainVC, this);

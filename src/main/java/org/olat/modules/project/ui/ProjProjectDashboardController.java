@@ -31,7 +31,7 @@ import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -174,11 +174,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 		putInitialPanel(mainVC);
 		
 		//Commands
-		cmdsDropDown = new Dropdown("cmds", null, false, getTranslator());
-		cmdsDropDown.setCarretIconCSS("o_icon o_icon_commands");
+		cmdsDropDown = DropdownUIFactory.createMoreDropdown("cmds", getTranslator());
 		cmdsDropDown.setButton(true);
 		cmdsDropDown.setEmbbeded(true);
-		cmdsDropDown.setOrientation(DropdownOrientation.right);
 		mainVC.put("cmds", cmdsDropDown);
 		
 		String editLabel = secCallback.canEditProjectMetadata()

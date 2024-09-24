@@ -263,6 +263,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 			confirmModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(confirmModel);
 			DefaultFlexiColumnModel commandsModel = new DefaultFlexiColumnModel(AppointmentCols.commands);
+			commandsModel.setIconHeader(FlexiTableDataModelFactory.getColumnModelMoreMenuIconCSS());
 			commandsModel.setExportable(false);
 			columnsModel.addFlexiColumnModel(commandsModel);
 		}
@@ -545,9 +546,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private DropdownItem getOrCreateCommandDroppdown(AppointmentRow row) {
 		DropdownItem dropdown = row.getCommandDropdown();
 		if (dropdown == null) {
-			dropdown = uifactory.addDropdownMenu("cmd_" + row.getKey(), "commands", null, null, getTranslator());
-			dropdown.setCarretIconCSS("o_icon o_icon-lg o_icon_commands");
-			dropdown.setOrientation(DropdownOrientation.right);
+			dropdown = uifactory.addDropdownMenuMore("cmd_" + row.getKey(), null, getTranslator());
 			dropdown.setUserObject(row);
 			row.setCommandDropdown(dropdown);
 		}

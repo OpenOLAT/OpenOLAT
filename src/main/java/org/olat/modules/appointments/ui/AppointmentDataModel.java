@@ -96,7 +96,7 @@ implements SortableFlexiTableDataModel<AppointmentRow>{
 		recordings("recordings"),
 		select("select"),
 		confirm("confirm"),
-		commands("table.header.commands");
+		commands("action.more");
 		
 		private final String i18nKey;
 		

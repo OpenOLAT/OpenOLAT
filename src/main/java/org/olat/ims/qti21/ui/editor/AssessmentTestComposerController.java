@@ -40,7 +40,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -363,12 +363,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
 		deleteLink.setVisible(!restrictedEdit);
 		
-		changeItemDropDown = new Dropdown("changeTools", null, false, getTranslator());
+		changeItemDropDown = DropdownUIFactory.createMoreDropdown("changeTools", getTranslator());
 		changeItemDropDown.setElementCssClass("o_sel_qti_change_node");
-		changeItemDropDown.setCarretIconCSS("o_icon o_icon_commands");
 		changeItemDropDown.setButton(true);
 		changeItemDropDown.setEmbbeded(true);
-		changeItemDropDown.setOrientation(DropdownOrientation.right);
 		mainVC.put("cmds", changeItemDropDown);
 		
 		copyLink = LinkFactory.createToolLink("import.table", translate("tools.change.copy"), this, "o_icon_copy");
