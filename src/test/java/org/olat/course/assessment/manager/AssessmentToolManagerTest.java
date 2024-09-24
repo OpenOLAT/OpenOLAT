@@ -840,6 +840,42 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getAssessmentEntries_filter_subIdents() {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		String subIden1 = random();
+		createCourseElement(entry, subIden1);
+		String subIden2 = random();
+		createCourseElement(entry, subIden2);
+		String subIden3 = random();
+		createCourseElement(entry, subIden3);
+		
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.coach.name());
+		
+		AssessmentEntry ae11 = createAssessmentEntry(assessedIdentity1, entry, subIden1, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae12 = createAssessmentEntry(assessedIdentity1, entry, subIden2, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae13 = createAssessmentEntry(assessedIdentity1, entry, subIden3, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae21 = createAssessmentEntry(assessedIdentity2, entry, subIden1, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae22 = createAssessmentEntry(assessedIdentity2, entry, subIden2, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae31 = createAssessmentEntry(assessedIdentity3, entry, subIden1, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, null, null, assessmentCallback);
+		params.setSubIdents(List.of(subIden2, subIden3));
+		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae12, ae13, ae22).doesNotContain(ae11, ae21, ae31);
+	}
+	
+	@Test
 	public void getCoachingEntries() {
 		//course
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());

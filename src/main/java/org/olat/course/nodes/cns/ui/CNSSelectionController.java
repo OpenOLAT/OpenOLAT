@@ -106,7 +106,7 @@ public class CNSSelectionController extends FormBasicController implements Flexi
 		this.userCourseEnv = userCourseEnv;
 		courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		this.courseNode = courseNode;
-		childNodes = getChildNodes();
+		childNodes = CNSUIFactory.getChildNodes(courseNode);
 		this.cnsEnv = cnsEnv;
 		overviewFactory = new OverviewFactory(userCourseEnv, null, null, false);
 		statusRenderer = new CNSSelectionStatusRenderer(false);
@@ -115,24 +115,13 @@ public class CNSSelectionController extends FormBasicController implements Flexi
 		
 		initForm(ureq);
 		loadModel(ureq);
-		updateConfigUI();
-	}
-	
-	private List<CourseNode> getChildNodes() {
-		List<CourseNode> children = new ArrayList<>(courseNode.getChildCount());
-		for (int i = 0; i < courseNode.getChildCount(); i++) {
-			INode childNode = courseNode.getChildAt(i);
-			if (childNode instanceof CourseNode courseNode) {
-				children.add(courseNode);
-			}
-		}
-		return children;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		configPanel = new InfoPanel("configs");
 		configPanel.setTitle(translate("config.overview.selection.title"));
+		configPanel.setInformations(CNSUIFactory.getConfigMessageParticipant(getTranslator(), requiredSelections));
 		configPanel.setPersistedStatusId(ureq, "cns-selection-config-" + courseEntry.getKey() + "::" + courseNode.getIdent());
 		formLayout.add("config", new ComponentWrapperElement(configPanel));
 		
@@ -247,7 +236,7 @@ public class CNSSelectionController extends FormBasicController implements Flexi
 
 	private void updateSelectionMessage() {
 		if (selectionDataModel.getObjects().size() < requiredSelections) {
-			flc.contextPut("selectionWarning", translate("selections.msg.too.less.available"));
+			flc.contextPut("selectionWarning", translate("selections.msg.too.few.available"));
 		} else if (numSelections < requiredSelections) {
 			String message = translate("selections.msg.required.more", 
 					String.valueOf(numSelections),
@@ -276,16 +265,6 @@ public class CNSSelectionController extends FormBasicController implements Flexi
 		}
 		
 		return CNSSelectionStatus.inProgress;
-	}
-	
-	private void updateConfigUI() {
-		String infos = "<div>" + translate("config.overview.selection.hint") + "</div>";
-		infos += "<br>";
-		infos += "<ul class=\"list-unstyled\">";
-		infos += "<li><span><i class=\"o_icon o o_icon-fw " + CNSCourseNode.ICON_CSS + "\"></i> "
-				+ translate("config.overview.required.selections", String.valueOf(requiredSelections)) + "</span></li>";
-		infos += "</ul>";
-		configPanel.setInformations(infos);
 	}
 	
 	@Override
