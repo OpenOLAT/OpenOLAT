@@ -154,8 +154,11 @@ public class RenameController extends FormBasicController {
 		}
 		
 		if (vfsMetadata != null) {
-			vfsMetadata.setTitle(titleEl.getValue());
-			vfsRepositoryService.updateMetadata(vfsMetadata);
+			VFSMetadata reloadedMetadata = vfsRepositoryService.getMetadata(vfsMetadata);
+			if (reloadedMetadata != null) {
+				reloadedMetadata.setTitle(titleEl.getValue());
+				vfsRepositoryService.updateMetadata(reloadedMetadata);
+			}
 		}
 		
 		if (isFileRenamed()) {
