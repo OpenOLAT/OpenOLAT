@@ -44,6 +44,8 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -70,6 +72,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
+import org.olat.user.propertyhandlers.GenericSelectionPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -235,8 +238,8 @@ public class UserSearchFlexiController extends FormBasicController {
 				if (userPropertyHandler == null) continue;
 				
 				FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, UserSearchForm.class.getCanonicalName(), false, searchFormContainer);
-				if(autofocus && fi instanceof TextElement) {
-					((TextElement)fi).setFocus(true);
+				if(autofocus && fi instanceof TextElement te) {
+					te.setFocus(true);
 					autofocus = false;
 				}
 				
@@ -341,6 +344,7 @@ public class UserSearchFlexiController extends FormBasicController {
 		}
 		
 		boolean filled = !loginEl.isEmpty();
+		boolean filledSelection = false;
 		StringBuilder  full = new StringBuilder(loginEl.getValue().trim());
 		FormItem lastFormElement = loginEl;
 		
@@ -351,11 +355,19 @@ public class UserSearchFlexiController extends FormBasicController {
 		// "this e-mail exists already"
 		for (UserPropertyHandler userPropertyHandler : userSearchFormPropertyHandlers) {
 			FormItem ui = propFormItems.get(userPropertyHandler.getName());
+			ui.clearError();
+			
 			String uiValue = userPropertyHandler.getStringValue(ui);
 			// add value for later non-empty search check
 			if (StringHelper.containsNonWhitespace(uiValue)) {
 				full.append(uiValue.trim());
 				filled = true;
+			}
+			if(ui instanceof SingleSelection uiSelection) {
+				filledSelection |= uiSelection.isOneSelected()
+						&& !GenericSelectionPropertyHandler.NO_SEL_KEY.equals(uiSelection.getSelectedKey());
+			} else if(ui instanceof MultipleSelectionElement uiSelection) {
+				filledSelection |= uiSelection.isAtLeastSelected(1);
 			}
 
 			lastFormElement = ui;
@@ -366,7 +378,7 @@ public class UserSearchFlexiController extends FormBasicController {
 		String fullString = full.toString();
 		boolean onlyStar= fullString.matches("^[\\*\\s@\\%]*$");
 
-		if (!filled || onlyStar) {
+		if ((!filled && !filledSelection) || onlyStar) {
 			// set the error message
 			lastFormElement.setErrorKey("error.search.form.notempty");
 			return false;
@@ -375,7 +387,7 @@ public class UserSearchFlexiController extends FormBasicController {
 			lastFormElement.setErrorKey("error.search.form.no.wildcard.dublicates");
 			return false;
 		}		
-		if (fullString.length() < 4) {
+		if (fullString.length() < 4 && !filledSelection) {
 			lastFormElement.setErrorKey("error.search.form.to.short");
 			return false;
 		}
@@ -489,17 +501,13 @@ public class UserSearchFlexiController extends FormBasicController {
 	public void doSearch() {
 		String login = loginEl.getValue();
 		Map<String, String> userPropertiesSearch = collectSearchProperties();
-
-		tableEl.reset();
-		
 		List<Identity> users = search.searchUsers(login, userPropertiesSearch, true);
-		if (!users.isEmpty()) {
-			tableEl.setVisible(true);
-			userTableModel.setObjects(users);
-			flc.contextPut("showButton","true");
-		} else {
-			getWindowControl().setInfo(translate("error.no.user.found"));
-		}
+
+		tableEl.setVisible(true);
+		tableEl.setEmptyTableMessageKey("error.no.user.found");
+		userTableModel.setObjects(users);
+		tableEl.reset(true, true, true);
+		flc.contextPut("showButton","true");
 	}
 	
 	private Map<String, String> collectSearchProperties() {
