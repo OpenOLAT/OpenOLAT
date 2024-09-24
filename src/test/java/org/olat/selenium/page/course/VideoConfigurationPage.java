@@ -76,6 +76,8 @@ public class VideoConfigurationPage {
 		//double check that the resource is selected (search the preview link)
 		By landingBy = By.xpath("//fieldset[contains(@class,'o_sel_video_configuration_form')]//a[contains(@onclick,'command.preview')][i[contains(@class,'o_icon_preview')]][span/text()[contains(.,'" + resourceTitle + "')]]");
 		OOGraphene.waitElementSlowly(landingBy, 15, browser);
+		// Close blue box
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 		
 	}
