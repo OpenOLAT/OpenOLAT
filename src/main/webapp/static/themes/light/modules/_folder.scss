@@ -55,17 +55,21 @@
 		}
 		
 		.o_folder_create_group {
+			display: flex;
+			align-items: stretch;
 			.o_fileinput.o_area {
 				@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
 				
 				margin-bottom: 0;
-				padding-top: 5px;
-				padding-bottom: 6px;
+				padding-top: 0px;
+				padding-bottom: 0px;
 				border: 1px solid $btn-default-border;
 				border-top-right-radius: 0;
 				border-bottom-right-radius: 0;
 				border-right: none;
 				background-color: $btn-default-bg;
+				display: flex;
+				height: 100%;
 				
 				&:has(.o_realchooser:hover),
 				&:has(.o_realchooser:focus) {
@@ -86,6 +90,7 @@
 			}
 			
 			.o_dnd {
+				margin: auto;
 				.o_dnd_icon {
 					font-size: 1em;
 					color: black;
