@@ -29,6 +29,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 
 /**
  * 
@@ -42,8 +43,9 @@ public class LectureBlockVO implements LectureBlockRef {
 	
 	private Long key;
 	private String externalId;
+	private String externalRef;
 	
-	@Schema(required = true, description = "Action to be performed on managedFlagsString", allowableValues = { 
+	@Schema(requiredMode = RequiredMode.NOT_REQUIRED, description = "Action to be performed on managedFlagsString", allowableValues = { 
 			"all",
 		      "details(all) //details tab",
 		        "title(details,all)",
@@ -82,6 +84,7 @@ public class LectureBlockVO implements LectureBlockRef {
 	public LectureBlockVO(LectureBlock block, Long repoEntryKey) {
 		key = block.getKey();
 		externalId = block.getExternalId();
+		externalRef = block.getExternalRef();
 		managedFlagsString = block.getManagedFlagsString();
 		title = block.getTitle();
 		description = block.getDescription();
@@ -122,6 +125,14 @@ public class LectureBlockVO implements LectureBlockRef {
 
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+	public String getExternalRef() {
+		return externalRef;
+	}
+
+	public void setExternalRef(String externalRef) {
+		this.externalRef = externalRef;
 	}
 
 	public String getManagedFlagsString() {

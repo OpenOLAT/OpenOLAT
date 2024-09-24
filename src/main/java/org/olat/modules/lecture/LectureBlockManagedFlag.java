@@ -37,6 +37,7 @@ public enum LectureBlockManagedFlag {
 	all,
       details(all),//details tab
         title(details,all),
+        externalRef(details,all),
         compulsory(details,all),
         plannedLectures(details,all),
         teachers(details,all),

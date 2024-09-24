@@ -20,14 +20,17 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityNames;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -40,12 +43,15 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -56,12 +62,19 @@ import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.MemberViewQueries;
+import org.olat.group.model.MemberView;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.ui.main.CourseMembership;
+import org.olat.group.ui.main.CourseRoleCellRenderer;
+import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.group.ui.main.SearchMembersParams.Origin;
+import org.olat.group.ui.main.SearchMembersParams.UserType;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
@@ -76,9 +89,9 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -88,10 +101,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EditLectureBlockController extends FormBasicController {
-	
-	private static final String[] onKeys = new String[] { "on" };
+
+	private static final String USER_PROPS_ID = MemberListController.class.getCanonicalName();
+	private static final String ON_KEY = "on";
 	
 	private TextElement titleEl;
+	private TextElement externalRefEl;
 	private TextElement descriptionEl;
 	private TextElement preparationEl;
 	private AutoCompleter locationEl;
@@ -100,17 +115,21 @@ public class EditLectureBlockController extends FormBasicController {
 	private MultipleSelectionElement groupsEl;
 	private MultipleSelectionElement teacherEl;
 	private MultipleSelectionElement compulsoryEl;
+	private SingleSelection curriculumEntriesEl;
 	
 	private final boolean readOnly;
 	private RepositoryEntry entry;
 	private LectureBlock lectureBlock;
 	private CurriculumElement curriculumElement;
+	private final List<RepositoryEntry> curriculumElementEntries;
 	
-	private List<Identity> teachers;
 	private List<GroupBox> groupBox;
-	private String[] teacherKeys;
+	private List<MemberView> possibleTeachersList;
+
+	private final List<Identity> teachers;
 	private final boolean lectureManagementManaged;
 	private final List<LocationHistory> locations;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
 	private DB dbInstance;
@@ -123,6 +142,8 @@ public class EditLectureBlockController extends FormBasicController {
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
+	private MemberViewQueries memberQueries;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
@@ -132,26 +153,37 @@ public class EditLectureBlockController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		this(ureq, wControl, entry, null, null, false);
+		this(ureq, wControl, entry, null, null, null, false);
 	}
 	
-	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
-		this(ureq, wControl, null, curriculumElement, null, false);
-	}
-	
-	public EditLectureBlockController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, CurriculumElement curriculumElement,
+	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			LectureBlock lectureBlock, boolean readOnly) {
-		super(ureq, wControl);
+		this(ureq, wControl, entry, null, null, lectureBlock, readOnly);
+	}
+	
+	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement,
+			List<RepositoryEntry> curriculumElementEntries) {
+		this(ureq, wControl, null, curriculumElement, curriculumElementEntries, null, false);
+	}
+	
+	private EditLectureBlockController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry entry, CurriculumElement curriculumElement, List<RepositoryEntry> curriculumElementEntries,
+			LectureBlock lectureBlock, boolean readOnly) {
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = readOnly;
 		this.lectureBlock = lectureBlock;
 		this.curriculumElement = curriculumElement;
+		this.curriculumElementEntries = curriculumElementEntries;
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, true);
+		
 		locations = getLocations(ureq);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		if(lectureBlock != null && lectureBlock.getKey() != null) {
 			teachers = lectureService.getTeachers(lectureBlock);
+		} else {
+			teachers = List.of();
 		}
 		
 		initForm(ureq);
@@ -174,6 +206,22 @@ public class EditLectureBlockController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(title)) {
 			titleEl.setFocus(true);
 		}
+
+		String externalRef = lectureBlock == null ? null : lectureBlock.getTitle();
+		externalRefEl = uifactory.addTextElement("externalref", "lecture.external.ref", 128, externalRef, formLayout);
+		externalRefEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.externalRef));
+
+		Date startDate = lectureBlock == null ? null : lectureBlock.getStartDate();
+		Date endDate = lectureBlock == null ? null : lectureBlock.getEndDate();
+		dateEl = uifactory.addDateChooser("lecture.date", startDate, formLayout);
+		dateEl.setSecondDate(endDate);
+		dateEl.setElementCssClass("o_sel_repo_lecture_date");
+		dateEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
+		dateEl.setMandatory(true);
+		dateEl.setSameDay(true);
+		dateEl.setSecondDate(true);
+		dateEl.setDateChooserTimeEnabled(true);
+		dateEl.setValidDateCheck("form.error.date");
 		
 		int plannedNumOfLectures = lectureBlock == null ? lectureModule.getDefaultPlannedLectures() : lectureBlock.getPlannedLecturesNumber();
 		int maxNumOfLectures = Math.max(12, plannedNumOfLectures);
@@ -202,85 +250,64 @@ public class EditLectureBlockController extends FormBasicController {
 			&& !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.plannedLectures);
 		plannedLecturesEl.setEnabled(!readOnly && plannedLecturesEditable);
 		
-		String[] onValues = new String[]{ "" };
-		boolean compulsory = lectureBlock == null || lectureBlock.isCompulsory();
-		compulsoryEl = uifactory.addCheckboxesVertical("compulsory", "lecture.compulsory", formLayout, onKeys, onValues, 1);
-		compulsoryEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.compulsory));
-		compulsoryEl.addActionListener(FormEvent.ONCHANGE);
-		if(compulsory) {
-			compulsoryEl.select(onKeys[0], true);
+		// Location
+		String location = lectureBlock == null ? "" : lectureBlock.getLocation();
+		locationEl = uifactory.addTextElementWithAutoCompleter("location", "lecture.location", 128, location, formLayout);
+		locationEl.setElementCssClass("o_sel_repo_lecture_location");
+		locationEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.location));
+		locationEl.setListProvider(new LocationListProvider(), ureq.getUserSession());
+		locationEl.setMinLength(1);
+		
+		SelectionValues courseEntriesPK = new SelectionValues();
+		courseEntriesPK.add(SelectionValues.entry("-", translate("no.course")));
+		if(curriculumElementEntries != null) {
+			for(RepositoryEntry curriculumEntry:curriculumElementEntries) {
+				courseEntriesPK.add(SelectionValues.entry(curriculumEntry.getKey().toString(), StringHelper.escapeHtml(curriculumEntry.getDisplayname())));
+			}
 		}
-
-		List<Identity> coaches;
-		if(curriculumElement != null && entry == null) {
-			coaches = curriculumService.getMembersIdentity(curriculumElement, CurriculumRoles.coach);
-		} else {
-			coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name());
+		curriculumEntriesEl = uifactory.addDropdownSingleselect("lecture.curriculum.entries", "lecture.curriculum.entries", formLayout,
+				courseEntriesPK.keys(), courseEntriesPK.values());
+		curriculumEntriesEl.select("-", true);
+		curriculumEntriesEl.setVisible(curriculumElementEntries != null && curriculumElementEntries.size() > 1);
+		
+		possibleTeachersList = loadTeachers();
+		SelectionValues teachersPK = new SelectionValues();
+		for(MemberView teacher:possibleTeachersList) {
+			teachersPK.add(teacherPK(teacher));
 		}
-		List<Identity> allPossibleTeachers = new ArrayList<>();
-		allPossibleTeachers.addAll(coaches);
-		if(teachers != null) {// eventually external teachers
-			allPossibleTeachers.addAll(teachers);
-		}
-		allPossibleTeachers = new ArrayList<>(new HashSet<>(allPossibleTeachers));
-		teacherKeys = new String[allPossibleTeachers.size() + 1];
-		String[] teacherValues = new String[allPossibleTeachers.size() + 1];
-		for(int i=allPossibleTeachers.size() + 1; i-->1; ) {
-			Identity coach = allPossibleTeachers.get(i - 1);
-			teacherKeys[i] = coach.getKey().toString();
-			teacherValues[i] = userManager.getUserDisplayName(coach);
-		}
-		teacherKeys[0] = "-";
-		teacherValues[0] = translate("no.teachers");
-		teacherEl = uifactory.addCheckboxesVertical("teacher", "lecture.teacher", formLayout, teacherKeys, teacherValues, 2);
+		teacherEl = uifactory.addCheckboxesVertical("teacher", "lecture.teacher", formLayout, teachersPK.keys(), teachersPK.values(),
+				null, teachersPK.icons(), 2);
 		teacherEl.setElementCssClass("o_sel_repo_lecture_teachers");
 		teacherEl.setMandatory(true);
 		teacherEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.teachers));
+		teacherEl.setVisible(!teachersPK.isEmpty());
+		
+		EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("teacher.empty", "lecture.teacher", formLayout);
+		emptyTeachersList.setTitle(translate("lecture.no.teacher.title"));
+		emptyTeachersList.setInformations(translate("lecture.no.teacher"));
+		emptyTeachersList.setInformations(translate("lecture.no.teacher"));
+		emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_icon_user");
+		emptyTeachersList.setVisible(teachersPK.isEmpty());
 		
 		boolean found = false;
-		if(teachers != null && !teachers.isEmpty()) {
-			for(Identity teacher:teachers) {
-				String currentTeacherKey = teacher.getKey().toString();
-				for(String teacherKey:teacherKeys) {
-					if(currentTeacherKey.equals(teacherKey)) {
-						teacherEl.select(currentTeacherKey, true);
-						found = true;
-					}
+		if(possibleTeachersList != null && !possibleTeachersList.isEmpty()) {
+			for(MemberView teacher:possibleTeachersList) {
+				if(containsIdentity(teacher, teachers)) {
+					teacherEl.select(teacher.getIdentityKey().toString(), true);
+					found = true;
 				}
 			}
 		} 
-		if(!found) {
-			teacherEl.select(teacherKeys[0], true);
+		if(!found && teachersPK.size() > 0) {
+			teacherEl.select(teachersPK.keys()[0], true);
 		}
 		
-		groupBox = new ArrayList<>();
-		List<CurriculumElement> elements = null;
-		if(entry != null) {
-			Group entryBaseGroup =repositoryService.getDefaultGroup(entry);
-			groupBox.add(new GroupBox(entry, entryBaseGroup));
-		
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-			List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, entry, 0, -1, BusinessGroupOrder.nameAsc);
-			for(BusinessGroup businessGroup:businessGroups) {
-				groupBox.add(new GroupBox(businessGroup));
-			}
-			
-			elements = curriculumService.getCurriculumElements(entry);
-			for(CurriculumElement element:elements) {
-				groupBox.add(new GroupBox(element));
-			}
-		}
-		if(curriculumElement != null && (elements == null || !elements.contains(curriculumElement))) {
-			groupBox.add(new GroupBox(curriculumElement));
-		}
-		
-		String[] groupKeys = new String[groupBox.size()];
-		String[] groupValues = new String[groupBox.size()];
+		groupBox = loadGroups();
+		SelectionValues groupPK = new SelectionValues();
 		for(int i=groupBox.size(); i-->0; ) {
-			groupKeys[i] = Integer.toString(i);
-			groupValues[i] = groupBox.get(i).getName();
+			groupPK.add(SelectionValues.entry(Integer.toString(i), groupBox.get(i).getName()));
 		}
-		groupsEl = uifactory.addCheckboxesVertical("lecture.groups", "lecture.groups", formLayout, groupKeys, groupValues, 2);
+		groupsEl = uifactory.addCheckboxesVertical("lecture.groups", "lecture.groups", formLayout, groupPK.keys(), groupPK.values(), 2);
 		groupsEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.groups));
 		groupsEl.setMandatory(true);
 		if(lectureBlock != null) {
@@ -290,9 +317,10 @@ public class EditLectureBlockController extends FormBasicController {
 					groupsEl.select(Integer.toString(i), true);
 				}
 			}
-		} else if(groupKeys.length == 1) {
-			groupsEl.select(groupKeys[0], true);
+		} else if(groupPK.size() == 1) {
+			groupsEl.select(groupPK.keys()[0], true);
 		}
+		groupsEl.setVisible(groupBox.size() > 1);
 		
 		List<TaxonomyLevel> levels = lectureService.getTaxonomy(lectureBlock);
 		if(!levels.isEmpty()) {
@@ -308,36 +336,114 @@ public class EditLectureBlockController extends FormBasicController {
 		descriptionEl = uifactory.addTextAreaElement("lecture.descr", 4, 72, description, formLayout);
 		descriptionEl.setElementCssClass("o_sel_repo_lecture_description");
 		descriptionEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.description));
+		
 		String preparation = lectureBlock == null ? "" : lectureBlock.getPreparation();
 		preparationEl = uifactory.addTextAreaElement("lecture.preparation", 4, 72, preparation, formLayout);
 		preparationEl.setElementCssClass("o_sel_repo_lecture_preparation");
 		preparationEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.preparation));
-		String location = lectureBlock == null ? "" : lectureBlock.getLocation();
-		locationEl = uifactory.addTextElementWithAutoCompleter("location", "lecture.location", 128, location, formLayout);
-		locationEl.setElementCssClass("o_sel_repo_lecture_location");
-		locationEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.location));
-		locationEl.setListProvider(new LocationListProvider(), ureq.getUserSession());
-		locationEl.setMinLength(1);
-
-		Date startDate = lectureBlock == null ? null : lectureBlock.getStartDate();
-		Date endDate = lectureBlock == null ? null : lectureBlock.getEndDate();
-		dateEl = uifactory.addDateChooser("lecture.date", startDate, formLayout);
-		dateEl.setSecondDate(endDate);
-		dateEl.setElementCssClass("o_sel_repo_lecture_date");
-		dateEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
-		dateEl.setMandatory(true);
-		dateEl.setSameDay(true);
-		dateEl.setSecondDate(true);
-		dateEl.setDateChooserTimeEnabled(true);
-		dateEl.setValidDateCheck("form.error.date");
-		dateEl.setSeparator("lecture.time.until");
+		
+		boolean compulsory = lectureBlock == null || lectureBlock.isCompulsory();
+		SelectionValues compulsoryPK = new SelectionValues();
+		compulsoryPK.add(SelectionValues.entry(ON_KEY, translate("lecture.compulsory.on")));
+		compulsoryEl = uifactory.addCheckboxesVertical("compulsory", "lecture.compulsory", formLayout, compulsoryPK.keys(), compulsoryPK.values(), 1);
+		compulsoryEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.compulsory));
+		compulsoryEl.addActionListener(FormEvent.ONCHANGE);
+		if(compulsory) {
+			compulsoryEl.select(ON_KEY, true);
+		}
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		if(!readOnly) {
 			uifactory.addFormSubmitButton("save", buttonsCont);
 		}
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	private boolean containsIdentity(MemberView member, Collection<Identity> identities) {
+		return identities.stream()
+				.anyMatch(id -> id.getKey().equals(member.getIdentityKey()));
+	}
+	
+	private boolean containsIdentity(Identity identity, Collection<MemberView> members) {
+		return members.stream()
+				.anyMatch(mem -> mem.getIdentityKey().equals(identity.getKey()));
+	}
+	
+	private SelectionValue teacherPK(MemberView teacher) {
+		String key = teacher.getIdentityKey().toString();
+		IdentityNames identityNames = teacher.getIdentityNames(userPropertyHandlers);
+		String displayName = StringHelper.escapeHtml(userManager.getUserDisplayName(identityNames));
+		
+		try(StringOutput sb = new StringOutput()) {
+			sb.append(displayName);
+			CourseMembership membership = teacher.getMemberShip();
+			if(membership.isCoach() || membership.isOwner()) {
+				sb.append(" (");
+				
+				CourseRoleCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
+				roleRenderer.render(sb, membership);
+	
+				sb.append(")");
+			}
+			displayName = sb.toString();
+		} catch(Exception e) {
+			logError("", e);
+		}
+		
+		return SelectionValues.entry(key, displayName, null, "o_icon o_icon-fw o_icon_user", null, true);
+	}
+	
+	private List<MemberView> loadTeachers() {
+		List<MemberView> memberViews;
+		if(curriculumElement != null && entry == null) {
+			SearchMembersParams params = new SearchMembersParams();
+			params.setRoles(new GroupRoles[] { GroupRoles.coach });
+			params.setOrigins(Set.of(Origin.curriculum));
+			params.setUserTypes(Set.of(UserType.user));
+			memberViews = memberQueries.getCurriculumElementMembers(curriculumElement, params, userPropertyHandlers, getLocale());
+		} else {
+			SearchMembersParams params = new SearchMembersParams();
+			params.setRoles(new GroupRoles[] { GroupRoles.coach });
+			params.setOrigins(Set.of(Origin.repositoryEntry, Origin.curriculum));
+			params.setUserTypes(Set.of(UserType.user));
+			memberViews = memberQueries.getRepositoryEntryMembers(entry, params, userPropertyHandlers, getLocale());
+		}
+		
+		Set<MemberView> allPossibleTeachers = new HashSet<>();
+		allPossibleTeachers.addAll(memberViews);
+		if(teachers != null && !teachers.isEmpty()) {// eventually external teachers
+			for(Identity teacher:teachers) {
+				if(!containsIdentity(teacher, allPossibleTeachers)) {
+					allPossibleTeachers.add(new MemberView(teacher, userPropertyHandlers, getLocale()));
+				}
+			}
+		}
+		return new ArrayList<>(allPossibleTeachers);
+	}
+	
+	private List<GroupBox> loadGroups() {
+		List<GroupBox> groupList = new ArrayList<>();
+		List<CurriculumElement> elements = null;
+		if(entry != null) {
+			Group entryBaseGroup =repositoryService.getDefaultGroup(entry);
+			groupList.add(new GroupBox(entry, entryBaseGroup));
+		
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+			List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, entry, 0, -1, BusinessGroupOrder.nameAsc);
+			for(BusinessGroup businessGroup:businessGroups) {
+				groupList.add(new GroupBox(businessGroup));
+			}
+			
+			elements = curriculumService.getCurriculumElements(entry);
+			for(CurriculumElement element:elements) {
+				groupList.add(new GroupBox(element));
+			}
+		}
+		if(curriculumElement != null && (elements == null || !elements.contains(curriculumElement))) {
+			groupList.add(new GroupBox(curriculumElement));
+		}
+		return groupList;
 	}
 	
 	private void updateUI() {
@@ -371,7 +477,7 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		
 		groupsEl.clearError();
-		if(!groupsEl.isAtLeastSelected(1)) {
+		if(groupsEl.isVisible() && !groupsEl.isAtLeastSelected(1)) {
 			groupsEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -418,7 +524,8 @@ public class EditLectureBlockController extends FormBasicController {
 			if(entry != null) {
 				lectureBlock = lectureService.createLectureBlock(entry);
 			} else if(curriculumElement != null) {
-				lectureBlock = lectureService.createLectureBlock(curriculumElement, null);
+				RepositoryEntry courseEntry = getPrivilegedRepositoryentry();
+				lectureBlock = lectureService.createLectureBlock(curriculumElement, courseEntry);
 			}
 			create = true;
 		} else {
@@ -427,6 +534,7 @@ public class EditLectureBlockController extends FormBasicController {
 			currentPlannedLectures = lectureBlock.getPlannedLecturesNumber();
 		}
 		lectureBlock.setTitle(titleEl.getValue());
+		lectureBlock.setExternalRef(externalRefEl.getValue());
 		lectureBlock.setCompulsory(compulsoryEl.isAtLeastSelected(1));
 		lectureBlock.setDescription(descriptionEl.getValue());
 		lectureBlock.setPreparation(preparationEl.getValue());
@@ -439,52 +547,12 @@ public class EditLectureBlockController extends FormBasicController {
 		int plannedLectures = Integer.parseInt(plannedLecturesEl.getSelectedKey());
 		lectureBlock.setPlannedLecturesNumber(plannedLectures);
 
-		List<Group> selectedGroups = new ArrayList<>();
-		if(groupsEl.isAtLeastSelected(1)) {
-			for(String selectedGroupPos:groupsEl.getSelectedKeys()) {
-				Group bGroup = groupBox.get(Integer.parseInt(selectedGroupPos)).getBaseGroup();
-				selectedGroups.add(bGroup);
-			}	
-		}
+		List<Group> selectedGroups = synchronizeGroups();
 
 		lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 		
 		if(teacherEl.isAtLeastSelected(1)) {
-			List<Identity> currentTeachers = lectureService.getTeachers(lectureBlock);
-			List<String> selectedTeacherKeys = new ArrayList<>(teacherEl.getSelectedKeys());
-			if(selectedTeacherKeys.size() == 1 && teacherKeys[0].equals(selectedTeacherKeys.get(0))) {
-				//remove all
-				for(Identity teacher:currentTeachers) {
-					lectureService.removeTeacher(lectureBlock, teacher);
-					audit.append("remove teacher: ").append(userManager.getUserDisplayName(teacher)).append(" (").append(teacher.getKey()).append(");");
-				}
-			} else {
-				//remove deselected
-				for(Identity teacher:currentTeachers) {
-					boolean found = selectedTeacherKeys.contains(teacher.getKey().toString());
-					if(!found) {
-						lectureService.removeTeacher(lectureBlock, teacher);
-						audit.append("remove teacher: ").append(userManager.getUserDisplayName(teacher)).append(" (").append(teacher.getKey()).append(");");
-					}
-				}
-				//add new one
-				for(String selectedTeacherKey:selectedTeacherKeys) {
-					if(selectedTeacherKey.equals(teacherKeys[0])) continue;
-					
-					boolean found = false;
-					for(Identity teacher:currentTeachers) {
-						if(selectedTeacherKey.equals(teacher.getKey().toString())) {
-							found = true;
-						}
-					}
-					
-					if(!found) {
-						Identity teacher = securityManager.loadIdentityByKey(Long.valueOf(selectedTeacherKey));
-						lectureService.addTeacher(lectureBlock, teacher);
-						audit.append("add teacher: ").append(userManager.getUserDisplayName(teacher)).append(" (").append(teacher.getKey()).append(");");
-					}
-				}
-			}
+			synchronizeTeachers(audit);
 		}
 
 		String afterxml = lectureService.toAuditXml(lectureBlock);
@@ -510,6 +578,65 @@ public class EditLectureBlockController extends FormBasicController {
 		} else {
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_EDITED, getClass(),
 					CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
+		}
+	}
+	
+	private RepositoryEntry getPrivilegedRepositoryentry() {
+		RepositoryEntry courseEntry = null;
+		if(curriculumElementEntries != null) {
+			if(curriculumElementEntries.size() == 1) {
+				courseEntry = curriculumElementEntries.get(0);
+			} else if(curriculumEntriesEl.isVisible() && curriculumEntriesEl.isOneSelected()
+					&& !"-".equals(curriculumEntriesEl.getSelectedKey())) {
+				Long key = Long.valueOf(curriculumEntriesEl.getSelectedKey());
+				for(RepositoryEntry curriculumEntry:curriculumElementEntries) {
+					if(key.equals(curriculumEntry.getKey())) {
+						courseEntry = curriculumEntry;
+					}
+				}
+			}
+		}
+		return courseEntry;
+	}
+	
+	private List<Group> synchronizeGroups() {
+		List<Group> selectedGroups = new ArrayList<>();
+		if(groupsEl.isVisible() && groupsEl.isAtLeastSelected(1)) {
+			for(String selectedGroupPos:groupsEl.getSelectedKeys()) {
+				Group bGroup = groupBox.get(Integer.parseInt(selectedGroupPos)).getBaseGroup();
+				selectedGroups.add(bGroup);
+			}	
+		} else {
+			for(GroupBox group:groupBox) {
+				Group bGroup = group.getBaseGroup();
+				selectedGroups.add(bGroup);
+			}
+		}
+		return selectedGroups;
+	}
+	
+	private void synchronizeTeachers(StringBuilder audit) {
+		List<Identity> currentTeachers = lectureService.getTeachers(lectureBlock);
+		List<String> selectedTeacherKeys = new ArrayList<>(teacherEl.getSelectedKeys());
+		
+		// Remove deselected
+		for(Identity teacher:currentTeachers) {
+			boolean found = selectedTeacherKeys.contains(teacher.getKey().toString());
+			if(!found) {
+				lectureService.removeTeacher(lectureBlock, teacher);
+				audit.append("remove teacher: ").append(userManager.getUserDisplayName(teacher)).append(" (").append(teacher.getKey()).append(");");
+			}
+		}
+		
+		// Add new one
+		for(String selectedTeacherKey:selectedTeacherKeys) {
+			for(MemberView teacherView:possibleTeachersList) {
+				if(selectedTeacherKey.equals(teacherView.getIdentityKey().toString())) {
+					Identity teacher = securityManager.loadIdentityByKey(teacherView.getIdentityKey());
+					lectureService.addTeacher(lectureBlock, teacher);
+					audit.append("add teacher: ").append(userManager.getUserDisplayName(teacher)).append(" (").append(teacher.getKey()).append(");");
+				}
+			}
 		}
 	}
 

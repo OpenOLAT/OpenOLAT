@@ -171,6 +171,58 @@ public class MemberViewQueries {
 		return new ArrayList<>(views.values());
 	}
 	
+	public List<MemberView> getCurriculumElementMembers(CurriculumElement element, SearchMembersParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		if(element == null) return Collections.emptyList();
+
+		Map<Identity,MemberView> views = getMembersView(element, params, userPropertyHandlers, locale);
+		//TODO getPending(views, entry, params, userPropertyHandlers, locale);
+		
+		List<MemberView> members = new ArrayList<>(views.values());
+		filterByRoles(members, params);
+		filterByOrigin(members, params);
+		filterByUserTypes(members, params);
+		return members;
+	}
+	
+	private Map<Identity,MemberView> getMembersView(CurriculumElement element, SearchMembersParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership")
+		  .append(" from curriculumelement as curEl")
+		  .append(" inner join curEl.group as mGroup")
+		  .append(" inner join mGroup.members as membership")
+		  .append(" inner join fetch membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where curEl.key=:elementKey and membership.role in ('")
+		  	.append(GroupRoles.participant).append("','").append(GroupRoles.coach).append("','")
+		  	.append(GroupRoles.owner).append("','").append(GroupRoles.waiting).append("')");
+		searchByIdentity(sb, params);
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("elementKey", element.getKey());
+		searchByIdentity(query, params);
+		
+		List<Object[]> rawObjects = query.getResultList();
+		Map<Identity,MemberView> views = new HashMap<>();
+		for(Object[] rawObject:rawObjects) {
+			GroupMembership membership = (GroupMembership)rawObject[0];
+			
+			Identity member = membership.getIdentity();
+			
+			MemberView view = views.computeIfAbsent(member, id
+					-> new MemberView(id, userPropertyHandlers, locale));
+			
+			view.setCreationDate(membership.getCreationDate());
+			view.setLastModified(membership.getLastModified());
+			view.addCurriculumElement(new MemberView
+					.CurriculumElementShortImpl(element.getKey(), element.getDisplayName(), element.getManagedFlags()));
+			view.getMemberShip().setCurriculumElementRole(membership.getRole());
+		}
+		return views;
+	}
+	
 	public List<MemberView> getRepositoryEntryMembers(RepositoryEntry entry, SearchMembersParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		if(entry == null) return Collections.emptyList();

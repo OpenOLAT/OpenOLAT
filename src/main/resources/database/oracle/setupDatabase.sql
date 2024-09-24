@@ -3562,6 +3562,7 @@ create table o_lecture_block (
   creationdate date not null,
   lastmodified date not null,
   l_external_id varchar2(255 char),
+  l_external_ref varchar(128),
   l_managed_flags varchar2(255 char),
   l_title varchar2(255 char),
   l_descr clob,

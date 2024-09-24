@@ -41,6 +41,10 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 
 	public void setExternalId(String externalId);
 	
+	public String getExternalRef();
+
+	public void setExternalRef(String externalRef);
+	
 	public LectureBlockManagedFlag[] getManagedFlags();
 	
 	public String getManagedFlagsString();

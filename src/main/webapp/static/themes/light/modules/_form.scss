@@ -141,6 +141,20 @@ form .o_form, form.o_form {
 		padding-right: 0;
 	}
 	
+	.o_form_two_cols .o_date {
+		display: block;
+	}
+	
+	.o_form_two_cols .o_time .o_date_ms,
+	.o_form_two_cols .o_time .o_date_ms>input.o_date_ms {
+		display: inline-block;
+	}
+	.o_form_two_cols .o_time .o_date_separator {
+		display: inline-block;
+		padding-right: 0.75em;
+		padding-left: 0.75em;
+	}
+	
 	.form-control.textarea.o_fixed_font_with {
 		resize: vertical;
 		font-family: $font-family-monospace;

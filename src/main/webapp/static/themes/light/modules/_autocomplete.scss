@@ -33,3 +33,8 @@
 .tt-menu div.o_icon_error:before {
 	content:'';
 }
+
+.o_form:not(.form-inline) .tt-input {
+	width: 100%;
+	display: block !important;
+}

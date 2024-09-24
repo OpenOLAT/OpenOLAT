@@ -38,6 +38,17 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class AutoCompleterRenderer extends DefaultComponentRenderer {
+	
+	private boolean isVertical(String[] args) {
+		if(args != null && args.length > 0 && args[0] != null) {
+			for(int i=0; i<args.length; i++) {
+				if("vertical".equals(args[i])) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
@@ -49,6 +60,11 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 		int limit = autoCompleter.getMaxEntries();
 		if(limit <= 0) {
 			limit = 5;
+		}
+		
+		boolean verticalLayout = isVertical(args);
+		if(verticalLayout) {
+			sb.append("<div>");
 		}
 		
 		final int inputSize = 72;
@@ -139,6 +155,10 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			  .append(inputSize)
 			  .append("\" value=\"").append(value).append("\" />")
 			  .append("</span>");
+		}
+		
+		if(verticalLayout) {
+			sb.append("</div>");
 		}
 	}
 }

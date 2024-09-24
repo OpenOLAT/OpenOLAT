@@ -48,6 +48,63 @@ import org.olat.core.util.Util;
  * @author patrickb
  */
 class JSDateChooserRenderer extends DefaultComponentRenderer {
+	
+	@Override
+	protected void renderVerticalLayout(Renderer renderer, StringOutput sb, Component source, String layout,
+			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+		JSDateChooserComponent jsdcc = (JSDateChooserComponent) source;
+		
+		if(jsdcc.isSecondDate() && jsdcc.isSameDay() && jsdcc.isDateChooserTimeEnabled()) {
+			renderTwoColumnsForSameDayWithTimeLayout(sb, source, layout, translator, args);
+		} else {
+			super.renderVerticalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
+		}
+	}
+	
+	private void renderTwoColumnsForSameDayWithTimeLayout(StringOutput sb, Component source, String layout,
+			Translator translator, String[] args) {
+		JSDateChooserComponent jsdcc = (JSDateChooserComponent) source;
+		JSDateChooser jsdci = jsdcc.getFormItem();
+		String receiverId = jsdcc.getTextElementComponent().getFormDispatchId();
+		
+		// Override the component layout
+		sb.append("<div id='o_c").append(jsdcc.getDispatchID()).append("'")
+		  .append(" class='o_form_two_cols");
+		if(StringHelper.containsNonWhitespace(jsdci.getElementCssClass())) {
+			sb.append(" ").append(jsdci.getElementCssClass());
+		}
+		sb.append("'>");
+		
+		String exDate = jsdcc.getExampleDateString();
+		int maxlength = exDate.length() + 4;
+		
+		sb.append("<div class='o_date'>");
+		renderLabel(sb, jsdcc, layout, translator, args);
+		if (source.isEnabled()) {
+			renderDateChooser(sb, jsdcc, receiverId, receiverId, jsdcc.getValue(), "o_first_date", maxlength, translator);
+		} else{
+			renderTextElementReadonly(sb, jsdcc, maxlength, translator);
+		}
+		sb.append("</div><div class='o_time'><label for=\"").append(receiverId).append("_time_bloc\">")
+		  .append(translator.translate("time"))
+		  .append("</label><div id=\"").append(receiverId).append("_time_bloc\">");
+		
+		String timeOnlyCss = jsdcc.isTimeOnlyEnabled() ? " o_time_only" : "";
+		renderTime(sb, jsdcc.getHour(), jsdcc.getMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
+				receiverId, jsdcc, "o_first_ms".concat(timeOnlyCss));
+
+		String separator;
+		if(jsdcc.getSeparator() != null) {
+			separator = translator.translate(jsdcc.getSeparator());
+		} else {
+			separator = " - ";
+		}
+		renderSeparator(sb, separator);
+		renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
+				receiverId.concat("_snd"), jsdcc, "o_second_ms".concat(timeOnlyCss));
+
+		sb.append("</div></div></div>");
+	}
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,

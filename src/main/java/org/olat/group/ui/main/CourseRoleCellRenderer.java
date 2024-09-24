@@ -50,7 +50,7 @@ public class CourseRoleCellRenderer implements FlexiCellRenderer {
 		}
 	}
 	
-	private void render(StringOutput sb, CourseMembership membership) {
+	public void render(StringOutput sb, CourseMembership membership) {
 		boolean and = false;
 		
 		// default repository entry group

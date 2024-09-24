@@ -22,8 +22,10 @@ package org.olat.user;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.IdentityNames;
 import org.olat.basesecurity.model.QueryUserHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -107,5 +109,42 @@ public class UserPropertiesRow {
 		}
 		
 		return null;
+	}
+	
+	public IdentityNames getIdentityNames(List<UserPropertyHandler> userPropertyHandlers) {
+		String firstName = null;
+		String lastName = null;
+		
+		int numOfHandlers = userPropertyHandlers.size();
+		for(int i=0; i<numOfHandlers; i++) {
+			if(UserConstants.FIRSTNAME.equals(userPropertyHandlers.get(i).getName()) && i<identityProps.length) {
+				firstName = getIdentityProp(i);
+			} else if(UserConstants.LASTNAME.equals(userPropertyHandlers.get(i).getName()) && i<identityProps.length) {
+				lastName = getIdentityProp(i);
+			}
+		}
+		return new UserNames(getIdentityKey(), firstName, lastName);
+	}
+	
+	public record UserNames(Long key, String firstName, String lastName) implements IdentityNames {
+		@Override
+		public Long getKey() {
+			return key();
+		}
+
+		@Override
+		public String getName() {
+			return null;
+		}
+
+		@Override
+		public String getFirstName() {
+			return firstName();
+		}
+
+		@Override
+		public String getLastName() {
+			return lastName();
+		}
 	}
 }

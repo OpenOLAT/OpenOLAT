@@ -74,7 +74,7 @@ public class EditLectureBlockPage {
 		By untilAltBy = By.cssSelector("fieldset.o_sel_repo_edit_lecture_form div.o_sel_repo_lecture_date span.input-group-addon");
 		browser.findElement(untilAltBy).click();
 		
-		By datePickerBy = By.cssSelector("div.o_sel_repo_lecture_date  div.datepicker-dropdown.active");
+		By datePickerBy = By.cssSelector("div.o_sel_repo_lecture_date div.datepicker-dropdown.active");
 		OOGraphene.waitElement(datePickerBy, browser);
 		OOGraphene.selectDayInDatePicker(day, browser);
 		
@@ -102,6 +102,7 @@ public class EditLectureBlockPage {
 		By saveBy = By.cssSelector("fieldset.o_sel_repo_edit_lecture_form button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 

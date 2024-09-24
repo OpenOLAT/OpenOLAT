@@ -84,6 +84,8 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Column(name="l_managed_flags", nullable=true, insertable=true, updatable=true)
 	private String managedFlagsString;
 
+	@Column(name="l_external_ref", nullable=true, insertable=true, updatable=true)
+	private String externalRef;
 	@Column(name="l_title", nullable=true, insertable=true, updatable=true)
 	private String title;
 	@Column(name="l_descr", nullable=true, insertable=true, updatable=true)
@@ -190,14 +192,26 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	}
 	
 	@Override
+	public String getExternalRef() {
+		return externalRef;
+	}
+
+	@Override
+	public void setExternalRef(String externalRef) {
+		this.externalRef = externalRef;
+	}
+
+	@Override
 	public LectureBlockManagedFlag[] getManagedFlags() {
 		return LectureBlockManagedFlag.toEnum(managedFlagsString);
 	}
 
+	@Override
 	public String getManagedFlagsString() {
 		return managedFlagsString;
 	}
 
+	@Override
 	public void setManagedFlagsString(String managedFlagsString) {
 		this.managedFlagsString = managedFlagsString;
 	}

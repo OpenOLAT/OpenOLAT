@@ -1,3 +1,6 @@
+-- Lecture
+alter table o_lecture_block add l_external_ref varchar(128);
+
 alter table o_lecture_block modify (fk_entry null);
 alter table o_lecture_block add fk_curriculum_element number(20);
 

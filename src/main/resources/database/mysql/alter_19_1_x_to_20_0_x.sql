@@ -1,4 +1,6 @@
 -- Lecture
+alter table o_lecture_block add column l_external_ref varchar(128);
+
 alter table o_lecture_block modify column fk_entry bigint null;
 alter table o_lecture_block add column fk_curriculum_element bigint;
 

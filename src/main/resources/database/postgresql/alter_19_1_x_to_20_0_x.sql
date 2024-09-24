@@ -1,4 +1,6 @@
 -- Lectures
+alter table o_lecture_block add column l_external_ref varchar(128);
+
 alter table o_lecture_block alter column fk_entry drop not null;
 alter table o_lecture_block add column fk_curriculum_element int8;
 

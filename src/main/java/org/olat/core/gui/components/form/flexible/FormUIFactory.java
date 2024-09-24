@@ -109,6 +109,8 @@ import org.olat.core.gui.components.link.ExternalLinkItemImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.math.MathLiveElement;
 import org.olat.core.gui.components.math.MathLiveElementImpl;
+import org.olat.core.gui.components.panel.EmptyPanelItem;
+import org.olat.core.gui.components.panel.IconPanelItem;
 import org.olat.core.gui.components.panel.InfoPanelItem;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
@@ -1669,6 +1671,24 @@ public class FormUIFactory {
 	
 	public InfoPanelItem addInfoPanel(String name, String i18nLabel, FormItemContainer formLayout) {
 		InfoPanelItem item = new InfoPanelItem(name);
+		setLabelIfNotNull(i18nLabel, item);
+		if(formLayout != null) {
+			formLayout.add(item);
+		}
+		return item;
+	}
+	
+	public EmptyPanelItem addEmptyPanel(String name, String i18nLabel, FormItemContainer formLayout) {
+		EmptyPanelItem item = new EmptyPanelItem(name);
+		setLabelIfNotNull(i18nLabel, item);
+		if(formLayout != null) {
+			formLayout.add(item);
+		}
+		return item;
+	}
+	
+	public IconPanelItem addIconPanel(String name, String i18nLabel, FormItemContainer formLayout) {
+		IconPanelItem item = new IconPanelItem(name);
 		setLabelIfNotNull(i18nLabel, item);
 		if(formLayout != null) {
 			formLayout.add(item);

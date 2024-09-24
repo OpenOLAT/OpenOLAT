@@ -148,9 +148,10 @@ public class LectureBlocksWebService {
 	 * @return It returns the updated / created lecture block.
 	 */
 	@POST
-	@Operation(summary = "Create or update a lecture block", description = "Create or update a lecture block. The status of the blocks will be set to\n" + 
-			" autoclose only for newly created blocks. By update, the states of the\n" + 
-			" block and the roll call will not be updated")
+	@Operation(summary = "Create or update a lecture block", description = """
+			Create or update a lecture block. The status of the blocks will be set to
+			autoclose only for newly created blocks. By update, the states of the
+			block and the roll call will not be updated""")
 	@ApiResponse(responseCode = "200", description = "The updated configuration",
 			content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockVO.class)),
@@ -188,6 +189,9 @@ public class LectureBlocksWebService {
 		
 		if(blockVo.getExternalId() != null) {
 			block.setExternalId(blockVo.getExternalId());
+		}
+		if(blockVo.getExternalRef() != null) {
+			block.setExternalRef(blockVo.getExternalRef());
 		}
 		if(blockVo.getTitle() != null) {
 			block.setTitle(blockVo.getTitle());

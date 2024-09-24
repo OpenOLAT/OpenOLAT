@@ -200,6 +200,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		lectureBlockVo.setPreparation("Lot of");
 		lectureBlockVo.setPlannedLectures(4);
 		lectureBlockVo.setExternalId(externalId);
+		lectureBlockVo.setExternalRef("lot-of-0001");
 		lectureBlockVo.setStartDate(new Date());
 		lectureBlockVo.setEndDate(new Date());
 
@@ -222,6 +223,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		Assert.assertEquals("all", blockVo.getManagedFlagsString());
 		Assert.assertEquals(4, blockVo.getPlannedLectures());
 		Assert.assertEquals(externalId, blockVo.getExternalId());
+		Assert.assertEquals("lot-of-0001", blockVo.getExternalRef());
 		Assert.assertNotNull(blockVo.getStartDate());
 		Assert.assertNotNull(blockVo.getEndDate());
 		

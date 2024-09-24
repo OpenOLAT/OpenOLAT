@@ -296,7 +296,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		
 		LectureBlock block = lectureService.getLectureBlock(row);
 		boolean readOnly = lectureManagementManaged || !secCallback.canNewLectureBlock();
-		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, null, block, readOnly);
+		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, readOnly);
 		listenTo(editLectureCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));

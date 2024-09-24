@@ -56,7 +56,6 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.ConfirmDeleteLectureBlockController;
 import org.olat.modules.lecture.ui.EditLectureBlockController;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
-import org.olat.modules.lecture.ui.NewLectureBlockController;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +82,7 @@ public class CurriculumElementLectureBlocksListController extends FormBasicContr
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
-	private NewLectureBlockController addLectureCtrl;
+	private EditLectureBlockController addLectureCtrl;
 	private EditLectureBlockController editLectureCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ConfirmDeleteLectureBlockController deleteLectureBlockCtrl;
@@ -212,7 +211,7 @@ public class CurriculumElementLectureBlocksListController extends FormBasicContr
 		CurriculumElement element = curriculumService.getCurriculumElement(curriculumElement);
 		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(element);
 	
-		addLectureCtrl = new NewLectureBlockController(ureq, getWindowControl(), element, entries);
+		addLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), element, entries);
 		listenTo(addLectureCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
@@ -224,7 +223,7 @@ public class CurriculumElementLectureBlocksListController extends FormBasicContr
 		if(guardModalController(editLectureCtrl) || !secCallback.canNewLectureBlock()) return;
 		
 		CurriculumElement element = curriculumService.getCurriculumElement(curriculumElement);
-		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), element);
+		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), element, null);
 		listenTo(editLectureCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLectureCtrl.getInitialComponent(), true, translate("edit.lecture"));

@@ -63,10 +63,16 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 				renderTrLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
 				break;
 			case "vertical":
+				renderVerticalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
+				break;
 			case "horizontal":
+				renderHorizontalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
+				break;
 			case "minimal":
-			case "tablecell":
 				renderMinimalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
+				break;
+			case "tablecell":
+				renderTableCellLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
 				break;
 			case "label":
 				renderLabel(sb, source, "label", translator, args);
@@ -136,7 +142,22 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		renderComponent(renderer, sb, source, ubu, translator, renderResult, args);
 	}
 	
-	private void renderMinimalLayout(Renderer renderer, StringOutput sb, Component source, String layout,
+	protected void renderVerticalLayout(Renderer renderer, StringOutput sb, Component source, String layout,
+			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+		renderMinimalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
+	}
+	
+	protected void renderHorizontalLayout(Renderer renderer, StringOutput sb, Component source, String layout,
+			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+		renderMinimalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
+	}
+	
+	protected void renderTableCellLayout(Renderer renderer, StringOutput sb, Component source, String layout,
+			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+		renderMinimalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
+	}
+	
+	protected void renderMinimalLayout(Renderer renderer, StringOutput sb, Component source, String layout,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 
 		Item item = new Item(source);
