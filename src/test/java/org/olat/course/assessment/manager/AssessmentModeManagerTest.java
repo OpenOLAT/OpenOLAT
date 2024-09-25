@@ -27,10 +27,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.DateUtils;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
@@ -85,6 +88,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
 	private BusinessGroupService businessGroupService;
@@ -96,6 +101,16 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
+
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-course-infos-unit-test", "Org-course-infos-unit-test", "", null, null);
+		}
+	}
 	
 	@Test
 	public void createAssessmentMode() {
@@ -187,8 +202,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void createAssessmentModeToGroup() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "as_mode_1", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, null);
 		
@@ -213,8 +228,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void createAssessmentModeToArea() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "as_mode_1", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, null);
 		BGArea area = areaMgr.createAndPersistBGArea("little area", "My little secret area", entry.getOlatResource());
@@ -261,8 +276,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	@Test
 	public void deleteAssessmentMode() {
 		//prepare the setup
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "as_mode_1", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, null);
 		
@@ -572,10 +587,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void isInAssessmentModeBusinessGroup() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-auth-1");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-grp-1");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-grp-2");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-auth-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-grp-1", defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-grp-2", defaultUnitTestOrganisation, null);
 		
 		BusinessGroup businessGroup1 = businessGroupService.createBusinessGroup(null, "as-mode-10", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, courseEntry);
@@ -650,10 +665,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void loadAssessmentMode_identityInBusinessGroup() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-2");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-3");
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-3");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-2", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-3", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-3", defaultUnitTestOrganisation, null);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "as-mode-2", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRoles.participant.name());
@@ -694,10 +709,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void loadAssessmentMode_identityInBusinessGroup_coach() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-4");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-5");
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-6");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-4", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-5", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-6", defaultUnitTestOrganisation, null);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "as-mode-3", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRoles.participant.name());
@@ -807,10 +822,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void loadAssessmentMode_identityInArea() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-12");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-13");
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-14");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-12", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-13", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-14", defaultUnitTestOrganisation, null);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "as-mode-3", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRoles.participant.name());
@@ -853,10 +868,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void loadAssessmentMode_identityInArea_coach() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-12");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-13");
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-14");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-12", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-13", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-14", defaultUnitTestOrganisation, null);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "as-mode-3", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRoles.participant.name());
@@ -896,10 +911,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void loadAssessmentMode_identityInCurriculum() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-30");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-31");
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-32");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-30", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-31", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-32", defaultUnitTestOrganisation, null);
 		
 		Curriculum curriculum = curriculumService.createCurriculum("cur-as-mode-1", "Curriculum for assessment", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel",
@@ -942,10 +957,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void loadAssessmentMode_identityInCurriculumCoach() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-35");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-36");
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-37");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-35", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-36", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-37", defaultUnitTestOrganisation, null);
 		
 		Curriculum curriculum = curriculumService.createCurriculum("cur-as-mode-2", "Curriculum for assessment", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel",
@@ -989,10 +1004,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getAssessedIdentities_course_groups() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-15");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-16");
-		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-17");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-15", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-16", defaultUnitTestOrganisation, null);
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-17", defaultUnitTestOrganisation, null);
 		
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "as-mode-4", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry);
@@ -1027,8 +1042,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getPlannedAssessmentMode() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 	
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setBegin(DateUtils.addDays(mode.getBegin(), -4));
@@ -1047,8 +1062,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void findAssessmentModeSearchParams() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 	
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setBegin(DateUtils.addDays(mode.getBegin(), -25));
@@ -1123,10 +1138,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getAssessedIdentities_course_areas() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-20");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-21");
-		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-22");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-20", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-21", defaultUnitTestOrganisation, null);
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-22", defaultUnitTestOrganisation, null);
 		
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "as-mode-5", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry);
@@ -1165,10 +1180,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getAssessedIdentities_course_curriculum() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-37");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-38");
-		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-39");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-37", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-38", defaultUnitTestOrganisation, null);
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-39", defaultUnitTestOrganisation, null);
 		
 		Curriculum curriculum = curriculumService.createCurriculum("cur-as-mode-3", "Curriculum for assessment", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel",
@@ -1210,11 +1225,11 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getAssessedIdentities_course_curriculumElements() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-39");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-40");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-41");
-		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-42");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-39", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-40", defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-41", defaultUnitTestOrganisation, null);
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-42", defaultUnitTestOrganisation, null);
 		
 		Curriculum curriculum = curriculumService.createCurriculum("cur-as-mode-4", "Curriculum for assessment", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel-1", "Element for assessment",  CurriculumElementStatus.active,
@@ -1257,10 +1272,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void removeBusinessGroupFromRepositoryEntry() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-4");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-5");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-6");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-4", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-5", defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-6", defaultUnitTestOrganisation, null);
 		BusinessGroup businessGroup1 = businessGroupService.createBusinessGroup(author, "as-mode-7", "desc", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry);
 		BusinessGroup businessGroup2 = businessGroupService.createBusinessGroup(author, "as-mode-8", "desc", BusinessGroup.BUSINESS_TYPE,
@@ -1309,10 +1324,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Test
 	public void deleteBusinessGroupFromRepositoryEntry() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-9");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-10");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-11");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-9", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-10", defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-11", defaultUnitTestOrganisation, null);
 		BusinessGroup businessGroup1 = businessGroupService.createBusinessGroup(author, "as-mode-12", "", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry);
 		BusinessGroup businessGroup2 = businessGroupService.createBusinessGroup(author, "as-mode-13", "", BusinessGroup.BUSINESS_TYPE,
@@ -1362,9 +1377,9 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	@Test
 	public void deleteAreaFromRepositoryEntry() {
 		//prepare the setup
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-14");
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-15");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-14", defaultUnitTestOrganisation, null);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-15", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setTargetAudience(AssessmentMode.Target.groups);

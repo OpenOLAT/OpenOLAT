@@ -76,7 +76,7 @@ public class CoursesInfosTest extends OlatRestTestCase {
 	public void testGetCourseInfos_byId() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, "course-info 1",
-				RepositoryEntryStatusEnum.preparation, false, false);
+				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
 		RestConnection conn = new RestConnection();

@@ -30,10 +30,13 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
@@ -71,15 +74,27 @@ public class CertificatesManagerTest extends OlatTestCase {
 	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+		}
+	}
+	
 	@Test
 	public void createTemplate() throws URISyntaxException {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-0");
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-0", defaultUnitTestOrganisation, null);
 		URL templateUrl = CertificatesManagerTest.class.getResource("template.pdf");
 		Assert.assertNotNull(templateUrl);
 		File templateFile = new File(templateUrl.toURI());
@@ -97,9 +112,9 @@ public class CertificatesManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void createCertificate() throws URISyntaxException {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity);
+	public void createCertificate() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null, null, null, "");
@@ -122,8 +137,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 	
 	@Test
 	public void loadCertificate() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
@@ -165,8 +180,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 	
 	@Test
 	public void loadLastCertificate() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, 10.0f, Boolean.TRUE, 0.2, "");
@@ -194,12 +209,12 @@ public class CertificatesManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void certificateNotifications_courseCoach() throws URISyntaxException {
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-2");
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-3");
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-4");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-4");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(owner);
+	public void certificateNotifications_courseCoach() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-2", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-3", defaultUnitTestOrganisation, null);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-4", defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-4", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
 		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(participant1, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(participant2, entry, GroupRoles.participant.name());
@@ -238,12 +253,12 @@ public class CertificatesManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void certificateNotifications_courseCoachByGroups() throws URISyntaxException {
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-5");
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-6");
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-7");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-8");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(owner);
+	public void certificateNotifications_courseCoachByGroups() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-5", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-6", defaultUnitTestOrganisation, null);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-7", defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-8", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "certified-group", "Group with certification", BusinessGroup.BUSINESS_TYPE,
 				null, null, false, false, entry);
 	    businessGroupRelationDao.addRole(coach, group, GroupRoles.coach.name());
@@ -283,8 +298,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 	
 	@Test
 	public void uploadCertificate() throws URISyntaxException {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		Calendar cal = Calendar.getInstance();
@@ -328,7 +343,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 	
 	@Test
 	public void uploadStandalone() throws URISyntaxException {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1");
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1", defaultUnitTestOrganisation, null);
 		dbInstance.commitAndCloseSession();
 		
 		String courseTitle = "Unkown course";
@@ -378,8 +393,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 	@Test
 	public void deleteCourse()  throws URISyntaxException  {
 		//create a course with a certificate
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-del-2");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-del-2", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		Long resourceKey = entry.getOlatResource().getKey();
 		
@@ -417,9 +432,9 @@ public class CertificatesManagerTest extends OlatTestCase {
 	@Test
 	public void deleteCourse_paranoiaCheck()  throws URISyntaxException  {
 		//create a course with a certificate
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-del-3");
-		RepositoryEntry entryToDelete = JunitTestHelper.deployBasicCourse(identity);
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-del-3", defaultUnitTestOrganisation, null);
+		RepositoryEntry entryToDelete = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		Long resourceKeyToDelete = entryToDelete.getOlatResource().getKey();
 		Long resourceKey = entry.getOlatResource().getKey();

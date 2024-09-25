@@ -80,11 +80,11 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		try {
 			if(courseEntry == null) {
 				Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
-				courseEntry = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation, false, false);
+				courseEntry = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation);
 			}
 			dbInstance.closeSession();
 		} catch (Exception e) {
-			log.error("Exception in setUp(): " + e);
+			log.error("Exception in setUp(): ", e);
 		}
 	}
 	

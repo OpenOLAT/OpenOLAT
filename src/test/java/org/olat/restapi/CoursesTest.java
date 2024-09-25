@@ -100,7 +100,7 @@ public class CoursesTest extends OlatRestTestCase {
 	@Test
 	public void testGetCourses() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
-		RepositoryEntry re = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation, false, false);
+		RepositoryEntry re = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation);
 		
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
@@ -132,7 +132,7 @@ public class CoursesTest extends OlatRestTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
-		RepositoryEntry re = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation, false, false);
+		RepositoryEntry re = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation);
 		String externalId = UUID.randomUUID().toString();
 		re = repositoryManager.setDescriptionAndName(re, "courses ext. id.", "courses desc", null, null, null, externalId, "ref-" + externalId, null, null);
 		dbInstance.commitAndCloseSession();
@@ -157,7 +157,7 @@ public class CoursesTest extends OlatRestTestCase {
 	@Test
 	public void testGetCourses_searchExternalID_withLifecycle() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
-		RepositoryEntry re = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation, false, false);
+		RepositoryEntry re = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation);
 		dbInstance.commit();
 
 		String externalId = UUID.randomUUID().toString();
@@ -194,7 +194,7 @@ public class CoursesTest extends OlatRestTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
-		RepositoryEntry re = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation, false, false);
+		RepositoryEntry re = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation);
 		String externalRef = UUID.randomUUID().toString();
 		re = repositoryManager.setDescriptionAndName(re, "courses ext. ref.", "courses desc", null, null, null, "ID-" + externalRef, externalRef, null, null);
 		dbInstance.commitAndCloseSession();
@@ -217,7 +217,7 @@ public class CoursesTest extends OlatRestTestCase {
 	@Test
 	public void testGetCourses_managed() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
-		RepositoryEntry re = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation, false, false);
+		RepositoryEntry re = JunitTestHelper.deployBasicCourse(admin, RepositoryEntryStatusEnum.preparation);
 		re = repositoryManager.setDescriptionAndName(re, "Course managed", "A managed course", null, null, null, null, null, "all", null);
 		dbInstance.commitAndCloseSession();
 		
@@ -270,9 +270,9 @@ public class CoursesTest extends OlatRestTestCase {
 		
 		// prepare 3 courses
 		String ref = UUID.randomUUID().toString();
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author.getIdentity(), RepositoryEntryStatusEnum.published, false, false);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author.getIdentity(), RepositoryEntryStatusEnum.published, false, false);
-		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author.getIdentity(), RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author.getIdentity(), RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author.getIdentity(), RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author.getIdentity(), RepositoryEntryStatusEnum.published);
 		repositoryManager.setDescriptionAndName(entry1, null, null, null, null, null, null, ref, null, null);
 		repositoryManager.setDescriptionAndName(entry2, null, null, null, null, null, null, ref, null, null);
 		repositoryManager.setDescriptionAndName(entry3, null, null, null, null, null, null, ref, null, null);

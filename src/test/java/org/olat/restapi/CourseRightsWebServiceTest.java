@@ -31,9 +31,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -41,10 +38,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.group.BusinessGroup;
@@ -56,11 +56,15 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.RightsVO;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * 
@@ -79,7 +83,22 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
+	
+	private static Organisation defaultUnitTestOrganisation;
+	private static IdentityWithLogin defaultUnitTestAdministrator;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+			defaultUnitTestAdministrator = JunitTestHelper
+					.createAndPersistRndAdmin("Cur-Elem-Web", defaultUnitTestOrganisation);
+		}
+	}
 	
 	/**
 	 * Load the rights link to coaches and participants of the course without any permissions set.
@@ -87,11 +106,11 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getRightsByCourseEmpty()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		//create an contact node
 		URI rightsUri = UriBuilder.fromUri(getContextURI())
@@ -127,8 +146,8 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getRightsByCourse()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		
 		Group defGroup = repositoryService.getDefaultGroup(entry);
 		rightManager.addBGRight(CourseRights.RIGHT_COURSEEDITOR, defGroup, entry.getOlatResource(), BGRightsRole.tutor);
@@ -137,7 +156,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		//create an contact node
 		URI rightsUri = UriBuilder.fromUri(getContextURI())
@@ -176,8 +195,8 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void addRightsByCourse()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		
 		Group defGroup = repositoryService.getDefaultGroup(entry);
 		rightManager.addBGRight(CourseRights.RIGHT_DB, defGroup, entry.getOlatResource(), BGRightsRole.tutor);
@@ -186,7 +205,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		RightsVO newCoachRights = new RightsVO();
 		newCoachRights.setRole(BGRightsRole.tutor.name());
@@ -238,8 +257,8 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getRightsByBusinessGroup()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-3");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-3", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(author, "Rights-3-1", "", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry);
@@ -254,7 +273,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		//create an contact node
 		URI rightsUri = UriBuilder.fromUri(getContextURI())
@@ -293,8 +312,8 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateRightsByBusinessGroup()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-4");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-4", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(author, "Rights-4-1", "", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry);
@@ -309,7 +328,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		RightsVO newCoachRights = new RightsVO();
 		newCoachRights.setRole(BGRightsRole.tutor.name());
@@ -362,9 +381,9 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateRightsByWrongBusinessGroup()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-4");
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-4", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(author, "Rights-4-1", "", BusinessGroup.BUSINESS_TYPE,
 				null, null, null, null, false, false, entry2);
@@ -373,7 +392,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(group1);
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		RightsVO newCoachRights = new RightsVO();
 		newCoachRights.setRole(BGRightsRole.tutor.name());
