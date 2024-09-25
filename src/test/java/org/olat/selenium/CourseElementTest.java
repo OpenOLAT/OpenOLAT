@@ -3039,7 +3039,7 @@ public class CourseElementTest extends Deployments {
 		Date newEnd = DateUtils.addDays(now, -1);
 		new TBrokerConfigurationPage(browser)
 			.selectConfiguration()
-			.selectPeriod(start, newEnd)
+			.selectEndPeriod(newEnd, true)
 			.saveConfiguration();
 		
 		courseEditor
@@ -3160,7 +3160,7 @@ public class CourseElementTest extends Deployments {
 		Date newEnd = DateUtils.addDays(now, -1);
 		new TBrokerConfigurationPage(browser)
 			.selectConfiguration()
-			.selectPeriod(start, newEnd)
+			.selectEndPeriod(newEnd, true)
 			.saveConfiguration();
 		
 		courseEditor
