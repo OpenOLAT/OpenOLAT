@@ -142,7 +142,17 @@ public class ObligationEditController extends FormBasicController implements Con
 		}
 		
 		// Default obligation
-		String translatedObligation = translateObligation(learningPathConfigs.getObligation());
+		AssessmentObligation configObligation = learningPathConfigs.getObligation();
+		if (obligation.isOverridden()) {
+			if (obligation.getConfigOriginal() != null) {
+				configObligation = obligation.getConfigOriginal();
+			}
+		} else {
+			if (obligation.getConfigCurrent() != null) {
+				configObligation = obligation.getConfigCurrent();
+			}
+		}
+		String translatedObligation = translateObligation(configObligation);
 		String defaultObligationText = translate("override.obligation.default", translatedObligation);
 		uifactory.addStaticTextElement("default.obligation", null, defaultObligationText, formLayout);
 		

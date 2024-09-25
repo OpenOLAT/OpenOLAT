@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 
+import org.hibernate.internal.util.MutableInteger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -70,7 +71,6 @@ import org.olat.modules.grading.GradingAssignment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.hibernate.internal.util.MutableInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -274,6 +274,10 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			sf.append(" and aentry.subIdent=:subIdent");
 			queryParams.addSubIdent();
 		}
+		if(params.getSubIdents() != null) {
+			sf.append(" and aentry.subIdents in :subIdents");
+			queryParams.addSubIdents();
+		}
 		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
 			sf.append(" and (");
 			if (params.getAssessmentObligations().contains(AssessmentObligation.mandatory)) {
@@ -350,6 +354,10 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			sf.append(" and aentry.subIdent=:subIdent");
 			queryParams.addSubIdent();
 		}
+		if(params.getSubIdents() != null) {
+			sf.append(" and aentry.subIdent in :subIdents");
+			queryParams.addSubIdents();
+		}
 		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
 			sf.append(" and (");
 			if (params.getAssessmentObligations().contains(AssessmentObligation.mandatory)) {
@@ -412,6 +420,10 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			if (params.getSubIdent() != null) {
 				sb.append(" and ae.subIdent=:subIdent");
 				queryParams.addSubIdent();
+			}
+			if (params.getSubIdents() != null) {
+				sb.append(" and ae.subIdent in :subIdents");
+				queryParams.addSubIdents();
 			}
 			sb.append(")");
 			
@@ -510,6 +522,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if (queryParams.isSubIdent()) {
 			query.setParameter("subIdent", params.getSubIdent());
 		}
+		if (queryParams.isSubIdents()) {
+			query.setParameter("subIdents", params.getSubIdents());
+		}
 		if(queryParams.isBusinessGroupKeys()) {
 			query.setParameter("businessGroupKeys", params.getBusinessGroupKeys());
 		}
@@ -552,6 +567,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		if(params.getSubIdent() != null) {
 			sf.and().append(" aentry.subIdent=:subIdent");
+		}
+		if(params.getSubIdents() != null) {
+			sf.and().append(" aentry.subIdent in :subIdents");
 		}
 		if(params.getReferenceEntry() != null) {
 			sf.and().append(" aentry.referenceEntry.key=:referenceKey");
@@ -832,6 +850,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		return list.getResultList();
 	}
 
+	@Override
 	public void getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params,
 									 AssessmentEntryStatus status,
 									 AssessmentEntryHandler assessmentEntryHandler) {
@@ -917,6 +936,10 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(params.getSubIdent() != null) {
 			sb.append(" and aentry.subIdent=:subIdent");
 			queryParams.addSubIdent();
+		}
+		if(params.getSubIdents() != null) {
+			sb.append(" and aentry.subIdent in :subIdents");
+			queryParams.addSubIdents();
 		}
 		if(status != null) {
 			sb.append(" and aentry.status=:assessmentStatus");
@@ -1339,6 +1362,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		private boolean repoEntryKey;
 		private boolean coachKey;
 		private boolean subIdent;
+		private boolean subIdents;
 		private boolean businessGroupKeys;
 		private boolean curriculumElementKeys;
 		private boolean fakeParticipantKeys;
@@ -1365,6 +1389,14 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		
 		public void addSubIdent() {
 			this.subIdent = true;
+		}
+
+		public boolean isSubIdents() {
+			return subIdents;
+		}
+		
+		public void addSubIdents() {
+			this.subIdents = true;
 		}
 		
 		public boolean isBusinessGroupKeys() {

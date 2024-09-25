@@ -12,7 +12,7 @@
 			<div class="o_steps_main clearfix">
 				<ul>
 				#foreach($mainTitle in $mainStepTitles)
-					<li #if($mainStepPos == $foreach.index) class="active"#end>
+					<li #if($mainStepPos == $foreach.index) class="active" aria-current="step"#end>
 					#if($mainStepPos == $foreach.index)
 						$r.render($mainTitle, "a11yactive")
 					#else
@@ -28,7 +28,7 @@
 				<div class="o_steps_sub clearfix">
 					<ul>
 					#foreach($subTitle in $subStepTitles)
-						<li #if($subStepPos == $foreach.index) class="active"#end>
+						<li #if($subStepPos == $foreach.index) class="active" aria-current="step"#end>
 						#if($subStepPos == $foreach.index)
 							$r.render($subTitle, "a11yactive")
 						#else

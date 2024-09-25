@@ -27,7 +27,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -105,12 +105,10 @@ public class MediaDetailsController extends BasicController implements Activatea
 		mainVC = createVelocityContainer("media_details");
 		loadTitle();
 		
-		Dropdown commandsDropdown = new Dropdown("commands", null, false, getTranslator());
+		Dropdown commandsDropdown = DropdownUIFactory.createMoreDropdown("commands", getTranslator());
 		commandsDropdown.setDomReplaceable(false);
-		commandsDropdown.setCarretIconCSS("o_icon o_icon_commands");
 		commandsDropdown.setButton(true);
 		commandsDropdown.setEmbbeded(true);
-		commandsDropdown.setOrientation(DropdownOrientation.right);
 		commandsDropdown.setVisible(editable);
 		mainVC.put("commands", commandsDropdown);
 		

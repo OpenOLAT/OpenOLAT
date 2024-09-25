@@ -72,14 +72,13 @@ public class CNSRunCoachController extends BasicController implements Activateab
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		
-//		participantsLink = LinkFactory.createLink("participants.title", mainVC, this);
-//		segmentView.addSegment(participantsLink, false);
+		participantsLink = LinkFactory.createLink("participants.title", mainVC, this);
+		segmentView.addSegment(participantsLink, false);
 		
 		previewLink = LinkFactory.createLink("preview", mainVC, this);
 		segmentView.addSegment(previewLink, false);
 		
-//		doOpenParticipants(ureq);
-		doOpenPreview(ureq);
+		doOpenParticipants(ureq);
 	}
 	
 	@Override
@@ -113,7 +112,7 @@ public class CNSRunCoachController extends BasicController implements Activateab
 	private void doOpenParticipants(UserRequest ureq) {
 		if (participantsCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
-			participantsCtrl = new CNSParticipantListController(ureq, bwControl);
+			participantsCtrl = new CNSParticipantListController(ureq, bwControl, courseNode, userCourseEnv);
 			listenTo(participantsCtrl);
 		} else {
 			participantsCtrl.reload(ureq);

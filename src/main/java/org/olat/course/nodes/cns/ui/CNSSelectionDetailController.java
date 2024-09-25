@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.cns.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -31,14 +30,18 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.st.Overview;
 import org.olat.course.nodes.st.OverviewController;
 import org.olat.course.nodes.st.OverviewFactory;
+import org.olat.course.run.scoring.AssessmentAccounting;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.style.Header;
 import org.olat.course.style.Header.Builder;
 import org.olat.course.style.ui.CourseStyleUIFactory;
 import org.olat.course.style.ui.HeaderContentController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -53,8 +56,12 @@ public class CNSSelectionDetailController extends BasicController {
 	private Link selectLink;
 	
 	private final CNSSelectionRow row;
+	
+	@Autowired
+	private LearningPathService learningPathService;
 
-	protected CNSSelectionDetailController(UserRequest ureq, WindowControl wControl, OverviewFactory overviewFactory, CNSSelectionRow row) {
+	protected CNSSelectionDetailController(UserRequest ureq, WindowControl wControl, OverviewFactory overviewFactory,
+			CNSSelectionRow row, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(HeaderContentController.class, getLocale(), getTranslator()));
 		this.row = row;
@@ -66,18 +73,22 @@ public class CNSSelectionDetailController extends BasicController {
 		overviewBuilder.withGoToNodeLinkEnabled(false);
 		overviewFactory.appendCourseNodeInfos(overviewBuilder, row.getCourseNode());
 		overviewFactory.appendCourseStyleInfos(overviewBuilder, row.getCourseNode());
-		overviewFactory.appendLearningPathConfigs(overviewBuilder, row.getCourseNode());
+		if (row.isSelected() && userCourseEnv.getScoreAccounting() instanceof AssessmentAccounting assessmentAccounting) {
+			overviewFactory.appendScoreAccountingInfos(overviewBuilder, row.getCourseNode(), assessmentAccounting);
+		} else {
+			overviewFactory.appendLearningPathConfigs(overviewBuilder, row.getCourseNode(), learningPathService);
+		}
 		overviewBuilder.withLearningPathStatus(row.getLearningPathStatus());
 		Overview overview = overviewBuilder.build();
 		
-		List<Link> links = new ArrayList<>(1);
-		if (row.getSelectLink() != null) {
+		List<Link> links = null;
+		if (!userCourseEnv.isCourseReadOnly() && row.getSelectLink() != null) {
 			selectLink = LinkFactory.createCustomLink("o_cns_select_" + row.getCourseNode().getIdent(), "select",
 					null, Link.BUTTON + Link.NONTRANSLATED, null, this);
 			selectLink.setCustomDisplayText(translate("select"));
 			selectLink.setPrimary(true);
 			selectLink.setUserObject(row);
-			links.add(selectLink);
+			links = List.of(selectLink);
 		}
 		
 		OverviewController overviewCtrl = new OverviewController(ureq, getWindowControl(), overview, null, links);

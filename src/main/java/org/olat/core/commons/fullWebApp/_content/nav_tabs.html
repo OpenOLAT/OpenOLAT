@@ -5,8 +5,12 @@
 	#set ($pos=${foreach.count} - 1)
 	#set ($postfix=$dtabsLinkNames.get(${pos}))
 	
-	<li class="#if($tabhelper.isDTabActive($dtab)) active #end">
-		$r.render("a$postfix")
+	<li class="#if($tabhelper.isDTabActive($dtab)) active #end" #if($tabhelper.isDTabActive($dtab)) aria-current='true' #end>
+		#if($tabhelper.isDTabActive($dtab))
+			$r.render("a$postfix", "a11yactive")
+		#else
+			$r.render("a$postfix")
+		#end
 		#if($tabhelper.isCanCloseDTab($dtab))
 			$r.render("c$postfix")	 ## close link has class o_nav_tab_close
 		#end

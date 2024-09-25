@@ -181,7 +181,13 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			target.append(" children_visible");	
 		}
 		String ident = curRoot.getIdent();
-		target.append("' data-nodeid='").append(ident).append("'>");			
+		target.append("' data-nodeid='").append(ident).append("'");			
+		// a11 marker for active parents and elements
+		if (tree.isHighlightSelection()) {
+			target.append(" aria-current='true'");
+		}
+		target.append(">");
+
 		target.append("<div id='dd").append(ident).append("' class='o_tree_l").append(level);
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			target.append(" o_dnd_item");
@@ -376,6 +382,10 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		}
 		renderDisplayTitle(renderer, target, curRoot, tree);
 		// display title and close menu item
+				
+		if (tree.isHighlightSelection() && selected && tree.getTranslator() != null) {
+			target.append("<span class='sr-only'>").appendHtmlAttributeEscaped(tree.getTranslator().translate("a11y.active")).append("</span>");
+		}
 		
 		appendDecorators(curRoot, target);
 		target.append("</a></span>");
@@ -403,6 +413,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			StringHelper.escapeHtml(target, title);
 		}
 		target.append("</span>");
+		
 		//render badge
 		if(node.getBadge() != null) {
 			target.append("&nbsp;");

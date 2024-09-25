@@ -166,38 +166,38 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
 		ae1.setScore(BigDecimal.valueOf(3.0));
 		ae1.setPassed(Boolean.FALSE);
-		assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry);
 		ae2.setScore(BigDecimal.valueOf(5.0));
 		ae2.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae2);
+		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, refEntry);
 		ae3.setScore(BigDecimal.valueOf(8.0));
 		ae3.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae3);
+		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		AssessmentEntry ae4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, refEntry);
 		ae4.setScore(BigDecimal.valueOf(9.0));
 		ae4.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae4);
+		ae4 = assessmentEntryDao.updateAssessmentEntry(ae4);
 		AssessmentEntry ae5 = assessmentEntryDao.createAssessmentEntry(assessedIdentity5, null, entry, subIdent, null, refEntry);
 		ae5.setScore(BigDecimal.valueOf(9.0));
 		ae5.setPassed(Boolean.TRUE);
 		ae5.setObligation(ObligationOverridable.of(AssessmentObligation.excluded));
-		assessmentEntryDao.updateAssessmentEntry(ae5);
+		ae5 = assessmentEntryDao.updateAssessmentEntry(ae5);
 		AssessmentEntry ae6 = assessmentEntryDao.createAssessmentEntry(assessedIdentity6, null, entry, subIdent, null, refEntry);
 		ae6.setScore(BigDecimal.valueOf(4.0));
 		ae6.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae6);
+		ae6 = assessmentEntryDao.updateAssessmentEntry(ae6);
 		AssessmentEntry ae7 = assessmentEntryDao.createAssessmentEntry(assessedIdentity7, null, entry, subIdent, null, refEntry);
 		ae7.setScore(BigDecimal.valueOf(9.0));
 		ae7.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae7);
+		ae7 = assessmentEntryDao.updateAssessmentEntry(ae7);
 		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, null, refEntry);
 		// Coach has done the assessment as a fake participant
 		AssessmentEntry aeCoach = assessmentEntryDao.createAssessmentEntry(coach, null, entry, subIdent, null, refEntry);
 		aeCoach.setScore(BigDecimal.valueOf(10.0));
 		aeCoach.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(aeCoach);
+		aeCoach = assessmentEntryDao.updateAssessmentEntry(aeCoach);
 		dbInstance.commitAndCloseSession();
 		
 		// coach of group 1 with id 1 and id2
@@ -323,34 +323,34 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		ae1.setScore(BigDecimal.valueOf(3.0));
 		ae1.setPassed(Boolean.FALSE);
 		ae1.setAssessmentStatus(AssessmentEntryStatus.done);
-		assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry);
 		ae2.setScore(BigDecimal.valueOf(5.0));
 		ae2.setPassed(Boolean.TRUE);
 		ae2.setAssessmentStatus(AssessmentEntryStatus.inReview);
-		assessmentEntryDao.updateAssessmentEntry(ae2);
+		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, refEntry);
 		ae3.setScore(BigDecimal.valueOf(8.0));
 		ae3.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae3);
+		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		AssessmentEntry ae4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, refEntry);
 		ae4.setScore(BigDecimal.valueOf(9.0));
 		ae4.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae4);
+		ae4 = assessmentEntryDao.updateAssessmentEntry(ae4);
 		AssessmentEntry ae5 = assessmentEntryDao.createAssessmentEntry(assessedExtIdentity5, null, entry, subIdent, null, refEntry);
 		ae5.setScore(BigDecimal.valueOf(3.0));
 		ae5.setGrade("Grade A");
 		ae5.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae5);
+		ae5 = assessmentEntryDao.updateAssessmentEntry(ae5);
 		AssessmentEntry ae6 = assessmentEntryDao.createAssessmentEntry(assessedExtIdentity6, null, entry, subIdent, null, refEntry);
 		ae6.setScore(BigDecimal.valueOf(4.0));
 		ae6.setGrade("Grade A");
 		ae6.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae6);
+		ae6 = assessmentEntryDao.updateAssessmentEntry(ae6);
 		AssessmentEntry ae7 = assessmentEntryDao.createAssessmentEntry(assessedExtIdentity7, null, entry, subIdent, null, refEntry);
 		ae7.setScore(BigDecimal.valueOf(5.0));
 		ae7.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae7);
+		ae7 = assessmentEntryDao.updateAssessmentEntry(ae7);
 		assessmentEntryDao.createAssessmentEntry(assessedIdentity8, null, entry, subIdent, null, refEntry);
 		assessmentEntryDao.createAssessmentEntry(assessedIdentity9, null, entry, subIdent, null, refEntry);
 		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, null, refEntry);
@@ -358,11 +358,11 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		AssessmentEntry aeAdmin = assessmentEntryDao.createAssessmentEntry(admin, null, entry, subIdent, null, refEntry);
 		aeAdmin.setScore(BigDecimal.valueOf(10.0));
 		aeAdmin.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(aeAdmin);
+		aeAdmin = assessmentEntryDao.updateAssessmentEntry(aeAdmin);
 		AssessmentEntry aeCoach = assessmentEntryDao.createAssessmentEntry(coach, null, entry, subIdent, null, refEntry);
 		aeCoach.setScore(BigDecimal.valueOf(10.0));
 		aeCoach.setPassed(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(aeCoach);
+		aeCoach = assessmentEntryDao.updateAssessmentEntry(aeCoach);
 		dbInstance.commitAndCloseSession();
 		
 		// administrator with full access
@@ -611,22 +611,22 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		ae1.setScore(BigDecimal.valueOf(1.0));
 		ae1.setPassed(Boolean.TRUE);
 		ae1.setObligation(null); // should be treated like mandatory
-		assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
 		ae2.setScore(BigDecimal.valueOf(4.0));
 		ae2.setPassed(Boolean.TRUE);
 		ae2.setObligation(ObligationOverridable.of(AssessmentObligation.mandatory));
-		assessmentEntryDao.updateAssessmentEntry(ae2);
+		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
 		ae3.setScore(BigDecimal.valueOf(1.0));
 		ae3.setPassed(Boolean.TRUE);
 		ae3.setObligation(ObligationOverridable.of(AssessmentObligation.optional));
-		assessmentEntryDao.updateAssessmentEntry(ae3);
+		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		AssessmentEntry ae4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, null);
 		ae4.setScore(BigDecimal.valueOf(0.0));
 		ae4.setPassed(Boolean.FALSE);
 		ae4.setObligation(ObligationOverridable.of(AssessmentObligation.excluded));
-		assessmentEntryDao.updateAssessmentEntry(ae4);
+		ae4 = assessmentEntryDao.updateAssessmentEntry(ae4);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
@@ -657,15 +657,15 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// Assessment data
 		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, null);
 		ae1.setScore(BigDecimal.valueOf(4.1));
-		assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
 		ae2.setScore(BigDecimal.valueOf(3.9));
-		assessmentEntryDao.updateAssessmentEntry(ae2);
+		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
 		ae3.setScore(BigDecimal.valueOf(1));
-		assessmentEntryDao.updateAssessmentEntry(ae3);
+		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		AssessmentEntry ae4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, null);
-		assessmentEntryDao.updateAssessmentEntry(ae4);
+		ae4 = assessmentEntryDao.updateAssessmentEntry(ae4);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
@@ -696,13 +696,13 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// Assessment data
 		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, null);
 		ae1.setObligation(null);
-		assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
 		ae2.setUserVisibility(Boolean.TRUE);
-		assessmentEntryDao.updateAssessmentEntry(ae2);
+		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
 		ae3.setUserVisibility(Boolean.FALSE);
-		assessmentEntryDao.updateAssessmentEntry(ae3);
+		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
@@ -739,13 +739,13 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// some datas
 		AssessmentEntry ae1 = createAssessmentEntry(assessedIdentity1, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae1.setScore(new BigDecimal("1"));
-		assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = createAssessmentEntry(assessedIdentity2, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae2.setScore(new BigDecimal("2"));
-		assessmentEntryDao.updateAssessmentEntry(ae2);
+		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = createAssessmentEntry(assessedIdentity3, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae3.setScore(null);
-		assessmentEntryDao.updateAssessmentEntry(ae3);
+		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
@@ -779,13 +779,13 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// some datas
 		AssessmentEntry ae1 = createAssessmentEntry(assessedIdentity1, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae1.setGrade(random());
-		assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = createAssessmentEntry(assessedIdentity2, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae2.setGrade(random());
-		assessmentEntryDao.updateAssessmentEntry(ae2);
+		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = createAssessmentEntry(assessedIdentity3, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae3.setScore(null);
-		assessmentEntryDao.updateAssessmentEntry(ae3);
+		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
@@ -818,16 +818,16 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// Assessment data
 		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, null);
 		ae1.setObligation(null);
-		assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
 		ae2.setObligation(ObligationOverridable.of(AssessmentObligation.mandatory));
-		assessmentEntryDao.updateAssessmentEntry(ae2);
+		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
 		ae3.setObligation(ObligationOverridable.of(AssessmentObligation.optional));
-		assessmentEntryDao.updateAssessmentEntry(ae3);
+		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		AssessmentEntry ae4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, null);
 		ae4.setObligation(ObligationOverridable.of(AssessmentObligation.excluded));
-		assessmentEntryDao.updateAssessmentEntry(ae4);
+		ae4 = assessmentEntryDao.updateAssessmentEntry(ae4);
 		
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
@@ -837,6 +837,42 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		params.setAssessmentObligations(List.of(AssessmentObligation.mandatory, AssessmentObligation.optional));
 		assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3);
+	}
+	
+	@Test
+	public void getAssessmentEntries_filter_subIdents() {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		String subIden1 = random();
+		createCourseElement(entry, subIden1);
+		String subIden2 = random();
+		createCourseElement(entry, subIden2);
+		String subIden3 = random();
+		createCourseElement(entry, subIden3);
+		
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.coach.name());
+		
+		AssessmentEntry ae11 = createAssessmentEntry(assessedIdentity1, entry, subIden1, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae12 = createAssessmentEntry(assessedIdentity1, entry, subIden2, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae13 = createAssessmentEntry(assessedIdentity1, entry, subIden3, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae21 = createAssessmentEntry(assessedIdentity2, entry, subIden1, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae22 = createAssessmentEntry(assessedIdentity2, entry, subIden2, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae31 = createAssessmentEntry(assessedIdentity3, entry, subIden1, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, null, null, assessmentCallback);
+		params.setSubIdents(List.of(subIden2, subIden3));
+		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae12, ae13, ae22).doesNotContain(ae11, ae21, ae31);
 	}
 	
 	@Test
@@ -1048,13 +1084,13 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// some datas
 		AssessmentEntry ae1 = createAssessmentEntry(assessedIdentity1, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae1.setScore(new BigDecimal(1));
-		assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = createAssessmentEntry(assessedIdentity2, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae2.setScore(new BigDecimal(2));
-		assessmentEntryDao.updateAssessmentEntry(ae2);
+		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = createAssessmentEntry(assessedIdentity3, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae3.setScore(null);
-		assessmentEntryDao.updateAssessmentEntry(ae3);
+		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		waitMessageAreConsumed();
 		
@@ -1090,13 +1126,13 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// some datas
 		AssessmentEntry ae1 = createAssessmentEntry(assessedIdentity1, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae1.setGrade(random());
-		assessmentEntryDao.updateAssessmentEntry(ae1);
+		ae1 = assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = createAssessmentEntry(assessedIdentity2, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae2.setGrade(random());
-		assessmentEntryDao.updateAssessmentEntry(ae2);
+		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = createAssessmentEntry(assessedIdentity3, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		ae3.setScore(null);
-		assessmentEntryDao.updateAssessmentEntry(ae3);
+		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		
 		CoachingAssessmentSearchParams params = new CoachingAssessmentSearchParams();

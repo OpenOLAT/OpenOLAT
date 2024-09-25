@@ -52,6 +52,7 @@ public class SearchAssessedIdentityParams {
 	private final RepositoryEntry entry;
 	private final RepositoryEntry referenceEntry;
 	private final String subIdent;
+	private Collection<String> subIdents;
 	
 	private final boolean admin;
 	private final boolean nonMembers;
@@ -123,6 +124,14 @@ public class SearchAssessedIdentityParams {
 
 	public void setSearchString(String searchString) {
 		this.searchString = searchString;
+	}
+
+	public Collection<String> getSubIdents() {
+		return subIdents;
+	}
+
+	public void setSubIdents(Collection<String> subIdents) {
+		this.subIdents = subIdents;
 	}
 
 	public List<AssessmentEntryStatus> getAssessmentStatus() {

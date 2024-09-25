@@ -61,6 +61,10 @@ public class ToDoMailing {
 	private I18nManager i18nManager;
 
 	public void sendAssignedEmail(Identity doer, Identity assignee, ToDoTask toDoTask, ToDoProvider toDoProvider) {
+		if (assignee.getStatus() > Identity.STATUS_VISIBLE_LIMIT) {
+			return;
+		}
+		
 		Locale locale = i18nManager.getLocaleOrDefault(assignee.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(ToDoUIFactory.class, locale);
 		String subject = translator.translate("email.assigned.subject");
@@ -86,6 +90,10 @@ public class ToDoMailing {
 	}
 	
 	public void sendDoneEmail(Identity doer, Identity member, ToDoTask toDoTask, ToDoProvider toDoProvider) {
+		if (member.getStatus() > Identity.STATUS_VISIBLE_LIMIT) {
+			return;
+		}
+		
 		Locale locale = i18nManager.getLocaleOrDefault(member.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(ToDoUIFactory.class, locale);
 		String subject = translator.translate("email.done.subject");

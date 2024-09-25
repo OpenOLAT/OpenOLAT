@@ -78,6 +78,10 @@
 	border-radius: $o-cn-style-border-radius;
 	background-color: $o-cn-style-bg;
 	
+	a:not(.btn) {
+		color: o-a11y-color($link-color, $o-cn-style-bg);
+	}
+	
 	.o_expanded {
 		border-top: $o-cn-style-border;
 	}
@@ -234,6 +238,9 @@
 		.o_peekview {
 			padding: 15px 15px 10px 15px;
 			background: $o-cn-style-peekview-bg;
+			a:not(.btn) {
+				color: o-a11y-color($link-color, $o-cn-style-peekview-bg);
+			}
 		}
 		.o_assessment {
 			.o_labeled {

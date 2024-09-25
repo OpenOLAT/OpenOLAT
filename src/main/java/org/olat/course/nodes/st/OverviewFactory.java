@@ -106,24 +106,9 @@ public class OverviewFactory {
 		appendCourseStyleInfos(builder, courseNode);
 		
 		if (scoreAccounting != null) {
-			AssessmentEvaluation evaluation = scoreAccounting.getScoreEvaluation(courseNode);
-			LearningPathStatus learningPathStatus = LearningPathStatus.of(evaluation);
-			builder.withLearningPathStatus(learningPathStatus);
-			
-			if (LearningPathStatus.done != learningPathStatus) {
-				builder.withDuration(evaluation.getDuration());
-				
-				Date startDate = evaluation.getStartDate();
-				if (startDate != null && startDate.after(now)) {
-					builder.withStartDateConfig(DueDateConfig.absolute(startDate));
-				}
-				Overridable<Date> endDate = evaluation.getEndDate();
-				if (endDate != null && endDate.getCurrent() != null) {
-					builder.withEndDateConfig(DueDateConfig.absolute(endDate.getCurrent()));
-				}
-			}
+			appendScoreAccountingInfos(builder, courseNode, scoreAccounting);
 		} else if (learningPathService != null) {
-			appendLearningPathConfigs(builder, courseNode);
+			appendLearningPathConfigs(builder, courseNode, learningPathService);
 		}
 		
 		Controller peekViewCtrl = null;
@@ -165,7 +150,30 @@ public class OverviewFactory {
 		}
 	}
 
-	public void appendLearningPathConfigs(Builder builder, CourseNode courseNode) {
+	public void appendScoreAccountingInfos(Builder builder, CourseNode courseNode, ScoreAccounting scoreAccounting) {
+		AssessmentEvaluation evaluation = scoreAccounting.getScoreEvaluation(courseNode);
+		if (evaluation == null) {
+			return;
+		}
+		
+		LearningPathStatus learningPathStatus = LearningPathStatus.of(evaluation);
+		builder.withLearningPathStatus(learningPathStatus);
+		
+		if (LearningPathStatus.done != learningPathStatus) {
+			builder.withDuration(evaluation.getDuration());
+			
+			Date startDate = evaluation.getStartDate();
+			if (startDate != null && startDate.after(now)) {
+				builder.withStartDateConfig(DueDateConfig.absolute(startDate));
+			}
+			Overridable<Date> endDate = evaluation.getEndDate();
+			if (endDate != null && endDate.getCurrent() != null) {
+				builder.withEndDateConfig(DueDateConfig.absolute(endDate.getCurrent()));
+			}
+		}
+	}
+
+	public void appendLearningPathConfigs(Builder builder, CourseNode courseNode, LearningPathService learningPathService) {
 		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
 		builder.withDuration(learningPathConfigs.getDuration());
 		builder.withStartDateConfig(learningPathConfigs.getStartDateConfig());

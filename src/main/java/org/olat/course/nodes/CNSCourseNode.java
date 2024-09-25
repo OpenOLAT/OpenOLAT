@@ -43,7 +43,6 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.cns.CNSEnvironment;
 import org.olat.course.nodes.cns.manager.CNSAssessmentEnvironment;
-import org.olat.course.nodes.cns.manager.CNSPreviewEnvironment;
 import org.olat.course.nodes.cns.ui.CNSEditController;
 import org.olat.course.nodes.cns.ui.CNSRunCoachController;
 import org.olat.course.nodes.cns.ui.CNSSelectionController;
@@ -107,9 +106,7 @@ public class CNSCourseNode extends AbstractAccessableCourseNode {
 		if (roles.isGuestOnly()) {
 			controller = MessageUIFactory.createGuestNoAccessMessage(ureq, wControl, null);
 		} else if (userCourseEnv.isParticipant()) {
-			CNSEnvironment cnsEnv = userCourseEnv.isMemberParticipant()
-					? new CNSAssessmentEnvironment(userCourseEnv, this)
-					: new CNSPreviewEnvironment();
+			CNSEnvironment cnsEnv = new CNSAssessmentEnvironment(userCourseEnv, this);
 			controller = new CNSSelectionController(ureq, wControl, this, userCourseEnv, cnsEnv);
 		} else {
 			controller = new CNSRunCoachController(ureq, wControl, this, userCourseEnv);

@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -171,9 +172,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			addMemberDropdown.setVisible(false);
 		}
 
-		moreDropdown = new Dropdown("more", null, false, getTranslator());
-		moreDropdown.setCarretIconCSS("o_icon o_icon_commands");
-		moreDropdown.setOrientation(DropdownOrientation.right);
+		moreDropdown = DropdownUIFactory.createMoreDropdown("more", getTranslator());
 		moreDropdown.setButton(true);
 		moreDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
 		mainVC.put("more", moreDropdown);

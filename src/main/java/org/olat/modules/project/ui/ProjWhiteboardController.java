@@ -30,7 +30,7 @@ import org.olat.core.commons.services.doceditor.drawio.DrawioEditorConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
@@ -104,10 +104,8 @@ public class ProjWhiteboardController extends BasicController implements Generic
 		putInitialPanel(mainVC);
 		
 		//Commands
-		cmdsDropDown = new Dropdown("cmds", null, false, getTranslator());
-		cmdsDropDown.setCarretIconCSS("o_icon o_icon_commands");
+		cmdsDropDown = DropdownUIFactory.createMoreDropdown("cmds", getTranslator());
 		cmdsDropDown.setEmbbeded(true);
-		cmdsDropDown.setOrientation(DropdownOrientation.right);
 		mainVC.put("cmds", cmdsDropDown);
 		
 		if (secCallback.canEditWhiteboard()) {

@@ -67,7 +67,7 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 	private boolean isMultiselect;
 	private String[] selectionKeys;
 
-	private static final String NO_SEL_KEY = "gsph.doselect";
+	public static final String NO_SEL_KEY = "gsph.doselect";
 	public static final String KEY_DELIMITER = ",";
 
 	private UsrPropHandlerCfgFactory cfgFactory;

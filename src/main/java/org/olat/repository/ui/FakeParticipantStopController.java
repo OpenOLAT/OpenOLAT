@@ -23,7 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -63,9 +63,7 @@ public class FakeParticipantStopController extends BasicController {
 		
 		stopButton = LinkFactory.createButtonSmall("fake.participant.stop", mainVC, this);
 		
-		moreDropdown = new Dropdown("fake.participant.more", null, false, getTranslator());
-		moreDropdown.setCarretIconCSS("o_icon o_icon_commands");
-		moreDropdown.setOrientation(DropdownOrientation.right);
+		moreDropdown = DropdownUIFactory.createMoreDropdown("fake.participant.more", getTranslator());
 		moreDropdown.setEmbbeded(true);
 		moreDropdown.setButton(true);
 		moreDropdown.setButtonSize(ButtonSize.small);
