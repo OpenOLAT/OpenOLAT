@@ -264,6 +264,10 @@
 body .basicLightbox {
 	z-index: 100000; 
 }
+/* prevent double scroll bar (mainly PDFs) */
+body:has(.basicLightbox) {
+	overflow: hidden;
+}
 
 /* TwentyTwenty image comparison */
 .twentytwenty-wrapper {
