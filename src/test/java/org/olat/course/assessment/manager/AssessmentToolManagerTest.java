@@ -32,14 +32,20 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentConfigMock;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CoachingAssessmentEntry;
@@ -91,6 +97,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentToolManagerTest extends OlatTestCase {
 
+	private static final Logger log = Tracing.createLoggerFor(AssessmentToolManagerTest.class);
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -106,6 +114,8 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
@@ -114,21 +124,36 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 	
+	private static Organisation defaultUnitTestOrganisation;
+	private static Identity defaultUnitTestAdministrator;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+			defaultUnitTestAdministrator = JunitTestHelper
+					.createAndPersistRndAdmin("Cur-Elem-Web", defaultUnitTestOrganisation)
+					.getIdentity();
+		}
+	}
+	
+	
 	@Test
 	public void assessmentTool_coach() {
 		//course
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-author-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-author-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		
 		//members as participant and coach
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-1");
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-2");
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-3");
-		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-4");
-		Identity assessedIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-5");
-		Identity assessedIdentity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-6");
-		Identity assessedIdentity7 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-7");
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-1");
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-1", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-2", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-3", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-4", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-5", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-6", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity7 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-7", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-1", defaultUnitTestOrganisation, null);
 
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
@@ -285,20 +310,20 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void assessmentTool_admin() {
 		//course
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("ast-admin-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-1", defaultUnitTestOrganisation).getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
 		
 		//members as participant and coach
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-5");
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-6");
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-7");
-		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-8");
-		Identity assessedExtIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-9");
-		Identity assessedExtIdentity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-10");
-		Identity assessedExtIdentity7 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-11");
-		Identity assessedIdentity8 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity9 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-9");
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-5", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-6", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-7", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-8", defaultUnitTestOrganisation, null);
+		Identity assessedExtIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-9", defaultUnitTestOrganisation, null);
+		Identity assessedExtIdentity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-10", defaultUnitTestOrganisation, null);
+		Identity assessedExtIdentity7 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-11", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity8 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-12", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity9 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-13", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-9", defaultUnitTestOrganisation, null);
 
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
@@ -487,11 +512,11 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void assessmentTool_owner() {
 		//course
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-author-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-author-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		
 		//members as participant and coach
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("asto-1");
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("asto-1", defaultUnitTestOrganisation, null);
 
 		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
 
@@ -521,20 +546,20 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void getNumberOfParticipants() {
 		//course
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("ast-admin-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-1", defaultUnitTestOrganisation).getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(defaultUnitTestAdministrator, defaultUnitTestOrganisation);
 		
 		//members as participant and coach
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-5");
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-6");
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-7");
-		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-8");
-		Identity assessedExtIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-9");
-		Identity assessedExtIdentity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-10");
-		Identity assessedExtIdentity7 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-11");
-		Identity assessedExtIdentity8 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-12");
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-9");
-		Identity coachWithAE = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-9-ae");
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-5", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-6", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-7", defaultUnitTestOrganisation, null);
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-8", defaultUnitTestOrganisation, null);
+		Identity assessedExtIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-9", defaultUnitTestOrganisation, null);
+		Identity assessedExtIdentity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-10", defaultUnitTestOrganisation, null);
+		Identity assessedExtIdentity7 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-11", defaultUnitTestOrganisation, null);
+		Identity assessedExtIdentity8 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-12", defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-9", defaultUnitTestOrganisation, null);
+		Identity coachWithAE = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-9-ae", defaultUnitTestOrganisation, null);
 
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
@@ -593,13 +618,13 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void getStatistics_filterByObligation() {
 		// Course and users
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-2").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
 		String subIdent = random();
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.participant.name());
@@ -641,13 +666,13 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getScoreStatistic() {
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-3").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
 		String subIdent = random();
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.participant.name());
@@ -682,12 +707,12 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void getAssessmentEntries_filterByUserVisibility() {
 		// Course and users
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-4").getIdentity();;
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
 		String subIdent = random();
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.participant.name());
@@ -721,15 +746,15 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getAssessmentEntries_filter_scoreNull() {
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-5").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
 		String subIdent = random();
 		createCourseElement(entry, subIdent);
 		
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		
 		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.coach.name());
@@ -761,15 +786,15 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getAssessmentEntries_filter_gradeNull() {
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-6").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
 		String subIdent = random();
 		createCourseElement(entry, subIdent);
 		
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		
 		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.coach.name());
@@ -802,13 +827,13 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void getAssessmentEntries_filterByObligation() {
 		// Course and users
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-7").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
 		String subIdent = random();
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.participant.name());
@@ -842,12 +867,12 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	@Test
 	public void getCoachingEntries() {
 		//course
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(admin);
-		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(admin);
-		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(admin);
-		RepositoryEntry entryTrashed = JunitTestHelper.deployBasicCourse(admin);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-8").getIdentity();
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		RepositoryEntry entryTrashed = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
 		repositoryService.deleteSoftly(entryTrashed, admin, false, false);
 		dbInstance.commitAndCloseSession();
 		
@@ -860,45 +885,45 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// Group participant
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Group participant
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Group participant, group not linked to the course
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant and group participant
-		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant
-		Identity assessedIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant, no assessment entry
-		Identity assessedIdentity8 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity8 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant, obligation mandatory
-		Identity assessedIdentity9 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity9 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant, obligation mandatory
-		Identity assessedIdentity10 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity10 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant, obligation mandatory
-		Identity assessedIdentity11 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity11 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant, obligation none
-		Identity assessedIdentity12 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity12 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant by owner
-		Identity assessedIdentity13 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity13 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant, only group coach
-		Identity assessedIdentity14 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity14 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant, wrong status
-		Identity assessedIdentity15 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity15 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant, wrong user visibility
-		Identity assessedIdentity16 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity16 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Course participant, no user visibility (= true)
-		Identity assessedIdentity17 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity17 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Not member but assessment entry (coach)
-		Identity assessedIdentity18 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity18 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Not member but assessment entry (owner)
-		Identity assessedIdentity19 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity19 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		// Member, but course in trash
-		Identity assessedIdentity21 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity21 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		//Member but identity is deleted
-		Identity assessedIdentity22 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity22 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		assessedIdentity22 = securityManager.saveIdentityStatus(assessedIdentity22, Identity.STATUS_DELETED, admin);
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		dbInstance.commitAndCloseSession();
 
 		BusinessGroup group1 = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
@@ -1029,15 +1054,15 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	public void getCoachingEntries_filter_scoreNull() {
 		//course
 		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		waitMessageAreConsumed();// Wait sync course element ready
 		String subIdent = random();
 		createCourseElement(entry, subIdent);
 		
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 
 		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
@@ -1073,14 +1098,14 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	public void getCoachingEntries_filter_gradeNull() {
 		//course
 		Identity admin = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
 		String subIdent = random();
 		createCourseElement(entry1, subIdent);
 		
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 
 		repositoryEntryRelationDao.addRole(assessedIdentity1, entry1, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(assessedIdentity2, entry1, GroupRoles.participant.name());
@@ -1114,10 +1139,10 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	public void getCoachingEntries_filter_configScoreModes() {
 		//course
 		Identity admin = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
-		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(assessedIdentity, entry1, GroupRoles.participant.name());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(coach, entry1, GroupRoles.coach.name());
 		
 		AssessmentConfigMock assessmentConfig = createAssessmentConfigMock();
@@ -1152,10 +1177,10 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	public void getCoachingEntries_filter_configGrade() {
 		//course
 		Identity admin = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
-		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(assessedIdentity, entry1, GroupRoles.participant.name());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(coach, entry1, GroupRoles.coach.name());
 		
 		AssessmentConfigMock assessmentConfig = createAssessmentConfigMock();
@@ -1189,10 +1214,10 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	public void getCoachingEntries_filter_configAutoGrade() {
 		//course
 		Identity admin = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
-		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(assessedIdentity, entry1, GroupRoles.participant.name());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(coach, entry1, GroupRoles.coach.name());
 		
 		AssessmentConfigMock assessmentConfig = createAssessmentConfigMock();
@@ -1224,18 +1249,20 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getCoachingEntries_filter_userVisibilitySetable() {
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
-		CourseFactory.loadCourse(entry1).getRunStructure().getRootNode().getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, true);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(admin);
-		CourseFactory.loadCourse(entry2).getRunStructure().getRootNode().getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, false);
+		Identity admin = JunitTestHelper.getDefaultAuthor();
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		setRootCourseElementEntry(entry1, STCourseNode.CONFIG_COACH_USER_VISIBILITY, true);
+		
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		setRootCourseElementEntry(entry2, STCourseNode.CONFIG_COACH_USER_VISIBILITY, false);
+		
 		String subIdent = random();
 		createCourseElement(entry1, subIdent);
 		createCourseElement(entry2, subIdent);
 		
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(owner, entry1, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(coach, entry1, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(participant, entry1, GroupRoles.participant.name());
@@ -1246,6 +1273,8 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		AssessmentEntry ae1 = createAssessmentEntry(participant, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		AssessmentEntry ae2 = createAssessmentEntry(participant, entry2, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
 		dbInstance.commitAndCloseSession();
+		
+		log.info("ae1: {} ae2: {}", ae1.getKey(), ae2.getKey());
 		
 		CoachingAssessmentSearchParams params = new CoachingAssessmentSearchParams();
 		params.setCoach(coach);
@@ -1266,18 +1295,20 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getCoachingEntries_filter_gradeApplicable() {
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
-		CourseFactory.loadCourse(entry1).getRunStructure().getRootNode().getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_COACH_GRADE_APPLY, true);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(admin);
-		CourseFactory.loadCourse(entry2).getRunStructure().getRootNode().getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_COACH_GRADE_APPLY, false);
+		Identity admin = JunitTestHelper.getDefaultAuthor();
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		setRootCourseElementEntry(entry1, STCourseNode.CONFIG_COACH_GRADE_APPLY, true);
+		
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		setRootCourseElementEntry(entry2, STCourseNode.CONFIG_COACH_GRADE_APPLY, false);
+		
 		String subIdent = random();
 		createCourseElement(entry1, subIdent);
 		createCourseElement(entry2, subIdent);
 		
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		repositoryEntryRelationDao.addRole(owner, entry1, GroupRoles.owner.name());
 		repositoryEntryRelationDao.addRole(coach, entry1, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(participant, entry1, GroupRoles.participant.name());
@@ -1308,21 +1339,21 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	
 	@Test
 	public void getFakeParticipants() {
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
-		RepositoryEntry entryOther = JunitTestHelper.deployBasicCourse(admin);
+		Identity admin = JunitTestHelper.createAndPersistRndAdmin("ast-admin-9").getIdentity();
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
+		RepositoryEntry entryOther = JunitTestHelper.deployBasicCourse(admin, defaultUnitTestOrganisation);
 		String subIdent = random();
 		
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity formerParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity coachWithoutAE = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity coachAndParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity ownerInOtherRE = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity ownerAndParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity masterCoachAndParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity formerParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity coachWithoutAE = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity coachAndParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity ownerInOtherRE = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity ownerAndParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
+		Identity masterCoachAndParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser(random(), defaultUnitTestOrganisation, null);
 		
 		repositoryEntryRelationDao.addRole(participant, entry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
@@ -1387,6 +1418,13 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 
 	private CourseElement createCourseElement(RepositoryEntry entry, String subIdent) {
 		return createCourseElement(entry, subIdent, createAssessmentConfigMock());
+	}
+	
+	private void setRootCourseElementEntry(RepositoryEntry entry, String configKey, Boolean value) {
+		ICourse course2 = CourseFactory.openCourseEditSession(entry.getOlatResource().getResourceableId());
+		course2.getRunStructure().getRootNode().getModuleConfiguration().setBooleanEntry(configKey, value);
+		CourseFactory.saveCourse(course2.getResourceableId());
+		CourseFactory.closeCourseEditSession(course2.getResourceableId(), true);
 	}
 	
 	private CourseElement createCourseElement(RepositoryEntry entry, String subIdent, AssessmentConfig assessmentConfig) {

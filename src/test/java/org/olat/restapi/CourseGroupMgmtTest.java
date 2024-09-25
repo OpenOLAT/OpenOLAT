@@ -35,9 +35,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -47,9 +44,12 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -63,6 +63,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 
 /**
@@ -81,15 +84,30 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
+	
+	private static Organisation defaultUnitTestOrganisation;
+	private static IdentityWithLogin defaultUnitTestAdministrator;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+			defaultUnitTestAdministrator = JunitTestHelper
+					.createAndPersistRndAdmin("Cur-Elem-Web", defaultUnitTestOrganisation);
+		}
+	}
 	
 	@Test
 	public void getCourseGroups() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-5");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-5", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
 		BusinessGroup businessGroup1 = businessGroupService.createBusinessGroup(owner, "rest-g5", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseEntry);
 		BusinessGroup businessGroup2 = businessGroupService.createBusinessGroup(owner, "rest-g6", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseEntry);
 		dbInstance.commitAndCloseSession();
@@ -113,7 +131,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	@Test
 	public void getCourseGroupsUnkownId() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		Long courseId = 1l;
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups").build();
@@ -128,10 +146,10 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	@Test
 	public void getCourseGroup() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-6");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-6", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g6", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseEntry);
 		dbInstance.commitAndCloseSession();
 		
@@ -151,10 +169,10 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	@Test
 	public void putCourseGroupRelation() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-7");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-7", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g7", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -187,10 +205,10 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	@Test
 	public void postCourseGroupRelation() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-8");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-8", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g8", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -223,10 +241,10 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	@Test
 	public void putNewCourseGroup() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-11");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-11", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		GroupVO vo = new GroupVO();
@@ -258,10 +276,10 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	@Test
 	public void removeCourseGroup() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-9");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-9", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g9", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, courseEntry);
 		dbInstance.commitAndCloseSession();
 		
@@ -291,8 +309,8 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(identity));
 		
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-11");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-11", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g11", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
 		dbInstance.commitAndCloseSession();
 
@@ -313,8 +331,8 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(identity));
 		
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-10");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-10", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner, "rest-g10", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
 		dbInstance.commitAndCloseSession();
 		

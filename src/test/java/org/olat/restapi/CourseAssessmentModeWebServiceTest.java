@@ -84,7 +84,7 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 			}
 			dbInstance.closeSession();
 		} catch (Exception e) {
-			log.error("Exception in setUp(): " + e);
+			log.error("Exception in setUp(): ", e);
 		}
 	}
 	

@@ -99,6 +99,7 @@ public class JunitTestHelper {
 	}
 	
 	private static Identity defaultAuthor;
+	private static Identity defaultAdministrator;
 	private static Organisation defaultOrganisation;
 	
 	public static final Identity getDefaultAuthor() {
@@ -106,6 +107,13 @@ public class JunitTestHelper {
 			defaultAuthor = createAndPersistIdentityAsRndAuthor("the-author");
 		}
 		return defaultAuthor;
+	}
+	
+	public static final Identity getDefaultAdministrator() {
+		if(defaultAdministrator == null) {
+			defaultAdministrator = CoreSpringFactory.getImpl(BaseSecurity.class).findIdentityByLogin("administrator");
+		}
+		return defaultAdministrator;
 	}
 	
 	public static final Organisation getDefaultOrganisation() {
@@ -323,7 +331,7 @@ public class JunitTestHelper {
 	public static final IdentityWithLogin createAndPersistRndAdmin(String prefixLogin) {
 		String login = getRandomizedLoginName(prefixLogin);
 		String password = PWD;
-		Identity identity = createAndPersistIdentityAsAdmin(login, password);
+		Identity identity = createAndPersistIdentityAsAdmin(login, password, getDefaultOrganisation());
 		return new IdentityWithLogin(identity, login, password);
 	}
 	
@@ -342,7 +350,12 @@ public class JunitTestHelper {
 	
 	public static final Identity createAndPersistIdentityAsRndAdmin(String prefixLogin) {
 		String login = getRandomizedLoginName(prefixLogin);
-		return createAndPersistIdentityAsAdmin(login, PWD);
+		return createAndPersistIdentityAsAdmin(login, PWD, getDefaultOrganisation());
+	}
+	
+	public static final Identity createAndPersistIdentityAsRndAdmin(String prefixLogin, Organisation organisation, String pwd) {
+		String login = getRandomizedLoginName(prefixLogin);
+		return createAndPersistIdentityAsAdmin(login, pwd, organisation);
 	}
 	
 	/**
@@ -351,7 +364,7 @@ public class JunitTestHelper {
 	 * @param password The password
 	 * @return
 	 */
-	private static final Identity createAndPersistIdentityAsAdmin(String login, String password) {
+	private static final Identity createAndPersistIdentityAsAdmin(String login, String password, Organisation organisation) {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		Identity identity = findIdentityByLogin(login);
 		if (identity != null) {
@@ -362,8 +375,9 @@ public class JunitTestHelper {
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, password, null);
-		addToDefaultOrganisation(identity, OrganisationRoles.administrator);
-		addToDefaultOrganisation(identity, OrganisationRoles.user);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.administrator);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.user);
+		
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
 	}
@@ -465,8 +479,21 @@ public class JunitTestHelper {
 	 * @return The repository entry of the course
 	 */
 	public static RepositoryEntry deployBasicCourse(Identity initialAuthor) {
+		Organisation organisation = getDefaultOrganisation();
 		String displayname = "Basic course (" + CodeHelper.getForeverUniqueID() + ")";
-		return deployBasicCourse(initialAuthor, displayname, RepositoryEntryStatusEnum.published);
+		return deployBasicCourse(initialAuthor, displayname, organisation, RepositoryEntryStatusEnum.published);
+	}
+	
+	/**
+	 * Deploy a course with only a single page. Title is randomized.
+	 * 
+	 * @param initialAuthor The author
+	 * @param organisation The organisation
+	 * @return The repository entry of the course
+	 */
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, Organisation organisation) {
+		String displayname = "Basic course (" + CodeHelper.getForeverUniqueID() + ")";
+		return deployBasicCourse(initialAuthor, displayname, organisation, RepositoryEntryStatusEnum.published);
 	}
 	
 	/**
@@ -476,9 +503,12 @@ public class JunitTestHelper {
 	 * @param access The access
 	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, RepositoryEntryStatusEnum status) {
+
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor,
+			RepositoryEntryStatusEnum status) {
+		Organisation organisation = getDefaultOrganisation();
 		String displayname = "Basic course (" + CodeHelper.getForeverUniqueID() + ")";
-		return deployBasicCourse(initialAuthor, displayname, status);
+		return deployBasicCourse(initialAuthor, displayname, organisation, status);
 	}
 
 	/**
@@ -489,10 +519,25 @@ public class JunitTestHelper {
 	 * @param access The access
 	 * @return The repository entry of the course
 	 */
-	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, String displayname, RepositoryEntryStatusEnum status) {
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, String displayname,
+			RepositoryEntryStatusEnum status) {
+		Organisation organisation = getDefaultOrganisation();
+		return deployBasicCourse(initialAuthor, displayname, organisation, status);
+	}
+	
+	/**
+	 * 
+	 * @param initialAuthor
+	 * @param displayname
+	 * @param organisation
+	 * @param status
+	 * @return
+	 */
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor, String displayname,
+			Organisation organisation, RepositoryEntryStatusEnum status) {
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Basic_course.zip");
-			return deployCourse(initialAuthor, displayname, status, courseUrl);
+			return deployCourse(initialAuthor, displayname, status, courseUrl, organisation);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -503,7 +548,8 @@ public class JunitTestHelper {
 			RepositoryEntryStatusEnum status) {
 		try {
 			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Empty_course.zip");
-			return deployCourse(initialAuthor, displayname, status, courseUrl);
+			Organisation organisation = getDefaultOrganisation();
+			return deployCourse(initialAuthor, displayname, status, courseUrl, organisation);
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
