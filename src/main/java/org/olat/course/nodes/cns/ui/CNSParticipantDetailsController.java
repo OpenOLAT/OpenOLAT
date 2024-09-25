@@ -241,7 +241,8 @@ public class CNSParticipantDetailsController extends FormBasicController {
 		removeAsListenerAndDispose(ccwc);
 		removeAsListenerAndDispose(obligationEditCtrl);
 		
-		obligationEditCtrl = new ObligationEditController(ureq, getWindowControl(), courseEntry, courseNode, coachedCourseEnv, true);
+		obligationEditCtrl = new ObligationEditController(ureq, getWindowControl(), courseEntry, courseNode,
+				coachedCourseEnv, !coachedCourseEnv.isCourseReadOnly());
 		listenTo(obligationEditCtrl);
 		
 		CalloutSettings settings = new CalloutSettings();

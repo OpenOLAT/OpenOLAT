@@ -216,7 +216,7 @@ public class CNSSelectionController extends FormBasicController implements Flexi
 		detailsLink.setUserObject(row);
 		links.add(detailsLink);
 		
-		if (!row.isSelected()) {
+		if (!row.isSelected() && !userCourseEnv.isCourseReadOnly()) {
 			Link selectLink = LinkFactory.createCustomLink("o_cns_select_" + row.getCourseNode().getIdent(), CMD_SELECT,
 					null, Link.BUTTON + Link.NONTRANSLATED, null, this);
 			selectLink.setCustomDisplayText(translate("select"));
@@ -359,7 +359,7 @@ public class CNSSelectionController extends FormBasicController implements Flexi
 	private void doOpenDetails(UserRequest ureq, CNSSelectionRow row) {
 		removeAsListenerAndDispose(detailCtrl);
 		
-		detailCtrl = new CNSSelectionDetailController(ureq, getWindowControl(), overviewFactory, row);
+		detailCtrl = new CNSSelectionDetailController(ureq, getWindowControl(), overviewFactory, row, userCourseEnv);
 		listenTo(detailCtrl);
 		
 		lightboxCtrl = new LightboxController(ureq, getWindowControl(), detailCtrl);

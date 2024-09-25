@@ -63,6 +63,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -75,6 +76,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -129,6 +131,7 @@ public class CNSParticipantListController extends FormBasicController implements
 	public CNSParticipantListController(UserRequest ureq, WindowControl wControl, CNSCourseNode courseNode, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl, "participant_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.coachCourseEnv = coachCourseEnv;
 		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
 		courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
