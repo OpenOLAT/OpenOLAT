@@ -3,8 +3,12 @@
 	#foreach ($site in $sites)
 		#set ($siteEl = $r.getComponent("$site"))
 		#set ($navel = $siteEl.userObject.getNavElement())
-		<li class='#if($tabhelper.isSiteActive($siteEl.userObject)) active #end $!navel.getIconCSSClass()'>
-			$r.render("$site")
+		<li class='#if($tabhelper.isSiteActive($siteEl.userObject)) active #end $!navel.getIconCSSClass()' #if($tabhelper.isSiteActive($siteEl.userObject)) aria-current='true' #end>
+		#if($tabhelper.isSiteActive($siteEl.userObject))
+			$r.render("$site", "a11yactive")
+		#else
+			$r.render("$site")	
+		#end
 		</li>
 	#end
 #end

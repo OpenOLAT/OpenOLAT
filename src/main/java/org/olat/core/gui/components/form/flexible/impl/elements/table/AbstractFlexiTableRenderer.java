@@ -848,10 +848,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	private void appendPagenNumberLink(StringOutput sb, FlexiTableComponent ftC, int page, int i) {
 		FlexiTableElementImpl ftE = ftC.getFormItem();
 		Form theForm = ftE.getRootForm();
-		sb.append("<li").append(" class='active'", (page == i)).append("><a href=\"javascript:")
+		sb.append("<li").append(" class='active' aria-current='true'", (page == i)).append("><a href=\"javascript:")
 		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 				  new NameValuePair("page", Integer.toString(i))))
-		  .append(";\" draggable=\"false\">").append(i+1).append("</a></li>");
+		  .append(";\" draggable=\"false\">").append(i+1);
+		if (page == i) {
+			sb.append("<span class='sr-only'>").append(ftC.getTranslator().translate("a11y.active")).append("</span>");
+		}
+		sb.append("</a></li>");
 	}
 
 	private int adaptStepIfNeeded(final int page, final int maxStepSize, final int stepSize, final int i) {
