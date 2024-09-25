@@ -1120,9 +1120,11 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		ae2.setGrade(random());
 		ae2 = assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = createAssessmentEntry(assessedIdentity3, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
-		ae3.setScore(null);
+		ae3.setGrade(null);
 		ae3 = assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
+		
+		log.info("ae1: {}-{} ae2: {}-{} ae3: {}-{}", ae1.getKey(), ae1.getGrade(), ae2.getKey(), ae2.getGrade(), ae3.getKey(), ae3.getGrade());
 		
 		CoachingAssessmentSearchParams params = new CoachingAssessmentSearchParams();
 		params.setCoach(coach);
