@@ -92,7 +92,7 @@
 											#if($r.isNotEmpty($topic.participants))
 												<div class="text-muted">
 													#foreach($participant in $topic.participants)
-														<span class='o_participant'><i class='o_icon o_icon_user'>&nbsp;</i>$participant &nbsp;</span>
+														<span class='o_participant'><i class='o_icon o_icon_user'>&nbsp;</i>$r.escapeHtml($participant) &nbsp;</span>
 													#end
 													#if($r.isNotNull($topic.showMoreLinkName))
 														<small>$r.render($topic.showMoreLinkName)</small>

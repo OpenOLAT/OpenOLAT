@@ -31,9 +31,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -44,6 +41,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationService;
@@ -78,11 +76,15 @@ import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * 
@@ -112,6 +114,21 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Autowired
 	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyLevelDao;
 	
+	private static Identity author;
+	private static Organisation defaultUnitTestOrganisation;
+	private static IdentityWithLogin defaultUnitTestAdministrator;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-lectures-unit-test", "Org-lectures-unit-test", "", null, null);
+			author = JunitTestHelper.createAndPersistIdentityAsRndUser("lecture_author", defaultUnitTestOrganisation, null);
+			defaultUnitTestAdministrator = JunitTestHelper
+					.createAndPersistRndAdmin("Cur-Elem-Web", defaultUnitTestOrganisation);
+		}
+	}
+	
 	/**
 	 * Get the list of lecture block through the course.
 	 * 
@@ -121,15 +138,14 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void getLecturesBlock_course()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course.getResourceableId().toString()).path("lectureblocks").build();
@@ -154,15 +170,14 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void getLecturesBlock_repository()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString()).path("lectureblocks").build();
@@ -181,14 +196,13 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void putLecturesBlock_repository()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		String externalId = UUID.randomUUID().toString();
 		LectureBlockVO lectureBlockVo = new LectureBlockVO();
@@ -250,14 +264,13 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void putLecturesBlock_autoclosed()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		String externalId = UUID.randomUUID().toString();
 		LectureBlockVO lectureBlockVo = new LectureBlockVO();
@@ -300,14 +313,13 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void getLecturesBlockConfiguration()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString()).path("lectureblocks").path("configuration").build();
@@ -322,12 +334,11 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void updateLecturesBlockConfiguration()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 		
 		
 		RepositoryEntryLectureConfigurationVO configVo = new RepositoryEntryLectureConfigurationVO();
@@ -372,13 +383,12 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void getLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -397,13 +407,12 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void deleteLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -420,13 +429,12 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void addRepositoryEntryDefaultGroupToLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -456,13 +464,12 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void addRepositoryEntryDefaultGroupToLectureBlockMultipleTimes()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
 				.path("lectureblocks").path(block.getKey().toString())
@@ -487,15 +494,14 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void removeRepositoryEntryDefaultGroupToLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		Group defGroup = repositoryService.getDefaultGroup(entry);
 		lectureService.save(block, Collections.singletonList(defGroup));
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -518,12 +524,11 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	public void syncRepositoryEntryCurriculumElementToLectureBlock()
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("add-group", "Add group REST", "", false, defOrganisation);
+		
+		Curriculum curriculum = curriculumService.createCurriculum("add-group", "Add group REST", "", false, defaultUnitTestOrganisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("add-group",
 				"Add element group", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -532,7 +537,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -556,12 +561,11 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	public void syncRepositoryEntryCurriculumElementToLectureBlockAddRemove()
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("add-groups", "Add groups REST", "", false, defOrganisation);
+		
+		Curriculum curriculum = curriculumService.createCurriculum("add-groups", "Add groups REST", "", false, defaultUnitTestOrganisation);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement("add-group-1",
 				"Add element group", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -576,7 +580,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -614,12 +618,11 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	public void syncRepositoryEntryCurriculumElementToLectureBlockAddRemoveOtherGroups()
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("add-groups-but-notall", "Add groups REST", "", false, defOrganisation);
+		
+		Curriculum curriculum = curriculumService.createCurriculum("add-groups-but-notall", "Add groups REST", "", false, defaultUnitTestOrganisation);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement("add-group-1",
 				"Add element group", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -639,7 +642,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		// add curriculum elements groups
 		URI cUri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
@@ -697,12 +700,11 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	public void syncRepositoryEntryCurriculumElementToLectureBlockSeveralAdd()
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("add-group-serveral", "Add several times group REST", "", false, defOrganisation);
+		
+		Curriculum curriculum = curriculumService.createCurriculum("add-group-serveral", "Add several times group REST", "", false, defaultUnitTestOrganisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("add-group",
 				"Add several times element group", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -711,7 +713,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -739,12 +741,10 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
 		// the lecture block use already the curriculum element as source of participants
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Curriculum curriculum = curriculumService.createCurriculum("rm-group", "Remove group REST", "", false, defOrganisation);
+		Curriculum curriculum = curriculumService.createCurriculum("rm-group", "Remove group REST", "", false, defaultUnitTestOrganisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("rm-group",
 				"Remove element group", CurriculumElementStatus.active, null, null, null, null,
 				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
@@ -755,7 +755,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -777,14 +777,13 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void addTeacherToLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -804,10 +803,9 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void removeTeacherToLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
-		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2", defaultUnitTestOrganisation, null);
+		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, teacher1);
@@ -815,7 +813,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -843,16 +841,15 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void moveLectureBlock()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		RepositoryEntry entryOrigin = JunitTestHelper.deployBasicCourse(author);
-		RepositoryEntry entryTarget = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entryOrigin = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
+		RepositoryEntry entryTarget = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		ICourse courseOrigin = CourseFactory.loadCourse(entryOrigin);
 		entryOrigin = courseOrigin.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		LectureBlock block = createLectureBlock(entryOrigin);
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseOrigin.getResourceableId().toString())
 				.path("lectureblocks").path(block.getKey().toString())
@@ -879,9 +876,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void getTaxonomyLevels()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, teacher);
@@ -892,7 +888,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commit();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -909,9 +905,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void addTaxonomyLevels()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, teacher);
@@ -921,7 +916,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -943,9 +938,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void addTwiceTaxonomyLevels()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, teacher);
@@ -956,7 +950,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -978,9 +972,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	@Test
 	public void deleteTaxonomyLevel()
 	throws IOException, URISyntaxException {
-		Identity author = JunitTestHelper.getDefaultAuthor();
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2", defaultUnitTestOrganisation, null);
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 		lectureService.addTeacher(block, teacher);
@@ -998,7 +991,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())

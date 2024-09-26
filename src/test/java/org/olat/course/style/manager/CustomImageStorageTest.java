@@ -29,8 +29,11 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
@@ -54,11 +57,23 @@ public class CustomImageStorageTest extends OlatTestCase {
 	
 	@Autowired
 	private CustomImageStorage sut;
+	@Autowired
+	private OrganisationService organisationService;
+	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+		}
+	}
 
 	@Test
 	public void shouldStoreCourseImage() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Image-1", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		File file = getExistingFile();
 		String filename = random();
@@ -72,8 +87,8 @@ public class CustomImageStorageTest extends OlatTestCase {
 	
 	@Test
 	public void shouldOverrideOldCourseImage() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Image-2", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		File file = getExistingFile();
 		String filename = random();
@@ -86,8 +101,8 @@ public class CustomImageStorageTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadCourseImage() throws IOException {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Image-3", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		File file = getExistingFile();
 		String filename = random();
@@ -101,8 +116,8 @@ public class CustomImageStorageTest extends OlatTestCase {
 	
 	@Test
 	public void shouldDeleteCourseImage() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Image-4", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		File file = getExistingFile();
 		String filename = random();
@@ -118,8 +133,8 @@ public class CustomImageStorageTest extends OlatTestCase {
 
 	@Test
 	public void shouldStoreCourseNodeImage() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Image-5", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.setIdent(random());
@@ -135,8 +150,8 @@ public class CustomImageStorageTest extends OlatTestCase {
 	
 	@Test
 	public void shouldOverrideOldCourseNodeImage() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Image-6", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode courseNode = new STCourseNode();
 		File file = getExistingFile();
@@ -150,8 +165,8 @@ public class CustomImageStorageTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadCourseNodeImage() throws IOException {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Image-7", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode courseNode = new STCourseNode();
 		File file = getExistingFile();
@@ -166,8 +181,8 @@ public class CustomImageStorageTest extends OlatTestCase {
 	
 	@Test
 	public void shouldDeleteCourseNodeImage() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("Image-8", defaultUnitTestOrganisation, null);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity, defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode courseNode = new STCourseNode();
 		File file = getExistingFile();

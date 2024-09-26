@@ -28,14 +28,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.course.CourseFactory;
@@ -81,6 +83,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
@@ -91,6 +95,16 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Autowired
 	private AssessmentService assessmnetService;
 	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+		}
+	}
+	
 	/**
 	 * 
 	 * 1 course with 2 groups.
@@ -98,12 +112,12 @@ public class CoachingDAOTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void getStatistics_duplicateInGroups()
-	throws URISyntaxException {
+	public void getStatisticsDuplicateInGroups() {
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 
 		Assert.assertNotNull(re);
 
@@ -118,12 +132,12 @@ public class CoachingDAOTest extends OlatTestCase {
 		//  -> group 2 p2
 		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("Coach-1-" + UUID.randomUUID());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re, GroupRoles.coach.name());
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant1, re, GroupRoles.participant.name());
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant2, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -207,27 +221,28 @@ public class CoachingDAOTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void getStatistics_notAttempted()
-	throws URISyntaxException {
+	public void getStatisticsNotAttempted() {
 		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
-		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
-		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", courseUrl);
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
-		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("Coach-1-" + UUID.randomUUID());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re1, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re1, GroupRoles.coach.name());
 		repositoryService.addRole(coach, re2, GroupRoles.coach.name());
 		repositoryService.addRole(coach, re3, GroupRoles.coach.name());
 		
 		
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant1, re2, GroupRoles.participant.name());
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant2, re1, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -328,23 +343,25 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getStatistics_owner()
-	throws URISyntaxException {
+	public void getStatisticsOwner() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl); 
-		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl); 
-		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", courseUrl);
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation); 
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation); 
+		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("Coach-1-" + UUID.randomUUID());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re1, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re2, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re3, GroupRoles.coach.name());
 		
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant1, re1, GroupRoles.participant.name());
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant2, re1, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -476,63 +493,62 @@ public class CoachingDAOTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void getStatistics_permissionOnCourses()
-	throws URISyntaxException {
+	public void getStatisticsPermissionOnCourses() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1",
-				RepositoryEntryStatusEnum.preparation, courseUrl);
+				RepositoryEntryStatusEnum.preparation, courseUrl, defaultUnitTestOrganisation);
 		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2",
-				RepositoryEntryStatusEnum.review, courseUrl);
+				RepositoryEntryStatusEnum.review, courseUrl, defaultUnitTestOrganisation);
 		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3",
-				RepositoryEntryStatusEnum.published, courseUrl);
+				RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity courseCoach = JunitTestHelper.createAndPersistIdentityAsAuthor("Coach-1-" + UUID.randomUUID());
-		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsAuthor("Coach-1-" + UUID.randomUUID());
+		Identity courseCoach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
+		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(courseCoach, re1, GroupRoles.coach.name());
 		repositoryService.addRole(courseCoach, re2, GroupRoles.coach.name());
 		repositoryService.addRole(courseCoach, re3, GroupRoles.coach.name());
 		
 		//add participants to courses
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant1, re1, GroupRoles.participant.name());
-		Identity participant11 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-11");
+		Identity participant11 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-11", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant11, re1, GroupRoles.participant.name());
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant2, re2, GroupRoles.participant.name());
-		Identity participant21 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-21");
+		Identity participant21 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-21", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant21, re2, GroupRoles.participant.name());
-		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3");
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant3, re3, GroupRoles.participant.name());
-		Identity participant31 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-31");
+		Identity participant31 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-31", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant31, re3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 1
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
 				null, null, false, false, re1);
-		Identity participantG1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g1");
+		Identity participantG1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g1", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG1, group1, GroupRoles.participant.name());
-		Identity participantG11 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g11");
+		Identity participantG11 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g11", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG11, group1, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
 		//members of group of re 2
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-2", "tg", BusinessGroup.BUSINESS_TYPE,
 				null, null, false, false, re2);
-		Identity participantG2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g2");
+		Identity participantG2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g2", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG2, group2, GroupRoles.participant.name());
-		Identity participantG21 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g22");
+		Identity participantG21 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g22", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG21, group2, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 3
 		BusinessGroup group3 = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-3", "tg", BusinessGroup.BUSINESS_TYPE,
 				null, null, false, false, re3);
-		Identity participantG3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g3");
+		Identity participantG3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g3", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG3, group3, GroupRoles.participant.name());
-		Identity participantG31 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g33");
+		Identity participantG31 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-g33", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participantG31, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -665,30 +681,31 @@ public class CoachingDAOTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void getStatistics_emptyStatements_emptyCourseInfos()
-	throws URISyntaxException {
+	public void getStatistics_emptyStatements_emptyCourseInfos() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
-		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("Coach-1-" + UUID.randomUUID());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re1, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re2, GroupRoles.coach.name());
 		
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant1, re1, GroupRoles.participant.name());
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant2, re1, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//groups
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
 				null, null, false, false, re1);
-		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3");
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participant3, group1, GroupRoles.participant.name());
-		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-4");
+		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-4", defaultUnitTestOrganisation, null);
 		businessGroupRelationDao.addRole(participant4, group1, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -744,15 +761,16 @@ public class CoachingDAOTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void getStatistics_empty()
-	throws URISyntaxException {
+	public void getStatistics_empty() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
-		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("Coach-1-" + UUID.randomUUID());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re1, GroupRoles.owner.name());
 		repositoryService.addRole(coach, re2, GroupRoles.coach.name());
 		//groups
@@ -779,19 +797,22 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getStatistics_completion()
-	throws URISyntaxException {
+	public void getStatistics_completion() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl); 
-		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl); 
-		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", courseUrl);
-		RepositoryEntry re4 = JunitTestHelper.deployCourse(null, "Coaching course 4", courseUrl);
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation); 
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation); 
+		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re4 = JunitTestHelper.deployCourse(null, "Coaching course 4", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("Coach-1-");
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2");
-		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1", defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2", defaultUnitTestOrganisation, null);
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3", defaultUnitTestOrganisation, null);
 
 		//members of courses
 		repositoryService.addRole(coach, re1, GroupRoles.coach.name());
@@ -885,16 +906,18 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getUsers()
-	throws URISyntaxException {
+	public void getUsers() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
-		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
-		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", courseUrl);
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
+		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("User-Part-1");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("User-Part-1", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(participant, re1, GroupRoles.participant.name());
 		repositoryService.addRole(participant, re2, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
@@ -966,16 +989,17 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getStudents_coach_course() throws URISyntaxException {
+	public void getStudents_coach_course() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("User-Part-1");
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("User-Part-1");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("User-Part-2");
-		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("User-Part-3");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("User-Part-1", defaultUnitTestOrganisation, null);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("User-Part-1", defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("User-Part-2", defaultUnitTestOrganisation, null);
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("User-Part-3", defaultUnitTestOrganisation, null);
 		
 		repositoryService.addRole(coach, re, GroupRoles.coach.name());
 		repositoryService.addRole(participant1, re, GroupRoles.participant.name());
@@ -999,18 +1023,19 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getStudents_owner_course() throws URISyntaxException {
+	public void getStudents_owner_course() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 		
 		//members of courses
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-1");
-		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Group coach-1");
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-1");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-2");
-		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-3");
-		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-4");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-1", defaultUnitTestOrganisation, null);
+		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Group coach-1", defaultUnitTestOrganisation, null);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-1", defaultUnitTestOrganisation, null);
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-2", defaultUnitTestOrganisation, null);
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-3", defaultUnitTestOrganisation, null);
+		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser("Part-4", defaultUnitTestOrganisation, null);
 		
 		repositoryService.addRole(owner, re, GroupRoles.owner.name());
 		repositoryService.addRole(participant1, re, GroupRoles.participant.name());
@@ -1046,11 +1071,12 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void isCoach_owner() throws URISyntaxException {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 	
 		//members of courses
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-1-");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner-1-", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(coach, re, GroupRoles.owner.name());
 		dbInstance.commitAndCloseSession();
 		
@@ -1059,18 +1085,19 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void isCoach_coach() throws URISyntaxException {
+	public void isCoach_coach() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
-		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
+		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", RepositoryEntryStatusEnum.published,
+				courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 	
 		//coach of course
-		Identity courseCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1");
+		Identity courseCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1", defaultUnitTestOrganisation, null);
 		repositoryService.addRole(courseCoach, re, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 
 		//coach in a group of the course
-		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-2");
+		Identity groupCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-2", defaultUnitTestOrganisation, null);
 		BusinessGroup group = businessGroupService.createBusinessGroup(groupCoach, "Coaching-grp-1", "tg", BusinessGroup.BUSINESS_TYPE,
 				null, null, false, false, re);
 		Assert.assertNotNull(group);
@@ -1084,10 +1111,10 @@ public class CoachingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void isCoach_notPermitted() throws URISyntaxException {
+	public void isCoach_notPermitted() {
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course",
-				RepositoryEntryStatusEnum.published, courseUrl);
+				RepositoryEntryStatusEnum.published, courseUrl, defaultUnitTestOrganisation);
 		dbInstance.commitAndCloseSession();
 	
 		//owner of course

@@ -126,7 +126,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 			}
 			
 		} catch (Exception e) {
-			log.error("Exception in setUp(): " + e);
+			log.error("Exception in setUp(): ", e);
 		}
 	}
 	

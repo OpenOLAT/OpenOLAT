@@ -2314,14 +2314,19 @@ public class FolderController extends FormBasicController implements Activateabl
 			VFSItem vfsItemToCopy = listIterator.next();
 			// Paranoia: Check isItemNotAvailable and canEdit before every single file.
 			if (!isItemNotAvailable(ureq, targetContainer, false) && canCopy(vfsItemToCopy, null)) {
+				boolean fileIgnored = false;
 				if (canEdit(targetContainer)) {
 					vfsStatus = isQuotaAvailable(targetContainer, vfsItemToCopy, move);
 					if (vfsStatus == VFSSuccess.SUCCESS) {
 						VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
 						if (versionsEnabled && !suppressVersion && vfsItemToCopy instanceof VFSLeaf newLeaf && targetItem instanceof VFSLeaf currentLeaf && targetItem.canVersion() == VFSStatus.YES) {
-							boolean success = vfsRepositoryService.addVersion(currentLeaf, ureq.getIdentity(), false, "", newLeaf.getInputStream());
-							if (!success) {
-								vfsStatus = VFSSuccess.ERROR_FAILED;
+							if (newLeaf.getRelPath().equalsIgnoreCase(currentLeaf.getRelPath())) {
+								fileIgnored = true;
+							} else {
+								boolean success = vfsRepositoryService.addVersion(currentLeaf, ureq.getIdentity(), false, "", newLeaf.getInputStream());
+								if (!success) {
+									vfsStatus = VFSSuccess.ERROR_FAILED;
+								}
 							}
 						} else {
 							vfsItemToCopy = appendMissingLicense(vfsItemToCopy, license);
@@ -2336,7 +2341,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				}
 				if (vfsStatus == VFSSuccess.SUCCESS) {
 					addEvent.addFilename(vfsItemToCopy.getName());
-					if (move) {
+					if (move && !fileIgnored) {
 						vfsItemToCopy.deleteSilently();
 					}
 				}

@@ -204,7 +204,7 @@ public class AssessmentModePage {
 	 */
 	public AssessmentModePage startAssessment() {
 		try {
-			By startBy = By.cssSelector("div.modal-dialog div.modal-body div.o_button_group.o_sel_checked a.o_sel_assessment_start");
+			By startBy = By.cssSelector("dialog.dialog div.modal-body div.o_button_group.o_sel_checked a.o_sel_assessment_start");
 			OOGraphene.waitElement(startBy, browser);
 			browser.findElement(startBy).click();
 			OOGraphene.waitBusy(browser);
@@ -217,7 +217,7 @@ public class AssessmentModePage {
 	}
 	
 	public AssessmentModePage waitBackToOpenOlat() {
-		By continueBy = By.xpath("//div[@class='modal-content']//a[contains(@class,'o_sel_assessment_continue')]");
+		By continueBy = By.xpath("//dialog[contains(@class,'dialog')]//div[@class='modal-content']//a[contains(@class,'o_sel_assessment_continue')]");
 		OOGraphene.waitElementSlowly(continueBy, 20, browser);
 		return this;
 	}
@@ -226,7 +226,7 @@ public class AssessmentModePage {
 	 * After an assessment, go back to OpenOLAT.
 	 */
 	public void backToOpenOLAT() {
-		By continueBy = By.cssSelector("div.modal-dialog div.modal-body div.o_button_group a.o_sel_assessment_continue");
+		By continueBy = By.cssSelector("dialog.dialog div.modal-body div.o_button_group a.o_sel_assessment_continue");
 		OOGraphene.waitElement(continueBy, browser);
 		browser.findElement(continueBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
