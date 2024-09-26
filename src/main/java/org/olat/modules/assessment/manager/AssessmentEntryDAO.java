@@ -516,17 +516,14 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 
-	public List<AssessmentEntry> loadRootAssessmentEntriesForResourceKeys(Set<Long> resourceKeys) {
-		StringBuilder sb = new StringBuilder();
-		sb
-				.append("select data from assessmententry data")
-				.append(" inner join data.repositoryEntry as v")
-				.append(" inner join v.olatResource as ores")
-				.append(" where ores.key in (:resourceKeys)")
-				.append(" and data.entryRoot = true");
+	public List<AssessmentEntry> loadRootAssessmentEntriesForRepositoryEntryKeys(Set<Long> repositoryEntryKeys) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae from assessmententry ae");
+		sb.and().append("ae.entryRoot = true");
+		sb.and().append("ae.repositoryEntry.key in (:repositoryEntryKeys)");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentEntry.class)
-				.setParameter("resourceKeys", resourceKeys)
+				.setParameter("repositoryEntryKeys", repositoryEntryKeys)
 				.getResultList();
 	}
 

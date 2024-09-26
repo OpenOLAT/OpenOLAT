@@ -19,11 +19,12 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.Set;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -44,7 +45,11 @@ import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.criteria.Symbol;
 import org.olat.modules.openbadges.ui.element.BadgeSelectorElement;
 import org.olat.modules.openbadges.ui.element.BadgeSelectorElementImpl;
+import org.olat.modules.openbadges.ui.element.CourseSelectorElement;
+import org.olat.modules.openbadges.ui.element.CourseSelectorElementImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 
 /**
  * Initial date: 2024-09-06<br>
@@ -58,15 +63,16 @@ public class ConditionRow {
 	private final SingleSelection symbolDropdown;
 	private final SingleSelection badgesDropdown;
 	private final SingleSelection courseElementsDropdown;
-	private final MultipleSelectionElement coursesDropdown;
+	private final CourseSelectorElement coursesDropdown;
 	private final BadgeSelectorElement globalBadgesDropdown;
 	private final TextElement valueEl;
 	private final StaticTextElement unitEl;
 	private final FormLink deleteLink;
 
-	public record ConditionRowContext(RepositoryEntry entry, SelectionValues badgesKV, SelectionValues coursesKV,
+	public record ConditionRowContext(RepositoryEntry entry, SelectionValues badgesKV,
 									  SelectionValues courseElementsKV, SelectionValues globalBadgesKV,
-									  SelectionValues conditionsKV, SelectionValues symbolsKV, String mediaUrl) {}
+									  SelectionValues conditionsKV, SelectionValues symbolsKV, String mediaUrl,
+									  Set<RepositoryEntry> visibleCourses) {}
 
 	public ConditionRow(UserRequest ureq, String id, BadgeCondition badgeCondition, FormItemContainer formLayout, boolean showAndLabel,
 						Translator translator, ConditionRowContext context) {
@@ -98,8 +104,9 @@ public class ConditionRow {
 				formLayout, context.courseElementsKV.keys(), context.courseElementsKV.values());
 		courseElementsDropdown.addActionListener(FormEvent.ONCHANGE);
 
-		coursesDropdown = uifactory.addCheckboxesDropdown("form.condition.courses." + id, null,
-				formLayout, context.coursesKV.keys(), context.coursesKV.values());
+		coursesDropdown = new CourseSelectorElementImpl(formLayout.getRootForm().getWindowControl(),
+				"form.condition.courses." + id, context.visibleCourses);
+		formLayout.add(coursesDropdown);
 		coursesDropdown.addActionListener(FormEvent.ONCHANGE);
 
 		globalBadgesDropdown = new BadgeSelectorElementImpl(ureq, formLayout.getRootForm().getWindowControl(),
@@ -179,11 +186,8 @@ public class ConditionRow {
 		}
 		if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
 			coursesDropdown.setVisible(true);
-			for (Long courseResourceKey : coursesPassedCondition.getCourseResourceKeys()) {
-				if (coursesDropdown.getKeys().contains(courseResourceKey.toString())) {
-					coursesDropdown.select(courseResourceKey.toString(), true);
-				}
-			}
+			coursesDropdown.setCourses(coursesPassedCondition.getCourseRepositoryEntryKeys().stream()
+					.map(RepositoryEntryRefImpl::new).toList());
 		}
 		if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
 			globalBadgesDropdown.setVisible(true);
@@ -263,7 +267,7 @@ public class ConditionRow {
 	/**
 	 * Used in template
 	 */
-	public MultipleSelectionElement getCoursesDropdown() {
+	public CourseSelectorElement getCoursesDropdown() {
 		return coursesDropdown;
 	}
 
@@ -312,7 +316,7 @@ public class ConditionRow {
 					StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
 			);
 			case CoursesPassedCondition.KEY -> new CoursesPassedCondition(
-					coursesDropdown.getSelectedKeys().stream().map(Long::parseLong).toList()
+					coursesDropdown.getCourses().stream().map(RepositoryEntryRef::getKey).toList()
 			);
 			case GlobalBadgesEarnedCondition.KEY -> new GlobalBadgesEarnedCondition(
 					globalBadgesDropdown.getSelection().stream().toList()

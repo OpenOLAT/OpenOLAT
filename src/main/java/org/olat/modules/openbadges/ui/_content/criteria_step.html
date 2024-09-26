@@ -24,25 +24,23 @@
 			$r.render($conditionRow.getAndTextEl().getComponent().getComponentName(), "horizontal", "form")
 		#end
 		<div class="row">
-			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-				<!-- condition dropdown -->
+			<div class="col-xs-12 col-sm-6 col-md-4">
 				#if($r.visible($conditionRow.getConditionDropdown().getName()))
+					<!-- condition dropdown -->
 					$r.render($conditionRow.getConditionDropdown().getName(), "horizontal", "form")
 				#end
 			</div>
-			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-				<!-- global badges dropdown -->
+			<div class="col-xs-12 col-sm-6 col-md-4">
 				#if($r.visible($conditionRow.getGlobalBadgesDropdown().getName()))
+					<!-- global badges dropdown -->
 					$r.render($conditionRow.getGlobalBadgesDropdown().getName(), "horizontal", "form")
 				#end
-			</div>
-			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-				<!-- courses dropdown -->
 				#if($r.visible($conditionRow.getCoursesDropdown().getName()))
+					<!-- courses dropdown -->
 					$r.render($conditionRow.getCoursesDropdown().getName(), "horizontal", "form")
 				#end
 			</div>
-			<div class="col-xs-offset-1 col-xs-10 col-sm-offset-0 col-sm-5 col-md-4 col-lg-2">
+			<div class="col-xs-10 col-sm-5 col-md-3">
 				<div class="row">
 					#if($r.visible($conditionRow.getBadgesDropdown().getName()))
 					<!-- badge dropdown -->
@@ -78,7 +76,7 @@
 					#end
 				</div>
 			</div>
-			<div class="col-xs-1">
+			<div class="col-xs-2 col-sm-1" style="margin-bottom: 4px;">
 				<!-- delete button -->
 				$r.render($conditionRow.getDeleteLink().getComponent().getComponentName())
 			</div>
@@ -86,7 +84,7 @@
 	#end
 
 	<div class="row">
-		<div class="col-xs-6 col-sm-6 col-md-4 col-lg-3">
+		<div class="col-xs-12 col-sm-6 col-md-4">
 			$r.render("form.condition.new", "horizontal", "form")
 		</div>
 	</div>

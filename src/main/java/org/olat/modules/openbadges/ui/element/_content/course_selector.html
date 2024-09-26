@@ -1,0 +1,26 @@
+<div class="clearfix">
+	<div class="input-group o_badge_course_selector_search">
+		<div class="input-group-btn">
+			$r.render("quickSearchButton")
+		</div>
+		$r.render("quickSearch")
+		<div class="input-group-btn">
+			$r.render("resetQuickSearch")
+		</div>
+	</div>
+</div>
+<div class="clearfix o_filter_search_list_values o_badge_course_selector_selections">
+	$r.render("course.selector.selection.none", "label")
+	$r.render("course.selector.selection", "label")
+	$r.render("course.selector.selection.none")
+	$r.render("course.selector.selection")
+	$r.render("course.selector.results.none", "label")
+	$r.render("course.selector.results.none")
+	$r.render("course.selector.results", "label")
+	$r.render("course.selector.results")
+</div>
+<small>$r.render("course.selector.results.more")</small>
+<div class="o_button_group o_button_group_right o_button_group_bottom">
+	$r.render("course.selector.browser")
+	$r.render("course.selector.apply")
+</div>

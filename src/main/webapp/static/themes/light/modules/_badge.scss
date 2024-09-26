@@ -463,8 +463,41 @@ span.o_labeled_light {
 	padding-right: 0;
 }
 
+
+.o_badge_course_selector_button {
+	display: flex;
+	min-height: 34px;
+
+	>span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		padding-right: 4px;
+	}
+
+	.o_icon {
+		margin: auto 0 auto auto;
+	}
+
+	&:is(.form-group *) {
+		width: 100%;
+		max-width: 100%;
+		min-width: $input-height-base;
+	}
+}
+
+.o_badge_course_selector_selections {
+	overflow-y: auto;
+	max-height: unset;
+
+	label.control-label {
+		color: $text-color;
+		font-weight: bold;
+	}
+}
+
 .o_badge_selector_button {
 	display: flex;
+	min-height: 34px;
 
 	span.o_badge_selector_span {
 		overflow: hidden;

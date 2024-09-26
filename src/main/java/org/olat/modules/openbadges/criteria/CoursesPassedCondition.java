@@ -19,11 +19,14 @@
  */
 package org.olat.modules.openbadges.criteria;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryDAO;
 
@@ -35,13 +38,15 @@ import org.olat.repository.manager.RepositoryEntryDAO;
 public class CoursesPassedCondition implements BadgeCondition {
 	public static final String KEY = "coursesPassed";
 
-	private final List<Long> courseResourceKeys = new ArrayList<>();
+	private List<Long> courseResourceKeys;
+	private List<Long> courseRepositoryEntryKeys;
 
 	public CoursesPassedCondition() {
 	}
 
-	public CoursesPassedCondition(List<Long> courseResourceKeys) {
-		this.courseResourceKeys.addAll(courseResourceKeys);
+	public CoursesPassedCondition(List<Long> courseRepositoryEntryKeys) {
+		this.courseRepositoryEntryKeys = new ArrayList<>();
+		this.courseRepositoryEntryKeys.addAll(courseRepositoryEntryKeys);
 	}
 
 	@Override
@@ -51,31 +56,36 @@ public class CoursesPassedCondition implements BadgeCondition {
 
 	@Override
 	public String toString(Translator translator, RepositoryEntry courseEntry) {
-		List<RepositoryEntry> repositoryEntries = CoreSpringFactory.getImpl(RepositoryEntryDAO.class).loadByResourceKeys(courseResourceKeys);
+		List<RepositoryEntry> repositoryEntries = new ArrayList<>();
+		if (courseRepositoryEntryKeys != null && !courseRepositoryEntryKeys.isEmpty()) {
+			repositoryEntries = CoreSpringFactory.getImpl(RepositoryEntryDAO.class).loadByKeys(courseRepositoryEntryKeys);
+		}
 
 		StringBuilder sb = new StringBuilder();
 		String keySuffix = repositoryEntries.size() == 1 ? "singular" : "plural";
-		if (repositoryEntries.size() == 1) {
-			sb.append("\"").append(repositoryEntries.get(0).getDisplayname()).append("\"");
-		} else {
+		if (repositoryEntries.size() != 1) {
 			sb.append("(");
-			boolean first = true;
-			for (RepositoryEntry repositoryEntry : repositoryEntries) {
-				if (!first) {
-					sb.append(", ");
-				} else {
-					first = false;
-				}
-				sb.append("\"");
-				sb.append(repositoryEntry.getDisplayname());
-				sb.append("\"");
-			}
+		}
+
+		String str = repositoryEntries.stream()
+				.map(c -> StringHelper.escapeHtml(c.getDisplayname()))
+				.map(s -> "\"" + s + "\"")
+				.sorted(Collator.getInstance(translator.getLocale()))
+				.collect(Collectors.joining(", "));
+		if (StringHelper.containsNonWhitespace(str)) {
+			sb.append(str);
+		}
+
+		if (repositoryEntries.size() != 1) {
 			sb.append(")");
 		}
 		return translator.translate("badgeCondition." + KEY + "." + keySuffix, sb.toString());
 	}
 
-	public List<Long> getCourseResourceKeys() {
-		return courseResourceKeys;
+	public List<Long> getCourseRepositoryEntryKeys() {
+		if (courseRepositoryEntryKeys == null) {
+			courseRepositoryEntryKeys = new ArrayList<>();
+		}
+		return courseRepositoryEntryKeys;
 	}
 }
