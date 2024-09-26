@@ -2189,7 +2189,7 @@ public class FolderController extends FormBasicController implements Activateabl
 					if (vfsStatus == VFSSuccess.SUCCESS) {
 						VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
 						if (versionsEnabled && !suppressVersion && vfsItemToCopy instanceof VFSLeaf newLeaf && targetItem instanceof VFSLeaf currentLeaf && targetItem.canVersion() == VFSStatus.YES) {
-							if (newLeaf.getRelPath().equalsIgnoreCase(currentLeaf.getRelPath())) {
+							if (newLeaf.getRelPath() != null && currentLeaf.getRelPath() != null && newLeaf.getRelPath().equalsIgnoreCase(currentLeaf.getRelPath())) {
 								fileIgnored = true;
 							} else {
 								boolean success = vfsRepositoryService.addVersion(currentLeaf, ureq.getIdentity(), false, "", newLeaf.getInputStream());
