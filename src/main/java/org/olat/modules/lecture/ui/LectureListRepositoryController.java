@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -33,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -51,6 +53,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -85,6 +91,7 @@ import org.olat.modules.lecture.ui.blockimport.BlocksImport_1_InputStep;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlock;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.ReferenceRenderer;
 import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -98,6 +105,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class LectureListRepositoryController extends FormBasicController {
+
+	private static final String ALL_TAB_ID = "All";
+	private static final String PAST_TAB_ID = "Past";
+	private static final String CURRENT_TAB_ID = "Current";
+	private static final String CLOSED_TAB_ID = "Closed";
+	private static final String PENDING_TAB_ID = "Pending";
+	private static final String WITHOUT_TEACHERS_TAB_ID = "WithoutTeachers";
 	
 	private static final String FILTER_ONE_LEVEL_ONLY = "OneLevelOnly";
 	private static final String FILTER_ROLL_CALL_STATUS = "Status";
@@ -107,6 +121,14 @@ public class LectureListRepositoryController extends FormBasicController {
 	private FormLink importLecturesButton;
 	private FlexiTableElement tableEl;
 	private LectureListRepositoryDataModel tableModel;
+
+	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab pastTab;
+	private FlexiFiltersTab closedTab;
+	private FlexiFiltersTab currentTab;
+	private FlexiFiltersTab pendingTab;
+	private FlexiFiltersTab withoutTeachersTab;
+
 	private FlexiTableMultiSelectionFilter rollCallStatusFilter;
 	private FlexiTableOneClickSelectionFilter oneLevelOnlyFilter;
 	
@@ -170,23 +192,33 @@ public class LectureListRepositoryController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.externalRef));
 		if(entry != null) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.assessmentMode,
 				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_assessment_mode"), null)));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.compulsory,
-				new YesNoCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.curriculumElement,
+				new ReferenceRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.entry,
+				new ReferenceRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.date,
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.startTime,
 				new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.endTime,
 				new TimeFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.lecturesNumber));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.numParticipants));
+		
+		DefaultFlexiColumnModel compulsoryColumn = new DefaultFlexiColumnModel(false, BlockCols.compulsory,
+				new YesNoCellRenderer());
+		compulsoryColumn.setIconHeader("o_icon o_icon_compulsory o_icon-lg");
+		columnsModel.addFlexiColumnModel(compulsoryColumn);
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.status,
 				new LectureBlockStatusCellRenderer(getTranslator())));
-
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
 				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
 		editColumn.setExportable(false);
@@ -212,6 +244,8 @@ public class LectureListRepositoryController extends FormBasicController {
 		tableEl.addBatchButton(deleteLecturesButton);
 		
 		initFilters();
+		initFiltersPresets();
+		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 	
 	private void initFilters() {
@@ -234,7 +268,40 @@ public class LectureListRepositoryController extends FormBasicController {
 				FILTER_ROLL_CALL_STATUS, rollCallStatusValues, true);
 		filters.add(rollCallStatusFilter);
 
-		tableEl.setFilters(true, filters, false, true);
+		tableEl.setFilters(true, filters, false, false);
+	}
+	
+	private void initFiltersPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		allTab.setElementCssClass("o_sel_elements_all");
+		tabs.add(allTab);
+		
+		currentTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CURRENT_TAB_ID, translate("filter.current"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(currentTab);
+		
+		pastTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PAST_TAB_ID, translate("filter.past"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(pastTab);
+		
+		withoutTeachersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(WITHOUT_TEACHERS_TAB_ID, translate("filter.without.teachers"),
+				TabSelectionBehavior.nothing, List.of());
+		tabs.add(withoutTeachersTab);
+		
+		pendingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PENDING_TAB_ID, translate("filter.pending"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLL_CALL_STATUS,
+						List.of(LectureRollCallStatus.open.name(), LectureRollCallStatus.reopen.name()))));
+		tabs.add(pendingTab);
+		
+		closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CLOSED_TAB_ID, translate("filter.closed"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLL_CALL_STATUS,
+						List.of(LectureRollCallStatus.closed.name(), LectureRollCallStatus.autoclosed.name()))));
+		tabs.add(closedTab);
+		
+		tableEl.setFilterTabs(true, tabs);
 	}
 	
 	private void loadModel() {
@@ -264,12 +331,14 @@ public class LectureListRepositoryController extends FormBasicController {
 			}
 
 			LectureBlockRow row = new LectureBlockRow(b, displayname, externalRef,
-					teachers.toString(), false, block.isAssessmentMode());
+					teachers.toString(), false, block.getCurriculumElementRef(), block.getEntryRef(),
+					block.getNumOfParticipants(), block.isAssessmentMode());
 			rows.add(row);
 			
 			String linkName = "tools-" + counter++;
 			FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
 			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsLink.setTitle(translate("action.more"));
 			toolsLink.setUserObject(row);
 			flc.add(linkName, toolsLink);
 			row.setToolsLink(toolsLink);
@@ -302,7 +371,15 @@ public class LectureListRepositoryController extends FormBasicController {
 				searchParams.setRollCallStatus(status);
 			}
 		}
-
+		
+		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
+		if(selectedTab == currentTab) {
+			searchParams.setStartDate(new Date());
+		} else if(selectedTab == pastTab || selectedTab == pendingTab) {
+			searchParams.setEndDate(new Date());
+		} else if(selectedTab == withoutTeachersTab) {
+			searchParams.setWithTeachers(Boolean.FALSE);
+		}
 		return searchParams;
 	}
 	
@@ -330,7 +407,8 @@ public class LectureListRepositoryController extends FormBasicController {
 				if("edit".equals(cmd)) {
 					doEditLectureBlock(ureq, row);
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
+			} else if(event instanceof FlexiTableSearchEvent
+					|| event instanceof FlexiTableFilterTabEvent) {
 				loadModel();
 			}
 		} else if(source instanceof FormLink link) {
@@ -543,6 +621,7 @@ public class LectureListRepositoryController extends FormBasicController {
 	private class ToolsController extends BasicController {
 		
 		private Link deleteLink;
+		private Link editLink;
 		private Link copyLink;
 		private Link logLink;
 		private Link reopenLink;
@@ -556,6 +635,9 @@ public class LectureListRepositoryController extends FormBasicController {
 			VelocityContainer mainVC = createVelocityContainer("lectures_tools");
 			
 			LectureBlock lectureBlock = row.getLectureBlock();
+			
+			editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
+			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 
 			if(secCallback.canReopenLectureBlock() && (lectureBlock.getStatus() == LectureBlockStatus.cancelled
 					|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.closed
@@ -567,13 +649,15 @@ public class LectureListRepositoryController extends FormBasicController {
 			if(secCallback.canNewLectureBlock()) {
 				copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
 				copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
-				if(!LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) {
-					deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
-					deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
-				}
 			}
+			
 			logLink = LinkFactory.createLink("log", "log", getTranslator(), mainVC, this, Link.LINK);
-			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log"); 
+			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
+				
+			if(secCallback.canNewLectureBlock() && !LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) {
+				deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			}
 			putInitialPanel(mainVC);
 		}
 
@@ -582,6 +666,8 @@ public class LectureListRepositoryController extends FormBasicController {
 			fireEvent(ureq, Event.DONE_EVENT);
 			if(copyLink == source) {
 				doCopy(row);
+			} else if(editLink == source) {
+				doEditLectureBlock(ureq, row);
 			} else if(deleteLink == source) {
 				doConfirmDelete(ureq, row);
 			} else if(logLink == source) {

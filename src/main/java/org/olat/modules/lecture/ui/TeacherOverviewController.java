@@ -129,7 +129,9 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 				
 				assessmentMode |= blockWithTeachers.isAssessmentMode();
 				rows.add(new LectureBlockRow(block, entry.getDisplayname(), entry.getExternalRef(),
-						teachers.toString(), teacherList.contains(getIdentity()), blockWithTeachers.isAssessmentMode()));
+						teachers.toString(), teacherList.contains(getIdentity()),
+						blockWithTeachers.getCurriculumElementRef(), blockWithTeachers.getEntryRef(),
+						blockWithTeachers.getNumOfParticipants(), blockWithTeachers.isAssessmentMode()));
 			}
 		}
 		

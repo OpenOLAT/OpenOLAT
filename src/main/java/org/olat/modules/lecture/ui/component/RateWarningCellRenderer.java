@@ -44,8 +44,8 @@ public class RateWarningCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof LectureBlockStatistics) {
-			render(target, (LectureBlockStatistics)cellValue);
+		if(cellValue instanceof LectureBlockStatistics stats) {
+			render(target, stats);
 		}
 	}
 

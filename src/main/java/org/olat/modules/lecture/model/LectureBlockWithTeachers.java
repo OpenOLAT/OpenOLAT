@@ -35,15 +35,22 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 public class LectureBlockWithTeachers {
 	
 	private final boolean assessmentMode;
+	private final Reference entryRef;
 	private final LectureBlock lectureBlock;
+	private final Reference curriculumElementRef;
 	private final RepositoryEntryLectureConfiguration lecturesConfiguration;
 	
+	private final long numOfParticipants;
 	private final List<Identity> teachers = new ArrayList<>(3);
 	
 	public LectureBlockWithTeachers(LectureBlock lectureBlock, RepositoryEntryLectureConfiguration lecturesConfiguration,
-			boolean assessmentMode) {
+			Reference curriculumElementRef, Reference entryRef,
+			long numOfParticipants, boolean assessmentMode) {
+		this.entryRef = entryRef;
 		this.lectureBlock = lectureBlock;
 		this.assessmentMode = assessmentMode;
+		this.numOfParticipants = numOfParticipants;
+		this.curriculumElementRef = curriculumElementRef;
 		this.lecturesConfiguration = lecturesConfiguration;
 	}
 	
@@ -55,6 +62,18 @@ public class LectureBlockWithTeachers {
 		return lectureBlock;
 	}
 	
+	public long getNumOfParticipants() {
+		return numOfParticipants;
+	}
+
+	public Reference getEntryRef() {
+		return entryRef;
+	}
+
+	public Reference getCurriculumElementRef() {
+		return curriculumElementRef;
+	}
+
 	public List<Identity> getTeachers() {
 		return teachers;
 	}

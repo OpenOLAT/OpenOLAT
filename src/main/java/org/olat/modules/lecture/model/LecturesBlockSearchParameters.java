@@ -47,13 +47,13 @@ public class LecturesBlockSearchParameters {
 	private IdentityRef participant;
 	private IdentityRef masterCoach;
 	private RepositoryEntry entry;
+	private Boolean withTeachers;
 	private String curriculumElementPath;
 	private CurriculumElementRef curriculumElement;
 	private List<LectureRollCallStatus> rollCallStatus;
 	private List<LectureBlockStatus> lectureBlockStatus;
 	private List<LectureBlockRef> lectureBlocks;
 	
-
 	public String getSearchString() {
 		return searchString;
 	}
@@ -76,6 +76,14 @@ public class LecturesBlockSearchParameters {
 
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
+	}
+
+	public Boolean getWithTeachers() {
+		return withTeachers;
+	}
+
+	public void setWithTeachers(Boolean withTeachers) {
+		this.withTeachers = withTeachers;
 	}
 
 	public List<LectureRollCallStatus> getRollCallStatus() {

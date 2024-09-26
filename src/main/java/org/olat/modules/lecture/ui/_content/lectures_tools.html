@@ -1,14 +1,18 @@
 <ul class="o_dropdown list-unstyled">
+#if($r.available("edit"))
+	<li>$r.render("edit")</li>
+#end
 #if($r.available("reopen.lecture.blocks"))
 	<li>$r.render("reopen.lecture.blocks")</li>
 #end
 #if($r.available("copy"))
 	<li>$r.render("copy")</li>
 #end
-#if($r.available("delete"))
-	<li>$r.render("delete")</li>
-#end
 #if($r.available("log"))
 	<li>$r.render("log")</li>
+#end
+#if($r.available("delete"))
+	<li class="divider"></li>
+	<li>$r.render("delete")</li>
 #end
 </ul>

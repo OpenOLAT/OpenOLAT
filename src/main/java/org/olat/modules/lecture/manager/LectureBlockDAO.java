@@ -65,6 +65,7 @@ import org.olat.modules.lecture.model.LectureRepositoryEntryInfos;
 import org.olat.modules.lecture.model.LectureRepositoryEntrySearchParameters;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
+import org.olat.modules.lecture.model.Reference;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -561,10 +562,10 @@ public class LectureBlockDAO {
 				.getResultList();
 		Set<Long> assessedBlockKeySet = new HashSet<>(assessedBlockKeys);
 		
-		
 		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
 		for(LectureBlock block:blocks) {
-			blockMap.put(block.getKey(), new LectureBlockWithTeachers(block, config, assessedBlockKeySet.contains(block.getKey())));
+			blockMap.put(block.getKey(), new LectureBlockWithTeachers(block, config,
+					null, null, -1, assessedBlockKeySet.contains(block.getKey())));
 		}
 		
 		// append the coaches
@@ -602,13 +603,23 @@ public class LectureBlockDAO {
 	 */
 	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sc = new QueryBuilder(2048);
-		sc.append("select block, coach, config, mode.key")
+		sc.append("select block, coach, config, mode.key,")
+		  .append(" entry.displayname as vDisplayName,")
+		  .append(" entry.externalRef as vExternalRef,")
+		  .append(" curEl.displayName as cDisplayName,")
+		  .append(" curEl.identifier as cIdentifier,")
+		  .append(" (select count(participant.key) from lectureblocktogroup as ltogroup")
+		  .append("   inner join ltogroup.group lgroup")
+		  .append("   inner join lgroup.members as participant")
+		  .append("   where ltogroup.lectureBlock.key=block.key and participant.role='").append(GroupRoles.participant).append("'")
+		  .append(" ) as numOfParticipants")
 		  .append(" from lectureblock block")
 		  .append(" inner join fetch block.entry entry")
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join membership.identity coach")
 		  .append(" inner join fetch coach.user usercoach")
+		  .append(" left join block.curriculumElement curEl")
 		  .append(" left join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
 		  .append(" inner join lectureentryconfig as config on (config.entry.key=entry.key)")
 		  .where().append(" membership.role='").append("teacher").append("'")
@@ -627,13 +638,14 @@ public class LectureBlockDAO {
 			LectureBlock block = (LectureBlock)rawCoach[0];
 			Identity coach = (Identity)rawCoach[1];
 			RepositoryEntryLectureConfiguration lectureConfiguration = (RepositoryEntryLectureConfiguration)rawCoach[2];
-			Long assessmentModeKey = (Long)rawCoach[3];
+			boolean assessmentMode = rawCoach[3] != null;
+			Reference entryRef = new Reference((String)rawCoach[4], (String)rawCoach[5]);
+			Reference elementRef = new Reference((String)rawCoach[6], (String)rawCoach[7]);
+			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 8);
 			
-			LectureBlockWithTeachers blockWith = blockMap.get(block.getKey());
-			if(blockWith == null) {
-				blockWith = new LectureBlockWithTeachers(block, lectureConfiguration, assessmentModeKey != null);
-				blockMap.put(block.getKey(), blockWith);
-			}
+			LectureBlockWithTeachers blockWith = blockMap.computeIfAbsent(block.getKey(), key ->
+				new LectureBlockWithTeachers(block, lectureConfiguration,
+						elementRef, entryRef, numOfParticipants, assessmentMode));
 			blockWith.getTeachers().add(coach);
 		}
 		return new ArrayList<>(blockMap.values());
@@ -647,7 +659,16 @@ public class LectureBlockDAO {
 	 */
 	public List<LectureBlockWithTeachers> getLecturesBlockWithOptionalTeachers(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sc = new QueryBuilder(2048);
-		sc.append("select block, coach, config, mode.key")
+		sc.append("select block, coach, config, mode.key,")
+		  .append(" entry.displayname as vDisplayName,")
+		  .append(" entry.externalRef as vExternalRef,")
+		  .append(" curEl.displayName as cDisplayName,")
+		  .append(" curEl.identifier as cIdentifier,")
+		  .append(" (select count(participant.key) from lectureblocktogroup as ltogroup")
+		  .append("   inner join ltogroup.group lgroup")
+		  .append("   inner join lgroup.members as participant")
+		  .append("   where ltogroup.lectureBlock.key=block.key and participant.role='").append(GroupRoles.participant).append("'")
+		  .append(" ) as numOfParticipants")
 		  .append(" from lectureblock block")
 		  .append(" left join block.teacherGroup tGroup")
 		  .append(" left join tGroup.members membership")
@@ -671,13 +692,14 @@ public class LectureBlockDAO {
 			LectureBlock block = (LectureBlock)rawCoach[0];
 			Identity coach = (Identity)rawCoach[1];
 			RepositoryEntryLectureConfiguration lectureConfiguration = (RepositoryEntryLectureConfiguration)rawCoach[2];
-			Long assessmentModeKey = (Long)rawCoach[3];
+			boolean assessmentMode = rawCoach[3] != null;
+			Reference entryRef = new Reference((String)rawCoach[4], (String)rawCoach[5]);
+			Reference elementRef = new Reference((String)rawCoach[6], (String)rawCoach[7]);
+			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 8);
 			
-			LectureBlockWithTeachers blockWith = blockMap.get(block.getKey());
-			if(blockWith == null) {
-				blockWith = new LectureBlockWithTeachers(block, lectureConfiguration, assessmentModeKey != null);
-				blockMap.put(block.getKey(), blockWith);
-			}
+			LectureBlockWithTeachers blockWith = blockMap.computeIfAbsent(block.getKey(), key ->
+					new LectureBlockWithTeachers(block, lectureConfiguration,
+							elementRef, entryRef, numOfParticipants, assessmentMode));
 			blockWith.getTeachers().add(coach);
 		}
 		return new ArrayList<>(blockMap.values());
@@ -706,6 +728,14 @@ public class LectureBlockDAO {
 		
 		if(searchParams.getRollCallStatus() != null && !searchParams.getRollCallStatus().isEmpty()) {
 			sb.and().append(" block.rollCallStatusString in (:rollCallStatus)");
+		}
+		
+		if(searchParams.getWithTeachers() != null) {
+			if(searchParams.getWithTeachers().booleanValue()) {
+				sb.and().append(" coach.key is not null");
+			} else {
+				sb.and().append(" coach.key is null");
+			}
 		}
 
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {

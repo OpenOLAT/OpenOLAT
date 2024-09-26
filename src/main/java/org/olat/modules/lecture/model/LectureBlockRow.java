@@ -42,6 +42,9 @@ public class LectureBlockRow implements LectureBlockRef {
 	private final String entryDisplayname;
 	private final LectureBlock lectureBlock;
 	private boolean assessmentMode;
+	private final long numOfParticipants;
+	private final Reference curriculumElement;
+	private final Reference entry;
 	
 	private FormLink toolsLink;
 	
@@ -51,9 +54,14 @@ public class LectureBlockRow implements LectureBlockRef {
 	private List<Identity> teachersList;
 	
 	public LectureBlockRow(LectureBlock lectureBlock, String entryDisplayname, String externalRef,
-			String teachers, boolean iamTeacher, boolean assessmentMode) {
+			String teachers, boolean iamTeacher, Reference curriculumElement, Reference entry,
+			long numOfParticipants, boolean assessmentMode) {
 		this.lectureBlock = lectureBlock;
 		this.teachers = teachers;
+		this.entry = entry;
+		this.numOfParticipants = numOfParticipants;
+		this.curriculumElement = curriculumElement;
+		
 		this.iamTeacher = iamTeacher;
 		this.entryExternalRef = externalRef;
 		this.entryDisplayname = entryDisplayname;
@@ -81,10 +89,22 @@ public class LectureBlockRow implements LectureBlockRef {
 		return lectureBlock;
 	}
 	
+	public long getNumOfParticipants() {
+		return numOfParticipants;
+	}
+	
 	public String getTeachers() {
 		return teachers;
 	}
 	
+	public Reference getCurriculumElement() {
+		return curriculumElement;
+	}
+
+	public Reference getEntry() {
+		return entry;
+	}
+
 	public boolean isAssessmentMode() {
 		return assessmentMode;
 	}

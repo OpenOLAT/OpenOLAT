@@ -52,8 +52,10 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 	
 	@Override
 	public void sort(SortKey orderBy) {
-		List<LectureBlockRow> rows = new LectureListRepositorySortDelegate(orderBy, this, locale).sort();
-		super.setObjects(rows);
+		if(orderBy != null) {
+			List<LectureBlockRow> rows = new LectureListRepositorySortDelegate(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 
 	@Override
@@ -64,25 +66,30 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 
 	@Override
 	public Object getValueAt(LectureBlockRow row, int col) {
-		switch(COLS[col]) {
-			case id: return row.getKey();
-			case externalId: return row.getLectureBlock().getExternalId();
-			case title: return  row.getLectureBlock().getTitle();
-			case compulsory: return row.getLectureBlock().isCompulsory();
-			case location: return row.getLectureBlock().getLocation();
-			case date: return row.getLectureBlock().getStartDate();
-			case startTime: return row.getLectureBlock().getStartDate();
-			case endTime: return row.getLectureBlock().getEndDate();
-			case status: return row.getLectureBlock();
-			case teachers: return row.getTeachers();
-			case tools: return row.getToolsLink();
-			case assessmentMode: return row.isAssessmentMode();
-			case dateChooser: return row.getDateChooser();
-			case teacherChooser: return row.getTeacherChooserLink();
-			case locationElement: return row.getLocationElement();
-			case chosenTeachers: return transformIdentitiesToString(row.getTeachersList());
-			default: return null;
-		}
+		return switch(COLS[col]) {
+			case id -> row.getKey();
+			case externalId -> row.getLectureBlock().getExternalId();
+			case externalRef -> row.getLectureBlock().getExternalRef();
+			case title ->  row.getLectureBlock().getTitle();
+			case compulsory -> row.getLectureBlock().isCompulsory();
+			case location -> row.getLectureBlock().getLocation();
+			case lecturesNumber -> row.getLectureBlock().getPlannedLecturesNumber();
+			case curriculumElement -> row.getCurriculumElement();
+			case entry -> row.getEntry();
+			case date -> row.getLectureBlock().getStartDate();
+			case startTime -> row.getLectureBlock().getStartDate();
+			case endTime -> row.getLectureBlock().getEndDate();
+			case status -> row.getLectureBlock();
+			case teachers -> row.getTeachers();
+			case numParticipants -> row.getNumOfParticipants();
+			case tools -> row.getToolsLink();
+			case assessmentMode -> row.isAssessmentMode();
+			case dateChooser -> row.getDateChooser();
+			case teacherChooser -> row.getTeacherChooserLink();
+			case locationElement -> row.getLocationElement();
+			case chosenTeachers -> transformIdentitiesToString(row.getTeachersList());
+			default -> null;
+		};
 	}
 	
 	private String transformIdentitiesToString(List<Identity> identities) {
@@ -117,7 +124,12 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		chosenTeachers("table.header.teachers"),
 		teacherChooser("table.header.teachers.edit"),
 		locationElement("lecture.location"),
-		externalId("table.header.external.id");
+		externalId("table.header.external.id"),
+		externalRef("table.header.external.ref"),
+		lecturesNumber("table.header.num.lecture.block"),
+		numParticipants("table.header.participants"),
+		curriculumElement("table.header.curriculum.element"),
+		entry("table.header.entry");
 		
 		private final String i18nKey;
 		
@@ -132,7 +144,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != tools;
 		}
 
 		@Override
