@@ -385,8 +385,20 @@
 
 .o_badge_classes {
 	th.o_col_image {
-		color: transparent;
 		user-select: none;
+	}
+
+	tr {
+		&.o_table_row_expanded {
+			td a {
+				color: o-a11y-color($brand-primary, $o-table-details-bg);
+			}
+			&:hover {
+				td a {
+					color: o-a11y-color($brand-primary, darken($o-table-details-bg,10%));
+				}
+			}
+		}
 	}
 }
 
@@ -399,59 +411,59 @@
 
 span.o_labeled_light {
 	&.o_badge_class_status_preparation {
-		color: $btn-info-border;
+		color: o-a11y-color($btn-info-border, $o-labeled-light-bg-color);
 	}
 	&.o_badge_class_status_active {
-		color: $btn-success-border;
+		color: o-a11y-color($btn-success-border, $o-labeled-light-bg-color);
 	}
 	&.o_badge_class_status_deleted {
-		color: $btn-warning-border;
+		color: o-a11y-color($btn-warning-border, $o-labeled-light-bg-color);
 	}
 	&.o_badge_class_status_revoked {
-		color: $btn-danger-border;
+		color: o-a11y-color($btn-danger-border, $o-labeled-light-bg-color);
 	}
 
 	&.o_badge_assertion_status_editing {
-		color: $btn-info-border;
+		color: o-a11y-color($btn-info-border, $o-labeled-light-bg-color);
 	}
 
 	&.o_badge_assertion_status_issued {
-		color: $btn-success-border;
+		color: o-a11y-color($btn-success-border, $o-labeled-light-bg-color);
 	}
 
 	&.o_badge_assertion_status_revoked {
-		color: $btn-danger-border;
+		color: o-a11y-color($btn-danger-border, $o-labeled-light-bg-color);
 	}
 
 	&.o_badge_assertion_status_reset {
-		color: $btn-warning-border;
+		color: o-a11y-color($btn-warning-border, $o-labeled-light-bg-color);
 	}
 }
 
 .o_labeled {
 	&.o_badge_class_status_preparation {
-		background-color: $btn-info-bg;
+		background-color: o-a11y-color($btn-info-bg, $o-labeled_color);
 	}
 	&.o_badge_class_status_active {
-		background-color: $btn-success-bg;
+		background-color: o-a11y-color($btn-success-bg, $o-labeled_color);
 	}
 	&.o_badge_class_status_revoked {
-		background-color: $btn-danger-bg;
+		background-color: o-a11y-color($btn-danger-bg, $o-labeled_color);
 	}
 	&.o_badge_class_status_deleted {
-		background-color: $btn-warning-bg;
+		background-color: o-a11y-color($btn-warning-bg, $o-labeled_color);
 	}
 
 	&.o_badge_assertion_status_editing {
-		background-color: $btn-info-bg;
+		background-color: o-a11y-color($btn-info-bg, $o-labeled_color);
 	}
 
 	&.o_badge_assertion_status_issued {
-		background-color: $btn-success-bg;
+		background-color: o-a11y-color($btn-success-bg, $o-labeled_color);
 	}
 
 	&.o_badge_assertion_status_revoked {
-		background-color: $btn-danger-bg;
+		background-color: o-a11y-color($btn-danger-bg, $o-labeled_color);
 	}
 
 	&.o_badge_assertion_status_reset {
