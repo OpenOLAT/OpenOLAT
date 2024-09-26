@@ -135,7 +135,9 @@ public class BadgeClassesController extends FormBasicController implements Activ
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeClassTableModel.BadgeClassCols.image,
 				(renderer, sb, val, row, source, ubu, translator) -> {
-					Size targetSize = tableModel.getObject(row).badgeClassWithSizeAndCount().fitIn(60, 60);
+					OpenBadgesManager.BadgeClassWithSizeAndCount bc = tableModel.getObject(row).badgeClassWithSizeAndCount();
+					Size targetSize = bc.fitIn(60, 60);
+					String name = bc.badgeClass().getNameWithScan();
 					int width = targetSize.getWidth();
 					int height = targetSize.getHeight();
 					sb.append("<div style='width: ").append(width).append("px; height: ").append(height).append("px;'>");
@@ -143,7 +145,9 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					if (val instanceof String image) {
 						sb.append("<img src=\"");
 						sb.append(mediaUrl).append("/").append(image).append("\" ");
-						sb.append(" width='").append(width).append("px' height='").append(height).append("px' >");
+						sb.append(" width='").append(width).append("px' height='").append(height).append("px' ");
+						sb.append(" alt='").append(translator.translate("badge.image")).append(": ").append(name).append("'");
+						sb.append(">");
 					}
 					sb.append("</div>");
 					sb.append("</div>");
@@ -163,6 +167,8 @@ public class BadgeClassesController extends FormBasicController implements Activ
 					BadgeClassTableModel.BadgeClassCols.tools.i18nHeaderKey(),
 					BadgeClassTableModel.BadgeClassCols.tools.ordinal()
 			);
+			toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fw o_icon-lg");
+			toolsColumn.setColumnCssClass("o_col_sticky_right o_col_action");
 			columnModel.addFlexiColumnModel(toolsColumn);
 		}
 
