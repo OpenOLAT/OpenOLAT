@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
@@ -824,6 +825,30 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, infos.get(0).getTeachers().size());
 		Assert.assertTrue(infos.get(0).getTeachers().contains(teacher1));
 		Assert.assertTrue(infos.get(0).getTeachers().contains(teacher2));
+	}
+	
+	@Test
+	public void getLecturesBlockWithOptionalTeachers() {
+		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-24", null);
+		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-25", null);
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		LectureBlock lectureBlock1 = createMinimalLectureBlock(entry);
+		LectureBlock lectureBlock2 = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		lectureService.addTeacher(lectureBlock1, teacher1);
+		lectureService.addTeacher(lectureBlock1, teacher2);
+		dbInstance.commitAndCloseSession();
+		
+		// fill a lot of search parameters
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setEntry(entry);
+		searchParams.addLectureBlockStatus(LectureBlockStatus.values());
+		
+		List<LectureBlockWithTeachers> infos = lectureBlockDao.getLecturesBlockWithOptionalTeachers(searchParams);
+		Assertions.assertThat(infos)
+			.hasSize(2)
+			.map(LectureBlockWithTeachers::getLectureBlock)
+			.containsExactlyInAnyOrder(lectureBlock1, lectureBlock2);
 	}
 	
 	@Test

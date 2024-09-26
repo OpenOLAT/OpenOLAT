@@ -51,7 +51,7 @@ import org.olat.user.UserImpl;
  * 
  * @author Felix Jost
  */
-@Entity
+@Entity(name="bidentity")
 @Table(name="o_bs_identity")
 public class IdentityImpl implements Identity {
 

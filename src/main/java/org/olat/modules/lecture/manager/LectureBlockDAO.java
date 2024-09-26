@@ -594,10 +594,11 @@ public class LectureBlockDAO {
 	}
 	
 	/**
+	 * Search lecture blocks with their teachers. Presence of a teacher is mandatory
+	 * to return a lecture block. Lecture block without are not returned.
 	 * 
-	 * @param entry The course (mandatory)
-	 * @param teacher The teacher (mandatory)
-	 * @return
+	 * @param searchParams The search parameters
+	 * @return Lecture blocks with their teachers
 	 */
 	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sc = new QueryBuilder(2048);
@@ -638,11 +639,59 @@ public class LectureBlockDAO {
 		return new ArrayList<>(blockMap.values());
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @param searchParams The search parameters
+	 * @return The lecture blocks and their coaches if any
+	 */
+	public List<LectureBlockWithTeachers> getLecturesBlockWithOptionalTeachers(LecturesBlockSearchParameters searchParams) {
+		QueryBuilder sc = new QueryBuilder(2048);
+		sc.append("select block, coach, config, mode.key")
+		  .append(" from lectureblock block")
+		  .append(" left join block.teacherGroup tGroup")
+		  .append(" left join tGroup.members membership")
+		  .append(" left join bidentity as coach on (membership.identity.key=coach.key and membership.role='").append("teacher").append("')")
+		  .append(" left join fetch coach.user usercoach")
+		  .append(" left join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
+		  .append(" left join fetch block.entry entry")
+		  .append(" left join fetch block.curriculumElement curEl")
+		  .append(" left join lectureentryconfig as config on (config.entry.key=entry.key)");
+		addSearchParametersToQuery(sc, searchParams);
+
+		//get all, it's quick
+		TypedQuery<Object[]> coachQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Object[].class);
+		
+		addSearchParametersToQuery(coachQuery, searchParams);
+		
+		List<Object[]> rawCoachs = coachQuery.getResultList();
+		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
+		for(Object[] rawCoach:rawCoachs) {
+			LectureBlock block = (LectureBlock)rawCoach[0];
+			Identity coach = (Identity)rawCoach[1];
+			RepositoryEntryLectureConfiguration lectureConfiguration = (RepositoryEntryLectureConfiguration)rawCoach[2];
+			Long assessmentModeKey = (Long)rawCoach[3];
+			
+			LectureBlockWithTeachers blockWith = blockMap.get(block.getKey());
+			if(blockWith == null) {
+				blockWith = new LectureBlockWithTeachers(block, lectureConfiguration, assessmentModeKey != null);
+				blockMap.put(block.getKey(), blockWith);
+			}
+			blockWith.getTeachers().add(coach);
+		}
+		return new ArrayList<>(blockMap.values());
+	}
+	
 	private void addSearchParametersToQuery(QueryBuilder sb, LecturesBlockSearchParameters searchParams) {
 		if(searchParams == null) return;
-		
-		if(searchParams.getEntry() != null) {
-			sb.and().append(" block.entry.key=:repoEntryKey");
+
+		if(searchParams.getCurriculumElement() != null) {
+			sb.and().append(" curEl.key=:curriculumElementKey");
+		} else if(StringHelper.containsNonWhitespace(searchParams.getCurriculumElementPath())) {
+			sb.and().append(" curEl.materializedPathKeys like :curriculumElementPath");
+		} else if(searchParams.getEntry() != null) {
+			sb.and().append(" entry.key=:repoEntryKey and config.lectureEnabled=true");
 		} else {
 			sb.and().append(" entry.status not ").in(RepositoryEntryStatusEnum.deleted());
 		}
@@ -708,7 +757,11 @@ public class LectureBlockDAO {
 	private void addSearchParametersToQuery(TypedQuery<?> query, LecturesBlockSearchParameters searchParams) {
 		if(searchParams == null) return;
 		
-		if(searchParams.getEntry() != null) {
+		if(searchParams.getCurriculumElement() != null) {
+			query.setParameter("curriculumElementKey", searchParams.getCurriculumElement().getKey());
+		} else if(StringHelper.containsNonWhitespace(searchParams.getCurriculumElementPath())) {
+			query.setParameter("curriculumElementPath", searchParams.getCurriculumElementPath() + "%");
+		} else if(searchParams.getEntry() != null) {
 			query.setParameter("repoEntryKey", searchParams.getEntry().getKey());
 		}
 		

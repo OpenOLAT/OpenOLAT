@@ -604,13 +604,14 @@ public interface LectureService {
 	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry);
 	
 	/**
-	 * Return the list of lecture blocks of a course with the teachers for a specific teacher.
+	 * Return the list of lecture blocks of a course with the teachers (mandatory).
 	 * 
-	 * @param entry
-	 * @param teacher The teacher to filter with (optional)
+	 * @param searchParams
 	 * @return
 	 */
 	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(LecturesBlockSearchParameters searchParams);
+	
+	public List<LectureBlockWithTeachers> getLectureBlocksWithOptionalTeachers(LecturesBlockSearchParameters searchParams);
 
 	public List<LectureBlockRef> getAssessedLectureBlocks(LecturesBlockSearchParameters searchParams);
 	

@@ -36,6 +36,10 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.lecture.ui.LectureListRepositoryController;
+import org.olat.modules.lecture.ui.LectureRoles;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
 
 /**
  * 
@@ -48,8 +52,8 @@ public class EditCurriculumElementOverviewController extends BasicController imp
 	private TabbedPane tabPane;
 	
 	private EditCurriculumElementController metadataCtrl;
+	private LectureListRepositoryController lectureBlocksCtrl;
 	private CurriculumElementResourceListController resourcesCtrl;
-	private CurriculumElementLectureBlocksListController lectureBlocksCtrl;
 	
 	private CurriculumElement element;
 	private final CurriculumSecurityCallback secCallback;
@@ -88,7 +92,9 @@ public class EditCurriculumElementOverviewController extends BasicController imp
 		});
 		
 		tabPane.addTab(ureq, translate("tab.lectureblocks"), uureq -> {
-			lectureBlocksCtrl = new CurriculumElementLectureBlocksListController(uureq, getWindowControl(), element, secCallback);
+			//TODO curriculum
+			LecturesSecurityCallback lecturesSecCallback = LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager);
+			lectureBlocksCtrl = new LectureListRepositoryController(uureq, getWindowControl(), element, lecturesSecCallback);
 			listenTo(lectureBlocksCtrl);
 			return lectureBlocksCtrl.getInitialComponent();
 		});

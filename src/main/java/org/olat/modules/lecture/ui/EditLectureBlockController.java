@@ -298,7 +298,7 @@ public class EditLectureBlockController extends FormBasicController {
 				}
 			}
 		} 
-		if(!found && teachersPK.size() > 0) {
+		if(!found && teachersPK.size() > 0 && lectureBlock == null) {
 			teacherEl.select(teachersPK.keys()[0], true);
 		}
 		
@@ -471,7 +471,7 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		
 		teacherEl.clearError();
-		if(!teacherEl.isAtLeastSelected(1)) {
+		if(teacherEl.isVisible() && entry != null && !teacherEl.isAtLeastSelected(1)) {
 			teacherEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}

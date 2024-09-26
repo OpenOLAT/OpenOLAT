@@ -1489,6 +1489,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.getConfiguration(entry);
 		return lectureBlockDao.getLecturesBlockWithTeachers(entry, config);
 	}
+	
 	@Override
 	public List<LectureReportRow> getLectureBlocksReport(Date from, Date to, List<LectureRollCallStatus> status) {
 		return lectureBlockDao.getLecturesBlocksReport(from, to, status);
@@ -1497,6 +1498,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(LecturesBlockSearchParameters searchParams) {
 		return lectureBlockDao.getLecturesBlockWithTeachers(searchParams);
+	}
+	
+	@Override
+	public List<LectureBlockWithTeachers> getLectureBlocksWithOptionalTeachers(LecturesBlockSearchParameters searchParams) {
+		return lectureBlockDao.getLecturesBlockWithOptionalTeachers(searchParams);
 	}
 
 	@Override

@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -46,9 +47,12 @@ public class LecturesBlockSearchParameters {
 	private IdentityRef participant;
 	private IdentityRef masterCoach;
 	private RepositoryEntry entry;
+	private String curriculumElementPath;
+	private CurriculumElementRef curriculumElement;
 	private List<LectureRollCallStatus> rollCallStatus;
 	private List<LectureBlockStatus> lectureBlockStatus;
 	private List<LectureBlockRef> lectureBlocks;
+	
 
 	public String getSearchString() {
 		return searchString;
@@ -76,6 +80,10 @@ public class LecturesBlockSearchParameters {
 
 	public List<LectureRollCallStatus> getRollCallStatus() {
 		return rollCallStatus;
+	}
+	
+	public void setRollCallStatus(List<LectureRollCallStatus> status) {
+		this.rollCallStatus = status;
 	}
 
 	public void addRollCallStatus(LectureRollCallStatus... status) {
@@ -165,6 +173,22 @@ public class LecturesBlockSearchParameters {
 
 	public void setEntry(RepositoryEntry entry) {
 		this.entry = entry;
+	}
+
+	public CurriculumElementRef getCurriculumElement() {
+		return curriculumElement;
+	}
+
+	public void setCurriculumElement(CurriculumElementRef curriculumElement) {
+		this.curriculumElement = curriculumElement;
+	}
+
+	public String getCurriculumElementPath() {
+		return curriculumElementPath;
+	}
+
+	public void setCurriculumElementPath(String curriculumElementPath) {
+		this.curriculumElementPath = curriculumElementPath;
 	}
 
 	public List<LectureBlockRef> getLectureBlocks() {
