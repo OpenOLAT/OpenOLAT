@@ -244,10 +244,10 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 			if (badgeCriteria.isAwardAutomatically()) {
 				Map<Identity, OpenBadgesManager.ParticipantAndAssessmentEntries> participantsAndAssessmentEntries = new HashMap<>();
 
-				Set<Long> courseResourceKeys = badgeCriteria.getGlobalCourseResourceKeys();
-				if (!courseResourceKeys.isEmpty()) {
+				Set<Long> courseRepositoryEntryKeys = badgeCriteria.getGlobalCourseRepositoryEntryKeys();
+				if (!courseRepositoryEntryKeys.isEmpty()) {
 					List<AssessmentEntry> rootAssessmentEntries =
-							assessmentEntryDAO.loadRootAssessmentEntriesForResourceKeys(courseResourceKeys);
+							assessmentEntryDAO.loadRootAssessmentEntriesForRepositoryEntryKeys(courseRepositoryEntryKeys);
 					List<OpenBadgesManager.ParticipantAndAssessmentEntries> newEntries = openBadgesManager.associateParticipantsWithAssessmentEntries(rootAssessmentEntries);
 					for (OpenBadgesManager.ParticipantAndAssessmentEntries newEntry : newEntries) {
 						participantsAndAssessmentEntries.put(newEntry.participant(), newEntry);

@@ -63,6 +63,7 @@ import org.olat.modules.openbadges.criteria.GlobalBadgesEarnedCondition;
 import org.olat.modules.openbadges.criteria.LearningPathProgressCondition;
 import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.criteria.Symbol;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
@@ -150,13 +151,13 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						.forEach(courseNode -> courseElementsKV.add(SelectionValues.entry(courseNode.getIdent(), courseNode.getShortName())));
 			}
 
-			SelectionValues coursesKV = new SelectionValues();
+			Set<RepositoryEntry> visibleCourses = new HashSet<>();
 			if (createContext.isGlobalBadge()) {
 				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), Roles.administratorRoles());
 				params.setResourceTypes(Collections.singletonList("CourseModule"));
 				repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true).stream()
 						.filter(re -> RepositoryEntryStatusEnum.published.equals(re.getEntryStatus()))
-						.forEach(re -> coursesKV.add(SelectionValues.entry(re.getOlatResource().getKey().toString(), re.getDisplayname())));
+						.forEach(visibleCourses::add);
 			}
 
 			SelectionValues globalBadgesKV = new SelectionValues();
@@ -187,7 +188,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				if (!globalBadgesKV.isEmpty()) {
 					conditionsKV.add(SelectionValues.entry(GlobalBadgesEarnedCondition.KEY, translate("form.criteria.condition.global.badges.earned")));
 				}
-				if (!coursesKV.isEmpty()) {
+				if (!visibleCourses.isEmpty()) {
 					conditionsKV.add(SelectionValues.entry(CoursesPassedCondition.KEY, translate("form.criteria.condition.courses.passed")));
 				}
 			}
@@ -202,8 +203,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			String mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
 
 			conditionContext = new ConditionRow.ConditionRowContext(createContext.getBadgeClass().getEntry(),
-					badgesKV, coursesKV, courseElementsKV,
-					globalBadgesKV, conditionsKV, symbolsKV, mediaUrl);
+					badgesKV, courseElementsKV, globalBadgesKV, conditionsKV, symbolsKV, mediaUrl, visibleCourses);
 		}
 
 		private class BadgeClassMediaFileMapper implements Mapper {

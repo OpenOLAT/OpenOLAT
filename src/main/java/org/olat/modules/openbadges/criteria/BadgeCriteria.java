@@ -342,7 +342,8 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	private boolean coursesPassedConditionMet(Identity recipient, List<AssessmentEntry> assessmentEntries, CoursesPassedCondition coursesPassedCondition) {
+	private boolean coursesPassedConditionMet(Identity recipient, List<AssessmentEntry> assessmentEntries,
+											  CoursesPassedCondition coursesPassedCondition) {
 		List<AssessmentEntry> rootAssessmentEntriesForRecipient = assessmentEntries;
 
 		if (rootAssessmentEntriesForRecipient == null) {
@@ -350,7 +351,7 @@ public class BadgeCriteria {
 			rootAssessmentEntriesForRecipient = assessmentEntryDAO.loadRootAssessmentEntriesForAssessedIdentity(recipient);
 		}
 
-		HashSet<Long> toPass = new HashSet<>(coursesPassedCondition.getCourseResourceKeys());
+		HashSet<Long> coursesToPass = new HashSet<>(coursesPassedCondition.getCourseRepositoryEntryKeys());
 		for (AssessmentEntry assessmentEntry : rootAssessmentEntriesForRecipient) {
 			if (assessmentEntry.getEntryRoot() == null || !assessmentEntry.getEntryRoot()) {
 				continue;
@@ -359,17 +360,17 @@ public class BadgeCriteria {
 				continue;
 			}
 			if (assessmentEntry.getPassed() != null && assessmentEntry.getPassed()) {
-				toPass.remove(assessmentEntry.getRepositoryEntry().getOlatResource().getKey());
+				coursesToPass.remove(assessmentEntry.getRepositoryEntry().getKey());
 			}
 		}
-		return toPass.isEmpty();
+		return coursesToPass.isEmpty();
 	}
 
-	public Set<Long> getGlobalCourseResourceKeys() {
+	public Set<Long> getGlobalCourseRepositoryEntryKeys() {
 		Set<Long> keys = new HashSet<>();
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
-				keys.addAll(coursesPassedCondition.getCourseResourceKeys());
+				keys.addAll(coursesPassedCondition.getCourseRepositoryEntryKeys());
 			}
 		}
 		return keys;
