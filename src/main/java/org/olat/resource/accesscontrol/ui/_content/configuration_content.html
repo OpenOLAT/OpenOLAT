@@ -24,6 +24,15 @@
 	</div>
 #end
 
+#if($offer.catalogIn)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_catin_${offer.link.key}">$r.translate("access.info.catalog.in")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_catin_${offer.link.key}">
+		$offer.catalogIn
+	</div>
+#end
+
 #if($offer.organisationInfo)
 	<div>
 		<label class="control-label col-sm-3" for="o_ac_org_${offer.link.key}">$r.translate("access.info.organisations")</label>

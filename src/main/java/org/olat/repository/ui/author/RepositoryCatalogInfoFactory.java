@@ -65,7 +65,8 @@ public class RepositoryCatalogInfoFactory {
 	}
 	
 	public static CatalogInfo createCatalogInfo(RepositoryEntry entry, Locale locale, boolean showBusinessPath) {
-		if (CoreSpringFactory.getImpl(CatalogV2Module.class).isEnabled()) {
+		CatalogV2Module catalogV2Module = CoreSpringFactory.getImpl(CatalogV2Module.class);
+		if (catalogV2Module.isEnabled()) {
 			Translator translator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
 			translator = Util.createPackageTranslator(RepositoryService.class, locale, translator);
@@ -82,7 +83,8 @@ public class RepositoryCatalogInfoFactory {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
 			}
 			Predicate<Offer> catalogVisibility = offer -> offer.isGuestAccess() || offer.isOpenAccess() || offer.isCatalogPublish();
-			return new CatalogInfo(true, true, translator.translate("cif.taxonomy.levels.catalog"),
+			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), true,
+					translator.translate("cif.taxonomy.levels.catalog"),
 					translator.translate("cif.taxonomy.levels.help.catalog"), details, catalogVisibility,
 					editBusinessPath, translator.translate("access.open.metadata"));
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
@@ -113,7 +115,7 @@ public class RepositoryCatalogInfoFactory {
 			if (showBusinessPath) {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			}
-			return new CatalogInfo(true, true, translator.translate("access.info.catalog.entries"),
+			return new CatalogInfo(true, false, true, translator.translate("access.info.catalog.entries"),
 					translator.translate("cif.taxonomy.levels.help.catalog"), details, catalogVisibility,
 					editBusinessPath, translator.translate("access.open.catalog"));
 		}

@@ -142,6 +142,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			catalogEl.select(CATALOG_WEB, link.getOffer() != null && link.getOffer().isCatalogWebPublish());
 		}
 		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
+		catalogEl.addActionListener(FormEvent.ONCHANGE);
 		
 		if (catalogEl.isVisible() && catalogInfo.isShowDetails()) {
 			StaticTextElement catalogEl = uifactory.addStaticTextElement("access.info.catalog.entries", null, catalogInfo.getDetails(), formLayout);
@@ -196,6 +197,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == periodEl) {
 			updateUI();
+		} else if (source == catalogEl) {
+			updateCatalogUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -203,6 +206,17 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	protected void updateUI() {
 		boolean periodeDates = periodEl.isOneSelected() && PERIOD_DATE.equals(periodEl.getSelectedKey());
 		datesEl.setVisible(periodeDates);
+	}
+
+	private void updateCatalogUI() {
+		if (catalogEl.getKeys().contains(CATALOG_WEB)) {
+			if (!catalogEl.getSelectedKeys().contains(CATALOG_OO)) {
+				catalogEl.select(CATALOG_WEB, false);
+				catalogEl.setEnabled(CATALOG_WEB, false);
+			} else {
+				catalogEl.setEnabled(CATALOG_WEB, true);
+			}
+		}
 	}
 	
 	@Override

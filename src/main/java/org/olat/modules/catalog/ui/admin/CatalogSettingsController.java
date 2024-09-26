@@ -34,6 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -80,6 +81,8 @@ public class CatalogSettingsController extends FormBasicController {
 	private SingleSelection enabledEl;
 	private FormLayoutContainer taxonomiesCont;
 	private MultipleSelectionElement taxonomyEditRolesEl;
+	private FormToggle webPublishEnabledEl;
+	private FormToggle webPublishTemporaryDisabledEl;
 	private FormLayoutContainer migrationCont;
 	private FormLayoutContainer migrationStartCont;
 	private FormLink migrationStartLink;
@@ -153,6 +156,16 @@ public class CatalogSettingsController extends FormBasicController {
 		taxonomyEditRolesEl.addActionListener(FormEvent.ONCHANGE);
 		catalogV2Module.getTaxonomyEditRoles().stream().forEach(role -> taxonomyEditRolesEl.select(role.name(), true));
 		
+		webPublishEnabledEl = uifactory.addToggleButton("admin.webpub.enabled", "admin.webpub.enabled", translate("on"),
+				translate("off"), generalCont);
+		webPublishEnabledEl.toggle(catalogV2Module.isWebPublishEnabled());
+		webPublishEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		
+		webPublishTemporaryDisabledEl = uifactory.addToggleButton("admin.webpub.temporary.disabled",
+				"admin.webpub.temporary.disabled", translate("on"), translate("off"), generalCont);
+		webPublishTemporaryDisabledEl.toggle(catalogV2Module.isWebPublishTemporaryDisabled());
+		webPublishTemporaryDisabledEl.addActionListener(FormEvent.ONCHANGE);
+		
 		migrationCont = FormLayoutContainer.createDefaultFormLayout("migrations", getTranslator());
 		migrationCont.setFormTitle(translate("admin.migration"));
 		migrationCont.setFormDescription(translate("admin.migration.desc"));
@@ -176,6 +189,8 @@ public class CatalogSettingsController extends FormBasicController {
 		}
 		taxonomiesCont.setVisible(catalogV2Module.isEnabled());
 		taxonomyEditRolesEl.setVisible(catalogV2Module.isEnabled());
+		webPublishEnabledEl.setVisible(catalogV2Module.isEnabled());
+		webPublishTemporaryDisabledEl.setVisible(catalogV2Module.isEnabled() && catalogV2Module.isWebPublishEnabled());
 	}
 
 	private void updateMigrationUI() {
@@ -225,6 +240,11 @@ public class CatalogSettingsController extends FormBasicController {
 					.map(OrganisationRoles::valueOf)
 					.collect(Collectors.toSet());
 			catalogV2Module.setTaxonomyEditRoles(taxonomyEditRoles);
+		} else if (source == webPublishEnabledEl) {
+			catalogV2Module.setWebPublishEnabled(webPublishEnabledEl.isOn());
+			doSetEnabled();
+		} else if (source == webPublishTemporaryDisabledEl) {
+			catalogV2Module.setWebPublishTemporaryDisabled(webPublishTemporaryDisabledEl.isOn());
 		} else if (source == migrationStartLink) {
 			doConfirmMigraion(ureq);
 		} else if (source instanceof FormLink) {

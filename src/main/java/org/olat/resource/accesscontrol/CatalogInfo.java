@@ -22,10 +22,11 @@ package org.olat.resource.accesscontrol;
 import java.util.function.Predicate;
 
 public class CatalogInfo {
-	
-	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, null, null, null, null, null, null);
-	
+
+	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, null, null, null, null, null, null);
+
 	private final boolean catalogSupported;
+	private final boolean webCatalogSupported;
 	private final boolean showDetails;
 	private final String detailsLabel;
 	private final String detailsHelpText;
@@ -33,10 +34,12 @@ public class CatalogInfo {
 	private final Predicate<Offer> catalogVisibility;
 	private final String editBusinessPath;
 	private final String editLabel;
-	
-	public CatalogInfo(boolean catalogSupported, boolean showDetails, String detailsLabel, String detailsHelpText,
-			String details, Predicate<Offer> catalogVisibility, String editBusinessPath, String editLabel) {
+
+	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, boolean showDetails, String detailsLabel,
+			String detailsHelpText, String details, Predicate<Offer> catalogVisibility, String editBusinessPath,
+			String editLabel) {
 		this.catalogSupported = catalogSupported;
+		this.webCatalogSupported = webCatalogSupported;
 		this.showDetails = showDetails;
 		this.detailsLabel = detailsLabel;
 		this.detailsHelpText = detailsHelpText;
@@ -48,6 +51,10 @@ public class CatalogInfo {
 
 	public boolean isCatalogSupported() {
 		return catalogSupported;
+	}
+
+	public boolean isWebCatalogSupported() {
+		return webCatalogSupported;
 	}
 
 	public boolean isShowDetails() {
@@ -77,5 +84,5 @@ public class CatalogInfo {
 	public String getEditLabel() {
 		return editLabel;
 	}
-	
+
 }

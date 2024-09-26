@@ -574,6 +574,14 @@ public class AccessConfigurationController extends FormBasicController {
 			if (catalogInfo.getCatalogVisibility().test(infos.getOffer())) {
 				infos.setCatalogIcon(ICON_ACTIVE);
 				infos.setCatalogDetails(catalogInfo.getDetails());
+				
+				if (catalogInfo.isWebCatalogSupported()) {
+					String catalogIn = ICON_ACTIVE + translate("access.info.catalog.in.catalog");
+					if (infos.getOffer().isCatalogWebPublish()) {
+						catalogIn += " " + ICON_ACTIVE + translate("access.info.catalog.in.web.catalog");
+					}
+					infos.setCatalogIn(catalogIn);
+				}
 			} else {
 				infos.setCatalogIcon(ICON_INACTIVE);
 				infos.setCatalogDetails(translate("access.info.catalog.oo.not.active"));
@@ -851,6 +859,7 @@ public class AccessConfigurationController extends FormBasicController {
 		private String catalogDetailsLabel;
 		private String catalogDetails;
 		private FormLink catalogEditLink;
+		private String catalogIn;
 		private OfferAccess link;
 		private AccessMethodHandler handler;
 		private FormLayoutContainer configCont;
@@ -1004,6 +1013,14 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public void setCatalogEditLink(FormLink catalogEditLink) {
 			this.catalogEditLink = catalogEditLink;
+		}
+
+		public String getCatalogIn() {
+			return catalogIn;
+		}
+
+		public void setCatalogIn(String catalogIn) {
+			this.catalogIn = catalogIn;
 		}
 
 		public FormLayoutContainer getConfigCont() {
