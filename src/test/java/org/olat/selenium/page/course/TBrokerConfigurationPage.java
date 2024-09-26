@@ -44,8 +44,8 @@ public class TBrokerConfigurationPage {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_tb_configuration>a");
 		OOGraphene.waitElement(tabBy, browser);
 		browser.findElement(tabBy).click();
-		// By configBy = By.cssSelector("fieldset.o_sel_st_overview_settings");
-		// OOGraphene.waitElement(configBy, browser);
+		By configBy = By.cssSelector("fieldset.o_sel_tb_buttons button.btn-primary");
+		OOGraphene.waitElement(configBy, browser);
 		return this;
 	}
 	
@@ -62,8 +62,8 @@ public class TBrokerConfigurationPage {
 		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_tb_topics>a");
 		OOGraphene.waitElement(tabBy, browser);
 		browser.findElement(tabBy).click();
-		// By configBy = By.cssSelector("fieldset.o_sel_st_overview_settings");
-		// OOGraphene.waitElement(configBy, browser);
+		By configBy = By.cssSelector("div.o_tb_topics>fieldset");
+		OOGraphene.waitElement(configBy, browser);
 		return this;
 	}
 	
@@ -73,9 +73,16 @@ public class TBrokerConfigurationPage {
 		By startBy = By.cssSelector("div.o_sel_tb_period div.o_first_date input.o_date_day");
 		browser.findElement(startBy).sendKeys(startText);
 		browser.findElement(startBy).sendKeys("\t");
-		
+		return selectEndPeriod(end, false);
+	}
+	
+	public TBrokerConfigurationPage selectEndPeriod(Date end, boolean clear) {
+		Locale locale = OOGraphene.getLocale(browser);
 		String endText =  OOGraphene.formatDate(end, locale);
 		By endBy = By.cssSelector("div.o_sel_tb_period div.o_second_date input.o_date_day");
+		if(clear) {
+			browser.findElement(endBy).clear();
+		}
 		browser.findElement(endBy).sendKeys(endText);
 		browser.findElement(endBy).sendKeys("\t");
 		return this;

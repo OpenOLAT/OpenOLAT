@@ -26,9 +26,12 @@ import java.util.List;
 import java.util.Locale;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -63,11 +66,24 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
+	
+	private static Organisation defaultUnitTestOrganisation;
+	
+	@Before
+	public void initDefaultUnitTestOrganisation() {
+		if(defaultUnitTestOrganisation == null) {
+			defaultUnitTestOrganisation = organisationService
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+		}
+	}
 	
 	@Test
 	public void testCurriculumElementActiveInactive() {
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum",
+				false, defaultUnitTestOrganisation);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -107,18 +123,19 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 	 */
 	@Test
 	public void testRepositoryEntryActiveInactive() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el", defaultUnitTestOrganisation, null);
 
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum",
+				false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", RepositoryEntryStatusEnum.trash);
-		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", RepositoryEntryStatusEnum.published);
-		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.closed);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.trash);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.published);
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element, entry1, false);
 		curriculumService.addRepositoryEntry(element, entry2, false);
@@ -151,18 +168,18 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 	
 	@Test
 	public void testRepositoryEntryClosed_underParent() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el", defaultUnitTestOrganisation, null);
 
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", RepositoryEntryStatusEnum.trash);
-		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", RepositoryEntryStatusEnum.published);
-		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.closed);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.trash);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.published);
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element, entry1, false);
 		curriculumService.addRepositoryEntry(element, entry2, false);
@@ -207,9 +224,9 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 	 */
 	@Test
 	public void testActiveInactiveClosedOrNot() {
-		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el", defaultUnitTestOrganisation, null);
 
-		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, defaultUnitTestOrganisation);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.inactive, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
@@ -224,10 +241,10 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
-		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed);
-		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", RepositoryEntryStatusEnum.published);
-		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", RepositoryEntryStatusEnum.closed);
-		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.closed);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.published);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.closed);
+		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.published);
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element1, entry1, false);
 		curriculumService.addRepositoryEntry(element2, entry2, false);
