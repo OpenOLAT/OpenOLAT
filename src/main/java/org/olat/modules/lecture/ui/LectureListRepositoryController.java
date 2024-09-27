@@ -29,6 +29,8 @@ import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -77,6 +79,7 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
@@ -119,6 +122,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	private static final String FILTER_ONE_LEVEL_ONLY = "OneLevelOnly";
 	private static final String FILTER_ROLL_CALL_STATUS = "Status";
+	
+	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
 
 	private FormLink addLectureButton;
 	private FormLink deleteLecturesButton;
@@ -188,9 +193,16 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
 			addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
 			
-			importLecturesButton = uifactory.addFormLink("import.lectures", formLayout, Link.BUTTON);
+			DropdownItem addTaskDropdown = uifactory.addDropdownMenu("import.lectures.dropdown", null, null, formLayout, getTranslator());
+			addTaskDropdown.setOrientation(DropdownOrientation.right);
+			addTaskDropdown.setElementCssClass("o_sel_add_more");
+			addTaskDropdown.setEmbbeded(true);
+			addTaskDropdown.setButton(true);
+
+			importLecturesButton = uifactory.addFormLink("import.lectures", formLayout, Link.LINK);
 			importLecturesButton.setIconLeftCSS("o_icon o_icon_import");
 			importLecturesButton.setElementCssClass("o_sel_repo_import_lectures");
+			addTaskDropdown.addElement(importLecturesButton);
 			
 			deleteLecturesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		}
@@ -198,7 +210,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.externalId));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title, TOGGLE_DETAILS_CMD));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.externalRef));
 		if(entry != null) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.assessmentMode,
@@ -245,6 +257,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setEmptyTableMessageKey("empty.table.lectures.blocks.admin");
+		tableEl.setSearchEnabled(true);
 		
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
@@ -252,7 +265,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), false));
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "repo-lecture-block-list-v2");
+		tableEl.setAndLoadPersistedPreferences(ureq, entry == null ? "curriculum-lecture-block-list-v1" : "repo-lecture-block-list-v3");
 		tableEl.addBatchButton(deleteLecturesButton);
 		
 		initFilters();
@@ -289,28 +302,34 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
 				TabSelectionBehavior.nothing, List.of());
 		allTab.setElementCssClass("o_sel_elements_all");
+		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
 		currentTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CURRENT_TAB_ID, translate("filter.current"),
 				TabSelectionBehavior.nothing, List.of());
+		currentTab.setFiltersExpanded(true);
 		tabs.add(currentTab);
 		
 		pastTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PAST_TAB_ID, translate("filter.past"),
 				TabSelectionBehavior.nothing, List.of());
+		pastTab.setFiltersExpanded(true);
 		tabs.add(pastTab);
 		
 		withoutTeachersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(WITHOUT_TEACHERS_TAB_ID, translate("filter.without.teachers"),
 				TabSelectionBehavior.nothing, List.of());
+		withoutTeachersTab.setFiltersExpanded(true);
 		tabs.add(withoutTeachersTab);
 		
 		pendingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PENDING_TAB_ID, translate("filter.pending"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLL_CALL_STATUS,
 						List.of(LectureRollCallStatus.open.name(), LectureRollCallStatus.reopen.name()))));
+		pendingTab.setFiltersExpanded(true);
 		tabs.add(pendingTab);
 		
 		closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CLOSED_TAB_ID, translate("filter.closed"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLL_CALL_STATUS,
 						List.of(LectureRollCallStatus.closed.name(), LectureRollCallStatus.autoclosed.name()))));
+		closedTab.setFiltersExpanded(true);
 		tabs.add(closedTab);
 		
 		tableEl.setFilterTabs(true, tabs);
@@ -407,6 +426,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		} else if(selectedTab == withoutTeachersTab) {
 			searchParams.setWithTeachers(Boolean.FALSE);
 		}
+		
+		String quickSearch = tableEl.getQuickSearchString();
+		if(StringHelper.containsNonWhitespace(quickSearch)) {
+			searchParams.setSearchString(quickSearch);
+		}
+		
 		return searchParams;
 	}
 	
@@ -417,6 +442,17 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			return filterValues != null && filterValues.contains(id);
 		}
 		return false;
+	}
+	
+	private void reloadModel(UserRequest ureq, LectureBlock lectureBlock) {
+		LectureBlockRow row = tableModel.getObject(lectureBlock);
+		row.setLectureBlock(lectureBlock);
+		if(row.getDetailsController() != null) {
+			doOpenLectureBlockDetails(ureq, row);
+			tableEl.reset(false, false, false);
+		} else {
+			tableEl.reset(false, false, true);
+		}
 	}
 	
 	@Override
@@ -433,6 +469,14 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				LectureBlockRow row = tableModel.getObject(se.getIndex());
 				if("edit".equals(cmd)) {
 					doEditLectureBlock(ureq, row);
+				} else if(TOGGLE_DETAILS_CMD.equals(cmd)) {
+					if(row.getDetailsController() != null) {
+						doCloseLectureBlockDetails(row);
+						tableEl.collapseDetails(se.getIndex());
+					} else {
+						this.doOpenLectureBlockDetails(ureq, row);
+						tableEl.expandDetails(se.getIndex());
+					}
 				}
 			} else if(event instanceof FlexiTableSearchEvent
 					|| event instanceof FlexiTableFilterTabEvent) {
@@ -459,7 +503,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(editLectureCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
+				reloadModel(ureq, editLectureCtrl.getLectureBlock());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -658,6 +702,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private void doOpenLectureBlockDetails(UserRequest ureq, LectureBlockRow row) {
+		if(row.getDetailsController() != null) {
+			removeAsListenerAndDispose(row.getDetailsController());
+			flc.remove(row.getDetailsController().getInitialFormItem());
+		}
+		
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row, mainForm);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);

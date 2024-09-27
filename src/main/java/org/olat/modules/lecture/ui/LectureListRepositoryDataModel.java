@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.id.Identity;
+import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.model.LectureBlockRow;
 
 /**
@@ -56,6 +57,16 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			List<LectureBlockRow> rows = new LectureListRepositorySortDelegate(orderBy, this, locale).sort();
 			super.setObjects(rows);
 		}
+	}
+	
+	public LectureBlockRow getObject(LectureBlock lectureBlock) {
+		List<LectureBlockRow> rows = this.getObjects();
+		for(int i=0; i<rows.size(); i++) {
+			if(lectureBlock.equals(rows.get(i).getLectureBlock())) {
+				return rows.get(i);
+			}
+		}
+		return null;
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -64,7 +65,9 @@ public class IconDecoratorCellRenderer extends AbstractCSSIconFlexiCellRenderer 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if(cellValue != null) {
+		if(cellValue != null
+				&& (cellValue instanceof String str && StringHelper.containsNonWhitespace(str)
+						|| cellValue instanceof Number)) {
 			super.render(renderer, target, cellValue, row, source, ubu, translator);
 		}
 	}

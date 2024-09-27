@@ -183,6 +183,10 @@ public class EditLectureBlockController extends FormBasicController {
 		initForm(ureq);
 		updateUI();
 	}
+	
+	public LectureBlock getLectureBlock() {
+		return lectureBlock;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -201,7 +205,7 @@ public class EditLectureBlockController extends FormBasicController {
 			titleEl.setFocus(true);
 		}
 
-		String externalRef = lectureBlock == null ? null : lectureBlock.getTitle();
+		String externalRef = lectureBlock == null ? null : lectureBlock.getExternalRef();
 		externalRefEl = uifactory.addTextElement("externalref", "lecture.external.ref", 128, externalRef, formLayout);
 		externalRefEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.externalRef));
 

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.model;
 
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 
@@ -31,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 public class CurriculumElementInfos implements CurriculumElementRef {
 	
 	private final CurriculumElement curriculumElement;
+	private final Curriculum curriculum;
 	private final long numOfResources;
 	private final long numOfParticipants;
 	private final long numOfCoaches;
@@ -39,6 +41,7 @@ public class CurriculumElementInfos implements CurriculumElementRef {
 	public CurriculumElementInfos(CurriculumElement curriculumElement, long numOfResources,
 			long numOfParticipants, long numOfCoaches, long numOfOwners) {
 		this.curriculumElement = curriculumElement;
+		this.curriculum = curriculumElement.getCurriculum();
 		this.numOfResources = numOfResources;
 		this.numOfParticipants = numOfParticipants;
 		this.numOfCoaches = numOfCoaches;
@@ -52,6 +55,10 @@ public class CurriculumElementInfos implements CurriculumElementRef {
 
 	public CurriculumElement getCurriculumElement() {
 		return curriculumElement;
+	}
+	
+	public Curriculum getCurriculum() {
+		return curriculum;
 	}
 
 	public long getNumOfResources() {

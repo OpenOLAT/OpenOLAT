@@ -50,12 +50,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.StatisticsBusinessGroupRow;
-import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -224,7 +224,9 @@ public class LectureListDetailsController extends FormBasicController {
 			title += " <small>" + translate("lecture.separator") + " " + StringHelper.escapeHtml(externalRef) + "</small>";
 		}
 		
+		String businessPath = getBusinessPath(groupRow);
 		FormLink openLink = uifactory.addFormLink(openLinkName, "open", title, null, flc, Link.LINK | Link.NONTRANSLATED);
+		openLink.setUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
 		openLink.setIconLeftCSS(groupRow.getIconCssClass());
 		openLink.setUserObject(groupRow);
 		groupRow.setTitleLink(openLink);
@@ -273,6 +275,8 @@ public class LectureListDetailsController extends FormBasicController {
 			String cmd = link.getCmd();
 			if("detailstool".equals(cmd) && link.getUserObject() instanceof LectureBlockParticipantGroupRow groupRow) {
 				doOpenTools(ureq, groupRow, link);
+			} else if("open".equals(cmd) && link.getUserObject() instanceof LectureBlockParticipantGroupRow groupRow) {
+				doOpen(ureq, groupRow);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -292,20 +296,24 @@ public class LectureListDetailsController extends FormBasicController {
 	}
 	
 	private void doOpen(UserRequest ureq, LectureBlockParticipantGroupRow groupRow) {
+		String businessPath = getBusinessPath(groupRow);
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private String getBusinessPath(LectureBlockParticipantGroupRow groupRow) {
 		String businessPath;
 		if(groupRow.getEntry() != null) {
 			businessPath = "[RepositoryEntry:" + groupRow.getEntry().getKey() + "]";
 		} else if(groupRow.getBusinessGroup() != null) {
 			businessPath = "[BusinessGroup:" + groupRow.getBusinessGroup().getKey() + "]";	
 		} else if(groupRow.getCurriculumElement() != null) {
-			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(groupRow.getCurriculumElement());
-			businessPath = "[CurriculumAdmin:0][Curriculum:" + curriculumElement .getCurriculum().getKey()
+			CurriculumElementInfos curriculumElement = groupRow.getCurriculumElement();
+			businessPath = "[CurriculumAdmin:0][Curriculum:" + curriculumElement.getCurriculum().getKey()
 					+ "][CurriculumElement:" + curriculumElement.getKey() + "]";	
 		} else {
-			return;
+			businessPath = null;
 		}
-
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		return businessPath;
 	}
 	
 	private void doExclude(UserRequest ureq, LectureBlockParticipantGroupRow groupRow) {
@@ -356,22 +364,27 @@ public class LectureListDetailsController extends FormBasicController {
 			
 			VelocityContainer mainVC = createVelocityContainer("lectures_details_tools");
 			
-			String openI18nKey = "open.course";
-			if(groupRow.getBusinessGroup() != null) {
-				openI18nKey = "open.group";
+			String businessPath = getBusinessPath(groupRow);
+			if(businessPath != null) {
+				String openI18nKey = "open.course";
+				if(groupRow.getBusinessGroup() != null) {
+					openI18nKey = "open.group";
+				}
+				if(groupRow.getCurriculumElement() != null) {
+					openI18nKey = "open.curriculum.element";
+				}
+				openLink = LinkFactory.createLink("open", openI18nKey, getTranslator(), mainVC, this, Link.LINK);
+				openLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
+				openLink.setUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
+				openLink.setNewWindow(true, false);
 			}
-			if(groupRow.getCurriculumElement() != null) {
-				openI18nKey = "open.curriculum.element";
-			}
-			openLink = LinkFactory.createLink("open", openI18nKey, getTranslator(), mainVC, this, Link.LINK);
-			openLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 
 			if(groupRow.isExcluded()) {
 				includeLink = LinkFactory.createLink("include.participants", "include.participants", getTranslator(), mainVC, this, Link.LINK);
-				includeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+				includeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			} else {
 				excludeLink = LinkFactory.createLink("exclude.participants", "exclude.participants", getTranslator(), mainVC, this, Link.LINK);
-				excludeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+				excludeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_invalidate");
 			}
 			putInitialPanel(mainVC);
 		}
