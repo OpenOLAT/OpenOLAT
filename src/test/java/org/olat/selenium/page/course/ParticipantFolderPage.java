@@ -53,6 +53,8 @@ public class ParticipantFolderPage {
 	public ParticipantFolderPage openParticipantFolder(String firstName) {
 		By inListBy = By.xpath("//div[contains(@class,'o_sel_pf_participants_list')]//table//tr[td/a[contains(text(),'" + firstName + "')]]/td/a[contains(@onclick,'open.box')][i]");
 		OOGraphene.waitElement(inListBy, browser);
+		By inListTableBy = By.xpath("//div[contains(@class,'o_sel_pf_participants_list')]//table");
+		OOGraphene.scrollTableRight(inListTableBy, browser);
 		browser.findElement(inListBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
