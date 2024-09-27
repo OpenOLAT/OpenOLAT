@@ -66,6 +66,7 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.ui.LectureListDetailsParticipantsGroupDataModel.GroupCols;
 import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockParticipantGroupExcludeRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -115,6 +116,9 @@ public class LectureListDetailsController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("title", row.getLectureBlock().getTitle());
 			layoutCont.contextPut("externalRef", row.getLectureBlock().getExternalRef());
+			
+			String badge = LectureBlockStatusCellRenderer.getStatusBadge(row.getLectureBlock(), getTranslator());
+			layoutCont.contextPut("statusBadge", badge);
 		}
 		
 		editButton = uifactory.addFormLink("edit", "edit", "edit", formLayout, Link.BUTTON);

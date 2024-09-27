@@ -25,7 +25,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -49,14 +48,23 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof LectureBlockStatus status) {
 			target.append(translator.translate(status.name()));
 		} else if(cellValue instanceof LectureBlock block) {
-			String status  = getStatus(block, translator);
-			if(StringHelper.containsNonWhitespace(status)) {
-				target.append(status);
-			}
+			getStatus(target, "o_labeled_light", block, translator);
 		}
 	}
 	
-	public static final String getStatus(LectureBlock block, Translator trans) {
+	public static final String getStatusBadge(LectureBlock block, Translator trans) {
+		StringOutput sb = new StringOutput();
+		getStatus(sb, "o_lecture_status_badge", block, trans);
+		return sb.toString();
+	}
+
+	public static final String getStatusLabel(LectureBlock block, Translator trans) {
+		StringOutput sb = new StringOutput();
+		getStatus(sb, "o_labeled_light", block, trans);
+		return sb.toString();
+	}
+	
+	public static final String getStatusString(LectureBlock block, Translator trans) {
 		LectureBlockStatus status = block.getStatus();
 		if(LectureBlockStatus.done.equals(status)) {
 			LectureRollCallStatus rollCallStatus = block.getRollCallStatus();
@@ -66,5 +74,27 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 			return trans.translate(status.name());
 		}
 		return null;
+	}
+	
+	public static final void getStatus(StringOutput target, String type, LectureBlock block, Translator trans) {
+		LectureBlockStatus status = block.getStatus();
+		if(LectureBlockStatus.done.equals(status)) {
+			LectureRollCallStatus rollCallStatus = block.getRollCallStatus();
+			getStatus(target, type, rollCallStatus, trans);
+		} else if(status != null) {
+			getStatus(target, type, status, trans);
+		}
+	}
+	
+	public static final void getStatus(StringOutput target, String type, LectureRollCallStatus status, Translator trans) {
+		target.append("<span class=\"").append(type).append(" o_lecture_rollcall_status_")
+		      .append(status.name()).append("\">").append(trans.translate(status.name()))
+		      .append("</span>");
+	}
+	
+	public static final void getStatus(StringOutput target, String type, LectureBlockStatus status, Translator trans) {
+		target.append("<span class=\"").append(type).append(" o_lecture_status_")
+		      .append(status.name()).append("\">").append(trans.translate(status.name()))
+		      .append("</span>");
 	}
 }

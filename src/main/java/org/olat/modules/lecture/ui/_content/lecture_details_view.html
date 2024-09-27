@@ -1,7 +1,7 @@
 <div class="o_header_with_buttons">
 	<h3>$r.escapeHtml($title)#if($r.isNotEmpty($externalRef)) <small>$r.translate("lecture.separator") $r.escapeHtml($externalRef)</small>#end</h3>
 	<div class="o_button_group o_button_group_right">
-		$r.render("edit")
+		<div class="o_lecture_badge">$statusBadge</div> $r.render("edit") 
 	</div>
 </div>
 

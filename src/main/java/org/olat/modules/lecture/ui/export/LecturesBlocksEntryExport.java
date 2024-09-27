@@ -146,7 +146,7 @@ public class LecturesBlocksEntryExport extends OpenXMLWorkbookResource {
 				if(lectureBlock.getRollCallStatus() == null) {
 					pos++;
 				} else {
-					String status = LectureBlockStatusCellRenderer.getStatus(lectureBlock, translator);
+					String status = LectureBlockStatusCellRenderer.getStatusString(lectureBlock, translator);
 					if(status != null) {
 						row.addCell(pos++, status);
 					} else {

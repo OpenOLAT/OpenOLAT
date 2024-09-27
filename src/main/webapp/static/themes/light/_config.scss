@@ -929,6 +929,10 @@ $o-lm-current-border-color							: transparent !default;
 $o-lm-current-border-radius							: $border-radius-base !default;
 $o-lm-excluded-color								: $brand-danger !default;
 
+$o-lm-status-active-color							: $o-repo-published-color !default;
+$o-lm-status-done-color								: $o-repo-closed-color !default;
+$o-lm-status-cancelled-color						: $o-repo-trash-color !default;
+
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fefefe !default;
 $o-dialog-window-bar-bg			: #eee !default;

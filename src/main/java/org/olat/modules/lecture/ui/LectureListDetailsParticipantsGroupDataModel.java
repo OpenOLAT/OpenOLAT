@@ -73,12 +73,10 @@ implements SortableFlexiTableDataModel<LectureBlockParticipantGroupRow> {
 	}
 	
 	public enum GroupCols implements FlexiSortableColumnDef {
-		id("table.header.id"),
-		title("lecture.title"),
+		title("table.header.for"),
 		status("table.header.status"),
 		numParticipants("table.header.participants"),
-		tools("table.header.actions"),
-		compulsory("table.header.compulsory.long");
+		tools("table.header.actions");
 		
 		private final String i18nKey;
 		

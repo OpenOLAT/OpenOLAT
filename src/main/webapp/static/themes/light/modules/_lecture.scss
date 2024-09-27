@@ -100,6 +100,83 @@
 	background-color: $alert-warning-bg !important;
 }
 
+.o_labeled_light {
+	&.o_lecture_status_active {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-lm-status-active-color;
+	    color: $o-lm-status-active-color;
+	}
+	&.o_lecture_status_done {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-lm-status-done-color;
+	    color: $o-lm-status-done-color;
+	}
+	&.o_lecture_status_cancelled {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-lm-status-cancelled-color;
+	    color: $o-lm-status-cancelled-color;
+	}
+	
+	&.o_lecture_rollcall_status_open,
+	&.o_lecture_rollcall_status_reopen {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-lm-status-active-color;
+	    color: $o-lm-status-active-color;
+	}
+	
+	&.o_lecture_rollcall_status_closed,
+	&.o_lecture_rollcall_status_autoclosed {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-lm-status-done-color;
+	    color: $o-lm-status-done-color;
+	}
+}
+
+.o_button_group>.o_lecture_badge {
+	display: inline-block;
+	margin-right: 7px;
+}
+
+.o_lecture_status_badge {
+	float: right;
+	display: inline-block;
+	padding: 1px 25px;
+	border-radius: $border-radius-small;
+	
+	&.o_lecture_status_active {
+	    background-color: 	$o-lm-status-active-color;
+	    color: 				#fff;
+	}
+
+	&.o_lecture_status_done {
+		background-color: 	$o-lm-status-done-color;
+	    color: 				#fff;
+	}
+	
+	&.o_lecture_status_cancelled {
+	    background-color: $o-lm-status-cancelled-color;
+		color: 				#fff;
+	}
+	
+	&.o_lecture_rollcall_status_open,
+	&.o_lecture_rollcall_status_reopen {
+	    background-color: 	$o-lm-status-active-color;
+	    color: 				#fff;
+	}
+	
+	&.o_lecture_rollcall_status_closed,
+	&.o_lecture_rollcall_status_autoclosed {
+		background-color: 	$o-lm-status-done-color;
+	    color: 				#fff;
+	}
+
+}
+
 .o_lecture_metadata_horizontal {
 	display: flex;
 	column-gap: 45px;
