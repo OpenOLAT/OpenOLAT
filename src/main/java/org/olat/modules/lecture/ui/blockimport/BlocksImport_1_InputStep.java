@@ -26,6 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -37,13 +38,15 @@ import org.olat.repository.RepositoryEntry;
 public class BlocksImport_1_InputStep extends BasicStep {
 	
 	private final RepositoryEntry entry;
+	private final CurriculumElement curriculumElement;
 	private final ImportedLectureBlocks importedBlocks;
 	
-	public BlocksImport_1_InputStep(UserRequest ureq,
-			RepositoryEntry entry, ImportedLectureBlocks importedBlocks) {
+	public BlocksImport_1_InputStep(UserRequest ureq, RepositoryEntry entry,
+			CurriculumElement curriculumElement, ImportedLectureBlocks importedBlocks) {
 		super(ureq);
 		this.entry = entry;
 		this.importedBlocks = importedBlocks;
+		this.curriculumElement = curriculumElement;
 		
 		setNextStep(new BlocksImport_2_OverviewStep(ureq, importedBlocks));
 		setI18nTitleAndDescr("wizard.import.input.title", "wizard.import.input.title");
@@ -56,6 +59,6 @@ public class BlocksImport_1_InputStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new TextInputController(ureq, wControl, entry, importedBlocks, runContext, form);
+		return new TextInputController(ureq, wControl, entry, curriculumElement, importedBlocks, runContext, form);
 	}
 }

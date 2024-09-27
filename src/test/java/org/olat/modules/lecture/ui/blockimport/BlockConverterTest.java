@@ -44,7 +44,7 @@ public class BlockConverterTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-lec");
 		
-		BlockConverter converter = new BlockConverter(entry, new ArrayList<>(), I18nModule.getDefaultLocale());
+		BlockConverter converter = new BlockConverter(entry, null, new ArrayList<>(), I18nModule.getDefaultLocale());
 		
 		String input = "L1	Mathematik	4	10/8/18	8:00	12:00	yes	" + teacher.getUser().getEmail() +"	COURSE	Basel, HS76	This is about this and that	Make your HP ready	Teacher identified via Email address, participants from course";
 		converter.parse(input);

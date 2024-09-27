@@ -39,6 +39,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StreamedMediaResource;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
@@ -59,17 +60,23 @@ public class TextInputController extends StepFormBasicController {
 	private final RepositoryEntry entry;
 	private List<LectureBlock> currentBlocks;
 	private ImportedLectureBlocks importedBlocks;
+	private final CurriculumElement curriculumElement;
 	
 	@Autowired
 	private LectureService lectureService;
 	
-	public TextInputController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+	public TextInputController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, CurriculumElement curriculumElement,
 			ImportedLectureBlocks importedBlocks, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(Util.createPackageTranslator(LectureListRepositoryController.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.importedBlocks = importedBlocks;
-		currentBlocks = lectureService.getLectureBlocks(entry);
+		this.curriculumElement = curriculumElement;
+		if(curriculumElement != null) {
+			currentBlocks = lectureService.getLectureBlocks(curriculumElement);
+		} else {
+			currentBlocks = lectureService.getLectureBlocks(entry);
+		}
 		initForm(ureq);
 	}
 	
@@ -93,7 +100,7 @@ public class TextInputController extends StepFormBasicController {
 		
 		String inp = inputElement.getValue();
 		if(validatedInp == null || !validatedInp.equals(inp)) {
-			BlockConverter converter = new BlockConverter(entry, currentBlocks, getLocale());
+			BlockConverter converter = new BlockConverter(entry, curriculumElement, currentBlocks, getLocale());
 			StringBuilder errors = new StringBuilder();
 			try {
 				converter.parse(inputElement.getValue());
@@ -135,7 +142,7 @@ public class TextInputController extends StepFormBasicController {
 	}
 
 	private void errorFieldMandatory(StringBuilder errors, String filedI18nKey, int line) {
-		String error = translate("error.mandatory.at.line", new String[] { translate(filedI18nKey), Integer.toString(line) });
+		String error = translate("error.mandatory.at.line", translate(filedI18nKey), Integer.toString(line));
 		if(errors.length() > 0) errors.append("<br>");
 		errors.append(error);
 	}
@@ -143,7 +150,7 @@ public class TextInputController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String inp = inputElement.getValue();
-		BlockConverter converter = new BlockConverter(entry, currentBlocks, getLocale());
+		BlockConverter converter = new BlockConverter(entry, curriculumElement, currentBlocks, getLocale());
 		converter.parse(inp);
 		importedBlocks.setLectureBlocks(converter.getImportedLectureBlocks());
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

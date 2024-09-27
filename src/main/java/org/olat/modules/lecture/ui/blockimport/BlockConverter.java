@@ -65,8 +65,9 @@ public class BlockConverter {
 	private final Map<String,GroupMapping> groupMapping = new HashMap<>();
 	private final Map<String,LectureBlock> externalIdToBlocks = new HashMap<>();
 	
+	private Group entryDefaultGroup;
 	private final RepositoryEntry entry;
-	private final Group entryDefaultGroup;
+	private final CurriculumElement curriculumElement;
 	private final List<BusinessGroup> businessGroups;
 	private final List<CurriculumElement> curriculumElements;
 	private final List<ImportedLectureBlock> lectureBlocks = new ArrayList<>();
@@ -80,17 +81,26 @@ public class BlockConverter {
 	@Autowired
 	private RepositoryService repositoryService;
 	
-	public BlockConverter(RepositoryEntry entry, List<LectureBlock> currentBlocks, Locale locale) {
+	public BlockConverter(RepositoryEntry entry, CurriculumElement curriculumElement,
+			List<LectureBlock> currentBlocks, Locale locale) {
 		CoreSpringFactory.autowireObject(this);
 
 		this.entry = entry;
-		entryDefaultGroup = repositoryService.getDefaultGroup(entry);
+		this.curriculumElement = curriculumElement;
+		if(entry != null) {
+			entryDefaultGroup = repositoryService.getDefaultGroup(entry);
+		}
 		
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		businessGroups = bgs.findBusinessGroups(new SearchBusinessGroupParams(), entry, 0, -1);
-		
-		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
-		curriculumElements = curriculumService.getCurriculumElements(entry);
+		if(entry != null) {
+			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			businessGroups = bgs.findBusinessGroups(new SearchBusinessGroupParams(), entry, 0, -1);
+			
+			CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
+			curriculumElements = curriculumService.getCurriculumElements(entry);
+		} else {
+			businessGroups = new ArrayList<>();
+			curriculumElements = new ArrayList<>();
+		}
 		
 		if(currentBlocks != null && !currentBlocks.isEmpty()) {
 			for(LectureBlock currentBlock:currentBlocks) {
@@ -99,6 +109,7 @@ public class BlockConverter {
 				}
 			}
 		}
+		
 		
 		//some default patterns
 		dateFormatters.add(new SimpleDateFormat("dd.MM.yyyy HH:mm:ss"));
@@ -152,7 +163,11 @@ public class BlockConverter {
 		String externalId = parts[0];
 		LectureBlock block = externalIdToBlocks.get(externalId);
 		if(block == null) {
-			block = lectureService.createLectureBlock(entry);
+			if(curriculumElement != null) {
+				block = lectureService.createLectureBlock(curriculumElement, entry);
+			} else {
+				block = lectureService.createLectureBlock(entry);
+			}
 			block.setExternalId(externalId);
 		}
 
@@ -220,6 +235,7 @@ public class BlockConverter {
 			} else if(participants.toLowerCase().startsWith("curr::")) {
 				String identifier = participants.substring(6, participants.length());
 				bGroup = new GroupMapping(GroupMapping.Type.curriculumElement);
+				bGroup.setCurriculumElement(curriculumElement);
 				for(CurriculumElement element:curriculumElements) {
 					if(identifier.equalsIgnoreCase(element.getDisplayName())
 							|| identifier.equalsIgnoreCase(element.getExternalId())

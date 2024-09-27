@@ -602,7 +602,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		removeAsListenerAndDispose(importBlockWizard);
 
 		final ImportedLectureBlocks lectureBlocks = new ImportedLectureBlocks();
-		Step start = new BlocksImport_1_InputStep(ureq, entry, lectureBlocks);
+		Step start = new BlocksImport_1_InputStep(ureq, entry, curriculumElement, lectureBlocks);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			doFinalizeImportedLectureBlocks(lectureBlocks);
 			return StepsMainRunController.DONE_MODIFIED;
