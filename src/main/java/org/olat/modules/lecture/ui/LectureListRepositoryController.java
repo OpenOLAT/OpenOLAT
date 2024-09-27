@@ -446,12 +446,16 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	private void reloadModel(UserRequest ureq, LectureBlock lectureBlock) {
 		LectureBlockRow row = tableModel.getObject(lectureBlock);
-		row.setLectureBlock(lectureBlock);
-		if(row.getDetailsController() != null) {
-			doOpenLectureBlockDetails(ureq, row);
-			tableEl.reset(false, false, false);
+		if(row == null) {
+			loadModel();
 		} else {
-			tableEl.reset(false, false, true);
+			row.setLectureBlock(lectureBlock);
+			if(row.getDetailsController() != null) {
+				doOpenLectureBlockDetails(ureq, row);
+				tableEl.reset(false, false, false);
+			} else {
+				tableEl.reset(false, false, true);
+			}
 		}
 	}
 	
