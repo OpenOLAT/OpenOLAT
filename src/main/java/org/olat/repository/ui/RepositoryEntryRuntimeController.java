@@ -1125,7 +1125,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 					listenTo(runtimeController);
 					toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 				} else {
-					AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), roles.isGuestOnly(), false);
+					AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), roles.isGuestOnly(), null, false);
 					if(acResult.isAccessible()) {
 						launchContent(ureq);
 					} else if (re != null
@@ -1181,7 +1181,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity) {
 		List<? extends OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(identity);
-		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, offerOrganisations);
+		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, null, offerOrganisations);
 	}
 	
 	protected boolean doMark(UserRequest ureq) {

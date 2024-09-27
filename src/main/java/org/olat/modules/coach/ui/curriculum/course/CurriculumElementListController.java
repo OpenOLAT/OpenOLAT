@@ -318,7 +318,7 @@ public class CurriculumElementListController extends FormBasicController impleme
                     }
                 }
                 List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, null);
-                List<OLATResource> resourcesOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null);
+                List<OLATResource> resourcesOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null, null);
                 repositoryService.filterMembership(assessedIdentity, repoKeys);
                 
                 Map<Long,CourseCurriculumTreeWithViewsRow> potentialParentRows = new HashMap<>();

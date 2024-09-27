@@ -32,6 +32,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.PostConstruct;
+
 import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -67,8 +69,6 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.annotation.PostConstruct;
 
 /**
  * 
@@ -150,7 +150,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		List<Long> reMembershipKeys = loadRepositoryEntryMembershipKeys(repositoryEntries, searchParams.getMember());
 		
 		// Load open access
-		List<Long> reOpenAccessKeys = loadRepositoryEntryOpenAccessKeys(repositoryEntries, searchParams.getOfferOrganisations());
+		List<Long> reOpenAccessKeys = loadRepositoryEntryOpenAccessKeys(repositoryEntries, searchParams.isWebPublish(), searchParams.getOfferOrganisations());
 		
 		// Load access methods
 		Map<RepositoryEntry, List<OLATResourceAccess>> reToResourceAccess = loadRepositoryEntryToResourceAccess(repositoryEntries, searchParams.getOfferOrganisations());
@@ -195,14 +195,15 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	}
 
 	private List<Long> loadRepositoryEntryOpenAccessKeys(List<RepositoryEntry> repositoryEntries,
-			List<? extends OrganisationRef> offerOrganisations) {
+			boolean webCatalog, List<? extends OrganisationRef> offerOrganisations) {
 		if (!acModule.isEnabled()) return Collections.emptyList();
 		
 		List<OLATResource> resourcesWithAC = repositoryEntries.stream()
 				.filter(RepositoryEntry::isPublicVisible)
 				.map(RepositoryEntry::getOlatResource)
 				.collect(Collectors.toList());
-		List<OLATResource> resourceWithOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, offerOrganisations);
+		Boolean webPublish = webCatalog? Boolean.TRUE: null;
+		List<OLATResource> resourceWithOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, webPublish, offerOrganisations);
 		
 		return repositoryEntries.stream()
 				.filter(re -> resourceWithOpenAccess.contains(re.getOlatResource()))

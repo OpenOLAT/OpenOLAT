@@ -59,6 +59,7 @@ public class CatalogRepositoryEntryAccessController extends BasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private ACService acService;
+	
 	public CatalogRepositoryEntryAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
 		this.entry = entry;
@@ -85,7 +86,7 @@ public class CatalogRepositoryEntryAccessController extends BasicController {
 			mainVC.contextPut("educationalTypeClass", entry.getEducationalType().getCssClass());	
 		}
 		
-		AccessResult acResult = acService.isAccessible(entry, getIdentity(), null, ureq.getUserSession().getRoles().isGuestOnly(), false);
+		AccessResult acResult = acService.isAccessible(entry, getIdentity(), null, ureq.getUserSession().getRoles().isGuestOnly(), null, false);
 		if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
 			fireEvent(ureq, new BookedEvent(entry));
 		} else {

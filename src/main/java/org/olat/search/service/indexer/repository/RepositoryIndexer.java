@@ -227,7 +227,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 			if(entries.size() > 1) {
 				boolean hasAccess = false;
 				ACService acService = CoreSpringFactory.getImpl(ACService.class);
-				AccessResult acResult = acService.isAccessible(repositoryEntry, identity, reSecurity.isMember(), false, false); 
+				AccessResult acResult = acService.isAccessible(repositoryEntry, identity, reSecurity.isMember(), false, null, false); 
 				if (acResult.isAccessible()) {
 					hasAccess = true;
 				} else if (!acResult.getAvailableMethods().isEmpty()) {

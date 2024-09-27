@@ -49,6 +49,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -83,6 +84,7 @@ import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.user.ui.admin.authentication.UserAuthenticationEditController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -100,6 +102,8 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	private final CatalogRepositoryEntrySearchParams searchParams;
 	
 	private CatalogRepositoryEntryInfosController infosCtrl;
+	private CloseableModalController cmc;
+	private WebCatalogAuthController authCtrl;
 	
 	private final boolean withSearch;
 	private final MapperKey mapperThumbnailKey;
@@ -378,8 +382,20 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 				Long repositoryEntryKey = ((BookedEvent)event).getRepositoryEntry().getKey();
 				doBooked(ureq, repositoryEntryKey);
 			}
+		} else if (authCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(authCtrl);
+		removeAsListenerAndDispose(cmc);
+		authCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -466,15 +482,26 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	private void doBook(UserRequest ureq, CatalogRepositoryEntryRow row) {
 		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getKey());
 		if (entry != null) {
-			AccessResult acResult = acService.isAccessible(entry, getIdentity(), row.isMember(), searchParams.isGuestOnly(), false);
-			if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
-				doStart(ureq, row.getKey());
+			if (searchParams.isWebPublish()) {
+				if (guardModalController(authCtrl)) return;
+				authCtrl = new WebCatalogAuthController(ureq, getWindowControl());
+				listenTo(authCtrl);
+				
+				String title = Util.createPackageTranslator(UserAuthenticationEditController.class, getLocale()).translate("change.providers");
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), authCtrl.getInitialComponent(), true, title, true);
+				listenTo(cmc);
+				cmc.activate();
 			} else {
-				doOpenDetails(ureq, row.getKey());
-				if (infosCtrl != null) {
-					OLATResourceable ores = OresHelper.createOLATResourceableType("Offers");
-					ContextEntry contextEntry = BusinessControlFactory.getInstance().createContextEntry(ores);
-					infosCtrl.activate(ureq, List.of(contextEntry), null);
+				AccessResult acResult = acService.isAccessible(entry, getIdentity(), row.isMember(), searchParams.isGuestOnly(), null, false);
+				if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
+					doStart(ureq, row.getKey());
+				} else {
+					doOpenDetails(ureq, row.getKey());
+					if (infosCtrl != null) {
+						OLATResourceable ores = OresHelper.createOLATResourceableType("Offers");
+						ContextEntry contextEntry = BusinessControlFactory.getInstance().createContextEntry(ores);
+						infosCtrl.activate(ureq, List.of(contextEntry), null);
+					}
 				}
 			}
 		} else {

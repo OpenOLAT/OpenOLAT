@@ -37,7 +37,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
@@ -73,9 +72,7 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 
 	private final RepositoryEntry entry;
 	private final boolean isMember;
-	private final RepositoryEntrySecurity reSecurity;
-	private final boolean guestOnly;
-	private final boolean inviteeOnly;
+
 	private final boolean showStart;
 	private List<PriceMethod> types = new ArrayList<>(1);
 	
@@ -94,10 +91,7 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 		this.entry = entry;
 		this.isMember = isMember;
 		this.showStart = showStart;
-		reSecurity = repositoryManager.isAllowed(ureq, entry);
-		Roles roles = ureq.getUserSession().getRoles();
-		guestOnly = roles.isGuestOnly();
-		inviteeOnly = roles.isInviteeOnly();
+		
 		initForm(ureq);
 	}
 
@@ -138,6 +132,15 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 				layoutCont.contextPut("educationalType", educationalType);
 			}
 			
+			if (ureq.getUserSession().getRoles() == null) {
+				initOffers(ureq, layoutCont, false, Boolean.TRUE);
+				return;
+			}
+			
+			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, entry);
+			boolean guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+			boolean inviteeOnly  = ureq.getUserSession().getRoles().isInviteeOnly();
+			
 			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) {
 				startLink = createStartLink(layoutCont);
 			} else {
@@ -153,29 +156,7 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 					if (acService.isAccessToResourcePending(entry.getOlatResource(), getIdentity())) {
 						showAccessDenied(AccessDeniedFactory.createBookingPending(ureq, getWindowControl()));
 					} else {
-						AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, false);
-						if (acResult.isAccessible()) {
-							startLink = createStartLink(layoutCont);
-						} else if (!acResult.getAvailableMethods().isEmpty()) {
-							for(OfferAccess access:acResult.getAvailableMethods()) {
-								AccessMethod method = access.getMethod();
-								String type = (method.getMethodCssClass() + "_icon").intern();
-								Price p = access.getOffer().getPrice();
-								String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
-								AccessMethodHandler amh = acModule.getAccessMethodHandler(method.getType());
-								String displayName = amh.getMethodName(getLocale());
-								types.add(new PriceMethod(price, type, displayName));
-							}
-							String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-							startLink = uifactory.addFormLink("start", "book", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-							startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
-							startLink.setElementCssClass("o_book btn-block");
-							startLink.setVisible(!guestOnly);
-						} else if (!getOffersNowNotInRange(entry, getIdentity()).isEmpty()) {
-							showAccessDenied(AccessDeniedFactory.createOfferNotNow(ureq, getWindowControl(), getOffersNowNotInRange(entry, getIdentity())));
-						} else {
-							showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
-						}
+						initOffers(ureq, layoutCont, guestOnly, null);
 					}
 				} else if (guestOnly) {
 					showAccessDenied(AccessDeniedFactory.createNoGuestAccess(ureq, getWindowControl()));
@@ -196,6 +177,32 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 			}
 		}
 	}
+
+	private void initOffers(UserRequest ureq, FormLayoutContainer layoutCont, boolean guestOnly, Boolean webPublish) {
+		AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, webPublish, false);
+		if (acResult.isAccessible()) {
+			startLink = createStartLink(layoutCont);
+		} else if (!acResult.getAvailableMethods().isEmpty()) {
+			for(OfferAccess access:acResult.getAvailableMethods()) {
+				AccessMethod method = access.getMethod();
+				String type = (method.getMethodCssClass() + "_icon").intern();
+				Price p = access.getOffer().getPrice();
+				String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
+				AccessMethodHandler amh = acModule.getAccessMethodHandler(method.getType());
+				String displayName = amh.getMethodName(getLocale());
+				types.add(new PriceMethod(price, type, displayName));
+			}
+			String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+			startLink = uifactory.addFormLink("start", "book", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+			startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
+			startLink.setElementCssClass("o_book btn-block");
+			startLink.setVisible(!guestOnly);
+		} else if (!getOffersNowNotInRange(entry, getIdentity()).isEmpty()) {
+			showAccessDenied(AccessDeniedFactory.createOfferNotNow(ureq, getWindowControl(), getOffersNowNotInRange(entry, getIdentity())));
+		} else {
+			showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
+		}
+	}
 	
 	private FormLink createStartLink(FormLayoutContainer layoutCont) {
 		String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
@@ -211,7 +218,7 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 	
 	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity) {
 		List<? extends OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(identity);
-		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, offerOrganisations);
+		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, null, offerOrganisations);
 	}
 
 	@Override

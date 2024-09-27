@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -42,9 +45,6 @@ import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
@@ -105,7 +105,7 @@ public class RepositoryEntryResourceInfoDetailsHeaderController extends FormBasi
 
 			boolean isGuestAccess = oaiPmhModule.getOffers(entry.getOlatResource()).stream().anyMatch(Offer::isGuestAccess);
 
-			if (!ureq.getUserSession().getRoles().isGuestOnly() || isGuestAccess) {
+			if ((ureq.getUserSession().getRoles() != null && !ureq.getUserSession().getRoles().isGuestOnly()) || isGuestAccess) {
 				createStartLink(layoutCont);
 			} else {
 				createLoginLink(layoutCont);

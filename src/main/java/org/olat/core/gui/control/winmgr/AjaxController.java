@@ -267,8 +267,11 @@ public class AjaxController extends DefaultController {
 		if(p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
 			List<ContextEntry> ces = p.getEntries();
 			String uriPrefix = wboImpl.getWindow().getUriPrefix();
-			bc.append(uriPrefix)
-			  .append(BusinessControlFactory.getInstance().getAsRestPart(ces, true));
+			bc.append(uriPrefix);
+			if (StringHelper.containsNonWhitespace(wboImpl.getWindow().getUriPrefixSubPath())) {
+				bc.append(wboImpl.getWindow().getUriPrefixSubPath());
+			}
+			bc.append(BusinessControlFactory.getInstance().getAsRestPart(ces, true));
 			writer.append(",\"businessPath\":").append(JSONObject.quote(bc.toString()));
 		    writer.append(",\"historyPointId\":").append(JSONObject.quote(p.getUuid()));
 		}

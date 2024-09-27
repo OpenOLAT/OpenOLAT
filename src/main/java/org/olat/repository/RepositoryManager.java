@@ -617,7 +617,7 @@ public class RepositoryManager {
 		if (roles.isGuestOnly()) {
 			// allow for guests if access granted for guests
 			canLaunch = re.isPublicVisible()
-					&& acService.isAccessible(re, identity, null, true, false).isAccessible();
+					&& acService.isAccessible(re, identity, null, true, null, false).isAccessible();
 		} else {
 			// allow if identity is owner
 			List<Object[]> roleAndDefs = repositoryEntryRelationDao.getRoleAndDefaults(identity, re);
@@ -717,7 +717,7 @@ public class RepositoryManager {
 				}
 				
 				if(!canLaunch && re.isPublicVisible() && !roles.isInviteeOnly()) {
-					canLaunch = acService.isAccessible(re, identity, Boolean.FALSE, false, false).isAccessible();
+					canLaunch = acService.isAccessible(re, identity, Boolean.FALSE, false, null, false).isAccessible();
 				}
 			}
 		}

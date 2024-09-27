@@ -77,10 +77,11 @@ public interface ACService {
 	 * @param forId
 	 * @param knowMember If you know that the forId is a member
 	 * @param isGuest
+	 * @param webPublish
 	 * @param allowNonInteractiveAccess
 	 * @return
 	 */
-	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean isGuest, boolean allowNonInteractiveAccess);
+	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean isGuest, Boolean webPublish, boolean allowNonInteractiveAccess);
 	
 	public boolean isGuestAccessible(RepositoryEntry entry, boolean filterStatus);
 	
@@ -130,13 +131,13 @@ public interface ACService {
 
 	public List<OLATResourceAccess> filterResourceWithAC(List<OLATResource> resources, List<? extends OrganisationRef> offerOrganisations);
 	
-	public List<OLATResource> filterResourceWithOpenAccess(List<OLATResource> resources, List<? extends OrganisationRef> offerOrganisations);
+	public List<OLATResource> filterResourceWithOpenAccess(List<OLATResource> resources, Boolean webPublish, List<? extends OrganisationRef> offerOrganisations);
 
 	public List<OLATResource> filterResourceWithGuestAccess(List<OLATResource> resources);
 
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, List<? extends OrganisationRef> offerOrganisations);
 	
-	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate, boolean dateMandatory, List<? extends OrganisationRef> offerOrganisations);
+	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate, boolean dateMandatory, Boolean webPublish, List<? extends OrganisationRef> offerOrganisations);
 
 	/**
 	 *

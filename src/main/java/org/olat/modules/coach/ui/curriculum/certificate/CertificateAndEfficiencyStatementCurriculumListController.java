@@ -439,7 +439,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
                     }
                 }
                 List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, null);
-                List<OLATResource> resourcesOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null);
+                List<OLATResource> resourcesOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null, null);
                 repositoryService.filterMembership(assessedIdentity, repoKeys);
 
                 for (CurriculumElementRepositoryEntryViews elementWithViews : elementsWithViews) {

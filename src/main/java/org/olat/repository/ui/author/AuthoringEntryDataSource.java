@@ -287,7 +287,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		
 		Map<String,String> fullNames = userManager.getUserDisplayNamesByUserName(newNames);
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, null);
-		List<OLATResource> resourcesWithOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null);
+		List<OLATResource> resourcesWithOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null, null);
 		List<OLATResource> resourcesWithGuestAccess = acService.filterResourceWithGuestAccess(resourcesWithAC);
 		Map<Long, List<TaxonomyLevel>> entryKeyToTaxonomyLevels = getTaxonomyLevels(repoEntries);
 		Map<Resourceable,ResourceLicense> licenses = getLicenses(repoEntries);

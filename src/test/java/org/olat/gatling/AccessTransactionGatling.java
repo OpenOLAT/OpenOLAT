@@ -97,7 +97,7 @@ public class AccessTransactionGatling extends OlatTestCase {
 
 					List<Identity> identities = loadIdentities.subList(fromIndex, toIndex);
 					for(Identity identity:identities) {
-						acService.isAccessible(course, identity, Boolean.FALSE, false, true);
+						acService.isAccessible(course, identity, Boolean.FALSE, false, null, true);
 						dbInstance.commit();
 					}
 				}

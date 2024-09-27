@@ -221,7 +221,7 @@ public class CoursesInfosWebService {
 		info.setDisplayName(entry.getDisplayname());
 
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
-		AccessResult result = acManager.isAccessible(entry, identity, null, false, false);
+		AccessResult result = acManager.isAccessible(entry, identity, null, false, null, false);
 		if(result.isAccessible()) {
 			try {
 				final ICourse course = CourseFactory.loadCourse(entry);

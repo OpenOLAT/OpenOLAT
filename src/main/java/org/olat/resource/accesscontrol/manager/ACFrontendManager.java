@@ -152,7 +152,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	private OrganisationService organisationService;
 
 	@Override
-	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean isGuest, boolean allowNonInteractiveAccess) {
+	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean isGuest,
+			Boolean webPublish, boolean allowNonInteractiveAccess) {
 		// Guests
 		if (isGuest) {
 			boolean guestAccessible = isGuestAccessible(entry, true);
@@ -171,9 +172,9 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 		
 		// Open access
-		List<OrganisationRef> offerOrganisations = getOfferOrganisations(forId);
+		List<OrganisationRef> offerOrganisations = webPublish == null || !webPublish? getOfferOrganisations(forId): null;
 		if (RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), ACService.RESTATUS_ACTIVE_OPEN)) {
-			boolean openAccessible = accessManager.isOpenAccessible(entry.getOlatResource(), offerOrganisations);
+			boolean openAccessible = accessManager.isOpenAccessible(entry.getOlatResource(), webPublish, offerOrganisations);
 			if (openAccessible) {
 				return new AccessResult(true);
 			}
@@ -185,7 +186,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 		
 		Date now = new Date();
-		List<Offer> offers = getOffers(entry, true, true, now, false, offerOrganisations);
+		List<Offer> offers = getOffers(entry, true, true, now, false, webPublish, offerOrganisations);
 		if(offers.isEmpty()) {
 			return new AccessResult(false);
 		}
@@ -221,7 +222,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 		Date now = dateNow();
 		OLATResource resource = OLATResourceManager.getInstance().findResourceable(group);
-		List<Offer> offers = accessManager.findOfferByResource(resource, true, now, false, null);
+		List<Offer> offers = accessManager.findOfferByResource(resource, true, now, false, null, null);
 		if(offers.isEmpty()) {
 			if(methodManager.isValidMethodAvailable(resource, null)) {
 				//not open for the moment: no valid offer at this date but some methods are defined
@@ -284,7 +285,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	
 	@Override
 	public void deleteOffers(OLATResource resource) {
-		accessManager.findOfferByResource(resource, true, null, false, null).forEach(offer -> accessManager.deleteOffer(offer));
+		accessManager.findOfferByResource(resource, true, null, false, null, null).forEach(offer -> accessManager.deleteOffer(offer));
 	}
 
 	@Override
@@ -329,8 +330,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 	
 	@Override
-	public List<OLATResource> filterResourceWithOpenAccess(List<OLATResource> resources,  List<? extends OrganisationRef> offerOrganisations) {
-		return accessManager.loadOpenAccessibleResources(resources, offerOrganisations);
+	public List<OLATResource> filterResourceWithOpenAccess(List<OLATResource> resources,  Boolean webPublish, List<? extends OrganisationRef> offerOrganisations) {
+		return accessManager.loadOpenAccessibleResources(resources, webPublish, offerOrganisations);
 	}
 	
 	@Override
@@ -340,12 +341,13 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	
 	@Override
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, List<? extends OrganisationRef> offerOrganisations) {
-		return accessManager.findOfferByResource(resource, valid, atDate, false, offerOrganisations);
+		return accessManager.findOfferByResource(resource, valid, atDate, false, null, offerOrganisations);
 	}
 	
 	@Override
-	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate, boolean dateMandatory, List<? extends OrganisationRef> offerOrganisations) {
-		List<Offer> offers = accessManager.findOfferByResource(entry.getOlatResource(), valid, atDate, dateMandatory, offerOrganisations);
+	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate,
+			boolean dateMandatory, Boolean webPublish, List<? extends OrganisationRef> offerOrganisations) {
+		List<Offer> offers = accessManager.findOfferByResource(entry.getOlatResource(), valid, atDate, dateMandatory, webPublish, offerOrganisations);
 		if (filterByStatus) {
 			offers = offers.stream()
 					.filter(offer -> filterByStatus(offer, entry.getEntryStatus()))
@@ -384,7 +386,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	 */
 	@Override
 	public List<OfferAccess> getAccessMethodForBusinessGroup(BusinessGroup group, boolean valid, Date atDate) {
-		List<Offer> offers = accessManager.findOfferByResource(group.getResource(), valid, atDate, false, null);
+		List<Offer> offers = accessManager.findOfferByResource(group.getResource(), valid, atDate, false, null, null);
 		if(offers.isEmpty()) {
 			return Collections.<OfferAccess>emptyList();
 		}

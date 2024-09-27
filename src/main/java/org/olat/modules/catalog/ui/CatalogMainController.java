@@ -70,10 +70,10 @@ public class CatalogMainController extends BasicController implements Activateab
 	public static final String ORES_TYPE_TAXONOMY_ADMIN = "TaxonomyAdmin";
 	public static final String ORES_TYPE_INFOS = "Infos";
 	
-	private final VelocityContainer mainVC;
-	private final CatalogSearchHeaderController headerSearchCtrl;
-	private final BreadcrumbedStackedPanel stackPanel;
-	private final CatalogLaunchersController launchersCtrl;
+	private VelocityContainer mainVC;
+	private CatalogSearchHeaderController headerSearchCtrl;
+	private BreadcrumbedStackedPanel stackPanel;
+	private CatalogLaunchersController launchersCtrl;
 	private CatalogTaxonomyHeaderController headerTaxonomyCtrl;
 	private CatalogRepositoryEntryListController catalogRepositoryEntryListCtrl;
 	private CatalogTaxonomyEditController taxonomyAdminCtrl;
@@ -93,10 +93,15 @@ public class CatalogMainController extends BasicController implements Activateab
 	public CatalogMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
-		this.secCallback = CatalogSecurityCallbackFactory.create(ureq.getUserSession().getRoles());
+		this.secCallback = createSecCallback(ureq);
 		this.defaultSearchParams = createDefaultSearchParams(ureq);
 		
+		init(ureq, wControl);
+	}
+
+	protected void init(UserRequest ureq, WindowControl wControl) {
 		mainVC = createVelocityContainer("main");
+		putInitialPanel(mainVC);
 		
 		headerSearchCtrl = new CatalogSearchHeaderController(ureq, wControl, secCallback);
 		listenTo(headerSearchCtrl);
@@ -112,11 +117,13 @@ public class CatalogMainController extends BasicController implements Activateab
 		launchersCtrl = new CatalogLaunchersController(ureq, getWindowControl(), defaultSearchParams.copy());
 		listenTo(launchersCtrl);
 		stackPanel.pushController(translate("overview"), launchersCtrl);
-		
-		putInitialPanel(mainVC);
+	}
+
+	protected CatalogSecurityCallback createSecCallback(UserRequest ureq) {
+		return CatalogSecurityCallbackFactory.create(ureq.getUserSession().getRoles());
 	}
 	
-	private CatalogRepositoryEntrySearchParams createDefaultSearchParams(UserRequest ureq) {
+	protected CatalogRepositoryEntrySearchParams createDefaultSearchParams(UserRequest ureq) {
 		CatalogRepositoryEntrySearchParams searchParams = new CatalogRepositoryEntrySearchParams();
 		searchParams.setMember(getIdentity());
 		searchParams.setGuestOnly(ureq.getUserSession().getRoles().isGuestOnly());

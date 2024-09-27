@@ -296,7 +296,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		}
 		List<? extends OrganisationRef> organisations = acService.getOfferOrganisations(assessedIdentity);
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC, organisations);
-		List<OLATResource> resourcesOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, organisations);
+		List<OLATResource> resourcesOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, null, organisations);
 		
 		repositoryService.filterMembership(assessedIdentity, repoKeys);
 

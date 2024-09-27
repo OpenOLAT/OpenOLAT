@@ -71,6 +71,7 @@ public class CatalogRepositoryEntrySearchParams {
 	}
 
 	// Base selection
+	private boolean webPublish;
 	private Identity member;
 	private boolean isGuestOnly;
 	private List<? extends OrganisationRef> offerOrganisations;
@@ -102,6 +103,14 @@ public class CatalogRepositoryEntrySearchParams {
 	// Order
 	private OrderBy orderBy;
 	private boolean orderByAsc = true;
+
+	public boolean isWebPublish() {
+		return webPublish;
+	}
+
+	public void setWebPublish(boolean webPublish) {
+		this.webPublish = webPublish;
+	}
 
 	public Identity getMember() {
 		return member;
@@ -299,6 +308,7 @@ public class CatalogRepositoryEntrySearchParams {
 		CatalogRepositoryEntrySearchParams copy = new CatalogRepositoryEntrySearchParams();
 		
 		// Base selection
+		copy.webPublish = this.webPublish;
 		copy.member = this.member;
 		copy.isGuestOnly = this.isGuestOnly;
 		if (this.offerOrganisations != null) {

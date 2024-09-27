@@ -405,7 +405,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commit();
 
 		long start = System.nanoTime();
-		AccessResult acResult = acService.isAccessible(re, id, null, false, true);
+		AccessResult acResult = acService.isAccessible(re, id, null, false, null, true);
 		Assert.assertNotNull(acResult);
 		Assert.assertTrue(acResult.isAccessible());
 		dbInstance.commit();

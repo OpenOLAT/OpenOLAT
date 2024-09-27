@@ -96,10 +96,10 @@ import org.olat.modules.lecture.restapi.LectureBlocksWebService;
 import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.modules.vitero.restapi.ViteroBookingWebService;
 import org.olat.repository.ErrorList;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -1575,7 +1575,7 @@ public class CourseWebService {
 		}
 
 		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
-		AccessResult result = acManager.isAccessible(entry, identity, null, false, false);
+		AccessResult result = acManager.isAccessible(entry, identity, null, false, null, false);
 		return result.isAccessible();
 	}
 }

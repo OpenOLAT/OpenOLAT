@@ -66,7 +66,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	private final RepositoryEntryDetailsDescriptionController accessListCtrl;
 	private final RepositoryEntryDetailsMetadataController metadataCtrl;
 	private final RepositoryEntryDetailsLinkController linkCtrl;
-	private final RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
+	private RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private final RepositoryEntry entry;
@@ -82,7 +82,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
-		List<String> memberRoles = repositoryService.getRoles(getIdentity(), entry);
+		List<String> memberRoles = getIdentity() != null? repositoryService.getRoles(getIdentity(), entry): List.of();
 		boolean isOwner = memberRoles.contains(GroupRoles.owner.name());
 		boolean isParticipant = memberRoles.contains(GroupRoles.participant.name());
 		boolean isMember = isOwner || isParticipant || memberRoles.contains(GroupRoles.coach.name());
@@ -106,7 +106,8 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 			listenTo(headerCtrl);
 			mainVC.put("header", headerCtrl.getInitialComponent());
 			types = headerCtrl.getTypes();
-			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, types, ureq.getUserSession().getRoles().isGuestOnly());
+			boolean guestOnly = ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isGuestOnly();
+			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, types, guestOnly);
 		}
 		
 		accessListCtrl = new RepositoryEntryDetailsDescriptionController(ureq, wControl, entry);
@@ -127,13 +128,13 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		}
 
 		// show technical data only for administrative users or owners, hide from normal users
-		Roles roles = ureq.getUserSession().getRoles();
-		if (isOwner || roles.isAdministrator() || roles.isManager()) {
-			technicalDetailsCtrl = new RepositoryEntryDetailsTechnicalController(ureq, wControl, entry, isOwner);
-			listenTo(technicalDetailsCtrl);
-			mainVC.put("technical", technicalDetailsCtrl.getInitialComponent());
-		} else {
-			technicalDetailsCtrl = null;
+		if (ureq.getUserSession().getRoles() != null) {
+			Roles roles = ureq.getUserSession().getRoles();
+			if (isOwner || roles.isAdministrator() || roles.isManager()) {
+				technicalDetailsCtrl = new RepositoryEntryDetailsTechnicalController(ureq, wControl, entry, isOwner);
+				listenTo(technicalDetailsCtrl);
+				mainVC.put("technical", technicalDetailsCtrl.getInitialComponent());
+			}
 		}
 		
 		if (entry.getEducationalType() != null) {
@@ -157,7 +158,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	}
 
 	private UserCommentsAndRatingsController initCommentsCtrl(UserRequest ureq) {
-		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
+		boolean anonym = ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isGuestOnly();
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey());
 		UserCommentsAndRatingsController commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, secCallback, null, secCallback.canViewComments(), false, true);

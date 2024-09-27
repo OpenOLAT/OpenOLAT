@@ -507,7 +507,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
 		
-		acService.getOffers(reloadedRe, true, false, null, false, null).stream()
+		acService.getOffers(reloadedRe, true, false, null, false, null, null).stream()
 				.filter(offer -> offer.isGuestAccess() || offer.isOpenAccess())
 				.forEach(offer -> acService.deleteOffer(offer));
 		
@@ -579,7 +579,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		String before = toAuditXml(entry);
 
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(entry);
-		acService.getOffers(entry, true, false, null, false, null).stream()
+		acService.getOffers(entry, true, false, null, false, null, null).stream()
 				.filter(offer -> offer.isGuestAccess() || offer.isOpenAccess())
 				.forEach(offer -> acService.deleteOffer(offer));
 		

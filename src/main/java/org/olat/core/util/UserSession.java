@@ -289,22 +289,10 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		}
 	}
 
-	/**
-	 * @return Roles
-	 */
 	public Roles getRoles() {
-		Roles result = identityEnvironment.getRoles();
-		if (result == null) {
-			log.warn("getRoles: null, this={}", this, new RuntimeException("getRoles"));
-		}
-		return result;
+		return  identityEnvironment.getRoles();
 	}
 
-	/**
-	 * Sets the roles.
-	 * 
-	 * @param roles The roles to set
-	 */
 	public void setRoles(Roles roles) {
 		identityEnvironment.setRoles(roles);
 	}

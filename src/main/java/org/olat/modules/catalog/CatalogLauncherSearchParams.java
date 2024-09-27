@@ -48,7 +48,9 @@ public class CatalogLauncherSearchParams {
 	}
 
 	public void setLauncherOrganisations(Collection<? extends OrganisationRef> organisations) {
-		this.launcherOrganisationKeys = organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+		this.launcherOrganisationKeys = organisations != null
+				? organisations.stream().map(OrganisationRef::getKey).collect(Collectors.toList())
+				: null;
 	}
 
 }

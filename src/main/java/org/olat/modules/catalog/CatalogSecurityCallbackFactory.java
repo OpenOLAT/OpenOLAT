@@ -34,6 +34,12 @@ import org.olat.modules.taxonomy.TaxonomyModule;
  */
 public class CatalogSecurityCallbackFactory {
 	
+	private static final CatalogSecurityCallback WEB_CATALOG_CALLBACK = new CatalogSecurityCallbackImpl(false, false);
+	
+	public static CatalogSecurityCallback createWebCatalogCallback() {
+		return WEB_CATALOG_CALLBACK;
+	}
+	
 	public static CatalogSecurityCallback create(Roles roles) {
 		boolean canEditCatalogAdministration = roles.isSystemAdmin();
 		boolean canEditTaxonomy = false;

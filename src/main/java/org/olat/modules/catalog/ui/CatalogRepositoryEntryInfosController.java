@@ -27,17 +27,20 @@ import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.user.ui.admin.authentication.UserAuthenticationEditController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,6 +54,8 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	private final BreadcrumbedStackedPanel stackPanel;
 	
 	private CatalogRepositoryEntryAccessController accessCtrl;
+	private CloseableModalController cmc;
+	private WebCatalogAuthController authCtrl;
 	
 	@Autowired
 	protected ACService acService;
@@ -76,15 +81,31 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 			if (event instanceof BookedEvent) {
 				fireEvent(ureq, event);
 			}
+		} else if (authCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(authCtrl);
+		removeAsListenerAndDispose(cmc);
+		authCtrl = null;
+		cmc = null;
 	}
 	
 	@Override
 	protected void doStart(UserRequest ureq) {
 		try {
-			String businessPath = "[RepositoryEntry:" + getEntry().getKey() + "]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			if (getIdentity() != null) {
+				String businessPath = "[RepositoryEntry:" + getEntry().getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			} else {
+				doShowLogin(ureq);
+			}
 		} catch (CorruptedCourseException e) {
 			logError("Course corrupted: " + getEntry().getKey() + " (" + getEntry().getOlatResource().getResourceableId() + ")", e);
 			showError("cif.error.corrupted");
@@ -94,11 +115,15 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	@Override
 	protected void doBook(UserRequest ureq) {
 		if (getEntry() != null) {
-			AccessResult acResult = acService.isAccessible(getEntry(), getIdentity(), Boolean.FALSE, ureq.getUserSession().getRoles().isGuestOnly(), false);
-			if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), getEntry(), acResult)) {
-				doStart(ureq);
+			if (getIdentity() != null) {
+				AccessResult acResult = acService.isAccessible(getEntry(), getIdentity(), Boolean.FALSE, ureq.getUserSession().getRoles().isGuestOnly(), null, false);
+				if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), getEntry(), acResult)) {
+					doStart(ureq);
+				} else {
+					doOpenBooking(ureq);
+				}
 			} else {
-				doOpenBooking(ureq);
+				doShowLogin(ureq);
 			}
 		}
 	}
@@ -114,6 +139,17 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 		
 		String displayName = translate("offers");
 		stackPanel.pushController(displayName, accessCtrl);
+	}
+
+	private void doShowLogin(UserRequest ureq) {
+		if (guardModalController(authCtrl)) return;
+		authCtrl = new WebCatalogAuthController(ureq, getWindowControl());
+		listenTo(authCtrl);
+		
+		String title = Util.createPackageTranslator(UserAuthenticationEditController.class, getLocale()).translate("change.providers");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), authCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 }

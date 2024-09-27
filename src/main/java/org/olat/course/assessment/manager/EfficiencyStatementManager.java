@@ -569,6 +569,10 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	 * @return The user efficiency statement
 	 */
 	public UserEfficiencyStatement getUserEfficiencyStatementLightByRepositoryEntry(RepositoryEntryRef courseRepo, IdentityRef identity) {
+		if (identity == null) {
+			return null;
+		}
+		
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select statement from effstatementlight as statement")
 		  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey")

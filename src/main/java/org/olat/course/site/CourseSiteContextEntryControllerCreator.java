@@ -173,7 +173,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	
 	private boolean isPublicVisible(RepositoryEntry re, RepositoryEntrySecurity reSecurity, Identity identity, Roles roles) {
 		if (re.isPublicVisible() && !roles.isInviteeOnly()) {
-			AccessResult accessResult = CoreSpringFactory.getImpl(ACService.class).isAccessible(re, identity, reSecurity.isMember(), roles.isGuestOnly(), true);
+			AccessResult accessResult = CoreSpringFactory.getImpl(ACService.class).isAccessible(re, identity, reSecurity.isMember(), roles.isGuestOnly(), null, true);
 			return accessResult.isAccessible() || !accessResult.getAvailableMethods().isEmpty();
 		}
 		return false;
@@ -182,7 +182,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity, Roles roles) {
 		if (re.isPublicVisible() && !roles.isInviteeOnly()) {
 			List<? extends OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(identity);
-			return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, offerOrganisations);
+			return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, null, offerOrganisations);
 		}
 		return Collections.emptyList();
 	}

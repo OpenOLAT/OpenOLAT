@@ -106,7 +106,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check if the offer is saved
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, null);
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, null, null);
 		assertNotNull(offers);
 		assertEquals(1, offers.size());
 		Offer savedOffer = offers.get(0);
@@ -146,7 +146,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//retrieve the offer
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, null);
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, null, null);
 		assertNotNull(offers);
 		assertEquals(1, offers.size());
 		assertEquals(offer, offers.get(0));
@@ -157,13 +157,13 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//try to retrieve the offer
-		List<Offer> noOffers = acOfferManager.findOfferByResource(testOres, true, null, false, null);
+		List<Offer> noOffers = acOfferManager.findOfferByResource(testOres, true, null, false, null, null);
 		assertNotNull(noOffers);
 		assertEquals(0, noOffers.size());
 		dbInstance.commitAndCloseSession();
 
 		//retrieve all offers, deleted too
-		List<Offer> delOffers = acOfferManager.findOfferByResource(testOres, false, null, false, null);
+		List<Offer> delOffers = acOfferManager.findOfferByResource(testOres, false, null, false, null, null);
 		assertNotNull(delOffers);
 		assertEquals(1, delOffers.size());
 		assertEquals(offer, delOffers.get(0));
@@ -192,7 +192,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//load offer by resource -> nothing found
-		List<Offer> retrievedOffers = acOfferManager.findOfferByResource(testOres, true, null, false, null);
+		List<Offer> retrievedOffers = acOfferManager.findOfferByResource(testOres, true, null, false, null, null);
 		assertNotNull(retrievedOffers);
 		assertEquals(0, retrievedOffers.size());
 
@@ -219,7 +219,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		acOfferManager.deleteOffer(offerNotValid); // valid => false
 		dbInstance.commitAndCloseSession();
 		
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, null);
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, null, null);
 		
 		assertThat(offers).hasSize(1).containsExactlyInAnyOrder(offerValid);
 	}
@@ -254,11 +254,31 @@ public class ACOfferManagerTest extends OlatTestCase {
 		acMethodManager.save(acMethodManager.createOfferAccess(offerInFuture, method));
 		dbInstance.commitAndCloseSession();
 		
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, date, false, null);
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, date, false, null, null);
 		assertThat(offers).containsExactlyInAnyOrder(offerAlways, offerInRange);
 		
-		offers = acOfferManager.findOfferByResource(testOres, true, date, true, null);
+		offers = acOfferManager.findOfferByResource(testOres, true, date, true, null, null);
 		assertThat(offers).containsExactlyInAnyOrder(offerInRange);
+	}
+	
+	@Test
+	public void shouldFilterByWebPublish() {
+		OLATResource testOres = JunitTestHelper.createRandomResource();
+		AccessMethod method = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class).get(0);
+		
+		// Offer not web publish
+		Offer offerNotWebPublish = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerNotWebPublish = acOfferManager.saveOffer(offerNotWebPublish);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerNotWebPublish, method));
+		// Offer web published
+		Offer offerWebPublish = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerWebPublish.setCatalogWebPublish(true);
+		offerWebPublish = acOfferManager.saveOffer(offerWebPublish);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(acOfferManager.findOfferByResource(testOres, true, null, false, null, null)).containsExactlyInAnyOrder(offerNotWebPublish, offerWebPublish);
+		assertThat(acOfferManager.findOfferByResource(testOres, true, null, false, Boolean.TRUE, null)).containsExactlyInAnyOrder(offerWebPublish);
+		assertThat(acOfferManager.findOfferByResource(testOres, true, null, false, Boolean.FALSE, null)).containsExactlyInAnyOrder(offerNotWebPublish);
 	}
 	
 	@Test
@@ -289,7 +309,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		acMethodManager.save(acMethodManager.createOfferAccess(offerInNoOrganisation, method));
 		dbInstance.commitAndCloseSession();
 		
-		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, List.of(organisation1, organisation2));
+		List<Offer> offers = acOfferManager.findOfferByResource(testOres, true, null, false, null, List.of(organisation1, organisation2));
 		
 		assertThat(offers).containsExactlyInAnyOrder(offerInOrganisation2, offerInOrganisation1);
 	}
@@ -304,14 +324,14 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// No offer
-		assertThat(acOfferManager.isOpenAccessible(resource, organisations)).isFalse();
+		assertThat(acOfferManager.isOpenAccessible(resource, null, organisations)).isFalse();
 		
 		// No open offer
 		Offer offer = acService.createOffer(resource, random());
 		acOfferManager.saveOffer(offer);
 		acService.updateOfferOrganisations(offer, organisations);
 		dbInstance.commitAndCloseSession();
-		assertThat(acOfferManager.isOpenAccessible(resource, organisations)).isFalse();
+		assertThat(acOfferManager.isOpenAccessible(resource, null, organisations)).isFalse();
 		
 		// Open offer in other organisation
 		offer = acService.createOffer(resource, random());
@@ -319,16 +339,33 @@ public class ACOfferManagerTest extends OlatTestCase {
 		acOfferManager.saveOffer(offer);
 		acService.updateOfferOrganisations(offer, List.of(organisation3));
 		dbInstance.commitAndCloseSession();
-		assertThat(acOfferManager.isOpenAccessible(resource, organisations)).isFalse();
+		assertThat(acOfferManager.isOpenAccessible(resource, null, organisations)).isFalse();
 		
 		// Open offer in organisation
 		acService.updateOfferOrganisations(offer, List.of(organisation2));
 		dbInstance.commitAndCloseSession();
-		assertThat(acOfferManager.isOpenAccessible(resource, organisations)).isTrue();
+		assertThat(acOfferManager.isOpenAccessible(resource, null, organisations)).isTrue();
 		
 		// Delete offer
 		acService.deleteOffer(offer);
-		assertThat(acOfferManager.isOpenAccessible(resource, organisations)).isFalse();
+		assertThat(acOfferManager.isOpenAccessible(resource, null, organisations)).isFalse();
+	}
+	
+	@Test
+	public void shouldGetOpenAccessible_filterWebPublish() {
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		OLATResource testOres = JunitTestHelper.createRandomResource();
+		
+		Offer offerWebPublish = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
+		offerWebPublish.setOpenAccess(true);
+		offerWebPublish.setCatalogWebPublish(true);
+		offerWebPublish = acOfferManager.saveOffer(offerWebPublish);
+		acService.updateOfferOrganisations(offerWebPublish, List.of(organisation));
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(acOfferManager.isOpenAccessible(testOres, null, null)).isTrue();
+		assertThat(acOfferManager.isOpenAccessible(testOres, Boolean.TRUE, null)).isTrue();
+		assertThat(acOfferManager.isOpenAccessible(testOres, Boolean.FALSE, null)).isFalse();
 	}
 	
 	@Test
@@ -363,9 +400,32 @@ public class ACOfferManagerTest extends OlatTestCase {
 		acOfferManager.saveOffer(offer);
 		dbInstance.commitAndCloseSession();
 		
-		List<OLATResource> resources = acOfferManager.loadOpenAccessibleResources(List.of(resource1, resource2, resource3, resource4), null);
+		List<OLATResource> resources = acOfferManager.loadOpenAccessibleResources(List.of(resource1, resource2, resource3, resource4), null, null);
 		
 		assertThat(resources).hasSize(2).containsExactlyInAnyOrder(resource1, resource2);
+	}
+	
+	@Test
+	public void shouldGetOpenAccessibleResources_filterWebPublish() {
+		OLATResource resource1 = JunitTestHelper.createRandomResource();
+		OLATResource resource2 = JunitTestHelper.createRandomResource();
+		AccessMethod method = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class).get(0);
+		
+		// Offer not web publish
+		Offer offerNotWebPublish = acOfferManager.createOffer(resource1, JunitTestHelper.miniRandom());
+		offerNotWebPublish.setOpenAccess(true);
+		offerNotWebPublish = acOfferManager.saveOffer(offerNotWebPublish);
+		acMethodManager.save(acMethodManager.createOfferAccess(offerNotWebPublish, method));
+		// Offer web published
+		Offer offerWebPublish = acOfferManager.createOffer(resource2, JunitTestHelper.miniRandom());
+		offerWebPublish.setOpenAccess(true);
+		offerWebPublish.setCatalogWebPublish(true);
+		offerWebPublish = acOfferManager.saveOffer(offerWebPublish);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(acOfferManager.loadOpenAccessibleResources(List.of(resource1, resource2), null, null)).containsExactlyInAnyOrder(resource1, resource2);
+		assertThat(acOfferManager.loadOpenAccessibleResources(List.of(resource1, resource2), Boolean.TRUE, null)).containsExactlyInAnyOrder(resource2);
+		assertThat(acOfferManager.loadOpenAccessibleResources(List.of(resource1, resource2), Boolean.FALSE, null)).containsExactlyInAnyOrder(resource1);
 	}
 	
 	@Test
@@ -383,7 +443,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		createReOpenAccess(resource4, singletonList(otherOganisation));
 		dbInstance.commitAndCloseSession();
 		
-		List<OLATResource> resources = acOfferManager.loadOpenAccessibleResources(List.of(resource1, resource2, resource3, resource4), List.of(organisation1, organisation2));
+		List<OLATResource> resources = acOfferManager.loadOpenAccessibleResources(List.of(resource1, resource2, resource3, resource4), null, List.of(organisation1, organisation2));
 		
 		assertThat(resources).hasSize(2).containsExactlyInAnyOrder(resource1, resource2);
 	}

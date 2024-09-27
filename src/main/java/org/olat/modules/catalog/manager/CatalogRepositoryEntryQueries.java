@@ -29,6 +29,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
+
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
@@ -50,10 +54,6 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -257,9 +257,9 @@ public class CatalogRepositoryEntryQueries {
 			sb.append(" left join v.lifecycle as lifecycle");
 		}
 		
-		appendMyViewAccessSubSelect(sb, addParams, searchParams.isGuestOnly(),
-				searchParams.getOfferValidAt(), searchParams.getOfferOrganisations(), searchParams.getOpenAccess(),
-				searchParams.getShowAccessMethods(), searchParams.getAccessMethods());
+		appendMyViewAccessSubSelect(sb, addParams, searchParams.isWebPublish(),
+				searchParams.isGuestOnly(), searchParams.getOfferValidAt(), searchParams.getOfferOrganisations(),
+				searchParams.getOpenAccess(), searchParams.getShowAccessMethods(), searchParams.getAccessMethods());
 		
 		if (searchParams.getRepositoryEntryKeys() != null && !searchParams.getRepositoryEntryKeys().isEmpty()) {
 			sb.and().append("v.key in :repositoryEntryKeys");
@@ -487,9 +487,9 @@ public class CatalogRepositoryEntryQueries {
 		}
 	}
 	
-	private void appendMyViewAccessSubSelect(QueryBuilder sb, AddParams addParams, boolean isGuestOnly,
-			Date offerValidAt, List<? extends OrganisationRef> offerOrganisations, Boolean openAccess,
-			Boolean showAccessMethods, Collection<AccessMethod> accessMethods) {
+	private void appendMyViewAccessSubSelect(QueryBuilder sb, AddParams addParams, boolean webPublish,
+			boolean isGuestOnly, Date offerValidAt, List<? extends OrganisationRef> offerOrganisations,
+			Boolean openAccess, Boolean showAccessMethods, Collection<AccessMethod> accessMethods) {
 		if (isGuestOnly) {
 			sb.and().append("v.publicVisible=true");
 			sb.and().append("v.status ").in(ACService.RESTATUS_ACTIVE_GUEST);
@@ -520,6 +520,9 @@ public class CatalogRepositoryEntryQueries {
 			sb.append("        on oto.offer.key = offer.key");
 			sb.append("    where offer.valid = true");
 			sb.append("      and offer.openAccess = true");
+			if (webPublish) {
+				sb.append("  and offer.catalogWebPublish = true");
+			}
 			sb.append("      and re2.status ").in(ACService.RESTATUS_ACTIVE_OPEN);
 			if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
 				sb.append("      and oto.organisation.key in :offerOrganisationKeys");
@@ -545,6 +548,9 @@ public class CatalogRepositoryEntryQueries {
 			sb.append("        on oto.offer.key = offer.key");
 			sb.append("   where offer.valid = true");
 			sb.append("     and offer.catalogPublish = true");
+			if (webPublish) {
+				sb.append(" and offer.catalogWebPublish = true");
+			}
 			sb.append("     and offer.openAccess = false");
 			sb.append("     and offer.guestAccess = false");
 			sb.append("     and access.method.enabled = true");

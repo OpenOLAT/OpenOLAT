@@ -179,6 +179,10 @@ public class UserRatingsDAO {
 	}
 	
 	public Integer getRatingValue(Identity identity, OLATResourceable ores, String resSubPath) {
+		if (identity == null) {
+			return null;
+		}
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select r.rating from userrating as r where r.creator.key=:creatorKey and r.resName=:resname and r.resId=:resId");
 		TypedQuery<Integer> query;

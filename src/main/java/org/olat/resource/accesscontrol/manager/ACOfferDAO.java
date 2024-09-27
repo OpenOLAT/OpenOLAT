@@ -54,7 +54,7 @@ public class ACOfferDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, boolean dateMandatory, List<? extends OrganisationRef> organisations) {
+	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, boolean dateMandatory, Boolean webPublish, List<? extends OrganisationRef> organisations) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select offer, access");
 		sb.append("  from acoffer offer");
@@ -74,6 +74,9 @@ public class ACOfferDAO {
 		}
 		if (dateMandatory) {
 			sb.and().append("(offer.validFrom is not null or offer.validTo is not null)");
+		}
+		if (webPublish != null) {
+			sb.and().append(" offer.catalogWebPublish =").append(webPublish);
 		}
 		if (organisations != null && !organisations.isEmpty()) {
 			sb.and().append(" oto.organisation.key in :organisationKeys");
@@ -103,7 +106,7 @@ public class ACOfferDAO {
 		return new ArrayList<>(offers);
 	}
 
-	public boolean isOpenAccessible(OLATResource olatResource, List<? extends OrganisationRef> organisations) {
+	public boolean isOpenAccessible(OLATResource olatResource, Boolean webPublish, List<? extends OrganisationRef> organisations) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(*)");
 		sb.append("  from acoffer offer");
@@ -112,6 +115,9 @@ public class ACOfferDAO {
 		sb.and().append(" offer.valid = true");
 		sb.and().append(" offer.openAccess = true");
 		sb.and().append(" offer.resource.key=:resourceKey");
+		if (webPublish != null) {
+			sb.and().append(" offer.catalogWebPublish = ").append(webPublish);
+		}
 		if (organisations != null && !organisations.isEmpty()) {
 			sb.and().append(" oto.organisation.key in :organisationKeys");
 		}
@@ -126,7 +132,7 @@ public class ACOfferDAO {
 		return query.getSingleResult().longValue() > 0;
 	}
 
-	public List<OLATResource> loadOpenAccessibleResources(List<OLATResource> resources, List<? extends OrganisationRef> organisations) {
+	public List<OLATResource> loadOpenAccessibleResources(List<OLATResource> resources, Boolean webPublish, List<? extends OrganisationRef> organisations) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct offer.resource");
 		sb.append("  from acoffer offer");
@@ -137,6 +143,9 @@ public class ACOfferDAO {
 		sb.and().append(" offer.valid = true");
 		sb.and().append(" offer.openAccess = true");
 		sb.and().append(" offer.resource.key in :resourceKeys");
+		if (webPublish != null) {
+			sb.and().append(" offer.catalogWebPublish = ").append(webPublish);
+		}
 		if (organisations != null && !organisations.isEmpty()) {
 			sb.and().append(" oto.organisation.key in :organisationKeys");
 		}

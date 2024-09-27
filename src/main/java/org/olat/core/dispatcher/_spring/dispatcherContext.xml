@@ -242,6 +242,17 @@
 					</bean>
 				</entry>
 				
+				<!-- Web catalog -->
+				<entry key="/webcatalog/">
+					<bean
+						class="org.olat.core.gui.control.ChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<bean
+								class="org.olat.modules.catalog.ui.WebCatalogControllerCreator" />
+						</property>
+					</bean>
+				</entry>
+				
 			</map>
 		</property>
 	</bean>

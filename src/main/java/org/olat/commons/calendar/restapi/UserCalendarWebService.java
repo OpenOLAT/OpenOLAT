@@ -302,7 +302,7 @@ public class UserCalendarWebService {
 				
 				List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(repoParams, 0, -1, true);
 				for(RepositoryEntry entry:entries) {
-					AccessResult result = acManager.isAccessible(entry, retrievedUser, null, false, false);
+					AccessResult result = acManager.isAccessible(entry, retrievedUser, null, false, null, false);
 					if(result.isAccessible()) {
 						try {
 							final ICourse course = CourseFactory.loadCourse(entry);
