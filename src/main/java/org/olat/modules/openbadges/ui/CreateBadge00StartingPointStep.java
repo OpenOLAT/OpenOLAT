@@ -193,6 +193,7 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 			FlexiColumnModel imageModel = new DefaultFlexiColumnModel(BadgesTableModel.BadgesCols.image,
 					(renderer, sb, val, row, source, ubu, translator) -> {
 						Size targetSize = tableModel.getObject(row).badgeClassWithSizeAndCount().fitIn(55, 55);
+						String name = tableModel.getObject(row).badgeClassWithSizeAndCount().badgeClass().getNameWithScan();
 						int width = targetSize.getWidth();
 						int height = targetSize.getHeight();
 						sb.append("<div style='width: ").append(width).append("px; height: ").append(height).append("px;'>");
@@ -200,7 +201,9 @@ public class CreateBadge00StartingPointStep extends BasicStep {
 						if (val instanceof String image) {
 							sb.append("<img src=\"");
 							sb.append(mediaUrl).append("/").append(image).append("\" ");
-							sb.append(" width='").append(width).append("px' height='").append(height).append("px' >");
+							sb.append(" width='").append(width).append("px' height='").append(height).append("px' ");
+							sb.append(" alt='").append(translator.translate("badge.image")).append(": ").append(name).append("'");
+							sb.append(">");
 						}
 						sb.append("</div>");
 						sb.append("</div>");

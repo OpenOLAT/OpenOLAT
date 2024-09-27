@@ -172,6 +172,7 @@ public class BadgeDetailsController extends FormBasicController {
 		name = badgeClass.getNameWithScan();
 
 		flc.contextPut("img", mediaUrl + "/" + badgeClass.getImage());
+		flc.contextPut("imgAlt", translate("badge.image") + ": " + badgeClass.getNameWithScan());
 		flc.contextPut("badgeClass", badgeClass);
 		flc.contextPut("isCourseBadge", badgeClass.getEntry() != null);
 

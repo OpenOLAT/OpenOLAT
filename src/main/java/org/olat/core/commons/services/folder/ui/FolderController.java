@@ -802,21 +802,21 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private void initBulkLinks() {
-		bulkCopyButton = uifactory.addFormLink("copy.to", flc, Link.BUTTON);
-		bulkCopyButton.setIconLeftCSS("o_icon o_icon-fw o_icon_duplicate");
-		tableEl.addBatchButton(bulkCopyButton);
-		
 		bulkDownloadButton = uifactory.addFormLink("download", flc, Link.BUTTON);
 		bulkDownloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		tableEl.addBatchButton(bulkDownloadButton);
 		
-		bulkMoveButton = uifactory.addFormLink("move.to", flc, Link.BUTTON);
-		bulkMoveButton.setIconLeftCSS("o_icon o_icon-fw o_icon_move");
-		tableEl.addBatchButton(bulkMoveButton);
-		
 		bulkZipButton = uifactory.addFormLink("zip", flc, Link.BUTTON);
 		bulkZipButton.setIconLeftCSS("o_icon o_icon-fw o_filetype_zip");
 		tableEl.addBatchButton(bulkZipButton);
+		
+		bulkCopyButton = uifactory.addFormLink("copy.to", flc, Link.BUTTON);
+		bulkCopyButton.setIconLeftCSS("o_icon o_icon-fw o_icon_duplicate");
+		tableEl.addBatchButton(bulkCopyButton);
+		
+		bulkMoveButton = uifactory.addFormLink("move.to", flc, Link.BUTTON);
+		bulkMoveButton.setIconLeftCSS("o_icon o_icon-fw o_icon_move");
+		tableEl.addBatchButton(bulkMoveButton);
 		
 		bulkEmailButton = uifactory.addFormLink("email.send", flc, Link.BUTTON);
 		bulkEmailButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");

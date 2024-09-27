@@ -150,6 +150,8 @@ public class CourseSelectorController extends FormBasicController {
 			sb.append("<div class=\"o_badge_course_selector_option\">");
 			sb.append("<div class=\"o_nowrap\">");
 			sb.append(StringHelper.escapeHtml(course.getDisplayname()));
+			sb.append(" &middot; ");
+			sb.append(course.getKey().toString());
 			sb.append("</div>");
 			sb.append("</div>");
 			selectedSV.add(entry(course.getKey().toString(), sb.toString()));

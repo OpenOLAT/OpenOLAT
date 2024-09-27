@@ -82,7 +82,8 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		if (ftE.hasDetailsRenderer()) {
 			target.append("<th>");
 			target.append("<div title=\"").append(translator.translate("form.details")).append("\">");
-			target.append("<i class='o_icon o_icon-lg o_icon_table_details_expand' aria-hidden='true'> </i>");
+			target.append("<i class='o_icon o_icon-lg o_icon_table_details_expand' title='").append(translator.translate("form.details")).append("' aria-hidden='true'> </i>");
+			target.append("<span class='sr-only'>").append(translator.translate("form.details")).append("</span>");
 			target.append("</div>");
 			target.append("</th>");
 		}

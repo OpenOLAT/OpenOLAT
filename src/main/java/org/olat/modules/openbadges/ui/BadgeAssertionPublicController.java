@@ -97,6 +97,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		flc.contextPut("inDialog", inDialog);
 		flc.contextPut("img", mediaUrl + "/" + badgeAssertion.getBakedImage());
+		flc.contextPut("imgAlt", translate("badge.image") + ": " + badgeAssertion.getBadgeClass().getNameWithScan());
 		flc.contextPut("downloadUrl", downloadUrl + "/" + fileName);
 
 		if (BadgeAssertion.BadgeAssertionStatus.revoked.equals(badgeAssertion.getStatus())) {
