@@ -92,6 +92,8 @@ public class RenameController extends FormBasicController {
 		filenameEl.clearError();
 		if (isFileRenamed()) {
 			String filename = filenameEl.getValue();
+			filename = ensureSuffix(filename);
+			filenameEl.setValue(filename);
 			if (!StringHelper.containsNonWhitespace(filename)) {
 				filenameEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
@@ -137,6 +139,20 @@ public class RenameController extends FormBasicController {
 		updateMetadata();
 		
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	private String ensureSuffix(String filename) {
+		String suffix = FileUtils.getFileSuffix(filename);
+		if (StringHelper.containsNonWhitespace(suffix)) {
+			return filename;
+		}
+		
+		String initialSuffix = FileUtils.getFileSuffix(initialFilename);
+		if (StringHelper.containsNonWhitespace(initialSuffix)) {
+			return filename + "." + initialSuffix;
+		}
+		
+		return filename;
 	}
 	
 	private void updateMetadata() {
