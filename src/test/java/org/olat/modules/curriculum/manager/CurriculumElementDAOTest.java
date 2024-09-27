@@ -227,7 +227,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, entry2, true);
 		dbInstance.commit();
 		
-		List<CurriculumElementInfos> relations = curriculumElementDao.loadElementsWithInfos(curriculum);
+		List<CurriculumElementInfos> relations = curriculumElementDao.loadElementsWithInfos(curriculum, null, null);
 		Assert.assertEquals(1, relations.size());
 		Assert.assertEquals(element, relations.get(0).getCurriculumElement());
 		Assert.assertEquals(element.getKey(), relations.get(0).getKey());
@@ -235,7 +235,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void countElements_repoEntry() {
+	public void countElementsRepositoryEntry() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,

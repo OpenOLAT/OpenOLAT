@@ -1,0 +1,25 @@
+<div class="o_header_with_buttons">
+	<h3>$r.escapeHtml($title)#if($r.isNotEmpty($externalRef)) <small>$r.translate("lecture.separator") $r.escapeHtml($externalRef)</small>#end</h3>
+	<div class="o_button_group o_button_group_right">
+		$r.render("edit")
+	</div>
+</div>
+
+<div class="o_lecture_metadata_horizontal">
+	$r.render("lecture.date","vertical")
+	$r.render("lecture.time","vertical")
+	#if($r.available("lecture.location"))
+		$r.render("lecture.location","vertical")
+	#end
+	$r.render("lecture.participants","vertical")
+</div>
+<div class="o_block_bottom">
+$r.render("participantsGroupTable")
+</div>
+#if($r.available("lecture.desc"))
+	$r.render("lecture.desc","vertical")
+#end
+#if($r.available("lecture.preparation"))
+	$r.render("lecture.preparation","vertical")
+#end
+$r.render("lecture.compulsory","vertical")

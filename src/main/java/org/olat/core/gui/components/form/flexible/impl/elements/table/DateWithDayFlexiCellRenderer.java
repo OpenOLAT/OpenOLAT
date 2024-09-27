@@ -17,7 +17,16 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.model;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
+
+import java.util.Date;
+import java.util.Locale;
+
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 
 /**
  * 
@@ -25,6 +34,19 @@ package org.olat.modules.lecture.model;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record Reference(Long key, String displayName, String externalRef) {
-	//
+public class DateWithDayFlexiCellRenderer implements FlexiCellRenderer {
+	
+	private final Formatter format;
+	
+	public DateWithDayFlexiCellRenderer(Locale locale) {
+		format = Formatter.getInstance(locale);
+	}
+
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue,
+			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof Date date) {
+			target.append(format.formatDateWithDay(date));
+		}
+	}
 }

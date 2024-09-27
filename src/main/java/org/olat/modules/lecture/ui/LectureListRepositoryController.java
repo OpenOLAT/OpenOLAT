@@ -41,9 +41,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -90,8 +92,10 @@ import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
 import org.olat.modules.lecture.ui.blockimport.BlocksImport_1_InputStep;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlock;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
+import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.ReferenceRenderer;
+import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -104,7 +108,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureListRepositoryController extends FormBasicController {
+public class LectureListRepositoryController extends FormBasicController implements FlexiTableComponentDelegate {
 
 	private static final String ALL_TAB_ID = "All";
 	private static final String PAST_TAB_ID = "Past";
@@ -121,6 +125,7 @@ public class LectureListRepositoryController extends FormBasicController {
 	private FormLink importLecturesButton;
 	private FlexiTableElement tableEl;
 	private LectureListRepositoryDataModel tableModel;
+	private final VelocityContainer detailsVC;
 
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab pastTab;
@@ -158,6 +163,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		this.curriculumElement = null;
 		this.secCallback = secCallback;
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
+		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
 		loadModel();
@@ -169,6 +175,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		this.curriculumElement = curriculumElement;
 		this.secCallback = secCallback;
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
+		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
 		loadModel();
@@ -202,14 +209,16 @@ public class LectureListRepositoryController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.entry,
 				new ReferenceRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.date,
-				new DateFlexiCellRenderer(getLocale())));
+				new DateWithDayFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.startTime,
 				new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.endTime,
 				new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.lecturesNumber));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location,
+				new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_location")));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers,
+				new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_user")));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.numParticipants));
 		
 		DefaultFlexiColumnModel compulsoryColumn = new DefaultFlexiColumnModel(false, BlockCols.compulsory,
@@ -236,6 +245,9 @@ public class LectureListRepositoryController extends FormBasicController {
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setEmptyTableMessageKey("empty.table.lectures.blocks.admin");
+		
+		tableEl.setDetailsRenderer(detailsVC, this);
+		tableEl.setMultiDetails(true);
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), false));
@@ -304,6 +316,21 @@ public class LectureListRepositoryController extends FormBasicController {
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
+	@Override
+	public boolean isDetailsRow(int row, Object rowObject) {
+		return true;
+	}
+
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		List<Component> components = new ArrayList<>();
+		if(rowObject instanceof LectureBlockRow lectureRow
+				&& lectureRow.getDetailsController() != null) {
+			components.add(lectureRow.getDetailsController().getInitialFormItem().getComponent());
+		}
+		return components;
+	}
+
 	private void loadModel() {
 		String displayname = null;
 		String externalRef = null;
@@ -410,12 +437,19 @@ public class LectureListRepositoryController extends FormBasicController {
 			} else if(event instanceof FlexiTableSearchEvent
 					|| event instanceof FlexiTableFilterTabEvent) {
 				loadModel();
+			} else if(event instanceof DetailsToggleEvent toggleEvent) {
+				LectureBlockRow row = tableModel.getObject(toggleEvent.getRowIndex());
+				if(toggleEvent.isVisible()) {
+					doOpenLectureBlockDetails(ureq, row);
+				} else {
+					doCloseLectureBlockDetails(row);
+				}
 			}
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if(cmd != null && cmd.startsWith("tools-")) {
-				LectureBlockRow row = (LectureBlockRow)link.getUserObject();
-				doOpenTools(ureq, row, link);
+			if(cmd != null && cmd.startsWith("tools-")
+					&& link.getUserObject() instanceof LectureBlockRow lectureBlockRow) {
+				doOpenTools(ureq, lectureBlockRow, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -452,6 +486,10 @@ public class LectureListRepositoryController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(source instanceof LectureListDetailsController) {
+			if(event instanceof EditLectureBlockRowEvent editRowEvent) {
+				doEditLectureBlock(ureq, editRowEvent.getRow());
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -479,7 +517,14 @@ public class LectureListRepositoryController extends FormBasicController {
 		
 		LectureBlock block = lectureService.getLectureBlock(row);
 		boolean readOnly = lectureManagementManaged || !secCallback.canNewLectureBlock();
-		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, readOnly);
+		if(entry != null) {
+			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, readOnly);
+		} else if(curriculumElement != null) {
+			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), curriculumElement, block, readOnly);
+		} else {
+			showWarning("error.no.entry.curriculum");
+			return;
+		}
 		listenTo(editLectureCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
@@ -490,7 +535,14 @@ public class LectureListRepositoryController extends FormBasicController {
 	private void doAddLectureBlock(UserRequest ureq) {
 		if(guardModalController(editLectureCtrl) || !secCallback.canNewLectureBlock()) return;
 		
-		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry);
+		if(entry != null) {
+			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry);
+		} else if(curriculumElement != null) {
+			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), curriculumElement);
+		} else {
+			showWarning("error.no.entry.curriculum");
+			return;
+		}
 		listenTo(editLectureCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
@@ -603,6 +655,20 @@ public class LectureListRepositoryController extends FormBasicController {
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 		
 		loadModel();
+	}
+	
+	private void doOpenLectureBlockDetails(UserRequest ureq, LectureBlockRow row) {
+		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row, mainForm);
+		listenTo(detailsCtrl);
+		row.setDetailsController(detailsCtrl);
+		flc.add(detailsCtrl.getInitialFormItem());
+	}
+
+	private void doCloseLectureBlockDetails(LectureBlockRow row) {
+		if(row.getDetailsController() == null) return;
+		removeAsListenerAndDispose(row.getDetailsController());
+		flc.remove(row.getDetailsController().getInitialFormItem());
+		row.setDetailsController(null);
 	}
 	
 	private void doOpenTools(UserRequest ureq, LectureBlockRow row, FormLink link) {

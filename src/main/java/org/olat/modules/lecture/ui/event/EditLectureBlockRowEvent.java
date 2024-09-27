@@ -17,7 +17,10 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.model;
+package org.olat.modules.lecture.ui.event;
+
+import org.olat.core.gui.control.Event;
+import org.olat.modules.lecture.model.LectureBlockRow;
 
 /**
  * 
@@ -25,6 +28,19 @@ package org.olat.modules.lecture.model;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record Reference(Long key, String displayName, String externalRef) {
-	//
+public class EditLectureBlockRowEvent extends Event {
+	
+	private static final long serialVersionUID = 5204729788527755948L;
+	public static final String EDIT_LECTURE_BLOCK = "edit-lecture-block";
+	
+	private final LectureBlockRow row;
+	
+	public EditLectureBlockRowEvent(LectureBlockRow row) {
+		super(EDIT_LECTURE_BLOCK);
+		this.row = row;
+	}
+	
+	public LectureBlockRow getRow() {
+		return row;
+	}
 }

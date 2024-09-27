@@ -22,6 +22,7 @@ package org.olat.group.model;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.Group;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.group.BusinessGroupLifecycle;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -64,6 +65,7 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 	
 	private final String url;
 	
+	private Group baseGroup;
 	private BusinessGroupMembershipImpl member;
 	
 	private List<PriceMethodBundle> bundles;
@@ -92,6 +94,8 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 		softDeleteDate = businessGroup.getSoftDeleteDate();
 		softDeleteEmailDate = businessGroup.getSoftDeleteEmailDate();
 		
+		baseGroup = businessGroup.getBaseGroup();
+		
 		String path = "[BusinessGroup:" + businessGroup.getKey() + "]";
 		url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
 	}
@@ -119,6 +123,8 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 		softDeleteDate = businessGroup.getSoftDeleteDate();
 		softDeleteEmailDate = businessGroup.getSoftDeleteEmailDate();
 		
+		baseGroup = businessGroup.getBaseGroup();
+		
 		String path = "[BusinessGroup:" + businessGroup.getKey() + "]";
 		url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
 	}
@@ -142,6 +148,10 @@ public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecy
 	@Override
 	public Long getKey() {
 		return key;
+	}
+	
+	public Group getBaseGroup() {
+		return baseGroup;
 	}
 
 	public Date getCreationDate() {

@@ -249,8 +249,7 @@ public class BusinessGroupToSearch implements Persistable {
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;
-		} else if (obj instanceof BusinessGroup) {
-			BusinessGroup bg = (BusinessGroup)obj;
+		} else if (obj instanceof BusinessGroup bg) {
 			return getKey() != null && getKey().equals(bg.getKey());
 		}
 		return false;

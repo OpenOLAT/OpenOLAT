@@ -604,8 +604,10 @@ public class LectureBlockDAO {
 	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sc = new QueryBuilder(2048);
 		sc.append("select block, coach, config, mode.key,")
+		  .append(" entry.key as vKey,")
 		  .append(" entry.displayname as vDisplayName,")
 		  .append(" entry.externalRef as vExternalRef,")
+		  .append(" curEl.key as cKey,")
 		  .append(" curEl.displayName as cDisplayName,")
 		  .append(" curEl.identifier as cIdentifier,")
 		  .append(" (select count(participant.key) from lectureblocktogroup as ltogroup")
@@ -639,9 +641,9 @@ public class LectureBlockDAO {
 			Identity coach = (Identity)rawCoach[1];
 			RepositoryEntryLectureConfiguration lectureConfiguration = (RepositoryEntryLectureConfiguration)rawCoach[2];
 			boolean assessmentMode = rawCoach[3] != null;
-			Reference entryRef = new Reference((String)rawCoach[4], (String)rawCoach[5]);
-			Reference elementRef = new Reference((String)rawCoach[6], (String)rawCoach[7]);
-			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 8);
+			Reference entryRef = new Reference((Long)rawCoach[4], (String)rawCoach[5], (String)rawCoach[6]);
+			Reference elementRef = new Reference((Long)rawCoach[7], (String)rawCoach[8], (String)rawCoach[9]);
+			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 10);
 			
 			LectureBlockWithTeachers blockWith = blockMap.computeIfAbsent(block.getKey(), key ->
 				new LectureBlockWithTeachers(block, lectureConfiguration,
@@ -660,8 +662,10 @@ public class LectureBlockDAO {
 	public List<LectureBlockWithTeachers> getLecturesBlockWithOptionalTeachers(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sc = new QueryBuilder(2048);
 		sc.append("select block, coach, config, mode.key,")
+		  .append(" entry.key as vKey,")
 		  .append(" entry.displayname as vDisplayName,")
 		  .append(" entry.externalRef as vExternalRef,")
+		  .append(" curEl.key as cKey,")
 		  .append(" curEl.displayName as cDisplayName,")
 		  .append(" curEl.identifier as cIdentifier,")
 		  .append(" (select count(participant.key) from lectureblocktogroup as ltogroup")
@@ -693,9 +697,9 @@ public class LectureBlockDAO {
 			Identity coach = (Identity)rawCoach[1];
 			RepositoryEntryLectureConfiguration lectureConfiguration = (RepositoryEntryLectureConfiguration)rawCoach[2];
 			boolean assessmentMode = rawCoach[3] != null;
-			Reference entryRef = new Reference((String)rawCoach[4], (String)rawCoach[5]);
-			Reference elementRef = new Reference((String)rawCoach[6], (String)rawCoach[7]);
-			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 8);
+			Reference entryRef = new Reference((Long)rawCoach[4], (String)rawCoach[5], (String)rawCoach[6]);
+			Reference elementRef = new Reference((Long)rawCoach[7], (String)rawCoach[8], (String)rawCoach[9]);
+			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawCoach, 10);
 			
 			LectureBlockWithTeachers blockWith = blockMap.computeIfAbsent(block.getKey(), key ->
 					new LectureBlockWithTeachers(block, lectureConfiguration,

@@ -64,11 +64,8 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupOrder;
-import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.MemberViewQueries;
 import org.olat.group.model.MemberView;
-import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.CourseMembership;
 import org.olat.group.ui.main.CourseRoleCellRenderer;
 import org.olat.group.ui.main.SearchMembersParams;
@@ -112,18 +109,14 @@ public class EditLectureBlockController extends FormBasicController {
 	private AutoCompleter locationEl;
 	private DateChooser dateEl;
 	private SingleSelection plannedLecturesEl;
-	private MultipleSelectionElement groupsEl;
 	private MultipleSelectionElement teacherEl;
 	private MultipleSelectionElement compulsoryEl;
-	private SingleSelection curriculumEntriesEl;
 	
 	private final boolean readOnly;
 	private RepositoryEntry entry;
 	private LectureBlock lectureBlock;
 	private CurriculumElement curriculumElement;
-	private final List<RepositoryEntry> curriculumElementEntries;
 	
-	private List<GroupBox> groupBox;
 	private List<MemberView> possibleTeachersList;
 
 	private final List<Identity> teachers;
@@ -149,25 +142,27 @@ public class EditLectureBlockController extends FormBasicController {
 	private CurriculumService curriculumService;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		this(ureq, wControl, entry, null, null, null, false);
+		this(ureq, wControl, entry, null, null, false);
 	}
 	
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			LectureBlock lectureBlock, boolean readOnly) {
-		this(ureq, wControl, entry, null, null, lectureBlock, readOnly);
+		this(ureq, wControl, entry, null, lectureBlock, readOnly);
+	}
+	
+	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
+		this(ureq, wControl, null, curriculumElement, null, false);
 	}
 	
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement,
-			List<RepositoryEntry> curriculumElementEntries) {
-		this(ureq, wControl, null, curriculumElement, curriculumElementEntries, null, false);
+			LectureBlock lectureBlock, boolean readOnly) {
+		this(ureq, wControl, null, curriculumElement, lectureBlock, readOnly);
 	}
 	
 	private EditLectureBlockController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, CurriculumElement curriculumElement, List<RepositoryEntry> curriculumElementEntries,
+			RepositoryEntry entry, CurriculumElement curriculumElement,
 			LectureBlock lectureBlock, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -175,7 +170,6 @@ public class EditLectureBlockController extends FormBasicController {
 		this.readOnly = readOnly;
 		this.lectureBlock = lectureBlock;
 		this.curriculumElement = curriculumElement;
-		this.curriculumElementEntries = curriculumElementEntries;
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, true);
 		
 		locations = getLocations(ureq);
@@ -258,18 +252,6 @@ public class EditLectureBlockController extends FormBasicController {
 		locationEl.setListProvider(new LocationListProvider(), ureq.getUserSession());
 		locationEl.setMinLength(1);
 		
-		SelectionValues courseEntriesPK = new SelectionValues();
-		courseEntriesPK.add(SelectionValues.entry("-", translate("no.course")));
-		if(curriculumElementEntries != null) {
-			for(RepositoryEntry curriculumEntry:curriculumElementEntries) {
-				courseEntriesPK.add(SelectionValues.entry(curriculumEntry.getKey().toString(), StringHelper.escapeHtml(curriculumEntry.getDisplayname())));
-			}
-		}
-		curriculumEntriesEl = uifactory.addDropdownSingleselect("lecture.curriculum.entries", "lecture.curriculum.entries", formLayout,
-				courseEntriesPK.keys(), courseEntriesPK.values());
-		curriculumEntriesEl.select("-", true);
-		curriculumEntriesEl.setVisible(curriculumElementEntries != null && curriculumElementEntries.size() > 1);
-		
 		possibleTeachersList = loadTeachers();
 		SelectionValues teachersPK = new SelectionValues();
 		for(MemberView teacher:possibleTeachersList) {
@@ -301,26 +283,6 @@ public class EditLectureBlockController extends FormBasicController {
 		if(!found && teachersPK.size() > 0 && lectureBlock == null) {
 			teacherEl.select(teachersPK.keys()[0], true);
 		}
-		
-		groupBox = loadGroups();
-		SelectionValues groupPK = new SelectionValues();
-		for(int i=groupBox.size(); i-->0; ) {
-			groupPK.add(SelectionValues.entry(Integer.toString(i), groupBox.get(i).getName()));
-		}
-		groupsEl = uifactory.addCheckboxesVertical("lecture.groups", "lecture.groups", formLayout, groupPK.keys(), groupPK.values(), 2);
-		groupsEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.groups));
-		groupsEl.setMandatory(true);
-		if(lectureBlock != null) {
-			List<Group> selectedGroups = lectureService.getLectureBlockToGroups(lectureBlock);
-			for(int i=0; i<groupBox.size(); i++) {
-				if(selectedGroups.contains(groupBox.get(i).getBaseGroup())) {
-					groupsEl.select(Integer.toString(i), true);
-				}
-			}
-		} else if(groupPK.size() == 1) {
-			groupsEl.select(groupPK.keys()[0], true);
-		}
-		groupsEl.setVisible(groupBox.size() > 1);
 		
 		List<TaxonomyLevel> levels = lectureService.getTaxonomy(lectureBlock);
 		if(!levels.isEmpty()) {
@@ -422,30 +384,6 @@ public class EditLectureBlockController extends FormBasicController {
 		return new ArrayList<>(allPossibleTeachers);
 	}
 	
-	private List<GroupBox> loadGroups() {
-		List<GroupBox> groupList = new ArrayList<>();
-		List<CurriculumElement> elements = null;
-		if(entry != null) {
-			Group entryBaseGroup =repositoryService.getDefaultGroup(entry);
-			groupList.add(new GroupBox(entry, entryBaseGroup));
-		
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-			List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, entry, 0, -1, BusinessGroupOrder.nameAsc);
-			for(BusinessGroup businessGroup:businessGroups) {
-				groupList.add(new GroupBox(businessGroup));
-			}
-			
-			elements = curriculumService.getCurriculumElements(entry);
-			for(CurriculumElement element:elements) {
-				groupList.add(new GroupBox(element));
-			}
-		}
-		if(curriculumElement != null && (elements == null || !elements.contains(curriculumElement))) {
-			groupList.add(new GroupBox(curriculumElement));
-		}
-		return groupList;
-	}
-	
 	private void updateUI() {
 		if(compulsoryEl.isAtLeastSelected(1)) {
 			setFormWarning(null);
@@ -473,12 +411,6 @@ public class EditLectureBlockController extends FormBasicController {
 		teacherEl.clearError();
 		if(teacherEl.isVisible() && entry != null && !teacherEl.isAtLeastSelected(1)) {
 			teacherEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
-		
-		groupsEl.clearError();
-		if(groupsEl.isVisible() && !groupsEl.isAtLeastSelected(1)) {
-			groupsEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -518,20 +450,33 @@ public class EditLectureBlockController extends FormBasicController {
 		String beforeXml;
 		LectureBlockAuditLog.Action action;
 		StringBuilder audit = new StringBuilder();
+		List<Group> selectedGroups;
 		if(lectureBlock == null) {
 			beforeXml = null;
 			action = LectureBlockAuditLog.Action.createLectureBlock;
+			selectedGroups = new ArrayList<>();
 			if(entry != null) {
 				lectureBlock = lectureService.createLectureBlock(entry);
+				Group defGroup = repositoryService.getDefaultGroup(entry);
+				selectedGroups.add(defGroup);
 			} else if(curriculumElement != null) {
-				RepositoryEntry courseEntry = getPrivilegedRepositoryentry();
-				lectureBlock = lectureService.createLectureBlock(curriculumElement, courseEntry);
+				List<RepositoryEntry> curriculumElementEntries = curriculumService.getRepositoryEntries(curriculumElement);
+				RepositoryEntry singleEntry = curriculumElementEntries.size() == 1 ? curriculumElementEntries.get(0) : null;
+				lectureBlock = lectureService.createLectureBlock(curriculumElement, singleEntry);
+				if(singleEntry != null) {
+					Group defGroup = repositoryService.getDefaultGroup(singleEntry);
+					selectedGroups.add(defGroup);
+				}
+			} else {
+				showWarning("error.no.entry.curriculum");
+				return;
 			}
 			create = true;
 		} else {
 			beforeXml = lectureService.toAuditXml(lectureBlock);
 			action = LectureBlockAuditLog.Action.createLectureBlock;
 			currentPlannedLectures = lectureBlock.getPlannedLecturesNumber();
+			selectedGroups = lectureService.getLectureBlockToGroups(lectureBlock);
 		}
 		lectureBlock.setTitle(titleEl.getValue());
 		lectureBlock.setExternalRef(externalRefEl.getValue());
@@ -546,8 +491,6 @@ public class EditLectureBlockController extends FormBasicController {
 		
 		int plannedLectures = Integer.parseInt(plannedLecturesEl.getSelectedKey());
 		lectureBlock.setPlannedLecturesNumber(plannedLectures);
-
-		List<Group> selectedGroups = synchronizeGroups();
 
 		lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 		
@@ -579,40 +522,6 @@ public class EditLectureBlockController extends FormBasicController {
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_EDITED, getClass(),
 					CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 		}
-	}
-	
-	private RepositoryEntry getPrivilegedRepositoryentry() {
-		RepositoryEntry courseEntry = null;
-		if(curriculumElementEntries != null) {
-			if(curriculumElementEntries.size() == 1) {
-				courseEntry = curriculumElementEntries.get(0);
-			} else if(curriculumEntriesEl.isVisible() && curriculumEntriesEl.isOneSelected()
-					&& !"-".equals(curriculumEntriesEl.getSelectedKey())) {
-				Long key = Long.valueOf(curriculumEntriesEl.getSelectedKey());
-				for(RepositoryEntry curriculumEntry:curriculumElementEntries) {
-					if(key.equals(curriculumEntry.getKey())) {
-						courseEntry = curriculumEntry;
-					}
-				}
-			}
-		}
-		return courseEntry;
-	}
-	
-	private List<Group> synchronizeGroups() {
-		List<Group> selectedGroups = new ArrayList<>();
-		if(groupsEl.isVisible() && groupsEl.isAtLeastSelected(1)) {
-			for(String selectedGroupPos:groupsEl.getSelectedKeys()) {
-				Group bGroup = groupBox.get(Integer.parseInt(selectedGroupPos)).getBaseGroup();
-				selectedGroups.add(bGroup);
-			}	
-		} else {
-			for(GroupBox group:groupBox) {
-				Group bGroup = group.getBaseGroup();
-				selectedGroups.add(bGroup);
-			}
-		}
-		return selectedGroups;
 	}
 	
 	private void synchronizeTeachers(StringBuilder audit) {

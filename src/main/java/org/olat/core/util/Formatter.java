@@ -82,6 +82,7 @@ public class Formatter {
 	private final Locale locale;
 	private final Translator translator;
 	private final DateFormat shortDateFormat;
+	private final DateFormat shortDateWithDayFormat;
 	private final DateFormat longDateFormat;
 	private final DateFormat shortDateTimeFormat;
 	private final DateFormat longDateTimeFormat;
@@ -97,11 +98,15 @@ public class Formatter {
 		// Date only formats
 		shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
 		shortDateFormat.setLenient(false);
-		if (shortDateFormat instanceof SimpleDateFormat) {
+		
+		shortDateWithDayFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+		shortDateWithDayFormat.setLenient(false);
+		
+		if (shortDateFormat instanceof SimpleDateFormat sdf && shortDateWithDayFormat instanceof SimpleDateFormat sdfwd) {
 			// by default year has only two digits, however most people prefer a four digits year, even in short format
-			SimpleDateFormat sdf = (SimpleDateFormat) shortDateFormat;
 			String pattern = sdf.toPattern().replaceAll("y+","yyyy");
-			sdf.applyPattern(pattern); 
+			sdf.applyPattern(pattern);
+			sdfwd.applyPattern("EEE, " + pattern);
 		}
 		longDateFormat = DateFormat.getDateInstance(DateFormat.LONG, locale);
 		longDateFormat.setLenient(false);
@@ -113,9 +118,8 @@ public class Formatter {
 		// Date and time formats
 		shortDateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
 		shortDateTimeFormat.setLenient(false);
-		if (shortDateTimeFormat instanceof SimpleDateFormat) {
+		if (shortDateTimeFormat instanceof SimpleDateFormat sdf) {
 			// by default year has only two digits, however most people prefer a four digits year, even in short format
-			SimpleDateFormat sdf = (SimpleDateFormat) shortDateTimeFormat;
 			String pattern = sdf.toPattern().replaceAll("y+","yyyy");
 			sdf.applyPattern(pattern); 
 		}
@@ -177,6 +181,13 @@ public class Formatter {
 		if (date == null) return null;
 		synchronized (shortDateFormat) {
 			return shortDateFormat.format(date);
+		}
+	}
+	
+	public String formatDateWithDay(Date date) {
+		if (date == null) return null;
+		synchronized (shortDateWithDayFormat) {
+			return shortDateWithDayFormat.format(date);
 		}
 	}
 

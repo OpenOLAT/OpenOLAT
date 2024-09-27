@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,37 +14,58 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.lecture.ui.component;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.AbstractCSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.lecture.LectureBlockAppealStatus;
 
 /**
  * 
- * Initial date: 13 juin 2018<br>
+ * Initial date: 26 sept. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureBlockAppealStatusCellRenderer implements FlexiCellRenderer {
+public class IconDecoratorCellRenderer extends AbstractCSSIconFlexiCellRenderer {
 	
-	private final Translator translator;
+	private final String iconCssClass;
 	
-	public LectureBlockAppealStatusCellRenderer(Translator translator) {
-		this.translator = translator;
+	public IconDecoratorCellRenderer(String iconCssClass) {
+		this.iconCssClass = iconCssClass;
+	}
+	
+	@Override
+	protected String getCssClass(Object val) {
+		return iconCssClass;
+	}
+	
+	@Override
+	protected String getCellValue(Object val) {
+		if(val instanceof String str) {
+			return str;
+		}
+		if(val != null) {
+			return val.toString();
+		}
+		return null;
+	}
+	
+	@Override
+	protected String getHoverText(Object val, Translator translator) {
+		return null;
 	}
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof LectureBlockAppealStatus status) {
-			target.append(translator.translate("appeal.".concat(status.name())));
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		if(cellValue != null) {
+			super.render(renderer, target, cellValue, row, source, ubu, translator);
 		}
 	}
 }

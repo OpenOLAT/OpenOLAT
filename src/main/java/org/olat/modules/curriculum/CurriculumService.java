@@ -295,6 +295,10 @@ public interface CurriculumService {
 	 * @return A list of curriculum elements with additional informations
 	 */
 	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumRef curriculum);
+
+	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(RepositoryEntryRef entry);
+	
+	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(List<CurriculumElementRef> curriculumElements);
 	
 	/**
 	 * Retrieve the children elements of the specified curriculum element. The method

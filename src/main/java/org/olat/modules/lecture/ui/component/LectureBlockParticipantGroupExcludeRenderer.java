@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.lecture.ui.component;
@@ -25,26 +25,28 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.lecture.LectureBlockAppealStatus;
 
 /**
  * 
- * Initial date: 13 juin 2018<br>
+ * Initial date: 27 sept. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureBlockAppealStatusCellRenderer implements FlexiCellRenderer {
+public class LectureBlockParticipantGroupExcludeRenderer implements FlexiCellRenderer {
 	
 	private final Translator translator;
 	
-	public LectureBlockAppealStatusCellRenderer(Translator translator) {
+	public LectureBlockParticipantGroupExcludeRenderer(Translator translator) {
 		this.translator = translator;
 	}
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof LectureBlockAppealStatus status) {
-			target.append(translator.translate("appeal.".concat(status.name())));
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator trans) {
+		if(Boolean.TRUE.equals(cellValue)) {
+			target.append("<span class=\"o_lecture_excluded\"><i class=\"o_icon o_icon-fw o_icon_invalidate\" aria-hidden=\"true\"> </i> ")
+			      .append(translator.translate("participants.excluded"))
+			      .append("</span>");
 		}
 	}
 }

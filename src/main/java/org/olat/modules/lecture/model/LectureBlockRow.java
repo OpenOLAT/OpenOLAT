@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
+import org.olat.modules.lecture.ui.LectureListDetailsController;
 
 /**
  * 
@@ -40,13 +41,14 @@ public class LectureBlockRow implements LectureBlockRef {
 	private final boolean iamTeacher;
 	private final String entryExternalRef;
 	private final String entryDisplayname;
-	private final LectureBlock lectureBlock;
+	private LectureBlock lectureBlock;
 	private boolean assessmentMode;
-	private final long numOfParticipants;
+	private long numOfParticipants;
 	private final Reference curriculumElement;
 	private final Reference entry;
 	
 	private FormLink toolsLink;
+	private LectureListDetailsController detailsCtrl;
 	
 	private DateChooser dateChooser;
 	private FormLink teacherChooserLink;
@@ -89,8 +91,16 @@ public class LectureBlockRow implements LectureBlockRef {
 		return lectureBlock;
 	}
 	
+	public void setLectureBlock(LectureBlock lectureBlock) {
+		this.lectureBlock = lectureBlock;
+	}
+	
 	public long getNumOfParticipants() {
 		return numOfParticipants;
+	}
+	
+	public void setNumOfParticipants(long participants) {
+		this.numOfParticipants = participants;
 	}
 	
 	public String getTeachers() {
@@ -151,5 +161,27 @@ public class LectureBlockRow implements LectureBlockRef {
 	
 	public void setTeachersList(List<Identity> teachersList) {
 		this.teachersList = teachersList;
+	}
+	
+	public boolean isDetailsControllerAvailable() {
+		if(detailsCtrl != null) {
+			return detailsCtrl.getInitialFormItem().isVisible();
+		}
+		return false;
+	}
+
+	public LectureListDetailsController getDetailsController() {
+		return detailsCtrl;
+	}
+	
+	public String getDetailsControllerName() {
+		if(detailsCtrl != null) {
+			return detailsCtrl.getInitialFormItem().getComponent().getComponentName();
+		}
+		return null;
+	}
+	
+	public void setDetailsController(LectureListDetailsController detailsCtrl) {
+		this.detailsCtrl = detailsCtrl;
 	}
 }

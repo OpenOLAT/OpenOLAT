@@ -369,7 +369,8 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	public List<CurriculumElementInfos> loadElementsWithInfos(CurriculumRef curriculum) {
+	public List<CurriculumElementInfos> loadElementsWithInfos(CurriculumRef curriculum,
+			RepositoryEntryRef entry, List<CurriculumElementRef> curriculumElements) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select el, ")
 		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
@@ -389,12 +390,38 @@ public class CurriculumElementDAO {
 		  .append(" inner join fetch el.group baseGroup")
 		  .append(" left join fetch el.type curElementType")
 		  .append(" left join el.parent parentEl")
-		  .append(" where el.curriculum.key=:curriculumKey and el.status ").in(CurriculumElementStatus.notDeleted());
+		  .where().append(" el.status ").in(CurriculumElementStatus.notDeleted());
 		
-		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
-				.setParameter("curriculumKey", curriculum.getKey())
-				.getResultList();
+		if(curriculum != null) {
+			sb.and().append("el.curriculum.key=:curriculumKey");
+		}
+		if(curriculumElements != null && !curriculumElements.isEmpty()) {
+			sb.and().append("el.key in (:curriculumElementsKeys)");
+		}
+		if(entry != null) {
+			sb.and()
+			  .append("baseGroup.key in (select rel.group.key from repoentrytogroup as rel")
+			  .append(" where rel.entry.key=:entryKey)");
+		}
+
+		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		
+		if(curriculum != null) {
+			rawQuery.setParameter("curriculumKey", curriculum.getKey());
+		}
+		if(curriculumElements != null && !curriculumElements.isEmpty()) {
+			List<Long> curriculumElementsKeys = curriculumElements.stream()
+					.map(CurriculumElementRef::getKey)
+					.toList();
+			rawQuery.setParameter("curriculumElementsKeys", curriculumElementsKeys);
+		}
+		if(entry != null) {
+			rawQuery.setParameter("entryKey", entry.getKey());
+		}
+		
+		List<Object[]> rawObjects =	rawQuery.getResultList();
+		
 		List<CurriculumElementInfos> infos = new ArrayList<>(rawObjects.size());
 		for(Object[] rawObject:rawObjects) {
 			CurriculumElement element = (CurriculumElement)rawObject[0];

@@ -636,7 +636,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumRef curriculum) {
-		return curriculumElementDao.loadElementsWithInfos(curriculum);
+		return curriculumElementDao.loadElementsWithInfos(curriculum, null, null);
+	}
+	
+	@Override
+	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(RepositoryEntryRef entry) {
+		return curriculumElementDao.loadElementsWithInfos(null, entry, null);
+	}
+	
+	@Override
+	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(List<CurriculumElementRef> curriculumElements) {
+		return curriculumElementDao.loadElementsWithInfos(null, null, curriculumElements);
 	}
 	
 	@Override
