@@ -142,6 +142,10 @@ public class RenameController extends FormBasicController {
 	}
 
 	private String ensureSuffix(String filename) {
+		if (vfsItem instanceof VFSContainer) {
+			return filename;
+		}
+		
 		String suffix = FileUtils.getFileSuffix(filename);
 		if (StringHelper.containsNonWhitespace(suffix)) {
 			return filename;

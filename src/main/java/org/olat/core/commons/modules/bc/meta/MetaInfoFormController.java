@@ -56,12 +56,12 @@ import org.olat.core.gui.control.generic.folder.FolderHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -575,8 +575,11 @@ public class MetaInfoFormController extends FormBasicController {
 		}
 		
 		filename.clearError();
+		
+		String filenameStr = getFilename();
+		filenameStr = ensureSuffix(filenameStr);
+		filename.setValue(filenameStr);
 		if(isFileRenamed()) {
-			String filenameStr = getFilename();
 			if (!StringHelper.containsNonWhitespace(filenameStr)) {
 				filename.setErrorKey("form.legende.mandatory");
 				valid &= false;
@@ -624,6 +627,24 @@ public class MetaInfoFormController extends FormBasicController {
 		}
 		
 		return allOk;
+	}
+	
+	private String ensureSuffix(String filename) {
+		if (item instanceof VFSContainer) {
+			return filename;
+		}
+		
+		String suffix = FileUtils.getFileSuffix(filename);
+		if (StringHelper.containsNonWhitespace(suffix)) {
+			return filename;
+		}
+		
+		String initialSuffix = FileUtils.getFileSuffix(initialFilename);
+		if (StringHelper.containsNonWhitespace(initialSuffix)) {
+			return filename + "." + initialSuffix;
+		}
+		
+		return filename;
 	}
 	
 	/**
