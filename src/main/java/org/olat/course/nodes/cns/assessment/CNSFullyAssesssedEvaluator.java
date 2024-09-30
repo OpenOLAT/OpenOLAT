@@ -41,10 +41,10 @@ public class CNSFullyAssesssedEvaluator implements FullyAssessedEvaluator {
 	public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 			List<AssessmentEvaluation> children, Blocker blocker) {
 		String requiredSelectionsConfig = courseNode.getModuleConfiguration().getStringValue(CNSCourseNode.CONFIG_KEY_REQUIRED_SELECTIONS);
-		return getFullyAssessed(requiredSelectionsConfig, children);
+		return getFullyAssessed(requiredSelectionsConfig, blocker, children);
 	}
 	
-	Boolean getFullyAssessed(String requiredSelectionsConfig, List<AssessmentEvaluation> children) {
+	Boolean getFullyAssessed(String requiredSelectionsConfig, Blocker blocker, List<AssessmentEvaluation> children) {
 		if (StringHelper.isLong(requiredSelectionsConfig)) {
 			Integer requiredSelections = Integer.valueOf(requiredSelectionsConfig);
 			
@@ -63,6 +63,7 @@ public class CNSFullyAssesssedEvaluator implements FullyAssessedEvaluator {
 			}
 			
 			if (!allMandatoryDone) {
+				blocker.block();
 				return Boolean.FALSE;
 			}
 			if (numSelected >= requiredSelections) {
@@ -70,6 +71,7 @@ public class CNSFullyAssesssedEvaluator implements FullyAssessedEvaluator {
 			}
 			
 		}
+		blocker.block();
 		return Boolean.FALSE;
 	}
 
