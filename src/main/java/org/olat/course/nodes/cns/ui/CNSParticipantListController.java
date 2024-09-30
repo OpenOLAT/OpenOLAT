@@ -436,10 +436,13 @@ public class CNSParticipantListController extends FormBasicController implements
 				}
 			} else if (event instanceof DetailsToggleEvent) {
 				DetailsToggleEvent dte = (DetailsToggleEvent)event;
+				CNSParticipantRow row = dataModel.getObject(dte.getRowIndex());
 				if (dte.isVisible()) {
-					CNSParticipantRow row = dataModel.getObject(dte.getRowIndex());
 					doShowDetails(ureq, row);
 					setDetailsOpenIdentities();
+				} else if (detailsOpenIdentityKeys.contains(row.getIdentityKey())) {
+					detailsOpenIdentityKeys.remove(row.getIdentityKey());
+					loadModel(ureq);
 				}
 			} else if (event instanceof FlexiTableFilterTabEvent) {
 				detailsOpenIdentityKeys = null;
