@@ -98,6 +98,14 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 		
 		String cssClasses = LearningPathStatus.of(assessmentEvaluation).getCssClass();
 		
+		if (assessmentEvaluation.getObligation() != null
+				&& assessmentEvaluation.getObligation().getCurrent() != null
+				&& AssessmentObligation.optional == assessmentEvaluation.getObligation().getCurrent()
+				&& rootCompletion != null
+				&& rootCompletion.doubleValue() > 0.999999) {
+			cssClasses += " o_lp_obli_root_completed";
+		}
+		
 		if (sequenceConfig.isInSequence()) {
 			// nodes that take part in a linear sequence
 			cssClasses += " o_lp_in_sequence";			

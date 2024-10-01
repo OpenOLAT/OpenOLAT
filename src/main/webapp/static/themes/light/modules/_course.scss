@@ -378,6 +378,11 @@
 	li.o_lp_done {
 		@include alert-tree-path-variant($o-lp-done, 'check-circle', $o-lp-done, solid, true);
 	}
+	li.o_lp_status.o_lp_obli_root_completed {
+		&:after {
+			color: $o-lp-done;
+		}
+	}
 	
 	&.o_path {
 		/* Opener more right than default to make room for path */	
