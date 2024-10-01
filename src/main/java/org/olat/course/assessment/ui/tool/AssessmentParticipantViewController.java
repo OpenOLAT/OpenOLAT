@@ -552,12 +552,18 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	}
 	
 	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean showDefault) {
+		if (panelInfo == null) {
+			return showDefault;
+		}
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		Boolean showConfig  = (Boolean) guiPrefs.get(panelInfo.attributedClass(), getOpenPanelId(panelId));
 		return showConfig == null ? showDefault : showConfig.booleanValue();
 	}
 	
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
+		if (panelInfo == null) {
+			return;
+		}
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
 			guiPrefs.putAndSave(panelInfo.attributedClass(), getOpenPanelId(panelId), Boolean.valueOf(newValue));
@@ -565,7 +571,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 	}
 	
 	private String getOpenPanelId(String panelId) {
-		return panelId + panelInfo.idSuffix();
+		return panelId + (panelInfo != null ? panelInfo.idSuffix() : "");
 	}
 	
 	private void doOpenDocument(UserRequest ureq, DocumentWrapper wrapper) {

@@ -33,6 +33,7 @@ public enum LearningPathStatus {
 	notAccessible("o_lp_not_accessible", "assessment.status.notReady"),
 	ready("o_lp_ready", "assessment.status.notStart"),
 	inProgress("o_lp_in_progress", "assessment.status.inProgress"),
+	inReview("o_lp_in_review", "assessment.status.inReview"),
 	done("o_lp_done", "fully.assessed");
 
 	private final String cssClass;
@@ -66,7 +67,7 @@ public enum LearningPathStatus {
 			case notReady: return notAccessible;
 			case notStarted: return ready;
 			case inProgress: return inProgress;
-			case inReview: return inProgress;
+			case inReview: return inReview;
 			case done: return inProgress;
 			default: return notAccessible;
 			}
@@ -78,6 +79,7 @@ public enum LearningPathStatus {
 	public static boolean isAccessible(LearningPathStatus status) {
 		return status == ready
 				|| status == inProgress
+				|| status == inReview
 				|| status == done;
 	}
 	

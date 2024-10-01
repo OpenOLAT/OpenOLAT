@@ -114,7 +114,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.audiovideorecording.AVModule;
@@ -1057,7 +1056,10 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private void doAddMedia(UserRequest ureq, String titleKey, FileElement fileElement) {
-		if(guardModalController(mediaUploadCtrl)) return;
+		if(guardModalController(mediaUploadCtrl)|| fileElement == null || fileElement.getUploadFile() == null) {
+			cleanUp();
+			return;
+		}
 
 		mediaUploadCtrl = new MediaUploadController(ureq, getWindowControl(), fileElement);
 		listenTo(mediaUploadCtrl);
@@ -1083,10 +1085,6 @@ public class MediaCenterController extends FormBasicController
 				addFromBrowserCtrl.getInitialComponent(), true, translate("browser.add"), true);
 		listenTo(cmc);
 		cmc.activate();
-	}
-
-	private void doHandleAddFromBrowserEvent(List<VFSItem> uploadedItems) {
-
 	}
 	
 	private void doAddTextMedia(UserRequest ureq) {

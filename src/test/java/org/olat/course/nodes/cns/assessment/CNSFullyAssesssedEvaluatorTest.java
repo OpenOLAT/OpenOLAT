@@ -24,7 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.junit.Test;
+import org.olat.course.nodes.st.assessment.SequentialBlocker;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.Blocker;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.model.ObligationOverridableImpl;
@@ -39,14 +41,18 @@ public class CNSFullyAssesssedEvaluatorTest {
 
 	@Test
 	public void shouldReturnFalseIfConfigNotValid() {
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		CNSFullyAssesssedEvaluator sut = new CNSFullyAssesssedEvaluator();
-		assertThat(sut.getFullyAssessed("abc", List.of(getAssessmentEvaluation(null, null)))).isEqualTo(Boolean.FALSE);
+		assertThat(sut.getFullyAssessed("abc", blocker, List.of(getAssessmentEvaluation(null, null)))).isEqualTo(Boolean.FALSE);
+		assertThat(blocker.isBlocked()).isTrue();
 	}
 	
 	@Test
 	public void shouldReturnFalseIfConfigNoChildren() {
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		CNSFullyAssesssedEvaluator sut = new CNSFullyAssesssedEvaluator();
-		assertThat(sut.getFullyAssessed("1", List.of())).isEqualTo(Boolean.FALSE);
+		assertThat(sut.getFullyAssessed("1", blocker, List.of())).isEqualTo(Boolean.FALSE);
+		assertThat(blocker.isBlocked()).isTrue();
 	}
 	
 	@Test
@@ -55,14 +61,20 @@ public class CNSFullyAssesssedEvaluatorTest {
 		AssessmentEvaluation child2 = getAssessmentEvaluation(ofCurrent(AssessmentObligation.excluded), Boolean.FALSE);
 		AssessmentEvaluation child3 = getAssessmentEvaluation(ofCurrent(AssessmentObligation.excluded), Boolean.FALSE);
 		
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		CNSFullyAssesssedEvaluator sut = new CNSFullyAssesssedEvaluator();
-		assertThat(sut.getFullyAssessed("2", List.of(child1, child2, child3))).isEqualTo(Boolean.FALSE);
+		assertThat(sut.getFullyAssessed("2", blocker, List.of(child1, child2, child3))).isEqualTo(Boolean.FALSE);
+		assertThat(blocker.isBlocked()).isTrue();
 		
-		child1 = getAssessmentEvaluation(ofCurrent(AssessmentObligation.mandatory), Boolean.FALSE);
-		assertThat(sut.getFullyAssessed("2", List.of(child1, child2, child3))).isEqualTo(Boolean.FALSE);
-		
+		blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		child1 = getAssessmentEvaluation(ofCurrent(AssessmentObligation.mandatory), Boolean.TRUE);
-		assertThat(sut.getFullyAssessed("2", List.of(child1, child2, child3))).isEqualTo(Boolean.FALSE);
+		assertThat(sut.getFullyAssessed("2", blocker, List.of(child1, child2, child3))).isEqualTo(Boolean.FALSE);
+		assertThat(blocker.isBlocked()).isTrue();
+		
+		blocker = new SequentialBlocker(AssessmentObligation.mandatory);
+		child2 = getAssessmentEvaluation(ofCurrent(AssessmentObligation.mandatory), Boolean.TRUE);
+		assertThat(sut.getFullyAssessed("2", blocker, List.of(child1, child2, child3))).isEqualTo(Boolean.TRUE);
+		assertThat(blocker.isBlocked()).isFalse();
 	}
 	
 	@Test
@@ -71,11 +83,15 @@ public class CNSFullyAssesssedEvaluatorTest {
 		AssessmentEvaluation child2 = getAssessmentEvaluation(ofCurrent(AssessmentObligation.mandatory), Boolean.FALSE);
 		AssessmentEvaluation child3 = getAssessmentEvaluation(ofCurrent(AssessmentObligation.optional), Boolean.TRUE);
 		
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		CNSFullyAssesssedEvaluator sut = new CNSFullyAssesssedEvaluator();
-		assertThat(sut.getFullyAssessed("2", List.of(child1, child2, child3))).isEqualTo(Boolean.FALSE);
+		assertThat(sut.getFullyAssessed("2", blocker, List.of(child1, child2, child3))).isEqualTo(Boolean.FALSE);
+		assertThat(blocker.isBlocked()).isTrue();
 		
+		blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		child1 = getAssessmentEvaluation(ofCurrent(AssessmentObligation.mandatory), Boolean.TRUE);
-		assertThat(sut.getFullyAssessed("2", List.of(child1, child2, child3))).isEqualTo(Boolean.FALSE);
+		assertThat(sut.getFullyAssessed("2", blocker, List.of(child1, child2, child3))).isEqualTo(Boolean.FALSE);
+		assertThat(blocker.isBlocked()).isTrue();
 	}
 	
 	private ObligationOverridable ofCurrent(AssessmentObligation obligation) {

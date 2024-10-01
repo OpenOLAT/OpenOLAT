@@ -129,7 +129,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_content_popup { @include o-add-icon('external-link');}
 .o_icon_correct_answer { @include o-add-icon('check'); color: $brand-success;}
 .o_icon_correct_response { @include o-add-icon('check-circle', false); color: $brand-success;}
-.o_icon_correction { @include o-add-icon('pencil');}
+.o_icon_correction { @include o-add-icon('highlighter');}
 .o_icon_crosshairs { @include o-add-icon('crosshairs');}
 .o_icon_curriculum { @include o-add-icon('cubes');}
 .o_icon_curriculum_element { @include o-add-icon('cube');}
@@ -485,7 +485,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_status_not_ready { @include o-add-icon('ban');}
 .o_icon_status_not_started { @include o-add-icon('circle', false);}
 .o_icon_status_in_progress { @include o-add-icon('play');}
-.o_icon_status_in_review { @include o-add-icon('hand-point-up');}
+.o_icon_status_in_review { @include o-add-icon('highlighter');}
 .o_icon_status_done { @include o-add-icon('check');}
 .o_icon_statistics_tool { @include o-add-icon('bar-chart', false);}
 .o_icon_submit { @include o-add-icon('check');}
@@ -931,6 +931,7 @@ $fa-css-prefix: "o_icon" !default;
 i.o_lp_not_accessible { @include o-add-icon('ban');}
 i.o_lp_ready { @include o-add-icon('circle', false);}
 i.o_lp_in_progress { @include o-add-icon('play-circle', false);}
+i.o_lp_in_review { @include o-add-icon('highlighter');}
 i.o_lp_done { @include o-add-icon('check-circle');}
 
 

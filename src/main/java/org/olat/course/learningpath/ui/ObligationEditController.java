@@ -211,7 +211,7 @@ public class ObligationEditController extends FormBasicController implements Con
 			if (obligation.getModBy() != null) {
 				String[] args = new String[] {
 						translateObligation(configCurrent),
-						userManager.getUserDisplayName(obligation.getModBy()),
+						StringHelper.escapeHtml(userManager.getUserDisplayName(obligation.getModBy())),
 						formatter.formatDateAndTime(obligation.getModDate())
 				};
 				String infoText = translate("override.obligation.info", args);

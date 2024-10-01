@@ -654,6 +654,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			cmc.deactivate();
 			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
 				doUploadFile(ureq, selectionEvent.getFileElement());
+			} else if (event == Event.CANCELLED_EVENT) {
+				cleanUp();
 			}
 		} else if (fileCreateCtrl == source
 				|| fileEditCtrl == source
@@ -781,7 +783,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	}
 
 	protected void doUploadFile(UserRequest ureq, FileElement fileElement) {
-		if (guardModalController(fileUploadCtrl)) return;
+		if (guardModalController(fileUploadCtrl) || fileElement == null || fileElement.getUploadFile() == null) {
+			cleanUp();
+			return;
+		}
 
 		fileUploadCtrl = new ProjFileUploadController(ureq, getWindowControl(), project, fileElement);
 		listenTo(fileUploadCtrl);

@@ -586,6 +586,7 @@ $o-st-peekview-text-padding			: 2px 15px !default;
 $o-lp-not-accessible			: lighten($text-muted,10%) !default;
 $o-lp-ready						: #FCCA46 !default; /* yellow */
 $o-lp-in-progress				: $o-lp-ready !default;
+$o-lp-in-review					: $state-success-text !default;
 $o-lp-done						: $state-success-text !default;
 $o-lp-default					: #888 !default;
 $o-lp-icon-bg-color				: #fff !default;

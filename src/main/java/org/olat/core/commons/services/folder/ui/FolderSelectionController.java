@@ -197,9 +197,15 @@ public class FolderSelectionController extends FormBasicController implements Fi
 		
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-		
-		boolean multiSelect = FileBrowserSelectionMode.sourceMulti == selectionMode && isAnyChildCopyable();
-		tableEl.setMultiSelect(multiSelect);
+	
+		tableEl.setSelection(false, false, false);
+		if (isAnyChildCopyable()) {
+			if (FileBrowserSelectionMode.sourceSingle == selectionMode) {
+				tableEl.setSelection(true, false, true);
+			} else if (FileBrowserSelectionMode.sourceMulti == selectionMode) {
+				tableEl.setSelection(true, true, true);
+			}
+		}
 	}
 	
 	private List<VFSItem> getDescendants(VFSContainer vfsContainer) {

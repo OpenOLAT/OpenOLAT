@@ -21,6 +21,7 @@ package org.olat.course.run.userview;
 
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 
 /**
  * 
@@ -32,6 +33,7 @@ public abstract class CourseTreeModelBuilder {
 	
 	protected UserCourseEnvironment userCourseEnv;
 	protected VisibilityFilter visibilityFilter;
+	protected Double rootCompletion;
 
 	protected CourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		this.userCourseEnv = userCourseEnv;
@@ -44,6 +46,11 @@ public abstract class CourseTreeModelBuilder {
 	
 	public GenericTreeModel build() {
 		CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+		AssessmentEvaluation rootEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(rootNode);
+		if (rootEvaluation != null) {
+			rootCompletion = rootEvaluation.getCompletion();
+		}
+		
 		int treeLevel = 0;
 		CourseTreeNode rootTreeNode = getCourseTreeNode(rootNode, null, treeLevel);
 		GenericTreeModel treeModel = new GenericTreeModel();
