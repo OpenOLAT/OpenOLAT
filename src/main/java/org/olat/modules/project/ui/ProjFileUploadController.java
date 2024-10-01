@@ -66,7 +66,7 @@ public class ProjFileUploadController extends FormBasicController {
 		this.fileEl = fileEl;
 		
 		initForm(ureq);
-		if (fileEl.getUploadFileName() != null) {
+		if (fileEl != null && fileEl.getUploadFileName() != null) {
 			fileEditCtrl.setFilename(fileEl.getUploadFileName(), false);
 		}
 	}
