@@ -1057,7 +1057,10 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private void doAddMedia(UserRequest ureq, String titleKey, FileElement fileElement) {
-		if(guardModalController(mediaUploadCtrl)) return;
+		if(guardModalController(mediaUploadCtrl)|| fileElement == null || fileElement.getUploadFile() == null) {
+			cleanUp();
+			return;
+		}
 
 		mediaUploadCtrl = new MediaUploadController(ureq, getWindowControl(), fileElement);
 		listenTo(mediaUploadCtrl);
@@ -1083,10 +1086,6 @@ public class MediaCenterController extends FormBasicController
 				addFromBrowserCtrl.getInitialComponent(), true, translate("browser.add"), true);
 		listenTo(cmc);
 		cmc.activate();
-	}
-
-	private void doHandleAddFromBrowserEvent(List<VFSItem> uploadedItems) {
-
 	}
 	
 	private void doAddTextMedia(UserRequest ureq) {
