@@ -930,6 +930,7 @@ $fa-css-prefix: "o_icon" !default;
 i.o_lp_not_accessible { @include o-add-icon('ban');}
 i.o_lp_ready { @include o-add-icon('circle', false);}
 i.o_lp_in_progress { @include o-add-icon('play-circle', false);}
+i.o_lp_in_review { @include o-add-icon('highlighter');}
 i.o_lp_done { @include o-add-icon('check-circle');}
 
 
