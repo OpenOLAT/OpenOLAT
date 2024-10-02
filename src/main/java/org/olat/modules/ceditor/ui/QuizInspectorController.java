@@ -48,6 +48,7 @@ import org.olat.modules.ceditor.model.jpa.QuizPart;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
+import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,6 +63,7 @@ public class QuizInspectorController extends FormBasicController implements Page
 	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 	private QuizElement quizElement;
 	private final PageElementStore<QuizElement> store;
+	private final RepositoryEntry entry;
 	private TextElement titleEl;
 	private TextAreaElement descriptionEl;
 	private StaticTextElement imageNameEl;
@@ -75,10 +77,11 @@ public class QuizInspectorController extends FormBasicController implements Page
 	private ColorService colorService;
 
 	public QuizInspectorController(UserRequest ureq, WindowControl wControl, QuizElement quizElement,
-								   PageElementStore<QuizElement> store) {
+								   PageElementStore<QuizElement> store, RepositoryEntry entry) {
 		super(ureq, wControl, "tabs_inspector");
 		this.quizElement = quizElement;
 		this.store = store;
+		this.entry = entry;
 		initForm(ureq);
 	}
 
@@ -218,7 +221,7 @@ public class QuizInspectorController extends FormBasicController implements Page
 	}
 
 	private void doChooseImage(UserRequest ureq) {
-		chooseImageController = new ChooseImageController(ureq, getWindowControl(), false);
+		chooseImageController = new ChooseImageController(ureq, getWindowControl(), false, entry);
 		listenTo(chooseImageController);
 		String title = translate("choose.image");
 		cmc = new CloseableModalController(getWindowControl(), null,

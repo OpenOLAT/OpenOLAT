@@ -105,7 +105,7 @@ public class QuizElementHandler implements PageElementHandler, PageElementStore<
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if (element instanceof QuizPart quizPart) {
-			return new QuizInspectorController(ureq, wControl, quizPart, this);
+			return new QuizInspectorController(ureq, wControl, quizPart, this, entry);
 		}
 		return null;
 	}

@@ -65,6 +65,10 @@ public class RepositoryEntryShareController extends FormBasicController {
 		return media;
 	}
 
+	public String getTitle() {
+		return translate("share.confirm.title." + media.getType());
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String type = media.getType();

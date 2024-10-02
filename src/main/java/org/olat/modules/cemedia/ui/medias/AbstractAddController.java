@@ -97,8 +97,8 @@ public abstract class AbstractAddController extends BasicController {
 				media, settings.baseRepositoryEntry());
 		listenTo(shareCtrl);
 		
-		String title = translate("share.confirm.title." + media.getType());
-		cmc = new CloseableModalController(getWindowControl(), null, shareCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), null, shareCtrl.getInitialComponent(),
+				true, shareCtrl.getTitle(), true);
 		listenTo(cmc);
 		cmc.activate();
 	}

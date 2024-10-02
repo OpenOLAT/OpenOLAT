@@ -47,6 +47,7 @@ import org.olat.modules.ceditor.ui.GalleryEditorController;
 import org.olat.modules.ceditor.ui.GalleryInspectorController;
 import org.olat.modules.ceditor.ui.GalleryRunController;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2024-04-18<br>
@@ -54,6 +55,12 @@ import org.olat.modules.ceditor.ui.PageEditorV2Controller;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class GalleryElementHandler implements PageElementHandler, PageElementStore<GalleryElement>, SimpleAddPageElementHandler, ComponentEventListener {
+
+	private final RepositoryEntry entry;
+
+	public GalleryElementHandler(RepositoryEntry entry) {
+		this.entry = entry;
+	}
 
 	@Override
 	public String getType() {
@@ -86,7 +93,7 @@ public class GalleryElementHandler implements PageElementHandler, PageElementSto
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if (element instanceof GalleryPart galleryPart) {
-			return new GalleryEditorController(ureq, wControl, galleryPart, this);
+			return new GalleryEditorController(ureq, wControl, galleryPart, this, entry);
 		}
 		return null;
 	}

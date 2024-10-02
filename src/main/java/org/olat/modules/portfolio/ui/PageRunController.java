@@ -849,10 +849,10 @@ public class PageRunController extends BasicController implements TooledControll
 			QuizElementHandler quizElementHandler = new QuizElementHandler(settings.getBaseRepositoryEntry(), settings.getSubIdent());
 			handlers.add(quizElementHandler);
 			// handler for gallery
-			GalleryElementHandler galleryElementHandler = new GalleryElementHandler();
+			GalleryElementHandler galleryElementHandler = new GalleryElementHandler(settings.getBaseRepositoryEntry());
 			handlers.add(galleryElementHandler);
 			// handler for image comparison
-			ImageComparisonElementHandler imageComparisonElementHandler = new ImageComparisonElementHandler();
+			ImageComparisonElementHandler imageComparisonElementHandler = new ImageComparisonElementHandler(settings.getBaseRepositoryEntry());
 			handlers.add(imageComparisonElementHandler);
 
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
@@ -910,11 +910,11 @@ public class PageRunController extends BasicController implements TooledControll
 				creationHandlers.add(quizElementHandler);
 			}
 
-			GalleryElementHandler galleryElementHandler = new GalleryElementHandler();
+			GalleryElementHandler galleryElementHandler = new GalleryElementHandler(settings.getBaseRepositoryEntry());
 			handlers.add(galleryElementHandler);
 			creationHandlers.add(galleryElementHandler);
 
-			ImageComparisonElementHandler imageComparisonElementHandler = new ImageComparisonElementHandler();
+			ImageComparisonElementHandler imageComparisonElementHandler = new ImageComparisonElementHandler(settings.getBaseRepositoryEntry());
 			handlers.add(imageComparisonElementHandler);
 			creationHandlers.add(imageComparisonElementHandler);
 

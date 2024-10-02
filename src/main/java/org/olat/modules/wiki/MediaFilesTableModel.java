@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -62,7 +63,7 @@ public class MediaFilesTableModel extends DefaultTableDataModel<MediaFileElement
 
 	public void addColumnDescriptors(TableController tableCtr) {
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.filename", 0, WikiMainController.ACTION_SHOW_MEDIA,
-				getLocale(), 1, new StrikeThroughCellRenderer()));
+				getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new StrikeThroughCellRenderer()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.created.by", 1, null, getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.creation.date", 2, null, getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.deleted.by", 3, null, getLocale()));

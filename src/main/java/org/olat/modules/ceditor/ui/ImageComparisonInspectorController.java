@@ -60,6 +60,7 @@ import org.olat.modules.cemedia.MediaToPagePart;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
+import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,6 +75,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 	private MediaUIHelper.AlertBoxComponents alertBoxComponents;
 	private ImageComparisonElement imageComparisonElement;
 	private final PageElementStore<ImageComparisonElement> store;
+	private final RepositoryEntry entry;
 	private SingleSelection orientationEl;
 	private SingleSelection typeEl;
 	private SliderElement initialSliderPositionEl;
@@ -98,10 +100,11 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 
 	public ImageComparisonInspectorController(UserRequest ureq, WindowControl wControl,
 											  ImageComparisonElement imageComparisonElement,
-											  PageElementStore<ImageComparisonElement> store) {
+											  PageElementStore<ImageComparisonElement> store, RepositoryEntry entry) {
 		super(ureq, wControl, "tabs_inspector");
 		this.imageComparisonElement = imageComparisonElement;
 		this.store = store;
+		this.entry = entry;
 		initForm(ureq);
 	}
 
@@ -444,10 +447,10 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 	}
 
 	private void doChooseImage(UserRequest ureq, int index) {
-		chooseImageController = new ChooseImageController(ureq, getWindowControl(), false);
+		chooseImageController = new ChooseImageController(ureq, getWindowControl(), false, entry);
 		chooseImageController.setUserData(index);
 		listenTo(chooseImageController);
-		String title = translate("choose.image");
+		String title = translate("add.others.modal.title");
 		cmc = new CloseableModalController(getWindowControl(), null,
 				chooseImageController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
