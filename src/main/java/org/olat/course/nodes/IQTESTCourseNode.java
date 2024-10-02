@@ -157,9 +157,9 @@ import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.GradingService;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -774,15 +774,16 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	public void promoteAssessmentTestSession(AssessmentTestSession testSession, UserCourseEnvironment assessedUserCourseEnv,
 			boolean updateScoring, Identity coachingIdentity, Role by, Locale locale) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentEntry currentAssessmentEntry = null;
+		AssessmentEntry currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 		
-		Float score = null;
-		Float weightedScore = null;
-		BigDecimal scoreScale = null;
-		String grade = null;
-		String gradeSystemIdent = null;
-		String performanceClassIdent = null;
-		Boolean passed = null;
+		
+		Float score = currentAssessmentEntry.getScore() != null? Float.valueOf(currentAssessmentEntry.getScore().floatValue()): null;
+		Float weightedScore = currentAssessmentEntry.getWeightedScore() != null? Float.valueOf(currentAssessmentEntry.getWeightedScore().floatValue()): null;
+		BigDecimal scoreScale = currentAssessmentEntry.getScoreScale();
+		String grade = currentAssessmentEntry.getGrade();
+		String gradeSystemIdent = currentAssessmentEntry.getGradeSystemIdent();
+		String performanceClassIdent = currentAssessmentEntry.getPerformanceClassIdent();
+		Boolean passed = currentAssessmentEntry.getPassed();
 		if(updateScoring) {
 			AssessmentTest assessmentTest = loadAssessmentTest(testSession.getTestEntry());
 			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
@@ -792,11 +793,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			scoreScale = ScoreScalingHelper.getScoreScale(this);
 			weightedScore = ScoreScalingHelper.getWeightedFloatScore(score, scoreScale);
 			passed = testSession.getPassed();
-			if(testSession.getManualScore() != null && finalScore != null) {
+			if(finalScore != null) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(assessedUserCourseEnv), this);
 				if (assessmentConfig.hasGrade() && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
 					currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
-					if (assessmentConfig.isAutoGrade() || (currentAssessmentEntry != null && StringHelper.containsNonWhitespace(currentAssessmentEntry.getGrade()))) {
+					if (assessmentConfig.isAutoGrade() || StringHelper.containsNonWhitespace(currentAssessmentEntry.getGrade())) {
 						GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 						GradeScale gradeScale = gradeService.getGradeScale(
 								assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
@@ -815,9 +816,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			}
 		}
 		
-		if (currentAssessmentEntry == null) {
-			currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
-		}
 		boolean increment = currentAssessmentEntry.getAttempts() == null || currentAssessmentEntry.getAttempts().intValue() == 0;
 		ScoreEvaluation sceval = new ScoreEvaluation(score, weightedScore, scoreScale, grade, gradeSystemIdent, performanceClassIdent, passed,
 				null, null, null, 1.0d, AssessmentRunStatus.done, testSession.getKey());
