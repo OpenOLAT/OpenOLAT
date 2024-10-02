@@ -71,6 +71,7 @@ import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionCon
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataContainer;
 import org.olat.core.commons.services.vfs.VFSMetadataItem;
+import org.olat.core.commons.services.vfs.VFSMetadataLeaf;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
@@ -864,6 +865,14 @@ public class FolderController extends FormBasicController implements Activateabl
 			VFSRevision vfsRevision = metadataKeyToLatestRevision.get(vfsMetadata.getKey());
 			
 			VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
+			if (vfsItem instanceof VFSContainer container) {
+				vfsItem = new VFSMetadataContainer(vfsRepositoryService, false, vfsMetadata,
+						container.getParentContainer(), container.getLocalSecurityCallback(),
+						container.getDefaultItemFilter());
+			} else if (vfsItem instanceof VFSLeaf leaf) {
+				vfsItem = new VFSMetadataLeaf(vfsRepositoryService, vfsMetadata, leaf.getParentContainer(),
+						leaf.getLocalSecurityCallback());
+			}
 			FolderRow row = createRow(ureq, vfsItem, vfsMetadata);
 			row.setDeleted(true);
 			row.setDeletedDate(FolderUIFactory.getDeletedDate(vfsMetadata, vfsRevision));
@@ -2643,7 +2652,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		removeAsListenerAndDispose(deleteSoftlyConfirmationCtrl);
 		
-		VFSItem vfsItem = getUncachedItem(row.getVfsItem());
+		VFSItem vfsItem = row.getVfsItem();
 		if (canNotDeleteLeaf(vfsItem)) {
 			showWarning("error.delete.locked.leaf");
 			loadModel(ureq);
@@ -2708,7 +2717,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		List<VFSItem> selecteditems = selectedIndex.stream()
 				.map(index -> dataModel.getObject(index.intValue()))
 				.filter(Objects::nonNull)
-				.map(row -> getUncachedItem(row.getVfsItem()))
+				.map(FolderRow::getVfsItem)
 				.filter(Objects::nonNull)
 				.filter(item -> !isItemNotAvailable(ureq, item, false))
 				.filter(item -> !canNotDeleteLeaf(item) && !canNotDeleteContainer(item))
@@ -2740,7 +2749,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		List<VFSItem> itemsToDelete = selectedIndex.stream()
 				.map(index -> dataModel.getObject(index.intValue()))
 				.filter(Objects::nonNull)
-				.map(row -> getUncachedItem(row.getVfsItem()))
+				.map(FolderRow::getVfsItem)
 				.filter(Objects::nonNull)
 				.filter(item -> !isItemNotAvailable(ureq, item, false))
 				.filter(item -> !canNotDeleteLeaf(item) && !canNotDeleteContainer(item))
@@ -2768,7 +2777,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		removeAsListenerAndDispose(deletePermanentlyConfirmationCtrl);
 		
-		VFSItem vfsItem = getUncachedItem(row.getVfsItem());
+		VFSItem vfsItem = row.getVfsItem();
 		VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
 		if (vfsMetadata == null || !vfsMetadata.isDeleted()) {
 			if (vfsItem instanceof VFSLeaf) {
@@ -2798,7 +2807,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
-		VFSMetadata vfsMetadata = getUncachedItem(vfsItem).getMetaInfo();
+		VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
 		if (isNotDeleted(vfsMetadata)) {
 			if (vfsItem instanceof VFSLeaf) {
 				showWarning("error.delete.permanently.leaf");
@@ -2827,7 +2836,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		List<VFSItem> selecteditems = selectedIndex.stream()
 				.map(index -> dataModel.getObject(index.intValue()))
 				.filter(Objects::nonNull)
-				.map(row -> getUncachedItem(row.getVfsItem()))
+				.map(FolderRow::getVfsItem)
 				.filter(Objects::nonNull)
 				.filter(vfsIttem -> !isItemNotAvailable(ureq, vfsIttem, false))
 				.filter(vfsItem -> canDeletePermamently(vfsItem) && !isNotDeleted(vfsItem.getMetaInfo()))
@@ -2872,8 +2881,9 @@ public class FolderController extends FormBasicController implements Activateabl
 				.filter(Objects::nonNull)
 				.map(row -> getUncachedItem(row.getVfsItem()))
 				.filter(Objects::nonNull)
-				.filter(vfsIttem -> !isItemNotAvailable(ureq, vfsIttem, false))
+				.filter(vfsItem -> !isItemNotAvailable(ureq, vfsItem, false))
 				.filter(vfsItem -> canDeletePermamently(vfsItem) && !isNotDeleted(vfsItem.getMetaInfo()))
+				.sorted((i1, i2) -> Boolean.valueOf(i1 instanceof VFSContainer).compareTo(Boolean.valueOf(i2 instanceof VFSContainer))) // Files first
 				.toList();
 		
 		if (selecteditems.isEmpty()) {
@@ -2912,6 +2922,10 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private boolean canDeletePermamently(VFSItem vfsItem) {
+		return canDeletePermamently(vfsItem, vfsItem.getMetaInfo());
+	}
+	
+	private boolean canDeletePermamently(VFSItem vfsItem, VFSMetadata vfsMetadata) {
 		VFSSecurityCallback secCallback = VFSManager.findInheritedSecurityCallback(vfsItem);
 		
 		if (secCallback == null) {
@@ -2924,7 +2938,6 @@ public class FolderController extends FormBasicController implements Activateabl
 			if (secCallback.canDeleteRevisionsPermanently()) {
 				return true;
 			}
-			VFSMetadata vfsMetadata = vfsItem.getMetaInfo();
 			if (vfsMetadata != null 
 					&& vfsMetadata.getFileInitializedBy() != null
 					&& getIdentity().getKey().equals(vfsMetadata.getFileInitializedBy().getKey())) {
@@ -3066,7 +3079,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	
 	private boolean hasLockedChild(VFSContainer vfsContainer) {
 		for (VFSItem vfsItem : vfsContainer.getItems()) {
-			if (vfsLockManager.isLockedForMe(vfsItem, getIdentity(), VFSLockApplicationType.vfs, null)) {
+			if (vfsLockManager.isLockedForMe(vfsItem, vfsItem.getMetaInfo(), getIdentity(), VFSLockApplicationType.vfs, null)) {
 				return true;
 			}
 			if (vfsItem instanceof VFSContainer vfsChildContainer && hasLockedChild(vfsChildContainer)) {

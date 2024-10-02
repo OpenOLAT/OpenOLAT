@@ -34,7 +34,7 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
  */
 public class VFSMetadataLeaf extends VFSMetadataItem implements VFSLeaf {
 
-	protected VFSMetadataLeaf(VFSRepositoryService vfsRepositoryService, VFSMetadata vfsMetadata,
+	public VFSMetadataLeaf(VFSRepositoryService vfsRepositoryService, VFSMetadata vfsMetadata,
 			VFSContainer parentContainer, VFSSecurityCallback secCallback) {
 		super(vfsRepositoryService, vfsMetadata, parentContainer, secCallback);
 	}
