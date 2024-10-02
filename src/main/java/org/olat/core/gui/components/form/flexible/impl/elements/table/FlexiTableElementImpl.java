@@ -146,6 +146,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private VelocityContainer rowRenderer;
 	private VelocityContainer detailsRenderer;
 
+	private FormLink sortOrderButton;
+	private FlexiTableSortOrderController sortOrderCtrl;
 	private FormLink customButton;
 	private FormLink exportButton;
 	private FormLink searchButton;
@@ -216,6 +218,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		
 		String dispatchId = component.getDispatchID();
+		sortOrderButton = new FormLinkImpl(dispatchId.concat("_sortOrderButton"), "rSortOrderButton", "", Link.BUTTON + Link.NONTRANSLATED);
+		sortOrderButton.setTranslator(translator);
+		sortOrderButton.setIconLeftCSS("o_icon o_icon_sort_menu o_icon-lg");
+		sortOrderButton.setIconRightCSS("o_icon o_icon_caret o_icon-sm");
+		components.put("rSortOrder", sortOrderButton);
+
 		customButton = new FormLinkImpl(dispatchId.concat("_customButton"), "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		customButton.setTranslator(translator);
 		customButton.setIconLeftCSS("o_icon o_icon_customize");
@@ -1071,7 +1079,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public FormLink getSearchButton() {
 		return searchButton;
 	}
-	
+
+	public FormLink getSortOrderButton() {
+		return sortOrderButton;
+	}
+
 	public FormLink getCustomButton() {
 		return customButton;
 	}
@@ -1296,6 +1308,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			doSelectAllColumn(ureq, Integer.parseInt(selectAllColumn));
 		} else if(dispatchuri != null && StringHelper.isLong(deselectAllColumn)) {
 			doUnSelectAllColumn(ureq, Integer.parseInt(deselectAllColumn));
+		} else if(sortOrderButton != null
+				&& sortOrderButton.getFormDispatchId().equals(dispatchuri)) {
+			doSetSortOrder(ureq);
 		} else if(customButton != null
 				&& customButton.getFormDispatchId().equals(dispatchuri)) {
 			//snap the request
@@ -1368,8 +1383,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(source == callout) {
 			if(CloseableCalloutWindowController.CLOSE_WINDOW_EVENT == event) {
-				//already deactivated
-				callout = null;
+				cleanUp();
 			}
 		} else if(source == extendedSearchCtrl) {
 			if(event == Event.CANCELLED_EVENT) {
@@ -1389,12 +1403,21 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if(sortOrderCtrl == source) {
+			if (event instanceof FlexiTableSortOrderController.SortOrderEvent sortOrderEvent) {
+				sort(sortOrderEvent.getSort().getSortKey().getKey(), !sortOrderEvent.getSort().getSortKey().isAsc());
+				saveCustomSettings(ureq);
+			}
+			callout.deactivate();
+			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
 		settingsCtrl = cleanUp(settingsCtrl);
+		sortOrderCtrl = cleanUp(sortOrderCtrl);
 		cmc = cleanUp(cmc);
+		callout = cleanUp(callout);
 	}
 	
 	private <T extends Controller> T cleanUp(T ctrl) {
@@ -1558,6 +1581,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				sort.setSelected(selected);
 				if(selected) {
 					sort.getSortKey().setAsc(asc);
+					if (sortOrderButton != null) {
+						sortOrderButton.setI18nKey(sort.getLabel());
+						if (asc) {
+							sortOrderButton.setIconLeftCSS("o_icon o_icon_sort_amount_asc o_icon-lg");
+						} else {
+							sortOrderButton.setIconLeftCSS("o_icon o_icon_sort_amount_desc o_icon-lg");
+						}
+					}
 				} else {
 					sort.getSortKey().setAsc(false);
 				}
@@ -1779,6 +1810,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			searchFieldEl.setValue("");
 			searchFieldEl.setVisible(true);
 		}
+	}
+
+	protected void doSetSortOrder(UserRequest ureq) {
+		sortOrderCtrl = new FlexiTableSortOrderController(ureq, wControl, this);
+		sortOrderCtrl.addControllerListener(this);
+		callout = new CloseableCalloutWindowController(ureq, wControl, sortOrderCtrl.getInitialComponent(),
+				sortOrderButton, translator.translate("sort.settings"), true, "o_sel_flexi_sort_order_callout");
+		callout.activate();
+		callout.addControllerListener(this);
 	}
 
 	protected void customizeCallout(UserRequest ureq) {
@@ -2385,6 +2425,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(searchButton != null) {
 			allOk &= searchButton.validate();
 		}
+		if(sortOrderButton != null) {
+			allOk &= sortOrderButton.validate();
+		}
 		if(customButton != null) {
 			allOk &= customButton.validate();
 		}
@@ -2475,6 +2518,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	protected void rootFormAvailable() {
 		rootFormAvailable(searchButton);
+		rootFormAvailable(sortOrderButton);
 		rootFormAvailable(customButton);
 		rootFormAvailable(settingsButton);
 		rootFormAvailable(exportButton);

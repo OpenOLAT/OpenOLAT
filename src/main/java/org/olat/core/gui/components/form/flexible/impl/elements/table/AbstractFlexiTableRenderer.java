@@ -366,7 +366,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if(!empty && ftE.isSortEnabled()) {
 			List<FlexiTableSort> sorts = ftE.getSorts();
 			if(sorts != null && !sorts.isEmpty()) {
-				renderSortDropdown(sb, ftE, sorts, translator);
+				sb.append("<div class='btn-group'>");
+				renderFormItem(renderer, sb, ftE.getSortOrderButton(), ubu, translator, renderResult, null);
+				sb.append("</div> ");
 			}
 		}
 		
