@@ -75,6 +75,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 	public static final Set<String> imageMimeTypes = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 
 	private FileElement fileEl;
+	private StaticTextElement filenameEl;
 	private TextElement titleEl;
 	private TagSelection tagsEl;
 	private TextElement sourceEl;
@@ -176,7 +177,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 	
 	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
-		fileEl.limitToMimeType(imageMimeTypes, null, null);
+		fileEl.limitToMimeType(imageMimeTypes, "error.image.mimetype", null);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		MediaUIHelper.setQuota(quota, fileEl);
 		fileEl.setPreview(ureq.getUserSession(), true);
@@ -192,7 +193,7 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
-		StaticTextElement filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
+		filenameEl = uifactory.addStaticTextElement("artefact.filename", "artefact.filename", "", formLayout);
 		filenameEl.setVisible(metadataOnly);
 		
 		if(mediaReference != null) {
@@ -204,6 +205,8 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 				fileEl.setInitialFile(jItem.getBasefile());
 				filenameEl.setValue(item.getName());
 			}
+		} else if (metadataOnly && uploadMedia != null) {
+			filenameEl.setValue(uploadMedia.getFilename());
 		}
 		
 		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, getIdentity(), false);
@@ -253,6 +256,14 @@ public class CollectImageMediaController extends AbstractCollectMediaController 
 		if (titleEl.isEmpty()) {
 			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		}
+
+		 if (metadataOnly && uploadMedia != null && uploadMedia.getMimeType() != null) {
+			filenameEl.clearError();
+			if (!imageMimeTypes.contains(uploadMedia.getMimeType().toLowerCase())) {
+				filenameEl.setErrorKey("error.image.mimetype");
+				allOk &= false;
+			}
 		}
 		
 		return allOk;
