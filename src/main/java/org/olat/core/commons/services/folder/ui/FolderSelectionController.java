@@ -21,6 +21,8 @@ package org.olat.core.commons.services.folder.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -455,6 +457,14 @@ public class FolderSelectionController extends FormBasicController implements Fi
 					.map(row -> getUncachedItem(row.getVfsItem()))
 					.filter(Objects::nonNull)
 					.toList();
+			}
+		} else if (FileBrowserSelectionMode.sourceSingle == selectionMode) {
+			Iterator<Integer> iterator = tableEl.getMultiSelectedIndex().iterator();
+			if (iterator.hasNext()) {
+				FolderRow row = dataModel.getObject(iterator.next());
+				items = Collections.singletonList(getUncachedItem(row.getVfsItem()));
+			} else {
+				items = List.of();
 			}
 		} else {
 			items = List.of(getUncachedItem(currentContainer));

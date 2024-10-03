@@ -366,7 +366,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	protected void doUploadFile(UserRequest ureq) {
 		if (guardModalController(fileUploadCtrl)) return;
 		
-		fileUploadCtrl = new ProjFileUploadController(ureq, getWindowControl(), project, null);
+		fileUploadCtrl = new ProjFileUploadController(ureq, getWindowControl(), project, null, null);
 		listenTo(fileUploadCtrl);
 		
 		String title = translate("file.upload");
