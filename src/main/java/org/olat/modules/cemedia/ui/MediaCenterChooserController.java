@@ -138,8 +138,8 @@ public class MediaCenterChooserController extends BasicController implements Pag
 		shareCtrl = new RepositoryEntryShareController(ureq, getWindowControl(), media, baseRepositoryEntry);
 		listenTo(shareCtrl);
 		
-		String title = translate("share.confirm.title." + media.getType());
-		cmc = new CloseableModalController(getWindowControl(), null, shareCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), null, shareCtrl.getInitialComponent(),
+				true, shareCtrl.getTitle(), true);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -71,6 +71,7 @@ import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
+import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,6 +89,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 
 	private GalleryPart galleryPart;
 	private final PageElementStore<GalleryElement> store;
+	private final RepositoryEntry entry;
 	private GalleryModel tableModel;
 	private FlexiTableElement tableEl;
 	private FormLink addImageButton;
@@ -111,10 +113,11 @@ public class GalleryEditorController extends FormBasicController implements Page
 	private MediaService mediaService;
 
 	public GalleryEditorController(UserRequest ureq, WindowControl wControl, GalleryPart galleryPart,
-								   PageElementStore<GalleryElement> store) {
+								   PageElementStore<GalleryElement> store, RepositoryEntry entry) {
 		super(ureq, wControl, "gallery_editor");
 		this.galleryPart = galleryPart;
 		this.store = store;
+		this.entry = entry;
 
 		initForm(ureq);
 		loadModel();
@@ -311,7 +314,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 	}
 
 	private void doAddImage(UserRequest ureq) {
-		chooseImageController = new ChooseImageController(ureq, getWindowControl(), true);
+		chooseImageController = new ChooseImageController(ureq, getWindowControl(), true, entry);
 		listenTo(chooseImageController);
 		String title = translate("choose.image");
 		cmc = new CloseableModalController(getWindowControl(), null,

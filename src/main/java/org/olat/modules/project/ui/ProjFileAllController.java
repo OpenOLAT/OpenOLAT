@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import java.util.Collections;
 import java.util.Date;
 
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -134,7 +135,7 @@ public class ProjFileAllController extends ProjFileListController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == uploadEl) {
-			doUploadFile(ureq, uploadEl);
+			doUploadFile(ureq, uploadEl, Collections.emptyList());
 			selectFilterTab(ureq, tabAll);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == createLink) {

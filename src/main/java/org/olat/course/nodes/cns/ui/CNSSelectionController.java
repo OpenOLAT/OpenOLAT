@@ -99,6 +99,7 @@ public class CNSSelectionController extends FormBasicController implements Flexi
 	private final CNSSelectionStatusRenderer statusRenderer;
 	private final int requiredSelections;
 	private int numSelections;
+	private boolean moreSelectionsRequired;
 
 	public CNSSelectionController(UserRequest ureq, WindowControl wControl, CNSCourseNode courseNode, UserCourseEnvironment userCourseEnv, CNSEnvironment cnsEnv) {
 		super(ureq, wControl, "selection");
@@ -174,20 +175,21 @@ public class CNSSelectionController extends FormBasicController implements Flexi
 					numSelections++;
 				}
 				
-				forgeOverview(ureq, row);
-				
 				rows.add(row);
 			}
 		}
 		
-		if (numSelections < requiredSelections) {
-			for (CNSSelectionRow row : rows) {
+		moreSelectionsRequired = numSelections < requiredSelections;
+		
+		for (CNSSelectionRow row : rows) {
+			forgeOverview(ureq, row);
+			if (moreSelectionsRequired) {
 				forgeSelectLink(row);
 			}
 		}
 		
 		selectionDataModel.setObjects(rows);
-		selectionTableEl.reset(false, false, true);
+		selectionTableEl.reset(true, true, true);
 		
 		updateSelectionMessage();
 		updateSelectionStatusUI();
@@ -216,7 +218,7 @@ public class CNSSelectionController extends FormBasicController implements Flexi
 		detailsLink.setUserObject(row);
 		links.add(detailsLink);
 		
-		if (!row.isSelected() && !userCourseEnv.isCourseReadOnly()) {
+		if (moreSelectionsRequired && !row.isSelected() && !userCourseEnv.isCourseReadOnly()) {
 			Link selectLink = LinkFactory.createCustomLink("o_cns_select_" + row.getCourseNode().getIdent(), CMD_SELECT,
 					null, Link.BUTTON + Link.NONTRANSLATED, null, this);
 			selectLink.setCustomDisplayText(translate("select"));

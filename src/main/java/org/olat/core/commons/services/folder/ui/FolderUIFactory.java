@@ -32,9 +32,9 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.AbstractVirtualContainer;
-import org.olat.core.util.vfs.VFSExternalItem;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSExternalItem;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -225,11 +225,14 @@ public class FolderUIFactory {
 	}
 
 	public static boolean isNew(Date refDate, VFSMetadata vfsMetadata, VFSItem vfsItem) {
-		if (vfsMetadata != null && vfsMetadata.getFileLastModified() != null && refDate.before(vfsMetadata.getFileLastModified())) {
-			return true;
-		}
-		if (vfsItem != null && vfsItem.getLastModified() > 0 && refDate.before(new Date(vfsItem.getLastModified()))) {
-			return true;
+		if (vfsMetadata != null) {
+			if (vfsMetadata.getCreationDate() != null && refDate.before(vfsMetadata.getCreationDate())) {
+				return true;
+			}
+		} else if (vfsItem != null) {
+			if (vfsItem.getLastModified() > 0 && refDate.before(new Date(vfsItem.getLastModified()))) {
+				return true;
+			}
 		}
 		return false;
 	}

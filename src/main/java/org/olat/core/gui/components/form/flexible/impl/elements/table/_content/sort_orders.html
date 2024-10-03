@@ -1,0 +1,11 @@
+<div class="o_table_sorter">
+	<ul class="o_dropdown list-unstyled" role="menu">
+		#foreach($row in $rows)
+			#if($row.spacer())
+				<li class="divider"></li>
+			#else
+				<li>$r.render($row.button().getComponentName())</li>
+			#end
+		#end
+	</ul>
+</div>

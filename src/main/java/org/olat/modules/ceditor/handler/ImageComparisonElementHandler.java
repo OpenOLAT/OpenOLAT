@@ -44,6 +44,7 @@ import org.olat.modules.ceditor.model.ImageComparisonType;
 import org.olat.modules.ceditor.model.jpa.ImageComparisonPart;
 import org.olat.modules.ceditor.ui.ImageComparisonInspectorController;
 import org.olat.modules.ceditor.ui.ImageComparisonRunController;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2024-05-15<br>
@@ -51,6 +52,13 @@ import org.olat.modules.ceditor.ui.ImageComparisonRunController;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class ImageComparisonElementHandler implements PageElementHandler, PageElementStore<ImageComparisonElement>, SimpleAddPageElementHandler, ComponentEventListener {
+
+	private final RepositoryEntry entry;
+
+	public ImageComparisonElementHandler(RepositoryEntry entry) {
+		this.entry = entry;
+	}
+
 	@Override
 	public String getType() {
 		return "imagecomparison";
@@ -87,7 +95,7 @@ public class ImageComparisonElementHandler implements PageElementHandler, PageEl
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if (element instanceof ImageComparisonPart imageComparisonPart) {
-			return new ImageComparisonInspectorController(ureq, wControl, imageComparisonPart, this);
+			return new ImageComparisonInspectorController(ureq, wControl, imageComparisonPart, this, entry);
 		}
 		return null;
 	}

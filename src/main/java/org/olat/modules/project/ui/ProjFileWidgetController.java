@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -135,7 +136,7 @@ public class ProjFileWidgetController extends ProjFileListController {
 		if (source == titleLink || source == showAllLink) {
 			fireEvent(ureq, ProjProjectDashboardController.SHOW_ALL);
 		} else if (source == uploadEl) {
-			doUploadFile(ureq, uploadEl);
+			doUploadFile(ureq, uploadEl, Collections.emptyList());
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == createLink) {
 			doCreateFile(ureq);

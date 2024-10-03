@@ -645,7 +645,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			if (event == Event.DONE_EVENT) {
 				loadModel(ureq, false);
 				showUploadSuccessMessage(Collections.singletonList(fileUploadCtrl.getFilename()));
-				fileUploadCtrl.getFileEl().reset();
+				if (fileUploadCtrl.getFileEl() != null) {
+					fileUploadCtrl.getFileEl().reset();
+				}
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -653,7 +655,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		} else if (addFromBrowserCtrl == source) {
 			cmc.deactivate();
 			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
-				doUploadFile(ureq, selectionEvent.getFileElement());
+				doUploadFile(ureq, selectionEvent.getFileElement(), selectionEvent.getVfsItems());
 			} else if (event == Event.CANCELLED_EVENT) {
 				cleanUp();
 			}
@@ -782,13 +784,22 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		}
 	}
 
-	protected void doUploadFile(UserRequest ureq, FileElement fileElement) {
-		if (guardModalController(fileUploadCtrl) || fileElement == null || fileElement.getUploadFile() == null) {
+	protected void doUploadFile(UserRequest ureq, FileElement fileElement, List<VFSItem> vfsItems) {
+		if ((guardModalController(fileUploadCtrl) || fileElement == null || fileElement.getUploadFile() == null) && (vfsItems == null || vfsItems.isEmpty())) {
 			cleanUp();
 			return;
 		}
 
-		fileUploadCtrl = new ProjFileUploadController(ureq, getWindowControl(), project, fileElement);
+		VFSLeaf selectedLeaf = null;
+		// assuming vfsItems is not null and only contains one element (single selection of an item)
+		if (vfsItems != null && vfsItems.size() == 1) {
+			VFSItem selectedItem = vfsItems.get(0);
+			if (selectedItem instanceof VFSLeaf vfsLeaf) {
+				selectedLeaf = vfsLeaf;
+			}
+		}
+
+		fileUploadCtrl = new ProjFileUploadController(ureq, getWindowControl(), project, fileElement, selectedLeaf);
 		listenTo(fileUploadCtrl);
 
 		String title = translate("file.upload");

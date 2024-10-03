@@ -19,6 +19,8 @@
  */
 package org.olat.modules.project.ui;
 
+import java.io.InputStream;
+
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -34,6 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
@@ -47,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjFileUploadController extends FormBasicController {
 
+	private final VFSLeaf selectedLeaf;
 	private FileElement fileEl;
 
 	private ProjFileContentController fileEditCtrl;
@@ -59,15 +63,18 @@ public class ProjFileUploadController extends FormBasicController {
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 
-	public ProjFileUploadController(UserRequest ureq, WindowControl wControl, ProjProject project, FileElement fileEl) {
+	public ProjFileUploadController(UserRequest ureq, WindowControl wControl, ProjProject project, FileElement fileEl, VFSLeaf selectedLeaf) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(CreateDocumentController.class, getLocale(), getTranslator()));
 		this.project = project;
 		this.fileEl = fileEl;
+		this.selectedLeaf = selectedLeaf;
 		
 		initForm(ureq);
 		if (fileEl != null && fileEl.getUploadFileName() != null) {
 			fileEditCtrl.setFilename(fileEl.getUploadFileName(), false);
+		} else if (selectedLeaf != null) {
+			fileEditCtrl.setFilename(selectedLeaf.getName(), false);
 		}
 	}
 	
@@ -85,7 +92,7 @@ public class ProjFileUploadController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (fileEl == null) {
+		if (fileEl == null && selectedLeaf == null) {
 			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "file.file", formLayout);
 			fileEl.setMandatory(true, "form.mandatory.hover");
 			fileEl.addActionListener(FormEvent.ONCHANGE);
@@ -125,19 +132,32 @@ public class ProjFileUploadController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (fileEl.getUploadFile() != null) {
-			file = projectService.createFile(getIdentity(), project, fileEditCtrl.getFilename(), fileEl.getUploadInputStream(), true);
-			if (file != null) {
-				projectService.updateTags(getIdentity(), file.getArtefact(), fileEditCtrl.getTagDisplayValues());
-
-				VFSMetadata vfsMetadata = file.getVfsMetadata();
-				fileEditCtrl.updateVfsMetdata(vfsMetadata);
-				vfsMetadata = vfsRepositoryService.updateMetadata(vfsMetadata);
-			}
-			fireEvent(ureq, FormEvent.DONE_EVENT);
+		if (fileEl != null && fileEl.getUploadFile() != null) {
+			handleFileCreation(ureq, fileEl.getUploadInputStream());
+		} else if (selectedLeaf != null) {
+			handleFileCreation(ureq, selectedLeaf.getInputStream());
 		} else {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		}
+	}
+
+	/**
+	 * depending on incoming file, fileInputstream could be from an uploaded file
+	 * or from a selected file from filehub (which is a single vfsLeaf instead of fileElement)
+	 *
+	 * @param ureq
+	 * @param fileInputStream
+	 */
+	private void handleFileCreation(UserRequest ureq, InputStream fileInputStream) {
+		file = projectService.createFile(getIdentity(), project, fileEditCtrl.getFilename(), fileInputStream, true);
+		if (file != null) {
+			projectService.updateTags(getIdentity(), file.getArtefact(), fileEditCtrl.getTagDisplayValues());
+
+			VFSMetadata vfsMetadata = file.getVfsMetadata();
+			fileEditCtrl.updateVfsMetdata(vfsMetadata);
+			vfsMetadata = vfsRepositoryService.updateMetadata(vfsMetadata);
+		}
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 }
