@@ -19,16 +19,11 @@
  */
 package org.olat.modules.catalog.ui;
 
-import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.messages.MessageController;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogSecurityCallback;
 import org.olat.modules.catalog.CatalogSecurityCallbackFactory;
-import org.olat.modules.catalog.CatalogV2Module;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,28 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class WebCatalogMainController extends CatalogMainController {
 
-	@Autowired
-	private CatalogV2Module catalogModule;
-
 	public WebCatalogMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-	}
-
-	@Override
-	protected void init(UserRequest ureq, WindowControl wControl) {
-		if (catalogModule.isEnabled() && catalogModule.isWebPublishEnabled()) {
-			if (catalogModule.isWebPublishTemporaryDisabled()) {
-				MessageController messageCtrl = MessageUIFactory.createInfoMessage(ureq, wControl,
-						translate("web.catalog.temporary.disabled.title"),
-						translate("web.catalog.temporary.disabled.text"));
-				listenTo(messageCtrl);
-				putInitialPanel(messageCtrl.getInitialComponent());
-			} else {
-				super.init(ureq, wControl);
-			}
-		} else {
-			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
-		}
 	}
 
 	@Override

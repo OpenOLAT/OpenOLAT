@@ -56,6 +56,9 @@
 				<entry key="/tiny/">
 					<ref bean="tinywebbean" />
 				</entry>
+				<entry key="/catalog/">
+					<ref bean="webcatalogbean" />
+				</entry>
 				<entry key="/survey/">
 					<ref bean="evaluationformwebbean" />
 				</entry>
@@ -242,17 +245,6 @@
 					</bean>
 				</entry>
 				
-				<!-- Web catalog -->
-				<entry key="/webcatalog/">
-					<bean
-						class="org.olat.core.gui.control.ChiefControllerCreator">
-						<property name="contentControllerCreator">
-							<bean
-								class="org.olat.modules.catalog.ui.WebCatalogControllerCreator" />
-						</property>
-					</bean>
-				</entry>
-				
 			</map>
 		</property>
 	</bean>
@@ -313,6 +305,9 @@
 	<bean id="tinywebbean"
 		class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.TinyDispatcher" />
 		
+	<bean id="webcatalogbean"
+		class="org.olat.modules.catalog.WebCatalogDispatcher" />
+
 	<bean id="evaluationformwebbean"
 		class="org.olat.modules.forms.EvaluationFormDispatcher" />
 

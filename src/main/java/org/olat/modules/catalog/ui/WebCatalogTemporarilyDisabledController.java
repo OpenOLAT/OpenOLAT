@@ -19,30 +19,34 @@
  */
 package org.olat.modules.catalog.ui;
 
-import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.AutoCreator;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.login.DmzBFWCParts;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 
 /**
  * 
- * Initial date: 26 Sep 2024<br>
+ * Initial date: 3 Oct 2024<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class WebCatalogControllerCreator implements ControllerCreator {
+public class WebCatalogTemporarilyDisabledController extends BasicController {
+
+	public WebCatalogTemporarilyDisabledController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		MessageController messageCtrl = MessageUIFactory.createInfoMessage(ureq, wControl,
+				translate("web.catalog.temporarily.disabled.title"),
+				translate("web.catalog.temporarily.disabled.text"));
+		listenTo(messageCtrl);
+		putInitialPanel(messageCtrl.getInitialComponent());
+	}
 
 	@Override
-	public Controller createController(UserRequest lureq, WindowControl lwControl) {
-		DmzBFWCParts dmzSitesAndNav = new DmzBFWCParts();
-		dmzSitesAndNav.showTopNav(false);
-		AutoCreator contentControllerCreator = new AutoCreator();
-		contentControllerCreator.setClassName(WebCatalogMainController.class.getName());
-		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
-		return new BaseFullWebappController(lureq, dmzSitesAndNav);
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 
 }

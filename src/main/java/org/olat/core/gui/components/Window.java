@@ -165,7 +165,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	public static final String IGNORE_VALIDATING_ERROR_RESPONSE_VALUE_MARKER = "oo-ignore-validating-error";
 	
 	private String uriPrefix;
-	private String uriPrefixSubPath;
 	private final String csrfToken;
 	private ComponentCollection contentPane;
 	private String latestTimestamp;
@@ -1368,14 +1367,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		this.uriPrefix = uriPrefix;
 	}
 	
-	public String getUriPrefixSubPath() {
-		return uriPrefixSubPath;
-	}
-
-	public void setUriPrefixSubPath(String uriPrefixSubPath) {
-		this.uriPrefixSubPath = uriPrefixSubPath;
-	}
-
 	public String getCsrfToken() {
 		return csrfToken;
 	}

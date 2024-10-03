@@ -96,10 +96,6 @@ public class CatalogMainController extends BasicController implements Activateab
 		this.secCallback = createSecCallback(ureq);
 		this.defaultSearchParams = createDefaultSearchParams(ureq);
 		
-		init(ureq, wControl);
-	}
-
-	protected void init(UserRequest ureq, WindowControl wControl) {
 		mainVC = createVelocityContainer("main");
 		putInitialPanel(mainVC);
 		

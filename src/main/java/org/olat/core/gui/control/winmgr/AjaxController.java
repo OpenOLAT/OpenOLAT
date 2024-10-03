@@ -268,9 +268,6 @@ public class AjaxController extends DefaultController {
 			List<ContextEntry> ces = p.getEntries();
 			String uriPrefix = wboImpl.getWindow().getUriPrefix();
 			bc.append(uriPrefix);
-			if (StringHelper.containsNonWhitespace(wboImpl.getWindow().getUriPrefixSubPath())) {
-				bc.append(wboImpl.getWindow().getUriPrefixSubPath());
-			}
 			bc.append(BusinessControlFactory.getInstance().getAsRestPart(ces, true));
 			writer.append(",\"businessPath\":").append(JSONObject.quote(bc.toString()));
 		    writer.append(",\"historyPointId\":").append(JSONObject.quote(p.getUuid()));

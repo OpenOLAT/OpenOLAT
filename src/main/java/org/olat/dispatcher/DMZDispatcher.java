@@ -178,17 +178,9 @@ public class DMZDispatcher implements Dispatcher {
 			if (!dmzOnly) {
 				int sl = pathInfo.indexOf('/', uriPrefix.length());
 				String sub;
-				String businessPath = null;
 				if (sl > 1) {
 					// e.g. something like /registration/ or /pwchange/
 					sub = pathInfo.substring(uriPrefix.length() - 1, sl + 1);
-					
-					if (pathInfo.length() > sl + 1) {
-						String[] split = pathInfo.substring(sl + 1).split("/");
-						if (split.length > 0 && split.length % 2 == 0) {
-							businessPath = BusinessControlFactory.getInstance().formatFromSplittedURI(split);
-						}
-					}
 				} else {
 					// e.g. something like /info.html from (/dmz/info.html)
 					sub = pathInfo;
@@ -196,25 +188,12 @@ public class DMZDispatcher implements Dispatcher {
 				// chief controller creator for sub path, e.g. 
 				subPathccc = dmzServicesByPath.get(sub);
 				if(subPathccc != null) {
-					if (ureq.getUserSession().isAuthenticated()) {
-						UserSession usess = ureq.getUserSession();
-						synchronized (usess) {
-							CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(usess);
-							usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
-							I18nManager.updateLocaleInfoToThread(usess);
-						}
-					}
 					Windows ws = Windows.getWindows(ureq);
 					synchronized (ws) { //o_clusterOK by:fj per user session
 						ChiefController occ = subPathccc.createChiefController(ureq);
 						Window window = occ.getWindow();
 						window.setUriPrefix(uriPrefix);
-						window.setUriPrefixSubPath(sub.substring(1));
 						ws.registerWindow(occ);
-						if (businessPath != null) {
-							List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
-							window.getDTabs().activate(ureq, null, ces);
-						}
 						window.dispatchRequest(ureq, true);
 						return;
 					}					

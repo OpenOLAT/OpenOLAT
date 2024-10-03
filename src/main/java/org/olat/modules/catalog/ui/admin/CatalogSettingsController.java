@@ -82,7 +82,7 @@ public class CatalogSettingsController extends FormBasicController {
 	private FormLayoutContainer taxonomiesCont;
 	private MultipleSelectionElement taxonomyEditRolesEl;
 	private FormToggle webPublishEnabledEl;
-	private FormToggle webPublishTemporaryDisabledEl;
+	private FormToggle webPublishTemporarilyDisabledEl;
 	private FormLayoutContainer migrationCont;
 	private FormLayoutContainer migrationStartCont;
 	private FormLink migrationStartLink;
@@ -161,10 +161,10 @@ public class CatalogSettingsController extends FormBasicController {
 		webPublishEnabledEl.toggle(catalogV2Module.isWebPublishEnabled());
 		webPublishEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
-		webPublishTemporaryDisabledEl = uifactory.addToggleButton("admin.webpub.temporary.disabled",
-				"admin.webpub.temporary.disabled", translate("on"), translate("off"), generalCont);
-		webPublishTemporaryDisabledEl.toggle(catalogV2Module.isWebPublishTemporaryDisabled());
-		webPublishTemporaryDisabledEl.addActionListener(FormEvent.ONCHANGE);
+		webPublishTemporarilyDisabledEl = uifactory.addToggleButton("admin.webpub.temporarily.disabled",
+				"admin.webpub.temporarily.disabled", translate("on"), translate("off"), generalCont);
+		webPublishTemporarilyDisabledEl.toggle(catalogV2Module.isWebPublishTemporarilyDisabled());
+		webPublishTemporarilyDisabledEl.addActionListener(FormEvent.ONCHANGE);
 		
 		migrationCont = FormLayoutContainer.createDefaultFormLayout("migrations", getTranslator());
 		migrationCont.setFormTitle(translate("admin.migration"));
@@ -190,7 +190,7 @@ public class CatalogSettingsController extends FormBasicController {
 		taxonomiesCont.setVisible(catalogV2Module.isEnabled());
 		taxonomyEditRolesEl.setVisible(catalogV2Module.isEnabled());
 		webPublishEnabledEl.setVisible(catalogV2Module.isEnabled());
-		webPublishTemporaryDisabledEl.setVisible(catalogV2Module.isEnabled() && catalogV2Module.isWebPublishEnabled());
+		webPublishTemporarilyDisabledEl.setVisible(catalogV2Module.isEnabled() && catalogV2Module.isWebPublishEnabled());
 	}
 
 	private void updateMigrationUI() {
@@ -243,8 +243,8 @@ public class CatalogSettingsController extends FormBasicController {
 		} else if (source == webPublishEnabledEl) {
 			catalogV2Module.setWebPublishEnabled(webPublishEnabledEl.isOn());
 			doSetEnabled();
-		} else if (source == webPublishTemporaryDisabledEl) {
-			catalogV2Module.setWebPublishTemporaryDisabled(webPublishTemporaryDisabledEl.isOn());
+		} else if (source == webPublishTemporarilyDisabledEl) {
+			catalogV2Module.setWebPublishTemporarilyDisabled(webPublishTemporarilyDisabledEl.isOn());
 		} else if (source == migrationStartLink) {
 			doConfirmMigraion(ureq);
 		} else if (source instanceof FormLink) {
