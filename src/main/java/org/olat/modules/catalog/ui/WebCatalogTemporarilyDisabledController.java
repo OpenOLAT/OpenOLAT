@@ -19,13 +19,19 @@
  */
 package org.olat.modules.catalog.ui;
 
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.messages.MessageController;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.modules.catalog.CatalogV2Module;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -35,18 +41,40 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
  */
 public class WebCatalogTemporarilyDisabledController extends BasicController {
 
+	private final EmptyState emptyState;
+	
+	@Autowired
+	private CatalogV2Module catalogModule;
+
 	public WebCatalogTemporarilyDisabledController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		MessageController messageCtrl = MessageUIFactory.createInfoMessage(ureq, wControl,
-				translate("web.catalog.temporarily.disabled.title"),
-				translate("web.catalog.temporarily.disabled.text"));
-		listenTo(messageCtrl);
-		putInitialPanel(messageCtrl.getInitialComponent());
+		
+		VelocityContainer mainVC = createVelocityContainer("temporarily_disabled");
+		putInitialPanel(mainVC);
+		
+		emptyState = EmptyStateFactory.create("empty", mainVC, this);
+		emptyState.setMessageI18nKey("web.catalog.temporarily.disabled.title");
+		emptyState.setHintI18nKey("web.catalog.temporarily.disabled.text");
+		emptyState.setButtonI18nKey("web.catalog.goto.login");
+		emptyState.setIconCss("o_icon_catalog");
+		emptyState.setIndicatorIconCss("o_icon_none");
+		emptyState.getButton().setUrl(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault());
+		
+		if (catalogModule.hasHeaderBgImage()) {
+			String mapperUri = registerMapper(ureq, new VFSMediaMapper(catalogModule.getHeaderBgImage()));
+			mainVC.contextPut("bgImageUrl", mapperUri);
+		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == emptyState) {
+			doGotoDmz(ureq);
+		}
+	}
+
+	private void doGotoDmz(UserRequest ureq) {
+		DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 	}
 
 }

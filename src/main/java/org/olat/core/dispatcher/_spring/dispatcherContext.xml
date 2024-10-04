@@ -59,6 +59,9 @@
 				<entry key="/catalog/">
 					<ref bean="webcatalogbean" />
 				</entry>
+				<entry key="/catalogtemporarilydisabled/">
+					<ref bean="webcatalogtemporarilydisabledgbean" />
+				</entry>
 				<entry key="/survey/">
 					<ref bean="evaluationformwebbean" />
 				</entry>
@@ -307,6 +310,9 @@
 		
 	<bean id="webcatalogbean"
 		class="org.olat.modules.catalog.WebCatalogDispatcher" />
+
+	<bean id="webcatalogtemporarilydisabledgbean"
+		class="org.olat.modules.catalog.WebCatalogTemporarilyDisabledDispatcher" />
 
 	<bean id="evaluationformwebbean"
 		class="org.olat.modules.forms.EvaluationFormDispatcher" />

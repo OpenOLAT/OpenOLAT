@@ -703,6 +703,9 @@
 			padding: 20px 20px 40px 20px;
 			height: $o-cat2-header-height;
 			max-height: $o-cat2-header-height;
+			&.o_catalog_temporarily_disabled {
+				padding: 0;
+			}
 		}
 		.o_catalog_header_item:not(.o_header_bg_image) {
 			background: $o-cat2-header-noimage-bg;
@@ -765,7 +768,20 @@
 			}
 		}
 	}
-	
+	.o_catalog_temporarily_disabled {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		.o_empty_state {
+			background-color: $input-bg;
+		}
+		.o_empty_state:is(.o_header_bg_image *) {
+			background-color: $o-cat2-header-box-bg-color;
+			.o_empty_visual i:nth-child(2) {
+				color: lighten($o-empty-msg-color, 20%);
+			}
+		}
+	}
 	.o_catalog_breadcrumb {
 		.breadcrumb {
 			background-color: $input-bg;

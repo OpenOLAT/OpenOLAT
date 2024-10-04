@@ -20,9 +20,6 @@
 package org.olat.modules.catalog;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,18 +38,14 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
-import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.servlets.RequestAbortedException;
-import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
-import org.olat.modules.catalog.ui.WebCatalogMainController;
+import org.olat.modules.catalog.ui.WebCatalogTemporarilyDisabledController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,26 +54,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class WebCatalogDispatcher implements Dispatcher {
+public class WebCatalogTemporarilyDisabledDispatcher implements Dispatcher {
 
-	private static final Logger log = Tracing.createLoggerFor(WebCatalogDispatcher.class);
-	
-	private static final String PATH_TEMPORARILY_DISABLED = "catalogtemporarilydisabled";
-	private static final String URI_TEMPORARILY_DISABLED =
-			WebappHelper.getServletContextPath() + "/" + PATH_TEMPORARILY_DISABLED + "/";
+	private static final Logger log = Tracing.createLoggerFor(WebCatalogTemporarilyDisabledDispatcher.class);
 	
 	@Autowired
 	private CatalogV2Module catalogModule;
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if (!catalogModule.isEnabled() || !catalogModule.isWebPublishEnabled()) {
+		if (!catalogModule.isEnabled() || !catalogModule.isWebPublishEnabled() || !catalogModule.isWebPublishTemporarilyDisabled()) {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
-			return;
-		}
-		
-		if (catalogModule.isWebPublishTemporarilyDisabled()) {
-			DispatcherModule.redirectTo(response, URI_TEMPORARILY_DISABLED);
 			return;
 		}
 		
@@ -107,20 +91,12 @@ public class WebCatalogDispatcher implements Dispatcher {
 		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 		I18nManager.updateLocaleInfoToThread(usess);
 		
-		Windows windows = Windows.getWindows(ureq);
-		windows.getWindowManager().setAjaxWanted(ureq);
-		
-		if (ureq.isValidDispatchURI()) {
-			Window window = windows.getWindow(ureq);
-			window.dispatchRequest(ureq, true);
-			return;
-		}
-		
 		DmzBFWCParts bfwcParts = new DmzBFWCParts();
 		AutoCreator controllerCreator = new AutoCreator();
-		controllerCreator.setClassName(WebCatalogMainController.class.getName());
+		controllerCreator.setClassName(WebCatalogTemporarilyDisabledController.class.getName());
 		bfwcParts.setContentControllerCreator(controllerCreator);
 		
+		Windows windows = Windows.getWindows(ureq);
 		boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
 		if (!windowHere) {
 			synchronized (windows) {
@@ -132,40 +108,17 @@ public class WebCatalogDispatcher implements Dispatcher {
 			}
 		}
 		
+		windows.getWindowManager().setAjaxWanted(ureq);
 		ChiefController chiefController = windows.getChiefController(ureq);
 		try {
 			WindowControl wControl = chiefController.getWindowControl();
 			NewControllerFactory.getInstance().launch(ureq, wControl);	
 			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
-			
-			String[] restParts = extractRestParts(request, uriPrefix);
-			if (restParts.length > 0 && restParts.length % 2 == 0) {
-				String businessPath = BusinessControlFactory.getInstance().formatFromSplittedURI(restParts);
-				List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
-				w.getDTabs().activate(ureq, null, ces);
-			}
-			
 			w.dispatchRequest(ureq, true);
 			chiefController.resetReload();
 		} catch (Exception e) {
 			log.error("", e);
 		}
-	}
-	
-	private String[] extractRestParts(HttpServletRequest request, String uriPrefix) {
-		String uri = request.getRequestURI();
-		String restPart = uri.substring(uriPrefix.length());
-		try {
-			restPart = URLDecoder.decode(restPart, "UTF8");
-		} catch (UnsupportedEncodingException e) {
-			log.error("Unsupported encoding", e);
-		}
-		
-		if (restPart == null) {
-			return ArrayHelper.emptyStrings();
-		}
-		
-		return restPart.split("/");
 	}
 
 }
