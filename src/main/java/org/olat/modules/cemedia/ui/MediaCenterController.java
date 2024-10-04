@@ -25,6 +25,7 @@ import static org.olat.core.util.StringHelper.EMPTY;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -114,6 +115,8 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.audiovideorecording.AVModule;
@@ -856,7 +859,7 @@ public class MediaCenterController extends FormBasicController
 		if(createFileLink == source) {
 			doCreateFile(ureq);
 		} else if(addMediaEl == source) {
-			doAddMedia(ureq, "add.media", addMediaEl);
+			doAddMedia(ureq, "add.media", addMediaEl, Collections.emptyList());
 		} else if (addBrowserLink == source) {
 			doAddFromBrowser(ureq);
 		} else if (addTextLink == source) {
@@ -948,16 +951,16 @@ public class MediaCenterController extends FormBasicController
 				}
 			}
 			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
-				doAddMedia(ureq, "add.media", selectionEvent.getFileElement());
+				doAddMedia(ureq, "add.media", selectionEvent.getFileElement(), selectionEvent.getVfsItems());
 			} else {
 				cleanUp();
 			}
 		} else if(newMediasCtrl == source) {
 			newMediasCalloutCtrl.deactivate();
 			if("add.file".equals(event.getCommand())) {
-				doAddMedia(ureq, "add.file", addMediaEl);
+				doAddMedia(ureq, "add.file", addMediaEl, Collections.emptyList());
 			} else if("add.media".equals(event.getCommand())) {
-				doAddMedia(ureq, "add.media", addMediaEl);
+				doAddMedia(ureq, "add.media", addMediaEl, Collections.emptyList());
 			} else if("add.text".equals(event.getCommand())) {
 				doAddTextMedia(ureq);
 			} else if("add.citation".equals(event.getCommand())) {
@@ -1055,13 +1058,26 @@ public class MediaCenterController extends FormBasicController
 		cmc.activate();
 	}
 	
-	private void doAddMedia(UserRequest ureq, String titleKey, FileElement fileElement) {
-		if(guardModalController(mediaUploadCtrl)|| fileElement == null || fileElement.getUploadFile() == null) {
+	private void doAddMedia(UserRequest ureq, String titleKey, FileElement fileElement, List<VFSItem> vfsItems) {
+		if((guardModalController(mediaUploadCtrl) || fileElement == null || fileElement.getUploadFile() == null) && (vfsItems == null || vfsItems.isEmpty())) {
 			cleanUp();
 			return;
 		}
 
-		mediaUploadCtrl = new MediaUploadController(ureq, getWindowControl(), fileElement);
+		VFSLeaf selectedLeaf = null;
+		// assuming vfsItems is not null and only contains one element (single selection of an item)
+		if (vfsItems != null && vfsItems.size() == 1) {
+			VFSItem selectedItem = vfsItems.get(0);
+			if (selectedItem instanceof VFSLeaf vfsLeaf) {
+				selectedLeaf = vfsLeaf;
+			} else if (selectedItem instanceof VFSContainer) {
+				// containers should not be selected, thus skip and clean up
+				cleanUp();
+				return;
+			}
+		}
+
+		mediaUploadCtrl = new MediaUploadController(ureq, getWindowControl(), fileElement, selectedLeaf);
 		listenTo(mediaUploadCtrl);
 		
 		String title = translate(titleKey);
