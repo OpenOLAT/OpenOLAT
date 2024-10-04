@@ -1,3 +1,6 @@
 <div class="o_notifications_subs_table">
-    <a href="$row.getLink()"> $row.getDescription()</a> $row.getFormattedDate()
+    $row.getDescription()
+    <div class="o_notification_data">
+        <a href="$row.getLink()"> $r.translate("subs.list.link") </a> · $row.getFormattedDate()
+    </div>
 </div>

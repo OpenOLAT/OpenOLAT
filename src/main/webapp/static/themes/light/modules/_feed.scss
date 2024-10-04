@@ -87,5 +87,6 @@
 	.o_feed_tag_sub_button {
 		display: flex;
 		align-items: center;
+		gap: $o-widgets-gap;
 	}
 }

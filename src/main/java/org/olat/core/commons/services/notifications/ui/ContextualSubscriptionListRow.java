@@ -63,7 +63,6 @@ public class ContextualSubscriptionListRow {
 
 	public String getFormattedDate() {
 		Formatter form = Formatter.getInstance(locale);
-		Translator translator = Util.createPackageTranslator(ContextualSubscriptionController.class, locale);
-		return translator.translate("subscription.listitem.dateprefix", form.formatDateAndTime(date));
+		return form.formatDateAndTime(date);
 	}
 }

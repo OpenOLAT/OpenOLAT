@@ -155,7 +155,7 @@ public class ContextualSubscriptionController extends BasicController {
 		if (subscriber != null && subscriber.isEnabled()) {
 			subscribeButton.setIconLeftCSS("o_icon o_icon-fw o_icon-bell");
 		} else {
-			subscribeButton.setIconLeftCSS("o_icon o_icon-fw o_icon-bell-slash");
+			subscribeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_reminder");
 		}
 		myContent.contextPut("command.subscribe", subscribeButton);
 	}
