@@ -154,7 +154,7 @@ public class ProjNoteController extends FormBasicController {
 		
 		String modifiedDate = formatter.formatDateRelative(noteInfo.getNote().getArtefact().getContentModifiedDate());
 		String modifiedBy = userManager.getUserDisplayName(noteInfo.getNote().getArtefact().getContentModifiedBy().getKey());
-		String modified = translate("date.by", modifiedDate, modifiedBy);
+		String modified = StringHelper.escapeHtml(translate("date.by", modifiedDate, modifiedBy));
 		flc.contextPut("modified", modified);
 	}
 

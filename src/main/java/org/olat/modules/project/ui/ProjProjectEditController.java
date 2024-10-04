@@ -397,7 +397,7 @@ public class ProjProjectEditController extends FormBasicController {
 	
 	private void updateOwnerUI() {
 		if (ownerEl != null && owner != null) {
-			ownerEl.setValue(userManager.getUserDisplayName(owner.getKey()));
+			ownerEl.setValue(StringHelper.escapeHtml(userManager.getUserDisplayName(owner.getKey())));
 			if (createForEnabled && organisationModule.isEnabled()) {
 				initUserOrganisations();
 			}

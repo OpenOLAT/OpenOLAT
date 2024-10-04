@@ -229,7 +229,7 @@ public class ProjTimelineController extends FormBasicController
 				})
 				.forEach(member -> userValues.add(SelectionValues.entry(
 						member.getKey().toString(),
-						userManager.getUserDisplayName(member))));
+						StringHelper.escapeHtml(userManager.getUserDisplayName(member)))));
 		userValues.sort(SelectionValues.VALUE_ASC);
 		if (!userValues.isEmpty()) {
 			filters.add(new FlexiTableMultiSelectionFilter(translate("timeline.filter.user"), FILTER_USER, userValues, true));

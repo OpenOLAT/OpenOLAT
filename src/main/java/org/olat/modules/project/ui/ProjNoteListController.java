@@ -343,7 +343,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			String modifiedDate = formatter.formatDateRelative(info.getNote().getArtefact().getContentModifiedDate());
 			String modifiedBy = userManager.getUserDisplayName(info.getNote().getArtefact().getContentModifiedBy().getKey());
 			row.setContentModifiedByName(modifiedBy);
-			String modified = translate("date.by", modifiedDate, modifiedBy);
+			String modified = translate("date.by", modifiedDate, StringHelper.escapeHtml(modifiedBy));
 			row.setModified(modified);
 			
 			if (row.getDeletedBy() != null) {
