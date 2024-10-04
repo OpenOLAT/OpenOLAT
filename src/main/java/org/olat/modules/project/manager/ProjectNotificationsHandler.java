@@ -142,7 +142,7 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 	}
 	
 	private SubscriptionListItem toItem(Translator translator, ProjTimelineRow row) {
-		String desc = translator.translate("notifications.info.desc", row.getDoerDisplyName(), row.getMessage());
+		String desc = translator.translate("notifications.info.desc", StringHelper.escapeHtml(row.getDoerDisplyName()), row.getMessage());
 		String url = null;
 		String businessPath = null;
 		if (row.getProject() != null) {

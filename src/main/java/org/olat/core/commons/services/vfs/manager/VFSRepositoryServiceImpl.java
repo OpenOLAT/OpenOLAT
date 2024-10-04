@@ -760,6 +760,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 			
 			updateParent(metadata, deletedFile);
+			dbInstance.intermediateCommit();
 		}
 	}
 	
@@ -779,6 +780,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 			
 			updateParent(metadata, restoredFile);
+			dbInstance.intermediateCommit();
 		}
 	}
 

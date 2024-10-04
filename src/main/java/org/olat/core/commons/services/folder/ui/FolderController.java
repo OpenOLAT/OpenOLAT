@@ -158,6 +158,7 @@ import org.olat.core.util.mail.ui.SendDocumentsByEMailController;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.CopySourceLeaf;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.NamedLeaf;
 import org.olat.core.util.vfs.Quota;
@@ -2772,6 +2773,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
+		if (vfsItem instanceof LocalFolderImpl localFolder) {
+			vfsItem = getCachedContainer(localFolder);
+		}
 		if (canNotDeleteContainer(vfsItem)) {
 			showWarning("error.delete.locked.children");
 			return;
@@ -2802,6 +2806,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
+		if (vfsItem instanceof LocalFolderImpl localFolder) {
+			vfsItem = getCachedContainer(localFolder);
+		}
 		if (canNotDeleteContainer(vfsItem)) {
 			showWarning("error.delete.locked.children");
 			return;
@@ -2811,7 +2818,9 @@ public class FolderController extends FormBasicController implements Activateabl
 		deleteEvent.addFilename(vfsItem.getName());
 		
 		// Move to trash
+		Instant start = Instant.now();
 		vfsItem.delete();
+		log.debug("Folder: Deleted softly in {} millis ({})", Duration.between(start, Instant.now()).toMillis(), vfsItem.getRelPath());
 		
 		markNews();
 		loadModel(ureq);
@@ -2873,11 +2882,13 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
+		Instant start = Instant.now();
 		FolderDeleteEvent deleteEvent = new FolderDeleteEvent();
 		itemsToDelete.forEach(itemToDelete -> {
 			deleteEvent.addFilename(itemToDelete.getName());
 			itemToDelete.delete();
 		});
+		log.debug("Folder: Bulk deleted softly in {} millis", Duration.between(start, Instant.now()).toMillis());
 		
 		markNews();
 		loadModel(ureq);
@@ -2931,7 +2942,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
+		Instant start = Instant.now();
 		vfsItem.deleteSilently();
+		log.debug("Folder: Deleted permanently in {} millis ({})", Duration.between(start, Instant.now()).toMillis(), vfsItem.getRelPath());
 		
 		loadModel(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -3004,7 +3017,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			return;
 		}
 		
+		Instant start = Instant.now();
 		selecteditems.forEach(VFSItem::deleteSilently);
+		log.debug("Folder: Bulk deleted permanently in {} millis", Duration.between(start, Instant.now()).toMillis());
 		
 		loadModel(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);

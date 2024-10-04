@@ -564,7 +564,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			if (activity != null) {
 				row.setLastActivityDate(activity.getCreationDate());
 				String modifiedDate = formatter.formatDateRelative(activity.getCreationDate());
-				String modifiedBy = userManager.getUserDisplayName(activity.getDoer().getKey());
+				String modifiedBy = StringHelper.escapeHtml(userManager.getUserDisplayName(activity.getDoer().getKey()));
 				String modified = translate("date.by", modifiedDate, modifiedBy);
 				row.setModified(modified);
 			}
