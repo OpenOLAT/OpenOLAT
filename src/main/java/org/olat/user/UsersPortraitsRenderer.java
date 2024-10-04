@@ -75,7 +75,7 @@ public class UsersPortraitsRenderer extends DefaultComponentRenderer {
 			sb.append("</div>");
 			if (PortraitLayout.verticalPortraitsDisplayName == opc.getPortraitLayout()) {
 				sb.append("<div class=\"o_displayname\">");
-				sb.append(portraitUser.getDisplayName());
+				sb.append(StringHelper.escapeHtml(portraitUser.getDisplayName()));
 				sb.append("</div>");
 			}
 			sb.append("</li>");

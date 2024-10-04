@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -209,7 +210,7 @@ public class ProjWhiteboardController extends BasicController implements Generic
 			if (lastActivity != null) {
 				String modifiedDate = formatter.formatDateRelative(lastActivity.getCreationDate());
 				String modifiedBy = userManager.getUserDisplayName(lastActivity.getDoer().getKey());
-				String modified = translate("date.by", modifiedDate, modifiedBy);
+				String modified = StringHelper.escapeHtml(translate("date.by", modifiedDate, modifiedBy));
 				mainVC.contextPut("modified", modified);
 			}
 		}

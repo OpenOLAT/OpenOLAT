@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,14 +60,14 @@ public class ProjArtefactMetadataController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormStyle("o_two_col_metadata");
 		
-		String createdDateBy = translate("date.by",
+		String createdDateBy = StringHelper.escapeHtml(translate("date.by",
 				formatter.formatDate(artefact.getCreationDate()),
-				userManager.getUserDisplayName(artefact.getCreator().getKey()));
+				userManager.getUserDisplayName(artefact.getCreator().getKey())));
 		uifactory.addStaticTextElement("created", createdDateBy, formLayout);
 		
-		String modifiedDateBy = translate("date.by",
+		String modifiedDateBy = StringHelper.escapeHtml(translate("date.by",
 				formatter.formatDate(artefact.getContentModifiedDate()),
-				userManager.getUserDisplayName(artefact.getContentModifiedBy()));
+				userManager.getUserDisplayName(artefact.getContentModifiedBy())));
 		uifactory.addStaticTextElement("last.modified", modifiedDateBy, formLayout);
 		
 		activityLogCtrl = new ProjActivityLogController(ureq, getWindowControl(), mainForm, artefact);

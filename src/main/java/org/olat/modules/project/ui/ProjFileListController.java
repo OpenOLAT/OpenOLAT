@@ -387,7 +387,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			String modifiedDate = formatter.formatDateRelative(vfsMetadata.getFileLastModified());
 			String modifiedBy = userManager.getUserDisplayName(vfsMetadata.getFileLastModifiedBy());
 			row.setLastModifiedByName(modifiedBy);
-			String modified = translate("date.by", modifiedDate, modifiedBy);
+			String modified = StringHelper.escapeHtml(translate("date.by", modifiedDate, modifiedBy));
 			row.setModified(modified);
 			
 			if (row.getDeletedBy() != null) {

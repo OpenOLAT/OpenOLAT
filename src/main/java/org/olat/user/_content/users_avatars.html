@@ -10,7 +10,7 @@
 			</div>
 			<div class="o_properties">
 				<div class="o_prop o_name">
-					#if($identity.getOnlineIconCss())<i class="$identity.getOnlineIconCss()"></i> #end$identity.displayName
+					#if($identity.getOnlineIconCss())<i class="$identity.getOnlineIconCss()"></i> #end"$r.escapeHtml("$identity.getDisplayName()")
 				</div>
 				#foreach($userPropertyHandler in $userPropertyHandlers)
 					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName") 
