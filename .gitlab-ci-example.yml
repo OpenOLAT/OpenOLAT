@@ -1,0 +1,57 @@
+variables:
+  POSTGRES_DB: olattest
+  POSTGRES_USER: olat
+  POSTGRES_PASSWORD: $SECRET_POSTGRES_PASSWORD
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true -Xms512m -Xmx2048m"
+  MAVEN_CLI_OPTS: "-B --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true -s .m2/settings.xml -Dhttp.proxyHost=proxy.uibk.ac.at -Dhttp.proxyPort=3128 -Dhttp.nonProxyHosts='*.uibk.ac.at'"
+
+stages:
+  - test
+  - deploy
+
+cache:
+  paths:
+    - .m2/repository
+
+.unittest: &unittest
+  stage: test
+  before_script:
+    - 'mkdir .m2 || echo ".m2 directory exists already"'
+    - 'cp ./scripts/settings.xml .m2/settings.xml'
+  script:
+    - 'mvn $MAVEN_CLI_OPTS clean test -Dwith-postgresql -Dtest.env.db.postgresql.host.name=postgres -Dtest.env.db.postgresql.user=$POSTGRES_USER -Dtest.env.db.postgresql.pass=$POSTGRES_PASSWORD -Ptomcat'
+  services:
+    - postgres:9.4
+  artifacts:
+    paths:
+      - target
+    expire_in: 1 week
+
+unittest:jdk8:
+  <<: *unittest
+  image: maven:3.6.3-jdk-8
+
+release:
+  stage: deploy
+  image: maven:3.6.3-jdk-8
+  tags:
+    - olat
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_RELEASE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - git config --global user.email "gitlab-runner@$(hostname -f)"
+    - git config --global user.name "GitLab Release Runner"
+    - git remote -v
+    - git branch -v -a
+    - sed "s/__MVN_PASSWORD__/$MVN_PASSWORD/" ./scripts/settings.xml > .m2/settings.xml
+  script:
+    - bash -x ./scripts/uibk-release.sh
+  artifacts:
+    paths:
+      - target/*.war
+    expire_in: 1 week
+  when: manual
+

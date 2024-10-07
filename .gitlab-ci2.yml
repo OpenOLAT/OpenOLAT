@@ -1,0 +1,45 @@
+variables:
+  # Configure mysql environment variables (https://hub.docker.com/_/mysql/)
+  MYSQL_DATABASE: "egifadli"
+  MYSQL_ROOT_PASSWORD: "root"
+  TZ: Asia/Jakarta
+
+stages:
+  - test
+  - build
+
+connect:
+  stage: test
+  image: mysql
+  services:
+    - mysql
+  script:
+  - echo "SELECT 'OK';" | mysql --user=root --password="$MYSQL_ROOT_PASSWORD" --host=mysql "$MYSQL_DATABASE"
+  #- echo "CREATE DATABASE egifadli;" | mysql --user=root --password="$MYSQL_ROOT_PASSWORD" --host=mysql "$MYSQL_DATABASE"
+  when: manual 
+
+build:
+  stage: build
+  image: ubuntu
+  services:
+    - maven
+    - tomcat
+    - mysql
+  before_script:
+    - ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    - apt-get update
+    - apt-get install -y mysql-server mysql-client libmysqlclient-dev maven openjdk-8-jdk
+  script:
+    - mvn -Declipse.workspace=m2/ eclipse:configure-workspace
+    - java -version
+    - echo "2"| update-alternatives --config java 
+    - java -version
+    - mvn eclipse:clean eclipse:eclipse
+    - echo "CREATE DATABASE openolat;" | mysql --user=root --password="${MYSQL_ROOT_PASSWORD}" --host=mysql
+    - echo "CREATE USER 'openolat'@'mysql' IDENTIFIED BY 'openolat';" | mysql --user=root --password="${MYSQL_ROOT_PASSWORD}" --host=mysql
+    - echo "GRANT ALL PRIVILEGES ON openolat.* TO 'openolat'@'mysql';" | mysql --user=root --password="${MYSQL_ROOT_PASSWORD}" --host=mysql "openolat"
+    - echo "UPDATE mysql.user SET HOST='mysql' WHERE USER='openolat' AND HOST='%';" | mysql --user=root --password="${MYSQL_ROOT_PASSWORD}" --host=mysql
+    - echo "FLUSH PRIVILEGES;" | mysql --user=root --password="${MYSQL_ROOT_PASSWORD}" --host=mysql
+    - echo "root" | mysql -u openolat -p openolat -h mysql < src/main/resources/database/mysql/setupDatabase.sql
+
+#egi fadli soerachman
