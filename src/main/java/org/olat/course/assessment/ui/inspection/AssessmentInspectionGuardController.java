@@ -273,7 +273,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		quitSEBButton.setElementCssClass("btn btn-default");
 		quitSEBButton.setVisible(inspection.hasLinkToQuitSEB());
 		
-		String setUrl = Settings.createServerURI() + mapperUri + "/" + inspection.getInspectionKey() + "/" + SafeExamBrowserConfigurationMediaResource.SEB_SETTINGS_FILENAME;
+		String setUrl = Settings.createServerURI() + mapperUri + "/" + CodeHelper.getRAMUniqueID() + "/" + inspection.getInspectionKey() + "/" + SafeExamBrowserConfigurationMediaResource.SEB_SETTINGS_FILENAME;
 		ExternalLinkItem downloadSEBConfigurationButton = uifactory.addExternalLink("download-seb-config-" + id, "download.seb.config", setUrl, "_blank", flc);
 		downloadSEBConfigurationButton.setElementCssClass("btn btn-default");
 		downloadSEBConfigurationButton.setName(translate("download.seb.config"));

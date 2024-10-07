@@ -203,7 +203,7 @@ public class AssessmentInspectionLogController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof FlexiTableFilterTabEvent fe) {
+			if(event instanceof FlexiTableFilterTabEvent) {
 				loadModel();
 			}
 		}
