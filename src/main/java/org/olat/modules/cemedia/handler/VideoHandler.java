@@ -157,7 +157,7 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 
 	@Override
 	public boolean hasMediaThumbnail(MediaVersion mediaVersion) {
-		if (mediaVersion.hasUrl()) {
+		if (mediaVersion != null && mediaVersion.hasUrl()) {
 			return urlDelegate.hasMediaThumbnail(mediaVersion);
 		}
 		return super.hasMediaThumbnail(mediaVersion);
