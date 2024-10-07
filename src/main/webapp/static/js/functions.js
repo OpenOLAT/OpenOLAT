@@ -1211,7 +1211,7 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 		formData.append('upload-folder', directory);
 		formData.append('dropped-filename', file);
 
-		let xhr = jQuery.ajax(targetUrl,{
+		jQuery.ajax(targetUrl,{
 			type:'POST',
 			data: formData,
 			cache: false,
@@ -1235,7 +1235,6 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 		
 		let targetUrl = htmlForm.getAttribute("action");
 		let csrf = document.querySelector('#' + formName + " input[name='_csrf']").getAttribute('value');
-		let numOfFiles = files.length;
 		let totalFiles = 0;
 		for(const file of files) {
 			totalFiles += file.size;
@@ -1277,6 +1276,9 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 			o_XHRLoadend();
 		}
 		
+		if(typeof tinymce !== 'undefined') {
+			tinymce.triggerSave(true,true);
+		}
 		let formData = new FormData(htmlForm);
 		for(const file of files) {
 			formData.append(inputFileId, file);
@@ -1390,10 +1392,6 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 			o_handleFilenames(data, directory);
 		} else if(files.length > 0 && o_handleFilesValidate(files)) {
 			const filteredFiles = loadFiles(files);
-			
-			for(const file of filteredFiles) {
-				console.log('After', file);
-			}
 			o_handleFiles(filteredFiles, directory);
 		} else {
 			jQuery(e.target).parents("*[data-upload-folder]")
