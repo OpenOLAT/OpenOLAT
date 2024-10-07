@@ -22,9 +22,7 @@ package org.olat.core.commons.services.notifications.ui;
 import java.util.Date;
 import java.util.Locale;
 
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
 /**
