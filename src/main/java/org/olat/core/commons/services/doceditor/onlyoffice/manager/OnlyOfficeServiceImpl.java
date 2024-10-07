@@ -51,6 +51,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.core.util.vfs.VFSStatus;
@@ -137,7 +138,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		
 		InfoImpl info = new InfoImpl();
 		String author = vfsMetadata.getFileInitializedBy() != null
-				? identityService.getUserDisplayName(vfsMetadata.getFileInitializedBy())
+				? StringHelper.escapeHtml(identityService.getUserDisplayName(vfsMetadata.getFileInitializedBy()))
 				: null;
 		info.setAuthor(author);
 		info.setCreated(null); // not in metadata
@@ -169,7 +170,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		apiConfig.setEditor(editorConfig);
 		
 		UserImpl user = new UserImpl();
-		String name = identityService.getUserDisplayName(identity);
+		String name =  StringHelper.escapeHtml(identityService.getUserDisplayName(identity));
 		user.setName(name);
 		user.setId(identityService.getGlobalIdentityId(identity));
 		editorConfig.setUser(user);

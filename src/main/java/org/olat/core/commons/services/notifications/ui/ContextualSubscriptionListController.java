@@ -150,9 +150,9 @@ public class ContextualSubscriptionListController extends FormBasicController im
 			subscribeToggle.toggleOff();
 		} else {
 			subscribeToggle.toggleOn();
-			loadModel();
-			toggleFilterTabs(ureq);
 		}
+		loadModel();
+		toggleFilterTabs(ureq);
 		initEmptyTableSettings();
 	}
 
@@ -163,7 +163,7 @@ public class ContextualSubscriptionListController extends FormBasicController im
 			subsInfoMap = initSubsInfoMap(selectedFilterDate);
 
 			List<ContextualSubscriptionListRow> rows = new ArrayList<>();
-			if (subsInfoMap.get(subscriber) != null && subscriber.isEnabled()) {
+			if (subsInfoMap.get(subscriber) != null) {
 				List<SubscriptionListItem> subscriptionListItems = subsInfoMap.get(subscriber).getSubscriptionListItems();
 
 				for (SubscriptionListItem subscriptionListItem : subscriptionListItems) {
@@ -180,13 +180,7 @@ public class ContextualSubscriptionListController extends FormBasicController im
 	}
 
 	private void initEmptyTableSettings() {
-		if (!subscribeToggle.isOn()) {
-			tableEl.setEmptyTableSettings("subs.list.empty.message", null,
-					"o_icon_notification", "command.subscribe",
-					"o_icon-bell", false);
-		} else {
-			tableEl.setEmptyTableSettings("subs.list.empty.message", null, "o_icon_notification");
-		}
+		tableEl.setEmptyTableSettings("subs.list.empty.message", null, "o_icon_notification");
 	}
 
 	private Map<Subscriber, SubscriptionInfo> initSubsInfoMap(Date compareDate) {
@@ -237,7 +231,7 @@ public class ContextualSubscriptionListController extends FormBasicController im
 	}
 
 	private void toggleFilterTabs(UserRequest ureq) {
-		if (dataModel != null && !isSubSInfoMapEmpty() && subscribeToggle.isOn()) {
+		if (dataModel != null && isSubSInfoMapEmpty()) {
 			initFilterTabs(ureq);
 		} else {
 			tableEl.setFilterTabs(true, Collections.emptyList());

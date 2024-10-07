@@ -50,10 +50,12 @@ public class SecurityAdminController extends BasicController implements Breadcru
 	private final SegmentViewComponent segmentView;
 	private final Link cspLink;
 	private final Link configurationLink;
+	private final Link mediaServerLink;
 	private BreadcrumbPanel stackPanel;
 	
 	private CSPLogListController logListCtrl;
 	private SecurityAdminConfigurationController configurationCtrl;
+	private MediaServerController mediaServerCtrl;
 
 	@Autowired
 	private CSPModule cspModule;
@@ -73,7 +75,10 @@ public class SecurityAdminController extends BasicController implements Breadcru
 		if(cspModule.isContentSecurityPolicyEnabled()) {
 			segmentView.addSegment(cspLink, false);
 		}
-		
+
+		mediaServerLink = LinkFactory.createLink("media.server", mainVC, this);
+		segmentView.addSegment(mediaServerLink, false);
+
 		putInitialPanel(mainVC);
 	}
 
@@ -96,6 +101,8 @@ public class SecurityAdminController extends BasicController implements Breadcru
 					doOpenConfiguration(ureq);
 				} else if (clickedLink == cspLink){
 					doOpenCSPLog(ureq);
+				} else if (clickedLink == mediaServerLink) {
+					doOpenMediaServer(ureq);
 				}
 			}
 		}
@@ -133,5 +140,15 @@ public class SecurityAdminController extends BasicController implements Breadcru
 		}
 		addToHistory(ureq, logListCtrl);
 		mainVC.put("segmentCmp", logListCtrl.getInitialComponent());
+	}
+
+	private void doOpenMediaServer(UserRequest ureq) {
+		if (mediaServerCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("MediaServer"), null);
+			mediaServerCtrl = new MediaServerController(ureq, bwControl);
+			listenTo(mediaServerCtrl);
+		}
+		addToHistory(ureq, mediaServerCtrl);
+		mainVC.put("segmentCmp", mediaServerCtrl.getInitialComponent());
 	}
 }

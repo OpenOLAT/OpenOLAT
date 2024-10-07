@@ -27,6 +27,7 @@ import java.util.Locale;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LockGuardController;
 import org.olat.core.commons.fullWebApp.LockRequestEvent;
 import org.olat.core.commons.fullWebApp.LockResourceInfos;
@@ -53,9 +54,11 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.IpListValidator;
@@ -422,8 +425,8 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		quitSEBLink.setName(translate("current.mode.seb.quit"));
 		quitSEBLink.setTooltip(translate("current.mode.seb.quit"));
 		quitSEBLink.setElementCssClass("btn btn-default");
-		
-		String setUrl = Settings.createServerURI() + mapperUri + "/" + mode.getModeKey() + "/" + SafeExamBrowserConfigurationMediaResource.SEB_SETTINGS_FILENAME;
+
+		String setUrl = Settings.createServerURI() + mapperUri + "/" + CodeHelper.getRAMUniqueID() + "/" + mode.getModeKey() + "/" + SafeExamBrowserConfigurationMediaResource.SEB_SETTINGS_FILENAME;
 		ExternalLink downloadSEBConfigurationButton = LinkFactory.createExternalLink("download-seb-config-" + id, "download.seb.config", setUrl);
 		downloadSEBConfigurationButton.setElementCssClass("btn btn-default");
 		downloadSEBConfigurationButton.setName(translate("download.seb.config"));
@@ -440,11 +443,11 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		countDown.setI18nKey("current.mode.in");
 		
 		ResourceGuard guard = new ResourceGuard(mode.getModeKey(), goButton, continueButton, quitSEBLink, downloadSEBLink, downloadSEBConfigurationButton, countDown);
-		mainVC.put(goButton.getComponentName(), goButton);
-		mainVC.put(continueButton.getComponentName(), continueButton);
-		mainVC.put(countDown.getComponentName(), countDown);
-		mainVC.put(downloadSEBConfigurationButton.getComponentName(), downloadSEBConfigurationButton);
-		mainVC.put(downloadSEBLink.getComponentName(), downloadSEBLink);
+		mainVC.put(goButton.getDispatchID(), goButton);
+		mainVC.put(continueButton.getDispatchID(), continueButton);
+		mainVC.put(countDown.getDispatchID(), countDown);
+		mainVC.put(downloadSEBConfigurationButton.getDispatchID(), downloadSEBConfigurationButton);
+		mainVC.put(downloadSEBLink.getDispatchID(), downloadSEBLink);
 		
 		goButton.setUserObject(guard);
 		continueButton.setUserObject(guard);
@@ -732,7 +735,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 						if(StringHelper.isLong(guardKey)) {
 							for(ResourceGuard guard:guards.getList()) {
 								if(guardKey.equals(guard.getModeKey().toString())) {
-									return new SafeExamBrowserConfigurationMediaResource(guard.getSafeExamBrowserConfigPList());
+									return mediaResource(guard);
 								}							
 							}
 						}
@@ -741,10 +744,17 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			}
 			
 			if(!guards.getList().isEmpty()) {
-				ResourceGuard guard = guards.getList().get(0);		
-				return new SafeExamBrowserConfigurationMediaResource(guard.getSafeExamBrowserConfigPList());
+				return mediaResource(guards.getList().get(0));
 			}
 			return new NotFoundMediaResource();
+		}
+		
+		private MediaResource mediaResource(ResourceGuard guard) {
+			AssessmentMode assessmentMode = CoreSpringFactory.getImpl(AssessmentModeManager.class).getAssessmentModeById(guard.getModeKey());
+			if(assessmentMode == null) {
+				return new NotFoundMediaResource();
+			}
+			return new SafeExamBrowserConfigurationMediaResource(assessmentMode.getSafeExamBrowserConfigPList());
 		}
 	}
 	

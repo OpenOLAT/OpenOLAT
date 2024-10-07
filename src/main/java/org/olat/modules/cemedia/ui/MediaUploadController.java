@@ -44,6 +44,9 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -72,6 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MediaUploadController extends AbstractCollectMediaController implements PageElementAddController {
 
 	private final FileElement fileEl;
+	private final VFSLeaf selectedLeaf;
 
 	private TextElement titleEl;
 	private TagSelection tagsEl;
@@ -93,10 +97,12 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	@Autowired
 	private TaxonomyService taxonomyService;
 
-	public MediaUploadController(UserRequest ureq, WindowControl wControl, FileElement fileEl) {
+	public MediaUploadController(UserRequest ureq, WindowControl wControl, FileElement fileEl, VFSLeaf selectedLeaf) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 				Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale())));
 		this.fileEl = fileEl;
+		this.selectedLeaf = selectedLeaf;
+
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		
 		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
@@ -177,13 +183,15 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
-		fileEl.clearError();
-		if(fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1 || getHandler() == null) {
-			fileEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		} else {
-			allOk &= validateFormItem(ureq, fileEl);
+
+		if (fileEl != null) {
+			fileEl.clearError();
+			if(fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1 || getHandler() == null) {
+				fileEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else {
+				allOk &= validateFormItem(ureq, fileEl);
+			}
 		}
 		
 		titleEl.clearError();
@@ -220,15 +228,24 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		String altText = altTextEl.isVisible() ? altTextEl.getValue() : null;
 		String description = descriptionEl.getValue();
 
-		File uploadedFile = fileEl.getUploadFile();
-		String uploadedFilename = fileEl.getUploadFileName();
+		File uploadedFile = null;
+		String uploadedFilename = "";
+		if (selectedLeaf != null) {
+			uploadedFile = VFSManager.olatRootFile(selectedLeaf.getRelPath());
+			uploadedFilename = selectedLeaf.getName();
+		} else if (fileEl != null && fileEl.getUploadFile() != null) {
+			uploadedFile = fileEl.getUploadFile();
+			uploadedFilename = fileEl.getUploadFileName();
+		}
 
 		MediaHandler mediaHandler = getHandler();
 		if (mediaHandler == null || uploadedFile == null) {
 			return;  // Early exit if no media handler or file
 		}
 
-		UploadMedia mObject = new UploadMedia(uploadedFile, uploadedFilename, fileEl.getUploadMimeType());
+		String mimeType = WebappHelper.getMimeType(uploadedFilename);
+
+		UploadMedia mObject = new UploadMedia(uploadedFile, uploadedFilename, mimeType);
 		mediaReference = mediaHandler.createMedia(
 				title, description, altText, mObject, businessPath, getIdentity(), MediaLog.Action.UPLOAD
 		);
@@ -247,11 +264,18 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	private void initMetadata() {
 		MediaHandler handler = getHandler();
 		if (titleEl.isEmpty()) {
-			titleEl.setValue(fileEl.getUploadFileName());
+			titleEl.setValue(fileEl != null ? fileEl.getUploadFileName() : selectedLeaf.getName());
 			titleEl.getComponent().setDirty(true);
 		}
 		titleEl.clearWarning();
-		if(fileEl.getUploadFile() != null && mediaService.isInMediaCenter(getIdentity(), fileEl.getUploadFile())) {
+		File uploadedFile = null;
+		if (fileEl != null && fileEl.getUploadFile() != null) {
+			uploadedFile = fileEl.getUploadFile();
+		} else if (selectedLeaf != null) {
+			uploadedFile = VFSManager.olatRootFile(selectedLeaf.getRelPath());
+		}
+
+		if(uploadedFile != null && mediaService.isInMediaCenter(getIdentity(), uploadedFile)) {
 			titleEl.setWarningKey("warning.checksum.file");
 		}
 		altTextEl.setVisible(handler != null && ImageHandler.IMAGE_TYPE.equals(handler.getType()));
@@ -291,7 +315,13 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 	
 	private MediaHandler getHandler() {
 		MediaHandler handler = null;
-		String mimeType = fileEl.getUploadMimeType();
+		String mimeType = "";
+		if (fileEl != null) {
+			mimeType = fileEl.getUploadMimeType();
+		} else if (selectedLeaf != null) {
+			mimeType = WebappHelper.getMimeType(selectedLeaf.getName());
+		}
+
 		if(StringHelper.containsNonWhitespace(mimeType)) {
 			List<MediaHandler> availableHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler availableHandler:availableHandlers) {

@@ -22,9 +22,7 @@ package org.olat.core.commons.services.notifications.ui;
 import java.util.Date;
 import java.util.Locale;
 
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
 /**
@@ -63,7 +61,6 @@ public class ContextualSubscriptionListRow {
 
 	public String getFormattedDate() {
 		Formatter form = Formatter.getInstance(locale);
-		Translator translator = Util.createPackageTranslator(ContextualSubscriptionController.class, locale);
-		return translator.translate("subscription.listitem.dateprefix", form.formatDateAndTime(date));
+		return form.formatDateAndTime(date);
 	}
 }

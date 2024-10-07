@@ -396,6 +396,11 @@ ul.o_dropdown {
 	/* override default margin */
 	margin: 0;
 }
+.o_notifications_subs_table {
+	display: flex;
+	flex-direction: column;
+	gap: $o-widgets-gap;
+}
 
 /* Portrait image */
 .o_portrait {

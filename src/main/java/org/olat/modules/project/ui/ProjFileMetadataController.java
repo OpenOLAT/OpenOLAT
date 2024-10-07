@@ -83,14 +83,14 @@ public class ProjFileMetadataController extends FormBasicController {
 		String size = Formatter.formatBytes(vfsMetadata.getFileSize());
 		uifactory.addStaticTextElement("file.size", size, formLayout);
 		
-		String createdDateBy = translate("file.date.by",
+		String createdDateBy = StringHelper.escapeHtml(translate("file.date.by",
 				formatter.formatDate(vfsMetadata.getCreationDate()),
-				userManager.getUserDisplayName(vfsMetadata.getFileInitializedBy()));
+				userManager.getUserDisplayName(vfsMetadata.getFileInitializedBy())));
 		uifactory.addStaticTextElement("file.created", createdDateBy, formLayout);
 		
-		String modifiedDateBy = translate("file.date.by",
+		String modifiedDateBy = StringHelper.escapeHtml(translate("file.date.by",
 				formatter.formatDate(vfsMetadata.getFileLastModified()),
-				userManager.getUserDisplayName(vfsMetadata.getFileLastModifiedBy()));
+				userManager.getUserDisplayName(vfsMetadata.getFileLastModifiedBy())));
 		uifactory.addStaticTextElement("file.modified", modifiedDateBy, formLayout);
 		
 		VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);

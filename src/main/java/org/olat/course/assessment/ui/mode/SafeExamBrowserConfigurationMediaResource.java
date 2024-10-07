@@ -76,7 +76,7 @@ public class SafeExamBrowserConfigurationMediaResource implements MediaResource 
 
 	@Override
 	public long getCacheControlDuration() {
-		return ServletUtil.CACHE_ONE_HOUR;
+		return ServletUtil.CACHE_NO_CACHE;
 	}
 
 	@Override

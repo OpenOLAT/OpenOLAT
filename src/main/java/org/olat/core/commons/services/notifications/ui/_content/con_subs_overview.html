@@ -1,11 +1,11 @@
 <div class="o_notifications_news_wrapper">
     <div class="o_notifications_subs_callout">
         <div class="o_notifications_subscribe_toggle">
-            $r.render("toggle") <strong>$r.translate("command.subscribe")</strong>
+            $r.render("toggle") <strong><i class="o_icon o_icon-fw o_icon_notification" aria-hidden="true"></i> $r.translate("command.subscribe")</strong>
         </div>
         <div class="o_notifications_help">
-            $r.render("toolsLink")
             $r.render("helpLink")
+            $r.render("toolsLink")
         </div>
     </div>
     $r.render("table")

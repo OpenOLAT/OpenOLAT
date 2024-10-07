@@ -19,35 +19,35 @@
 	#end
 	
 	#if($mode.status == "leadtime")
-		<div class="o_hint">$r.render($mode.countDown.componentName)</div>
+		<div class="o_hint">$r.render($mode.countDown.dispatchID)</div>
 	#end
 	
 	#if($mode.status == "assessment" || $mode.status == "leadtime")
 		#if($mode.safeExamBrowserHint && !$mode.safeExamBrowserHint.empty)
 			<div class="o_hint">$r.xssScan($mode.safeExamBrowserHint)</div>
 		#end
-		<div class="o_button_group o_sel_${checked}">$r.render($mode.go.componentName)</div>
+		<div class="o_button_group o_sel_${checked}">$r.render($mode.go.dispatchID)</div>
 	#elseif($mode.status == "followup")
 		<div class="o_hint">$r.translate("current.mode.followuptime.info")</div>
 	#elseif($mode.status == "end")
 		<div class="o_hint">$r.translate("current.mode.end.info")</div>
 		<div class="o_button_group">
-		#if($r.visible($mode.quitSEB.componentName)) 
-			$r.render($mode.quitSEB.componentName)
+		#if($r.visible($mode.quitSEB.dispatchID)) 
+			$r.render($mode.quitSEB.dispatchID)
 		#else
-			$r.render($mode.continue.componentName)
+			$r.render($mode.continue.dispatchID)
 		#end
 		</div>
 	#else
 		<div class="o_error o_assessment_mode_error">$mode.errors</div>
-		#if($r.visible($mode.downloadSEBButton.componentName) || $r.visible($mode.downloadSEBConfigurationButton.componentName))
+		#if($r.visible($mode.downloadSEBButton.dispatchID) || $r.visible($mode.downloadSEBConfigurationButton.dispatchID))
 			<div class="o_button_group">
-			#if($r.visible($mode.downloadSEBButton.componentName))
-				$r.render($mode.downloadSEBButton.componentName)
+			#if($r.visible($mode.downloadSEBButton.dispatchID))
+				$r.render($mode.downloadSEBButton.dispatchID)
 			#end
 		
-			#if($r.visible($mode.downloadSEBConfigurationButton.componentName))
-				$r.render($mode.downloadSEBConfigurationButton.componentName)
+			#if($r.visible($mode.downloadSEBConfigurationButton.dispatchID))
+				$r.render($mode.downloadSEBConfigurationButton.dispatchID)
 			#end
 			</div>
 		#end
