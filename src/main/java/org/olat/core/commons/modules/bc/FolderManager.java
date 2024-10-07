@@ -33,6 +33,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSStatus;
@@ -129,7 +130,8 @@ public class FolderManager {
 			// Excel, Word and PowerPoint not allowed to open inline, they will show
 			// an unsupported WebDAV loginpromt!
 			String mimeType = WebappHelper.getMimeType(name);
-			download = FolderModule.isContentSusceptibleToForceDownload(mimeType);					
+			String suffix = FileUtils.getFileSuffix(name);
+			download = FolderModule.isContentSusceptibleToForceDownload(suffix, mimeType);					
 		}
 		return download;
 	}
