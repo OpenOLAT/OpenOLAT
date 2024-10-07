@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -151,13 +152,14 @@ public class FolderModule extends AbstractSpringModule {
 	}
 	
 	public boolean isContentSusceptibleToForceDownload(VFSItem item) {
+		String suffix = FileUtils.getFileSuffix(item.getName());
 		String mimeType = WebappHelper.getMimeType(item.getName());
 		//html, xhtml and javascript are set to force download
-		return isContentSusceptibleToForceDownload(mimeType);
+		return isContentSusceptibleToForceDownload(suffix, mimeType);
 	}
 	
-	public static boolean isContentSusceptibleToForceDownload(String mimeType) {
-		return (mimeType == null
+	public static boolean isContentSusceptibleToForceDownload(String suffix, String mimeType) {
+		return ((mimeType == null && !suffix.equals("drawio"))
 				|| "text/html".equals(mimeType)
 				|| "application/xhtml+xml".equals(mimeType)
 				|| "application/javascript".equals(mimeType)

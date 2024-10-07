@@ -35,6 +35,7 @@ import org.olat.core.commons.services.image.ImageUtils;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
@@ -90,10 +91,12 @@ public class VFSMediaResource implements MediaResource {
 
 	@Override
 	public String getContentType() {
-		String mimeType = WebappHelper.getMimeType(getLeaf().getName());
+		String name = getLeaf().getName();
+		String mimeType = WebappHelper.getMimeType(name);
 		if(downloadable) {
 			//html, xhtml and javascript are set to force download
-			if (FolderModule.isContentSusceptibleToForceDownload(mimeType)) {
+			String suffix = FileUtils.getFileSuffix(name);
+			if (FolderModule.isContentSusceptibleToForceDownload(suffix, mimeType)) {
 				mimeType = MIME_TYPE_OCTET_STREAM;
 				unknownMimeType = true;
 			} else if (encoding != null) {
