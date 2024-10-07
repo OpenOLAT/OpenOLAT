@@ -628,7 +628,7 @@ public class MediaCenterController extends FormBasicController
 			Media media = mediaWithVersion.media();
 			if(currentMap.containsKey(mediaWithVersion.getKey())) {
 				MediaRow row = currentMap.get(mediaWithVersion.getKey());
-				if(row.getVersion().getCollectionDate().equals(mediaWithVersion.version().getCollectionDate())) {
+				if(mediaWithVersion.version() != null && row.getVersion().getCollectionDate().equals(mediaWithVersion.version().getCollectionDate())) {
 					row.getOpenFormItem().getComponent().setCustomDisplayText(StringHelper.escapeHtml(media.getTitle()));
 					rows.add(row);
 					continue;
@@ -637,7 +637,8 @@ public class MediaCenterController extends FormBasicController
 			MediaHandler handler = mediaService.getMediaHandler(media.getType());
 			if(handler != null) {
 				MediaVersion currentVersion = mediaWithVersion.version();
-				boolean hasThumbnail = handler.hasMediaThumbnail(mediaWithVersion.version()) || vfsRepositoryService.isThumbnailAvailable(mediaWithVersion.metadata());
+				boolean hasThumbnail = (currentVersion != null && handler.hasMediaThumbnail(currentVersion))
+						|| vfsRepositoryService.isThumbnailAvailable(mediaWithVersion.metadata());
 				String mediaTitle = StringHelper.escapeHtml(media.getTitle());
 				String iconCssClass = currentVersion == null ? "" : handler.getIconCssClass(currentVersion);
 				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
