@@ -19,6 +19,7 @@
  */
 package org.olat.modules.sharepoint.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.util.vfs.VFSItem;
@@ -57,8 +58,12 @@ public class OneDriveContainer extends AbstractRootDriveContainer {
 	
 	@Override
 	public List<VFSItem> getDescendants(VFSItemFilter filter) {
-		List<MicrosoftDriveItem> driveItems = sharePointDao.searchDriveItems(oneDrive.drive(), "", tokenProvider);
-		return toVFS(oneDrive, driveItems);
+		MicrosoftDrive drive = getDrive();
+		if(drive != null) {
+			List<MicrosoftDriveItem> driveItems = sharePointDao.searchDriveItems(drive.drive(), "", tokenProvider);
+			return toVFS(drive, driveItems);
+		}
+		return new ArrayList<>();
 	}
 	
 	@Override
