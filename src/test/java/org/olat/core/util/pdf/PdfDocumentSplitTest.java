@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.test.OlatTestCase;
 
 /**
  * 
@@ -31,7 +32,7 @@ import org.junit.Test;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PdfDocumentSplitTest {
+public class PdfDocumentSplitTest extends OlatTestCase {
 	
 	@Test
 	public void splitTextInPartsDegenerated() throws IOException {
@@ -54,6 +55,20 @@ public class PdfDocumentSplitTest {
 		String text = "Hiermit erkl\u00E4re ich mich damit einverstanden, dass bei der Pr\u00FCfung Regelungstechnik eine Videoaufsicht zu den im Vorfeld genannten Bedingungen durchgef\u00FChrt wird.";
 		String[] splittedTexts = doc.splitTextInParts(text, 210.0f, 10.0f);
 		Assert.assertEquals(4, splittedTexts.length);
+	}
+	
+	@Test
+	public void findBreakBefore() {
+		String text = "Hiermit damit einverstanden";
+		int pos = PdfDocument.findBreakBefore(text, 20);
+		Assert.assertEquals(13, pos);
+	}
+	
+	@Test
+	public void findBreakBeforeOutOfBound() {
+		String text = "Hiermitdamiteinverstanden";
+		int pos = PdfDocument.findBreakBefore(text, 42);
+		Assert.assertEquals(-1, pos);
 	}
 
 }

@@ -329,11 +329,13 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 				selectionType = "checkbox";
 			}
 			target.append("<td class='").append("o_singleselect", "o_multiselect", selectionMode == SelectionMode.single).append(" o_col_sticky_left'>")
-			      .append("<input type='").append(selectionType).append("' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'")
-			      .append(" onclick=\"o_ffTableToggleRowCheck('").append(rowIdPrefix).append(row).append("','o_row_selected');")
-			      .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
-			    		  new NameValuePair("chkbox", Integer.toString(row))))
-				  .append(";\"");	 
+			      .append("<input type='").append(selectionType).append("' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'");
+			if(selectionMode != SelectionMode.multi || !ftE.isRowSelectionEnabled()) {
+				target.append(" onclick=\"o_ffTableToggleRowCheck('").append(rowIdPrefix).append(row).append("','o_row_selected');")
+				      .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
+				    		  new NameValuePair("chkbox", Integer.toString(row))))
+					  .append(";\"");
+			}
 			if(ftE.isMultiSelectedIndex(row)) {
 				target.append(" checked='checked'");
 			}

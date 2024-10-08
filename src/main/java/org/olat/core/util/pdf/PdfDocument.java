@@ -442,7 +442,11 @@ public class PdfDocument {
 	
 	public static int findBreakBefore(String line, int start) {
 		start = Math.min(line.length(), start);
+		int lineLength = line.length();
 		for (int i = start; i >= 0; --i) {
+			if(i >= lineLength) {
+				continue;
+			}
 			char c = line.charAt(i);
 			if (Character.isWhitespace(c) || c == '-' || c == ',') {
 				return i;
