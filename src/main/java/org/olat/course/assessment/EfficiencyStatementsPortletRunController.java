@@ -209,7 +209,9 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 					// will not be disposed on course run dispose, popus up as new browserwindow
 					ControllerCreator ctrlCreator = (lureq, lwControl) -> {
 						RepositoryEntry re = repositoryService.loadByResourceKey(statement.getResourceKey());
-						CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(lwControl, lureq, re);
+						EfficiencyStatement efficiencyStatement = esm.getEfficiencyStatement(statement);
+						CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(lwControl, lureq, lureq.getIdentity(),
+								null, statement.getResourceKey(), re, efficiencyStatement, null, false, true, false, true, true);
 						return new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyCtrl);				
 					};
 					//wrap the content controller into a full header layout

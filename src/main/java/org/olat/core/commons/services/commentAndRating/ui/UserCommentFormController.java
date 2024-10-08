@@ -352,7 +352,8 @@ public class UserCommentFormController extends FormBasicController {
 	}
 
 	private void doCopyTemp(UserRequest ureq) {
-		for (VFSLeaf uploadedFileLeaf : uploadedAttachmentLeafs) {
+		List<VFSLeaf> leafs = new ArrayList<>(uploadedAttachmentLeafs);
+		for (VFSLeaf uploadedFileLeaf : leafs) {
 			if (!FileUtils.validateFilename(uploadedFileLeaf.getName())) {
 				uploadedAttachmentLeafs.remove(uploadedFileLeaf);
 				attachFileButton.setErrorKey("file.invalid.error", uploadedFileLeaf.getName());
