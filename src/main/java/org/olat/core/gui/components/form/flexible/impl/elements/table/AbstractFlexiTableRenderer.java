@@ -371,6 +371,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append("</div> ");
 			}
 		}
+		if(ftE.getSortOrderButton() != null) {
+			ftE.getSortOrderButton().getComponent().setDirty(false);
+		}
 		
 		// view custom / table
 		//switch type of tables
