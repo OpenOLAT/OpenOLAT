@@ -38,6 +38,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -222,10 +223,11 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 
 		// user activity logging
+		String loggedComment = Formatter.truncate(StringHelper.stripLineBreaks(comment), 239);
 		ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_USERCOMMENT_UPDATED, 
 				getClass(), 
 				LoggingResourceable.wrap(assessedIdentity), 
-				LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiUserComment, "", StringHelper.stripLineBreaks(comment)));	
+				LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiUserComment, "", loggedComment));	
 	}
 
 	@Override
@@ -340,10 +342,11 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 
 		// user activity logging
+		String loggedComment = Formatter.truncate(StringHelper.stripLineBreaks(comment), 239);
 		ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_COACHCOMMENT_UPDATED, 
 				getClass(), 
 				LoggingResourceable.wrap(assessedIdentity), 
-				LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiCoachComment, "", StringHelper.stripLineBreaks(comment)));	
+				LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiCoachComment, "", loggedComment));	
 	}
 
 	@Override
