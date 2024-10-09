@@ -108,7 +108,7 @@ public class VideoMediaController extends BasicController implements GenericEven
 	private void setMedia() {
 		File mediaFile = dataStorage.getFile(version);
 		videoCmp.setMedia(mediaFile);
-		if (version.getMetadata().isInTranscoding()) {
+		if (version.getMetadata() != null && version.getMetadata().isInTranscoding()) {
 			File masterFile = vfsTranscodingService.getMasterFile(mediaFile);
 			if (masterFile != null) {
 				videoCmp.setMedia(masterFile);

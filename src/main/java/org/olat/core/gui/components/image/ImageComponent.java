@@ -240,7 +240,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		if(mimeType != null) {
 			return mimeType;
 		}
-		if(media == null) {
+		if(media == null || !media.exists()) {
 			return null;
 		}
 		return WebappHelper.getMimeType(media.getName());
