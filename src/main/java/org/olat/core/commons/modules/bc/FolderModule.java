@@ -159,7 +159,7 @@ public class FolderModule extends AbstractSpringModule {
 	}
 	
 	public static boolean isContentSusceptibleToForceDownload(String suffix, String mimeType) {
-		return ((mimeType == null && !suffix.equals("drawio"))
+		return ((mimeType == null && suffix != null && !suffix.equalsIgnoreCase("drawio") && !suffix.equalsIgnoreCase("dwb"))
 				|| "text/html".equals(mimeType)
 				|| "application/xhtml+xml".equals(mimeType)
 				|| "application/javascript".equals(mimeType)

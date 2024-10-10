@@ -125,11 +125,11 @@ public class CollectAudioMediaController extends AbstractCollectMediaController 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_collect_video_form");
-		initMetadataForm(formLayout, ureq);
+		initMetadataForm(formLayout);
 		initRelationsAndSaveCancel(formLayout, ureq);
 	}
 
-	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
+	private void initMetadataForm(FormItemContainer formLayout) {
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
 		fileEl.limitToMimeType(audioMimeTypes, "error.audio.mimetype", null);
 		fileEl.setVisible(!isMetadataOnly());

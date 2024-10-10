@@ -226,9 +226,21 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("  language: '").append(locale.getLanguage()).append("'\n")
 		  .append(" });\n");
 		
+		// Allow to close the chooser with return without submitting the form
+		sb.append(" function stopReturnKey(e) {\n")
+		  .append("   if(e.keyCode === 13 && elem.getAttribute('data-oo-show-picker') === 'show') {\n")
+		  .append("     e.preventDefault();\n")
+		  .append("     e.stopPropagation();\n")
+		  .append("   }\n")
+		  .append(" };\n")
+		  .append(" elem.addEventListener('keydown', stopReturnKey);\n")
+		  .append(" elem.addEventListener('keypress', stopReturnKey);\n")
+		  .append(" elem.addEventListener('keyup', stopReturnKey);\n");
+		
 		// On show
 		sb.append(" elem.addEventListener('show', function() {\n")
-		  .append("  elem.setAttribute('data-oo-validation', 'suspend');\n");
+		  .append("  elem.setAttribute('data-oo-validation', 'suspend');\n")
+		  .append("  elem.setAttribute('data-oo-show-picker', 'show');\n");
 		if(jsdci.getDefaultValue() instanceof JSDateChooser defaultValue) {
 			String id = defaultValue.getTextElementComponent().getFormDispatchId();
 			sb.append("  const focusedDate = document.getElementById('").append(id).append("').datepicker.getFocusedDate();\n")
@@ -256,8 +268,10 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		sb.append(" });\n");
 		
 		// On hide
-		sb.append(" elem.addEventListener('hide', function() {\n")
+		sb.append(" elem.addEventListener('hide', function(e) {\n")
 		  .append("  elem.setAttribute('data-oo-validation', null);\n")
+		  // Execute this after all events
+		  .append("  setTimeout(function() { elem.setAttribute('data-oo-show-picker', 'hide'); }, 0);\n")
 		  .append(" });\n")
 		  .append("});")
 		  .append("</script>");
