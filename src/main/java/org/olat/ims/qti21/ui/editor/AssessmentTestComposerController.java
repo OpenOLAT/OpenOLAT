@@ -132,6 +132,7 @@ import org.olat.ims.qti21.ui.editor.metadata.MetadataChangedEvent;
 import org.olat.ims.qti21.ui.editor.overview.AssessmentTestOverviewConfigurationController;
 import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ResourceType;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.site.QuestionPoolSiteDef;
@@ -157,7 +158,6 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.RootNodeLookup;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
-import uk.ac.ed.ph.jqtiplus.utils.TreeWalkNodeHandler;
 
 /**
  * Assessment test editor and composer.
@@ -768,45 +768,47 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		AtomicInteger counter = new AtomicInteger();
 		Object uobject = selectedNode.getUserObject();
-		if(uobject instanceof AssessmentItemRef) {
-			doExportPool((AssessmentItemRef)uobject);
-			counter.incrementAndGet();
-		} else if(uobject instanceof QtiNode) {
-			QtiNode qtiNode = (QtiNode)uobject;
-			QueryUtils.walkTree(new TreeWalkNodeHandler() {
-				
-				@Override
-				public boolean handleNode(QtiNode node) {
-					if(node instanceof AssessmentItemRef) {
-						doExportPool((AssessmentItemRef)node);
+		if(uobject instanceof AssessmentItemRef itemRef) {
+			if(doExportPool(itemRef)) {
+				counter.incrementAndGet();
+			}
+		} else if(uobject instanceof QtiNode qtiNode) {
+			QueryUtils.walkTree(node -> {
+				if(node instanceof AssessmentItemRef itemRef) {
+					if(doExportPool(itemRef)) {
 						counter.incrementAndGet();
 					}
-					return true;
 				}
+				return true;
 			}, qtiNode);
 		}
 		
 		if(counter.get() > 0) {
 			showInfo("export.qpool.successful", counter.toString());
+		} else {
+			showWarning("warning.export.qpool");
 		}
 	}
 	
-	private void doExportPool(AssessmentItemRef itemRef) {
+	private boolean doExportPool(AssessmentItemRef itemRef) {
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 		RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
 		AssessmentItem assessmentItem = rootNode.extractIfSuccessful();
-
-		ManifestBuilder clonedManifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
-		ResourceType resource = getResourceType(clonedManifestBuilder, itemRef);
-		ManifestMetadataBuilder metadata = clonedManifestBuilder.getMetadataBuilder(resource, true);
-		if(metadata == null) {
-			metadata = new ManifestMetadataBuilder();// not in imsmanifest.xml?
+		if(assessmentItem != null) {
+			ManifestBuilder clonedManifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+			ResourceType resource = getResourceType(clonedManifestBuilder, itemRef);
+			ManifestMetadataBuilder metadata = clonedManifestBuilder.getMetadataBuilder(resource, true);
+			if(metadata == null) {
+				metadata = new ManifestMetadataBuilder();// not in imsmanifest.xml?
+			}
+	
+			File itemFile = new File(rootNode.getSystemId());
+	
+			QuestionItem item = qti21QPoolServiceProvider
+					.importAssessmentItemRef(getIdentity(), assessmentItem, itemFile, metadata, getLocale());
+			return item != null;
 		}
-
-		File itemFile = new File(rootNode.getSystemId());
-
-		qti21QPoolServiceProvider
-				.importAssessmentItemRef(getIdentity(), assessmentItem, itemFile, metadata, getLocale());
+		return false;
 	}
 	
 	private void doImportTable(UserRequest ureq) {
