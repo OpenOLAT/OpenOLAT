@@ -349,6 +349,7 @@ public class PageMetadataController extends FormBasicController {
 				publishButton = uifactory.addFormLink("publish", "publish", null, flc, Link.BUTTON_SMALL);
 				publishButton.setIconLeftCSS("o_icon o_icon_publish o_icon-fw");
 				publishButton.setElementCssClass("o_sel_pf_publish_entry");
+				publishButton.setForceOwnDirtyFormWarning(true);
 			}
 			if(secCallback.canRevision(page)) {
 				revisionButton = uifactory.addFormLink("revision.page", "revision.page", null, flc, Link.BUTTON_SMALL);

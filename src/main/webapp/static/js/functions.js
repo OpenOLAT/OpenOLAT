@@ -308,7 +308,6 @@ function o_afterserver(responseData) {
 					var co = acmd["cmd"];
 					if(co == 10) {
 						o2c = 1;
-						o_info.dirty_form = true;
 						setFlexiFormDirty(acmd["cda"].dispatchFieldId, acmd["cda"].hideDirtyMarking);
 					}
 				}
@@ -1928,7 +1927,21 @@ function showerror(e) {
 }
 
 
-
+function o_ffEventDirtyCheck(event, formNam, dispIdField, dispId, eventIdField, eventInt, newWindow, tcid) {
+	// Copy function arguments and set the dirtyCheck to false for execution in callback.
+	// Note that the argument list is dynamic, there are potentially more arguments than
+	// listed in the function (e.g. in QTI2)
+	let callbackArguments = Array.prototype.slice.call(arguments);	
+	if(isFlexiFormDirty()) {
+		let onIgnoreCallback = function() {
+			// fire original event when the "ok, delete anyway" button was pressed
+			o_ffEvent.apply(window, callbackArguments);
+		}
+		return o_showFormDirtyDialog(onIgnoreCallback);
+	} else {
+		o_ffEvent.apply(window, callbackArguments);
+	}
+}
 
 // Each flexible.form item with an javascript 'on...' configured calls this fn.
 // It is called at least if a flexible.form is submitted.
@@ -1946,22 +1959,22 @@ function o_ffEvent(event, formNam, dispIdField, dispId, eventIdField, eventInt, 
 	}
 	
 	//set hidden fields and submit form
-	var dispIdEl = document.getElementById(dispIdField);
-	var defDispId = dispIdEl.value;
+	let dispIdEl = document.getElementById(dispIdField);
+	let defDispId = dispIdEl.value;
 	dispIdEl.value = dispId;
-	var eventIdEl = document.getElementById(eventIdField);
-	var defEventId = eventIdEl.value;
+	let eventIdEl = document.getElementById(eventIdField);
+	let defEventId = eventIdEl.value;
 	eventIdEl.value = eventInt;
-	var tCmdEl = null;
+	let tCmdEl = null;
 	
 	// manually execute onsubmit method - calling submit itself does not trigger onsubmit event!
-	var form = jQuery('#' + formNam);
-	var formValid = true;
+	let form = jQuery('#' + formNam);
+	let formValid = true;
 	jQuery('#' + formNam + ' input[type=file]')
 		.filter(function(index, element) {return !element.checkValidity()})
 		.each(function(index, element) {
-			var valErrorElementId = element.getAttribute('id') + "_validation_error";
-			var valErrorElement = document.getElementById(valErrorElementId);
+			let valErrorElementId = element.getAttribute('id') + "_validation_error";
+			let valErrorElement = document.getElementById(valErrorElementId);
 			if (!valErrorElement) {
 				valErrorElement = document.createElement('div');
 				valErrorElement.setAttribute('class','o_error');
@@ -1984,7 +1997,7 @@ function o_ffEvent(event, formNam, dispIdField, dispId, eventIdField, eventInt, 
 				value: tcid }).appendTo(form);
 		}
 		
-		var enctype = form.attr('enctype');
+		let enctype = form.attr('enctype');
 		if(enctype && enctype.indexOf("multipart") == 0) {
 			form.submit(); // jQuery send onsubmit events
 		} else if (document.forms[formNam].onsubmit()) {
@@ -1999,7 +2012,7 @@ function o_ffEvent(event, formNam, dispIdField, dispId, eventIdField, eventInt, 
 }
 
 function o_TableMultiActionEvent(formNam, action){
-	var mActionIdEl = jQuery('#o_mai_' + formNam);
+	let mActionIdEl = jQuery('#o_mai_' + formNam);
 	mActionIdEl.val(action);
 	if (document.forms[formNam].onsubmit()) {
 		document.forms[formNam].submit();
