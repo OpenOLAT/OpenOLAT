@@ -645,32 +645,31 @@ public class VFSManager {
 		if (recursionLevel > 20) {
 			// Emergency exit condition: a directory hierarchy that has more than 20
 			// levels? Probably not..
-			log.warn("Reached recursion level while finding writable root Folder - most likely a bug. rootDir::" + rootDir
-					+ " relFilePath::" + relFilePath);
+			log.warn("Reached recursion level while finding writable root Folder - most likely a bug. rootDir::{} relFilePath::{}",
+					rootDir, relFilePath);
 			return null;
 		}
 
-		if (rootDir instanceof NamedContainerImpl)  {
-			rootDir = ((NamedContainerImpl)rootDir).getDelegate();
+		if (rootDir instanceof NamedContainerImpl namedContainer)  {
+			rootDir = namedContainer.getDelegate();
 		}
-		if (rootDir instanceof MergeSource) {
-			MergeSource mergedDir = (MergeSource)rootDir;
+		if (rootDir instanceof MergeSource mergedDir) {
 			//first check if the next level is not a second MergeSource
 			int stop = relFilePath.indexOf("/", 1);
 			if(stop > 0) {
 				String nextLevel = extractChild(relFilePath);
 				VFSItem item = mergedDir.resolve(nextLevel);
-				if (item instanceof NamedContainerImpl)  {
-					item = ((NamedContainerImpl)item).getDelegate();
+				if (item instanceof NamedContainerImpl namedContainer)  {
+					item = namedContainer.getDelegate();
 				}
-				if(item instanceof MergeSource) {
-					rootDir = (MergeSource)item;
+				if(item instanceof MergeSource mergeSource) {
+					rootDir = mergeSource;
 					relFilePath = relFilePath.substring(stop);
 					return findWritableRootFolderForRecursion(rootDir, relFilePath, recursionLevel);
 				}
 				//very< special case for share folder in merged source
-				if(item instanceof LocalFolderImpl && "_sharedfolder_".equals(item.getName())) {
-					rootDir = (LocalFolderImpl)item;
+				if(item instanceof LocalFolderImpl sharedFolder && "_sharedfolder_".equals(sharedFolder.getName()) ) {
+					rootDir = sharedFolder;
 					relFilePath = relFilePath.substring(stop);
 					return findWritableRootFolderForRecursion(rootDir, relFilePath, recursionLevel);
 				}
@@ -686,15 +685,22 @@ public class VFSManager {
 					// ups, a merge source without children, no good, return null
 					return null;
 				}
-
-				String nextChildName = relFilePath.substring(1, relFilePath.indexOf("/", 1));
+				
+				String nextChildName = relFilePath;
+				if(relFilePath.startsWith("/")) {
+					nextChildName = relFilePath.substring(1);
+				}
+				int nextSep = nextChildName.indexOf("/");
+				if(nextSep > 0) {
+					nextChildName = nextChildName.substring(0, nextSep);
+				}
 				for (VFSItem child : children) {
 					// look up for the next child in the path
 					if (child.getName().equals(nextChildName)) {
 						// use this child as new root and remove the child name from the rel
 						// path
-						if (child instanceof VFSContainer) {
-							rootDir = (VFSContainer) child;
+						if (child instanceof VFSContainer childContainer) {
+							rootDir = childContainer;
 							relFilePath = relFilePath.substring(relFilePath.indexOf("/",1));
 							break;							
 						} else {
