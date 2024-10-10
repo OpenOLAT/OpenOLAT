@@ -464,10 +464,12 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				log.error("", e);
 			}
 		} else if(link.isForceFlexiDirtyFormWarning()) {
-			sb.append("href=\"javascript:")
-			  .append(FormJSHelper.getJSFnCallFor(flexiLink.getRootForm(), elementId, 1))
-			  .append(";\" ")
-			  .append("onclick=\"return o2cl_dirtyCheckOnly();\" ");
+			boolean hasUrl = StringHelper.containsNonWhitespace(link.getUrl());
+			String href = hasUrl ? link.getUrl() : "javascript:;";
+			// Prevent 2 submits by onchange and click (button or submit) events
+			sb.append("href=\"").append(href).append("\" onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" onclick=\"")
+			  .append(FormJSHelper.getJSFnCallFor(flexiLink.getRootForm(), elementId, 1).replace("o_ffEvent(", "o_ffEventDirtyCheck("))
+			  .append("; ").append(" return false;", hasUrl).append("\" ");
 		} else {
 			boolean hasUrl = StringHelper.containsNonWhitespace(link.getUrl());
 			String href = hasUrl ? link.getUrl() : "javascript:;";
