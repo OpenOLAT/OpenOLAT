@@ -1926,7 +1926,9 @@ function showerror(e) {
     return "error detail:\n"+r;
 }
 
-
+/** 
+ * Wrapper around o_ffEvent with an absolut dirty check.
+ */
 function o_ffEventDirtyCheck(event, formNam, dispIdField, dispId, eventIdField, eventInt, newWindow, tcid) {
 	// Copy function arguments and set the dirtyCheck to false for execution in callback.
 	// Note that the argument list is dynamic, there are potentially more arguments than
