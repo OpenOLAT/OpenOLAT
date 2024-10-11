@@ -105,6 +105,7 @@ import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -158,7 +159,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private final boolean lectureManagementManaged;
 	private final CurriculumElement curriculumElement;
 	private final LecturesSecurityCallback secCallback;
-	
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final String avatarMapperBaseURL;
+
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -171,6 +174,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		this.entry = entry;
 		this.curriculumElement = null;
 		this.secCallback = secCallback;
+		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
 		
@@ -183,6 +187,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		this.entry = null;
 		this.curriculumElement = curriculumElement;
 		this.secCallback = secCallback;
+		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		detailsVC = createVelocityContainer("lecture_details");
 		
@@ -383,6 +388,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			LectureBlockRow row = new LectureBlockRow(b, displayname, externalRef,
 					teachers.toString(), false, block.getCurriculumElementRef(), block.getEntryRef(),
 					block.getNumOfParticipants(), block.isAssessmentMode());
+			row.setTeachersList(block.getTeachers());
 			rows.add(row);
 			
 			String linkName = "tools-" + counter++;
@@ -730,7 +736,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			flc.remove(row.getDetailsController().getInitialFormItem());
 		}
 		
-		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row, mainForm);
+		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row,
+				avatarMapper, avatarMapperBaseURL, mainForm);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

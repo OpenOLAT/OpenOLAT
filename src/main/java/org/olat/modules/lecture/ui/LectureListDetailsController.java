@@ -44,12 +44,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -71,6 +73,11 @@ import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryRefImpl;
+import org.olat.user.UserAvatarMapper;
+import org.olat.user.UserInfoProfile;
+import org.olat.user.UserInfoProfileConfig;
+import org.olat.user.UserInfoProfileController;
+import org.olat.user.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -88,6 +95,7 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	private int counter = 0;
 	private final LectureBlockRow row;
+	private final UserInfoProfileConfig profileConfig;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -97,15 +105,22 @@ public class LectureListDetailsController extends FormBasicController {
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
+	private UserInfoService userInfoService;
+	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row, Form rootForm) {
+	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row,
+			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "lecture_details_view", rootForm);
 		this.row = row;
+		profileConfig = userInfoService.createProfileConfig();
+		profileConfig.setChatEnabled(true);
+		profileConfig.setAvatarMapper(avatarMapper);
+		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
 		initForm(ureq);
 		loadGroupsModel();
@@ -119,13 +134,15 @@ public class LectureListDetailsController extends FormBasicController {
 			
 			String badge = LectureBlockStatusCellRenderer.getStatusBadge(row.getLectureBlock(), getTranslator());
 			layoutCont.contextPut("statusBadge", badge);
+			
+			editButton = uifactory.addFormLink("edit", "edit", "edit", formLayout, Link.BUTTON);
+			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			
+			initFormReferencedCourses(layoutCont);
+			initFormTeachers(layoutCont, ureq);
+			initFormMetadata(formLayout);
+			initFormParticipantsGroupTable(formLayout);
 		}
-		
-		editButton = uifactory.addFormLink("edit", "edit", "edit", formLayout, Link.BUTTON);
-		editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
-		
-		initFormMetadata(formLayout);
-		initFormParticipantsGroupTable(formLayout);
 	}
 	
 	private void initFormParticipantsGroupTable(FormItemContainer formLayout) {
@@ -148,6 +165,34 @@ public class LectureListDetailsController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 	}
 	
+	private void initFormReferencedCourses(FormLayoutContainer formLayout) {
+		EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("course.empty", "lecture.course", formLayout);
+		emptyTeachersList.setTitle(translate("lecture.no.course.assigned.title"));
+		emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_CourseModule_icon");
+	}
+	
+	private void initFormTeachers(FormLayoutContainer formLayout, UserRequest ureq) {
+		List<String> profilesIds = new ArrayList<>();
+		if(row.getTeachersList() == null || row.getTeachersList().isEmpty()) {
+			EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("teacher.empty", "lecture.teacher", formLayout);
+			emptyTeachersList.setTitle(translate("lecture.no.teacher.assigned.title"));
+			emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_icon_user");
+			profilesIds.add(emptyTeachersList.getName());
+		} else {
+			List<Identity> teachers = row.getTeachersList();
+			for(Identity teacher:teachers) {
+				UserInfoProfile teacherProfile = userInfoService.createProfile(teacher);
+				UserInfoProfileController profile = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, teacherProfile);
+				listenTo(profile);
+				
+				String profileId = "profile_" + teacher.getKey();
+				profilesIds.add(profileId);
+				formLayout.put(profileId, profile.getInitialComponent());
+			}
+		}
+		formLayout.contextPut("profilesIds", profilesIds);
+	}
+	
 	private void initFormMetadata(FormItemContainer formLayout) {	
 		Formatter formatter = Formatter.getInstance(getLocale());
 		Date startDate = row.getLectureBlock().getStartDate();
@@ -157,6 +202,11 @@ public class LectureListDetailsController extends FormBasicController {
 		String time = translate("lecture.from.to.format.short",
 				formatter.formatTimeShort(startDate), formatter.formatTimeShort(endDate));
 		uifactory.addStaticTextElement("lecture.time", "lecture.time", time, formLayout);
+		
+		if(row.getLectureBlock().getPlannedLecturesNumber() > 1) {
+			String units = Integer.toString(row.getLectureBlock().getPlannedLecturesNumber());
+			uifactory.addStaticTextElement("lecture.units", "lecture.units", units, formLayout);
+		}
 		
 		String location = row.getLectureBlock().getLocation();
 		if(StringHelper.containsNonWhitespace(location)) {

@@ -227,7 +227,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, entry2, true);
 		dbInstance.commit();
 		
-		List<CurriculumElementInfos> relations = curriculumElementDao.loadElementsWithInfos(curriculum, null, null);
+		List<CurriculumElementInfos> relations = curriculumElementDao.loadElementsWithInfos(curriculum, null, null, null);
 		Assert.assertEquals(1, relations.size());
 		Assert.assertEquals(element, relations.get(0).getCurriculumElement());
 		Assert.assertEquals(element.getKey(), relations.get(0).getKey());

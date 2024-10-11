@@ -55,10 +55,12 @@ public class EmptyPanelRenderer extends DefaultComponentRenderer {
 		sb.append("<div class='o_empty_panel_icon'>")
 		  .append("<i class='").append(panel.getIconCssClass()).append("' aria-hidden='true'> </i></div>");
 
-		sb.append("<div class='o_empty_panel_content'>")
-		  .append("<strong>").append(panel.getTitle()).append("</strong>")
-		  .append("<p>").append(panel.getInformations()).append("</p>")
-		  .append("</div>");
+		sb.append("<div class='o_empty_panel_content'><div>")
+		  .append("<strong>").append(panel.getTitle()).append("</strong>");
+		if(StringHelper.containsNonWhitespace(panel.getInformations())) {
+			sb.append("<p>").append(panel.getInformations()).append("</p>");
+		}
+		sb.append("</div></div>");
 
 		sb.append("</div>");
 	}

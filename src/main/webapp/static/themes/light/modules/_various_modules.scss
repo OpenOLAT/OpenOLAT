@@ -1195,6 +1195,11 @@ div.o_reminder_custom_email {
 		}
 	}
 	
+	.o_empty_panel_content {
+		display: flex;
+		align-items: center;
+	}
+	
 	.o_empty_panel_content>p:last-child {
 		margin-bottom: 0;
 	}

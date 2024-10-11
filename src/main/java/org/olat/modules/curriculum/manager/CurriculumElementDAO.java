@@ -370,7 +370,7 @@ public class CurriculumElementDAO {
 	}
 	
 	public List<CurriculumElementInfos> loadElementsWithInfos(CurriculumRef curriculum,
-			RepositoryEntryRef entry, List<CurriculumElementRef> curriculumElements) {
+			RepositoryEntryRef entry, List<CurriculumElementRef> curriculumElements, CurriculumElement parentElement) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select el, ")
 		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
@@ -398,6 +398,9 @@ public class CurriculumElementDAO {
 		if(curriculumElements != null && !curriculumElements.isEmpty()) {
 			sb.and().append("el.key in (:curriculumElementsKeys)");
 		}
+		if(parentElement != null) {
+			sb.and().append("(el.key=:elementKey or el.materializedPathKeys like :materializedPath)");
+		}
 		if(entry != null) {
 			sb.and()
 			  .append("baseGroup.key in (select rel.group.key from repoentrytogroup as rel")
@@ -415,6 +418,10 @@ public class CurriculumElementDAO {
 					.map(CurriculumElementRef::getKey)
 					.toList();
 			rawQuery.setParameter("curriculumElementsKeys", curriculumElementsKeys);
+		}
+		if(parentElement != null) {
+			rawQuery.setParameter("elementKey", parentElement.getKey());
+			rawQuery.setParameter("materializedPath", parentElement.getMaterializedPathKeys() + "%");
 		}
 		if(entry != null) {
 			rawQuery.setParameter("entryKey", entry.getKey());

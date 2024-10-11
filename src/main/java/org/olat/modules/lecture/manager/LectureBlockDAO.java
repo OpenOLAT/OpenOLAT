@@ -704,7 +704,9 @@ public class LectureBlockDAO {
 			LectureBlockWithTeachers blockWith = blockMap.computeIfAbsent(block.getKey(), key ->
 					new LectureBlockWithTeachers(block, lectureConfiguration,
 							elementRef, entryRef, numOfParticipants, assessmentMode));
-			blockWith.getTeachers().add(coach);
+			if(coach != null) {
+				blockWith.getTeachers().add(coach);
+			}
 		}
 		return new ArrayList<>(blockMap.values());
 	}

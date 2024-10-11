@@ -50,8 +50,8 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.lecture.ui.addwizard.CurriculumElementsDataModel.ElementCols;
@@ -177,6 +177,7 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		DateFlexiCellRenderer dateRenderer = new DateFlexiCellRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate, dateRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.references));
 		
 		curriculumElementTableModel = new CurriculumElementsDataModel(columnsModel);
 		curriculumElementTableEl = uifactory.addTableElement(getWindowControl(), "elementsTable", curriculumElementTableModel, 25, false, getTranslator(), formLayout);
@@ -188,12 +189,12 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 	private void loadCurriculumModel() {
 		List<CurriculumElementRow> rows = new ArrayList<>();
 		if(addLecture.getRootElement() != null) {
-			List<CurriculumElement> elements = curriculumService.getCurriculumElementsDescendants(addLecture.getRootElement());
-			elements.add(addLecture.getRootElement());
-			
+			List<CurriculumElementInfos> elements = curriculumService
+					.getCurriculumElementsDescendantsWithInfos(addLecture.getRootElement());
 			Map<Long,CurriculumElementRow> keyToRows = new HashMap<>();
-			for(CurriculumElement element:elements) {
-				CurriculumElementRow row = new CurriculumElementRow(element);
+			for(CurriculumElementInfos element:elements) {
+				CurriculumElementRow row = new CurriculumElementRow(element.getCurriculumElement(),
+						element.getNumOfResources());
 				rows.add(row);
 				keyToRows.put(row.getKey(), row);
 			}

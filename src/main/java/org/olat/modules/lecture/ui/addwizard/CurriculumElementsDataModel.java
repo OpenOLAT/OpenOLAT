@@ -59,6 +59,7 @@ public class CurriculumElementsDataModel extends DefaultFlexiTreeTableDataModel<
 			case identifier -> elementRow.getIdentifier();
 			case beginDate -> elementRow.getBeginDate();
 			case endDate -> elementRow.getEndDate();
+			case references -> elementRow.getNumOfReferences();
 			default -> "ERROR";
 		};
 	}
@@ -69,7 +70,7 @@ public class CurriculumElementsDataModel extends DefaultFlexiTreeTableDataModel<
 		identifier("table.header.identifier"),
 		beginDate("table.header.begin.date"),
 		endDate("table.header.end.date"),
-		resources("table.header.resources");
+		references("table.header.resources");
 		
 		private final String i18nKey;
 		
