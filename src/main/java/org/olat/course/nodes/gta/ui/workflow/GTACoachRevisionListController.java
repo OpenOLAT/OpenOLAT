@@ -291,6 +291,11 @@ public class GTACoachRevisionListController extends AbstractCoachWorkflowListCon
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(source instanceof GTACoachRevisionAndCorrectionsController) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		}
 		super.event(ureq, source, event);
 	}
