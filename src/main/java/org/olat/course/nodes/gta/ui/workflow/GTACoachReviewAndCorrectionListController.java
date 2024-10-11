@@ -198,15 +198,14 @@ public class GTACoachReviewAndCorrectionListController extends AbstractCoachWork
 	@Override
 	protected CoachedParticipantRow forgeRow(CoachedParticipantRow identityRow, RepositoryEntry entry) {
 		identityRow.setToolsLink(forgeToolsLink(identityRow));
-		
 		status(identityRow);
-		
 		return identityRow;
 	}
 	
 	private void status(CoachedParticipantRow identityRow) {
 		Task assignedTask = identityRow.getTask();
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();
+		identityRow.setRevisions(false);
 		
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
@@ -214,6 +213,9 @@ public class GTACoachReviewAndCorrectionListController extends AbstractCoachWork
 				identityRow.setStatus(CoachedParticipantStatus.notAvailable);
 			} else if(assignedTask.getTaskStatus() == TaskProcess.review) {
 				identityRow.setStatus(CoachedParticipantStatus.revisionAvailable);
+			} else if(assignedTask.getTaskStatus() == TaskProcess.revision) {
+				identityRow.setRevisions(true);
+				identityRow.setStatus(CoachedParticipantStatus.done);
 			} else {
 				identityRow.setStatus(CoachedParticipantStatus.done);
 			}
