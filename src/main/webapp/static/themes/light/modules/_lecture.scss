@@ -174,7 +174,24 @@
 		background-color: 	$o-lm-status-done-color;
 	    color: 				#fff;
 	}
+}
 
+.o_lecture_card {
+	.o_card_title > small {
+		display: block;
+	}
+	
+	.o_card_meta {
+		padding: 10px;;
+	}
+	
+	.o_visual_not_available {
+		height: 172px;
+		background-image:url('#{$o-images-path}no_preview.png');
+		background-repeat:no-repeat;
+		background-position:50% 50%;	
+		background-size: contain;
+	}
 }
 
 .o_lecture_metadata_horizontal {

@@ -22,14 +22,13 @@ package org.olat.modules.curriculum.ui;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
 
 /**
  * 
@@ -37,7 +36,7 @@ import org.olat.modules.curriculum.CurriculumLectures;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTableNode {
+public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	private boolean hasChildren;
 	private CurriculumElementRow parent;
@@ -96,11 +95,13 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	public void setCurriculumElement(CurriculumElement element) {
 		this.element = element;
 	}
-	
+
+	@Override
 	public String getIdentifier() {
 		return element.getIdentifier();
 	}
-	
+
+	@Override
 	public String getDisplayName() {
 		return element.getDisplayName();
 	}
@@ -108,7 +109,8 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	public String getExternalId() {
 		return element.getExternalId();
 	}
-	
+
+	@Override
 	public Date getBeginDate() {
 		return element.getBeginDate();
 	}
@@ -265,8 +267,7 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumElementRow) {
-			CurriculumElementRow row = (CurriculumElementRow)obj;
+		if(obj instanceof CurriculumElementRow row) {
 			return element != null && element.equals(row.element);
 		}
 		return false;

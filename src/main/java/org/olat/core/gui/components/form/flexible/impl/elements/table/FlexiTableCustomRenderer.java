@@ -180,6 +180,8 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 		Object rowObject = ftE.getTableDataModel().getObject(row);
 		container.contextPut("row", rowObject);
 		container.contextPut("rowIndex", row);
+		container.contextPut("rowId", rowIdPrefix + row);
+		container.contextPut("rowSelected", Boolean.valueOf(ftE.isMultiSelectedIndex(row)));
 		
 		FlexiTableColumnModel columnsModel = ftE.getTableDataModel().getTableColumnModel();
 		int numOfCols = columnsModel.getColumnCount();
@@ -218,7 +220,9 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 		container.getHTMLRendererSingleton().render(renderer, sb, container, ubu, translator, renderResult, null);
 		container.contextRemove("openCloseLink");
 		container.contextRemove("hasChildren");
+		container.contextRemove("rowSelected");
 		container.contextRemove("rowIndex");
+		container.contextRemove("rowId");
 		container.contextRemove("isOpen");
 		container.contextRemove("row");
 		container.contextRemove("f");

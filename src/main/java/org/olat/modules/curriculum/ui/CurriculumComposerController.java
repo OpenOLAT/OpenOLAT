@@ -228,6 +228,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(zoomColumn);
 		if(secCallback.canEditCurriculumElements() || (!managed && secCallback.canManagerCurriculumElementsUsers())) {
 			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ElementCols.tools);
+			toolsColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_actions");
 			toolsColumn.setExportable(false);
 			toolsColumn.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(toolsColumn);
@@ -348,6 +349,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(tooled) {
 			toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsLink.setTitle(translate("action.more"));
 		}
 		
 		FormLink resourcesLink = null;

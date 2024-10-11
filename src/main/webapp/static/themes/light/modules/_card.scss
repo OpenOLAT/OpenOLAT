@@ -19,6 +19,35 @@
 			}
 		}
 	}
+	
+	.o_card_radio_select {
+		display: grid;
+		grid-template-columns: 1fr;
+		height: 2em;
+		justify-items: center;
+		align-items: center;
+	}
+}
+
+.o_cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.o_cards.o_cards_4 {
+	>div {
+		width: calc(percentage(math.div(1, 4)) - 10px);
+		@media (max-width: $screen-md-max) {
+			min-width: calc(percentage(math.div(1, 3)) - 7px);
+		}
+		@media (max-width: $screen-sm-max) {
+			min-width: calc(percentage(math.div(1, 2)) - 7px);
+		}
+		@media (max-width: $screen-xs-max) {
+			min-width: 100%;
+		}
+	}
 }
 
 .o_widget {

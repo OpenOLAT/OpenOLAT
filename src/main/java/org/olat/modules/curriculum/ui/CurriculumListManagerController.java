@@ -172,6 +172,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(editCol);
 		if(secCallback.canEditCurriculum()) {
 			StickyActionColumnModel toolsCol = new StickyActionColumnModel(CurriculumCols.tools);
+			toolsCol.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_actions");
 			toolsCol.setExportable(false);
 			toolsCol.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(toolsCol);
@@ -235,6 +236,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private CurriculumRow forgeManagedRow(CurriculumInfos curriculum, boolean canManage) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		toolsLink.setTitle(translate("action.more"));
 		CurriculumRow row = new CurriculumRow(curriculum, toolsLink, canManage);
 		toolsLink.setUserObject(row);
 		return row;

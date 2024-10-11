@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -81,6 +82,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LocationHistory;
+import org.olat.modules.lecture.ui.addwizard.AddLectureContext;
 import org.olat.modules.lecture.ui.component.LocationDateComparator;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
@@ -113,8 +115,10 @@ public class EditLectureBlockController extends FormBasicController {
 	private MultipleSelectionElement compulsoryEl;
 	
 	private final boolean readOnly;
+	private final boolean embedded;
 	private RepositoryEntry entry;
 	private LectureBlock lectureBlock;
+	private AddLectureContext addLectureCtxt;
 	private CurriculumElement curriculumElement;
 	
 	private List<MemberView> possibleTeachersList;
@@ -143,17 +147,9 @@ public class EditLectureBlockController extends FormBasicController {
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 
-	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		this(ureq, wControl, entry, null, null, false);
-	}
-	
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			LectureBlock lectureBlock, boolean readOnly) {
 		this(ureq, wControl, entry, null, lectureBlock, readOnly);
-	}
-	
-	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
-		this(ureq, wControl, null, curriculumElement, null, false);
 	}
 	
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement,
@@ -166,10 +162,35 @@ public class EditLectureBlockController extends FormBasicController {
 			LectureBlock lectureBlock, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
+		embedded = false;
 		this.entry = entry;
 		this.readOnly = readOnly;
 		this.lectureBlock = lectureBlock;
 		this.curriculumElement = curriculumElement;
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, true);
+		
+		locations = getLocations(ureq);
+		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
+		if(lectureBlock != null && lectureBlock.getKey() != null) {
+			teachers = lectureService.getTeachers(lectureBlock);
+		} else {
+			teachers = List.of();
+		}
+		
+		initForm(ureq);
+		updateUI();
+	}
+	
+	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			AddLectureContext addLecture) {
+		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
+		embedded = true;
+		entry = addLecture.getEntry();
+		readOnly = false;
+		lectureBlock = null;
+		this.addLectureCtxt = addLecture;
+		curriculumElement = addLecture.getRootElement();
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, true);
 		
 		locations = getLocations(ureq);
@@ -317,13 +338,15 @@ public class EditLectureBlockController extends FormBasicController {
 		if(compulsory) {
 			compulsoryEl.select(ON_KEY, true);
 		}
-
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
-		if(!readOnly) {
-			uifactory.addFormSubmitButton("save", buttonsCont);
+		
+		if(!embedded) {
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			formLayout.add(buttonsCont);
+			if(!readOnly) {
+				uifactory.addFormSubmitButton("save", buttonsCont);
+			}
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	private boolean containsIdentity(MemberView member, Collection<Identity> identities) {
@@ -397,7 +420,7 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
+	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		titleEl.clearError();
@@ -447,7 +470,7 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	public void formOK(UserRequest ureq) {
 		boolean create = false;
 		int currentPlannedLectures = -1;
 		
@@ -495,37 +518,43 @@ public class EditLectureBlockController extends FormBasicController {
 		
 		int plannedLectures = Integer.parseInt(plannedLecturesEl.getSelectedKey());
 		lectureBlock.setPlannedLecturesNumber(plannedLectures);
-
-		lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 		
-		if(teacherEl.isAtLeastSelected(1)) {
-			synchronizeTeachers(audit);
-		}
-
-		String afterxml = lectureService.toAuditXml(lectureBlock);
-		lectureService.auditLog(action, beforeXml, afterxml, audit.toString(), lectureBlock, null,
-				entry, curriculumElement, null, getIdentity());
-		dbInstance.commit();
-		if(currentPlannedLectures >= 0) {
-			lectureService.adaptRollCalls(lectureBlock);
-		}
-		updateLocationsPrefs(ureq);
-		lectureService.syncCalendars(lectureBlock);
-		//update eventual assessment mode
-		AssessmentMode assessmentMode = assessmentModeMgr.getAssessmentMode(lectureBlock);
-		if(assessmentMode != null) {
-			assessmentModeMgr.syncAssessmentModeToLectureBlock(assessmentMode);
-			assessmentModeMgr.merge(assessmentMode, false);
-		}
-		fireEvent(ureq, Event.DONE_EVENT);
-
-		if(create) {
-			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_CREATED, getClass(),
-					CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
+		if(addLectureCtxt != null) {
+			addLectureCtxt.setTeachers(getSelectedTeachers());
+			addLectureCtxt.setLectureBlock(lectureBlock);
 		} else {
-			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_EDITED, getClass(),
-					CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
+			lectureBlock = lectureService.save(lectureBlock, selectedGroups);
+			
+			if(teacherEl.isAtLeastSelected(1)) {
+				synchronizeTeachers(audit);
+			}
+	
+			String afterxml = lectureService.toAuditXml(lectureBlock);
+			lectureService.auditLog(action, beforeXml, afterxml, audit.toString(), lectureBlock, null,
+					entry, curriculumElement, null, getIdentity());
+			dbInstance.commit();
+			if(currentPlannedLectures >= 0) {
+				lectureService.adaptRollCalls(lectureBlock);
+			}
+			lectureService.syncCalendars(lectureBlock);
+			//update eventual assessment mode
+			AssessmentMode assessmentMode = assessmentModeMgr.getAssessmentMode(lectureBlock);
+			if(assessmentMode != null) {
+				assessmentModeMgr.syncAssessmentModeToLectureBlock(assessmentMode);
+				assessmentModeMgr.merge(assessmentMode, false);
+			}
+			fireEvent(ureq, Event.DONE_EVENT);
+	
+			if(create) {
+				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_CREATED, getClass(),
+						CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
+			} else {
+				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_EDITED, getClass(),
+						CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
+			}
 		}
+		
+		updateLocationsPrefs(ureq);
 	}
 	
 	private void synchronizeTeachers(StringBuilder audit) {
@@ -551,6 +580,14 @@ public class EditLectureBlockController extends FormBasicController {
 				}
 			}
 		}
+	}
+	
+	private List<Identity> getSelectedTeachers() {
+		List<Long> selectedTeacherKeys = teacherEl.getSelectedKeys().stream()
+				.filter(StringHelper::isLong)
+				.map(Long::valueOf)
+				.toList();
+		return securityManager.loadIdentityByKeys(selectedTeacherKeys);
 	}
 
 	@Override

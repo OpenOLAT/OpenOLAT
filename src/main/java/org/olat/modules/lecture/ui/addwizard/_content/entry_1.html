@@ -1,0 +1,25 @@
+<div class="o_card o_lecture_card">
+	<div class="o_thumbnail">
+		<div class="o_gta_file_img">
+			#if($row.isThumbnailAvailable())
+				<img src="${row.getThumbnailUrl()}" alt="$r.translate("rentry.pic.alt")"/>
+			#else
+				<div class="o_visual_not_available"></div>
+			#end
+		</div>
+	</div>
+	<div class="o_card_meta">
+		<div class="o_flex_first_grow_base">
+			<div class="o_nowrap">
+				<h4 class="o_card_title">
+					#if($r.isNotEmpty($row.externalRef))
+					<small>$r.escapeHtml($row.externalRef)</small>
+					#end
+					<label for="radio_$rowId">$r.escapeHtml(${row.getDisplayname()})</label></h4>
+			</div>
+		</div>
+		<div class="o_card_radio_select">
+			<input id="radio_$rowId" type='radio' name='tb_ms' value='$rowId' #if($r.isTrue($rowSelected))checked='checked'#end>
+		</div>	
+	</div>
+</div>

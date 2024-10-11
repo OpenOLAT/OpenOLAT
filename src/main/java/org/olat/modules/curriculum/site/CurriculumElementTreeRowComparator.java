@@ -24,7 +24,6 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
-import org.olat.modules.curriculum.ui.CurriculumElementRow;
 
 /**
  * This is based of the position of the elements.
@@ -47,8 +46,8 @@ public class CurriculumElementTreeRowComparator extends FlexiTreeNodeComparator 
 			return compareNullObjects(o1, o2);
 		}
 		
-		CurriculumElementRow c1 = (CurriculumElementRow)o1;
-		CurriculumElementRow c2 = (CurriculumElementRow)o2;
+		ComparableCurriculumElementRow c1 = (ComparableCurriculumElementRow)o1;
+		ComparableCurriculumElementRow c2 = (ComparableCurriculumElementRow)o2;
 		Long parentKey1 = c1.getParentKey();
 		Long parentKey2 = c2.getParentKey();
 		
@@ -71,8 +70,8 @@ public class CurriculumElementTreeRowComparator extends FlexiTreeNodeComparator 
 			}
 		} else if(parentKey1 != null && parentKey2 != null && c1.getParent() != null && c2.getParent() != null) {
 			// This case is usually not possible
-			CurriculumElementRow p1 = c1.getParent();
-			CurriculumElementRow p2 = c2.getParent();
+			ComparableCurriculumElementRow p1 = c1.getParent();
+			ComparableCurriculumElementRow p2 = c2.getParent();
 			c = compareCurriculumElements(p1, p2);
 			if(c == 0) {
 				c = Long.compare(p1.getKey().longValue(), p2.getKey().longValue());
@@ -88,7 +87,7 @@ public class CurriculumElementTreeRowComparator extends FlexiTreeNodeComparator 
 		return c;
 	}
 	
-	private int compareCurriculumElements(CurriculumElementRow c1, CurriculumElementRow c2) {
+	private int compareCurriculumElements(ComparableCurriculumElementRow c1, ComparableCurriculumElementRow c2) {
 		int c = 0;
 		if(c1.getBeginDate() == null || c2.getBeginDate() == null) {
 			c = compareNullObjects(c1.getBeginDate(), c2.getBeginDate());

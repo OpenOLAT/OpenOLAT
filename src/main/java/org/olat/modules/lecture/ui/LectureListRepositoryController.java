@@ -92,6 +92,9 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
+import org.olat.modules.lecture.ui.addwizard.AddLectureBlock1ResourcesStep;
+import org.olat.modules.lecture.ui.addwizard.AddLectureBlockStepCallback;
+import org.olat.modules.lecture.ui.addwizard.AddLectureContext;
 import org.olat.modules.lecture.ui.blockimport.BlocksImport_1_InputStep;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlock;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
@@ -144,6 +147,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private StepsMainRunController addLectureCtrl;
 	private StepsMainRunController importBlockWizard;
 	private EditLectureBlockController editLectureCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -511,6 +515,14 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(addLectureCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					loadModel();
+				}
+				cleanUp();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		} else if(toolsCalloutCtrl == source) {
@@ -546,11 +558,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		removeAsListenerAndDispose(deleteLectureBlocksCtrl);
 		removeAsListenerAndDispose(editLectureCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(addLectureCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		deleteLectureBlocksCtrl = null;
 		toolsCalloutCtrl = null;
 		editLectureCtrl = null;
+		addLectureCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 	}
@@ -581,21 +595,26 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 
 	private void doAddLectureBlock(UserRequest ureq) {
-		if(guardModalController(editLectureCtrl) || !secCallback.canNewLectureBlock()) return;
+		if(guardModalController(addLectureCtrl) || !secCallback.canNewLectureBlock()) return;
 		
-		if(entry != null) {
-			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry);
-		} else if(curriculumElement != null) {
-			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), curriculumElement);
-		} else {
+		if(entry == null && curriculumElement == null) {
 			showWarning("error.no.entry.curriculum");
 			return;
 		}
-		listenTo(editLectureCtrl);
-
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
-		listenTo(cmc);
-		cmc.activate();
+		
+		List<RepositoryEntry> entries = entry == null ? List.of() : List.of(entry);
+		AddLectureContext addLecture = new AddLectureContext(curriculumElement, entries);
+		addLecture.setEntry(entry);
+		addLecture.setCurriculumElement(curriculumElement);
+		
+		AddLectureBlock1ResourcesStep step = new AddLectureBlock1ResourcesStep(ureq, addLecture);
+		AddLectureBlockStepCallback stop = new AddLectureBlockStepCallback(addLecture);
+		String title = translate("add.lecture");
+		
+		removeAsListenerAndDispose(addLectureCtrl);
+		addLectureCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, null, title, "");
+		listenTo(addLectureCtrl);
+		getWindowControl().pushAsModalDialog(addLectureCtrl.getInitialComponent());
 	}
 	
 	private void doImportLecturesBlock(UserRequest ureq) {
