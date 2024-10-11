@@ -34,8 +34,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
@@ -92,8 +90,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		if(minimalEditor) {
 			htmlItem = uifactory.addRichTextElementForParagraphEditor(cmpId, null, content, 8, 80, formLayout, getWindowControl());
 		} else {
-			VFSContainer container = new VirtualContainer("Virtual");
-			htmlItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 8, 80, container, formLayout, ureq.getUserSession(), getWindowControl());
+			htmlItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 8, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
 		}
 
 		htmlItem.getEditorConfiguration().setSendOnBlur(true);

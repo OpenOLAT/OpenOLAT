@@ -69,7 +69,7 @@ public class CodeRunController extends BasicController implements PageRunElement
 	}
 
 	private void initUI() {
-		HashMap<String, String> languageKeyToValue = new HashMap();
+		HashMap<String, String> languageKeyToValue = new HashMap<>();
 		for (CodeLanguage codeLanguage : CodeLanguage.values()) {
 			languageKeyToValue.put(codeLanguage.name(), codeLanguage.getDisplayText(getLocale()));
 		}
