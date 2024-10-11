@@ -994,8 +994,10 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		assignment = gradingAssignmentDao.updateAssignment(assignment);
 		if(metadataTime != null) {
 			GradingTimeRecord timeRecord = (GradingTimeRecord)getCurrentTimeRecord(assignment, new Date());
-			timeRecord.setMetadataTime(metadataTime.longValue());
-			gradingTimeRecordDao.updateTimeRecord(timeRecord);
+			if(timeRecord != null) {
+				timeRecord.setMetadataTime(metadataTime.longValue());
+				gradingTimeRecordDao.updateTimeRecord(timeRecord);
+			}
 		}
 		log.info(Tracing.M_AUDIT, "Assignment done {}", assignment.getKey());
 		dbInstance.commit();
@@ -1118,6 +1120,8 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 
 	@Override
 	public GradingTimeRecordRef getCurrentTimeRecord(GradingAssignment assignment, Date date) {
+		if(assignment == null || assignment.getGrader() == null ) return null;
+		
 		date = CalendarUtils.startOfDay(date);
 		GradingTimeRecord record = gradingTimeRecordDao.loadRecord(assignment.getGrader(), assignment, date);
 		if(record == null) {
