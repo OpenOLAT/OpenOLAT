@@ -155,7 +155,7 @@ public class DrawioEditorController extends BasicController {
 			mainVC.contextPut("fileId", vfsLeaf.getMetaInfo().getUuid());
 			mainVC.contextPut("instanceId", WebappHelper.getInstanceId());
 			mainVC.contextPut("userKey", getIdentity().getKey());
-			mainVC.contextPut("userDisplayName", userManager.getUserDisplayName(getIdentity().getKey()));
+			mainVC.contextPut("userDisplayName", StringHelper.escapeHtml(userManager.getUserDisplayName(getIdentity().getKey())));
 			mainVC.contextPut("fileInfoUrl", drawioService.getFileInfoUrl(access));
 			mainVC.contextPut("fileContentUrl", drawioService.getFileContentUrl(access));
 			
