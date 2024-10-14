@@ -46,6 +46,7 @@ public class LecturesBlockSearchParameters {
 	private IdentityRef manager;
 	private IdentityRef participant;
 	private IdentityRef masterCoach;
+	private List<? extends IdentityRef> teachersList;
 	private RepositoryEntry entry;
 	private Boolean withTeachers;
 	private String curriculumElementPath;
@@ -173,6 +174,14 @@ public class LecturesBlockSearchParameters {
 			case participant:
 			default: setParticipant(identity);
 		}
+	}
+
+	public List<? extends IdentityRef> getTeachersList() {
+		return teachersList;
+	}
+
+	public void setTeachersList(List<? extends IdentityRef> teachersList) {
+		this.teachersList = teachersList;
 	}
 
 	public RepositoryEntry getEntry() {

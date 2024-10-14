@@ -231,7 +231,8 @@ public class LectureBlockDAO {
 		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select distinct block from lectureblock block")
 		  .append(" inner join fetch block.entry entry")
-		  .append(" inner join fetch entry.olatResource oRes");
+		  .append(" inner join fetch entry.olatResource oRes")
+		  .append(" left join fetch block.teacherGroup tGroup");
 		addSearchParametersToQuery(sb, searchParams);
 		sb.and()
 		  .append(" exists (select config.key from lectureentryconfig config")
@@ -248,7 +249,8 @@ public class LectureBlockDAO {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select distinct block.key from lectureblock block")
 		  .append(" inner join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
-		  .append(" inner join block.entry entry");
+		  .append(" inner join block.entry entry")
+		  .append(" left join block.teacherGroup tGroup");
 		addSearchParametersToQuery(sb, searchParams);
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);
@@ -788,6 +790,13 @@ public class LectureBlockDAO {
 			  .append("  teachership.group.key=block.teacherGroup.key and teachership.identity.key=:teacherKey")
 			  .append(" )");
 		}
+
+		if(searchParams.getTeachersList() != null && !searchParams.getTeachersList().isEmpty()) {
+			sb.and()
+			  .append(" exists (select teacherlist.key from bgroupmember teacherlist where")
+			  .append("  teacherlist.group.key=tGroup.key and teacherlist.identity.key in (:teachersList)")
+			  .append(" )");
+		}
 	}
 	
 	private void addSearchParametersToQuery(TypedQuery<?> query, LecturesBlockSearchParameters searchParams) {
@@ -840,6 +849,11 @@ public class LectureBlockDAO {
 		}
 		if(searchParams.getParticipant() != null) {
 			query.setParameter("participantKey", searchParams.getParticipant().getKey());
+		}
+		if(searchParams.getTeachersList() != null && !searchParams.getTeachersList().isEmpty()) {
+			List<Long> teachersKeys = searchParams.getTeachersList().stream()
+					.map(IdentityRef::getKey).toList();
+			query.setParameter("teachersList", teachersKeys);
 		}
 	}
 

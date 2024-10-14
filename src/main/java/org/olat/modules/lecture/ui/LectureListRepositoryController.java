@@ -22,10 +22,12 @@ package org.olat.modules.lecture.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -126,6 +128,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	private static final String FILTER_ONE_LEVEL_ONLY = "OneLevelOnly";
 	private static final String FILTER_ROLL_CALL_STATUS = "Status";
+	private static final String FILTER_TEACHERS = "Teachers";
 	
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
 
@@ -143,8 +146,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private FlexiFiltersTab pendingTab;
 	private FlexiFiltersTab withoutTeachersTab;
 
+	private FlexiTableMultiSelectionFilter teachersFilter;
 	private FlexiTableMultiSelectionFilter rollCallStatusFilter;
 	private FlexiTableOneClickSelectionFilter oneLevelOnlyFilter;
+	private final SelectionValues teachersValues = new SelectionValues();
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
@@ -180,6 +185,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		
 		initForm(ureq);
 		loadModel();
+		updateTeachersFilters();
 	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement, LecturesSecurityCallback secCallback) {
@@ -301,6 +307,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		rollCallStatusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				FILTER_ROLL_CALL_STATUS, rollCallStatusValues, true);
 		filters.add(rollCallStatusFilter);
+		
+		teachersFilter = new FlexiTableMultiSelectionFilter(translate("filter.teachers"),
+				FILTER_TEACHERS, teachersValues, true);
+		filters.add(teachersFilter);
 
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -407,6 +417,19 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 	}
 	
+	private void updateTeachersFilters() {
+		List<LectureBlockRow> rows = tableModel.getObjects();
+		Set<Identity> teachers = new HashSet<>();
+		for(LectureBlockRow row:rows) {
+			teachers.addAll(row.getTeachersList());
+		}
+		List<Identity> teachersList = new ArrayList<>(teachers);
+		for(Identity teacher: teachersList) {
+			String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(teacher));
+			teachersValues.add(SelectionValues.entry(teacher.getKey().toString(), fullName));
+		}
+	}
+	
 	private LecturesBlockSearchParameters getSearchParams() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		
@@ -428,6 +451,17 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			}
 		}
 		
+
+		if(FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_TEACHERS) != null) {
+			List<String> filterValues = teachersFilter.getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				List<IdentityRefImpl> teachersKeys = filterValues.stream()
+						.filter(value -> StringHelper.isLong(value))
+						.map(key -> new IdentityRefImpl(Long.valueOf(key)))
+						.toList();
+				searchParams.setTeachersList(teachersKeys);
+			}
+		}
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
 		if(selectedTab == currentTab) {
 			searchParams.setStartDate(new Date());
