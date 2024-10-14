@@ -240,13 +240,17 @@ public class CNSSelectionController extends FormBasicController implements Flexi
 		if (selectionDataModel.getObjects().size() < requiredSelections) {
 			flc.contextPut("selectionWarning", translate("selections.msg.too.few.available"));
 		} else if (numSelections < requiredSelections) {
-			String message = translate("selections.msg.required.more", 
-					String.valueOf(numSelections),
-					String.valueOf(requiredSelections-numSelections),
-					String.valueOf(requiredSelections));
-			flc.contextPut("selectionWarning", message);
+			if (requiredSelections == 1) {
+				flc.contextPut("selectionWarning", translate("selections.msg.single"));
+			} else {
+				String message = translate("selections.msg.required.more", 
+						String.valueOf(numSelections),
+						String.valueOf(requiredSelections-numSelections),
+						String.valueOf(requiredSelections));
+				flc.contextPut("selectionWarning", message);
+			}
 		} else {
-			flc.contextRemove("selectionWarning");
+			flc.contextPut("selectionWarning", translate("selections.msg.complete"));
 		}
 	}
 	

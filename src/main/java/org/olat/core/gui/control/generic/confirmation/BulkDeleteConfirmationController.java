@@ -55,4 +55,9 @@ public class BulkDeleteConfirmationController extends ConfirmationController {
 		deleteValuesEl.setShowAllI18nKey(showAllI18nKey);
 	}
 	
+	@Override
+	protected FormLayoutContainer createConfirmContainer() {
+		return FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
+	}
+	
 }

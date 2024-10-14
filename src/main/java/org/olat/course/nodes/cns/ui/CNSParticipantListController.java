@@ -52,7 +52,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.panel.InfoPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -97,10 +100,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CNSParticipantListController extends FormBasicController implements FlexiTableComponentDelegate {
 	
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_PARTIALLY = "Partially";
+	private static final String TAB_ID_COMPLETELY = "Completely";
 	private static final String CMD_DETAILS = "details";
 	
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private InfoPanel configPanel;
+	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabPartially;
+	private FlexiFiltersTab tabCompletely;
 	private CNSParticipantDataModel dataModel;
 	private FlexiTableElement tableEl;
 	private VelocityContainer detailsVC;
@@ -153,6 +162,7 @@ public class CNSParticipantListController extends FormBasicController implements
 		
 		initForm(ureq);
 		initFilters();
+		initFilterTabs(ureq);
 		loadModel(ureq);
 	}
 	
@@ -230,6 +240,33 @@ public class CNSParticipantListController extends FormBasicController implements
 		
 		tableEl.setFilters(true, filters, false, false);
 	}
+	
+	private void initFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
+		
+		tabAll = FlexiFiltersTabFactory.tab(
+				TAB_ID_ALL,
+				translate("all"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabAll);
+		
+		if (requiredSelections > 1) {
+			tabPartially = FlexiFiltersTabFactory.tab(
+					TAB_ID_PARTIALLY,
+					translate("tab.partially"),
+					TabSelectionBehavior.reloadData);
+			tabs.add(tabPartially);
+		}
+		
+		tabCompletely = FlexiFiltersTabFactory.tab(
+				TAB_ID_COMPLETELY,
+				translate("tab.completely"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabCompletely);
+		
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, tabAll);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -298,6 +335,7 @@ public class CNSParticipantListController extends FormBasicController implements
 			rows.add(row);
 		}
 		
+		applyFilters(rows);
 		applySearch(rows);
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -318,7 +356,7 @@ public class CNSParticipantListController extends FormBasicController implements
 				});
 		}
 	}
-	
+
 	private SearchAssessedIdentityParams getSearchParameters() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
 		params.setSubIdents(childNodeIdents);
@@ -375,6 +413,18 @@ public class CNSParticipantListController extends FormBasicController implements
 		params.setCurriculumElementKeys(curriculumElementKeys);
 		
 		return params;
+	}
+	
+	private void applyFilters(List<CNSParticipantRow> rows) {
+		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabAll) {
+			return;
+		}
+		
+		if (tableEl.getSelectedFilterTab() == tabPartially) {
+			rows.removeIf(row -> row.getNumSelections() == 0 || row.getNumSelections() >= requiredSelections);
+		} else if (tableEl.getSelectedFilterTab() == tabCompletely) {
+			rows.removeIf(row -> row.getNumSelections() < requiredSelections);
+		}
 	}
 	
 	private void applySearch(List<CNSParticipantRow> rows) {

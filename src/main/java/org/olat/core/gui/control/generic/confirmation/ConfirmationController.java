@@ -94,7 +94,7 @@ public class ConfirmationController extends FormBasicController {
 		formLayout.add(messageCont);
 		messageCont.contextPut("message", message);
 		
-		FormLayoutContainer confirmCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
+		FormLayoutContainer confirmCont = createConfirmContainer();
 		formLayout.add("confirm", confirmCont);
 		confirmCont.setRootForm(mainForm);
 		confirmCont.setElementCssClass("o_sel_confirm_form");
@@ -115,6 +115,12 @@ public class ConfirmationController extends FormBasicController {
 			confirmLink.setElementCssClass("btn-danger");
 		}
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	protected FormLayoutContainer createConfirmContainer() {
+		return StringHelper.containsNonWhitespace(confirmation)
+				? FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator())
+				: FormLayoutContainer.createVerticalFormLayout("confirm", getTranslator());
 	}
 	
 	@Override
