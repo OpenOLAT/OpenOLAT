@@ -391,13 +391,34 @@ public class MediaCenterController extends FormBasicController
 
 		addDropdown.addElement(addBrowserLink);
 		addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
-		
+
+		addVideoViaUrlLink = uifactory.addFormLink("add.video.via.url", formLayout, Link.LINK);
+		addVideoViaUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_youtube");
+		addDropdown.addElement(addVideoViaUrlLink);
+
+		if (avModule.isVideoRecordingEnabled()) {
+			recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
+			recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
+			addDropdown.addElement(recordVideoLink);
+		}
+
+		if (avModule.isAudioRecordingEnabled()) {
+			addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
+			recordAudioLink = uifactory.addFormLink("create.version.audio", formLayout, Link.LINK);
+			recordAudioLink.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
+			addDropdown.addElement(recordAudioLink);
+		}
+
+		addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
+
 		if (!editableFileTypes.isEmpty()) {
 			createFileLink = uifactory.addFormLink("create.file.title", formLayout, Link.LINK);
 			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			createFileLink.setElementCssClass("o_sel_create_file");
 			addDropdown.addElement(createFileLink);
 		}
+
+		addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
 	
 		if (drawioModule.isEnabled()) {
 			createDrawioLink = uifactory.addFormLink("create.drawio", formLayout, Link.LINK);
@@ -407,22 +428,6 @@ public class MediaCenterController extends FormBasicController
 
 		if (!editableFileTypes.isEmpty() || drawioModule.isEnabled()) {
 			addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
-		}
-
-		if (avModule.isVideoRecordingEnabled()) {
-			recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
-			recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
-			addDropdown.addElement(recordVideoLink);
-		}
-
-		addVideoViaUrlLink = uifactory.addFormLink("add.video.via.url", formLayout, Link.LINK);
-		addVideoViaUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_youtube");
-		addDropdown.addElement(addVideoViaUrlLink);
-
-		if (avModule.isAudioRecordingEnabled()) {
-			recordAudioLink = uifactory.addFormLink("create.version.audio", formLayout, Link.LINK);
-			recordAudioLink.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
-			addDropdown.addElement(recordAudioLink);
 		}
 
 		addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
