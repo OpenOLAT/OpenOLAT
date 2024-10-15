@@ -58,7 +58,7 @@ public class ReadOnlyCallback implements VFSSecurityCallback {
 
 	@Override
 	public boolean canCopy() {
-		return false;
+		return true;
 	}
 
 	@Override

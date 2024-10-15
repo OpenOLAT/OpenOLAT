@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * 
@@ -138,8 +139,8 @@ public class DocumentSelectionController extends FormBasicController {
 	 */
 	public String moveUploadFileTo(VFSContainer destinationContainer) {
 		if (uploadEl.isUploadSuccess()) {
-			uploadEl.moveUploadFileTo(destinationContainer);
-			return uploadEl.getUploadFileName();
+			VFSLeaf vfsLeaf = uploadEl.moveUploadFileTo(destinationContainer);
+			return vfsLeaf.getName();
 		}
 		return null;
 	}
