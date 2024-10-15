@@ -449,11 +449,15 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	}
 	
 	private void doStart(UserRequest ureq, Long repositoryEntrykey) {
-		try {
-			String businessPath = "[RepositoryEntry:" + repositoryEntrykey + "]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-		} catch (CorruptedCourseException e) {
-			showError("error.corrupted");
+		if (searchParams.isWebPublish()) {
+			doLogin(ureq);
+		} else {
+			try {
+				String businessPath = "[RepositoryEntry:" + repositoryEntrykey + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			} catch (CorruptedCourseException e) {
+				showError("error.corrupted");
+			}
 		}
 	}
 	
@@ -483,14 +487,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getKey());
 		if (entry != null) {
 			if (searchParams.isWebPublish()) {
-				if (guardModalController(authCtrl)) return;
-				authCtrl = new WebCatalogAuthController(ureq, getWindowControl());
-				listenTo(authCtrl);
-				
-				String title = Util.createPackageTranslator(UserAuthenticationEditController.class, getLocale()).translate("change.providers");
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), authCtrl.getInitialComponent(), true, title, true);
-				listenTo(cmc);
-				cmc.activate();
+				doLogin(ureq);
 			} else {
 				AccessResult acResult = acService.isAccessible(entry, getIdentity(), row.isMember(), searchParams.isGuestOnly(), null, false);
 				if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
@@ -507,6 +504,17 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		} else {
 			tableEl.reloadData();
 		}
+	}
+
+	private void doLogin(UserRequest ureq) {
+		if (guardModalController(authCtrl)) return;
+		authCtrl = new WebCatalogAuthController(ureq, getWindowControl());
+		listenTo(authCtrl);
+		
+		String title = Util.createPackageTranslator(UserAuthenticationEditController.class, getLocale()).translate("change.providers");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), authCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doBooked(UserRequest ureq, Long repositoryEntryKey) {
