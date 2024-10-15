@@ -51,6 +51,7 @@ public class CatalogLauncherDataModel extends DefaultFlexiTableDataModel<Catalog
 			case name: return row.getTranslatedName();
 			case details: return row.getDetails();
 			case enabled: return Boolean.valueOf(row.getCatalogLauncher().isEnabled());
+			case webEnabled: return Boolean.valueOf(row.getCatalogLauncher().isWebEnabled());
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -61,7 +62,8 @@ public class CatalogLauncherDataModel extends DefaultFlexiTableDataModel<Catalog
 		type("admin.launcher.type"),
 		name("admin.launcher.name"),
 		details("admin.launcher.details"),
-		enabled("admin.launcher.enabled"),
+		enabled("admin.launcher.catalog"),
+		webEnabled("admin.launcher.web.catalog"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;

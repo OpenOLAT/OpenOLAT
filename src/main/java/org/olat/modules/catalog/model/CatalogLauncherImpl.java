@@ -67,6 +67,8 @@ public class CatalogLauncherImpl implements CatalogLauncher, Persistable, Create
 	private int sortOrder;
 	@Column(name="c_enabled", nullable=false, insertable=true, updatable=true)
 	private boolean enabled;
+	@Column(name="c_web_enabled", nullable=false, insertable=true, updatable=true)
+	private boolean webEnabled;
 	@Column(name="c_config", nullable=true, insertable=true, updatable=true)
 	private String config;
 	
@@ -136,6 +138,16 @@ public class CatalogLauncherImpl implements CatalogLauncher, Persistable, Create
 		this.enabled = enabled;
 	}
 	
+	@Override
+	public boolean isWebEnabled() {
+		return webEnabled;
+	}
+
+	@Override
+	public void setWebEnabled(boolean webEnabled) {
+		this.webEnabled = webEnabled;
+	}
+
 	@Override
 	public String getConfig() {
 		return config;

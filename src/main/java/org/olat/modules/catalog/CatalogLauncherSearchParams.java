@@ -33,6 +33,7 @@ import org.olat.core.id.OrganisationRef;
 public class CatalogLauncherSearchParams {
 	
 	private Boolean enabled;
+	private Boolean webEnabled;
 	private Collection<Long> launcherOrganisationKeys;
 
 	public Boolean getEnabled() {
@@ -41,6 +42,14 @@ public class CatalogLauncherSearchParams {
 
 	public void setEnabled(Boolean enabled) {
 		this.enabled = enabled;
+	}
+
+	public Boolean getWebEnabled() {
+		return webEnabled;
+	}
+
+	public void setWebEnabled(Boolean webEnabled) {
+		this.webEnabled = webEnabled;
 	}
 
 	public Collection<Long> getLauncherOrganisationKeys() {

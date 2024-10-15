@@ -13,3 +13,5 @@ alter table o_cur_element_type add column c_single_element bool default false no
 alter table o_cur_element_type add column c_max_repo_entries bigint default -1 not null;
 alter table o_cur_element_type add column c_allow_as_root bool default true not null;
 
+-- Catalog
+alter table o_ca_launcher add column c_web_enabled bool default true not null;

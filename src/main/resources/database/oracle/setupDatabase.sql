@@ -1199,6 +1199,7 @@ create table o_ca_launcher (
    c_identifier varchar2(32),
    c_sort_order number(20),
    c_enabled number default 1 not null,
+   c_web_enabled number default 1 not null,
    c_config varchar2(4000),
    primary key (id)
 );

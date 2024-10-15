@@ -189,6 +189,7 @@ public class CatalogFilterListController extends FormBasicController {
 			
 			FormLink toolsLink = uifactory.addFormLink("tools_" + catalogFilter.getSortOrder(), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsLink.setTitle(translate("action.more"));
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 			

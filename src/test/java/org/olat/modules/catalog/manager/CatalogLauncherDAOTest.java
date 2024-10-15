@@ -90,6 +90,7 @@ public class CatalogLauncherDAOTest extends OlatTestCase {
 		
 		catalogLauncher.setSortOrder(3);
 		catalogLauncher.setEnabled(false);
+		catalogLauncher.setWebEnabled(false);
 		String config = random();
 		catalogLauncher.setConfig(config);
 		catalogLauncher = sut.save(catalogLauncher);
@@ -97,6 +98,7 @@ public class CatalogLauncherDAOTest extends OlatTestCase {
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(catalogLauncher.getSortOrder()).isEqualTo(3);
 		softly.assertThat(catalogLauncher.isEnabled()).isFalse();
+		softly.assertThat(catalogLauncher.isWebEnabled()).isFalse();
 		softly.assertThat(catalogLauncher.getConfig()).isEqualTo(config);
 		softly.assertAll();
 	}
@@ -188,6 +190,44 @@ public class CatalogLauncherDAOTest extends OlatTestCase {
 		
 		// all
 		searchParams.setEnabled(null);
+		catalogLaunchers = sut.load(searchParams);
+		
+		assertThat(catalogLaunchers)
+				.contains(catalogLauncher1, catalogLauncher2, catalogLauncher3);
+	}
+	
+	@Test
+	public void shouldLoadLauncherByWebEnabled() {
+		CatalogLauncher catalogLauncher1 = sut.create(random(), miniRandom());
+		catalogLauncher1.setWebEnabled(true);
+		catalogLauncher1 = sut.save(catalogLauncher1);
+		CatalogLauncher catalogLauncher2 = sut.create(random(), miniRandom());
+		catalogLauncher2.setWebEnabled(true);
+		catalogLauncher2 = sut.save(catalogLauncher2);
+		CatalogLauncher catalogLauncher3 = sut.create(random(), miniRandom());
+		catalogLauncher3.setWebEnabled(false);
+		catalogLauncher3 = sut.save(catalogLauncher3);
+		dbInstance.commitAndCloseSession();
+		
+		// enabled
+		CatalogLauncherSearchParams searchParams = new CatalogLauncherSearchParams();
+		searchParams.setWebEnabled(Boolean.TRUE);
+		List<CatalogLauncher> catalogLaunchers = sut.load(searchParams);
+		
+		assertThat(catalogLaunchers)
+				.contains(catalogLauncher1, catalogLauncher2)
+				.doesNotContain(catalogLauncher3);
+		
+		// disabled
+		searchParams.setWebEnabled(Boolean.FALSE);
+		catalogLaunchers = sut.load(searchParams);
+		
+		assertThat(catalogLaunchers)
+				.contains(catalogLauncher3)
+				.doesNotContain(catalogLauncher1, catalogLauncher2);
+		
+		// all
+		searchParams.setWebEnabled(null);
 		catalogLaunchers = sut.load(searchParams);
 		
 		assertThat(catalogLaunchers)

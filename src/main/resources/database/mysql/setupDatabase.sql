@@ -1231,6 +1231,7 @@ create table o_ca_launcher (
    c_identifier varchar(32),
    c_sort_order integer,
    c_enabled bool not null default true,
+   c_web_enabled bool not null default true,
    c_config varchar(4000),
    primary key (id)
 );

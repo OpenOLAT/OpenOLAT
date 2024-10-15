@@ -54,6 +54,7 @@ public class CatalogLauncherDAO {
 		launcher.setIdentifier(identifier);
 		launcher.setSortOrder(getNextSortOrder());
 		launcher.setEnabled(true);
+		launcher.setWebEnabled(true);
 		dbInstance.getCurrentEntityManager().persist(launcher);
 		return launcher;
 	}
@@ -126,6 +127,9 @@ public class CatalogLauncherDAO {
 		sb.append("         on launcherToOrganisation.launcher.key = launcher.key");
 		if (searchParams.getEnabled() != null) {
 			sb.and().append("launcher.enabled = ").append(searchParams.getEnabled());
+		}
+		if (searchParams.getWebEnabled() != null) {
+			sb.and().append("launcher.webEnabled = ").append(searchParams.getWebEnabled());
 		}
 		if (searchParams.getLauncherOrganisationKeys() != null && !searchParams.getLauncherOrganisationKeys().isEmpty()) {
 			sb.and().append("(");

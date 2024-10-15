@@ -13,3 +13,6 @@ alter table o_lecture_block_audit_log add column fk_curriculum_element int8;
 alter table o_cur_element_type add column c_single_element bool default false not null;
 alter table o_cur_element_type add column c_max_repo_entries int8 default -1 not null;
 alter table o_cur_element_type add column c_allow_as_root bool default true not null;
+
+-- Catalog
+alter table o_ca_launcher add column c_web_enabled bool default true not null;

@@ -64,6 +64,7 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	private StaticTextElement nameEl;
 	private FormLink nameLink;
 	private MultipleSelectionElement enabledEl;
+	private MultipleSelectionElement webEnabledEl;
 	private MultiSelectionFilterElement organisationsEl;
 	
 	private CloseableModalController cmc;
@@ -134,11 +135,17 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		nameLink = uifactory.addFormLink("admin.launcher.name.edit", nameCont);
 		
 		String[] onValues = new String[]{ translate("on") };
-		enabledEl = uifactory.addCheckboxesHorizontal("admin.launcher.enabled", generalCont, ON_KEYS, onValues);
+		enabledEl = uifactory.addCheckboxesHorizontal("admin.launcher.catalog", generalCont, ON_KEYS, onValues);
 		enabledEl.select(ON_KEYS[0], catalogLauncher == null || catalogLauncher.isEnabled());
+		enabledEl.addActionListener(FormEvent.ONCHANGE);
+		
+		webEnabledEl = uifactory.addCheckboxesHorizontal("admin.launcher.web.catalog", generalCont, ON_KEYS, onValues);
+		webEnabledEl.select(ON_KEYS[0], catalogLauncher == null || catalogLauncher.isWebEnabled());
+		webEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
 		if (organisationModule.isEnabled()) {
 			initFormOrganisations(generalCont);
+			updateOrganisationUI();
 		}
 		
 		initForm(generalCont);
@@ -166,6 +173,12 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		}
 	}
 	
+	private void updateOrganisationUI() {
+		if (organisationsEl != null) {
+			organisationsEl.setVisible(enabledEl.isAtLeastSelected(1));
+		}
+	}
+	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == launcherNameTranslatorCtrl) {
@@ -189,10 +202,12 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == nameLink) {
 			doLauncherName(ureq);
+		} else if (source == enabledEl) {
+			updateOrganisationUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -205,6 +220,7 @@ public abstract class AbstractLauncherEditController extends FormBasicController
 		}
 		
 		catalogLauncher.setEnabled(enabledEl.isAtLeastSelected(1));
+		catalogLauncher.setWebEnabled(webEnabledEl.isAtLeastSelected(1));
 		catalogLauncher.setConfig(getConfig());
 		catalogLauncher = catalogService.update(catalogLauncher);
 		

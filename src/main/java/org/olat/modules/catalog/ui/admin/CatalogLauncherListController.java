@@ -128,6 +128,7 @@ public class CatalogLauncherListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.details, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.enabled));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogLauncherCols.webEnabled));
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", -1, CMD_EDIT,
 				new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit", null)));
@@ -206,6 +207,7 @@ public class CatalogLauncherListController extends FormBasicController {
 			
 			FormLink toolsLink = uifactory.addFormLink("tools_" + catalogLauncher.getSortOrder(), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsLink.setTitle(translate("action.more"));
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 			

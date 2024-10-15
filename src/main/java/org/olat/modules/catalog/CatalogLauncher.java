@@ -39,6 +39,10 @@ public interface CatalogLauncher extends CatalogLauncherRef, Comparable<CatalogL
 
 	void setEnabled(boolean enabled);
 
+	boolean isWebEnabled();
+	
+	void setWebEnabled(boolean webEnabled);
+	
 	String getConfig();
 
 	void setConfig(String config);

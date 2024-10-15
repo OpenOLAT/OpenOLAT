@@ -72,8 +72,12 @@ public class CatalogLaunchersController extends BasicController {
 		cleanUp();
 		
 		CatalogLauncherSearchParams searchParams = new CatalogLauncherSearchParams();
-		searchParams.setEnabled(Boolean.TRUE);
-		searchParams.setLauncherOrganisations(defaultSearchParams.getOfferOrganisations());
+		if (defaultSearchParams.isWebPublish()) {
+			searchParams.setWebEnabled(Boolean.TRUE);
+		} else {
+			searchParams.setEnabled(Boolean.TRUE);
+			searchParams.setLauncherOrganisations(defaultSearchParams.getOfferOrganisations());
+		}
 		List<CatalogLauncher> launchers = catalogService.getCatalogLaunchers(searchParams);
 		Collections.sort(launchers);
 		launcherCtrls = new ArrayList<>(launchers.size());
