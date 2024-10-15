@@ -96,9 +96,6 @@ public class ProjFileAllController extends ProjFileListController {
 		addBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_filehub_add");
 		addBrowserLink.setElementCssClass("o_sel_folder_add_browser");
 		uploadDropdown.addElement(addBrowserLink);
-
-		uploadDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
-
 		
 		createLink = uifactory.addFormLink("file.create", formLayout, Link.LINK);
 		createLink.setIconLeftCSS("o_icon o_icon_add");
