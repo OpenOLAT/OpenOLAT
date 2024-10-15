@@ -180,7 +180,7 @@ public class ObligationEditController extends FormBasicController implements Con
 		
 		buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("save", buttonLayout);
+		uifactory.addFormSubmitButton("override", buttonLayout);
 		resetOverwriteLink = uifactory.addFormLink("override.reset", buttonLayout, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
@@ -262,16 +262,16 @@ public class ObligationEditController extends FormBasicController implements Con
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == resetOverwriteLink) {
-			doReset();
+			doReset(ureq);
 		} else if (source == obligationEl) {
 			doSetObligation();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private void doReset() {
+	private void doReset(UserRequest ureq) {
 		obligation.reset();
-		updateUI();
+		formOK(ureq);
 	}
 
 	private void doSetObligation() {

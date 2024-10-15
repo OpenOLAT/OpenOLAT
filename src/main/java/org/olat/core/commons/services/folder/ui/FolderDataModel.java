@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.util.vfs.VFSContainer;
 
 /**
  * 
@@ -59,23 +60,29 @@ public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> imple
 
 	@Override
 	public Object getValueAt(FolderRow row, int col) {
-		switch(COLS[col]) {
-		case icon: return row;
-		case title: return row.getTitleItem();
-		case createdBy: return row.getCreatedBy();
-		case lastModifiedDate: return row.getLastModifiedDate();
-		case lastModifiedBy: return row.getLastModifiedBy();
-		case deletedDate: return row.getDeletedDate();
-		case deletedBy: return row.getDeletedBy();
-		case type: return row.getTranslatedType();
-		case status: return row;
-		case size: return row.getTranslatedSize();
-		case path: return row.getFilePathItem();
-		case versions: return row.getVersions();
-		case license: return row.getLicense();
-		case tools: return row.getToolsLink();
-		default: return null;
-		}
+		return switch (COLS[col]) {
+			case icon -> row;
+			case title -> row.getTitleItem();
+			case createdBy -> row.getCreatedBy();
+			case lastModifiedDate -> row.getLastModifiedDate();
+			case lastModifiedBy -> row.getLastModifiedBy();
+			case deletedDate -> row.getDeletedDate();
+			case deletedBy -> row.getDeletedBy();
+			case type -> row.getTranslatedType();
+			case status -> row;
+			case size -> row.getTranslatedSize();
+			case path -> row.getFilePathItem();
+			case versions -> row.getVersions();
+			case license -> row.getLicense();
+			case tools -> row.getToolsLink();
+			default -> null;
+		};
+	}
+
+	@Override
+	public boolean isSelectable(int row) {
+		FolderRow file = getObject(row);
+		return !(file.getVfsItem() instanceof VFSContainer);
 	}
 	
 	public enum FolderCols implements FlexiSortableColumnDef {

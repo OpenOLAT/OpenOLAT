@@ -391,24 +391,6 @@ public class MediaCenterController extends FormBasicController
 
 		addDropdown.addElement(addBrowserLink);
 		addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
-		
-		if (!editableFileTypes.isEmpty()) {
-			createFileLink = uifactory.addFormLink("create.file.title", formLayout, Link.LINK);
-			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-			createFileLink.setElementCssClass("o_sel_create_file");
-			addDropdown.addElement(createFileLink);
-		}
-	
-		if (drawioModule.isEnabled()) {
-			createDrawioLink = uifactory.addFormLink("create.drawio", formLayout, Link.LINK);
-			createDrawioLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_drawio");
-			addDropdown.addElement(createDrawioLink);
-		}
-		
-		addTextLink = uifactory.addFormLink("add.text", formLayout, Link.LINK);
-		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
-		addTextLink.setElementCssClass("o_sel_add_text");
-		addDropdown.addElement(addTextLink);
 
 		addVideoViaUrlLink = uifactory.addFormLink("add.video.via.url", formLayout, Link.LINK);
 		addVideoViaUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_youtube");
@@ -421,10 +403,39 @@ public class MediaCenterController extends FormBasicController
 		}
 
 		if (avModule.isAudioRecordingEnabled()) {
+			addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
 			recordAudioLink = uifactory.addFormLink("create.version.audio", formLayout, Link.LINK);
 			recordAudioLink.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
 			addDropdown.addElement(recordAudioLink);
 		}
+
+		addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
+
+		if (!editableFileTypes.isEmpty()) {
+			createFileLink = uifactory.addFormLink("create.file.title", formLayout, Link.LINK);
+			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			createFileLink.setElementCssClass("o_sel_create_file");
+			addDropdown.addElement(createFileLink);
+		}
+
+		addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
+	
+		if (drawioModule.isEnabled()) {
+			createDrawioLink = uifactory.addFormLink("create.drawio", formLayout, Link.LINK);
+			createDrawioLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_drawio");
+			addDropdown.addElement(createDrawioLink);
+		}
+
+		if (!editableFileTypes.isEmpty() || drawioModule.isEnabled()) {
+			addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
+		}
+
+		addDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
+
+		addTextLink = uifactory.addFormLink("add.text", formLayout, Link.LINK);
+		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
+		addTextLink.setElementCssClass("o_sel_add_text");
+		addDropdown.addElement(addTextLink);
 
 		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
 		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");

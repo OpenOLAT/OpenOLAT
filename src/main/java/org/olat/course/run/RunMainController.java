@@ -129,6 +129,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -471,25 +472,28 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	/**
 	 * Initialize the users group memberships for groups used within this course
 	 * 
-	 * @param identity
+	 * @param reSecurity
 	 */
 	protected void reloadGroupMemberships(RepositoryEntrySecurity reSecurity) {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		List<BusinessGroup> coachedGroups;
-		if(reSecurity.isGroupCoach()) {
+		if(reSecurity.isGroupCoach() || (reSecurity instanceof SingleRoleRepositoryEntrySecurity srSecurity
+				&& srSecurity.getWrappedSecurity().isGroupCoach())) {
 			coachedGroups = cgm.getOwnedBusinessGroups(getIdentity());
 		} else {
 			coachedGroups = Collections.emptyList();
 		}
 		List<BusinessGroup> participatedGroups;
-		
-		if(reSecurity.isGroupParticipant()) {
+
+		if(reSecurity.isGroupParticipant() || (reSecurity instanceof SingleRoleRepositoryEntrySecurity srSecurity
+				&& srSecurity.getWrappedSecurity().isGroupParticipant())) {
 			participatedGroups = cgm.getParticipatingBusinessGroups(getIdentity());
 		} else {
 			participatedGroups = Collections.emptyList();
 		}
 		List<BusinessGroup> waitingLists;
-		if(reSecurity.isGroupWaiting()) {
+		if(reSecurity.isGroupWaiting() || (reSecurity instanceof SingleRoleRepositoryEntrySecurity srSecurity
+				&& srSecurity.getWrappedSecurity().isGroupWaiting())) {
 			waitingLists = cgm.getWaitingListGroups(getIdentity());
 		} else {
 			waitingLists = Collections.emptyList();

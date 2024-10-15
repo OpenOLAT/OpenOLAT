@@ -167,23 +167,25 @@ public class CourseCalendars {
 				continue;
 			}
 			boolean member = courseEnv.isIdentityInCourseGroup(bGroup.getKey());
-			KalendarRenderWrapper groupCalendarWrapper = calendarManager.getGroupCalendar(bGroup);
-			groupCalendarWrapper.setPrivateEventsVisible(member || isOwner);
-			// set calendar access
-			int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
-			Long lCalAccess = collabTools.lookupCalendarAccess();
-			if (lCalAccess != null) iCalAccess = lCalAccess.intValue();
-			if (iCalAccess == CollaborationTools.CALENDAR_ACCESS_OWNERS && !isOwner) {
-				groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-			} else {
-				groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+			if (member || isOwner || courseEnv.isAdmin()) {
+				KalendarRenderWrapper groupCalendarWrapper = calendarManager.getGroupCalendar(bGroup);
+				groupCalendarWrapper.setPrivateEventsVisible(member || isOwner);
+				// set calendar access
+				int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
+				Long lCalAccess = collabTools.lookupCalendarAccess();
+				if (lCalAccess != null) iCalAccess = lCalAccess.intValue();
+				if (iCalAccess == CollaborationTools.CALENDAR_ACCESS_OWNERS && !isOwner) {
+					groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+				} else {
+					groupCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+				}
+				CalendarUserConfiguration config = configMap.get(groupCalendarWrapper.getCalendarKey());
+				if (config != null) {
+					groupCalendarWrapper.setConfiguration(config);
+				}
+				groupCalendarWrapper.setLinkProviderCreator(linkProvider);
+				calendars.add(groupCalendarWrapper);
 			}
-			CalendarUserConfiguration config = configMap.get(groupCalendarWrapper.getCalendarKey());
-			if (config != null) {
-				groupCalendarWrapper.setConfiguration(config);
-			}
-			groupCalendarWrapper.setLinkProviderCreator(linkProvider);
-			calendars.add(groupCalendarWrapper);
 		}
 	}
 	

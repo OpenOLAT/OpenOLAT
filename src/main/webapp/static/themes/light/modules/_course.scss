@@ -1394,8 +1394,7 @@ div.o_correction_navigation {
 		@extend %o_labeled_yellow;
 	}
 	&.o_cns_labled_status_selected {
-		background-color: 	$o-cns-status-selected-color;
-		border-color: 		$o-cns-status-selected-color;
+		@extend %o_labeled_yellow;
 	}
 	&.o_cns_labled_status_done {
 		background-color: 	$o-cns-status-done-color;
@@ -1407,8 +1406,7 @@ div.o_correction_navigation {
 		@extend %o_labeled_light_yellow;
 	}
 	&.o_cns_labled_light_status_selected {
-		color: 				$o-cns-status-selected-color;
-		border-color: 		$o-cns-status-selected-color;
+		@extend %o_labeled_light_yellow;
 	}
 	&.o_cns_labled_light_status_done {
 		color: 				$o-cns-status-done-color;

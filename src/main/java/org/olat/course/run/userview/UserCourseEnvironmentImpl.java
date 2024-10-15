@@ -56,6 +56,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
 
 /**
  * Initial Date:  Feb 6, 2004
@@ -142,19 +143,22 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	public static UserCourseEnvironmentImpl load(UserRequest ureq, ICourse course, RepositoryEntrySecurity reSecurity, WindowControl wControl) {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		List<BusinessGroup> coachedGroups;
-		if(reSecurity.isGroupCoach()) {
+		if(reSecurity.isGroupCoach() || (reSecurity instanceof SingleRoleRepositoryEntrySecurity srSecurity
+				&& srSecurity.getWrappedSecurity().isGroupCoach())) {
 			coachedGroups = cgm.getOwnedBusinessGroups(ureq.getIdentity());
 		} else {
 			coachedGroups = Collections.emptyList();
 		}
 		List<BusinessGroup> participatedGroups;
-		if(reSecurity.isGroupParticipant()) {
+		if(reSecurity.isGroupParticipant() || (reSecurity instanceof SingleRoleRepositoryEntrySecurity srSecurity
+				&& srSecurity.getWrappedSecurity().isGroupParticipant())) {
 			participatedGroups = cgm.getParticipatingBusinessGroups(ureq.getIdentity());
 		} else {
 			participatedGroups = Collections.emptyList();
 		}
 		List<BusinessGroup> waitingLists;
-		if(reSecurity.isGroupWaiting()) {
+		if(reSecurity.isGroupWaiting() || (reSecurity instanceof SingleRoleRepositoryEntrySecurity srSecurity
+				&& srSecurity.getWrappedSecurity().isGroupWaiting())) {
 			waitingLists = cgm.getWaitingListGroups(ureq.getIdentity());
 		} else {
 			waitingLists = Collections.emptyList();
@@ -167,19 +171,22 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	public static UserCourseEnvironmentImpl load(Identity identity, Roles roles, CourseEnvironment courseEnv, RepositoryEntrySecurity reSecurity) {
 		CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 		List<BusinessGroup> coachedGroups;
-		if(reSecurity.isGroupCoach()) {
+		if(reSecurity.isGroupCoach() || (reSecurity instanceof SingleRoleRepositoryEntrySecurity srSecurity
+				&& srSecurity.getWrappedSecurity().isGroupCoach())) {
 			coachedGroups = cgm.getOwnedBusinessGroups(identity);
 		} else {
 			coachedGroups = Collections.emptyList();
 		}
 		List<BusinessGroup> participatedGroups;
-		if(reSecurity.isGroupParticipant()) {
+		if(reSecurity.isGroupParticipant() || (reSecurity instanceof SingleRoleRepositoryEntrySecurity srSecurity
+				&& srSecurity.getWrappedSecurity().isGroupParticipant())) {
 			participatedGroups = cgm.getParticipatingBusinessGroups(identity);
 		} else {
 			participatedGroups = Collections.emptyList();
 		}
 		List<BusinessGroup> waitingLists;
-		if(reSecurity.isGroupWaiting()) {
+		if(reSecurity.isGroupWaiting() || (reSecurity instanceof SingleRoleRepositoryEntrySecurity srSecurity
+				&& srSecurity.getWrappedSecurity().isGroupWaiting())) {
 			waitingLists = cgm.getWaitingListGroups(identity);
 		} else {
 			waitingLists = Collections.emptyList();
