@@ -100,26 +100,25 @@ public class ProjFileAllController extends ProjFileListController {
 		uploadDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
 
 		
-		createLink = uifactory.addFormLink("file.create", formLayout, Link.BUTTON);
+		createLink = uifactory.addFormLink("file.create", formLayout, Link.LINK);
 		createLink.setIconLeftCSS("o_icon o_icon_add");
 		createLink.setVisible(secCallback.canCreateFiles());
+		uploadDropdown.addElement(createLink);
 		
 		if (secCallback.canCreateFiles() && avModule.isRecordingEnabled()) {
-			DropdownItem createDropdown = uifactory.addDropdownMenu("file.create.dropdown", null,
-					null, formLayout, getTranslator());
-			createDropdown.setOrientation(DropdownOrientation.right);
+			uploadDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
 
 			if (avModule.isVideoRecordingEnabled()) {
 				recordVideoLink = uifactory.addFormLink("record.video", formLayout, Link.LINK);
 				recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
 				recordVideoLink.setTitle("record.video");
-				createDropdown.addElement(recordVideoLink);
+				uploadDropdown.addElement(recordVideoLink);
 			}
 			if (avModule.isAudioRecordingEnabled()) {
 				recordAudioLink = uifactory.addFormLink("record.audio", formLayout, Link.LINK);
 				recordAudioLink.setIconLeftCSS("o_icon o_icon-fw o_icon_audio_record");
 				recordAudioLink.setTitle("record.audio");
-				createDropdown.addElement(recordAudioLink);
+				uploadDropdown.addElement(recordAudioLink);
 			}
 		}
 
