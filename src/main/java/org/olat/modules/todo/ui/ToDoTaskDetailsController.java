@@ -43,6 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
@@ -105,7 +106,7 @@ public class ToDoTaskDetailsController extends FormBasicController {
 		String modifiedDate = Formatter.getInstance(getLocale()).formatDateRelative(toDoTask.getContentModifiedDate());
 		String modifiedBy;
 		if (modifier != null) {
-			modifiedBy = userManager.getUserDisplayName(modifier.getKey());
+			modifiedBy = StringHelper.escapeHtml(userManager.getUserDisplayName(modifier.getKey()));
 		} else {
 			modifiedBy = toDoService.getProvider(toDoTask.getType()).getModifiedBy(getLocale(), toDoTask);
 		}
