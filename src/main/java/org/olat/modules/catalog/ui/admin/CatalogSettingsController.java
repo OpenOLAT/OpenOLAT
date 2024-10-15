@@ -83,6 +83,7 @@ public class CatalogSettingsController extends FormBasicController {
 	private MultipleSelectionElement taxonomyEditRolesEl;
 	private FormToggle webPublishEnabledEl;
 	private FormToggle webPublishTemporarilyDisabledEl;
+	private FormToggle webPublishLoginSiteEl;
 	private FormLayoutContainer migrationCont;
 	private FormLayoutContainer migrationStartCont;
 	private FormLink migrationStartLink;
@@ -166,6 +167,11 @@ public class CatalogSettingsController extends FormBasicController {
 		webPublishTemporarilyDisabledEl.toggle(catalogV2Module.isWebPublishTemporarilyDisabled());
 		webPublishTemporarilyDisabledEl.addActionListener(FormEvent.ONCHANGE);
 		
+		webPublishLoginSiteEl = uifactory.addToggleButton("admin.webpub.login.site",
+				"admin.webpub.login.site", translate("on"), translate("off"), generalCont);
+		webPublishLoginSiteEl.toggle(catalogV2Module.isWebPublishLoginSite());
+		webPublishLoginSiteEl.addActionListener(FormEvent.ONCHANGE);
+		
 		migrationCont = FormLayoutContainer.createDefaultFormLayout("migrations", getTranslator());
 		migrationCont.setFormTitle(translate("admin.migration"));
 		migrationCont.setFormDescription(translate("admin.migration.desc"));
@@ -191,6 +197,7 @@ public class CatalogSettingsController extends FormBasicController {
 		taxonomyEditRolesEl.setVisible(catalogV2Module.isEnabled());
 		webPublishEnabledEl.setVisible(catalogV2Module.isEnabled());
 		webPublishTemporarilyDisabledEl.setVisible(catalogV2Module.isEnabled() && catalogV2Module.isWebPublishEnabled());
+		webPublishLoginSiteEl.setVisible(catalogV2Module.isEnabled() && catalogV2Module.isWebPublishEnabled());
 	}
 
 	private void updateMigrationUI() {
@@ -245,6 +252,8 @@ public class CatalogSettingsController extends FormBasicController {
 			doSetEnabled();
 		} else if (source == webPublishTemporarilyDisabledEl) {
 			catalogV2Module.setWebPublishTemporarilyDisabled(webPublishTemporarilyDisabledEl.isOn());
+		} else if (source == webPublishLoginSiteEl) {
+			catalogV2Module.setWebPublishLoginSite(webPublishLoginSiteEl.isOn());
 		} else if (source == migrationStartLink) {
 			doConfirmMigraion(ureq);
 		} else if (source instanceof FormLink) {

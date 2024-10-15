@@ -63,6 +63,7 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	private static final String KEY_CATALOG_V1_MIGRATION = "catalog.v1.migration";
 	private static final String KEY_WEB_PUBLISH_ENABLED = "catalog.v2.web.publish.enabled";
 	private static final String KEY_WEB_PUBLISH_TEMPORARILY_DISABLED = "catalog.v2.web.publish.temporarily.disabled";
+	private static final String KEY_WEB_PUBLISH_LOGIN_SITE = "catalog.v2.web.publish.login.site";
 	private static final String KEY_TAXONOMY_EDIT_ROLES = "catalog.v2.taxonomy.edit.roles";
 	private static final String KEY_HEADER_BG_IMAGE_URI = "catalog.v2.header.bg.image.filename";
 	private static final String KEY_LAUNCHER_TAXONOMY_LEVEL_STYLE = "catalog.v2.launcher.taxonomy.level.style";
@@ -74,6 +75,8 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	private boolean webPublishEnabled;
 	@Value("${catalog.v2.web.publish.temporarily.disabled:false}")
 	private boolean webPublishTemporarilyDisabled;
+	@Value("${catalog.v2.web.publish.login.site:true}")
+	private boolean webPublishLoginSite;
 	@Value("${catalog.v2.taxonomy.edit.roles:administrator}")
 	private String taxonomyEditRolesValue;
 	private Set<OrganisationRoles> taxonomyEditRoles;
@@ -110,6 +113,11 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 		String webPublishTemporarilyDisabledObj = getStringPropertyValue(KEY_WEB_PUBLISH_TEMPORARILY_DISABLED, true);
 		if (StringHelper.containsNonWhitespace(webPublishTemporarilyDisabledObj)) {
 			webPublishTemporarilyDisabled = "true".equals(webPublishTemporarilyDisabledObj);
+		}
+		
+		String webPublishLoginSiteObj = getStringPropertyValue(KEY_WEB_PUBLISH_LOGIN_SITE, true);
+		if (StringHelper.containsNonWhitespace(webPublishLoginSiteObj)) {
+			webPublishLoginSite = "true".equals(webPublishLoginSiteObj);
 		}
 		
 		taxonomyEditRolesValue = getStringPropertyValue(KEY_TAXONOMY_EDIT_ROLES, taxonomyEditRolesValue);
@@ -170,6 +178,15 @@ public class CatalogV2Module extends AbstractSpringModule implements ConfigOnOff
 	public void setWebPublishTemporarilyDisabled(boolean webPublishTemporarilyDisabled) {
 		this.webPublishTemporarilyDisabled = webPublishTemporarilyDisabled;
 		setBooleanProperty(KEY_WEB_PUBLISH_TEMPORARILY_DISABLED, webPublishTemporarilyDisabled, true);
+	}
+
+	public boolean isWebPublishLoginSite() {
+		return webPublishLoginSite;
+	}
+
+	public void setWebPublishLoginSite(boolean webPublishLoginSite) {
+		this.webPublishLoginSite = webPublishLoginSite;
+		setBooleanProperty(KEY_WEB_PUBLISH_LOGIN_SITE, webPublishLoginSite, true);
 	}
 
 	public Set<OrganisationRoles> getTaxonomyEditRoles() {

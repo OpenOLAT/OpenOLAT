@@ -52,11 +52,19 @@
 				</div>
 				#end
 		
-				#if ($r.visible("menu.register"))
+				#if ($r.visible("login.catalog") || $r.visible("menu.register"))
 				<div class="divider">$r.translate("login.new.by")</div>
-				<div class="o_login_register_wrapper">
-					$r.render("menu.register") $r.translate("menu.register.to.use")
-				</div>
+					#if ($r.visible("login.catalog"))
+						<div class="o_login_catalog o_login_form">
+							<p>$r.translate("login.catalog.hint")</p>
+							$r.render("login.catalog")
+						</div>
+					#end
+					#if ($r.visible("menu.register"))
+						<div class="o_login_register_wrapper">
+							$r.render("menu.register") $r.translate("menu.register.to.use")
+						</div>
+					#end
 				#end
 			</div>
 			<div class="o_login_help">

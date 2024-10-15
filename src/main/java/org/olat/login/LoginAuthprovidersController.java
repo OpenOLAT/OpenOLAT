@@ -67,6 +67,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
+import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.registration.PwChangeController;
 import org.olat.registration.RegistrationController;
 import org.olat.registration.RegistrationModule;
@@ -87,6 +88,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	public  static final String ATTR_LOGIN_PROVIDER = "lp";
 	
 	private Link registerLink;
+	private ExternalLink catalogLink;
 	private ExternalLink faqLink;
 	private StackedPanel dmzPanel;
 	private VelocityContainer content;
@@ -111,6 +113,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private InfoMessageManager infoMessageMgr;
 	@Autowired
 	private RegistrationModule registrationModule;
+	@Autowired
+	private CatalogV2Module catalogV2Module;
 	
 	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl) {
 		// Use fallback translator from full webapp package to translate accessibility stuff
@@ -265,6 +269,15 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		// guest link
 		contentBorn.contextPut("guestLogin", Boolean.valueOf(loginModule.isGuestLoginEnabled()));
 		contentBorn.contextPut("startLogin", Boolean.FALSE);
+		
+		if (catalogV2Module.isEnabled() && catalogV2Module.isWebPublishEnabled() && catalogV2Module.isWebPublishLoginSite()) {
+			catalogLink = LinkFactory.createExternalLink("login.catalog", "log.catalog", WebappHelper.getServletContextPath() + "/catalog/");
+			catalogLink.setElementCssClass("o_login_catalog_button btn btn-default");
+			catalogLink.setName(translate("login.catalog"));
+			catalogLink.setIconLeftCSS("o_icon o_icon_catalog");
+			catalogLink.setTarget("_self");
+			contentBorn.put("login.catalog", catalogLink);
+		}
 		
 		String loginUrl = loginModule.getLoginFaqUrl();
 		if(StringHelper.containsNonWhitespace(loginUrl)) {

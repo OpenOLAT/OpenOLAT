@@ -19,6 +19,7 @@
  */
 package org.olat.modules.catalog.ui;
 
+import org.olat.basesecurity.AuthHelper;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -74,7 +75,7 @@ public class WebCatalogTemporarilyDisabledController extends BasicController {
 	}
 
 	private void doGotoDmz(UserRequest ureq) {
-		DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+		AuthHelper.doLogout(ureq);
 	}
 
 }
