@@ -187,7 +187,7 @@ public abstract class ActivityLogController extends FormBasicController {
 			filteridentities.stream().forEach(identity -> identityValues.add(
 					SelectionValues.entry(
 							identity.getKey().toString(),
-							userManager.getUserDisplayName(identity.getKey()))));
+							StringHelper.escapeHtml(userManager.getUserDisplayName(identity.getKey())))));
 			identityValues.sort(SelectionValues.VALUE_ASC);
 			if (!identityValues.isEmpty()) {
 				filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.filter.user"), FILTER_USER,

@@ -95,7 +95,7 @@ public class ProjAppointmentPreviewController extends BasicController {
 		mainVC.contextPut("location", appointment.getLocation());
 		
 		String userNames = info.getMembers().stream()
-				.map(member -> userManager.getUserDisplayName(member))
+				.map(member -> StringHelper.escapeHtml(userManager.getUserDisplayName(member)))
 				.collect(Collectors.joining(" / "));
 		mainVC.contextPut("members", userNames);
 		
