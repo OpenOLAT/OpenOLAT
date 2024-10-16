@@ -307,7 +307,9 @@ public class ReminderServiceImpl implements ReminderService {
 		Set<Identity> copyRecivers = new HashSet<>();
 		copyRecivers.addAll(copyOwners);
 		copyRecivers.addAll(assignedCoaches);
-		copyRecivers.removeIf(copyReviever -> copyReviever.equalsByPersistableKey(remindedIdentity));
+		if (!reminder.isEmailCopyOnly()) {
+			copyRecivers.removeIf(copyReviever -> copyReviever.equalsByPersistableKey(remindedIdentity));
+		}
 		return copyRecivers;
 	}
 
