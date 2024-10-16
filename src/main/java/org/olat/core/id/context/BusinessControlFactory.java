@@ -475,7 +475,7 @@ public class BusinessControlFactory {
 		return appendToURIString(retVal, ceList, normalize);
 	}
 	
-	private String appendToURIString(StringBuilder retVal, List<ContextEntry> ceList, boolean normalize) {
+	public String appendToURIString(StringBuilder retVal, List<ContextEntry> ceList, boolean normalize) {
 		String lastEntryString = null;
 		for (ContextEntry contextEntry : ceList) {
 			String ceStr = contextEntry != null ? contextEntry.toString() : "NULL_ENTRY";

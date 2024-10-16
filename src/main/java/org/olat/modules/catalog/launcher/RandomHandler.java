@@ -169,7 +169,8 @@ public class RandomHandler implements CatalogLauncherHandler {
 		}
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
-		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, false, null);
+		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, false,
+				defaultSearchParams.isWebPublish(), null);
 	}
 	
 	public Config fromXML(String xml) {

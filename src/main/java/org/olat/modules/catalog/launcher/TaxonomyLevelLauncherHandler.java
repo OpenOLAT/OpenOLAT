@@ -191,9 +191,9 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 		
 		taxonomyLevels.sort(CatalogV2UIFactory.getTaxonomyLevelComparator(translator));
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
-
-		return new CatalogLauncherTaxonomyController(ureq, wControl, launcherName, taxonomyLevels,
-				config.getEducationalTypeKeys(), config.getResourceTypes());
+		
+		return new CatalogLauncherTaxonomyController(ureq, wControl, launcherName, defaultSearchParams.isWebPublish(),
+				taxonomyLevels, config.getEducationalTypeKeys(), config.getResourceTypes());
 	}
 
 	private List<TaxonomyLevel> getChildren(Config config) {

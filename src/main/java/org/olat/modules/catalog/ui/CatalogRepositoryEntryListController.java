@@ -20,7 +20,6 @@
 package org.olat.modules.catalog.ui;
 
 import static org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.KEY_LAUNCHER;
-import static org.olat.modules.catalog.ui.CatalogMainController.ORES_TYPE_INFOS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -135,6 +135,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		setTranslator(Util.createPackageTranslator(CatalogRepositoryEntryListController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
 		this.searchParams = searchParams;
 		this.withSearch = withSearch;
 		this.taxonomyLevel = searchParams.getIdentToTaxonomyLevels().containsKey(KEY_LAUNCHER)
@@ -147,6 +148,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		
 		initForm(ureq);
 		tableEl.reloadData();
+		setWindowTitle();
 	}
 
 	public TaxonomyLevel getTaxonomyLevel() {
@@ -290,17 +292,22 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	
 	@Override
 	public void forgeDetailsLink(CatalogRepositoryEntryRow row) {
+		String url = CatalogBCFactory.get(searchParams.isWebPublish()).getInfosUrl(() -> row.getKey());
+		
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, flc, Link.LINK);
 		detailsLink.setIconRightCSS("o_icon o_icon_details");
 		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details");
 		detailsLink.setTitle("details");
+		detailsLink.setUrl(url);
 		detailsLink.setUserObject(row);
 		row.setDetailsLink(detailsLink);
 		
 		FormLink detailsSmallLink = uifactory.addFormLink("details_small_" + row.getKey(), "details", "details", null, null, Link.LINK);
 		detailsSmallLink.setCustomEnabledLinkCSS("btn btn-xs btn-default o_details");
 		detailsSmallLink.setTitle("details");
+		detailsSmallLink.setUrl(url);
 		detailsSmallLink.setUserObject(row);
+		
 		row.setDetailsSmallLink(detailsSmallLink);
 	}
 	
@@ -316,6 +323,13 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	public void forgeTaxonomyLevels(CatalogRepositoryEntryRow row) {
 		List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), row.getTaxonomyLevels());
 		row.setTaxonomyLevelNamePaths(taxonomyLevels);
+	}
+
+	private void setWindowTitle() {
+		String windowTitle = taxonomyLevel != null
+				? translate("window.title.taxonomy", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel))
+				: translate("window.title.main");
+		getWindow().setTitle(windowTitle);
 	}
 
 	@Override
@@ -339,8 +353,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		if (entries == null || entries.isEmpty()) return;
 		
 		ContextEntry entry = entries.get(0);
-		String type = entry.getOLATResourceable().getResourceableTypeName();
-		if (ORES_TYPE_INFOS.equalsIgnoreCase(type)) {
+		if (CatalogBCFactory.isInfosType(entry.getOLATResourceable())) {
 			Long key = entry.getOLATResourceable().getResourceableId();
 			tableEl.resetSearch(ureq);
 			dataModel.clear();
@@ -414,6 +427,12 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 						searchParams.getIdentToResourceTypes().get(KEY_LAUNCHER)));
 				return;
 			}
+		} else if (source == stackPanel) {
+			if (event instanceof PopEvent) {
+				if (stackPanel.getLastController() == this) {
+					setWindowTitle();
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -442,6 +461,14 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
+	@Override
+	public synchronized void dispose() {
+		if (stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
+		super.dispose();
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -469,7 +496,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	private void doOpenDetails(UserRequest ureq, RepositoryEntry entry) {
 		if (entry != null) {
 			removeAsListenerAndDispose(infosCtrl);
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE_INFOS, entry.getKey());
+			OLATResourceable ores = CatalogBCFactory.createInfosOres(entry);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
 			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, stackPanel, entry);
@@ -478,6 +505,9 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 			
 			String displayName = entry.getDisplayname();
 			stackPanel.pushController(displayName, infosCtrl);
+			
+			String windowTitle = translate("window.title.infos", entry.getDisplayname());
+			getWindow().setTitle(windowTitle);
 		} else {
 			tableEl.reloadData();
 		}

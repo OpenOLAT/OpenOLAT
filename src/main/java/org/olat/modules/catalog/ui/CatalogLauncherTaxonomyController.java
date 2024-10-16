@@ -59,7 +59,7 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 	@Autowired
 	private MapperService mapperService;
 
-	public CatalogLauncherTaxonomyController(UserRequest ureq, WindowControl wControl, String title,
+	public CatalogLauncherTaxonomyController(UserRequest ureq, WindowControl wControl, String title, boolean webCatalog,
 			List<TaxonomyLevel> taxonomyLevels, Collection<Long> educationalTypeKeys, Collection<String> resourceTypes) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -85,6 +85,7 @@ public class CatalogLauncherTaxonomyController extends BasicController {
 			Link selectLink = LinkFactory.createCustomLink(selectLinkName, "select_tax", selectLinkName, Link.LINK + Link.NONTRANSLATED, mainVC, this);
 			selectLink.setCustomDisplayText(StringHelper.escapeHtml(displayName));
 			selectLink.setUserObject(taxonomyLevel.getKey());
+			selectLink.setUrl(CatalogBCFactory.get(webCatalog).getTaxonomyLevelUrl(taxonomyLevel));
 			
 			LauncherItem item = new LauncherItem(taxonomyLevel.getKey(), displayName, selectLinkName);
 			

@@ -60,7 +60,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
-import org.olat.modules.catalog.ui.CatalogMainController;
+import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
@@ -508,10 +508,9 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		catalogLinksCont.setVisible(catalogModule.isEnabled() && accessEl.isVisible() && accessEl.isKeySelected(KEY_PUBLIC));
 
 		if (catalogLinksCont.isVisible()) {
-			String url = Settings.getServerContextPathURI() + "/url/Catalog/0/" + CatalogMainController.ORES_TYPE_SEARCH
-					+ "/0/" + CatalogMainController.ORES_TYPE_INFOS + "/" + entry.getKey();
+			String url = CatalogBCFactory.get(false).getInfosUrl(entry);
 			catalogLinksCont.contextPut("searchLink", new ExtLink(entry.getKey().toString(), url, null));
-
+			
 			showMicrositeLinks.setVisible(false);
 			if (taxonomyModule.isEnabled()) {
 				HashSet<TaxonomyLevel> taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(entry));
@@ -519,8 +518,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 					showMicrositeLinks.setVisible(true);
 					List<ExtLink> taxonomyLinks = new ArrayList<>(taxonomyLevels.size());
 					for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
-						url = Settings.getServerContextPathURI() + "/url/Catalog/0/" + CatalogMainController.ORES_TYPE_TAXONOMY
-								+ "/" + taxonomyLevel.getKey();
+						url = CatalogBCFactory.get(false).getTaxonomyLevelUrl(taxonomyLevel);
 						String name = translate("cif.catalog.links.microsite", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
 						ExtLink extLink = new ExtLink(taxonomyLevel.getKey().toString(), url, name);
 						taxonomyLinks.add(extLink);

@@ -140,7 +140,8 @@ public class StaticHandler implements CatalogLauncherHandler {
 		CatalogRepositoryEntryState state = new CatalogRepositoryEntryState();
 		state.setSpecialFilterRepositoryEntryLabel(launcherName);
 		state.setSpecialFilterRepositoryEntryKeys(reKeys);
-		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, true, state);
+		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, true,
+				defaultSearchParams.isWebPublish(), state);
 	}
 
 	public List<RepositoryEntry> getRepositoryEntries(CatalogLauncher catalogLauncher) {

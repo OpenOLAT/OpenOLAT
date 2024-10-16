@@ -41,6 +41,7 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
@@ -65,9 +66,18 @@ public class WebCatalogDispatcher implements Dispatcher {
 
 	private static final Logger log = Tracing.createLoggerFor(WebCatalogDispatcher.class);
 	
+	public static final String PATH_CATALOG = "catalog";
 	private static final String PATH_TEMPORARILY_DISABLED = "catalogtemporarilydisabled";
 	private static final String URI_TEMPORARILY_DISABLED =
 			WebappHelper.getServletContextPath() + "/" + PATH_TEMPORARILY_DISABLED + "/";
+	
+	public static StringBuilder getBaseUrl() {
+		return new StringBuilder()
+				.append(Settings.getServerContextPathURI())
+				.append("/")
+				.append(PATH_CATALOG)
+				.append("/");
+	}
 	
 	@Autowired
 	private CatalogV2Module catalogModule;

@@ -57,15 +57,17 @@ public class CatalogSearchHeaderController extends FormBasicController {
 	private FormLink exploreLink;
 	
 	private final CatalogSecurityCallback secCallback;
+	private final CatalogBCFactory bcFactory;
 	private String header;
 	private Integer totalRespositoryEntries;
 
 	@Autowired
 	private CatalogV2Module catalogModule;
 
-	public CatalogSearchHeaderController(UserRequest ureq, WindowControl wControl, CatalogSecurityCallback secCallback) {
+	public CatalogSearchHeaderController(UserRequest ureq, WindowControl wControl, CatalogSecurityCallback secCallback, boolean webCatalog) {
 		super(ureq, wControl, "header_search");
 		this.secCallback = secCallback;
+		bcFactory = CatalogBCFactory.get(webCatalog);
 		
 		initForm(ureq);
 		setTotalRepositoryEntries(Integer.valueOf(0));
@@ -104,6 +106,7 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		searchLink.setI18nKey(searchLabel);
 		
 		exploreLink = uifactory.addFormLink("explore", "", "", formLayout, Link.NONTRANSLATED);
+		exploreLink.setUrl(bcFactory.getSearchUrl());
 		
 		if (catalogModule.hasHeaderBgImage()) {
 			String mapperUri = registerMapper(ureq, new VFSMediaMapper(catalogModule.getHeaderBgImage()));

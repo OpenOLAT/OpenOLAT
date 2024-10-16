@@ -38,6 +38,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -85,7 +87,8 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 	private MapperService mapperService;
 
 	public CatalogLauncherRepositoryEntriesController(UserRequest ureq, WindowControl wControl,
-			List<CatalogRepositoryEntry> entries, String title, boolean showMore, CatalogRepositoryEntryState state) {
+			List<CatalogRepositoryEntry> entries, String title, boolean showMore, boolean webCatalog,
+			CatalogRepositoryEntryState state) {
 		super(ureq, wControl);
 		this.entries = entries;
 		this.state = state;
@@ -120,6 +123,14 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			Link displayNameLink = LinkFactory.createLink(id, id, "open", null, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
 			displayNameLink.setCustomDisplayText(StringHelper.escapeHtml(entry.getDisplayname()));
 			displayNameLink.setUserObject(entry.getKey());
+			String url;
+			if (canLaunch(entry.getKey())) {
+				List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString("[RepositoryEntry:" + entry.getKey() + "]");
+				url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
+			} else {
+				url = CatalogBCFactory.get(webCatalog).getInfosUrl(() -> entry.getKey());
+			}
+			displayNameLink.setUrl(url);
 			item.setDisplayNameLink(displayNameLink);
 			
 			items.add(item);
@@ -216,14 +227,21 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 	}
 	
 	private void launchOrOpen(UserRequest ureq, Long repositoryEntryKey) {
-		Optional<CatalogRepositoryEntry> found = entries.stream().filter(re -> re.getKey().equals(repositoryEntryKey)).findFirst();
-		if (found.isPresent() && found.get().isMember()) {
+		if (canLaunch(repositoryEntryKey)) {
 			boolean started = doStart(ureq, repositoryEntryKey);
 			if (started) {
-				return ;
+				return;
 			}
 		}
 		fireEvent(ureq, new OpenSearchEvent(state, repositoryEntryKey));
+	}
+	
+	private boolean canLaunch(Long repositoryEntryKey) {
+		Optional<CatalogRepositoryEntry> found = entries.stream().filter(re -> re.getKey().equals(repositoryEntryKey)).findFirst();
+		if (found.isPresent() && found.get().isMember()) {
+			return true;
+		}
+		return false;
 	}
 	
 	private boolean doStart(UserRequest ureq, Long repositoryEntryKey) {
