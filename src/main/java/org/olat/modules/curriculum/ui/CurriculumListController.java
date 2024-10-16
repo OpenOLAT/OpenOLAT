@@ -136,7 +136,7 @@ public class CurriculumListController extends FormBasicController implements Act
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.active, new CurriculumActiveCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.displayName, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.identifier, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.externalRef));
 		
 		tableModel = new CurriculumManagerDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -163,7 +163,7 @@ public class CurriculumListController extends FormBasicController implements Act
 		List<CurriculumRef> activeRefs = curriculumService.getMyActiveCurriculumRefs(assessedIdentity);
 		List<Long> activeKeys = activeRefs.stream().map(CurriculumRef::getKey).collect(Collectors.toList());
 		List<CurriculumRow> rows = curriculums.stream()
-				.map(c -> new CurriculumRow(c, activeKeys.contains(c.getKey())))
+				.map(c -> new CurriculumRow(c, null, activeKeys.contains(c.getKey())))
 				.collect(Collectors.toList());
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);

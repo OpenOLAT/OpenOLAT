@@ -1,3 +1,7 @@
+#if($r.isNotEmpty($title))
+	<h${titleSize}><i class="o_icon $titleIconCssClass"> </i> $r.escapeHtml($title)</h${titleSize}>
+#end
+
 #if($r.visible("override.member") || $r.visible("unoverride.member"))
 	<div class="o_warning">
 		$r.translate("override.member.hint")

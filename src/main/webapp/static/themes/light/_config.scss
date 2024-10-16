@@ -703,6 +703,22 @@ $o-curriculum-style-course-title-bg				: $o-curriculum-l2-title-bg !default;
 $o-curriculum-style-course-title-padding		: $o-curriculum-l2-title-padding !default;
 $o-curriculum-style-course-lifecycle-bg			: $o-curriculum-l2-lifecycle-bg !default;
 $o-curriculum-style-course-lifecycle-padding	: $o-curriculum-l2-lifecycle-padding !default;
+
+/* Curriculum management */
+$o-curriculum-avatar-width-medium				: 120px !default;
+$o-curriculum-avatar-height-medium				: 75px !default;
+$o-curriculum-avatar-font-size-medium			: calc($o-curriculum-avatar-height-medium / 5) !default;
+$o-curriculum-avatar-color						: #fff !default;
+$o-curriculum-avatar-bg-color					: $brand-primary !default;
+$o-curriculum-avatar-border-radius				: 6px !default;
+
+$o-curriculum-status-preparation-color			: $o-repo-preparation-color !default;
+$o-curriculum-status-provisional-color			: $o-repo-preparation-color !default;
+$o-curriculum-status-confirmed-color			: $o-repo-coachpublished-color !default;
+$o-curriculum-status-active-color				: $o-repo-published-color !default;
+$o-curriculum-status-finished-color				: $o-repo-closed-color !default;
+$o-curriculum-status-cancelled-color			: $o-repo-trash-color !default;
+$o-curriculum-status-deleted-color				: $o-repo-deleted-color !default;
 	
 /* Asssessment */
 $o-assessment-mode-today-bg						: $state-success-bg !default;

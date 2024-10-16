@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,35 +14,41 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.model;
+package org.olat.modules.curriculum.ui;
 
-import org.olat.modules.curriculum.Curriculum;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 
 /**
  * 
- * Initial date: 22 juin 2018<br>
+ * Initial date: 15 oct. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record CurriculumInfos(Curriculum curriculum,
-		CurriculumImplementationsStatistics implementationsStatistics) {
-
-	@Override
-	public int hashCode() {
-		return curriculum.getKey().hashCode();
+public class CurriculumManagerEventsController extends FormBasicController {
+	
+	public CurriculumManagerEventsController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "manager_events");
+		
+		initForm(ureq);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		if(obj instanceof CurriculumInfos infos) {
-			return curriculum.equals(infos.curriculum);
-		}
-		return false;
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		//
 	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+	
+	
+
 }

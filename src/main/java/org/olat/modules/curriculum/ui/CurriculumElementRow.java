@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -41,6 +42,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	private boolean hasChildren;
 	private CurriculumElementRow parent;
 	private final Long parentKey;
+	private final Curriculum curriculum;
 	private CurriculumElement element;
 	private CurriculumElementType elementType;
 	private final long numOfResources;
@@ -59,6 +61,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	public CurriculumElementRow(CurriculumElement element) {
 		this.element = element;
+		curriculum = element.getCurriculum();
 		elementType = element.getType();
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 		numOfResources = 0l;
@@ -73,6 +76,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 			long numOfParticipants, long numOfCoaches, long numOfOwners,
 			FormLink toolsLink, FormLink resourcesLink) {
 		this.element = element;
+		curriculum = element.getCurriculum();
 		this.toolsLink = toolsLink;
 		this.numOfResources = numOfResources;
 		this.numOfParticipants = numOfParticipants;
@@ -94,6 +98,18 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	public void setCurriculumElement(CurriculumElement element) {
 		this.element = element;
+	}
+	
+	public Long getCurriculumKey() {
+		return curriculum == null ? null : curriculum.getKey();
+	}
+	
+	public String getCurriculumDisplayName() {
+		return curriculum == null ? null : curriculum.getDisplayName();
+	}
+	
+	public String getCurriculumExternalRef() {
+		return curriculum == null ? null : curriculum.getIdentifier();
 	}
 
 	@Override
@@ -122,6 +138,10 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	public CurriculumElementStatus getStatus() {
 		CurriculumElementStatus status = element.getElementStatus();
 		return status == null ? CurriculumElementStatus.active : status;
+	}
+	
+	public Long getCurriculumElementTypeKey() {
+		return elementType == null ? null : elementType.getKey();
 	}
 	
 	public String getCurriculumElementTypeDisplayName() {

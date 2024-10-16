@@ -67,6 +67,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_bug { @include o-add-icon('bug');}
 .o_icon_busy { @include o-add-icon('spinner');}
 .o_icon_calendar { @include o-add-icon('calendar-days', false);}
+.o_icon_calendar_day { @include o-add-icon('calendar-day');}
 .o_icon_calendar_enabled { @include o-add-icon('check-square', false);}
 .o_icon_calendar_disabled { @include o-add-icon('square', false);}
 .o_icon_calendar_sync { @include o-add-icon('refresh');}
@@ -133,6 +134,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_crosshairs { @include o-add-icon('crosshairs');}
 .o_icon_curriculum { @include o-add-icon('cubes');}
 .o_icon_curriculum_element { @include o-add-icon('cube');}
+.o_icon_curriculum_implementations { @include o-add-icon('square-share-nodes');}
+.o_icon_curriculum_structure { @include o-add-icon('share-nodes');}
 .o_icon_customize { @include o-add-icon('gear');}
 .o_icon_database { @include o-add-icon('database');}
 .o_icon_deactivate { @include o-add-icon('ban');}

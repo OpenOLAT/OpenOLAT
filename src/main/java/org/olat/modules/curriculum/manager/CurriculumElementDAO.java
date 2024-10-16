@@ -60,6 +60,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
+import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipImpl;
 import org.olat.modules.curriculum.model.CurriculumElementNode;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
@@ -139,6 +140,7 @@ public class CurriculumElementDAO {
 		sb.append("select el from curriculumelement el")
 		  .append(" inner join fetch el.curriculum curriculum")
 		  .append(" inner join fetch el.group baseGroup")
+		  .append(" left join fetch el.type elementType")
 		  .append(" where el.key=:key");
 		
 		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
@@ -369,8 +371,7 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	public List<CurriculumElementInfos> loadElementsWithInfos(CurriculumRef curriculum,
-			RepositoryEntryRef entry, List<CurriculumElementRef> curriculumElements, CurriculumElement parentElement) {
+	public List<CurriculumElementInfos> loadElementsWithInfos(CurriculumElementInfosSearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select el, ")
 		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
@@ -392,16 +393,22 @@ public class CurriculumElementDAO {
 		  .append(" left join el.parent parentEl")
 		  .where().append(" el.status ").in(CurriculumElementStatus.notDeleted());
 		
-		if(curriculum != null) {
-			sb.and().append("el.curriculum.key=:curriculumKey");
+		if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
+			sb.and().append("el.curriculum.key in (:curriculumKey)");
 		}
-		if(curriculumElements != null && !curriculumElements.isEmpty()) {
+		if(searchParams.isRootElementsOnly()) {
+			sb.and().append("parentEl.key is null");
+		}
+		if(searchParams.getStatusList() != null && !searchParams.getStatusList().isEmpty()) {
+			sb.and().append("el.status in (:statusList)");
+		}
+		if(searchParams.getCurriculumElements() != null && !searchParams.getCurriculumElements().isEmpty()) {
 			sb.and().append("el.key in (:curriculumElementsKeys)");
 		}
-		if(parentElement != null) {
+		if(searchParams.getParentElement() != null) {
 			sb.and().append("(el.key=:elementKey or el.materializedPathKeys like :materializedPath)");
 		}
-		if(entry != null) {
+		if(searchParams.getEntry() != null) {
 			sb.and()
 			  .append("baseGroup.key in (select rel.group.key from repoentrytogroup as rel")
 			  .append(" where rel.entry.key=:entryKey)");
@@ -410,21 +417,29 @@ public class CurriculumElementDAO {
 		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
 		
-		if(curriculum != null) {
-			rawQuery.setParameter("curriculumKey", curriculum.getKey());
+		if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
+			List<Long> curriculumKeys = searchParams.getCurriculums().stream()
+					.map(CurriculumRef::getKey).toList();
+			rawQuery.setParameter("curriculumKey", curriculumKeys);
 		}
-		if(curriculumElements != null && !curriculumElements.isEmpty()) {
-			List<Long> curriculumElementsKeys = curriculumElements.stream()
+
+		if(searchParams.getStatusList() != null && !searchParams.getStatusList().isEmpty()) {
+			List<String> status = searchParams.getStatusList().stream()
+					.map(CurriculumElementStatus::toString).toList();
+			rawQuery.setParameter("statusList", status);
+		}
+		if(searchParams.getCurriculumElements() != null && !searchParams.getCurriculumElements().isEmpty()) {
+			List<Long> curriculumElementsKeys = searchParams.getCurriculumElements().stream()
 					.map(CurriculumElementRef::getKey)
 					.toList();
 			rawQuery.setParameter("curriculumElementsKeys", curriculumElementsKeys);
 		}
-		if(parentElement != null) {
-			rawQuery.setParameter("elementKey", parentElement.getKey());
-			rawQuery.setParameter("materializedPath", parentElement.getMaterializedPathKeys() + "%");
+		if(searchParams.getParentElement() != null) {
+			rawQuery.setParameter("elementKey", searchParams.getParentElement().getKey());
+			rawQuery.setParameter("materializedPath", searchParams.getParentElement().getMaterializedPathKeys() + "%");
 		}
-		if(entry != null) {
-			rawQuery.setParameter("entryKey", entry.getKey());
+		if(searchParams.getEntry() != null) {
+			rawQuery.setParameter("entryKey", searchParams.getEntry().getKey());
 		}
 		
 		List<Object[]> rawObjects =	rawQuery.getResultList();

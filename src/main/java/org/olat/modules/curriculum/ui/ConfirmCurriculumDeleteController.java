@@ -64,7 +64,7 @@ public class ConfirmCurriculumDeleteController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			String[] args = new String[] {
 				StringHelper.escapeHtml(rowToDelete.getDisplayName()),
-				Long.toString(rowToDelete.getNumOfElements())
+				Long.toString(rowToDelete.getImplementationsStatistics().numOfRootElements())
 			};
 			String msg = translate("confirmation.delete.curriculum", args);
 			layoutCont.contextPut("msg", msg);

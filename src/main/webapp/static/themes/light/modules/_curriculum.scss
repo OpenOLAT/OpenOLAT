@@ -344,3 +344,135 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	}
 	
 }
+
+/* Curriculum management */
+
+.o_curriculum_search_header {
+	display: flex;
+	justify-content: center;
+}
+
+.o_curriculum_title {
+	.o_curriculum_avatar_title_ref {
+		display: flex;
+		gap: 15px;
+		.o_curriculum_avatar ~ .o_curriculum_title_ref {
+			display: flex;
+			justify-content: start;
+			flex-direction: column;
+		}
+		
+		.o_curriculum_dashboard_title {
+			padding: 0px;
+			margin: 0px;
+			order: 2;
+		}
+		
+		.o_curriculum_ref {
+			order: 1;
+		}
+		
+		.o_curriculum_type_dates {
+			order: 3;
+			
+			display: flex;
+			gap: 15px;
+			flex-direction: row;
+		}
+	}
+}
+
+.o_curriculum_avatar {
+	display: flex;
+	align-items: start;
+	justify-content: right;
+	
+	color: $o-curriculum-avatar-color;
+	background-color: $o-curriculum-avatar-bg-color;
+	border-radius: $o-curriculum-avatar-border-radius;
+		
+	min-width: $o-curriculum-avatar-width-medium;
+	width: $o-curriculum-avatar-width-medium;
+	height: $o-curriculum-avatar-height-medium;
+	padding: 10px 10px 10px calc($o-curriculum-avatar-width-medium / 4);
+
+	.o_curriculum_avatar_ref {
+		font-size: $o-curriculum-avatar-font-size-medium;
+		text-wrap: nowrap;
+		overflow: hidden;
+	}
+}
+
+.o_labeled_light {
+	&.o_curriculum_status_preparation {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-curriculum-status-preparation-color;
+	    color: $o-curriculum-status-preparation-color;
+	}
+	
+	&.o_curriculum_status_provisional {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-curriculum-status-provisional-color;
+	    color: $o-curriculum-status-provisional-color;
+	}
+	
+	&.o_curriculum_status_confirmed {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-curriculum-status-confirmed-color;
+	    color: $o-curriculum-status-confirmed-color;
+	}
+
+	&.o_curriculum_status_active {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-curriculum-status-active-color;
+	    color: $o-curriculum-status-active-color;
+	}
+	
+	&.o_curriculum_status_cancelled {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-curriculum-status-cancelled-color;
+	    color: $o-curriculum-status-cancelled-color;
+	}
+	
+	&.o_curriculum_status_finished {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-curriculum-status-finished-color;
+	    color: $o-curriculum-status-finished-color;
+	}
+	
+	&.o_curriculum_status_deleted,
+	&.o_curriculum_status_inactive {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-curriculum-status-deleted-color;
+	    color: $o-curriculum-status-deleted-color;
+	}
+}
+
+.o_curriculum_status_badge {
+	float: right;
+	display: inline-block;
+	padding: 1px 25px;
+	border-radius: $border-radius-small;
+	
+	&.o_curriculum_status_active {
+	    background-color: $o-curriculum-status-active-color;
+	    color: #fff;
+	}
+	
+	&.o_curriculum_status_cancelled {
+	    background-color: $o-curriculum-status-cancelled-color;
+		color: #fff;
+	}
+	
+	&.o_curriculum_status_deleted {
+		background-color: $o-curriculum-status-deleted-color;
+	    color: #fff;
+	}
+}

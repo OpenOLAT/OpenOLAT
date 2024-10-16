@@ -45,6 +45,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumImpl;
+import org.olat.modules.curriculum.model.CurriculumImplementationsStatistics;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -251,21 +252,47 @@ public class CurriculumDAO {
 		return query.getResultList();
 	}
 	
+	private QueryBuilder appendElementStatistics(QueryBuilder sb, CurriculumElementStatus status) {
+		String prefix = status.name().substring(0, 3);
+		sb.append(" (select count(").append(prefix) .append("Element.key) from curriculumelement ").append(prefix) .append("Element")
+		  .append("  where ").append(prefix) .append("Element.curriculum.key=cur.key and ").append(prefix) .append("Element.status ").in(status)
+		  .append("   and ").append(prefix) .append("Element.parent.key is null")
+		  .append(" ) as numOf").append(prefix).append("RootElements");
+		return sb;
+	}
+	
 	public List<CurriculumInfos> searchWithInfos(CurriculumSearchParameters params) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select cur,")
+		  // All
 		  .append(" (select count(curElement.key) from curriculumelement curElement")
-		  .append("  where curElement.curriculum.key=cur.key and curElement.status ").in(CurriculumElementStatus.notDeleted())
-		  .append(" ) as numOfElements")
+				  .append("  where curElement.curriculum.key=cur.key and curElement.status ").in(CurriculumElementStatus.notDeleted())
+		  .append("   and curElement.parent.key is null")
+		  .append(" ) as numOfRootElements,");
+		appendElementStatistics( sb, CurriculumElementStatus.preparation).append(",");
+		appendElementStatistics( sb, CurriculumElementStatus.provisional).append(",");
+		appendElementStatistics( sb, CurriculumElementStatus.confirmed).append(",");
+		appendElementStatistics( sb, CurriculumElementStatus.active).append(",");
+		appendElementStatistics( sb, CurriculumElementStatus.cancelled).append(",");
+		appendElementStatistics( sb, CurriculumElementStatus.finished).append(",");
+		appendElementStatistics( sb, CurriculumElementStatus.deleted)
 		  .append(" from curriculum cur")
 		  .append(" inner join fetch cur.group baseGroup")
 		  .append(" ").append(params.getOrganisations().isEmpty() ? "left" : "inner").append(" join fetch cur.organisation organis");
 		
-		if(!params.isWithDeleted()) {
+		if(params.getStatusList() == null || params.getStatusList().isEmpty()) {
 			sb.and()
 			  .append(" (cur.status is null or cur.status ").in(CurriculumStatus.active.name()).append(")");
+		} else {
+			sb.and().append(" (");
+			if(params.getStatusList().contains(CurriculumStatus.active)) {
+				sb.append("cur.status is null or ");
+			}
+			CurriculumStatus[] statusArr = params.getStatusList()
+					.toArray(new CurriculumStatus[params.getStatusList().size()]);
+			sb.append("cur.status ").in(statusArr).append(")");
 		}
-		
+
 		if(!params.getOrganisations().isEmpty()) {
 			sb.and().append(" organis.key in (:organisationKeys)");
 		}
@@ -377,8 +404,18 @@ public class CurriculumDAO {
 		List<CurriculumInfos> infos = new ArrayList<>(rawObjects.size());
 		for(Object[] rawObject:rawObjects) {
 			Curriculum curriculum = (Curriculum)rawObject[0];
-			Long numOfElements = PersistenceHelper.extractLong(rawObject, 1);
-			infos.add(new CurriculumInfos(curriculum, numOfElements));
+			long numOfRootElements = PersistenceHelper.extractPrimitiveLong(rawObject, 1);
+			long numOfPreparationRootElements = PersistenceHelper.extractPrimitiveLong(rawObject, 2);
+			long numOfProvisionalRootElements = PersistenceHelper.extractPrimitiveLong(rawObject, 3);
+			long numOfConfirmedRootElements = PersistenceHelper.extractPrimitiveLong(rawObject, 4);
+			long numOfActiveRootElements = PersistenceHelper.extractPrimitiveLong(rawObject, 5);
+			long numOfCancelledRootElements = PersistenceHelper.extractPrimitiveLong(rawObject, 6);
+			long numOfFinishedRootElements = PersistenceHelper.extractPrimitiveLong(rawObject, 7);
+			long numOfDeletedRootElements = PersistenceHelper.extractPrimitiveLong(rawObject, 8);
+			CurriculumImplementationsStatistics statistics = new CurriculumImplementationsStatistics(numOfRootElements,
+					numOfPreparationRootElements, numOfProvisionalRootElements, numOfConfirmedRootElements,
+					numOfActiveRootElements, numOfCancelledRootElements, numOfFinishedRootElements, numOfDeletedRootElements);
+			infos.add(new CurriculumInfos(curriculum, statistics));
 		}
 		return infos;
 	}

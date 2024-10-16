@@ -52,6 +52,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
+import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.lecture.ui.addwizard.CurriculumElementsDataModel.ElementCols;
@@ -189,8 +190,9 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 	private void loadCurriculumModel() {
 		List<CurriculumElementRow> rows = new ArrayList<>();
 		if(addLecture.getRootElement() != null) {
-			List<CurriculumElementInfos> elements = curriculumService
-					.getCurriculumElementsDescendantsWithInfos(addLecture.getRootElement());
+			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams
+					.searchDescendantsOf(addLecture.getCurriculumElement());
+			List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			Map<Long,CurriculumElementRow> keyToRows = new HashMap<>();
 			for(CurriculumElementInfos element:elements) {
 				CurriculumElementRow row = new CurriculumElementRow(element.getCurriculumElement(),

@@ -61,6 +61,7 @@ import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
+import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -252,14 +253,17 @@ public class LectureListDetailsController extends FormBasicController {
 				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(businessGroup, excluded)));
 			}
 			
-			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(entry);
+			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(entry);
+			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
 				boolean excluded = !selectedGroups.contains(elementInfos.getCurriculumElement().getGroup());
 				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, excluded)));
 			}
 		} else if(row.getCurriculumElement() != null && row.getCurriculumElement().key() != null) {
 			CurriculumElementRef curriculumElementRef = new CurriculumElementRefImpl(row.getCurriculumElement().key());
-			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(List.of(curriculumElementRef));
+			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams
+					.searchElements(List.of(curriculumElementRef));
+			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
 				boolean excluded = !selectedGroups.contains(elementInfos.getCurriculumElement().getGroup());
 				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, excluded)));

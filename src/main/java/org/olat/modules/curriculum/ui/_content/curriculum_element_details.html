@@ -1,0 +1,24 @@
+<div class="o_curriculum_title o_curriculum_title_top o_block">
+	<div class="o_curriculum_avatar_title_ref">
+		<div aria-hidden="true" class="o_curriculum_avatar">
+			<span class="o_curriculum_avatar_ref">$r.escapeHtml($externalRef)</span>
+		</div>
+		<div class="o_curriculum_title_ref">
+			<h2 class="o_curriculum_dashboard_title">$r.escapeHtml($displayName)</h2>
+			<div class="o_curriculum_ref">
+				<small class="text-muted">$r.escapeHtml($externalRef)</small>
+			</div>
+
+			<div class="o_curriculum_type_dates">
+				#if($r.isNotEmpty($typeDisplayName))
+					<span class="o_curriculum_type"><i class="o_icon o_icon_curriculum_implementations" title="$r.translate("curriculum.element.type")"> </i> $typeDisplayName</span>
+				#end
+				#if($r.isNotEmpty($dates))
+					<span class="o_curriculum_dates"><i class="o_icon o_icon_calendar" title="$r.translate("curriculum.element.dates")"> </i> $dates</span>
+				#end
+			</div>
+		</div>
+	</div>
+</div>
+
+$r.render("tabs")

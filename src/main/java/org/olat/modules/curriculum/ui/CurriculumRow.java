@@ -22,6 +22,8 @@ package org.olat.modules.curriculum.ui;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.CurriculumStatus;
+import org.olat.modules.curriculum.model.CurriculumImplementationsStatistics;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 
 /**
@@ -32,35 +34,38 @@ import org.olat.modules.curriculum.model.CurriculumInfos;
  */
 public class CurriculumRow implements CurriculumRef {
 	
+	private static final String OVERVIEW_SUB_PATH = "/" + CurriculumListManagerController.CONTEXT_OVERVIEW + "/0";
+	private static final String IMPLEMENTATIONS_SUB_PATH = "/" + CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS + "/0";
+	
 	private final Curriculum curriculum;
-	private final long numOfElements;
+	private final CurriculumImplementationsStatistics statistics;
+	
 	private final boolean canManage;
 	private final boolean active;
 	
+	private final String baseUrl;
 	private final FormLink toolsLink;
+
 	
-	public CurriculumRow(Curriculum curriculum, boolean active) {
+	public CurriculumRow(Curriculum curriculum, String baseUrl, boolean active) {
+		this(curriculum, null, baseUrl, null, false, active);
+	}
+	
+	public CurriculumRow(CurriculumInfos infos, String baseUrl) {
+		this(infos.curriculum(), infos.implementationsStatistics(), baseUrl, null, false, false);
+	}
+	
+	public CurriculumRow(CurriculumInfos infos, String baseUrl, FormLink toolsLink, boolean canManage) {
+		this(infos.curriculum(), infos.implementationsStatistics(), baseUrl, toolsLink, canManage, false);
+	}
+	
+	private CurriculumRow(Curriculum curriculum, CurriculumImplementationsStatistics statistics, String baseUrl, FormLink toolsLink, boolean canManage, boolean active) {
 		this.curriculum = curriculum;
-		this.active = active;
-		numOfElements = -1l;
-		toolsLink = null;
-		canManage = false;
-	}
-	
-	public CurriculumRow(CurriculumInfos infos) {
-		this.curriculum = infos.getCurriculum();
-		numOfElements = infos.getNumOfElements();
-		toolsLink = null;
-		canManage = false;
-		active = false;
-	}
-	
-	public CurriculumRow(CurriculumInfos infos, FormLink toolsLink, boolean canManage) {
-		curriculum = infos.getCurriculum();
-		numOfElements = infos.getNumOfElements();
+		this.statistics = statistics == null ? CurriculumImplementationsStatistics.empty() : statistics;
+		this.baseUrl = baseUrl;
 		this.toolsLink = toolsLink;
 		this.canManage = canManage;
-		active = false;
+		this.active = active;
 	}
 	
 	@Override
@@ -68,11 +73,19 @@ public class CurriculumRow implements CurriculumRef {
 		return curriculum.getKey();
 	}
 	
+	public String getBaseUrl() {
+		return baseUrl;
+	}
+	
+	public String getImplementationsUrl() {
+		return baseUrl == null ? null : baseUrl.concat(IMPLEMENTATIONS_SUB_PATH);
+	}
+	
 	public String getDisplayName() {
 		return curriculum.getDisplayName();
 	}
 	
-	public String getIdentifier() {
+	public String getExternalRef() {
 		return curriculum.getIdentifier();
 	}
 	
@@ -87,8 +100,16 @@ public class CurriculumRow implements CurriculumRef {
 		return null;
 	}
 	
-	public long getNumOfElements() {
-		return numOfElements;
+	public CurriculumStatus getStatus() {
+		String status = curriculum.getStatus();
+		if(CurriculumStatus.deleted.equals(status)) {
+			return CurriculumStatus.deleted;
+		}
+		return CurriculumStatus.active;
+	}
+	
+	public CurriculumImplementationsStatistics getImplementationsStatistics() {
+		return statistics;
 	}
 	
 	public FormLink getTools() {

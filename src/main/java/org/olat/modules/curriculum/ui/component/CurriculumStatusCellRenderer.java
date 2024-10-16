@@ -25,27 +25,36 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumStatus;
 
 /**
  * 
- * Initial date: 25 avr. 2019<br>
+ * Initial date: 19 juin 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumActiveCellRenderer implements FlexiCellRenderer {
+public class CurriculumStatusCellRenderer implements FlexiCellRenderer {
 	
 	private final Translator translator;
 	
-	public CurriculumActiveCellRenderer(Translator translator) {
+	public CurriculumStatusCellRenderer(Translator translator) {
 		this.translator = translator;
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof Boolean active && !active.booleanValue()) {
-			String title = translator.translate("curriculum.inactive.explain");
-			target.append("<i class='o_icon o_icon_repo_status_closed' title=\"").append(title).append("\"> </i>");
+		if(cellValue instanceof CurriculumStatus status) {
+			getStatus(target, "o_labeled_light", status, translator);
+		} else if(cellValue instanceof CurriculumElementStatus status) {
+			getStatus(target, "o_labeled_light", status, translator);
 		}
+	}
+	
+	public static final void getStatus(StringOutput target, String type, Enum<?> status, Translator trans) {
+		target.append("<span class=\"").append(type).append(" o_curriculum_status_")
+		      .append(status.name()).append("\">").append(trans.translate("status.".concat(status.name())))
+		      .append("</span>");
 	}
 }

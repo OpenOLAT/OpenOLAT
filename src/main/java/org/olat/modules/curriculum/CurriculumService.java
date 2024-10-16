@@ -31,6 +31,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
+import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
@@ -291,16 +292,11 @@ public interface CurriculumService {
 	 * like the number of resources linked to the elements. List element in state
 	 * active and inactive.
 	 * 
-	 * @param curriculum The curriculum
+	 * @param curriculum The search parameters
 	 * @return A list of curriculum elements with additional informations
 	 */
-	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumRef curriculum);
+	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumElementInfosSearchParams searchParams);
 
-	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(RepositoryEntryRef entry);
-	
-	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(List<CurriculumElementRef> curriculumElements);
-
-	public List<CurriculumElementInfos> getCurriculumElementsDescendantsWithInfos(CurriculumElement parentElement);
 	
 	/**
 	 * Retrieve the children elements of the specified curriculum element. The method

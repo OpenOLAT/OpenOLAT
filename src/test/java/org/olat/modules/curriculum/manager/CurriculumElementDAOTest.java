@@ -48,6 +48,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
+import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
@@ -227,7 +228,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, entry2, true);
 		dbInstance.commit();
 		
-		List<CurriculumElementInfos> relations = curriculumElementDao.loadElementsWithInfos(curriculum, null, null, null);
+		CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(curriculum);
+		List<CurriculumElementInfos> relations = curriculumElementDao.loadElementsWithInfos(searchParams);
 		Assert.assertEquals(1, relations.size());
 		Assert.assertEquals(element, relations.get(0).getCurriculumElement());
 		Assert.assertEquals(element.getKey(), relations.get(0).getKey());

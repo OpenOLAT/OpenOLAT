@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumStatus;
 
 /**
  * 
@@ -37,6 +38,7 @@ public class CurriculumSearchParameters {
 	private Identity elementOwner;
 	private Identity managerIdentity;
 	private Identity principalIdentity;
+	private List<CurriculumStatus> statusList;
 	private List<? extends OrganisationRef> organisations;
 	
 	private boolean withDeleted = false;
@@ -92,6 +94,14 @@ public class CurriculumSearchParameters {
 	 */
 	public void setElementOwner(Identity identity) {
 		elementOwner = identity;
+	}
+
+	public List<CurriculumStatus> getStatusList() {
+		return statusList;
+	}
+
+	public void setStatusList(List<CurriculumStatus> statusList) {
+		this.statusList = statusList;
 	}
 
 	public boolean isWithDeleted() {

@@ -38,6 +38,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -48,6 +51,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -68,6 +72,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CurriculumSearchManagerController extends FormBasicController {
+
+	private static final String ALL_TAB_ID = "All";
+
+	private FlexiFiltersTab allTab;
 	
 	private FlexiTableElement tableEl;
 	private CurriculumElementSearchDataModel tableModel;
@@ -85,11 +93,14 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	private CurriculumService curriculumService;
 	
 	public CurriculumSearchManagerController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel toolbarPanel, CurriculumSecurityCallback secCallback) {
+			TooledStackedPanel toolbarPanel, String searchString, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculum_element_search");
 		this.toolbarPanel = toolbarPanel;
 		this.secCallback = secCallback;
 		initForm(ureq);
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			tableEl.quickSearch( ureq, searchString);
+		}
 	}
 
 	@Override
@@ -129,20 +140,34 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setEmptyTableSettings("table.search.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-search-manage");
+		
+		initFiltersPresets();
+		
+		tableEl.setSelectedFilterTab(ureq, allTab);
+	}
+	
+	private void initFiltersPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		allTab = FlexiFiltersTabFactory.tab(ALL_TAB_ID, translate("filter.all"), TabSelectionBehavior.clear);
+		allTab.setLargeSearch(true);
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+
+		tableEl.setFilterTabs(true, tabs);
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(searchCtrl == source) {
-			if(event instanceof CurriculumSearchEvent) {
-				CurriculumSearchEvent searchEvent = (CurriculumSearchEvent)event;
+			if(event instanceof CurriculumSearchEvent searchEvent) {
 				doSearch(searchEvent);
 			}
 		} else if (referencesCtrl == source) {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
-			if(event instanceof SelectReferenceEvent) {
-				launch(ureq, ((SelectReferenceEvent)event).getEntry());
+			if(event instanceof SelectReferenceEvent sre) {
+				launch(ureq, sre.getEntry());
 			}
 		} else if(toolsCalloutCtrl == source) {
 			cleanUp();
@@ -252,7 +277,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		} else {
 			Curriculum curriculum = row.getCurriculum();
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, row.getKey()), null);
-			EditCurriculumElementOverviewController editCtrl = new EditCurriculumElementOverviewController(ureq, swControl, element, curriculum, secCallback);
+			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel, curriculum, element, secCallback);
 			listenTo(editCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
 			editCtrl.activate(ureq, entries, null);

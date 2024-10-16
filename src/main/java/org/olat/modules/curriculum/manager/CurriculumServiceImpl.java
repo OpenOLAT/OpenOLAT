@@ -84,10 +84,12 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
+import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementNode;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
@@ -635,23 +637,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumRef curriculum) {
-		return curriculumElementDao.loadElementsWithInfos(curriculum, null, null, null);
-	}
-	
-	@Override
-	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(RepositoryEntryRef entry) {
-		return curriculumElementDao.loadElementsWithInfos(null, entry, null, null);
-	}
-	
-	@Override
-	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(List<CurriculumElementRef> curriculumElements) {
-		return curriculumElementDao.loadElementsWithInfos(null, null, curriculumElements, null);
-	}
-	
-	@Override
-	public List<CurriculumElementInfos> getCurriculumElementsDescendantsWithInfos(CurriculumElement parentElement) {
-		return curriculumElementDao.loadElementsWithInfos(null, null, null, parentElement);
+	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumElementInfosSearchParams searchParams) {
+		return curriculumElementDao.loadElementsWithInfos(searchParams);
 	}
 
 	@Override
@@ -1256,8 +1243,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public boolean deleteOrganisationData(Organisation organisation, Organisation replacementOrganisation) {
 		CurriculumSearchParameters searchParams = new CurriculumSearchParameters();
-		searchParams.setOrganisations(Collections.singletonList(organisation));
-		searchParams.setWithDeleted(true);
+		searchParams.setOrganisations(List.of(organisation));
+		searchParams.setStatusList(List.of(CurriculumStatus.active, CurriculumStatus.deleted));
 		List<Curriculum> curriculums = curriculumDao.search(searchParams);
 		for(Curriculum curriculum:curriculums) {
 			curriculum.setOrganisation(replacementOrganisation);

@@ -241,7 +241,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		managerParams.setCurriculumAdmin(manager);
 		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
 		Assert.assertEquals(1, managedCurriculums.size());
-		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
+		Assert.assertEquals(curriculum, managedCurriculums.get(0).curriculum());
 		
 		// search curriculum for the user
 		CurriculumSearchParameters userParams = new CurriculumSearchParameters();
@@ -263,7 +263,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		managerParams.setCurriculumAdmin(manager);
 		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
 		Assert.assertEquals(1, managedCurriculums.size());
-		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
+		Assert.assertEquals(curriculum, managedCurriculums.get(0).curriculum());
 	}
 	
 	@Test
@@ -281,7 +281,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		managerParams.setCurriculumAdmin(administrator);
 		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
 		Assert.assertEquals(1, managedCurriculums.size());
-		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
+		Assert.assertEquals(curriculum, managedCurriculums.get(0).curriculum());
 		
 		// search curriculum for the user
 		CurriculumSearchParameters userParams = new CurriculumSearchParameters();
@@ -305,7 +305,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		managerParams.setCurriculumPrincipal(principal);
 		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
 		Assert.assertEquals(1, managedCurriculums.size());
-		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
+		Assert.assertEquals(curriculum, managedCurriculums.get(0).curriculum());
 		
 		// search curriculum for the user
 		CurriculumSearchParameters userParams = new CurriculumSearchParameters();
@@ -335,7 +335,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		managerParams.setElementOwner(owner);
 		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
 		Assert.assertEquals(1, managedCurriculums.size());
-		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
+		Assert.assertEquals(curriculum, managedCurriculums.get(0).curriculum());
 		
 		// search curriculum for the user
 		CurriculumSearchParameters userParams = new CurriculumSearchParameters();
@@ -364,7 +364,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		managerParams.setElementOwner(owner);
 		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
 		Assert.assertEquals(1, managedCurriculums.size());
-		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
+		Assert.assertEquals(curriculum, managedCurriculums.get(0).curriculum());
 	}
 	
 	@Test
