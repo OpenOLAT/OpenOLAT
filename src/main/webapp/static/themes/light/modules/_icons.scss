@@ -1153,7 +1153,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_run_start { @include o-add-icon('circle-play');}
 
 /* Course node selection course node */
-.o_icon_cns { @include o-add-icon('arrows-turn-right'); transform: rotate(180deg);}
+.o_icon_cns { @include o-add-icon('arrows-turn-right'); transform: scaleY(-1);}
 .o_icon_cns_status_done { @include o-add-icon('check-circle');}
 .o_icon_cns_status_in_progress { @include o-add-icon('circle-play');}
 .o_icon_cns_status_selected { @include o-add-icon('hand-point-up');}
