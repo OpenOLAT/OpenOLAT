@@ -19,14 +19,18 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_OVERVIEW;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.util.StringHelper;
@@ -38,7 +42,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel<CurriculumElementRow> {
+public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel<CurriculumElementRow> implements FlexiBusinessPathModel {
 
 	private static final ElementCols[] COLS = ElementCols.values();
 	
@@ -155,7 +159,21 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		}
 		return null;
 	}
-	
+
+	@Override
+	public String getUrl(Component source, Object object, String action) {
+		if(object instanceof CurriculumElementRow row && row.getBaseUrl() != null) {
+			return switch(action) {
+				case "select" -> row.getBaseUrl().concat(SUB_PATH_OVERVIEW);
+				case "owners" -> row.getBaseUrl() + "/Members/0/Owners/0";
+				case "coaches" -> row.getBaseUrl() + "/Members/0/Coaches/0";
+				case "participants" -> row.getBaseUrl() + "/Members/0/Participants/0";
+				default -> row.getBaseUrl();
+			};
+		}
+		return null;
+	}
+
 	@Override
 	public boolean hasChildren(int row) {
 		CurriculumElementRow element = getObject(row);

@@ -23,18 +23,18 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_CANCELLED;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_CONFIRMED;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_DELETED;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_DETAILS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_FINISHED;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS;
-import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OVERVIEW;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_PREPARATION;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_PROVISIONAL;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_ACTIVE;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_CANCELLED;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_CONFIRMED;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_DELETED;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_DETAILS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_FINISHED;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_IMPLEMENTATIONS;
-import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_OVERVIEW;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_PREPARATION;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_PROVISIONAL;
 
@@ -108,7 +108,7 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 				return row.getBaseUrl();
 			}
 			return switch(action) {
-				case CONTEXT_OVERVIEW -> row.getBaseUrl().concat(SUB_PATH_OVERVIEW);
+				case CONTEXT_DETAILS -> row.getBaseUrl().concat(SUB_PATH_DETAILS);
 				case CONTEXT_IMPLEMENTATIONS -> row.getBaseUrl().concat(SUB_PATH_IMPLEMENTATIONS);
 				case CONTEXT_PREPARATION -> row.getBaseUrl().concat(SUB_PATH_PREPARATION);
 				case CONTEXT_PROVISIONAL -> row.getBaseUrl().concat(SUB_PATH_PROVISIONAL);

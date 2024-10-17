@@ -48,9 +48,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -71,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementUserManagementController extends FormBasicController {
+public class CurriculumElementUserManagementController extends FormBasicController implements Activateable2 {
 
 	public static final int USER_PROPS_OFFSET = 500;
 	public static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
@@ -160,6 +163,11 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		tableModel.setObjects(rows);
 		tableEl.reset(reset, reset, true);
 	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -170,15 +178,13 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 				doRemove(rows);
 			}
 		} else if(userSearchCtrl == source) {
-			if (event instanceof SingleIdentityChosenEvent) {
-				SingleIdentityChosenEvent singleEvent = (SingleIdentityChosenEvent)event;
+			if (event instanceof SingleIdentityChosenEvent singleEvent) {
 				Identity choosenIdentity = singleEvent.getChosenIdentity();
 				if (choosenIdentity != null) {
 					List<Identity> toAdd = Collections.singletonList(choosenIdentity);
 					doAddMember(toAdd, (CurriculumRoles)userSearchCtrl.getUserObject());
 				}
-			} else if (event instanceof MultiIdentityChosenEvent) {
-				MultiIdentityChosenEvent multiEvent = (MultiIdentityChosenEvent)event;
+			} else if (event instanceof MultiIdentityChosenEvent multiEvent) {
 				if(!multiEvent.getChosenIdentities().isEmpty()) {
 					doAddMember(multiEvent.getChosenIdentities(), (CurriculumRoles)userSearchCtrl.getUserObject());
 				}
@@ -188,8 +194,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		} else if(roleListCtrl == source) {
 			calloutCtrl.deactivate();
 			cleanUp();
-			if(event instanceof RoleEvent) {
-				RoleEvent re = (RoleEvent)event;
+			if(event instanceof RoleEvent re) {
 				doSearchMember(ureq, re.getRole());
 			}
 		} else if(cmc == source || calloutCtrl == source) {
@@ -281,7 +286,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		userSearchCtrl.setUserObject(role);
 		listenTo(userSearchCtrl);
 		
-		String title = translate("add.member.role", new String[] { translate("role.".concat(role.name())) });
+		String title = translate("add.member.role",  translate("role.".concat(role.name())));
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();

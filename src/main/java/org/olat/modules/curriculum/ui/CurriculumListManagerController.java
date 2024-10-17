@@ -100,21 +100,26 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumListManagerController extends FormBasicController implements Activateable2 {
 
-	public static final String CONTEXT_OVERVIEW = "Details";
+	public static final String CONTEXT_DETAILS = "Details";
+	public static final String CONTEXT_OVERVIEW = "Overview";
 	public static final String CONTEXT_STRUCTURE = "Structure";
 	public static final String CONTEXT_LECTURES = "Lectures";
+	public static final String CONTEXT_ELEMENT = "Element";
 	public static final String CONTEXT_IMPLEMENTATIONS = "Implementations";
 	public static final String CONTEXT_PREPARATION = "Preparation";
 	public static final String CONTEXT_PROVISIONAL = "Provisional";
+	public static final String CONTEXT_RESOURCES = "Resources";
+	public static final String CONTEXT_MEMBERS = "Members";
 	public static final String CONTEXT_CONFIRMED = "Confirmed";
 	public static final String CONTEXT_ACTIVE = "Active";
 	public static final String CONTEXT_CANCELLED = "Cancelled";
 	public static final String CONTEXT_FINISHED = "Finished";
 	public static final String CONTEXT_DELETED = "Deleted";
-	public static final List<String> CONTEXTS = List.of(CONTEXT_OVERVIEW, CONTEXT_IMPLEMENTATIONS,
+	public static final List<String> CONTEXTS = List.of(CONTEXT_DETAILS, CONTEXT_IMPLEMENTATIONS,
 			CONTEXT_PREPARATION, CONTEXT_PROVISIONAL, CONTEXT_CONFIRMED, CONTEXT_ACTIVE,
 			CONTEXT_CANCELLED, CONTEXT_FINISHED, CONTEXT_DELETED);
 	
+	public static final String SUB_PATH_DETAILS = "/" + CONTEXT_DETAILS + "/0";
 	public static final String SUB_PATH_OVERVIEW = "/" + CONTEXT_OVERVIEW + "/0";
 	public static final String SUB_PATH_IMPLEMENTATIONS = "/" + CONTEXT_IMPLEMENTATIONS + "/0";
 	public static final String SUB_PATH_PREPARATION = SUB_PATH_IMPLEMENTATIONS + "/" + CONTEXT_PREPARATION + "/0";
@@ -476,7 +481,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
-				if("select".equals(cmd) || CONTEXT_OVERVIEW.equals(cmd)) {
+				if("select".equals(cmd) || CONTEXT_DETAILS.equals(cmd)) {
 					doOpenCurriculumDetails(ureq, tableModel.getObject(se.getIndex()));
 				} else if("lectures".equals(cmd)) {
 					doOpenCurriculumLectures(ureq, tableModel.getObject(se.getIndex()));

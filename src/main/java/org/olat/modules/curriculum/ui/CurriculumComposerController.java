@@ -19,18 +19,24 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_ELEMENT;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -57,9 +63,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
-import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -68,11 +72,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -100,13 +106,14 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.olat.modules.curriculum.ui.copy.CopySettingsController;
+import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
-import org.olat.modules.curriculum.ui.member.CurriculumMembersManagementController;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.generator.ui.CurriculumElementPreviewListController;
 import org.olat.repository.RepositoryEntry;
@@ -119,7 +126,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumComposerController extends FormBasicController implements Activateable2, TooledController {
+public class CurriculumComposerController extends FormBasicController implements Activateable2 {
 	
 	private static final String NEW_ELEMENT  = "new-element";
 	
@@ -129,16 +136,20 @@ public class CurriculumComposerController extends FormBasicController implements
 	protected static final String FILTER_TYPE = "Type";
 	protected static final String FILTER_STATUS = "Status";
 	protected static final String FILTER_CURRICULUM = "Curriculum";
+	
+	private static final String CMD_ADD_ELEMENT = "add-element";
 
 	private Map<String,FlexiFiltersTab> statusTabMap;
 	
-	private Link newElementButton;
-	private Link manageFocusedMembersLink;
 	private FlexiTableElement tableEl;
 	private CurriculumComposerTableModel tableModel;
 	private TooledStackedPanel toolbarPanel;
+	
 	private FormLink overrideLink;
 	private FormLink unOverrideLink;
+	private FormLink bulkDeleteButton;
+	private DropdownItem newElementMenu;
+	private FormLink newGenericElementButton;
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
@@ -152,6 +163,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
 	private CurriculumElementPreviewListController qualityPreviewCtrl;
+	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
 	private CurriculumElementLearningPathController learningPathController;
 	
 	private int counter;
@@ -162,6 +174,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	private final CurriculumComposerConfig config;
 	private final CurriculumSecurityCallback secCallback;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -191,7 +205,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		} else {
 			managed = false;
 		}
-
+		
 		initForm(ureq);
 		toolbarPanel.addListener(this);
 	}
@@ -201,26 +215,12 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 
 	@Override
-	public void initTools() {
-		
-		
-		if(secCallback.canManagerCurriculumElementsUsers()) {
-			manageFocusedMembersLink = LinkFactory.createToolLink("manage.members.top", translate("manage.members"), this, "o_icon_group");
-			manageFocusedMembersLink.setElementCssClass("o_sel_curriculum_element_manage_members");
-			manageFocusedMembersLink.setVisible(false);
-			toolbarPanel.addTool(manageFocusedMembersLink, Align.left);
-		}
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			if(StringHelper.containsNonWhitespace(config.getTitle())) {
 				layoutCont.contextPut("title", config.getTitle());
 				layoutCont.contextPut("titleSize", config.getTitleSize());
 				layoutCont.contextPut("titleIconCssClass", config.getTitleIconCssClass());
-				
-				
 			}
 		}
 		
@@ -243,9 +243,28 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		
 		if(secCallback.canNewCurriculumElement()) {
-			newElementButton = LinkFactory.createToolLink("add.curriculum.element", translate("add.curriculum.element"), this, "o_icon_add");
-			newElementButton.setElementCssClass("o_sel_add_curriculum_element");
-			toolbarPanel.addTool(newElementButton, Align.left);	
+			newElementMenu = uifactory.addDropdownMenu("add.curriculum.element.menu", "add.curriculum.element.menu", null, formLayout, getTranslator());
+			newElementMenu.setIconCSS("o_icon o_icon-fw o_icon_add");
+			newElementMenu.setOrientation(DropdownOrientation.right);
+			
+			List<CurriculumElementType> allowedTypes;
+			if(rootElement == null) {
+				allowedTypes = curriculumService.getAllowedCurriculumElementType(rootElement, rootElement);
+			} else {
+				allowedTypes = curriculumService.getAllowedCurriculumElementType(rootElement.getParent(), rootElement);
+			}
+			
+			for(CurriculumElementType allowedType:allowedTypes) {
+				String link = translate("add.curriculum.element.typed", StringHelper.escapeHtml(allowedType.getDisplayName()));
+				newGenericElementButton = uifactory.addFormLink("add.curriculum.element." + allowedType.getKey(),
+						CMD_ADD_ELEMENT, link, null, formLayout, Link.LINK | Link.NONTRANSLATED);
+				newGenericElementButton.setUserObject(allowedType);
+				newElementMenu.addElement(newGenericElementButton);
+			}
+			
+			newGenericElementButton = uifactory.addFormLink("add.curriculum.element", formLayout, Link.LINK);
+			newGenericElementButton.setElementCssClass("o_sel_add_curriculum_element");
+			newElementMenu.addElement(newGenericElementButton);
 		}
 	}
 	
@@ -317,6 +336,12 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.setPageSize(40);
 		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-composer");
+		
+		if(secCallback.canNewCurriculumElement()) {
+			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkDeleteButton);
+			tableEl.setMultiSelect(true);
+		}
 	}
 	
 	private void initFilters() {
@@ -482,6 +507,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(resourcesLink != null) {
 			resourcesLink.setUserObject(row);
 		}
+
+		String businessPath = CurriculumHelper.getBusinessPath(row);
+		row.setBaseUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
 		
 		if(row.isCalendarsEnabled()) {
 			FormLink calendarsLink = uifactory.addFormLink("cals_" + (++counter), "calendars", "", null, null, Link.LINK | Link.NONTRANSLATED);
@@ -520,13 +548,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		List<ContextEntry> subEntries = entries.subList(1, entries.size());
-		if("CurriculumElement".equalsIgnoreCase(type)) {
-			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
-			CurriculumElementRow row = tableModel.getCurriculumElementRowByKey(elementKey);
-			if(row != null) {
-				doOpenCurriculumElementDetails(ureq, row, subEntries);
-			}
+		if("CurriculumElement".equalsIgnoreCase(type) || CONTEXT_ELEMENT.equalsIgnoreCase(type)) {
+			activateElement(ureq, entries);
 		} else if("Search".equalsIgnoreCase(type)) {
 			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
 			tableEl.quickSearch(ureq, elementKey.toString());
@@ -536,24 +559,28 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(row != null) {
 				tableEl.focus(row);
 			}
-		} else if("Members".equalsIgnoreCase(type)) {
-			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
-			CurriculumMembersManagementController mgmtCtrl = null;
-			if(elementKey.intValue() == 0) {
-				//TODO curriculum mgmtCtrl = doManageMembers(ureq);
-			} else {
-				CurriculumElementRow row = tableModel.getCurriculumElementRowByKey(elementKey);
-				if(row != null) {
-					mgmtCtrl = doManageMembers(ureq, row);
-				}
-			}
-			if(mgmtCtrl != null) {
-				mgmtCtrl.activate(ureq, subEntries, state);
-			}
 		} else if(statusTabMap != null && statusTabMap.containsKey(type.toLowerCase())) {
 			FlexiFiltersTab statusTab = statusTabMap.get(type.toLowerCase());
 			tableEl.setSelectedFilterTab(ureq, statusTab);
 			loadModel();
+		}
+	}
+	
+	private void activateElement(UserRequest ureq, List<ContextEntry> entries) {
+		Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
+		CurriculumElementRow row = tableModel.getCurriculumElementRowByKey(elementKey);
+		if(row != null) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenCurriculumElementDetails(ureq, row, subEntries);
+		} else if(rootElement == null) {
+			CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(elementKey));
+			if(element != null && element.getCurriculum().equals(curriculum) && element.getParent() != null) {
+				List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
+				CurriculumElementRow implementationRow = tableModel.getCurriculumElementRowByKey(parentLine.get(0).getKey());
+				if(implementationRow != null) {
+					doOpenCurriculumElementDetails(ureq, implementationRow, entries);
+				}
+			}
 		}
 	}
 
@@ -572,6 +599,13 @@ public class CurriculumComposerController extends FormBasicController implements
 				|| moveElementCtrl == source || confirmDeleteCtrl == source
 				|| copyCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(bulkDeleteConfirmationCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doDeleteCurriculumElements((ToDelete)bulkDeleteConfirmationCtrl.getUserObject());
 				loadModel();
 			}
 			cmc.deactivate();
@@ -612,11 +646,7 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(newElementButton == source) {
-			doNewCurriculumElement(ureq);
-		} else if(manageFocusedMembersLink == source) {
-			//TODO curriculum doManageMembers(ureq);
-		} else if(toolbarPanel == source) {
+		if(toolbarPanel == source) {
 			if(!toolbarPanel.isToolbarEnabled()) {
 				toolbarPanel.setToolbarEnabled(true);
 			}
@@ -634,6 +664,10 @@ public class CurriculumComposerController extends FormBasicController implements
 			doOverrideManagedResource();
 		} else if (source == unOverrideLink) {
 			doUnOverrideManagedResource();
+		} else if(newGenericElementButton == source) {
+			doNewCurriculumElement(ureq, null);
+		} else if(this.bulkDeleteButton == source) {
+			doConfirmBulkDelete(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
@@ -642,16 +676,16 @@ public class CurriculumComposerController extends FormBasicController implements
 					doOpenCurriculumElementOverview(ureq, row);
 				} else if("members".equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
-					doManager(ureq, row, "All");
+					doOpenCurriculumElementUserManagement(ureq, row, null);
 				} else if("participants".equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
-					doManager(ureq, row, "Participants");
+					doOpenCurriculumElementUserManagement(ureq, row, "Participants");
 				} else if("coachs".equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
-					doManager(ureq, row, "Coachs");
+					doOpenCurriculumElementUserManagement(ureq, row, "Coachs");
 				} else if("owners".equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
-					doManager(ureq, row, "Owners");
+					doOpenCurriculumElementUserManagement(ureq, row, "Owners");
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
@@ -659,12 +693,14 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(event instanceof FlexiTableFilterTabEvent) {
 				loadModel();
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
-				doNewCurriculumElement(ureq);
+				doNewCurriculumElement(ureq, null);
 			}
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("tools".equals(cmd)) {
 				doOpenTools(ureq, (CurriculumElementRow)link.getUserObject(), link);
+			} else if(CMD_ADD_ELEMENT.equals(cmd) && link.getUserObject() instanceof CurriculumElementType type) {
+				doNewCurriculumElement(ureq, type);
 			} else if("resources".equals(cmd)) {
 				doOpenReferences(ureq, (CurriculumElementRow)link.getUserObject(), link);
 			} else if("calendars".equals(cmd)) {
@@ -678,12 +714,6 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	private void doManager(UserRequest ureq, CurriculumElementRow row, String context) {
-		List<ContextEntry> entries = BusinessControlFactory.getInstance()
-				.createCEListFromString(OresHelper.createOLATResourceableInstance(context, 0l));
-		doManageMembers(ureq, row).activate(ureq, entries, null);
 	}
 	
 	private void doOverrideManagedResource() {
@@ -701,11 +731,12 @@ public class CurriculumComposerController extends FormBasicController implements
 		unOverrideLink.setVisible(overrideManaged);
 	}
 	
-	private void doNewCurriculumElement(UserRequest ureq) {
+	private void doNewCurriculumElement(UserRequest ureq, CurriculumElementType type) {
 		if(guardModalController(newElementCtrl)) return;
 
-		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), null,
-				(CurriculumElementType)null, curriculum, secCallback);
+		CurriculumElement parentElement = rootElement == null ? null : rootElement;
+		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), parentElement,
+				type, curriculum, secCallback);
 		listenTo(newElementCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -803,21 +834,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), false, getLocale());
 	}
 	
-	private CurriculumMembersManagementController doManageMembers(UserRequest ureq, CurriculumElementRow focusedRow) {
-		CurriculumElement curriculumElement = focusedRow.getCurriculumElement();
-		Curriculum focusedCurriculum = curriculumElement.getCurriculum();
-		Long focus = focusedRow.getKey();
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Members", focus);
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		CurriculumMembersManagementController membersMgmtCtrl = new CurriculumMembersManagementController(ureq, bwControl, toolbarPanel,
-				focusedCurriculum, curriculumElement, secCallback);
-		listenTo(membersMgmtCtrl);
-
-		String displayName = focusedRow.getDisplayName();
-		toolbarPanel.pushController(displayName, membersMgmtCtrl);
-		return membersMgmtCtrl;
-	}
-	
 	private void doOpenTools(UserRequest ureq, CurriculumElementRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -852,11 +868,22 @@ public class CurriculumComposerController extends FormBasicController implements
 		doOpenCurriculumElementDetails(ureq, row, overview);
 	}
 	
+	private void doOpenCurriculumElementUserManagement(UserRequest ureq, CurriculumElementRow row, String memberType) {
+		String path = "[Members:0]";
+		if(memberType != null) {
+			path += "[" + memberType + ":0]";
+		}
+		List<ContextEntry> overview = BusinessControlFactory.getInstance().createCEListFromString(path);
+		doOpenCurriculumElementDetails(ureq, row, overview);
+	}
+	
 	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElementRow row, List<ContextEntry> entries) {
 		CurriculumElement element = curriculumService.getCurriculumElement(row);
 		if(element == null) {
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
+		} else if(rootElement != null && rootElement.equals(element)) {
+			fireEvent(ureq, new ActivateEvent(entries));
 		} else {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, row.getKey()), null);
 			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel,
@@ -865,6 +892,12 @@ public class CurriculumComposerController extends FormBasicController implements
 			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
 			editCtrl.activate(ureq, entries, null);
 		}
+	}
+	
+	private void doOpenCurriculumElementInNewWindow(CurriculumElementRow row) {
+		String businessPath = CurriculumHelper.getBusinessPath(row) + "[Overview:0]";
+		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
 	
 	private void doOpenReferences(UserRequest ureq, CurriculumElementRow row, FormLink link) {
@@ -939,6 +972,51 @@ public class CurriculumComposerController extends FormBasicController implements
 		cmc.activate();
 	}
 	
+	private void doConfirmBulkDelete(UserRequest ureq) {
+		if(guardModalController(bulkDeleteConfirmationCtrl)) return;
+
+		List<CurriculumElementRow> curriculumElements =  tableEl.getMultiSelectedIndex().stream()
+				.map(index  -> tableModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.filter(element -> secCallback.canEditCurriculumElement(element.getCurriculumElement())
+						&& !CurriculumElementManagedFlag.isManaged(element.getCurriculumElement(), CurriculumElementManagedFlag.delete))
+				.toList();
+		
+		if(curriculumElements.isEmpty()) {
+			showWarning("curriculums.elements.bulk.delete.empty.selection");
+		} else {
+			List<String> curriculumsNames = curriculumElements.stream()
+					.map(CurriculumElementRow::getDisplayName)
+					.toList();
+
+			bulkDeleteConfirmationCtrl = new BulkDeleteConfirmationController(ureq, getWindowControl(), 
+					translate("curriculums.elements.bulk.delete.text", String.valueOf(curriculumElements.size())),
+					translate("curriculums.elements.bulk.delete.confirm", String.valueOf(curriculumElements.size())),
+					translate("curriculums.elements.bulk.delete.button"),
+					translate("curriculums.elements.bulk.delete.topics"),
+					curriculumsNames,
+					null);
+			
+			bulkDeleteConfirmationCtrl.setUserObject(new ToDelete(curriculumElements));
+			listenTo(bulkDeleteConfirmationCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
+					true, translate("curriculums.elements.bulk.delete.title"), true);
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private void doDeleteCurriculumElements(ToDelete toDelete) {
+		for(CurriculumElementRow element:toDelete.elements()) {
+			CurriculumElement elementToDelete = curriculumService.getCurriculumElement(element);
+			if(elementToDelete != null) {
+				curriculumService.deleteCurriculumElement(element);
+				dbInstance.commitAndCloseSession();
+			}
+		}
+	}
+	
 	private void launch(UserRequest ureq, RepositoryEntryRef ref) {
 		String businessPath = "[RepositoryEntry:" + ref.getKey() + "]";
 		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
@@ -950,10 +1028,15 @@ public class CurriculumComposerController extends FormBasicController implements
 		toolbarPanel.setToolbarEnabled(enable);
 	}
 	
+	private record ToDelete(List<CurriculumElementRow> elements) {
+		//
+	}
+	
 	private class ToolsController extends BasicController {
 		
 		private final VelocityContainer mainVC;
 		private Link newLink;
+		private Link openLink;
 		private Link editLink;
 		private Link moveLink;
 		private Link copyLink;
@@ -971,6 +1054,11 @@ public class CurriculumComposerController extends FormBasicController implements
 			mainVC = createVelocityContainer("tools");
 
 			List<String> links = new ArrayList<>(4);
+			
+			openLink = addLink("open.new.tab", "o_icon_arrow_up_right_from_square", links);
+			openLink.setNewWindow(true, true);
+			links.add("-");
+			
 			if(secCallback.canEditCurriculumElement(element)) {
 				editLink = addLink("edit", "o_icon_edit", links);
 				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
@@ -1031,7 +1119,10 @@ public class CurriculumComposerController extends FormBasicController implements
 
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
-			if(editLink == source) {
+			if(openLink == source) {
+				close();
+				doOpenCurriculumElementInNewWindow(row);
+			} else if(editLink == source) {
 				close();
 				doOpenCurriculumElementMetadata(ureq, row);
 			} else if(moveLink == source) {
@@ -1051,7 +1142,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				doImportMembers(ureq, row);
 			} else if(manageMembersLink == source) {
 				close();
-				doManageMembers(ureq, row);
+				doOpenCurriculumElementUserManagement(ureq, row, null);
 			} else if(source instanceof Link link
 					&& NEW_ELEMENT.equals(link.getCommand())
 					&& link.getUserObject() instanceof CurriculumElementType type) {

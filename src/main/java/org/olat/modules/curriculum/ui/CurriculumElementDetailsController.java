@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui;
 
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_LECTURES;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OVERVIEW;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.*;
 
@@ -30,6 +31,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -39,9 +41,11 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesController;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LectureRoles;
@@ -59,6 +63,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private int overviewTab;
 	private int lecturesTab;
 	private int structuresTab;
+	private int userManagerTab;
 	
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
@@ -122,7 +127,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 
 	private void initTabPane(UserRequest ureq) {
 		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> {
-			overviewCtrl = new CurriculumElementOverviewController(uureq, getWindowControl());
+			WindowControl subControl = addToHistory(uureq, OresHelper
+					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
+			overviewCtrl = new CurriculumElementOverviewController(uureq, subControl);
 			listenTo(overviewCtrl);
 			return overviewCtrl.getInitialComponent();
 		});
@@ -134,7 +141,10 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			config.setDefaultNumOfParticipants(true);
 			config.setRootElementsOnly(false);
 			config.setFlat(false);
-			structureCtrl = new CurriculumComposerController(uureq, getWindowControl(), toolbarPanel,
+			
+			WindowControl subControl = addToHistory(uureq, OresHelper
+					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_STRUCTURE), null);
+			structureCtrl = new CurriculumComposerController(uureq, subControl, toolbarPanel,
 					curriculum, curriculumElement, config, secCallback);
 			listenTo(structureCtrl);
 			
@@ -145,28 +155,36 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		// Courses
 		tabPane.addTab(ureq, translate("tab.resources"), uureq -> {
-			resourcesCtrl = new CurriculumElementResourceListController(uureq, getWindowControl(), curriculumElement, secCallback);
+			WindowControl subControl = addToHistory(uureq, OresHelper
+					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_RESOURCES), null);
+			resourcesCtrl = new CurriculumElementResourceListController(uureq, subControl, curriculumElement, secCallback);
 			listenTo(resourcesCtrl);
 			return resourcesCtrl.getInitialComponent();
 		});
 		
 		// Events / lectures blocks
 		tabPane.addTab(ureq, translate("curriculum.lectures"), uureq -> {
-			lecturesCtrl = new CurriculumElementLecturesController(uureq, getWindowControl(), toolbarPanel, curriculum, curriculumElement, true, secCallback);
+			WindowControl subControl = addToHistory(uureq, OresHelper
+					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
+			lecturesCtrl = new CurriculumElementLecturesController(uureq, subControl, toolbarPanel, curriculum, curriculumElement, true, secCallback);
 			listenTo(lecturesCtrl);
 			return lecturesCtrl.getInitialComponent();
 		});
 		
 		lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), uureq -> {
+			WindowControl subControl = addToHistory(uureq, OresHelper
+					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
 			LecturesSecurityCallback lecturesSecCallback = LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager);
-			lectureBlocksCtrl = new LectureListRepositoryController(uureq, getWindowControl(), curriculumElement, lecturesSecCallback);
+			lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, curriculumElement, lecturesSecCallback);
 			listenTo(lectureBlocksCtrl);
 			return lectureBlocksCtrl.getInitialComponent();
 		});
 		
 		// User management
-		tabPane.addTab(ureq, translate("tab.user.management"), uureq -> {
-			userManagementCtrl = new CurriculumElementUserManagementController(uureq, getWindowControl(), curriculumElement, secCallback);
+		userManagerTab = tabPane.addTab(ureq, translate("tab.user.management"), uureq -> {
+			WindowControl subControl = addToHistory(uureq, OresHelper
+					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS), null);
+			userManagementCtrl = new CurriculumElementUserManagementController(uureq, subControl, curriculumElement, secCallback);
 			listenTo(userManagementCtrl);
 			return userManagementCtrl.getInitialComponent();
 		});
@@ -186,7 +204,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 
-		if(CONTEXT_OVERVIEW.equalsIgnoreCase(type)) {
+		if(CONTEXT_OVERVIEW.equalsIgnoreCase(type) || "Overview".equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, overviewTab);
 		} else if(CONTEXT_LECTURES.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, lecturesTab);
@@ -196,6 +214,17 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			if(structureCtrl != null) {
 				structureCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
+		} else if(CONTEXT_MEMBERS.equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			tabPane.setSelectedPane(ureq, userManagerTab);
+			if(userManagementCtrl != null) {
+				userManagementCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
+		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type)) {
+			tabPane.setSelectedPane(ureq, structuresTab);
+			if(structureCtrl != null) {
+				structureCtrl.activate(ureq, entries, state);
+			}
 		}
 	}
 
@@ -203,5 +232,15 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == structureCtrl) {
+			if(event instanceof ActivateEvent ae) {
+				activate(ureq, ae.getEntries(), null);
+			}
+		}
+	}
+	
 	
 }

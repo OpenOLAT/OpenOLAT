@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_ELEMENT;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_LECTURES;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OVERVIEW;
@@ -152,6 +153,11 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			tabPane.setSelectedPane(ureq, lecturesTab);
 		} else if(CONTEXT_OVERVIEW.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, overviewTab);
+		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type)) {
+			tabPane.setSelectedPane(ureq, implementationsTab);
+			if(implementationsCtrl != null) {
+				implementationsCtrl.activate(ureq, entries, state);
+			}
 		}
 	}
 

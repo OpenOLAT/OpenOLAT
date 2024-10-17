@@ -51,4 +51,8 @@ public class CurriculumHelper {
 		String i18nKey = parentElement == null ? "select.value.element" : "select.value.element.parent";
 		return translator.translate(i18nKey, args);
 	}
+	
+	public static final String getBusinessPath(CurriculumElementRow row) {
+		return "[CurriculumAdmin:0][Curriculums:0][Curriculum:" + row.getCurriculumKey() + "][Element:" + row.getKey() + "]";
+	}
 }

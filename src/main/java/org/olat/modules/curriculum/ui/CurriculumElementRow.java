@@ -57,6 +57,8 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	private FormLink qualityPreviewLink;
 	private FormLink learningProgressLink;
 	
+	private String baseUrl;
+	
 	private boolean acceptedByFilter = true;
 	
 	public CurriculumElementRow(CurriculumElement element) {
@@ -275,6 +277,14 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 
 	public void setLearningProgressLink(FormLink learningProgressLink) {
 		this.learningProgressLink = learningProgressLink;
+	}
+
+	public String getBaseUrl() {
+		return baseUrl;
+	}
+
+	public void setBaseUrl(String baseUrl) {
+		this.baseUrl = baseUrl;
 	}
 
 	@Override
