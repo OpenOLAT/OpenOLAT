@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,12 +31,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
 import org.olat.core.commons.services.doceditor.DocEditorOpenInfo;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.DocTemplate;
+import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.folder.ui.FileBrowserController;
 import org.olat.core.commons.services.folder.ui.FileBrowserSelectionMode;
@@ -104,6 +108,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.VFSStatus;
@@ -179,7 +184,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private final Date lastVisitDate;
 	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
-	
+
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	protected ProjectService projectService;
 	@Autowired
@@ -850,6 +857,41 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileCreateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	protected void doCreateOfficeDocument(UserRequest ureq, String suffix) {
+		DocTemplate template = switch (suffix) {
+			case DocTemplates.SUFFIX_DOCX -> DocTemplates.builder(getLocale()).addDocx().build().getTemplates().get(0);
+			case DocTemplates.SUFFIX_XLSX -> DocTemplates.builder(getLocale()).addXlsx().build().getTemplates().get(0);
+			case DocTemplates.SUFFIX_PPTX -> DocTemplates.builder(getLocale()).addPptx().build().getTemplates().get(0);
+			default -> null;
+		};
+
+		if (template == null) {
+			showWarning("error.cannot.create.document");
+			return;
+		}
+
+		InputStream content = template.getContentProvider().getContent(getLocale());
+		VFSContainer projectContainer = projectService.getProjectContainer(project);
+		String filename = template.getName()
+				+ "_" + StringHelper.escapeHtml(getIdentity().getUser().getFirstName())
+				+ "_" + StringHelper.escapeHtml(getIdentity().getUser().getLastName())
+				+ "_1";
+		filename = StringHelper.transformDisplayNameToFileSystemName(filename) + "." + template.getSuffix();
+		filename = VFSManager.similarButNonExistingName(projectContainer, filename);
+		ProjFile file = projectService.createFile(getIdentity(), project, filename, content, false);
+
+		if (file != null) {
+			VFSMetadata vfsMetadata = file.getVfsMetadata();
+			vfsMetadata = vfsRepositoryService.updateMetadata(vfsMetadata);
+
+			dbInstance.commitAndCloseSession();
+			VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
+			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+				doOpenFile(ureq, file, vfsLeaf);
+			}
+		}
 	}
 
 	protected void doRecordVideo(UserRequest ureq) {

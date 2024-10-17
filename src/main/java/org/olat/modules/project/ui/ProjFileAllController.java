@@ -22,6 +22,7 @@ package org.olat.modules.project.ui;
 import java.util.Collections;
 import java.util.Date;
 
+import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -56,6 +57,9 @@ public class ProjFileAllController extends ProjFileListController {
 
 	private FileElement uploadEl;
 	private FormLink createLink;
+	private FormLink createWordLink;
+	private FormLink createExcelLink;
+	private FormLink createPowerPointLink;
 	private FormLink recordVideoLink;
 	private FormLink recordAudioLink;
 	private FormLink downloadAllLink;
@@ -103,6 +107,23 @@ public class ProjFileAllController extends ProjFileListController {
 		createLink.setIconLeftCSS("o_icon o_icon_add");
 		createLink.setVisible(secCallback.canCreateFiles());
 		uploadDropdown.addElement(createLink);
+
+		uploadDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
+
+		createWordLink = uifactory.addFormLink("document.create.word", formLayout, Link.LINK);
+		createWordLink.setIconLeftCSS("o_icon o_icon-fw o_FileResource-DOC_icon");
+		createWordLink.setNewWindow(true, true, true);
+		uploadDropdown.addElement(createWordLink);
+
+		createExcelLink = uifactory.addFormLink("document.create.excel", formLayout, Link.LINK);
+		createExcelLink.setIconLeftCSS("o_icon o_icon-fw o_FileResource-XLS_icon");
+		createExcelLink.setNewWindow(true, true, true);
+		uploadDropdown.addElement(createExcelLink);
+
+		createPowerPointLink = uifactory.addFormLink("document.create.powerpoint", formLayout, Link.LINK);
+		createPowerPointLink.setIconLeftCSS("o_icon o_icon-fw o_FileResource-PPT_icon");
+		createPowerPointLink.setNewWindow(true, true, true);
+		uploadDropdown.addElement(createPowerPointLink);
 		
 		if (secCallback.canCreateFiles() && avModule.isRecordingEnabled()) {
 			uploadDropdown.addElement(new Dropdown.SpacerItem("createSpace"));
@@ -138,6 +159,12 @@ public class ProjFileAllController extends ProjFileListController {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == createLink) {
 			doCreateFile(ureq);
+		} else if (source == createWordLink) {
+			doCreateOfficeDocument(ureq, DocTemplates.SUFFIX_DOCX);
+		} else if (source == createExcelLink) {
+			doCreateOfficeDocument(ureq, DocTemplates.SUFFIX_XLSX);
+		} else if (source == createPowerPointLink) {
+			doCreateOfficeDocument(ureq, DocTemplates.SUFFIX_PPTX);
 		} else if (source == downloadAllLink) {
 			doDownloadAll(ureq);
 		} else if (source == recordVideoLink) {
