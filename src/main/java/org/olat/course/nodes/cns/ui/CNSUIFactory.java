@@ -47,8 +47,10 @@ public class CNSUIFactory {
 	}
 	
 	public static final String getConfigMessageParticipant(Translator translator, int requiredSelections) {
-		String infos = "<div>" + translator.translate("config.overview.selection.hint") + "</div>";
-		infos += "<br>";
+		String infos = "<ol class=\"o_list_unstyled_left\">";
+		infos += "<li>" + translator.translate("config.overview.selection.instruction.1") + "</li>";
+		infos += "<li>" + translator.translate("config.overview.selection.instruction.2") + "</li>";
+		infos += "</ol>";
 		infos += getConfigMessage(translator, requiredSelections);
 		return infos;
 	}
