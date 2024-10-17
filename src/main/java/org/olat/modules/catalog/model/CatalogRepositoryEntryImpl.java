@@ -59,6 +59,7 @@ public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
 	private Set<TaxonomyLevel> taxonomyLevels;
 	private boolean member;
 	private boolean openAccess;
+	private boolean guestAccess;
 	private List<OLATResourceAccess> resourceAccess;
 
 	public CatalogRepositoryEntryImpl(RepositoryEntry re) {
@@ -180,6 +181,15 @@ public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
 
 	public void setOpenAccess(boolean openAccess) {
 		this.openAccess = openAccess;
+	}
+
+	@Override
+	public boolean isGuestAccess() {
+		return guestAccess;
+	}
+
+	public void setGuestAccess(boolean guestAccess) {
+		this.guestAccess = guestAccess;
 	}
 
 	@Override

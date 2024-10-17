@@ -416,6 +416,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return showSmallPageSize;
 	}
 
+	@Override
 	public void setShowSmallPageSize(boolean showSmallPageSize) {
 		this.showSmallPageSize = showSmallPageSize;
 	}
@@ -1930,6 +1931,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private void saveCustomSettings(UserRequest ureq) {
 		if(StringHelper.containsNonWhitespace(persistentId)) {
 			Preferences prefs = ureq.getUserSession().getGuiPreferences();
+			if (prefs == null) {
+				return;
+			}
 			
 			boolean sortDirection = false;
 			String sortedColKey = null;

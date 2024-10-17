@@ -33,10 +33,14 @@
 				</div>
 			#end
 			
-			#if($r.available("start"))
+			#if($r.available("start") || $r.available("start.guest"))
 				<div class="o_start_wrapper">
 					<div class="o_start_inner">
-						$r.render("start")
+						#if($r.available("start"))
+							$r.render("start")
+						#else
+							$r.render("start.guest")
+						#end
 					</div>
 				</div>
 			#end

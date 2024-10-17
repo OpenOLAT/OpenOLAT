@@ -30,7 +30,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -41,6 +40,7 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -50,7 +50,6 @@ import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.session.UserSessionManager;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
 import org.olat.modules.catalog.ui.WebCatalogMainController;
@@ -104,22 +103,28 @@ public class WebCatalogDispatcher implements Dispatcher {
 			return;
 		}
 		
+		Windows windows = Windows.getWindows(ureq);
 		if (ureq.getUserSession().isAuthenticated()) {
-			UserSession usess = ureq.getUserSession();
-			synchronized (usess) {
-				CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(usess);
-				usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
-				I18nManager.updateLocaleInfoToThread(usess);
+			if (ureq.isValidDispatchURI()) {
+				windows.getWindow(ureq).getWindowBackOffice().sendCommandTo(FunctionCommand.reloadWindow());
+			} else {
+				String restPart = extractRestPart(request, uriPrefix);
+				String authUrl = new StringBuilder()
+					.append(Settings.getServerContextPathURI())
+					.append("/auth/Catalog/0/")
+					.append(restPart)
+					.toString();
+				DispatcherModule.redirectTo(response, authUrl);
+				return;
 			}
+			
 		}
 		
 		UserSession usess = ureq.getUserSession();
 		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 		I18nManager.updateLocaleInfoToThread(usess);
 		
-		Windows windows = Windows.getWindows(ureq);
 		windows.getWindowManager().setAjaxWanted(ureq);
-		
 		if (ureq.isValidDispatchURI()) {
 			Window window = windows.getWindow(ureq);
 			window.dispatchRequest(ureq, true);
@@ -163,8 +168,7 @@ public class WebCatalogDispatcher implements Dispatcher {
 	}
 	
 	private String[] extractRestParts(HttpServletRequest request, String uriPrefix) {
-		String uri = request.getRequestURI();
-		String restPart = uri.substring(uriPrefix.length());
+		String restPart = extractRestPart(request, uriPrefix);
 		try {
 			restPart = URLDecoder.decode(restPart, "UTF8");
 		} catch (UnsupportedEncodingException e) {
@@ -176,6 +180,11 @@ public class WebCatalogDispatcher implements Dispatcher {
 		}
 		
 		return restPart.split("/");
+	}
+
+	private String extractRestPart(HttpServletRequest request, String uriPrefix) {
+		String uri = request.getRequestURI();
+		return uri.substring(uriPrefix.length());
 	}
 
 }

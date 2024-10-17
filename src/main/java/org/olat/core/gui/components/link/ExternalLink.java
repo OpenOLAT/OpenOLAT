@@ -38,6 +38,7 @@ public class ExternalLink extends AbstractComponent {
 	private String target;
 	private String tooltip;
 	private String iconLeftCSS;
+	private String iconRightCSS;
 	private String cssClass;
 	
 	public ExternalLink(String id, String name) {
@@ -72,6 +73,14 @@ public class ExternalLink extends AbstractComponent {
 
 	public void setIconLeftCSS(String iconLeftCSS) {
 		this.iconLeftCSS = iconLeftCSS;
+	}
+
+	public String getIconRightCSS() {
+		return iconRightCSS;
+	}
+
+	public void setIconRightCSS(String iconRightCSS) {
+		this.iconRightCSS = iconRightCSS;
 	}
 
 	public String getCssClass() {

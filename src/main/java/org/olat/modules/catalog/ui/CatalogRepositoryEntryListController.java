@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -257,39 +259,54 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 
 	@Override
 	public void forgeStartLink(CatalogRepositoryEntryRow row) {
-		String cmd;
-		String label;
-		String css;
-		String cssSmall;
-		if(!row.isMember() && row.isPublicVisible() && !row.isOpenAccess() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty()) {
+		String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
+		String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+		
+		String cmd = "start";
+		String label = "start";
+		String css = "btn btn-sm btn-primary o_start";
+		String cssSmall = "btn btn-xs btn-primary o_start";
+		if (searchParams.isWebPublish() && row.isGuestAccess()) {
+			url += "?guest=true";
+			
+			ExternalLinkItem link = uifactory.addExternalLink("start_" + row.getKey(), url, "_self", null);
+			link.setCssClass(css);
+			link.setIconRightCSS("o_icon o_icon_start");
+			link.setName(translate("start.guest"));
+			row.setStartLink(link);
+			
+			ExternalLinkItem linkSmall = uifactory.addExternalLink("starts_" + row.getKey(), url, "_self", null);
+			linkSmall.setCssClass(cssSmall);
+			linkSmall.setIconRightCSS("o_icon o_icon_start");
+			linkSmall.setName(translate("start.guest"));
+			row.setStartSmallLink(linkSmall);
+			return;
+		}
+		
+		if (!row.isMember() && row.isPublicVisible() && !row.isOpenAccess() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty()) {
 			cmd = "book";
 			label = "book";
-			css = "btn btn-sm btn-primary o_book ";
-			cssSmall = "btn btn-xs btn-primary o_book ";
-		} else {
-			cmd = "start";
-			label = "start";
-			css = "btn btn-sm btn-primary o_start";
-			cssSmall = "btn btn-xs btn-primary o_start";
+			css = "btn btn-sm btn-primary o_book";
+			cssSmall = "btn btn-xs btn-primary o_book";
 		}
+		
 		FormLink link = uifactory.addFormLink("start_" + row.getKey(), cmd, label, null, flc, Link.LINK);
 		link.setUserObject(row);
 		link.setCustomEnabledLinkCSS(css);
 		link.setIconRightCSS("o_icon o_icon_start");
 		link.setTitle(label);
-		String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
-		link.setUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
+		link.setUrl(url);
 		row.setStartLink(link);
 		
-		FormLink linkSmall = uifactory.addFormLink("start_" + row.getKey(), cmd, label, null, null, Link.LINK);
+		FormLink linkSmall = uifactory.addFormLink("starts_" + row.getKey(), cmd, label, null, null, Link.LINK);
 		linkSmall.setUserObject(row);
 		linkSmall.setCustomEnabledLinkCSS(cssSmall);
 		linkSmall.setIconRightCSS("o_icon o_icon_start");
 		linkSmall.setTitle(label);
-		linkSmall.setUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
+		linkSmall.setUrl(url);
 		row.setStartSmallLink(linkSmall);
 	}
-	
+
 	@Override
 	public void forgeDetailsLink(CatalogRepositoryEntryRow row) {
 		String url = CatalogBCFactory.get(searchParams.isWebPublish()).getInfosUrl(() -> row.getKey());
@@ -445,6 +462,9 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 			if ("start".equals(cmd)){
 				CatalogRepositoryEntryRow row = (CatalogRepositoryEntryRow)link.getUserObject();
 				doStart(ureq, row.getKey());
+			} else if ("startGuest".equals(cmd)){
+				CatalogRepositoryEntryRow row = (CatalogRepositoryEntryRow)link.getUserObject();
+				doStartGuest(ureq, row.getKey());
 			} else if ("book".equals(cmd)){
 				CatalogRepositoryEntryRow row = (CatalogRepositoryEntryRow)link.getUserObject();
 				doBook(ureq, row);
@@ -461,7 +481,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	@Override
 	public synchronized void dispose() {
 		if (stackPanel != null) {
@@ -486,6 +506,13 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 				showError("error.corrupted");
 			}
 		}
+	}
+	
+	private void doStartGuest(UserRequest ureq, Long key) {
+		String businessPath = "[RepositoryEntry:" + key + "]";
+		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath) + "?guest=true";
+		DispatcherModule.redirectTo(ureq.getHttpResp(), url);
+		
 	}
 	
 	protected void doOpenDetails(UserRequest ureq, Long repositoryEntryKey) {

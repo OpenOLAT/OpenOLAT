@@ -490,24 +490,37 @@ public class CatalogRepositoryEntryQueries {
 	private void appendMyViewAccessSubSelect(QueryBuilder sb, AddParams addParams, boolean webPublish,
 			boolean isGuestOnly, Date offerValidAt, List<? extends OrganisationRef> offerOrganisations,
 			Boolean openAccess, Boolean showAccessMethods, Collection<AccessMethod> accessMethods) {
-		if (isGuestOnly) {
-			sb.and().append("v.publicVisible=true");
-			sb.and().append("v.status ").in(ACService.RESTATUS_ACTIVE_GUEST);
-			sb.and().append("res.key in (");
-			sb.append("   select resource.key");
-			sb.append("     from acoffer offer");
-			sb.append("     inner join offer.resource resource");
-			sb.append("    where offer.valid = true");
-			sb.append("      and offer.guestAccess = true");
-			sb.append(")");
-			return;
-		}
-		
 		boolean or = false;
 		
 		sb.and().append("(");
+		
+		if (isGuestOnly || webPublish) {
+			or = true;
+			sb.append(" res.key in (");
+			sb.append("   select resource.key");
+			sb.append("     from acoffer offer");
+			sb.append("     inner join offer.resource resource");
+			sb.append("     inner join repositoryentry re2");
+			sb.append("        on re2.olatResource.key = resource.key");
+			sb.append("       and re2.publicVisible = true");
+			sb.append("    where offer.valid = true");
+			sb.append("      and offer.guestAccess = true");
+			if (webPublish) {
+				sb.append("  and offer.catalogWebPublish = true");
+			}
+			sb.append("      and re2.status ").in(ACService.RESTATUS_ACTIVE_GUEST);
+			sb.append(")");
+			if (isGuestOnly) {
+				sb.append(")");
+				return;
+			}
+		}
+		
 		// Open access
 		if (openAccess == null || openAccess.booleanValue()) {
+			if (or) {
+				sb.append(" or ");
+			}
 			or = true;
 			sb.append(" res.key in (");
 			sb.append("   select resource.key");

@@ -31,12 +31,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.image.ImageComponent;
+import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
@@ -179,6 +181,17 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 	}
 
 	private void initOffers(UserRequest ureq, FormLayoutContainer layoutCont, boolean guestOnly, Boolean webPublish) {
+		if (webPublish != null && webPublish.booleanValue()) {
+			if (acService.isGuestAccessible(entry, true)) {
+				String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+				String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath) + "?guest=true";
+				ExternalLinkItem guestLink = uifactory.addExternalLink("start.guest", url, "_self", layoutCont);
+				guestLink.setCssClass("btn btn-default");
+				guestLink.setName(translate("start.guest"));
+				return;
+			}
+		}
+		
 		AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, webPublish, false);
 		if (acResult.isAccessible()) {
 			startLink = createStartLink(layoutCont);

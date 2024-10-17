@@ -73,6 +73,8 @@ public interface CatalogRepositoryEntry {
 	
 	boolean isOpenAccess();
 	
+	boolean isGuestAccess();
+	
 	List<OLATResourceAccess> getResourceAccess();
 
 }

@@ -152,6 +152,9 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		// Load open access
 		List<Long> reOpenAccessKeys = loadRepositoryEntryOpenAccessKeys(repositoryEntries, searchParams.isWebPublish(), searchParams.getOfferOrganisations());
 		
+		// Load guest access
+		List<Long> reGuestAccessKeys = loadRepositoryEntryGuestAccessKeys(repositoryEntries, searchParams.isWebPublish());
+		
 		// Load access methods
 		Map<RepositoryEntry, List<OLATResourceAccess>> reToResourceAccess = loadRepositoryEntryToResourceAccess(repositoryEntries, searchParams.getOfferOrganisations());
 		
@@ -166,6 +169,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 			view.setMember(reMembershipKeys.contains(view.getKey()));
 			
 			view.setOpenAccess(reOpenAccessKeys.contains(view.getKey()));
+			view.setGuestAccess(reGuestAccessKeys.contains(view.getKey()));
 			
 			List<OLATResourceAccess> resourceAccess = reToResourceAccess.get(repositoryEntry);
 			view.setResourceAccess(resourceAccess);
@@ -209,6 +213,26 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 				.filter(re -> resourceWithOpenAccess.contains(re.getOlatResource()))
 				.map(RepositoryEntry::getKey)
 				.collect(Collectors.toList());
+	}
+	
+	private List<Long> loadRepositoryEntryGuestAccessKeys(List<RepositoryEntry> repositoryEntries, boolean webPublish) {
+		if (!acModule.isEnabled()) return List.of();
+		
+		if (webPublish) {
+			List<OLATResource> resourcesWithAC = repositoryEntries.stream()
+					.filter(RepositoryEntry::isPublicVisible)
+					.map(RepositoryEntry::getOlatResource)
+					.collect(Collectors.toList());
+			
+			List<OLATResource> resourcesWithGuestAccess = acService.filterResourceWithGuestAccess(resourcesWithAC);
+			return repositoryEntries.stream()
+					.filter(re -> resourcesWithGuestAccess.contains(re.getOlatResource()))
+					.map(RepositoryEntry::getKey)
+					.collect(Collectors.toList());
+		}
+		
+		// In internal catalog guest and other access are never displayed mixed.
+		return List.of();
 	}
 
 	private Map<RepositoryEntry, List<OLATResourceAccess>> loadRepositoryEntryToResourceAccess(

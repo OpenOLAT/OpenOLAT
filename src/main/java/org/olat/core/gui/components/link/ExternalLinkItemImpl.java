@@ -64,6 +64,26 @@ public class ExternalLinkItemImpl extends FormItemImpl implements ExternalLinkIt
 	}
 
 	@Override
+	public String getIconLeftCSS() {
+		return externalLink.getIconLeftCSS();
+	}
+
+	@Override
+	public void setIconLeftCSS(String iconLeftCSS) {
+		externalLink.setIconLeftCSS(iconLeftCSS);
+	}
+
+	@Override
+	public String getIconRightCSS() {
+		return externalLink.getIconRightCSS();
+	}
+
+	@Override
+	public void setIconRightCSS(String iconRightCSS) {
+		externalLink.setIconRightCSS(iconRightCSS);
+	}
+
+	@Override
 	public String getCssClass() {
 		return externalLink.getCssClass();
 	}

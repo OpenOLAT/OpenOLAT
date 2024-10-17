@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
@@ -67,11 +68,12 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 	private List<TaxonomyLevelNamePath> taxonomyLevelNamePaths;
 	private final boolean member;
 	private final boolean openAccess;
+	private final boolean guestAccess;
 	private List<PriceMethod> accessTypes;
 	private String thumbnailRelPath;
 	private FormLink selectLink;
-	private FormLink startLink;
-	private FormLink startSmallLink;
+	private FormItem startLink;
+	private FormItem startSmallLink;
 	private FormLink detailsLink;
 	private FormLink detailsSmallLink;
 	
@@ -91,6 +93,7 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 		taxonomyLevels = catalogRepositoryEntry.getTaxonomyLevels();
 		member = catalogRepositoryEntry.isMember();
 		openAccess = catalogRepositoryEntry.isOpenAccess();
+		guestAccess = catalogRepositoryEntry.isGuestAccess();
 		
 		RepositoryEntryLifecycle reLifecycle = catalogRepositoryEntry.getLifecycle();
 		if(reLifecycle != null) {
@@ -188,6 +191,10 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 	public boolean isOpenAccess() {
 		return openAccess;
 	}
+	
+	public boolean isGuestAccess() {
+		return guestAccess;
+	}
 
 	public List<PriceMethod> getAccessTypes() {
 		return accessTypes;
@@ -261,19 +268,19 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 		return startLink == null ? null :startLink.getComponent().getComponentName();
 	}
 	
-	public FormLink getStartLink() {
+	public FormItem getStartLink() {
 		return startLink;
 	}
 
-	public void setStartLink(FormLink startLink) {
+	public void setStartLink(FormItem startLink) {
 		this.startLink = startLink;
 	}
 	
-	public FormLink getStartSmallLink() {
+	public FormItem getStartSmallLink() {
 		return startSmallLink;
 	}
 
-	public void setStartSmallLink(FormLink startSmallLink) {
+	public void setStartSmallLink(FormItem startSmallLink) {
 		this.startSmallLink = startSmallLink;
 	}
 

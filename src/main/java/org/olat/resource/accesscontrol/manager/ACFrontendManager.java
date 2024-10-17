@@ -252,7 +252,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	
 	@Override
 	public List<OrganisationRef> getOfferOrganisations(IdentityRef identity) {
-		if (!organisationModule.isEnabled()) return Collections.emptyList();
+		if (!organisationModule.isEnabled() || identity == null) return List.of();
 		
 		List<Organisation> userOrganisations = organisationService.getOrganisations(identity, OrganisationRoles.user);
 		return organisationService.getParentLineRefs(userOrganisations);
