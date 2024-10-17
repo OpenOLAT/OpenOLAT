@@ -5,7 +5,7 @@
 	#end
 	<fieldset class="o_block_large">
 		<legend class="o_flex_first_grow">
-			<div>$r.translate("selection.my")</div>
+			<div>$r.translate("selection.my.title")</div>
 			<div>$statusLabel</div>
 		</legend>
 		#if($selectionSuccess)
@@ -20,7 +20,7 @@
 		$r.render("selectionTable")
 	</fieldset>
 	<fieldset>
-		<legend>$r.translate("topics.available")</legend>
+		<legend>$r.translate("topics.offered")</legend>
 		$r.render("topicTable")
 	</fieldset>
 </div>

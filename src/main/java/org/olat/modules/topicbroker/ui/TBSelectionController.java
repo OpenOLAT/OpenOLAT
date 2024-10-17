@@ -62,6 +62,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.InfoPanel;
@@ -114,6 +118,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TBSelectionController extends FormBasicController implements FlexiTableComponentDelegate, GenericEventListener {
 	
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_ENROLLED = "Enrolled";
+	private static final String TAB_ID_NOT_ENROLLED = "NotEnrolled";
 	private static final String CMD_UP = "up";
 	private static final String CMD_DOWN = "down";
 	private static final String CMD_SELECT = "select";
@@ -127,6 +134,9 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	private InfoPanel configPanel;
 	private SingleSelection maxEnrollmentsEl;
 	private final TBSelectionStatusRenderer statusRenderer;
+	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabEnrolled;
+	private FlexiFiltersTab tabNotEnrolled;
 	private TBSelectionDataModel selectionDataModel;
 	private FlexiTableElement selectionTableEl;
 	private TBSelectionDataModel topicDataModel;
@@ -184,7 +194,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	@Override
 	public void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		configPanel = new InfoPanel("configs");
-		configPanel.setTitle(translate("config.overview.selection.title"));
+		configPanel.setTitle(translate("config.overview.selection.header"));
 		configPanel.setPersistedStatusId(ureq, "tb-selection-config-" + broker.getKey());
 		formLayout.add("config", new ComponentWrapperElement(configPanel));
 		updateBrokerConfigUI();
@@ -212,11 +222,11 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			updateMaxEnrollmentsEnabledUI();
 		}
 		
-		initSelectionTable(formLayout);
+		initSelectionTable(ureq, formLayout);
 		initTopicsTable(ureq, formLayout);
 	}
 
-	private void initSelectionTable(FormItemContainer formLayout) {
+	private void initSelectionTable(UserRequest ureq, FormItemContainer formLayout) {
 		FlexiTableColumnModel selectionColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.priority, new TextFlexiCellRenderer(EscapeMode.none)));
 		
@@ -258,6 +268,38 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		
 		selectionDataModel = new TBSelectionDataModel(selectionColumnsModel);
 		selectionTableEl = uifactory.addTableElement(getWindowControl(), "selectionTable", selectionDataModel, 20, false, getTranslator(), formLayout);
+		
+		initFilterTabs(ureq);
+	}
+	
+	private void initFilterTabs(UserRequest ureq) {
+		// init filters only if enrollment done
+		if (broker.getEnrollmentDoneDate() == null) {
+			return;
+		}
+		
+		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
+		
+		tabAll = FlexiFiltersTabFactory.tab(
+				TAB_ID_ALL,
+				translate("all"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabAll);
+		
+		tabEnrolled = FlexiFiltersTabFactory.tab(
+				TAB_ID_ENROLLED,
+				translate("tab.enrolled"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabEnrolled);
+		
+		tabNotEnrolled = FlexiFiltersTabFactory.tab(
+				TAB_ID_NOT_ENROLLED,
+				translate("tab.enrolled.not"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabNotEnrolled);
+		
+		selectionTableEl.setFilterTabs(true, tabs);
+		selectionTableEl.setSelectedFilterTab(ureq, tabAll);
 	}
 
 	private void initTopicsTable(UserRequest ureq, FormItemContainer formLayout) {
@@ -401,6 +443,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			topicRows.add(row);
 		}
 		
+		applyFilers(selectionRows);
 		selectionRows.sort((r1, r2) -> Integer.compare(r1.getSelectionSortOrder(), r2.getSelectionSortOrder()));
 		fillEmptySelectionRows(selectionRows);
 		selectionDataModel.setObjects(selectionRows);
@@ -415,6 +458,14 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		}
 		
 		updateSelectionMessage();
+	}
+
+	private void applyFilers(List<TBSelectionRow> rows) {
+		if (selectionTableEl.getSelectedFilterTab() == tabEnrolled) {
+			rows.removeIf(row -> !row.isEnrolled());
+		} else if (selectionTableEl.getSelectedFilterTab() == tabNotEnrolled) {
+			rows.removeIf(TBSelectionRow::isEnrolled);
+		}
 	}
 
 	private void applySearch(List<TBSelectionRow> rows) {
@@ -622,6 +673,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 
 	private void fillEmptySelectionRows(List<TBSelectionRow> selectionRows) {
+		if (selectionTableEl.getSelectedFilterTab() != null || selectionTableEl.getSelectedFilterTab() != tabAll) {
+			return;
+		}
+		
 		for (int i = selectionRows.size() + 1; i <= broker.getMaxSelections(); i++) {
 			TBSelectionRow row = new TBSelectionRow();
 			row.setSelectionSortOrder(i);
@@ -702,8 +757,13 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 	
 	private void updateBrokerConfigUI() {
-		String infos = "<div>" + translate("config.overview.selection.hint") + "</div>";
-		infos += "<br>";
+		String infos = "<ol class=\"o_list_unstyled_left\">";
+		infos += "<li>" + translate("config.overview.selection.instruction.1") + "</li>";
+		infos += "<li>" + translate("config.overview.selection.instruction.2") + "</li>";
+		if (broker.isParticipantCanWithdraw()) {
+			infos += "<li>" + translate("config.overview.selection.instruction.3") + "</li>";
+		}
+		infos += "</ol>";
 		infos += "<ul class=\"list-unstyled\">";
 		infos += TBUIFactory.getConfigInfos(getTranslator(), broker, false);
 		infos += "</ul>";
@@ -813,6 +873,8 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 				if (CMD_DETAILS.equals(cmd)) {
 					doOpenDetails(ureq, row.getTopic(), row.getCustomFields());
 				}
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				loadModel(false);
 			}
 		} else if (topicTableEl == source) {
 			if (event instanceof SelectionEvent) {
