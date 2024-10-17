@@ -127,22 +127,22 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		mainVC.put("search", searchCtrl.getInitialComponent());
 		
 		currentLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.current.lectures.blocks", false, "current", 20, withRepositoryEntry, withTeachers, withAssessment);
+				admin, "empty.table.current.lectures.blocks", false, switchPrefsId.concat("current"), 20, withRepositoryEntry, withTeachers, withAssessment);
 		listenTo(currentLecturesBlockCtrl);
 		mainVC.put("currentLectures", currentLecturesBlockCtrl.getInitialComponent());
 		
 		pendingLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.lectures.blocks", false, "pending", 20, withRepositoryEntry, withTeachers, withAssessment);
+				admin, "empty.table.lectures.blocks", false, switchPrefsId.concat("pending"), 20, withRepositoryEntry, withTeachers, withAssessment);
 		listenTo(pendingLecturesBlockCtrl);
 		mainVC.put("pendingLectures", pendingLecturesBlockCtrl.getInitialComponent());
 		
 		nextLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.lectures.blocks", true, "next", 5, withRepositoryEntry, withTeachers, withAssessment);
+				admin, "empty.table.lectures.blocks", true, switchPrefsId.concat("next"), 5, withRepositoryEntry, withTeachers, withAssessment);
 		listenTo(nextLecturesBlockCtrl);
 		mainVC.put("nextLectures", nextLecturesBlockCtrl.getInitialComponent());
 		
 		closedLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.lectures.blocks", false, "closed", 10, withRepositoryEntry, withTeachers, false);
+				admin, "empty.table.lectures.blocks", false, switchPrefsId.concat("closed"), 10, withRepositoryEntry, withTeachers, false);
 		listenTo(closedLecturesBlockCtrl);
 		mainVC.put("closedLectures", closedLecturesBlockCtrl.getInitialComponent());
 	}
