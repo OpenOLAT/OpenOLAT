@@ -34,9 +34,6 @@ import org.olat.modules.curriculum.model.CurriculumInfos;
  */
 public class CurriculumRow implements CurriculumRef {
 	
-	private static final String OVERVIEW_SUB_PATH = "/" + CurriculumListManagerController.CONTEXT_OVERVIEW + "/0";
-	private static final String IMPLEMENTATIONS_SUB_PATH = "/" + CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS + "/0";
-	
 	private final Curriculum curriculum;
 	private final CurriculumImplementationsStatistics statistics;
 	
@@ -46,7 +43,6 @@ public class CurriculumRow implements CurriculumRef {
 	private final String baseUrl;
 	private final FormLink toolsLink;
 
-	
 	public CurriculumRow(Curriculum curriculum, String baseUrl, boolean active) {
 		this(curriculum, null, baseUrl, null, false, active);
 	}
@@ -77,10 +73,6 @@ public class CurriculumRow implements CurriculumRef {
 		return baseUrl;
 	}
 	
-	public String getImplementationsUrl() {
-		return baseUrl == null ? null : baseUrl.concat(IMPLEMENTATIONS_SUB_PATH);
-	}
-	
 	public String getDisplayName() {
 		return curriculum.getDisplayName();
 	}
@@ -93,6 +85,10 @@ public class CurriculumRow implements CurriculumRef {
 		return curriculum.getExternalId();
 	}
 	
+	public Curriculum getCurriculum() {
+		return curriculum;
+	}
+	
 	public String getOrganisation() {
 		if(curriculum.getOrganisation() != null) {
 			return curriculum.getOrganisation().getDisplayName();
@@ -102,7 +98,7 @@ public class CurriculumRow implements CurriculumRef {
 	
 	public CurriculumStatus getStatus() {
 		String status = curriculum.getStatus();
-		if(CurriculumStatus.deleted.equals(status)) {
+		if(CurriculumStatus.deleted.name().equals(status)) {
 			return CurriculumStatus.deleted;
 		}
 		return CurriculumStatus.active;
@@ -143,8 +139,7 @@ public class CurriculumRow implements CurriculumRef {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumRow) {
-			CurriculumRow row = (CurriculumRow)obj;
+		if(obj instanceof CurriculumRow row) {
 			return curriculum.equals(row.curriculum);
 		}
 		return false;

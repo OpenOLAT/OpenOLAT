@@ -82,8 +82,9 @@ public class ConfirmCurriculumDeleteController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		layoutCont.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		deleteButton = uifactory.addFormLink("delete", buttonsCont, Link.BUTTON);
+		deleteButton.setElementCssClass("btn-danger");
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	@Override

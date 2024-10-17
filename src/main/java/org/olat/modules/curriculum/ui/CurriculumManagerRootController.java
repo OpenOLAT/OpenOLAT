@@ -35,6 +35,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 
 /**
@@ -92,7 +93,17 @@ public class CurriculumManagerRootController extends BasicController implements 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Curriculum".equalsIgnoreCase(type)) {
 			doOpenCurriculumsList(ureq).activate(ureq, entries, state);
-		}
+		} else if("All".equalsIgnoreCase(type) || "Curriculums".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenCurriculumsList(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("Implementations".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			if(subEntries.isEmpty()) {
+				doOpenImplementationsAllFilter(ureq);
+			} else {
+				doOpenImplementations(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
+		} 
 	}
 
 	@Override
@@ -109,7 +120,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		if (source == curriculumsLink) {
 			doOpenCurriculumsList(ureq);
 		} else if (source == implementationsLink){
-			doOpenImplementations(ureq);
+			doOpenImplementationsAllFilter(ureq);
 		} else if (source == lecturesBlocksLink) {
 			doOpenLecturesBlocks(ureq);
 		}
@@ -128,25 +139,31 @@ public class CurriculumManagerRootController extends BasicController implements 
 		toolbarPanel.popUpToRootController(ureq);
 		removeAsListenerAndDispose(curriculumListCtrl);
 		
-		curriculumListCtrl = new CurriculumListManagerController(ureq, getWindowControl(), toolbarPanel, secCallback);
+		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Curriculums", 0l), null);
+		curriculumListCtrl = new CurriculumListManagerController(ureq, subControl, toolbarPanel, secCallback);
 		listenTo(curriculumListCtrl);
 		toolbarPanel.pushController(translate("toolbar.curriculums"), curriculumListCtrl);
 		return curriculumListCtrl;
 	}
 	
-	private void doOpenImplementations(UserRequest ureq) {
+	private void doOpenImplementationsAllFilter(UserRequest ureq) {
+		// Load "All" filter preset
+		List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
+		doOpenImplementations(ureq).activate(ureq, all, null);
+	}
+	
+	private CurriculumComposerController doOpenImplementations(UserRequest ureq) {
 		toolbarPanel.popUpToRootController(ureq);
 		removeAsListenerAndDispose(implementationsCtrl);
 		
 		CurriculumComposerConfig config = CurriculumComposerConfig.implementationsView();
 		config.setTitle(translate("curriculum.implementations"), 2, "o_icon_curriculum_implementations");
-		implementationsCtrl = new CurriculumComposerController(ureq, getWindowControl(), toolbarPanel,
+		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Implementations", 0l), null);
+		implementationsCtrl = new CurriculumComposerController(ureq, subControl, toolbarPanel,
 				null, null, config , secCallback);
 		listenTo(implementationsCtrl);
 		toolbarPanel.pushController(translate("toolbar.implementations"), implementationsCtrl);
-		
-		List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
-		implementationsCtrl.activate(ureq, all, null);
+		return implementationsCtrl;
 	}
 	
 	private void doOpenLecturesBlocks(UserRequest ureq) {

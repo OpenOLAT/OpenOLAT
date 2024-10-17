@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,7 +66,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -74,6 +77,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
@@ -129,6 +133,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private FlexiFiltersTab allTab;
 	
 	private FlexiTableElement tableEl;
+	private FormLink bulkDeleteButton;
 	private FormLink newCurriculumButton;
 	private FormLink importCurriculumButton;
 	private CurriculumManagerDataModel tableModel;
@@ -142,6 +147,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private CurriculumDetailsController editCurriculumCtrl;
 	private ConfirmCurriculumDeleteController deleteCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
 	
 	private int counter = 0;
 	private final Roles roles;
@@ -215,24 +221,28 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			columnsModel.addFlexiColumnModel(lecturesCol);
 		}
 		
-		if(secCallback.canEditCurriculum()) {
-			StickyActionColumnModel toolsCol = new StickyActionColumnModel(CurriculumCols.tools);
-			toolsCol.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_actions");
-			toolsCol.setExportable(false);
-			toolsCol.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(toolsCol);
-		}
+		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CurriculumCols.tools);
+		toolsCol.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_actions");
+		toolsCol.setExportable(false);
+		toolsCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(toolsCol);
 		
 		tableModel = new CurriculumManagerDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element", "add.curriculum", "o_icon_add", true);
+		tableEl.setMultiSelect(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-manage");
 		
 		initFilters();
 		initFiltersPresets();
 		tableEl.setSelectedFilterTab(ureq, allTab);
+		
+		if(secCallback.canEditCurriculum()) {
+			bulkDeleteButton = uifactory.addFormLink("bulk.delete", "delete", "delete", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkDeleteButton);
+		}
 	}
 	
 	private void initFilters() {
@@ -419,6 +429,12 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(bulkDeleteConfirmationCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doDeleteCurriculums((ToDelete)bulkDeleteConfirmationCtrl.getUserObject());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -426,10 +442,12 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(importCurriculumCtrl);
 		removeAsListenerAndDispose(deleteCurriculumCtrl);
 		removeAsListenerAndDispose(newCurriculumCtrl);
 		removeAsListenerAndDispose(cmc);
+		bulkDeleteConfirmationCtrl = null;
 		importCurriculumCtrl = null;
 		deleteCurriculumCtrl = null;
 		newCurriculumCtrl = null;
@@ -449,7 +467,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(newCurriculumButton == source) {
+		if(bulkDeleteButton == source) {
+			doBulkDeleteCurriculums(ureq);
+		} else if(newCurriculumButton == source) {
 			doNewCurriculum(ureq);
 		} else if(importCurriculumButton == source) {
 			doImportCurriculum(ureq);
@@ -503,6 +523,45 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		cmc.activate();
 	}
 	
+	private void doBulkDeleteCurriculums(UserRequest ureq) {
+		List<CurriculumRow> curriculums =  tableEl.getMultiSelectedIndex().stream()
+				.map(index  -> tableModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.filter(curriculum -> !CurriculumManagedFlag.isManaged(curriculum.getCurriculum(), CurriculumManagedFlag.delete))
+				.toList();
+		
+		if(curriculums.isEmpty()) {
+			showWarning("curriculums.bulk.delete.empty.selection");
+		} else {
+			List<String> curriculumsNames = curriculums.stream()
+					.map(CurriculumRow::getDisplayName)
+					.toList();
+
+			bulkDeleteConfirmationCtrl = new BulkDeleteConfirmationController(ureq, getWindowControl(), 
+					translate("curriculums.bulk.delete.text", String.valueOf(curriculums.size())),
+					translate("curriculums.bulk.delete.confirm", String.valueOf(curriculums.size())),
+					translate("curriculums.bulk.delete.button"),
+					translate("curriculums.bulk.delete.topics"),
+					curriculumsNames,
+					null);
+			
+			bulkDeleteConfirmationCtrl.setUserObject(new ToDelete(curriculums));
+			listenTo(bulkDeleteConfirmationCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
+					true, translate("curriculums.bulk.delete.title"), true);
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private void doDeleteCurriculums(ToDelete toDelete) {
+		for(CurriculumRow curriculum:toDelete.curriculums()) {
+			curriculumService.deleteCurriculum(curriculum);
+		}
+		loadModel(tableEl.getQuickSearchString(), false);
+	}
+	
 	private void doDeleteCurriculum(UserRequest ureq, CurriculumRow row) {
 		removeAsListenerAndDispose(deleteCurriculumCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -543,6 +602,12 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		doOpenCurriculumDetails(ureq, row, context);
 	}
 	
+	private void doOpenCurriculumDetailsInNewWindow(CurriculumRow row) {
+		String businessPath = "[CurriculumAdmin:0][Curriculums:0][Curriculum:" + row.getKey() + "][Overview:0]";
+		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+	}
+	
 	private void doOpenCurriculumDetails(UserRequest ureq, CurriculumRow row, List<ContextEntry> entries) {
 		removeAsListenerAndDispose(editCurriculumCtrl);
 		
@@ -550,7 +615,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		if(curriculum == null) {
 			showWarning("warning.curriculum.deleted");
 		} else {
-			editCurriculumCtrl = new CurriculumDetailsController(ureq, getWindowControl(), toolbarPanel, curriculum, secCallback);
+			WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(Curriculum.class, curriculum.getKey()), null);
+			editCurriculumCtrl = new CurriculumDetailsController(ureq, subControl, toolbarPanel, curriculum, secCallback);
 			listenTo(editCurriculumCtrl);
 			
 			String crumb = row.getExternalRef();
@@ -581,9 +647,13 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		}
 	}
 	
+	private record ToDelete(List<CurriculumRow> curriculums) {
+		//
+	}
+	
 	private class ToolsController extends BasicController {
 		
-		private Link editLink;
+		private Link openLink;
 		private Link deleteLink;
 		private Link exportLink;
 		private final VelocityContainer mainVC;
@@ -598,8 +668,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			
 			List<String> links = new ArrayList<>(4);
 			
-			//edit
-			editLink = addLink("edit", "o_icon_edit", links);
+			openLink = addLink("open.new.tab", "o_icon_arrow_up_right_from_square", links);
+			openLink.setNewWindow(true, true);
 			exportLink = addLink("export", "o_icon_export", links);
 			
 			if(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.delete)) {
@@ -621,9 +691,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
-			if(editLink == source) {
+			if(openLink == source) {
 				close();
-				doOpenCurriculumDetails(ureq, row, List.of());
+				doOpenCurriculumDetailsInNewWindow(row);
 			} else if(deleteLink == source) {
 				close();
 				doDeleteCurriculum(ureq, row);
