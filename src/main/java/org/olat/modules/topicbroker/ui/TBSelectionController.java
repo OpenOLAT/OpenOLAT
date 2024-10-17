@@ -299,7 +299,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 		tabs.add(tabNotEnrolled);
 		
 		selectionTableEl.setFilterTabs(true, tabs);
-		selectionTableEl.setSelectedFilterTab(ureq, tabAll);
+		selectionTableEl.setSelectedFilterTab(ureq, tabEnrolled);
 	}
 
 	private void initTopicsTable(UserRequest ureq, FormItemContainer formLayout) {
