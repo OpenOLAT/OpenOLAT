@@ -24,15 +24,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupRef;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.LTI13ToolDeploymentType;
 import org.olat.ims.lti13.model.LTI13ToolDeploymentImpl;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,11 +48,6 @@ public class LTI13ToolDeploymentDAO {
 	private LTI13IDGenerator idGenerator;
 	
 	public LTI13ToolDeployment createDeployment(String targetUrl, LTI13ToolDeploymentType type, String deploymentId, LTI13Tool tool) {
-		return createDeployment(targetUrl, type, deploymentId, tool, null, null, null);
-	}
-	
-	public LTI13ToolDeployment createDeployment(String targetUrl, LTI13ToolDeploymentType type, String deploymentId,
-			LTI13Tool tool, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
 		LTI13ToolDeploymentImpl deployment = new LTI13ToolDeploymentImpl();
 		deployment.setCreationDate(new Date());
 		deployment.setLastModified(deployment.getCreationDate());
@@ -69,11 +60,18 @@ public class LTI13ToolDeploymentDAO {
 		deployment.setDeploymentResourceId(UUID.randomUUID().toString());
 		deployment.setTargetUrl(targetUrl);
 		deployment.setTool(tool);
-		deployment.setEntry(entry);
-		deployment.setSubIdent(subIdent);
-		deployment.setBusinessGroup(businessGroup);
 		dbInstance.getCurrentEntityManager().persist(deployment);
 		return deployment;
+	}
+	
+	public LTI13ToolDeployment makeMultiContextsToolDeployment(LTI13ToolDeployment deployment) {
+		if(deployment instanceof LTI13ToolDeploymentImpl ltiDeployment) {
+			ltiDeployment.setDeploymentType(LTI13ToolDeploymentType.MULTIPLE_CONTEXTS);
+			ltiDeployment.setEntry(null);
+			ltiDeployment.setSubIdent(null);
+			ltiDeployment.setBusinessGroup(null);
+		}
+		return updateToolDeployment(deployment);
 	}
 	
 	public LTI13ToolDeployment updateToolDeployment(LTI13ToolDeployment deployment) {
@@ -100,31 +98,6 @@ public class LTI13ToolDeploymentDAO {
 		return deployments != null && !deployments.isEmpty() ? deployments.get(0) : null;
 	}
 	
-	public List<LTI13ToolDeployment> loadDeploymentsBy(RepositoryEntryRef entry, String subIdent) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select deployment from ltitooldeployment as deployment")
-		  .append(" inner join fetch deployment.tool tool")
-		  .append(" where deployment.entry.key=:entryKey and deployment.subIdent=:subIdent");
-		
-		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), LTI13ToolDeployment.class)
-			.setParameter("entryKey", entry.getKey())
-			.setParameter("subIdent", subIdent)
-			.getResultList();
-	}
-	
-	public List<LTI13ToolDeployment> loadDeploymentsBy(BusinessGroupRef businessGroup) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select deployment from ltitooldeployment as deployment")
-		  .append(" inner join fetch deployment.tool tool")
-		  .append(" where deployment.businessGroup.key=:businessGroupKey");
-		
-		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), LTI13ToolDeployment.class)
-			.setParameter("businessGroupKey", businessGroup.getKey())
-			.getResultList();
-	}
-	
 	/**
 	 * Load the deployment by key and fetch the repository entry
 	 * and the tool.
@@ -133,51 +106,51 @@ public class LTI13ToolDeploymentDAO {
 	 * @return The deployment
 	 */
 	public LTI13ToolDeployment loadDeploymentByKey(Long key) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select deployment from ltitooldeployment as deployment")
-		  .append(" inner join fetch deployment.tool tool")
-		  .append(" left join fetch deployment.entry as v")
-		  .append(" left join fetch v.olatResource as vOres")
-		  .append(" left join fetch v.statistics as vStatistics")
-		  .append(" left join fetch v.lifecycle as vLifecycle")
-		  .append(" left join fetch deployment.businessGroup as businessGroup")
-		  .append(" left join fetch businessGroup.resource as bOres")
-		  .append(" where deployment.key=:deploymentKey");
+		String query = """
+				select deployment from ltitooldeployment as deployment
+				inner join fetch deployment.tool tool
+				left join fetch deployment.entry as v
+				left join fetch v.olatResource as vOres
+				left join fetch v.statistics as vStatistics
+				left join fetch v.lifecycle as vLifecycle
+				left join fetch deployment.businessGroup as businessGroup
+				left join fetch businessGroup.resource as bOres
+				where deployment.key=:deploymentKey""";
 		
 		List<LTI13ToolDeployment> deployments = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), LTI13ToolDeployment.class)
+			.createQuery(query, LTI13ToolDeployment.class)
 			.setParameter("deploymentKey", key)
 			.getResultList();
 		return deployments != null && !deployments.isEmpty() ? deployments.get(0) : null;
 	}
 	
 	public LTI13ToolDeployment loadDeploymentByDeploymentId(String deploymentId) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select deployment from ltitooldeployment as deployment")
-		  .append(" inner join fetch deployment.tool tool")
-		  .append(" left join fetch deployment.entry as v")
-		  .append(" left join fetch v.olatResource as vOres")
-		  .append(" left join fetch v.statistics as vStatistics")
-		  .append(" left join fetch v.lifecycle as vLifecycle")
-		  .append(" left join fetch deployment.businessGroup as businessGroup")
-		  .append(" left join fetch businessGroup.resource as bOres")
-		  .append(" where deployment.deploymentId=:deploymentId");
+		String query = """
+				select deployment from ltitooldeployment as deployment
+				inner join fetch deployment.tool tool
+				left join fetch deployment.entry as v
+				left join fetch v.olatResource as vOres
+				left join fetch v.statistics as vStatistics
+				left join fetch v.lifecycle as vLifecycle
+				left join fetch deployment.businessGroup as businessGroup
+				left join fetch businessGroup.resource as bOres
+				where deployment.deploymentId=:deploymentId""";
 		
 		List<LTI13ToolDeployment> deployments = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), LTI13ToolDeployment.class)
+			.createQuery(query, LTI13ToolDeployment.class)
 			.setParameter("deploymentId", deploymentId)
 			.getResultList();
 		return deployments != null && !deployments.isEmpty() ? deployments.get(0) : null;
 	}
 	
 	public List<LTI13ToolDeployment> loadDeployments(LTI13Tool tool) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select deployment from ltitooldeployment as deployment")
-		  .append(" inner join fetch deployment.tool tool")
-		  .append(" where tool.key=:toolKey");
+		String query = """
+				select deployment from ltitooldeployment as deployment
+				inner join fetch deployment.tool tool
+				where tool.key=:toolKey""";
 		
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), LTI13ToolDeployment.class)
+			.createQuery(query, LTI13ToolDeployment.class)
 			.setParameter("toolKey", tool.getKey())
 			.getResultList();
 	}
