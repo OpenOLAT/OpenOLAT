@@ -119,13 +119,13 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 	private LTI13Tool tool;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
-	@JoinColumn(name="fk_entry_id", nullable=true, insertable=true, updatable=false)
+	@JoinColumn(name="fk_entry_id", nullable=true, insertable=true, updatable=true)
 	private RepositoryEntry entry;
-	@Column(name="l_sub_ident", nullable=true, insertable=true, updatable=false)
+	@Column(name="l_sub_ident", nullable=true, insertable=true, updatable=true)
 	private String subIdent;
 	
 	@ManyToOne(targetEntity=BusinessGroupImpl.class, fetch=FetchType.LAZY, optional=true)
-	@JoinColumn(name="fk_group_id", nullable=true, insertable=true, updatable=false)
+	@JoinColumn(name="fk_group_id", nullable=true, insertable=true, updatable=true)
 	private BusinessGroup businessGroup;
 	
 
@@ -418,8 +418,7 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof LTI13ToolDeploymentImpl) {
-			LTI13ToolDeploymentImpl deployment = (LTI13ToolDeploymentImpl)obj;
+		if(obj instanceof LTI13ToolDeploymentImpl deployment) {
 			return getKey() != null && getKey().equals(deployment.getKey());
 		}
 		return false;
