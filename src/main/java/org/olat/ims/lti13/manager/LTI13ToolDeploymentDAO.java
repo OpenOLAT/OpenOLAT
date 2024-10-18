@@ -107,14 +107,14 @@ public class LTI13ToolDeploymentDAO {
 	 */
 	public LTI13ToolDeployment loadDeploymentByKey(Long key) {
 		String query = """
-				select deployment from ltitooldeployment as deployment")
-				inner join fetch deployment.tool tool")
-				left join fetch deployment.entry as v")
-				left join fetch v.olatResource as vOres")
-				left join fetch v.statistics as vStatistics")
-				left join fetch v.lifecycle as vLifecycle")
-				left join fetch deployment.businessGroup as businessGroup")
-				left join fetch businessGroup.resource as bOres")
+				select deployment from ltitooldeployment as deployment
+				inner join fetch deployment.tool tool
+				left join fetch deployment.entry as v
+				left join fetch v.olatResource as vOres
+				left join fetch v.statistics as vStatistics
+				left join fetch v.lifecycle as vLifecycle
+				left join fetch deployment.businessGroup as businessGroup
+				left join fetch businessGroup.resource as bOres
 				where deployment.key=:deploymentKey""";
 		
 		List<LTI13ToolDeployment> deployments = dbInstance.getCurrentEntityManager()
