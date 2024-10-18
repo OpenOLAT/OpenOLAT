@@ -2917,7 +2917,7 @@ public class FolderController extends FormBasicController implements Activateabl
 			return false;
 		}
 		VFSContainer parentContainer = vfsItem.getParentContainer();
-		if (parentContainer != null && parentContainer.canWrite() != VFSStatus.YES) {
+		if (parentContainer != null && parentContainer.canDelete() != VFSStatus.YES) {
 			return false;
 		}
 		return vfsItem.canDelete() == VFSStatus.YES
