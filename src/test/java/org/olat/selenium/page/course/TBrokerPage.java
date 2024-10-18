@@ -45,8 +45,14 @@ public class TBrokerPage {
 		return this;
 	}
 	
-	public TBrokerPage assertOnSelectedTopic(String title) {
+	public TBrokerPage assertOnSelectedTopicInTable(String title) {
 		By selectedBy = By.xpath("//table[contains(@class,'table')]//tr[td/a[text()[contains(.,'" + title + "')]]]/td/div/span[contains(@class,'o_tb_label_light_selected')]");
+		OOGraphene.waitElement(selectedBy, browser);
+		return this;
+	}
+	
+	public TBrokerPage assertOnSelectedTopicAsCard(String title) {
+		By selectedBy = By.xpath("//div[contains(@class,'o_tb_topic_card')][div/div/div/h4[contains(@class,'o_tb_topic_card_title')][text()[contains(.,'" + title + "')]]]/div[contains(@class,'o_tb_topic_card_thumbnail')]//span[contains(@class,'o_tb_label_light_selected')]");
 		OOGraphene.waitElement(selectedBy, browser);
 		return this;
 	}
@@ -63,12 +69,18 @@ public class TBrokerPage {
 		return this;
 	}
 	
+	/**
+	 * The select needs an assert after.
+	 * 
+	 * @param title The topic to select
+	 * @return Itself
+	 */
 	public TBrokerPage selectTopic(String title) {
 		By selectBy = By.xpath("//div[contains(@class,'o_tb_topic_table')]//div[contains(@class,'o_tb_topic_card')][div[@class='o_tb_topic_card_meta']/div/div/h4[text()[contains(.,'" + title + "')]]]/div[@class='o_tb_topic_card_cmds']//a[contains(@class,'btn-primary')]");
 		OOGraphene.waitElement(selectBy, browser);
 		OOGraphene.click(selectBy, browser);
 		OOGraphene.waitBusy(browser);
-		return assertOnSelectedTopic(title);
+		return assertOnSelectedTopicAsCard(title);
 	}
 
 	public TBrokerPage selectTopicHighest(String title) {
@@ -78,7 +90,7 @@ public class TBrokerPage {
 		By selectFirstBy = By.xpath("//div[contains(@class,'o_tb_topic_table')]//div[contains(@class,'o_tb_topic_card')][div[@class='o_tb_topic_card_meta']/div/div/h4[text()[contains(.,'" + title + "')]]]/div[@class='o_tb_topic_card_cmds']//ul/li/a[i[contains(@class,'o_icon_tb_select_first')]]");
 		OOGraphene.waitElement(selectFirstBy, browser);
 		OOGraphene.click(selectFirstBy, browser);
-		return assertOnSelectedTopic(title);
+		return assertOnSelectedTopicAsCard(title);
 	}
 	
 	public TBrokerPage startEnrollment() {
