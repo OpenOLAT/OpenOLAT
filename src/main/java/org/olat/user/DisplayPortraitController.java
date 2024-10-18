@@ -64,7 +64,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 	
 	private final String mapperPath;
 	private final UserAvatarMapper mapper;
-	private final OLATResourceable listenerOres;
+	private OLATResourceable listenerOres;
 	
 	private final boolean useLarge;
 	private final boolean isAnonymous;
@@ -140,37 +140,45 @@ public class DisplayPortraitController extends BasicController implements Generi
 	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent,
 			boolean useLarge, boolean canLinkToHomePage, boolean displayUserFullName, boolean displayPortraitImage) { 
 		super(ureq, wControl);
-		this.isDeletedUser = portraitIdent.getStatus().equals(Identity.STATUS_DELETED);
+		this.isDeletedUser = portraitIdent != null? portraitIdent.getStatus().equals(Identity.STATUS_DELETED): false;
 		myContent = createVelocityContainer("displayportrait");
 		myContent.contextPut("canLinkToHomePage", (canLinkToHomePage && !isDeletedUser) ? Boolean.TRUE : Boolean.FALSE);
 
 		this.useLarge = useLarge;
 		this.portraitIdent = portraitIdent;
-		this.displayPortraitImage = displayPortraitImage;
+		this.displayPortraitImage = portraitIdent != null && displayPortraitImage;
 		
+		// export data doesn't have a session, web catalog doesn't have roles
 		UserSession usess = ureq.getUserSession();
-		isAnonymous = usess != null && usess.getRoles().isGuestOnly();// export data doesn't have a session
+		isAnonymous = portraitIdent == null || (usess != null && usess.getRoles() != null && usess.getRoles().isGuestOnly());
 
 		mapper = new UserAvatarMapper(useLarge);
 		mapperPath = registerMapper(ureq, mapper);
 		
-		myContent.contextPut("identityKey", portraitIdent.getKey().toString());
-		myContent.contextPut("displayUserFullName", displayUserFullName);
-		String fullName = UserManager.getInstance().getUserDisplayName(portraitIdent);
-		myContent.contextPut("fullName", fullName);		
-		String altText = translate("title.homepage") + ": " + fullName;
-		myContent.contextPut("altText", StringHelper.escapeHtml(altText));
+		if (portraitIdent != null) {
+			myContent.contextPut("identityKey", portraitIdent.getKey().toString());
+			myContent.contextPut("displayUserFullName", displayUserFullName);
+			String fullName = UserManager.getInstance().getUserDisplayName(portraitIdent);
+			myContent.contextPut("fullName", fullName);
+			String altText = translate("title.homepage") + ": " + fullName;
+			myContent.contextPut("altText", StringHelper.escapeHtml(altText));
+		}
+		
 		putInitialPanel(myContent);
 		
 		loadPortrait();
-
-		listenerOres = OresHelper.createOLATResourceableInstance("portrait", getIdentity().getKey());
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, portraitIdent, listenerOres);
+		
+		if (getIdentity() != null) {
+			listenerOres = OresHelper.createOLATResourceableInstance("portrait", getIdentity().getKey());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, portraitIdent, listenerOres);
+		}
 	}
 
 	@Override
 	protected void doDispose() {
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, listenerOres);
+		if (listenerOres != null) {
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, listenerOres);
+		}
         super.doDispose();
 	}
 	
