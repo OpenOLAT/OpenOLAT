@@ -211,7 +211,7 @@
 				color: o-a11y-color($link-color, $table-bg-accent);
 			}
  	 	}
-	}	
+	}
 	
 	.o_scrollable_right .table-striped {
   		> tbody > tr:nth-child(odd) {
@@ -233,6 +233,25 @@
 			}
 		}
   	}
+  	
+  	&.o_table_reduced {
+  		table.table {
+  			margin-top: 0;
+  		}
+  		thead, .o_table_footer {
+  			display: none;
+  		}
+  		tbody>tr {
+  			background-color: #fff;
+  			display: flex;
+  		}
+  		tbody>tr>td {
+  			display: inline-block;
+  			border: none !important;
+  			text-wrap: nowrap;
+  		}
+  	}
+  	
   	.table-hover {
   		> tbody > tr:not(.o_table_row_expanded):hover {
   			.o_col_sticky_right,

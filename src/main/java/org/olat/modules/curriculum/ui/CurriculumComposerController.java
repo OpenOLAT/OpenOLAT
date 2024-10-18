@@ -70,6 +70,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
@@ -113,6 +115,7 @@ import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.olat.modules.curriculum.ui.copy.CopySettingsController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.curriculum.ui.event.SelectCurriculumElementEvent;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.generator.ui.CurriculumElementPreviewListController;
@@ -619,6 +622,9 @@ public class CurriculumComposerController extends FormBasicController implements
 			cleanUp();
 			if(event instanceof SelectReferenceEvent sre) {
 				launch(ureq, sre.getEntry());
+			} else if(event instanceof SelectCurriculumElementEvent scee) {
+				List<ContextEntry> subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Structure:0]");
+				doOpenCurriculumElementDetails(ureq, scee.getEntry(), subEntries);
 			}
 		} else if(source instanceof CurriculumElementDetailsController) {
 			if(event == Event.CHANGED_EVENT) {
@@ -932,8 +938,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(), curriculumElement);
 		listenTo(curriculumStructureCalloutCtrl);
 		
+		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				curriculumStructureCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				curriculumStructureCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
 	}
