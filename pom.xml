@@ -2185,8 +2185,6 @@
 			<artifactId>azure-identity</artifactId>
 			<version>1.13.2</version>
 		</dependency>
-<!-- Thanks for using https://jar-download.com -->
-
 		<!-- End Microsoft Graph -->
 		<!-- Lucene dependencies -->
 		<dependency>
