@@ -80,6 +80,8 @@ public interface LTI13Service {
 	
 	public LTI13Context createContext(String targetUrl, LTI13ToolDeployment deployment,
 			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
+	
+	public LTI13Context copyContext(LTI13Context context, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
 
 	public LTI13Context updateContext(LTI13Context deployment);
 
