@@ -17,22 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.dispatcher;
+package org.olat.core.commons.services.robots;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
-import org.apache.logging.log4j.Logger;
-import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.helpers.Settings;
-import org.olat.core.logging.Tracing;
-import org.olat.modules.oaipmh.OAIPmhModule;
-import org.olat.repository.ResourceInfoDispatcher;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.logging.log4j.Logger;
+import org.olat.core.dispatcher.Dispatcher;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -45,7 +44,7 @@ public class RobotsDispatcher implements Dispatcher {
 	private static final Logger log = Tracing.createLoggerFor(RobotsDispatcher.class);
 
 	@Autowired
-	private OAIPmhModule oaiModule;
+	private RobotsService robotsService;
 	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response)
@@ -59,9 +58,14 @@ public class RobotsDispatcher implements Dispatcher {
 		try(PrintWriter writer = response.getWriter()) {
 			writer.write("User-agent: *\n");
 			writer.write("Disallow: /");
-			if (oaiModule.isEnabled() && oaiModule.isSearchEngineEnabled()) {
-				writer.write("\nAllow: " + Settings.getServerContextPath() + "/" + ResourceInfoDispatcher.RESOURCEINFO_PATH);	
-				writer.write("\n\nSitemap: " + ResourceInfoDispatcher.getUrl("sitemap.xml"));
+			List<String> allows = robotsService.getRobotsAllows();
+			for (String allow : allows) {
+				writer.write("\nAllow: " + allow);
+			}
+			
+			String sitemapIndexUrl = robotsService.getSitemapIndexUrl();
+			if (StringHelper.containsNonWhitespace(sitemapIndexUrl)) {
+				writer.write("\n\nSitemap: " + sitemapIndexUrl);
 			}
 		} catch(IOException e) {
 			log.error("", e);

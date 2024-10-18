@@ -21,6 +21,9 @@
 				<entry key="/robots.txt">
 					<ref bean="robotsdispatcher" />
 				</entry>
+				<entry key="/sitemap.xml">
+					<ref bean="sitemapdispatcher" />
+				</entry>
 				<entry key="/maintenance/">
 					<ref bean="maintenancebean" />
 				</entry>
@@ -136,7 +139,8 @@
 	
 	<bean id="getgocallback" class="org.olat.modules.gotomeeting.oauth.GetGoOAuthDispatcher" />
 	
-	<bean id="robotsdispatcher" class="org.olat.dispatcher.RobotsDispatcher" />
+	<bean id="robotsdispatcher" class="org.olat.core.commons.services.robots.RobotsDispatcher" />
+	<bean id="sitemapdispatcher" class="org.olat.core.commons.services.robots.SitemapDispatcher" />
 	
 	<!-- send bug report dispatcher -->
 	<bean id="errorMailBean" class="org.olat.core.dispatcher.ErrorFeedbackMailer">

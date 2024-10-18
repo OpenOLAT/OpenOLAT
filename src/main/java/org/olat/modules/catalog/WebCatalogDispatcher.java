@@ -31,6 +31,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
+import org.olat.core.commons.services.robots.SitemapWriter;
+import org.olat.core.commons.services.robots.model.SitemapItem;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -41,6 +43,8 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
+import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -52,6 +56,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
+import org.olat.modules.catalog.manager.CatalogRobotsProvider;
 import org.olat.modules.catalog.ui.WebCatalogMainController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,6 +71,7 @@ public class WebCatalogDispatcher implements Dispatcher {
 	private static final Logger log = Tracing.createLoggerFor(WebCatalogDispatcher.class);
 	
 	public static final String PATH_CATALOG = "catalog";
+	public static final String SITEMAP = "sitemap.xml";
 	private static final String PATH_TEMPORARILY_DISABLED = "catalogtemporarilydisabled";
 	private static final String URI_TEMPORARILY_DISABLED =
 			WebappHelper.getServletContextPath() + "/" + PATH_TEMPORARILY_DISABLED + "/";
@@ -80,11 +86,22 @@ public class WebCatalogDispatcher implements Dispatcher {
 	
 	@Autowired
 	private CatalogV2Module catalogModule;
+	@Autowired
+	private CatalogRobotsProvider robotsProvider;
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		if (!catalogModule.isEnabled() || !catalogModule.isWebPublishEnabled()) {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
+			return;
+		}
+		
+		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
+		String restPart = extractRestPart(request, uriPrefix);
+		
+		// Before isWebPublishTemporarilyDisabled check to send bad request instead of redirect
+		if (restPart.toLowerCase().startsWith(SITEMAP)) {
+			dispatchSitemap(request, response);
 			return;
 		}
 		
@@ -94,7 +111,6 @@ public class WebCatalogDispatcher implements Dispatcher {
 		}
 		
 		UserRequest ureq = null;
-		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 		try {
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 		} catch (RequestAbortedException | NumberFormatException nfe) {
@@ -108,7 +124,6 @@ public class WebCatalogDispatcher implements Dispatcher {
 			if (ureq.isValidDispatchURI()) {
 				windows.getWindow(ureq).getWindowBackOffice().sendCommandTo(FunctionCommand.reloadWindow());
 			} else {
-				String restPart = extractRestPart(request, uriPrefix);
 				String authUrl = new StringBuilder()
 					.append(Settings.getServerContextPathURI())
 					.append("/auth/Catalog/0/")
@@ -153,7 +168,7 @@ public class WebCatalogDispatcher implements Dispatcher {
 			NewControllerFactory.getInstance().launch(ureq, wControl);	
 			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
 			
-			String[] restParts = extractRestParts(request, uriPrefix);
+			String[] restParts = extractRestParts(restPart);
 			if (restParts.length > 0 && restParts.length % 2 == 0) {
 				String businessPath = BusinessControlFactory.getInstance().formatFromSplittedURI(restParts);
 				List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
@@ -166,25 +181,47 @@ public class WebCatalogDispatcher implements Dispatcher {
 			log.error("", e);
 		}
 	}
-	
-	private String[] extractRestParts(HttpServletRequest request, String uriPrefix) {
-		String restPart = extractRestPart(request, uriPrefix);
+
+	private String extractRestPart(HttpServletRequest request, String uriPrefix) {
+		String uri = request.getRequestURI();
+		String restPart = uri.substring(uriPrefix.length());
 		try {
 			restPart = URLDecoder.decode(restPart, "UTF8");
 		} catch (UnsupportedEncodingException e) {
 			log.error("Unsupported encoding", e);
 		}
-		
+		return restPart;
+	}
+
+	private String[] extractRestParts(String restPart) {
 		if (restPart == null) {
 			return ArrayHelper.emptyStrings();
 		}
 		
 		return restPart.split("/");
 	}
-
-	private String extractRestPart(HttpServletRequest request, String uriPrefix) {
-		String uri = request.getRequestURI();
-		return uri.substring(uriPrefix.length());
+	
+	private void dispatchSitemap(HttpServletRequest request, HttpServletResponse response) {
+		List<SitemapItem> sitemapItems = robotsProvider.getSitemapItems();
+		if (sitemapItems != null) {
+			String result = new SitemapWriter(sitemapItems).getSitemap();
+			
+			StringMediaResource mr = new StringMediaResource();
+			mr.setContentType("application/xml");
+			mr.setEncoding("UTF-8");
+			mr.setData(result);
+			
+			response.setCharacterEncoding("UTF-8");
+			response.setContentType(mr.getContentType());
+			
+			try {
+				ServletUtil.serveResource(request, response, mr);
+			} catch (Exception e) {
+				log.error("", e);
+				DispatcherModule.sendServerError(response);
+			}
+		} else {
+			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
+		}
 	}
-
 }

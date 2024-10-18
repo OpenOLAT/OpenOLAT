@@ -43,6 +43,8 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+import org.olat.core.commons.services.robots.RobotsProvider;
+import org.olat.core.commons.services.robots.SitemapProvider;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.helpers.Settings;
@@ -80,7 +82,8 @@ import org.springframework.stereotype.Service;
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 @Service
-public class OAIServiceImpl implements OAIService {
+public class OAIServiceImpl implements OAIService, RobotsProvider, SitemapProvider {
+	
 	private static final Logger log = Tracing.createLoggerFor(OAIServiceImpl.class);
 	private static final String METADATA_DEFAULT_PREFIX = "oai_dc";
 
@@ -260,4 +263,21 @@ public class OAIServiceImpl implements OAIService {
 	private String write(XmlWritable handle) throws XMLStreamException, XmlWriteException {
 		return XmlWriter.toString(writer -> writer.write(handle));
 	}
+
+	@Override
+	public List<String> getRobotAllows() {
+		if (oaiPmhModule.isEnabled() && oaiPmhModule.isSearchEngineEnabled()) {
+			return List.of(Settings.getServerContextPath() + "/" + ResourceInfoDispatcher.RESOURCEINFO_PATH);
+		}
+		return null;
+	}
+
+	@Override
+	public List<String> getSitemapUrls() {
+		if (oaiPmhModule.isEnabled() && oaiPmhModule.isSearchEngineEnabled()) {
+			return List.of(ResourceInfoDispatcher.getUrl("sitemap.xml"));
+		}
+		return null;
+	}
+	
 }

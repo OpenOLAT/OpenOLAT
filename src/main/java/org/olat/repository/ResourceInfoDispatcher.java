@@ -31,6 +31,8 @@ import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
+import org.olat.core.commons.services.robots.SitemapWriter;
+import org.olat.core.commons.services.robots.model.SitemapItem;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -54,7 +56,6 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
 import org.olat.modules.oaipmh.OAIPmhModule;
-import org.olat.modules.oaipmh.common.services.sitemap.XMLSitemap;
 import org.olat.repository.ui.list.RepositoryEntryPublicInfosController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -218,12 +219,18 @@ public class ResourceInfoDispatcher implements Dispatcher {
 	}
 
 	private void dispatchSitemap(HttpServletRequest request, HttpServletResponse response) {
-		List<RepositoryEntry> repositoryEntries = repositoryService.loadRepositoryForMetadata(RepositoryEntryStatusEnum.published);
-
+		if (!oaiPmhModule.isSearchEngineEnabled()) {
+			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
+			return;
+		}
+		
+		List<SitemapItem> items = repositoryService.loadRepositoryForMetadata(RepositoryEntryStatusEnum.published)
+				.stream()
+				.map(this::toSitemapItem)
+				.toList();
+		String result = new SitemapWriter(items).getSitemap();
+		
 		StringMediaResource mr = new StringMediaResource();
-		XMLSitemap xmlSitemap = new XMLSitemap(repositoryEntries);
-		String result = xmlSitemap.getSiteMapXML();
-
 		mr.setContentType("application/xml");
 		mr.setEncoding(CONTENT_ENCODING);
 		mr.setData(result);
@@ -236,6 +243,11 @@ public class ResourceInfoDispatcher implements Dispatcher {
 		} catch (Exception e) {
 			DispatcherModule.sendServerError(response);
 		}
+	}
+	
+	private SitemapItem toSitemapItem(RepositoryEntry repositoryEntry) {
+		String url = ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString());
+		return new SitemapItem(url, repositoryEntry.getLastModified(), SitemapItem.FREQ_WEEKLY);
 	}
 
 	private void dispatchKeyFile(HttpServletRequest request, HttpServletResponse response) {
@@ -252,6 +264,7 @@ public class ResourceInfoDispatcher implements Dispatcher {
 		try {
 			ServletUtil.serveResource(request, response, mr);
 		} catch (Exception e) {
+			log.error("", e);
 			DispatcherModule.sendServerError(response);
 		}
 	}
