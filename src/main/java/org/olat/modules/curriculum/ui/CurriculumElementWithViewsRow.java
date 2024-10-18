@@ -429,6 +429,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		this.accessTypes = accessTypes;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public boolean isClosedOrInactive() {
 		if(isCurriculumElementOnly()) {
 			return element.getElementStatus() == CurriculumElementStatus.inactive || element.getElementStatus() == CurriculumElementStatus.deleted;

@@ -19,15 +19,22 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_ELEMENT;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_LECTURES;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_MEMBERS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OVERVIEW;
-import static org.olat.modules.curriculum.ui.CurriculumListManagerController.*;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_STRUCTURE;
 
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.dropdown.DropdownUIFactory;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -35,6 +42,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -44,13 +52,16 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesController;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,11 +75,13 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private int lecturesTab;
 	private int structuresTab;
 	private int userManagerTab;
-	
+
+	private Link deleteButton;
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
 	
+	private CloseableModalController cmc;
 	private CurriculumElementOverviewController overviewCtrl;
 	private EditCurriculumElementController editMetadataCtrl;
 	private CurriculumComposerController structureCtrl;
@@ -76,10 +89,14 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private LectureListRepositoryController lectureBlocksCtrl;
 	private CurriculumElementResourceListController resourcesCtrl;
 	private CurriculumElementUserManagementController userManagementCtrl;
+	private ConfirmCurriculumElementDeleteController deleteCurriculumElementCtrl;
 	
 	private Curriculum curriculum;
 	private CurriculumElement curriculumElement;
 	private final CurriculumSecurityCallback secCallback;
+	
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	public CurriculumElementDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			Curriculum curriculum, CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
@@ -104,6 +121,20 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	}
 	
 	private void initMetadata() {
+		if(secCallback.canEditCurriculumElement(curriculumElement)
+				&& !CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.delete)) {
+			Dropdown commandsDropdown = DropdownUIFactory.createMoreDropdown("more", getTranslator());
+			commandsDropdown.setDomReplaceable(false);
+			commandsDropdown.setButton(true);
+			commandsDropdown.setOrientation(DropdownOrientation.right);
+			
+			deleteButton = LinkFactory.createCustomLink("delete", "delete", "delete", Link.LINK, mainVC, this);
+			deleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			commandsDropdown.addComponent(deleteButton);
+
+			mainVC.put(commandsDropdown.getComponentName(), commandsDropdown);
+		}
+		
 		mainVC.contextPut("displayName", curriculumElement.getDisplayName());
 		if(StringHelper.containsNonWhitespace(curriculumElement.getIdentifier())) {
 			mainVC.contextPut("externalRef", curriculumElement.getIdentifier());
@@ -227,20 +258,54 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			}
 		}
 	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(deleteCurriculumElementCtrl);
+		removeAsListenerAndDispose(cmc);
+		deleteCurriculumElementCtrl = null;
+		cmc = null;
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(deleteButton == source) {
+			doConfirmDeleteCurriculumElement(ureq);
+		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == structureCtrl) {
+		if(structureCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}
+		} else if(deleteCurriculumElementCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				toolbarPanel.popController(this);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
 	}
 	
-	
+	private void doConfirmDeleteCurriculumElement(UserRequest ureq) {
+		removeAsListenerAndDispose(deleteCurriculumElementCtrl);
+		removeAsListenerAndDispose(cmc);
+		
+		CurriculumElement elementToDelete = curriculumService.getCurriculumElement(curriculumElement);
+		if(elementToDelete == null) {
+			showWarning("warning.curriculum.deleted");
+		} else {
+			deleteCurriculumElementCtrl = new ConfirmCurriculumElementDeleteController(ureq, getWindowControl(), elementToDelete);
+			listenTo(deleteCurriculumElementCtrl);
+			
+			String title = translate("delete.curriculum.title", StringHelper.escapeHtml(curriculum.getDisplayName()));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCurriculumElementCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
 }

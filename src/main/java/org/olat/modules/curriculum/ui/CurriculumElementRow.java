@@ -52,6 +52,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
+	private final FormLink structureLink;
 	private FormLink lecturesLink;
 	private FormLink calendarsLink;
 	private FormLink qualityPreviewLink;
@@ -72,11 +73,12 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		numOfOwners = 0l;
 		toolsLink = null;
 		resourcesLink = null;
+		structureLink = null;
 	}
 	
 	public CurriculumElementRow(CurriculumElement element, long numOfResources,
 			long numOfParticipants, long numOfCoaches, long numOfOwners,
-			FormLink toolsLink, FormLink resourcesLink) {
+			FormLink toolsLink, FormLink resourcesLink, FormLink structureLink) {
 		this.element = element;
 		curriculum = element.getCurriculum();
 		this.toolsLink = toolsLink;
@@ -85,6 +87,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		this.numOfCoaches = numOfCoaches;
 		this.numOfOwners = numOfOwners;
 		this.resourcesLink = resourcesLink;
+		this.structureLink = structureLink;
 		elementType = element.getType();
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 	}
@@ -245,6 +248,10 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	public FormLink getResources() {
 		return resourcesLink;
+	}
+	
+	public FormLink getStructureLink() {
+		return structureLink;
 	}
 
 	public FormLink getCalendarsLink() {

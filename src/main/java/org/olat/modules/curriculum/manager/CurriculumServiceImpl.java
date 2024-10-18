@@ -392,6 +392,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
+	public CurriculumInfos getCurriculumWithInfos(CurriculumRef curriculum) {
+		CurriculumSearchParameters params = new CurriculumSearchParameters();
+		params.setCurriculums(List.of(curriculum));
+		List<CurriculumInfos> infos = curriculumDao.searchWithInfos(params);
+		return infos.size() == 1 ? infos.get(0) : null;
+	}
+
+	@Override
 	public List<CurriculumInfos> getCurriculumsWithInfos(CurriculumSearchParameters params) {
 		return curriculumDao.searchWithInfos(params);
 	}

@@ -80,8 +80,8 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 	private FormLink additionalReferencesLink;
 	
 	private final long numOfChildren;
-	private final CurriculumElementRow rowToDelete;
 	private final List<RepositoryEntry> references;
+	private final CurriculumElement curriculumElement;
 	
 	private CloseableCalloutWindowController calloutCtrl;
 	private AdditionalReferencesController addReferencesCtrl;
@@ -89,18 +89,17 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public ConfirmCurriculumElementDeleteController(UserRequest ureq, WindowControl wControl, CurriculumElementRow rowToDelete) {
+	public ConfirmCurriculumElementDeleteController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
 		super(ureq, wControl, "confirm_delete_curriculum_element", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
-		this.rowToDelete = rowToDelete;
+		this.curriculumElement = curriculumElement;
 		
-		CurriculumElement curElement = rowToDelete.getCurriculumElement();
-		List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curElement);
+		List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
 		
 		numOfChildren = descendants.stream()
 				.filter(element -> element.getElementStatus() != CurriculumElementStatus.deleted)
-				.filter(element -> !element.equals(curElement))
+				.filter(element -> !element.equals(curriculumElement))
 				.count();
-		references = new ArrayList<>(new HashSet<>(curriculumService.getRepositoryEntriesWithDescendants(curElement)));
+		references = new ArrayList<>(new HashSet<>(curriculumService.getRepositoryEntriesWithDescendants(curriculumElement)));
 		initForm(ureq);
 	}
 
@@ -115,7 +114,7 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 			} else {
 				msgI18nKey = "confirmation.delete.element.children";
 			}
-			String msg = translate(msgI18nKey, rowToDelete.getDisplayName(), Long.toString(numOfChildren));
+			String msg = translate(msgI18nKey, curriculumElement.getDisplayName(), Long.toString(numOfChildren));
 			layoutCont.contextPut("msg", StringHelper.xssScan(msg));
 			
 			List<String> resources = new ArrayList<>(6);
@@ -199,11 +198,11 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 	}
 	
 	private void doDelete() {
-		curriculumService.deleteCurriculumElement(rowToDelete);
+		curriculumService.deleteCurriculumElement(curriculumElement);
 	}
 	
 	private void doDownload(UserRequest ureq) {
-		String name = "resources_" + rowToDelete.getDisplayName();
+		String name = "resources_" + curriculumElement.getDisplayName();
 		name = StringHelper.transformDisplayNameToFileSystemName(name);
 		ReferencesMediaResources mediaResource = new ReferencesMediaResources(name, references, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(mediaResource);

@@ -81,6 +81,8 @@ public interface CurriculumService {
 	public List<Curriculum> getCurriculums(Collection<? extends CurriculumRef> refs);
 	
 	public List<Curriculum> getCurriculums(CurriculumSearchParameters params);
+
+	public CurriculumInfos getCurriculumWithInfos(CurriculumRef curriculum);
 	
 	public List<CurriculumInfos> getCurriculumsWithInfos(CurriculumSearchParameters params);
 	

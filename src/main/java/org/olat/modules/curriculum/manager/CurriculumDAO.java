@@ -296,6 +296,9 @@ public class CurriculumDAO {
 		if(!params.getOrganisations().isEmpty()) {
 			sb.and().append(" organis.key in (:organisationKeys)");
 		}
+		if(params.getCurriculums() != null && !params.getCurriculums().isEmpty()) {
+			sb.and().append(" cur.key in (:curriculumKeys)");
+		}
 		
 		Long key = null;
 		String ref = null;
@@ -380,6 +383,11 @@ public class CurriculumDAO {
 			List<Long> organisationKeys = params.getOrganisations()
 					.stream().map(OrganisationRef::getKey).toList();
 			query.setParameter("organisationKeys", organisationKeys);
+		}
+		if(params.getCurriculums() != null && !params.getCurriculums().isEmpty()) {
+			List<Long> curriculumKeys = params.getCurriculums()
+					.stream().map(CurriculumRef::getKey).toList();
+			query.setParameter("curriculumKeys", curriculumKeys);
 		}
 		if(key != null) {
 			query.setParameter("curriculumKey", key);

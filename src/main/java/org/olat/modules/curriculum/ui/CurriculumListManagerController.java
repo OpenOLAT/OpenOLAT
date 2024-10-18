@@ -146,10 +146,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
-	private CurriculumComposerController composerCtrl;
 	private EditCurriculumController newCurriculumCtrl;
 	private ImportCurriculumController importCurriculumCtrl;
-	private CurriculumDetailsController editCurriculumCtrl;
+	private CurriculumDetailsController detailsCurriculumCtrl;
 	private ConfirmCurriculumDeleteController deleteCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
@@ -403,13 +402,15 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void activateCurriculum(UserRequest ureq, Long curriculumKey, List<ContextEntry> entries) {
-		if(composerCtrl != null && curriculumKey.equals(composerCtrl.getCurriculum().getKey())) return;
-		
-		List<CurriculumRow> rows = tableModel.getObjects();
-		for(CurriculumRow row:rows) {
-			if(curriculumKey.equals(row.getKey())) {
-				doOpenCurriculumDetails(ureq, row, entries);
-				break;
+		if(detailsCurriculumCtrl != null && curriculumKey.equals(detailsCurriculumCtrl.getCurriculum().getKey())) {
+			detailsCurriculumCtrl.activate(ureq, entries, null);
+		} else {
+			List<CurriculumRow> rows = tableModel.getObjects();
+			for(CurriculumRow row:rows) {
+				if(curriculumKey.equals(row.getKey())) {
+					doOpenCurriculumDetails(ureq, row, entries);
+					break;
+				}
 			}
 		}
 	}
@@ -427,8 +428,11 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(editCurriculumCtrl == source || importCurriculumCtrl == source
-				|| deleteCurriculumCtrl == source) {
+		} else if(detailsCurriculumCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel(tableEl.getQuickSearchString(), false);
+			}
+		} else if(importCurriculumCtrl == source || deleteCurriculumCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(tableEl.getQuickSearchString(), false);
 			}
@@ -462,9 +466,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(toolbarPanel == source) {
-			if(event instanceof PopEvent pe && pe.getController() instanceof CurriculumComposerController) {
-				removeAsListenerAndDispose(composerCtrl);
-				composerCtrl = null;
+			if(event instanceof PopEvent pe && pe.getController() instanceof CurriculumDetailsController) {
+				removeAsListenerAndDispose(detailsCurriculumCtrl);
+				detailsCurriculumCtrl = null;
 			}
 		}
 		super.event(ureq, source, event);
@@ -567,7 +571,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		loadModel(tableEl.getQuickSearchString(), false);
 	}
 	
-	private void doDeleteCurriculum(UserRequest ureq, CurriculumRow row) {
+	private void doConfirmDeleteCurriculum(UserRequest ureq, CurriculumRow row) {
 		removeAsListenerAndDispose(deleteCurriculumCtrl);
 		removeAsListenerAndDispose(cmc);
 		
@@ -575,7 +579,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		if(curriculum == null) {
 			showWarning("warning.curriculum.deleted");
 		} else {
-			deleteCurriculumCtrl = new ConfirmCurriculumDeleteController(ureq, getWindowControl(), row);
+			deleteCurriculumCtrl = new ConfirmCurriculumDeleteController(ureq, getWindowControl(),
+					row.getCurriculum(), row.getImplementationsStatistics());
 			listenTo(deleteCurriculumCtrl);
 			
 			String title = translate("delete.curriculum.title", StringHelper.escapeHtml(row.getDisplayName()));
@@ -614,22 +619,22 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void doOpenCurriculumDetails(UserRequest ureq, CurriculumRow row, List<ContextEntry> entries) {
-		removeAsListenerAndDispose(editCurriculumCtrl);
+		removeAsListenerAndDispose(detailsCurriculumCtrl);
 		
 		Curriculum curriculum = curriculumService.getCurriculum(row);
 		if(curriculum == null) {
 			showWarning("warning.curriculum.deleted");
 		} else {
 			WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(Curriculum.class, curriculum.getKey()), null);
-			editCurriculumCtrl = new CurriculumDetailsController(ureq, subControl, toolbarPanel, curriculum, secCallback);
-			listenTo(editCurriculumCtrl);
+			detailsCurriculumCtrl = new CurriculumDetailsController(ureq, subControl, toolbarPanel, curriculum, secCallback);
+			listenTo(detailsCurriculumCtrl);
 			
 			String crumb = row.getExternalRef();
 			if(!StringHelper.containsNonWhitespace(crumb)) {
 				crumb = row.getDisplayName();
 			}
-			toolbarPanel.pushController(crumb, editCurriculumCtrl);
-			editCurriculumCtrl.activate(ureq, entries, null);
+			toolbarPanel.pushController(crumb, detailsCurriculumCtrl);
+			detailsCurriculumCtrl.activate(ureq, entries, null);
 		}
 	}
 	
@@ -677,7 +682,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			openLink.setNewWindow(true, true);
 			exportLink = addLink("export", "o_icon_export", links);
 			
-			if(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.delete)) {
+			if(secCallback.canEditCurriculum() && !CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.delete)) {
 				links.add("-");
 				deleteLink = addLink("delete", "o_icon_delete_item", links);
 			}
@@ -701,7 +706,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				doOpenCurriculumDetailsInNewWindow(row);
 			} else if(deleteLink == source) {
 				close();
-				doDeleteCurriculum(ureq, row);
+				doConfirmDeleteCurriculum(ureq, row);
 			} else if(exportLink == source) {
 				close();
 				doExportCurriculum(ureq, row);

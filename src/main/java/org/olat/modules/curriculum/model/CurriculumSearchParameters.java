@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumStatus;
 
 /**
@@ -39,6 +40,7 @@ public class CurriculumSearchParameters {
 	private Identity managerIdentity;
 	private Identity principalIdentity;
 	private List<CurriculumStatus> statusList;
+	private List<? extends CurriculumRef> curriculums;
 	private List<? extends OrganisationRef> organisations;
 	
 	private boolean withDeleted = false;
@@ -94,6 +96,14 @@ public class CurriculumSearchParameters {
 	 */
 	public void setElementOwner(Identity identity) {
 		elementOwner = identity;
+	}
+
+	public List<? extends CurriculumRef> getCurriculums() {
+		return curriculums;
+	}
+
+	public void setCurriculums(List<? extends CurriculumRef> curriculums) {
+		this.curriculums = curriculums;
 	}
 
 	public List<CurriculumStatus> getStatusList() {

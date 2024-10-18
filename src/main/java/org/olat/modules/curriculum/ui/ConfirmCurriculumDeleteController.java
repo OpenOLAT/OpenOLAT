@@ -32,7 +32,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumImplementationsStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -48,14 +50,17 @@ public class ConfirmCurriculumDeleteController extends FormBasicController {
 	private FormLink deleteButton;
 	private MultipleSelectionElement acknowledgeEl;
 	
-	private final CurriculumRow rowToDelete;
+	private final Curriculum curriculum;
+	private final CurriculumImplementationsStatistics statistics;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public ConfirmCurriculumDeleteController(UserRequest ureq, WindowControl wControl, CurriculumRow rowToDelete) {
+	public ConfirmCurriculumDeleteController(UserRequest ureq, WindowControl wControl,
+			Curriculum curriculum, CurriculumImplementationsStatistics statistics) {
 		super(ureq, wControl, "confirm_delete_curriculum");
-		this.rowToDelete = rowToDelete;
+		this.curriculum = curriculum;
+		this.statistics = statistics;
 		initForm(ureq);
 	}
 
@@ -63,8 +68,8 @@ public class ConfirmCurriculumDeleteController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			String[] args = new String[] {
-				StringHelper.escapeHtml(rowToDelete.getDisplayName()),
-				Long.toString(rowToDelete.getImplementationsStatistics().numOfRootElements())
+				StringHelper.escapeHtml(curriculum.getDisplayName()),
+				Long.toString(statistics.numOfRootElements())
 			};
 			String msg = translate("confirmation.delete.curriculum", args);
 			layoutCont.contextPut("msg", msg);
@@ -75,7 +80,7 @@ public class ConfirmCurriculumDeleteController extends FormBasicController {
 		layoutCont.setRootForm(mainForm);
 		
 		uifactory.addStaticTextElement("curriculum.displayName", "curriculum.displayName",
-				StringHelper.escapeHtml(rowToDelete.getDisplayName()), layoutCont);
+				StringHelper.escapeHtml(curriculum.getDisplayName()), layoutCont);
 		
 		String[] onValues = new String[]{ translate("delete.curriculum.acknowledge") };
 		acknowledgeEl = uifactory.addCheckboxesHorizontal("acknowledge", "confirmation", layoutCont, onKeys, onValues);
@@ -114,7 +119,7 @@ public class ConfirmCurriculumDeleteController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(deleteButton == source) {
 			if(validateFormLogic(ureq)) {
-				curriculumService.deleteCurriculum(rowToDelete);
+				curriculumService.deleteCurriculum(curriculum);
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}

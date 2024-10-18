@@ -165,6 +165,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private CurriculumElementPreviewListController qualityPreviewCtrl;
 	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
 	private CurriculumElementLearningPathController learningPathController;
+	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
 	
 	private int counter;
 	private final boolean managed;
@@ -277,6 +278,12 @@ public class CurriculumComposerController extends FormBasicController implements
 			TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, "select", treeNodeRenderer));
 		}
+		
+		DefaultFlexiColumnModel structureCol = new DefaultFlexiColumnModel(ElementCols.structure);
+		structureCol.setIconHeader("o_icon o_icon-lg o_icon_curriculum_structure");
+		structureCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(structureCol);
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(curriculum == null, ElementCols.curriculum));
@@ -298,7 +305,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		boolean withOptions = curriculum != null;
 		DefaultFlexiColumnModel calendarsCol = new DefaultFlexiColumnModel(withOptions, ElementCols.calendars);
-		calendarsCol.setIconHeader("o_icon o_icon-lg o_icon-calendar");
+		calendarsCol.setIconHeader("o_icon o_icon-lg o_icon_calendar");
 		columnsModel.addFlexiColumnModel(calendarsCol);
 		
 		DefaultFlexiColumnModel lecturesCol = new DefaultFlexiColumnModel(withOptions, ElementCols.lectures);
@@ -316,7 +323,7 @@ public class CurriculumComposerController extends FormBasicController implements
 
 		if(secCallback.canEditCurriculumElements() || (!managed && secCallback.canManagerCurriculumElementsUsers())) {
 			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ElementCols.tools);
-			toolsColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_actions");
+			toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
 			toolsColumn.setExportable(false);
 			toolsColumn.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(toolsColumn);
@@ -474,25 +481,23 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void reloadElement(CurriculumElement element) {
-		List<CurriculumElementRow> rows = tableModel.getAllRows();
-		for(CurriculumElementRow row:rows) {
-			CurriculumElement rowElement = row.getCurriculumElement();
-			if(rowElement.equals(element)) {
-				row.setCurriculumElement(element);
-				row.setCurriculumElementType(element.getType());
-				break;
-			}
+		CurriculumElementRow row = tableModel.getCurriculumElementRowByKey(element.getKey());
+		if(row != null) {
+			row.setCurriculumElement(element);
+			row.setCurriculumElementType(element.getType());
 		}
 	}
 	
 	private CurriculumElementRow forgeRow(CurriculumElementInfos element) {
-		FormLink toolsLink = null;
-		boolean tooled = secCallback.canEditCurriculumTree() || secCallback.canEditCurriculumElement(element.getCurriculumElement());
-		if(tooled) {
-			toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolsLink.setTitle(translate("action.more"));
-		}
+		String id = element.getKey().toString();
+		
+		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), "tools", "", null, null, Link.NONTRANSLATED);
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		toolsLink.setTitle(translate("action.more"));
+		
+		FormLink structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
+		structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_curriculum_structure");
+		structureLink.setTitle(translate("action.more"));
 		
 		FormLink resourcesLink = null;
 		if(element.getNumOfResources() > 0) {
@@ -500,10 +505,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		CurriculumElementRow row = new CurriculumElementRow(element.getCurriculumElement(), element.getNumOfResources(),
 				element.getNumOfParticipants(), element.getNumOfCoaches(), element.getNumOfOwners(),
-				toolsLink, resourcesLink);
-		if(toolsLink != null) {
-			toolsLink.setUserObject(row);
-		}
+				toolsLink, resourcesLink, structureLink);
+		toolsLink.setUserObject(row);
+		structureLink.setUserObject(row);
 		if(resourcesLink != null) {
 			resourcesLink.setUserObject(row);
 		}
@@ -610,11 +614,15 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (referencesCtrl == source) {
+		} else if (referencesCtrl == source || curriculumStructureCalloutCtrl == source) {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
 			if(event instanceof SelectReferenceEvent sre) {
 				launch(ureq, sre.getEntry());
+			}
+		} else if(source instanceof CurriculumElementDetailsController) {
+			if(event == Event.CHANGED_EVENT) {
+				loadModel();
 			}
 		} else if(cmc == source || toolsCalloutCtrl == source) {
 			cleanUp();
@@ -647,9 +655,6 @@ public class CurriculumComposerController extends FormBasicController implements
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(toolbarPanel == source) {
-			if(!toolbarPanel.isToolbarEnabled()) {
-				toolbarPanel.setToolbarEnabled(true);
-			}
 			if(event instanceof PopEvent pe
 					&& pe.getController() instanceof CurriculumElementDetailsController elementCtrl) {
 				reloadElement(elementCtrl.getCurriculumElement());
@@ -703,6 +708,8 @@ public class CurriculumComposerController extends FormBasicController implements
 				doNewCurriculumElement(ureq, type);
 			} else if("resources".equals(cmd)) {
 				doOpenReferences(ureq, (CurriculumElementRow)link.getUserObject(), link);
+			}  else if("structure".equals(cmd)) {
+				doOpenStructure(ureq, (CurriculumElementRow)link.getUserObject(), link);
 			} else if("calendars".equals(cmd)) {
 				doOpenCalendars(ureq, (CurriculumElementRow)link.getUserObject());
 			} else if("lectures".equals(cmd) && link.getUserObject() instanceof CurriculumElementRow row) {
@@ -919,6 +926,18 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 	}
 	
+	private void doOpenStructure(UserRequest ureq, CurriculumElementRow row, FormLink link) {
+		CurriculumElement curriculumElement = row.getCurriculumElement();
+		
+		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(), curriculumElement);
+		listenTo(curriculumStructureCalloutCtrl);
+		
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				curriculumStructureCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
 	private void doOpenCalendars(UserRequest ureq, CurriculumElementRow row) {
 		removeAsListenerAndDispose(calendarsCtrl);
 		toolbar(false);
@@ -963,13 +982,19 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doConfirmDelete(UserRequest ureq, CurriculumElementRow row) {
 		if(guardModalController(confirmDeleteCtrl)) return;
 		
-		confirmDeleteCtrl = new ConfirmCurriculumElementDeleteController(ureq, getWindowControl(), row);
-		listenTo(confirmDeleteCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true,
-				translate("confirmation.delete.element.title", row.getDisplayName()));
-		listenTo(cmc);
-		cmc.activate();
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(row);
+		if(curriculumElement == null) {
+			showWarning("warning.curriculum.deleted");
+			loadModel();
+		} else {
+			confirmDeleteCtrl = new ConfirmCurriculumElementDeleteController(ureq, getWindowControl(), curriculumElement);
+			listenTo(confirmDeleteCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true,
+					translate("confirmation.delete.element.title", row.getDisplayName()));
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doConfirmBulkDelete(UserRequest ureq) {

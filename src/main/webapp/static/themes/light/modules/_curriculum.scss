@@ -353,9 +353,15 @@ $o-curriculum-entry-bg							: #CCFFCC;
 }
 
 .o_curriculum_title {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: start;
+
 	.o_curriculum_avatar_title_ref {
+		flex-grow: 1;
 		display: flex;
 		gap: 15px;
+		
 		.o_curriculum_avatar ~ .o_curriculum_title_ref {
 			display: flex;
 			justify-content: start;
@@ -379,6 +385,10 @@ $o-curriculum-entry-bg							: #CCFFCC;
 			gap: 15px;
 			flex-direction: row;
 		}
+	}
+	
+	.o_title_cmds .o_curriculum_title_actions {
+		position: relative;
 	}
 }
 

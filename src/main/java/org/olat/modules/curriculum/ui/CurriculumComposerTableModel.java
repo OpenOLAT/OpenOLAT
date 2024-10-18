@@ -193,6 +193,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 			case endDate -> element.getEndDate();
 			case type -> element.getCurriculumElementTypeDisplayName();
 			case resources -> element.getResources();
+			case structure -> element.getStructureLink();
 			case status -> element.getStatus();
 			case tools -> element.getTools();
 			case numOfMembers -> element.getNumOfMembers();
@@ -230,6 +231,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		numOfOwners("table.header.num.of.owners"),
 		calendars("table.header.calendars"),
 		lectures("table.header.lectures"),
+		structure("table.header.structure"),
 		qualityPreview("table.header.quality.preview"),
 		learningProgress("table.header.learning.progress"),
 		status("table.header.status"),
