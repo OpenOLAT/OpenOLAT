@@ -3004,7 +3004,7 @@ public class CourseElementTest extends Deployments {
 		new TBrokerPage(browser)
 			.assertOnTopicTitle(topicTitle)
 			.selectTopic(topicTitle)
-			.assertOnSelectedTopic(topicTitle);
+			.assertOnSelectedTopicAsCard(topicTitle);
 		
 		// Second participant select topic with high priority
 		LoginPage participant2LoginPage = LoginPage.load(browser, deploymentUrl);
@@ -3023,7 +3023,7 @@ public class CourseElementTest extends Deployments {
 		new TBrokerPage(browser)
 			.assertOnTopicTitle(topicTitle)
 			.selectTopicHighest(topicTitle)
-			.assertOnSelectedTopic(topicTitle);
+			.assertOnSelectedTopicAsCard(topicTitle);
 		
 		// Author come back to change the end date of the enrollment
 		LoginPage.load(browser, deploymentUrl)

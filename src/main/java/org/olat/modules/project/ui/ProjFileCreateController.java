@@ -161,8 +161,7 @@ public class ProjFileCreateController extends FormBasicController {
 					
 					dbInstance.commitAndCloseSession();
 					VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
-					if (vfsItem instanceof VFSLeaf) {
-						VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
+					if (vfsItem instanceof VFSLeaf vfsLeaf) {
 						doOpen(ureq, vfsLeaf);
 					}
 				}
