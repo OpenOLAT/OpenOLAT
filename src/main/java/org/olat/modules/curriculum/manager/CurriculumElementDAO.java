@@ -377,6 +377,9 @@ public class CurriculumElementDAO {
 		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
 		  .append("  where reToGroup.group.key=baseGroup.key")
 		  .append(" ) as numOfElements,")
+		  .append(" (select count(distinct lblock.key) from lectureblock lblock")
+		  .append("  where lblock.curriculumElement.key=el.key")
+		  .append(" ) as numOfLectures,")
 		  .append(" (select count(distinct participants.identity.key) from bgroupmember as participants")
 		  .append("  where participants.group.key=baseGroup.key and participants.role='").append(GroupRoles.participant.name()).append("'")
 		  .append(" ) as numOfParticipants,")
@@ -443,19 +446,17 @@ public class CurriculumElementDAO {
 		}
 		
 		List<Object[]> rawObjects =	rawQuery.getResultList();
-		
 		List<CurriculumElementInfos> infos = new ArrayList<>(rawObjects.size());
 		for(Object[] rawObject:rawObjects) {
 			CurriculumElement element = (CurriculumElement)rawObject[0];
-			Long rawNumOfResources = PersistenceHelper.extractLong(rawObject, 1);
-			long numOfResources = rawNumOfResources == null ? 0l : rawNumOfResources.longValue();
-			Long rawNumOfParticipants = PersistenceHelper.extractLong(rawObject, 2);
-			long numOfParticipants = rawNumOfParticipants == null ? 0l : rawNumOfParticipants.longValue();
-			Long rawNumOfCoaches = PersistenceHelper.extractLong(rawObject, 3);
-			long numOfCoaches = rawNumOfCoaches == null ? 0l : rawNumOfCoaches.longValue();
-			Long rawNumOfOwners = PersistenceHelper.extractLong(rawObject, 4);
-			long numOfOwners = rawNumOfOwners == null ? 0l : rawNumOfOwners.longValue();
-			infos.add(new CurriculumElementInfos(element, numOfResources, numOfParticipants, numOfCoaches, numOfOwners));
+			long numOfResources = PersistenceHelper.extractPrimitiveLong(rawObject, 1);
+			long numOfLectures = PersistenceHelper.extractPrimitiveLong(rawObject, 2);
+			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawObject, 3);
+			long numOfCoaches = PersistenceHelper.extractPrimitiveLong(rawObject, 4);
+			long numOfOwners = PersistenceHelper.extractPrimitiveLong(rawObject, 5);
+			infos.add(new CurriculumElementInfos(element, element.getCurriculum(),
+					numOfResources, numOfLectures,
+					numOfParticipants, numOfCoaches, numOfOwners));
 		}
 		return infos;
 	}

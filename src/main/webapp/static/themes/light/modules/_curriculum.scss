@@ -413,6 +413,10 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	}
 }
 
+.o_curriculum_el_lectures li .o_labeled_light {
+	text-transform: uppercase;
+}
+
 .o_labeled_light {
 	&.o_curriculum_status_preparation {
 		font-weight: normal;

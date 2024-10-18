@@ -17,24 +17,39 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.model;
+package org.olat.modules.curriculum.ui.event;
 
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.curriculum.ui.CurriculumElementRow;
+import org.olat.modules.lecture.LectureBlock;
 
 /**
  * 
- * Initial date: 29 juin 2018<br>
+ * Initial date: 18 oct. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record CurriculumElementInfos(CurriculumElement curriculumElement, Curriculum curriculum,
-		long numOfResources, long numOfLectureBlocks, long numOfParticipants, long numOfCoaches, long numOfOwners)
-implements CurriculumElementRef {
+public class SelectLectureBlockEvent extends Event {
+
+	private static final long serialVersionUID = -8268720078288121230L;
+
+	public static final String SELECT_REF = "select-lecture-block";
 	
-	@Override
-	public Long getKey() {
-		return curriculumElement.getKey();
+	private final LectureBlock lectureBlock;
+	private final CurriculumElementRow curriculumElement;
+	
+	
+	public SelectLectureBlockEvent(LectureBlock lectureBlock, CurriculumElementRow curriculumElement) {
+		super(SELECT_REF);
+		this.lectureBlock = lectureBlock;
+		this.curriculumElement = curriculumElement;
+	}
+	
+	public CurriculumElementRow getCurriculumElement() {
+		return curriculumElement;
+	}
+	
+	public LectureBlock getLectureBlock() {
+		return lectureBlock;
 	}
 }

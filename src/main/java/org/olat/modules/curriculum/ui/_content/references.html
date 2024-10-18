@@ -1,6 +1,17 @@
-<p>$r.translate("curriculum.element.resources.txt")</p>
-<ul class="o_dropdown list-unstyled o_curriculum_el_references">
-#foreach($referenceLink in $referenceLinks)
-	<li>$r.render($referenceLink)</li>
+#if($r.isNotEmpty($referenceLinks))
+	<h4>$r.translate("curriculum.element.resources.title")</h4>
+	<ul class="o_dropdown list-unstyled o_curriculum_el_references">
+	#foreach($referenceLink in $referenceLinks)
+		<li>$r.render($referenceLink)</li>
+	#end
+	</ul>
 #end
-</ul>
+
+#if($r.isNotEmpty($lecturesLinks))
+	<h4>$r.translate("curriculum.element.lectures.title")</h4>
+	<ul class="o_dropdown list-unstyled o_curriculum_el_lectures">
+	#foreach($lecturesLink in $lecturesLinks)
+		<li>$r.render($lecturesLink)</li>
+	#end
+	</ul>
+#end

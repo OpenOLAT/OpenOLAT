@@ -59,8 +59,8 @@ public class LectureBlockParticipantGroupRow {
 	}
 	
 	public LectureBlockParticipantGroupRow(CurriculumElementInfos curriculumElement, boolean excluded) {
-		this.numOfParticipants = curriculumElement.getNumOfParticipants();
-		this.group = curriculumElement.getCurriculumElement().getGroup();
+		this.numOfParticipants = curriculumElement.numOfParticipants();
+		this.group = curriculumElement.curriculumElement().getGroup();
 		this.curriculumElement = curriculumElement;
 		this.excluded = excluded;
 	}
@@ -73,7 +73,7 @@ public class LectureBlockParticipantGroupRow {
 			return businessGroup.getName();
 		}
 		if(curriculumElement != null) {
-			return curriculumElement.getCurriculumElement().getDisplayName();
+			return curriculumElement.curriculumElement().getDisplayName();
 		}
 		return null;
 	}
@@ -83,7 +83,7 @@ public class LectureBlockParticipantGroupRow {
 			return entry.getExternalRef();
 		}
 		if(curriculumElement != null) {
-			return curriculumElement.getCurriculumElement().getIdentifier();
+			return curriculumElement.curriculumElement().getIdentifier();
 		}
 		return null;
 	}

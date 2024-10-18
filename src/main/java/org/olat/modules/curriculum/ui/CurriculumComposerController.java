@@ -116,6 +116,7 @@ import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.olat.modules.curriculum.ui.copy.CopySettingsController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.event.SelectCurriculumElementEvent;
+import org.olat.modules.curriculum.ui.event.SelectLectureBlockEvent;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.generator.ui.CurriculumElementPreviewListController;
@@ -503,11 +504,12 @@ public class CurriculumComposerController extends FormBasicController implements
 		structureLink.setTitle(translate("action.more"));
 		
 		FormLink resourcesLink = null;
-		if(element.getNumOfResources() > 0) {
-			resourcesLink = uifactory.addFormLink("resources_" + (++counter), "resources", String.valueOf(element.getNumOfResources()), null, null, Link.NONTRANSLATED);
+		long refs = element.numOfResources() + element.numOfLectureBlocks();
+		if(refs > 0) {
+			resourcesLink = uifactory.addFormLink("resources_" + (++counter), "resources", String.valueOf(refs), null, null, Link.NONTRANSLATED);
 		}
-		CurriculumElementRow row = new CurriculumElementRow(element.getCurriculumElement(), element.getNumOfResources(),
-				element.getNumOfParticipants(), element.getNumOfCoaches(), element.getNumOfOwners(),
+		CurriculumElementRow row = new CurriculumElementRow(element.curriculumElement(), refs,
+				element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
 				toolsLink, resourcesLink, structureLink);
 		toolsLink.setUserObject(row);
 		structureLink.setUserObject(row);
@@ -625,6 +627,9 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(event instanceof SelectCurriculumElementEvent scee) {
 				List<ContextEntry> subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Structure:0]");
 				doOpenCurriculumElementDetails(ureq, scee.getEntry(), subEntries);
+			} else if(event instanceof SelectLectureBlockEvent slbe) {
+				List<ContextEntry> subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Lectures:0]");
+				doOpenCurriculumElementDetails(ureq, slbe.getCurriculumElement(), subEntries);
 			}
 		} else if(source instanceof CurriculumElementDetailsController) {
 			if(event == Event.CHANGED_EVENT) {
@@ -922,11 +927,12 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
 		} else {
-			referencesCtrl = new ReferencesController(ureq, getWindowControl(), getTranslator(), element);
+			referencesCtrl = new ReferencesController(ureq, getWindowControl(), getTranslator(), row);
 			listenTo(referencesCtrl);
 	
+			CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true, null);
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-					referencesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+					referencesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", settings);
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}

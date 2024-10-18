@@ -256,7 +256,7 @@ public class LectureListDetailsController extends FormBasicController {
 			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(entry);
 			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
-				boolean excluded = !selectedGroups.contains(elementInfos.getCurriculumElement().getGroup());
+				boolean excluded = !selectedGroups.contains(elementInfos.curriculumElement().getGroup());
 				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, excluded)));
 			}
 		} else if(row.getCurriculumElement() != null && row.getCurriculumElement().key() != null) {
@@ -265,7 +265,7 @@ public class LectureListDetailsController extends FormBasicController {
 					.searchElements(List.of(curriculumElementRef));
 			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
-				boolean excluded = !selectedGroups.contains(elementInfos.getCurriculumElement().getGroup());
+				boolean excluded = !selectedGroups.contains(elementInfos.curriculumElement().getGroup());
 				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, excluded)));
 			}
 		}
@@ -366,7 +366,7 @@ public class LectureListDetailsController extends FormBasicController {
 			businessPath = "[BusinessGroup:" + groupRow.getBusinessGroup().getKey() + "]";	
 		} else if(groupRow.getCurriculumElement() != null) {
 			CurriculumElementInfos curriculumElement = groupRow.getCurriculumElement();
-			businessPath = "[CurriculumAdmin:0][Curriculum:" + curriculumElement.getCurriculum().getKey()
+			businessPath = "[CurriculumAdmin:0][Curriculum:" + curriculumElement.curriculum().getKey()
 					+ "][CurriculumElement:" + curriculumElement.getKey() + "]";	
 		} else {
 			businessPath = null;

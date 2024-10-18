@@ -231,9 +231,9 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(curriculum);
 		List<CurriculumElementInfos> relations = curriculumElementDao.loadElementsWithInfos(searchParams);
 		Assert.assertEquals(1, relations.size());
-		Assert.assertEquals(element, relations.get(0).getCurriculumElement());
+		Assert.assertEquals(element, relations.get(0).curriculumElement());
 		Assert.assertEquals(element.getKey(), relations.get(0).getKey());
-		Assert.assertEquals(2, relations.get(0).getNumOfResources());
+		Assert.assertEquals(2, relations.get(0).numOfResources());
 	}
 	
 	@Test
