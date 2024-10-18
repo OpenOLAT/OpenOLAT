@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -107,7 +108,7 @@ public class UserCommentDisplayController extends BasicController {
 		// Creator information
 		TextComponent creator = TextFactory.createTextComponentFromI18nKey("creator", null, null, null, true, userCommentDisplayVC);
 		String name = userManager.getUserDisplayName(userComment.getCreator());
-		creator.setText(translate("comments.comment.creator", new String[]{name}));
+		creator.setText(translate("comments.comment.creator", new String[]{StringHelper.escapeHtml(name)}));
 		// Portrait
 		if (CoreSpringFactory.containsBean(UserAvatarDisplayControllerCreator.class.getName())) {
 			UserAvatarDisplayControllerCreator avatarControllerCreator = (UserAvatarDisplayControllerCreator) CoreSpringFactory.getBean(UserAvatarDisplayControllerCreator.class);

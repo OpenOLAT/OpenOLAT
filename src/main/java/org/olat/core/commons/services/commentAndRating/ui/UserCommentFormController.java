@@ -103,7 +103,7 @@ public class UserCommentFormController extends FormBasicController {
 		// Add parent and parent first / last name
 		if (parentComment != null) {
 			String name = userManager.getUserDisplayName(parentComment.getCreator());
-			String[] args = new String[] {name};
+			String[] args = new String[] { StringHelper.escapeHtml(name)};
 			setFormTitle("comments.form.reply.title", args);
 		} else {
 			setFormTitle("comments.form.new.title");
