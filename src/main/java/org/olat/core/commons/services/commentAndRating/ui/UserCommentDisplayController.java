@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -240,7 +241,7 @@ public class UserCommentDisplayController extends BasicController {
 
 	private void initCreatorInformation() {
 		TextComponent creator = TextFactory.createTextComponentFromI18nKey("creator", null, null, null, true, userCommentDisplayVC);
-		String name = userManager.getUserDisplayName(userComment.getCreator());
+		String name = StringHelper.escapeHtml(userManager.getUserDisplayName(userComment.getCreator()));
 		creator.setText(name);
 	}
 
@@ -325,7 +326,7 @@ public class UserCommentDisplayController extends BasicController {
 
 	private void createReplyParentLink(UserComment reply) {
 		if (reply.getParent() != null) {
-			String name = userManager.getUserDisplayName(reply.getParent().getCreator());
+			String name = StringHelper.escapeHtml(userManager.getUserDisplayName(reply.getParent().getCreator()));
 			Link replyParentUserLink = LinkFactory.createLink("replyTo_" + reply.getParent().getKey(), "replyTo_" + reply.getParent().getKey(),
 					"replyParentUserLink", "@" + name, getTranslator(), userCommentDisplayVC, this, Link.LINK + Link.NONTRANSLATED);
 			replyParentUserLink.setUserObject(reply.getParent().getCreator());
