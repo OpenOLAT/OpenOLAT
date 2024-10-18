@@ -81,6 +81,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
+import org.olat.ims.lti13.LTI13Context;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -376,33 +377,75 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
+		BasicLTICourseNode ltiNode = (BasicLTICourseNode)super.createInstanceForCopy(isNewTitle, course, author);
+		copyConfiguration(course, ltiNode, getIdent());
+		return ltiNode;
+	}
+	
+	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		super.postCopy(envMapper, processType, course, sourceCourse, context);
-		removeLTI13DeploymentReference();
+		copyConfiguration(course, this, getIdent());// Identifier is the same
 	}
 
 	@Override
 	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
 		super.postImport(importDirectory, course, envMapper, processType);
-		removeLTI13DeploymentReference();
+		removeLTI13DeploymentReference(getModuleConfiguration());
 	}
 	
 	@Override
 	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
 		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
-		removeLTI13DeploymentReference();
+		
+		Object ltiVersion = sourceCourseNode.getModuleConfiguration().get(LTIConfigForm.CONFIGKEY_LTI_VERSION);
+		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {
+			copyConfiguration(course, this, sourceCourseNode.getIdent());
+		} else {
+			removeLTI13DeploymentReference(getModuleConfiguration());
+		}
 	}
 	
-	private void removeLTI13DeploymentReference() {
-		ModuleConfiguration config = getModuleConfiguration();
-		
+	private static void copyConfiguration(ICourse course, BasicLTICourseNode ltiNode, String sourceNodeIdent) {
+		ModuleConfiguration config = ltiNode.getModuleConfiguration();
 		String ltiVersion = (String)config.get(LTIConfigForm.CONFIGKEY_LTI_VERSION);
-		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {
-			config.remove(LTIConfigForm.CONFIGKEY_13_CONTEXT_KEY);
+		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {		
+			String contextKey = config.getStringValue(LTIConfigForm.CONFIGKEY_13_CONTEXT_KEY);
+			LTI13Service lti13Service = CoreSpringFactory.getImpl(LTI13Service.class);
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+
+			LTI13Context sourceLtiContext;
+			if(StringHelper.isLong(contextKey)) {
+				sourceLtiContext = lti13Service.getContextByKey(Long.valueOf(contextKey));
+			} else {
+				String deploymentKey = config.getStringValue(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY_DEP);
+				sourceLtiContext = lti13Service.getContextBackwardCompatibility(deploymentKey, courseEntry, sourceNodeIdent);
+			}
+			
+			LTI13Context newLtiContext = null;
+			if(sourceLtiContext != null) {
+				newLtiContext = lti13Service.copyContext(sourceLtiContext, courseEntry, ltiNode.getIdent(), null);
+			}
+			
+			if(newLtiContext != null) {
+				config.setStringValue(LTIConfigForm.CONFIGKEY_13_CONTEXT_KEY, newLtiContext.getKey().toString());
+			} else {
+				removeLTI13DeploymentReference(config);
+			}
 			config.remove(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY_DEP);
-		} else if(StringHelper.isLong(ltiVersion)) {
-			config.remove(LTIConfigForm.CONFIGKEY_13_CONTEXT_KEY);
-			config.remove(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY_DEP);
+		}
+	}
+	
+	private static void removeLTI13DeploymentReference(ModuleConfiguration config) {
+		String ltiVersion = (String)config.get(LTIConfigForm.CONFIGKEY_LTI_VERSION);
+		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion) || StringHelper.isLong(ltiVersion)) {
+			List<String> toRemove = List.of(LTIConfigForm.CONFIGKEY_13_CONTENT_ITEM_KEYS_ORDER, LTIConfigForm.CONFIGKEY_13_CONTEXT_KEY,LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY_DEP,
+					LTIConfigForm.CONFIGKEY_PASS, LTIConfigForm.CONFIGKEY_PASS, LTIConfigForm.CONFIGKEY_KEY, LTIConfigForm.CONFIGKEY_PORT,
+					LTIConfigForm.CONFIGKEY_URI, LTIConfigForm.CONFIGKEY_QUERY, LTIConfigForm.CONFIGKEY_HOST, LTIConfigForm.CONFIGKEY_PROTO);
+			for(String keyToRemove:toRemove) {
+				config.remove(keyToRemove);
+			}
 			config.setStringValue(LTIConfigForm.CONFIGKEY_LTI_VERSION, LTIConfigForm.CONFIGKEY_LTI_13);
 		}
 	}

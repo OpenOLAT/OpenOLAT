@@ -238,12 +238,20 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		List<LTI13Context> ltiContexts = lti13ContextDao.loadContextsBy(entry, subIdent);
 		for(LTI13Context ltiContext:ltiContexts) {
 			LTI13ToolDeployment deployment = ltiContext.getDeployment();
-			if(deployment.getTool().getToolTypeEnum() == LTI13ToolType.EXTERNAL) {
-				localTools.add(deployment.getTool());
+			
+			// Delete contexts and content items
+			List<LTI13ContentItem> contentItems = lti13ContentItemDao.loadItemByContext(ltiContext);
+			for(LTI13ContentItem contentItem:contentItems) {
+				lti13ContentItemDao.deleteItem(contentItem);
 			}
 			lti13ContextDao.deleteContext(ltiContext);
+			
+			// Delete deployment only if single context
 			if(deployment.getDeploymentType() == LTI13ToolDeploymentType.SINGLE_CONTEXT) {
 				lti13ToolDeploymentDao.deleteToolDeployment(deployment);
+				if(deployment.getTool().getToolTypeEnum() == LTI13ToolType.EXTERNAL) {
+					localTools.add(deployment.getTool());
+				}
 			}
 		}
 		for(LTI13Tool tool:localTools) {
@@ -451,6 +459,52 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	public LTI13Context createContext(String targetUrl, LTI13ToolDeployment deployment, RepositoryEntry entry,
 			String subIdent, BusinessGroup businessGroup) {
 		return lti13ContextDao.createContext(targetUrl, deployment, entry, subIdent, businessGroup);
+	}
+
+	@Override
+	public LTI13Context copyContext(LTI13Context sourceLtiContext, RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+		if(sourceLtiContext == null || sourceLtiContext.getDeployment() == null
+				|| sourceLtiContext.getDeployment().getTool() == null) return null;
+
+		LTI13Context newLtiContext = null;
+		LTI13ToolDeployment sourceToolDeployment = sourceLtiContext.getDeployment();
+
+		// Deployment is shared
+		if(sourceToolDeployment.getDeploymentType() == LTI13ToolDeploymentType.MULTIPLE_CONTEXTS) {
+			newLtiContext = createContext(sourceLtiContext.getTargetUrl(), sourceToolDeployment, entry, subIdent, businessGroup);
+			newLtiContext = copyContextSettings(sourceLtiContext, newLtiContext);
+		} else if(sourceToolDeployment.getDeploymentType() == LTI13ToolDeploymentType.SINGLE_CONTEXT) {
+			sourceToolDeployment = lti13ToolDeploymentDao.makeMultiContextsToolDeployment(sourceToolDeployment);
+			
+			String targetUrl = sourceLtiContext.getTargetUrl();
+			if(!StringHelper.containsNonWhitespace(targetUrl)) {
+				targetUrl = sourceToolDeployment.getTargetUrl();
+				if(!StringHelper.containsNonWhitespace(targetUrl)) {
+					targetUrl = sourceToolDeployment.getTool().getToolUrl();
+				}
+			}
+			newLtiContext = createContext(targetUrl, sourceToolDeployment, entry, subIdent, businessGroup);
+			newLtiContext = copyContextSettings(sourceLtiContext, newLtiContext);
+		}
+		return newLtiContext;
+	}
+	
+	private LTI13Context copyContextSettings(LTI13Context sourceContext, LTI13Context ltiContext) {
+		ltiContext.setSendUserAttributesList(sourceContext.getSendUserAttributesList());
+		ltiContext.setSendCustomAttributes(sourceContext.getSendCustomAttributes());
+		
+		ltiContext.setAuthorRoles(sourceContext.getAuthorRoles());
+		ltiContext.setCoachRoles(sourceContext.getCoachRoles());
+		ltiContext.setParticipantRoles(sourceContext.getParticipantRoles());
+		
+		ltiContext.setDisplay(sourceContext.getDisplay());
+		ltiContext.setDisplayHeight(sourceContext.getDisplayHeight());
+		ltiContext.setDisplayWidth(sourceContext.getDisplayWidth());
+		
+		ltiContext.setAssessable(sourceContext.isAssessable());
+		ltiContext.setSkipLaunchPage(sourceContext.isSkipLaunchPage());
+		ltiContext.setNameAndRolesProvisioningServicesEnabled(sourceContext.isNameAndRolesProvisioningServicesEnabled());
+		return updateContext(ltiContext);
 	}
 
 	@Override
