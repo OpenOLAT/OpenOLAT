@@ -308,6 +308,12 @@ public class OOGraphene {
 			.until(ExpectedConditions.presenceOfElementLocated(element));
 	}
 	
+	public static void waitElementWithScrollTableRight(By tableElement, By element, Duration timeoutDuration, Duration pollingDuration, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeoutDuration).pollingEvery(pollingDuration)
+			.until(elementLocatedRight(tableElement, element));
+	}
+	
 	/**
 	 * Wait until the element is not present.
 	 * 
@@ -431,6 +437,23 @@ public class OOGraphene {
 	public static void moveTo(By by, WebDriver browser) {
 		waitElementPresence(by, 5, browser);
 		scrollTo(by, browser);
+	}
+	
+	/**
+	 * Scroll 1024 to the right (table or window) and wait a little longer.
+	 * 
+	 * @param by The selector to find if the element is in a scrollable table.
+	 * @param browser The browser
+	 */
+	public static void scrollTableRight(By by, WebDriver browser) {
+		WebElement element = browser.findElement(by);
+
+		String scrollBottom = """
+				var modal = arguments[0].closest('.o_scrollable')?.scrollTo(1024, 0);\n
+				if(modal === undefined) { window.scrollTo(1024, 0); }
+				""";
+		((JavascriptExecutor)browser).executeScript(scrollBottom, element);
+		OOGraphene.waitingALittleLonger();
 	}
 	
 	/**
@@ -974,6 +997,23 @@ public class OOGraphene {
 		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+	
+	public static ExpectedCondition<WebElement> elementLocatedRight(final By tableLocator, final By locator) {
+		
+		return new ExpectedCondition<>() {
+			@Override
+			public WebElement apply(WebDriver driver) {
+				OOGraphene.scrollTableRight(tableLocator, driver);
+				WebElement element = driver.findElement(locator);
+				return element.isDisplayed() ? element : null;
+			}
+
+			@Override
+			public String toString() {
+				return "element to not being present after scroll right: " + locator;
+			}
+		};
 	}
 	
 	public static ExpectedCondition<Boolean> absenceOfElementLocated(final By locator) {
