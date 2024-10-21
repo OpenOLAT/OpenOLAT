@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.color.ColorService;
@@ -555,5 +556,9 @@ public class MediaUIHelper {
 			generalStyleSettings.setBackgroundColor(backgroundColorEl.getColor() != null ? backgroundColorEl.getColor().id() : null);
 			generalStyleSettings.setShowSpacing(spacingCheckBoxEl.isKeySelected(spacingKey));
 		}
+	}
+
+	public static String toHtmlListItems(List<String> items) {
+		return items.stream().map((item) -> "<li>" + item + "</li>").collect(Collectors.joining());
 	}
 }

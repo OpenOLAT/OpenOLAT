@@ -21,6 +21,7 @@ package org.olat.modules.cemedia.ui.medias;
 
 import java.util.List;
 
+import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -45,6 +46,7 @@ import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.MediaVersionMetadata;
 import org.olat.modules.cemedia.handler.VideoViaUrlHandlerDelegate;
 import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.cemedia.ui.MediaVersionChangedEvent;
 import org.olat.modules.video.VideoFormatExtended;
 import org.olat.modules.video.VideoManager;
@@ -79,6 +81,9 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 
 	@Autowired
 	private MediaService mediaService;
+
+	@Autowired
+	private MediaServerModule mediaServerModule;
 
 	public CollectUrlVideoMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		super(ureq, wControl, media, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
@@ -123,7 +128,8 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (!isMetadataOnly()) {
-			setFormInfo("add.video.via.url.info");
+			String servers = MediaUIHelper.toHtmlListItems(mediaServerModule.getMediaServerNames());
+			setFormInfo("add.video.via.url.info", new String[]{servers});
 		}
 		initMetadataForm(formLayout);
 		initRelationsAndSaveCancel(formLayout, ureq);

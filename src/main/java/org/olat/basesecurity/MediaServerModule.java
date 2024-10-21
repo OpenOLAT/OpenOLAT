@@ -47,6 +47,9 @@ public class MediaServerModule extends AbstractSpringModule {
 	public static final String VIMEO_KEY = "vimeo";
 	public static final String[] PREDEFINED_KEYS = { YOUTUBE_KEY, VIMEO_KEY };
 
+	public static final String YOUTUBE_NAME = "YouTube";
+	public static final String VIMEO_NAME = "Vimeo";
+
 	public static final String YOUTUBE_MEDIA_SRC = "https://youtu.be https://www.youtube.com";
 	public static final String VIMEO_MEDIA_SRC = "https://vimeo.com https://player.vimeo.com";
 
@@ -120,6 +123,17 @@ public class MediaServerModule extends AbstractSpringModule {
 		}
 		if (isAllowAll() || isMediaServerEnabled(VIMEO_KEY)) {
 			urls.addAll(Arrays.stream(VIMEO_MEDIA_SRC.split(" ")).toList());
+		}
+		return urls;
+	}
+
+	public List<String> getMediaServerNames() {
+		List<String> urls = new ArrayList<>();
+		if (isAllowAll() || isMediaServerEnabled(YOUTUBE_KEY)) {
+			urls.add(YOUTUBE_NAME);
+		}
+		if (isAllowAll() || isMediaServerEnabled(VIMEO_KEY)) {
+			urls.add(VIMEO_NAME);
 		}
 		return urls;
 	}

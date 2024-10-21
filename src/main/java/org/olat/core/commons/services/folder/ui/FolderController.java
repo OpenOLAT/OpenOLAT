@@ -205,6 +205,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private static final String FILTER_LICENSE = "filter.license";
 	private static final String CMD_FOLDER = "folder";
 	private static final String CMD_FILE = "file";
+	private static final String CMD_FILE_EDITOR = "efile";
 	private static final String CMD_PATH = "path";
 	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_COPY = "copy";
@@ -3330,14 +3331,16 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 			if (vfsItem instanceof VFSLeaf vfsLeaf) {
 				Roles roles = ureq.getUserSession().getRoles();
+				boolean canEdit = canEdit(vfsItem);
 				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
-						vfsMetadata, vfsMetadata != null, DocEditorService.modesEditView(canEdit(vfsItem)));
+						vfsMetadata, vfsMetadata != null, DocEditorService.modesEditView(canEdit));
 				if (editorInfo.isEditorAvailable()) {
-					Link link = LinkFactory.createLink("file.open", CMD_FILE, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
+					String command = canEdit ? CMD_FILE_EDITOR : CMD_FILE;
+					Link link = LinkFactory.createLink("file.open", command, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
 					link.setCustomDisplayText(editorInfo.getModeButtonLabel(getTranslator()));
 					link.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
 					link.setUserObject(row);
-					if (editorInfo.isNewWindow()) {
+					if (editorInfo.isNewWindow() && (canEdit || !folderModule.isForceDownload(row.getVfsItem()))) {
 						link.setNewWindow(true, true);
 					}
 				}
@@ -3413,6 +3416,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				if (CMD_FOLDER.equals(cmd)) {
 					doOpenFolder(ureq, row);
 				} else if (CMD_FILE.equals(cmd)) {
+					doOpenFile(ureq, row);
+				} else if (CMD_FILE_EDITOR.equals(cmd)) {
 					doOpenFileInEditor(ureq, row);
 				} else if (CMD_DOWNLOAD.equals(cmd)) {
 					doDownload(ureq, row);

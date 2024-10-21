@@ -19,6 +19,7 @@
  */
 package org.olat.modules.cemedia.ui.medias;
 
+import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -33,8 +34,10 @@ import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.handler.VideoHandler;
 import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.video.VideoFormatExtended;
 import org.olat.modules.video.ui.VideoAdminController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2023-11-21<br>
@@ -48,6 +51,9 @@ public class NewVideoViaUrlController extends FormBasicController {
 	private final Media media;
 	private final MediaHandler handler;
 
+	@Autowired
+	private MediaServerModule mediaServerModule;
+
 	public NewVideoViaUrlController(UserRequest ureq, WindowControl wControl, Media media, MediaHandler handler) {
 		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(VideoAdminController.class, ureq.getLocale())));
@@ -58,7 +64,8 @@ public class NewVideoViaUrlController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormInfo("add.video.via.url.info");
+		String servers = MediaUIHelper.toHtmlListItems(mediaServerModule.getMediaServerNames());
+		setFormInfo("add.video.via.url.info", new String[]{servers});
 
 		urlEl = uifactory.addTextElement("artefact.url", 512, "", formLayout);
 		urlEl.setMandatory(true);

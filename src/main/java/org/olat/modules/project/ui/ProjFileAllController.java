@@ -95,6 +95,8 @@ public class ProjFileAllController extends ProjFileListController {
 
 		DropdownItem uploadDropdown = uifactory.addDropdownMenu("upload.dropdown", null, null, formLayout, getTranslator());
 		uploadDropdown.setOrientation(DropdownOrientation.right);
+		uploadDropdown.setButton(true);
+		uploadDropdown.setEmbbeded(true);
 
 		addBrowserLink = uifactory.addFormLink("browser.add", formLayout, Link.LINK);
 		addBrowserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_filehub_add");
