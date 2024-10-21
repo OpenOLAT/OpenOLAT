@@ -307,6 +307,12 @@ public class OOGraphene {
 			.until(ExpectedConditions.presenceOfElementLocated(element));
 	}
 	
+	public static void waitElementWithScrollTableRight(By tableElement, By element, Duration timeoutDuration, Duration pollingDuration, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeoutDuration).pollingEvery(pollingDuration)
+			.until(elementLocatedRight(tableElement, element));
+	}
+	
 	/**
 	 * Wait until the element is not present.
 	 * 
@@ -1002,6 +1008,23 @@ public class OOGraphene {
 		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+	
+	public static ExpectedCondition<WebElement> elementLocatedRight(final By tableLocator, final By locator) {
+		
+		return new ExpectedCondition<>() {
+			@Override
+			public WebElement apply(WebDriver driver) {
+				OOGraphene.scrollTableRight(tableLocator, driver);
+				WebElement element = driver.findElement(locator);
+				return element.isDisplayed() ? element : null;
+			}
+
+			@Override
+			public String toString() {
+				return "element to not being present after scroll right: " + locator;
+			}
+		};
 	}
 	
 	public static ExpectedCondition<Boolean> absenceOfElementLocated(final By locator) {
