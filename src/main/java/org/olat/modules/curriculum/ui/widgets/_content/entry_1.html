@@ -1,0 +1,18 @@
+<div class="o_card o_curriculum_course_card">
+	<div class="o_thumbnail">
+		<div class="o_thumbnail_file_img">
+			#if($row.isThumbnailAvailable())
+				<img src="${row.getThumbnailUrl()}" alt="$r.translate("rentry.pic.alt")">
+			#else
+				<div class="o_visual_not_available"></div>
+			#end
+		</div>
+	</div>
+	<div class="o_card_meta">
+		<h4 class="o_card_title">$r.escapeHtml(${row.getDisplayname()})</h4>
+		#if($r.isNotEmpty($row.externalRef))
+			<small>$r.escapeHtml($row.externalRef)</small>
+		#end
+	</div>
+	<div class="o_card_status">$row.statusHtml</div>
+</div>

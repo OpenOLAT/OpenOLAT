@@ -24,6 +24,7 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_LECTURES;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_MEMBERS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_OVERVIEW;
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_RESOURCES;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_STRUCTURE;
 
 import java.util.List;
@@ -73,6 +74,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 
 	private int overviewTab;
 	private int lecturesTab;
+	private int resourcesTab;
 	private int structuresTab;
 	private int userManagerTab;
 
@@ -160,7 +162,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
-			overviewCtrl = new CurriculumElementOverviewController(uureq, subControl);
+			overviewCtrl = new CurriculumElementOverviewController(uureq, subControl, curriculumElement);
 			listenTo(overviewCtrl);
 			return overviewCtrl.getInitialComponent();
 		});
@@ -185,7 +187,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		});
 		
 		// Courses
-		tabPane.addTab(ureq, translate("tab.resources"), uureq -> {
+		resourcesTab = tabPane.addTab(ureq, translate("tab.resources"), uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_RESOURCES), null);
 			resourcesCtrl = new CurriculumElementResourceListController(uureq, subControl, curriculumElement, secCallback);
@@ -239,6 +241,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			tabPane.setSelectedPane(ureq, overviewTab);
 		} else if(CONTEXT_LECTURES.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, lecturesTab);
+		} else if(CONTEXT_RESOURCES.equalsIgnoreCase(type)) {
+			tabPane.setSelectedPane(ureq, resourcesTab);
 		} else if(CONTEXT_IMPLEMENTATIONS.equalsIgnoreCase(type) || CONTEXT_STRUCTURE.equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			tabPane.setSelectedPane(ureq, structuresTab);
@@ -275,7 +279,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(structureCtrl == source) {
+		if(structureCtrl == source || overviewCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}

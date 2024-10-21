@@ -30,6 +30,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class RepositoryEntryRow {
 	
+	private String statusHtml;
 	private String thumbnailUrl;
 	private final RepositoryEntry entry;
 	
@@ -65,6 +66,14 @@ public class RepositoryEntryRow {
 		return entry.getExternalRef();
 	}
 	
+	public String getStatusHtml() {
+		return statusHtml;
+	}
+
+	public void setStatusHtml(String statusHtml) {
+		this.statusHtml = statusHtml;
+	}
+
 	@Override
 	public int hashCode() {
 		return entry.hashCode();

@@ -19,12 +19,18 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
 
 /**
  * 
@@ -34,12 +40,30 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class CurriculumElementOverviewController extends BasicController {
 	
-	public CurriculumElementOverviewController(UserRequest ureq, WindowControl wControl) {
+	private CoursesWidgetController coursesCtrl;
+	
+	public CurriculumElementOverviewController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
 		super(ureq, wControl);
-		
+
+		List<String> widgets = new ArrayList<>();
 		VelocityContainer mainVC = createVelocityContainer("curriculum_element_overview");
+		if(curriculumElement.getParent() != null) {
+			coursesCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement);
+			listenTo(coursesCtrl);
+			mainVC.put("courses", coursesCtrl.getInitialComponent());
+			widgets.add("courses");
+		}
 		
+		mainVC.contextPut("widgets", widgets);
 		putInitialPanel(mainVC);
+	}
+	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(coursesCtrl == source) {
+			fireEvent(ureq, event);
+		}
 	}
 
 	@Override

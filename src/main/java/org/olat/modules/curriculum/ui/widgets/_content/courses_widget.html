@@ -1,0 +1,6 @@
+<h4 class="o_widget_title">$r.render("curriculum.courses")</h4>
+#if($r.available("course.empty"))
+	$r.render("course.empty")
+#else
+	$r.render("entriesTable")
+#end

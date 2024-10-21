@@ -417,6 +417,68 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	text-transform: uppercase;
 }
 
+/* Use the same color and border as o_widget */
+.o_curriculum_overview {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: $o-widgets-gap;
+	
+	.o_curriculum_widget {
+		border: $o-widget-border;
+		border-radius: $o-widget-border-radius;
+		padding: $o-widget-padding;
+		background-color: $panel-bg;
+	}
+		
+	.o_curriculum_widget h4:first-child {
+		padding-top: 0;
+	}
+	
+	.o_table_flexi.o_rendertype_custom .o_table_row.row {
+		padding: 0;
+		margin: 0;
+		width: 100%;
+	}
+	
+	.o_curriculum_course_card {
+		display: grid;
+		grid-template-columns: 120px 1fr auto;
+		gap: 10px;
+		padding: 5px;
+		
+		.o_thumbnail {
+			width: 120px;
+			height: 80px;
+			
+			img {
+				max-width: 120px;
+				max-height: 120px;
+			}
+		}
+	}
+	
+	.o_thumbnail_file_img {
+		width: 120px;
+		height: 80px;
+		
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		overflow: hidden;
+	}
+	
+	.o_card_meta {
+		display: flex;
+		flex-direction: column-reverse;
+		justify-content: flex-end;
+	}
+
+	.o_card_status {
+		display: flex;
+		align-items: center;
+	}
+}
+
 .o_labeled_light {
 	&.o_curriculum_status_preparation {
 		font-weight: normal;
