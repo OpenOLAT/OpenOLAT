@@ -67,6 +67,7 @@ import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.MemberViewQueries;
 import org.olat.group.model.MemberView;
+import org.olat.group.model.comparator.MemberViewNamesComparator;
 import org.olat.group.ui.main.CourseMembership;
 import org.olat.group.ui.main.CourseRoleCellRenderer;
 import org.olat.group.ui.main.SearchMembersParams;
@@ -283,7 +284,7 @@ public class EditLectureBlockController extends FormBasicController {
 			teachersPK.add(teacherPK(teacher));
 		}
 		teacherEl = uifactory.addCheckboxesVertical("teacher", "lecture.teacher", formLayout, teachersPK.keys(), teachersPK.values(),
-				null, teachersPK.icons(), 2);
+				null, teachersPK.icons(), 1);
 		teacherEl.setElementCssClass("o_sel_repo_lecture_teachers");
 		teacherEl.setMandatory(true);
 		teacherEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.teachers));
@@ -408,7 +409,9 @@ public class EditLectureBlockController extends FormBasicController {
 				}
 			}
 		}
-		return new ArrayList<>(allPossibleTeachers);
+		List<MemberView> views = new ArrayList<>(allPossibleTeachers);
+		Collections.sort(views, new MemberViewNamesComparator(userPropertyHandlers, getLocale()));
+		return views;
 	}
 	
 	private void updateUI() {
@@ -442,10 +445,13 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		
 		dateEl.clearError();
-		if(dateEl.getDate() == null) {
+		if(dateEl.getDate() == null || dateEl.getSecondDate() == null) {
 			dateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!validateFormItem(ureq, dateEl)) {
+			allOk &= false;
+		} else if(dateEl.getDate().after(dateEl.getSecondDate())) {
+			dateEl.setErrorKey("error.start.after.end.date");
 			allOk &= false;
 		}
 
@@ -454,7 +460,7 @@ public class EditLectureBlockController extends FormBasicController {
 
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
-		if(locationEl != fiSrc) {
+		if(locationEl != fiSrc && dateEl != fiSrc) {
 			super.propagateDirtinessToContainer(fiSrc, event);
 		}
 	}

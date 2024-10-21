@@ -171,6 +171,10 @@ $o-empty-border-color			: 1px solid #e7e7e7 !default;
 $o-empty-border-radius			: $panel-border-radius !default;
 $o-empty-msg-color				: $text-color !default;
 
+/* Empty panel component */
+$o-empty-panel-icon-color			: $brand-primary !default;
+$o-empty-panel-icon-bg-color		: rgb($brand-primary, 0.1) !default;
+
 /* The max width the header/navbar/main/footer can possibly have. */
 $o-page-width-max : 1324px !default;
 $o-page-width-toggler-border-color			: #eee !default;
@@ -377,10 +381,6 @@ $o-icon-panel-border				: 1px solid #e7e7e7 !default;
 $o-icon-panel-border-radius			: $panel-border-radius !default;
 $o-icon-panel-icon-bg-color			: #fcfcfc !default;
 $o-icon-panel-content-bg-color		: $panel-bg !default;
-
-/* Empty panel component */
-$o-empty-panel-icon-color			: $brand-primary !default;
-$o-empty-panel-icon-bg-color		: lighten($brand-primary, 50%) !default;
 
 /* Wizard */
 $o-wizard-steps-bg-color				: #f9f9f9 !default;

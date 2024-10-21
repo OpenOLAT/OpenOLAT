@@ -102,8 +102,14 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		renderSeparator(sb, separator);
 		renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
 				receiverId.concat("_snd"), jsdcc, "o_second_ms".concat(timeOnlyCss));
+		
+		sb.append("</div></div>");
+		
+		if(jsdci.hasError() || jsdci.hasWarning()) {
+			renderError(sb, jsdci,  jsdci.hasError(), jsdci.hasWarning());
+		}
 
-		sb.append("</div></div></div>");
+		sb.append("</div>");
 	}
 
 	@Override

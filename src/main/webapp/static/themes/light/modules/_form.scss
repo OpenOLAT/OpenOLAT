@@ -145,6 +145,12 @@ form .o_form, form.o_form {
 		display: block;
 	}
 	
+	.o_form_two_cols .o_date ~ .o_error,
+	.o_form_two_cols .o_date ~ .o_warning {
+		grid-column: 1 / span 2;
+		margin-top: -10px;
+	}
+	
 	.o_form_two_cols .o_time .o_date_ms,
 	.o_form_two_cols .o_time .o_date_ms>input.o_date_ms {
 		display: inline-block;
