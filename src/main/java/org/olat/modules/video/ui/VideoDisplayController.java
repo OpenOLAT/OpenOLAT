@@ -857,60 +857,67 @@ public class VideoDisplayController extends BasicController {
 	private void initDownloadOptions() {
 		// Only show download for local videos
 		if (videoMetadata.getVideoFormat() != null && videoMetadata.getVideoFormat().equals(VideoFormat.mp4) && videoMetadata.isDownloadEnabled()) {
-			List<Link> downloadLinks = new ArrayList<>();
-			List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodings(videoMetadata.getVideoResource());
-			int i = 0;
+			VFSLeaf videoFile = videoManager.getMasterVideoFile(videoMetadata.getVideoResource());
+			if(videoFile != null) {
+				initDownloadOptionsLocalFile(videoFile);
+			}
+		}
+	}
 			
-			for(VideoTranscoding videoTranscoding : videoTranscodings){
-				if (videoTranscoding.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE) {
-					break;
-				}
-				
-				String fileSize = "";
-				
-				if (videoTranscoding.getSize() != 0) {
-					fileSize = Formatter.formatBytes(videoTranscoding.getSize());
-				} 
-				
-				String title = videoManager.getDisplayTitleForResolution(videoTranscoding.getResolution(), getTranslator()) + " - " + fileSize;
-				
-				Link downloadLink = LinkFactory.createLink("download_" + i++, "download_video", getTranslator(), mainVC, this, Link.LINK);
-				downloadLink.setCustomDisplayText(title);
-				downloadLink.setUserObject(videoTranscoding);
-				
-				downloadLinks.add(downloadLink);
+	private void initDownloadOptionsLocalFile(VFSLeaf videoFile) {
+		List<Link> downloadLinks = new ArrayList<>();
+		List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodings(videoMetadata.getVideoResource());
+		int i = 0;
+		
+		for(VideoTranscoding videoTranscoding : videoTranscodings){
+			if (videoTranscoding.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE) {
+				break;
 			}
 			
-			String masterFileSize = Formatter.formatBytes(videoManager.getMasterVideoFile(videoMetadata.getVideoResource()).getSize());			
-			String masterTitle = videoManager.getDisplayTitleForResolution(videoManager.getVideoResolutionFromOLATResource(videoMetadata.getVideoResource()).getHeight(), getTranslator()) + " - " + masterFileSize;
+			String fileSize = "";
 			
-			mainVC.contextPut("downloadEnabled", true);
+			if (videoTranscoding.getSize() != 0) {
+				fileSize = Formatter.formatBytes(videoTranscoding.getSize());
+			} 
 			
-			if (downloadLinks.isEmpty()) {
-				Link downloadMasterFileLink = LinkFactory.createLink("download_" + i++, "download_master_video", getTranslator(), mainVC, this, Link.BUTTON);
-				downloadMasterFileLink.setElementCssClass("pull-right o_video_download_btn");
-				downloadMasterFileLink.setCustomDisplayText(translate("download.options") + " - " + masterTitle);
-				downloadMasterFileLink.setUserObject(videoManager.getMasterVideoFile(videoMetadata.getVideoResource()));
-				
-				mainVC.put("downloadOptions", downloadMasterFileLink);
-			} else {
-				Dropdown downloadDropDown = new Dropdown("downloadOptions", "download.options", true, getTranslator());
-				downloadDropDown.setButton(true);
-				downloadDropDown.setEmbbeded(true);
-				downloadDropDown.setOrientation(DropdownOrientation.right);
-				downloadDropDown.setExpandContentHeight(true);
-				
-				Link downloadMasterFileLink = LinkFactory.createLink("download_" + i++, "download_master_video", getTranslator(), mainVC, this, Link.LINK);
-				downloadMasterFileLink.setCustomDisplayText(translate("download.original") + " - " + masterTitle);
-				downloadMasterFileLink.setUserObject(videoManager.getMasterVideoFile(videoMetadata.getVideoResource()));
-				downloadDropDown.addComponent(downloadMasterFileLink);
-				
-				for (Link downloadLink : downloadLinks) {
-					downloadDropDown.addComponent(downloadLink);
-				}
-				
-				mainVC.put("downloadOptions", downloadDropDown);
+			String title = videoManager.getDisplayTitleForResolution(videoTranscoding.getResolution(), getTranslator()) + " - " + fileSize;
+			
+			Link downloadLink = LinkFactory.createLink("download_" + i++, "download_video", getTranslator(), mainVC, this, Link.LINK);
+			downloadLink.setCustomDisplayText(title);
+			downloadLink.setUserObject(videoTranscoding);
+			
+			downloadLinks.add(downloadLink);
+		}
+		
+		String masterFileSize = Formatter.formatBytes(videoFile.getSize());			
+		String masterTitle = videoManager.getDisplayTitleForResolution(videoManager.getVideoResolutionFromOLATResource(videoMetadata.getVideoResource()).getHeight(), getTranslator()) + " - " + masterFileSize;
+		
+		mainVC.contextPut("downloadEnabled", true);
+		
+		if (downloadLinks.isEmpty()) {
+			Link downloadMasterFileLink = LinkFactory.createLink("download_" + i++, "download_master_video", getTranslator(), mainVC, this, Link.BUTTON);
+			downloadMasterFileLink.setElementCssClass("pull-right o_video_download_btn");
+			downloadMasterFileLink.setCustomDisplayText(translate("download.options") + " - " + masterTitle);
+			downloadMasterFileLink.setUserObject(videoFile);
+			
+			mainVC.put("downloadOptions", downloadMasterFileLink);
+		} else {
+			Dropdown downloadDropDown = new Dropdown("downloadOptions", "download.options", true, getTranslator());
+			downloadDropDown.setButton(true);
+			downloadDropDown.setEmbbeded(true);
+			downloadDropDown.setOrientation(DropdownOrientation.right);
+			downloadDropDown.setExpandContentHeight(true);
+			
+			Link downloadMasterFileLink = LinkFactory.createLink("download_" + i++, "download_master_video", getTranslator(), mainVC, this, Link.LINK);
+			downloadMasterFileLink.setCustomDisplayText(translate("download.original") + " - " + masterTitle);
+			downloadMasterFileLink.setUserObject(videoFile);
+			downloadDropDown.addComponent(downloadMasterFileLink);
+			
+			for (Link downloadLink : downloadLinks) {
+				downloadDropDown.addComponent(downloadLink);
 			}
+			
+			mainVC.put("downloadOptions", downloadDropDown);
 		}
 	}
 
