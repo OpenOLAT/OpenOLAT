@@ -9,10 +9,10 @@
 <script>
 "use strict";
 jQuery(function() {
-	const elem = document.getElementById('callout_$r.getCId()');
-	elem.showModal();
-	
 	jQuery('#callout_$r.getCId()').each(function(index, el) {
+		if(el != null && !el.open) {
+			el.showModal();
+		}
 		var targetEl = jQuery('#$guimsgtarget,#o_c$guimsgtarget');
 		var targetOffset = targetEl.offset();
 		if(targetOffset) {

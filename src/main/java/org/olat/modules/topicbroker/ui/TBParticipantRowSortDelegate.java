@@ -25,7 +25,6 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.modules.topicbroker.ui.TBParticipantDataModel.TBParticipantCols;
 
 /**
@@ -43,7 +42,7 @@ public class TBParticipantRowSortDelegate extends SortableFlexiTableModelDelegat
 	@Override
 	protected void sort(List<TBParticipantRow> rows) {
 		int columnIndex = getColumnIndex();
-		if(columnIndex >= AbstractMemberListController.USER_PROPS_OFFSET) {
+		if(columnIndex >= TBParticipantDataModel.USER_PROPS_OFFSET) {
 			super.sort(rows);
 		} else {
 			TBParticipantCols column = TBParticipantCols.values()[columnIndex];
