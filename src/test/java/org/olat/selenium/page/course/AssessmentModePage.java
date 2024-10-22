@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.course;
 
+import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -205,7 +206,7 @@ public class AssessmentModePage {
 	public AssessmentModePage startAssessment() {
 		try {
 			By startBy = By.cssSelector("dialog.dialog div.modal-body div.o_button_group.o_sel_checked a.o_sel_assessment_start");
-			OOGraphene.waitElement(startBy, browser);
+			OOGraphene.waitElement(startBy, Duration.ofSeconds(10), Duration.ofSeconds(1), browser);
 			browser.findElement(startBy).click();
 			OOGraphene.waitBusy(browser);
 			OOGraphene.waitModalDialogDisappears(browser);
