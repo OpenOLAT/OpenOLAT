@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoTranscoding;
@@ -151,7 +152,7 @@ public class VideoAdminErrorController extends FormBasicController {
 			String initialAuthor = videoRe.getInitialAuthor();
 			String fullName = userManager.getUserDisplayName(initialAuthor);
 			FormLink authorLink = uifactory.addFormLink("author_" + counter++, "viewAuthor",
-					fullName, null, flc, Link.LINK | Link.NONTRANSLATED);
+					StringHelper.escapeHtml(fullName), null, flc, Link.LINK | Link.NONTRANSLATED);
 			authorLink.setUserObject(initialAuthor);
 			Date creationDate = videoTranscoding.getCreationDate();
 			TranscodingQueueTableRow transcodingrow = new TranscodingQueueTableRow(resourceLink, displayname, creationDate, authorLink,
