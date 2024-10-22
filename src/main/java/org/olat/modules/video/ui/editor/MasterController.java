@@ -22,6 +22,8 @@ package org.olat.modules.video.ui.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -75,8 +77,6 @@ import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.VideoTimeCellRenderer;
 import org.olat.repository.RepositoryEntry;
-
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -145,7 +145,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		if (videoDurationInMillis <= 0) {
 			videoDurationInMillis = durationInSeconds * 1000L;
 		}
-		flc.contextPut("durationInSeconds", Double.toString((double) this.videoDurationInMillis / 1000.0));
+		flc.contextPut("durationInSeconds", Double.toString(this.videoDurationInMillis / 1000.0));
 		flc.contextPut("currentTimeInSeconds", "0.0");
 
 		VideoMeta videoMetadata = videoManager.getVideoMetadata(repositoryEntry.getOlatResource());
@@ -173,20 +173,20 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				new VideoTimeCellRenderer()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TimelineCols.type,
 				(renderer, sb, val, row, source, ubu, translator) -> {
-			if (val instanceof TimelineEventType) {
-				sb.append("<i class=\"o_icon ").append(((TimelineEventType) val).getIcon()).append("\"></i>");
+			if (val instanceof TimelineEventType type) {
+				sb.append("<i class=\"o_icon ").append(type.getIcon()).append("\"></i>");
 			}
 		}));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TimelineCols.text, SELECT_ACTION,
 				(renderer, sb, val, row, source, ubu, translator) -> {
-			if (val instanceof String) {
-				sb.append(((String) val));
+			if (val instanceof String text) {
+				sb.append(StringHelper.escapeHtml(text));
 			}
 		}));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TimelineCols.color,
 				(renderer, sb, val, row, source, ubu, translator) -> {
-			if (val instanceof String) {
-				sb.append("<div class=\"o_video_color_circle o_video_colored_area ").append((String) val).append("\">").append("</div>");
+			if (val instanceof String colorCss) {
+				sb.append("<div class=\"o_video_color_circle o_video_colored_area ").append(colorCss).append("\">").append("</div>");
 			}
 		}));
 
