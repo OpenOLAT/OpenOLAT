@@ -22,13 +22,19 @@ package org.olat.basesecurity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.xml.XStreamHelper;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,8 +46,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class MediaServerModule extends AbstractSpringModule {
 
+	private static final Pattern DOMAIN_NAME_PATTERN = Pattern.compile("^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$");
+
 	private static final String MEDIA_SERVER_MODE = "media.server.mode";
 	private static final String MEDIA_SERVER_ENABLED = "media.server.enabled";
+	private static final String MEDIA_SERVERS_CUSTOM = "media.servers.custom";
 
 	public static final String YOUTUBE_KEY = "youtube";
 	public static final String VIMEO_KEY = "vimeo";
@@ -56,6 +65,18 @@ public class MediaServerModule extends AbstractSpringModule {
 	private MediaServerMode mode;
 
 	private Map<String, Boolean> mediaServersEnabled;
+
+	private List<MediaServer> customMediaServers;
+
+	private static final XStream xStream = XStreamHelper.createXStreamInstance();
+	static {
+		Class<?>[] types = new Class[] {
+				MediaServer.class
+		};
+		xStream.addPermission(new ExplicitTypePermission(types));
+
+		xStream.alias("mediaServer", MediaServer.class);
+	}
 
 	@Autowired
 	public MediaServerModule(CoordinatorManager coordinatorManager) {
@@ -86,6 +107,14 @@ public class MediaServerModule extends AbstractSpringModule {
 				mediaServersEnabled.put(key, Boolean.TRUE);
 			}
 		}
+
+		String customMediaServersObj = getStringPropertyValue(MEDIA_SERVERS_CUSTOM, true);
+		if (StringHelper.containsNonWhitespace(customMediaServersObj)) {
+			//noinspection unchecked
+			customMediaServers = (List<MediaServer>)xStream.fromXML(customMediaServersObj);
+		} else {
+			customMediaServers = new ArrayList<>();
+		}
 	}
 
 	@Override
@@ -113,6 +142,42 @@ public class MediaServerModule extends AbstractSpringModule {
 	public void setMediaServerEnabled(String key, boolean enabled) {
 		mediaServersEnabled.put(key, enabled);
 		setStringProperty(MEDIA_SERVER_ENABLED + "." + key, Boolean.toString(enabled), true);
+	}
+
+	public boolean isValidDomain(String domain) {
+		return DOMAIN_NAME_PATTERN.matcher(domain).find();
+	}
+
+	public List<MediaServer> getCustomMediaServers() {
+		return customMediaServers;
+	}
+
+	public void updateCustomMediaServer(MediaServer mediaServer) {
+		if (customMediaServers.contains(mediaServer)) {
+			customMediaServers = customMediaServers.stream()
+					.map(m -> m.equals(mediaServer) ? mediaServer : m)
+					.sorted(Comparator.comparing(MediaServer::getName)).collect(Collectors.toList());
+		} else {
+			customMediaServers = new ArrayList<>(customMediaServers);
+			customMediaServers.add(mediaServer);
+			customMediaServers = customMediaServers.stream()
+					.sorted(Comparator.comparing(MediaServer::getName)).collect(Collectors.toList());
+		}
+		storeCustomMediaServers();
+	}
+
+	public void deleteCustomMediaServer(MediaServer mediaServer) {
+		if (mediaServer == null || mediaServer.getId() == null) {
+			return;
+		}
+		customMediaServers = customMediaServers.stream().filter(m -> !m.equals(mediaServer))
+				.sorted(Comparator.comparing(MediaServer::getName)).collect(Collectors.toList());
+		storeCustomMediaServers();
+	}
+
+	private void storeCustomMediaServers() {
+		String customMediaServersObj = xStream.toXML(customMediaServers);
+		setStringProperty(MEDIA_SERVERS_CUSTOM, customMediaServersObj, true);
 	}
 
 	public Collection<String> getMediaSrcUrls() {
