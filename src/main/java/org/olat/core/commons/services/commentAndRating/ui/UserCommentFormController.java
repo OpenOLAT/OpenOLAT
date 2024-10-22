@@ -119,6 +119,8 @@ public class UserCommentFormController extends FormBasicController {
 	@Autowired
 	private FolderModule folderModule;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private DocEditorService docEditorService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
@@ -432,8 +434,8 @@ public class UserCommentFormController extends FormBasicController {
 		String formattedFileSize = Formatter.formatBytes(uploadedFileLeaf.getSize());
 		String fileSuffix = FileUtils.getFileSuffix(uploadedFileLeaf.getRelPath()).toUpperCase();
 		String fileDate = Formatter.getInstance(ureq.getLocale()).formatDateAndTime(uploadedFileLeaf.getMetaInfo().getFileLastModified());
-		String fileCreator = UserManager.getInstance().getUserDisplayName(uploadedFileLeaf.getMetaInfo().getFileInitializedBy());
-		String metaData = translate("attachment.metadata", fileSuffix, fileDate, fileCreator, formattedFileSize);
+		String fileCreator = userManager.getUserDisplayName(uploadedFileLeaf.getMetaInfo().getFileInitializedBy().getKey());
+		String metaData = translate("attachment.metadata", fileSuffix, fileDate, StringHelper.escapeHtml(fileCreator), formattedFileSize);
 		flc.contextPut("metaData_" + uploadedFileLeaf.getMetaInfo().getKey(), metaData);
 	}
 
