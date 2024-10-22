@@ -21,19 +21,33 @@ package org.olat.admin.security;
 
 import java.util.Arrays;
 
+import org.olat.basesecurity.MediaServer;
 import org.olat.basesecurity.MediaServerMode;
 import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -42,9 +56,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class MediaServerController extends FormBasicController {
+	private static final String CMD_EDIT = "edit";
+	private static final String CMD_DELETE = "delete";
 
 	private SingleSelection modeEl;
 	private MultipleSelectionElement mediaServersEl;
+	private FormLink addButton;
+	private FlexiTableElement tableEl;
+	private MediaServerModel tableModel;
+	private EditMediaServerController editController;
+	private CloseableModalController cmc;
+	private DialogBoxController deleteDialogController;
 
 	@Autowired
 	private MediaServerModule mediaServerModule;
@@ -53,6 +75,8 @@ public class MediaServerController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 
 		initForm(ureq);
+		loadModel();
+		updateUI();
 	}
 
 	@Override
@@ -85,19 +109,50 @@ public class MediaServerController extends FormBasicController {
 		mediaServersEl = uifactory.addCheckboxesVertical("media.servers", middleCont, mediaServersKV.keys(),
 				mediaServersKV.values(), 1);
 
+		addButton = uifactory.addFormLink("media.servers.add", middleCont, Link.BUTTON);
+		addButton.setLabel("media.servers.custom", null);
+		addButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaServerModel.MediaServerCol.name));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaServerModel.MediaServerCol.domain));
+		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel(MediaServerModel.MediaServerCol.edit.i18nHeaderKey(),
+				MediaServerModel.MediaServerCol.edit.ordinal(), CMD_EDIT,
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(MediaServerModel.MediaServerCol.edit.i18nHeaderKey()), CMD_EDIT), null));
+		columnsModel.addFlexiColumnModel(editCol);
+		DefaultFlexiColumnModel deleteCol = new DefaultFlexiColumnModel(MediaServerModel.MediaServerCol.delete.i18nHeaderKey(),
+				MediaServerModel.MediaServerCol.delete.ordinal(), CMD_DELETE,
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(MediaServerModel.MediaServerCol.delete.i18nHeaderKey()), CMD_DELETE), null));
+		columnsModel.addFlexiColumnModel(deleteCol);
+
+		tableModel = new MediaServerModel(columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20,
+				false, getTranslator(), middleCont);
+		tableEl.setCustomizeColumns(false);
+
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
 
-		updateUI();
+	private void loadModel() {
+		tableModel.setObjects(mediaServerModule.getCustomMediaServers().stream().map(this::toRow).toList());
+		tableEl.reset();
+	}
+
+	private MediaServerRow toRow(MediaServer mediaServer) {
+		return new MediaServerRow(mediaServer.getId(), mediaServer.getName(), mediaServer.getDomain());
 	}
 
 	private void updateUI() {
 		boolean mediaServersVisible = modeEl.isOneSelected() && MediaServerMode.configure.name().equals(modeEl.getSelectedKey());
 		mediaServersEl.setVisible(mediaServersVisible);
-		if (mediaServersEl.isVisible()) {
+		addButton.setVisible(mediaServersVisible);
+		tableEl.setVisible(mediaServersVisible);
+		if (mediaServersVisible) {
 			mediaServersEl.select(MediaServerModule.YOUTUBE_KEY, mediaServerModule.isMediaServerEnabled(MediaServerModule.YOUTUBE_KEY));
 			mediaServersEl.select(MediaServerModule.VIMEO_KEY, mediaServerModule.isMediaServerEnabled(MediaServerModule.VIMEO_KEY));
+			tableEl.setVisible(tableModel.getRowCount() > 0);
 		}
 	}
 
@@ -105,8 +160,86 @@ public class MediaServerController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (modeEl == source) {
 			updateUI();
+		} else if (addButton == source) {
+			doAdd(ureq);
+		} else if (tableEl == source) {
+			if (event instanceof SelectionEvent selectionEvent) {
+				String command = selectionEvent.getCommand();
+				MediaServerRow row = tableModel.getObject(selectionEvent.getIndex());
+				MediaServer mediaServer = mediaServerModule.getCustomMediaServers().stream()
+						.filter(m -> row != null && row.id().equals(m.getId())).findFirst().orElse(null);
+				if (CMD_EDIT.equals(command)) {
+					doEdit(ureq, mediaServer);
+				} else if (CMD_DELETE.equals(command)) {
+					doConfirmDelete(ureq, mediaServer);
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (editController == source) {
+			if (event == Event.DONE_EVENT) {
+				mediaServerModule.updateCustomMediaServer(editController.getMediaServer());
+				loadModel();
+				updateUI();
+
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
+		} else if (deleteDialogController == source) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				if (deleteDialogController.getUserObject() instanceof MediaServer mediaServer) {
+					mediaServerModule.deleteCustomMediaServer(mediaServer);
+					loadModel();
+					updateUI();
+				}
+			}
+		}
+
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(editController);
+		removeAsListenerAndDispose(cmc);
+		editController = null;
+		cmc = null;
+	}
+
+	private void doEdit(UserRequest ureq, MediaServer mediaServer) {
+		editController = new EditMediaServerController(ureq, getWindowControl(), mediaServer);
+		listenTo(editController);
+
+		String title = translate("media.server.edit");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				editController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doConfirmDelete(UserRequest ureq, MediaServer mediaServer) {
+		if (mediaServer == null) {
+			return;
+		}
+		String text = translate("media.server.delete.confirm", new String[] { mediaServer.getName() });
+		deleteDialogController = activateYesNoDialog(ureq, translate("media.server.delete"), text, deleteDialogController);
+		deleteDialogController.setUserObject(mediaServer);
+	}
+
+	private void doAdd(UserRequest ureq) {
+		editController = new EditMediaServerController(ureq, getWindowControl(), null);
+		listenTo(editController);
+
+		String title = translate("media.servers.add");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				editController.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	@Override

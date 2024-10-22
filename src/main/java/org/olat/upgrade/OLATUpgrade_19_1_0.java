@@ -24,6 +24,8 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.MediaServerMode;
+import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.logging.Tracing;
@@ -42,11 +44,14 @@ public class OLATUpgrade_19_1_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_19.1.0";
 
 	private static final String DELETE_WEBDAV_AUTH = "DELETED WEBDAV AUTH";
-	
+	private static final String MEDIA_SERVER_DOMAINS = "MEDIA SERVER DOMAINS";
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private MediaServerModule mediaServerModule;
 
 	public OLATUpgrade_19_1_0() {
 		super();
@@ -69,6 +74,7 @@ public class OLATUpgrade_19_1_0 extends OLATUpgrade {
 
 		boolean allOk = true;
 		allOk &= updateDeletedFolderMetadata(upgradeManager, uhd);
+		allOk &= updateMediaServerDomains(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -79,13 +85,13 @@ public class OLATUpgrade_19_1_0 extends OLATUpgrade {
 		}
 		return allOk;
 	}
-	
+
 	private boolean updateDeletedFolderMetadata(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(DELETE_WEBDAV_AUTH)) {
 			try {
 				log.info("Start to delete WebDAV basic authentications.");
-				
+
 				int counter = 0;
 				@SuppressWarnings("deprecation")
 				List<String> providers = List.of(WebDAVAuthManager.LEGACY_PROVIDER_WEBDAV,
@@ -104,19 +110,19 @@ public class OLATUpgrade_19_1_0 extends OLATUpgrade {
 					log.info(Tracing.M_AUDIT, "Deleted WebDAV basic authentications: {}", counter);
 					dbInstance.commitAndCloseSession();
 				} while (!webDavAuthentications.isEmpty());
-				
+
 				log.info("Finish to delete WebDAV basic authentications.");
 			} catch (Exception e) {
 				log.error("", e);
 				allOk = false;
 			}
-			
+
 			uhd.setBooleanDataValue(DELETE_WEBDAV_AUTH, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
 	}
-	
+
 	private List<Authentication> loadWebDAVAuthentication(int maxResults, List<String> providers) {
 		String query = """
 				select auth from authentication as auth 
@@ -129,5 +135,16 @@ public class OLATUpgrade_19_1_0 extends OLATUpgrade {
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
-	
+
+	private boolean updateMediaServerDomains(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+
+		if (!uhd.getBooleanDataValue(MEDIA_SERVER_DOMAINS)) {
+			mediaServerModule.setMediaServerMode(MediaServerMode.allowAll);
+			uhd.setBooleanDataValue(MEDIA_SERVER_DOMAINS, true);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+
+		return allOk;
+	}
 }

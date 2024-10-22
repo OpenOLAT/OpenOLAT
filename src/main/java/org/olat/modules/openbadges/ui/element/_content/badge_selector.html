@@ -13,7 +13,7 @@
 <div class="clearfix">
 	<div class="o_badge_selector_selected">
 		<div class="o_badge_selector_selected_label">
-			#if($nbSelected > 0)
+			#if($r.isNotNull($nbSelected) && $nbSelected > 0)
 			$r.translate("badge.selector.selected") <span class="badge">$nbSelected</span>
 			#else
 			$r.translate("badge.selector.selected.none")
