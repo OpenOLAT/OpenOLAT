@@ -455,7 +455,7 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		if(!lectureBlocks.isEmpty()) {
 			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 			searchParams.setLectureBlocks(lectureBlocks);
-			lectureBlocks = lectureService.getLectureBlocks(searchParams);
+			lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, null);
 		}
 	}
 	

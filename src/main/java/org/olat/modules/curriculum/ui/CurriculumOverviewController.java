@@ -19,12 +19,21 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -33,20 +42,40 @@ import org.olat.core.gui.control.controller.BasicController;
  *
  */
 public class CurriculumOverviewController extends BasicController {
+
+	private LectureBlocksWidgetController lectureBlocksCtrl;
 	
-	public CurriculumOverviewController(UserRequest ureq, WindowControl wControl) {
+	@Autowired
+	private LectureModule lectureModule;
+	
+	public CurriculumOverviewController(UserRequest ureq, WindowControl wControl,
+			Curriculum curriculum, LecturesSecurityCallback lecturesSecCallback) {
 		super(ureq, wControl);
+
+		List<String> widgets = new ArrayList<>();
+		VelocityContainer mainVC = createVelocityContainer("curriculum_overview");
 		
-		VelocityContainer mainVC = this.createVelocityContainer("curriculum_overview");
-		
+		if(lectureModule.isEnabled()) {
+			lectureBlocksCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(), curriculum, lecturesSecCallback);
+			listenTo(lectureBlocksCtrl);
+			mainVC.put("lectures", lectureBlocksCtrl.getInitialComponent());
+			widgets.add("lectures");
+		}
+
+		mainVC.contextPut("widgets", widgets);
 		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(lectureBlocksCtrl == source) {
+			fireEvent(ureq, event);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-	
-	
-
 }

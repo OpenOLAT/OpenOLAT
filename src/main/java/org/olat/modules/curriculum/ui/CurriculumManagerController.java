@@ -33,6 +33,9 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
+import org.olat.modules.lecture.ui.LectureRoles;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
 
 /**
  * The root controller of the curriculum mamangement site
@@ -49,12 +52,14 @@ public class CurriculumManagerController extends BasicController implements Acti
 	private CurriculumManagerRootController rootCtrl;
 	
 	private final CurriculumSecurityCallback secCallback;
+	private final LecturesSecurityCallback lecturesSecCallback;
 	
 	public CurriculumManagerController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		UserSession usess = ureq.getUserSession();
 		secCallback = CurriculumSecurityCallbackFactory.createCallback(usess.getRoles());
+		lecturesSecCallback = LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager);
 
 		toolbarPanel = new TooledStackedPanel("categoriesStackPanel", getTranslator(), this);
 		toolbarPanel.setShowCloseLink(false, false);
@@ -62,7 +67,8 @@ public class CurriculumManagerController extends BasicController implements Acti
 		toolbarPanel.setToolbarEnabled(false);
 		putInitialPanel(toolbarPanel);
 		
-		rootCtrl = new CurriculumManagerRootController(ureq, getWindowControl(), toolbarPanel, secCallback);
+		rootCtrl = new CurriculumManagerRootController(ureq, getWindowControl(), toolbarPanel,
+				secCallback, lecturesSecCallback);
 		listenTo(rootCtrl);
 		toolbarPanel.pushController(translate("curriculum.overview"), rootCtrl);
 	}

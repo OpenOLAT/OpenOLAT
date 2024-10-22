@@ -37,6 +37,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 
 /**
  * 
@@ -52,6 +53,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
 	private final CurriculumSecurityCallback secCallback;
+	private final LecturesSecurityCallback lecturesSecCallback;
 
 	private CurriculumManagerEventsController eventsCtrl;
 	private CurriculumSearchManagerController searchCtrl;
@@ -59,11 +61,12 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private CurriculumListManagerController curriculumListCtrl;
 	private final CurriculumSearchHeaderController searchFieldCtrl;
 	
-	public CurriculumManagerRootController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel toolbarPanel, CurriculumSecurityCallback secCallback) {
+	public CurriculumManagerRootController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
+		this.lecturesSecCallback = lecturesSecCallback;
 		
 		mainVC = createVelocityContainer("manager_overview");
 		
@@ -130,7 +133,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 		toolbarPanel.popUpToRootController(ureq);
 		removeAsListenerAndDispose(searchCtrl);
 		
-		searchCtrl = new CurriculumSearchManagerController(ureq, getWindowControl(), toolbarPanel, searchString, secCallback);
+		searchCtrl = new CurriculumSearchManagerController(ureq, getWindowControl(), toolbarPanel, searchString,
+				secCallback, lecturesSecCallback);
 		listenTo(searchCtrl);
 		toolbarPanel.pushController(translate("curriculum.search"), searchCtrl);
 	}
@@ -140,7 +144,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 		removeAsListenerAndDispose(curriculumListCtrl);
 		
 		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Curriculums", 0l), null);
-		curriculumListCtrl = new CurriculumListManagerController(ureq, subControl, toolbarPanel, secCallback);
+		curriculumListCtrl = new CurriculumListManagerController(ureq, subControl, toolbarPanel,
+				secCallback, lecturesSecCallback);
 		listenTo(curriculumListCtrl);
 		toolbarPanel.pushController(translate("toolbar.curriculums"), curriculumListCtrl);
 		return curriculumListCtrl;
@@ -160,7 +165,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		config.setTitle(translate("curriculum.implementations"), 2, "o_icon_curriculum_implementations");
 		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Implementations", 0l), null);
 		implementationsCtrl = new CurriculumComposerController(ureq, subControl, toolbarPanel,
-				null, null, config , secCallback);
+				null, null, config , secCallback, lecturesSecCallback);
 		listenTo(implementationsCtrl);
 		toolbarPanel.pushController(translate("toolbar.implementations"), implementationsCtrl);
 		return implementationsCtrl;

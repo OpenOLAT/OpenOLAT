@@ -191,7 +191,7 @@ public class EditLectureBlockController extends FormBasicController {
 		readOnly = false;
 		lectureBlock = null;
 		this.addLectureCtxt = addLecture;
-		curriculumElement = addLecture.getRootElement();
+		curriculumElement = addLecture.getCurriculumElement() != null ? addLecture.getCurriculumElement() : addLecture.getRootElement();
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, true);
 		
 		locations = getLocations(ureq);

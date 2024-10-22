@@ -1475,8 +1475,13 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public List<LectureBlock> getLectureBlocks(LecturesBlockSearchParameters searchParams) {
-		return lectureBlockDao.searchLectureBlocks(searchParams);
+	public long countLectureBlocks(LecturesBlockSearchParameters searchParams) {
+		return lectureBlockDao.countLectureBlocks(searchParams);
+	}
+
+	@Override
+	public List<LectureBlock> getLectureBlocks(LecturesBlockSearchParameters searchParams, int maxResults, Boolean orderAsc) {
+		return lectureBlockDao.searchLectureBlocks(searchParams, maxResults, orderAsc);
 	}
 
 	@Override
@@ -1599,7 +1604,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public List<LectureBlockBlockStatistics> getLectureBlocksStatistics(LecturesBlockSearchParameters searchParams) {
-		List<LectureBlock> lectureBlocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		List<LectureBlock> lectureBlocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
 		if(lectureBlocks == null || lectureBlocks.isEmpty()) {
 			return new ArrayList<>();
 		}

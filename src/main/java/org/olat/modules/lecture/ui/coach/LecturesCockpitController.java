@@ -252,7 +252,7 @@ public class LecturesCockpitController extends BasicController implements Activa
 		searchParams.addRollCallStatus(LectureRollCallStatus.open);
 
 		Formatter formatter = Formatter.getInstance(getLocale());
-		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams);
+		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, null);
 		Collections.sort(lectureBlocks, new LectureBlockComparator());
 		
 		List<Link> pendingLinks = new ArrayList<>();

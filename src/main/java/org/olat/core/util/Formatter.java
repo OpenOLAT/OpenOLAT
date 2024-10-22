@@ -401,6 +401,14 @@ public class Formatter {
 		long s = (millis - hmins - m*1000*60)/1000;
 		return h + "h " + m + "m " + s + "s";
 	}
+	
+	public static String formatDurationCompact(long millis) {
+		long h = millis / (1000*60*60);
+		long hmins = h*1000*60*60;
+		long m = (millis - hmins)/(1000*60);
+		long s = (millis - hmins - m*1000*60)/1000;
+		return h + "h " + (m > 0 || s > 0 ? m + "m " : "") + (s > 0 ? s + "s" : "");
+	}
 
 	/**
 	 * Formats a duration in millis to "XX:YY:ZZ". Removes the hours if zero

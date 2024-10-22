@@ -118,6 +118,7 @@ import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.event.SelectCurriculumElementEvent;
 import org.olat.modules.curriculum.ui.event.SelectLectureBlockEvent;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.generator.ui.CurriculumElementPreviewListController;
 import org.olat.repository.RepositoryEntry;
@@ -178,6 +179,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private final CurriculumElement rootElement;
 	private final CurriculumComposerConfig config;
 	private final CurriculumSecurityCallback secCallback;
+	private final LecturesSecurityCallback lecturesSecCallback;
 	
 	@Autowired
 	private DB dbInstance;
@@ -197,13 +199,15 @@ public class CurriculumComposerController extends FormBasicController implements
 	 * @param secCallback Security callback
 	 */
 	public CurriculumComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			Curriculum curriculum, CurriculumElement rootElement, CurriculumComposerConfig config, CurriculumSecurityCallback secCallback) {
+			Curriculum curriculum, CurriculumElement rootElement, CurriculumComposerConfig config,
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
 		super(ureq, wControl, "manage_curriculum_structure");
 		this.toolbarPanel = toolbarPanel;
 		this.config = config;
 		this.secCallback = secCallback;
 		this.curriculum = curriculum;
 		this.rootElement = rootElement;
+		this.lecturesSecCallback = lecturesSecCallback;
 		
 		if(curriculum != null) {
 			managed = CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members);
@@ -905,7 +909,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		} else {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, row.getKey()), null);
 			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel,
-					element.getCurriculum(), element, secCallback);
+					element.getCurriculum(), element, secCallback, lecturesSecCallback);
 			listenTo(editCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
 			editCtrl.activate(ureq, entries, null);

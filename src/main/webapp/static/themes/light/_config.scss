@@ -719,7 +719,17 @@ $o-curriculum-status-active-color				: $o-repo-published-color !default;
 $o-curriculum-status-finished-color				: $o-repo-closed-color !default;
 $o-curriculum-status-cancelled-color			: $o-repo-trash-color !default;
 $o-curriculum-status-deleted-color				: $o-repo-deleted-color !default;
-	
+
+/* Curriculum overview */
+$o-curriculum-widget-border						: 1px solid #e7e7e7 !default;
+$o-curriculum-widget-border-radius				: 4px !default;
+$o-curriculum-widget-bg-color					: $panel-bg !default;
+$o-curriculum-widget-color						: $brand-primary !default;
+$o-curriculum-widget-empty-color				: #5d5d5d !default;
+$o-curriculum-widget-card-border				: 1px solid #cccccc !default;
+$o-curriculum-widget-card-border-radius			: 4px !default;
+$o-curriculum-widget-now-bg-color				: rgb($brand-primary, 0.1) !default;
+
 /* Asssessment */
 $o-assessment-mode-today-bg						: $state-success-bg !default;
 $o-assessment-mode-today-border-color			: $state-success-text !default;

@@ -585,15 +585,18 @@ public interface LectureService {
 	 */
 	public List<LectureBlock> getLectureBlocks(CurriculumElementRef element);
 	
+	public long countLectureBlocks(LecturesBlockSearchParameters searchParams);
+	
 	/**
 	 * Search lecture blocks. It returns only lecture blocks with a teacher and
 	 * if the repository entry has the lectures enabled.
 	 * 
-	 * 
 	 * @param searchParams The search parameters
+	 * @param maxResults Max. number of results (-1 for all)
+	 * @param orderAsc Add asc / desc
 	 * @return A list of lecture blocks
 	 */
-	public List<LectureBlock> getLectureBlocks(LecturesBlockSearchParameters searchParams);
+	public List<LectureBlock> getLectureBlocks(LecturesBlockSearchParameters searchParams, int maxResults, Boolean orderAsc);
 	
 	/**
 	 * Return the list of lecture blocks of a course with the teachers.

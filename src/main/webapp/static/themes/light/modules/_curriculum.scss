@@ -424,20 +424,131 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	gap: $o-widgets-gap;
 	
 	.o_curriculum_widget {
-		border: $o-widget-border;
-		border-radius: $o-widget-border-radius;
-		padding: $o-widget-padding;
-		background-color: $panel-bg;
+		border: $o-curriculum-widget-border;
+		border-radius: $o-curriculum-widget-border-radius;
+		padding: 0;
+		background-color: $o-curriculum-widget-bg-color;
 	}
 		
-	.o_curriculum_widget h4:first-child {
-		padding-top: 0;
+	.o_curriculum_widget_title h4 {
+		padding: 5px 15px;
+		margin: 5px 0;
 	}
 	
-	.o_table_flexi.o_rendertype_custom .o_table_row.row {
-		padding: 0;
-		margin: 0;
-		width: 100%;
+	.o_header_with_buttons {
+		margin-bottom: 0;
+	}
+	
+	.o_curriculum_widget_cmds {
+		font-size: 18px;
+		margin-right: 15px;
+	}
+	
+	.o_curriculum_widget_cards {
+		padding: 0 15px 0 15px;
+	
+		.o_table_flexi.o_rendertype_custom .o_table_row.row {
+			padding: 0;
+			margin: 0;
+			width: 100%;
+		}
+	}
+
+	.o_curriculum_widget_numbers {
+		display: flex;
+		column-gap: 20px;
+		margin: 0px 15px;
+		
+		.o_curriculum_widget_number {
+			display: flex;
+			flex-direction: column-reverse;
+			
+			.o_curriculum_widget_value {
+				font-size: $o-widget-figure-value-font-size;
+				line-height: $o-widget-figure-value-font-size;
+				font-weight: normal;
+				padding: 0;
+				color: $o-curriculum-widget-color;
+			}
+			.o_curriculum_widget_label, label {
+				font-size: $o-widget-figure-desc-font-size;
+				font-weight: normal;
+				color: $o-curriculum-widget-color;
+			}
+		}
+	}
+	
+	.o_curriculum_widget_table {
+		margin-top: 10px;
+	
+		legend {
+			padding: 5px 15px;
+			margin: 0;
+			border: none;
+			font-weight: bold;
+		}
+		
+		.o_empty_state {
+			border: none;
+			border-top: $o-curriculum-widget-border;
+			border-bottom: $o-curriculum-widget-border;
+			border-radius: 0;
+			
+			margin: 0;
+			padding: 0 15px;
+			text-align: left;
+			font-style: italic;
+			background-color: #fff;
+			
+			h3 {
+				font-size: 1.2em;
+				color: $o-curriculum-widget-empty-color;
+			}
+		}
+		
+		.o_empty_visual, thead {
+			display: none;
+		}
+		
+		.table {
+			margin-top: 0;
+			
+			td {
+				background-color: #fff;
+				vertical-align: middle;
+			}
+			
+			.o_curriculum_date > td:first-child,
+			.o_curriculum_today > td:first-child {
+				border-left: 3px solid #fff;
+			}
+			
+			.o_curriculum_now > td:first-child {
+				border-left: 3px solid $brand-primary;
+			}
+			.o_curriculum_now {
+				background-color: $o-curriculum-widget-now-bg-color;
+			}
+		}
+		
+		.o_lecture_title_ref {
+			display: flex;
+			flex-direction: column-reverse;
+		}
+		.o_lecture_title {
+			font-weight: bold;
+		}
+		.o_lecture_day {
+			display: block;
+		}
+		
+		.o_curriculum_today .o_lecture_day,
+		.o_curriculum_now .o_lecture_day {
+			display: none;
+		}
+		.o_curriculum_now .o_lecture_time i.o_icon_time {
+			@include o-add-icon('hourglass-half', false);
+		}
 	}
 	
 	.o_curriculum_course_card {
@@ -445,6 +556,9 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		grid-template-columns: 120px 1fr auto;
 		gap: 10px;
 		padding: 5px;
+		border: $o-curriculum-widget-card-border;
+		border-radius: $o-curriculum-widget-card-border-radius;
+		background-color: #fff;
 		
 		.o_thumbnail {
 			width: 120px;

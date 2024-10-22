@@ -31,6 +31,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
+import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,8 +45,13 @@ import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
 public class CurriculumElementOverviewController extends BasicController {
 	
 	private CoursesWidgetController coursesCtrl;
+	private LectureBlocksWidgetController lectureBlocksCtrl;
 	
-	public CurriculumElementOverviewController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
+	@Autowired
+	private LectureModule lectureModule;
+	
+	public CurriculumElementOverviewController(UserRequest ureq, WindowControl wControl,
+			CurriculumElement curriculumElement, LecturesSecurityCallback lecturesSecCallback) {
 		super(ureq, wControl);
 
 		List<String> widgets = new ArrayList<>();
@@ -54,16 +63,24 @@ public class CurriculumElementOverviewController extends BasicController {
 			widgets.add("courses");
 		}
 		
+		if(lectureModule.isEnabled()) {
+			lectureBlocksCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
+					curriculumElement, lecturesSecCallback);
+			listenTo(lectureBlocksCtrl);
+			mainVC.put("lectures", lectureBlocksCtrl.getInitialComponent());
+			widgets.add("lectures");
+		}
+		
 		mainVC.contextPut("widgets", widgets);
 		putInitialPanel(mainVC);
 	}
-	
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(coursesCtrl == source) {
+		if(coursesCtrl == source || lectureBlocksCtrl == source) {
 			fireEvent(ureq, event);
 		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

@@ -1,0 +1,26 @@
+<div class="o_curriculum_widget_title o_header_with_buttons">
+	<h4>$r.render("curriculum.lectures")</h4>
+	#if($r.available("curriculum.add.lectures"))
+	<div class="o_curriculum_widget_cmds o_button_group o_button_group_right">
+		$r.render("curriculum.add.lectures")
+	</div>
+	#end
+</div>
+<div class="o_curriculum_widget_numbers">
+	<div class="o_curriculum_widget_number">
+		<div class="o_curriculum_widget_label">$r.render("num.of.events.today", "label")</div>
+		<div class="o_curriculum_widget_value">$r.render("num.of.events.today", "nolayout")</div>
+	</div>
+	<div class="o_curriculum_widget_number">
+		<div class="o_curriculum_widget_label">$r.render("num.of.events.next.days", "label")</div>
+		<div class="o_curriculum_widget_value">$r.render("num.of.events.next.days", "nolayout")</div>
+	</div>
+</div>
+<fieldset class="o_curriculum_widget_table">
+	<legend>$r.translate("curriculum.lectures.today")</legend>
+	$r.render("today")
+</fieldset>
+<fieldset class="o_curriculum_widget_table">
+	<legend>$r.translate("curriculum.lectures.next.days")</legend>
+	$r.render("nextDays")
+</fieldset>

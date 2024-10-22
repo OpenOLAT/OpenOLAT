@@ -269,7 +269,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setManager(lectureManager);
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
 		Assert.assertNotNull(blocks);
 		Assert.assertEquals(1, blocks.size());
 		LectureBlock loadedBlock = blocks.get(0);
@@ -293,7 +293,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		searchParams.setMasterCoach(id);
 		searchParams.setManager(id);
 		
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
 		Assert.assertNotNull(blocks);
 	}
 	
@@ -313,7 +313,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setManager(lectureManager);
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
 		Assert.assertNotNull(blocks);
 		Assert.assertTrue(blocks.isEmpty());
 	}
@@ -342,14 +342,14 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		// first see something
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setManager(lectureManager);
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
 		Assert.assertNotNull(blocks);
 		Assert.assertEquals(1, blocks.size());
 		
 		// second not
 		LecturesBlockSearchParameters otherSearchParams = new LecturesBlockSearchParameters();
 		otherSearchParams.setManager(otherLectureManager);
-		List<LectureBlock> otherBlocks = lectureBlockDao.searchLectureBlocks(otherSearchParams);
+		List<LectureBlock> otherBlocks = lectureBlockDao.searchLectureBlocks(otherSearchParams, -1, null);
 		Assert.assertNotNull(otherBlocks);
 		Assert.assertTrue(otherBlocks.isEmpty());
 	}
@@ -372,7 +372,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		// first see something
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setManager(lectureManager);
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
 		Assert.assertNotNull(blocks);
 		Assert.assertFalse(blocks.isEmpty());
 		Assert.assertTrue(blocks.contains(lectureBlock));
@@ -406,7 +406,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		//search all
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setViewAs(teacher, LectureRoles.teacher);
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
 		Assert.assertNotNull(blocks);
 		Assert.assertEquals(1, blocks.size());
 		Assert.assertEquals(lectureBlock, blocks.get(0));
@@ -424,7 +424,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		//search all
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setViewAs(teacher, LectureRoles.teacher);
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
 		Assert.assertNotNull(blocks);
 		Assert.assertTrue(blocks.isEmpty());
 	}
@@ -443,7 +443,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setSearchString("lecturers");
 		searchParams.setViewAs(teacher, LectureRoles.teacher);
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
 		Assert.assertNotNull(blocks);
 		Assert.assertEquals(1, blocks.size());
 		Assert.assertEquals(lectureBlock, blocks.get(0));
@@ -452,7 +452,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		LecturesBlockSearchParameters searchNegativeParams = new LecturesBlockSearchParameters();
 		searchNegativeParams.setSearchString("goodbye");
 		searchNegativeParams.setViewAs(teacher, LectureRoles.teacher);
-		List<LectureBlock> negativeBlocks = lectureBlockDao.searchLectureBlocks(searchNegativeParams);
+		List<LectureBlock> negativeBlocks = lectureBlockDao.searchLectureBlocks(searchNegativeParams, -1, null);
 		Assert.assertNotNull(negativeBlocks);
 		Assert.assertEquals(0, negativeBlocks.size());
 	}
@@ -475,7 +475,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		searchNowParams.setStartDate(now.getTime());
 		now.add(Calendar.DATE, 2);
 		searchNowParams.setEndDate(now.getTime());
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchNowParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchNowParams, -1, null);
 		Assert.assertNotNull(blocks);
 		Assert.assertEquals(1, blocks.size());
 		Assert.assertEquals(lectureBlock, blocks.get(0));
@@ -487,7 +487,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		searchFutureParams.setStartDate(now.getTime());
 		now.add(Calendar.DATE, 2);
 		searchFutureParams.setEndDate(now.getTime());
-		List<LectureBlock> futureBlocks = lectureBlockDao.searchLectureBlocks(searchFutureParams);
+		List<LectureBlock> futureBlocks = lectureBlockDao.searchLectureBlocks(searchFutureParams, -1, null);
 		Assert.assertNotNull(futureBlocks);
 		Assert.assertEquals(0, futureBlocks.size());
 	}
@@ -508,7 +508,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Calendar now = Calendar.getInstance();
 		now.add(Calendar.DATE, -1);
 		searchNowParams.setStartDate(now.getTime());
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchNowParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchNowParams, -1, null);
 		Assert.assertNotNull(blocks);
 		Assert.assertEquals(1, blocks.size());
 		Assert.assertEquals(lectureBlock, blocks.get(0));
@@ -518,7 +518,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		searchFutureParams.setViewAs(teacher, LectureRoles.teacher);
 		now.add(Calendar.DATE, 2);
 		searchFutureParams.setStartDate(now.getTime());
-		List<LectureBlock> futureBlocks = lectureBlockDao.searchLectureBlocks(searchFutureParams);
+		List<LectureBlock> futureBlocks = lectureBlockDao.searchLectureBlocks(searchFutureParams, -1, null);
 		Assert.assertNotNull(futureBlocks);
 		Assert.assertEquals(0, futureBlocks.size());
 	}
@@ -539,7 +539,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Calendar now = Calendar.getInstance();
 		now.add(Calendar.DATE, -1);
 		searchNowParams.setEndDate(now.getTime());
-		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchNowParams);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchNowParams, -1, null);
 		Assert.assertNotNull(blocks);
 		Assert.assertEquals(0, blocks.size());
 		
@@ -548,7 +548,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		searchFutureParams.setViewAs(teacher, LectureRoles.teacher);
 		now.add(Calendar.DATE, 2);
 		searchFutureParams.setEndDate(now.getTime());
-		List<LectureBlock> futureBlocks = lectureBlockDao.searchLectureBlocks(searchFutureParams);
+		List<LectureBlock> futureBlocks = lectureBlockDao.searchLectureBlocks(searchFutureParams, -1, null);
 		Assert.assertNotNull(futureBlocks);
 		Assert.assertEquals(1, futureBlocks.size());
 		Assert.assertEquals(lectureBlock, futureBlocks.get(0));

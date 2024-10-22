@@ -227,21 +227,49 @@ public class LectureBlockDAO {
 				.getResultList();
 	}
 	
-	public List<LectureBlock> searchLectureBlocks(LecturesBlockSearchParameters searchParams) {
+	public long countLectureBlocks(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
-		sb.append("select distinct block from lectureblock block")
-		  .append(" inner join fetch block.entry entry")
-		  .append(" inner join fetch entry.olatResource oRes")
-		  .append(" left join fetch block.teacherGroup tGroup");
+		sb.append("select count(distinct block.key) from lectureblock block")
+		  .append(" inner join block.entry entry")
+		  .append(" inner join entry.olatResource oRes")
+		  .append(" left join fetch block.teacherGroup tGroup")
+		  .append(" left join block.curriculumElement curEl");
 		addSearchParametersToQuery(sb, searchParams);
 		sb.and()
 		  .append(" exists (select config.key from lectureentryconfig config")
 		  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
 		  .append(" )");
 
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		addSearchParametersToQuery(query, searchParams);
+		List<Long> count = query.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null ? 0l : count.get(0).longValue();
+	}
+	
+	public List<LectureBlock> searchLectureBlocks(LecturesBlockSearchParameters searchParams, int maxResults, Boolean orderAsc) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select distinct block from lectureblock block")
+		  .append(" inner join fetch block.entry entry")
+		  .append(" inner join fetch entry.olatResource oRes")
+		  .append(" left join fetch block.teacherGroup tGroup")
+		  .append(" left join block.curriculumElement curEl");
+		addSearchParametersToQuery(sb, searchParams);
+		sb.and()
+		  .append(" exists (select config.key from lectureentryconfig config")
+		  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
+		  .append(" )");
+		if(orderAsc != null) {
+			sb.append(" order by block.startDate ").append("asc", "desc", orderAsc.booleanValue());
+		}
+
 		TypedQuery<LectureBlock> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlock.class);
 		addSearchParametersToQuery(query, searchParams);
+		if(maxResults > 0) {
+			query.setFirstResult(0)
+			     .setMaxResults(maxResults);
+		}
 		return query.getResultList();
 	}
 	

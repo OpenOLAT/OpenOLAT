@@ -189,9 +189,17 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 	
 	private void loadCurriculumModel() {
 		List<CurriculumElementRow> rows = new ArrayList<>();
+		
+		CurriculumElementInfosSearchParams searchParams = null;
 		if(addLecture.getRootElement() != null) {
-			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams
+			 searchParams = CurriculumElementInfosSearchParams
 					.searchDescendantsOf(addLecture.getCurriculumElement());
+		} else if(addLecture.getCurriculum() != null) {
+			searchParams = CurriculumElementInfosSearchParams
+					.searchElementsOf(addLecture.getCurriculum());
+		}
+		
+		if(searchParams != null) {
 			List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			Map<Long,CurriculumElementRow> keyToRows = new HashMap<>();
 			for(CurriculumElementInfos element:elements) {

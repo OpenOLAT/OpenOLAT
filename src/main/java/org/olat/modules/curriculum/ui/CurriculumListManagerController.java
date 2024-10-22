@@ -90,6 +90,7 @@ import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerDataModel.CurriculumCols;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -157,6 +158,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private final Roles roles;
 	private final boolean isMultiOrganisations;
 	private final CurriculumSecurityCallback secCallback;
+	private final LecturesSecurityCallback lecturesSecCallback;
 
 	@Autowired
 	private LectureModule lectureModule;
@@ -168,10 +170,12 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private OrganisationService organisationService;
 	
 	public CurriculumListManagerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			CurriculumSecurityCallback secCallback) {
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
 		super(ureq, wControl, "manage_curriculum");
 		this.toolbarPanel = toolbarPanel;
 		this.secCallback = secCallback;
+		this.lecturesSecCallback = lecturesSecCallback;
+		
 		roles = ureq.getUserSession().getRoles();
 		toolbarPanel.addListener(this);
 		isMultiOrganisations = organisationService.isMultiOrganisations();
@@ -625,8 +629,10 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		if(curriculum == null) {
 			showWarning("warning.curriculum.deleted");
 		} else {
-			WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(Curriculum.class, curriculum.getKey()), null);
-			detailsCurriculumCtrl = new CurriculumDetailsController(ureq, subControl, toolbarPanel, curriculum, secCallback);
+			WindowControl subControl = addToHistory(ureq, OresHelper
+					.createOLATResourceableInstance(Curriculum.class, curriculum.getKey()), null);
+			detailsCurriculumCtrl = new CurriculumDetailsController(ureq, subControl, toolbarPanel, curriculum,
+					secCallback, lecturesSecCallback);
 			listenTo(detailsCurriculumCtrl);
 			
 			String crumb = row.getExternalRef();

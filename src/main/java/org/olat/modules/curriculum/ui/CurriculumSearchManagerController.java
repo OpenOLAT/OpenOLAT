@@ -62,6 +62,7 @@ import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.ui.CurriculumElementSearchDataModel.SearchCols;
 import org.olat.modules.curriculum.ui.event.CurriculumSearchEvent;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,15 +89,18 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	
 	private int counter = 0;
 	private final CurriculumSecurityCallback secCallback;
+	private final LecturesSecurityCallback lecturesSecCallback;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	
 	public CurriculumSearchManagerController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel toolbarPanel, String searchString, CurriculumSecurityCallback secCallback) {
+			TooledStackedPanel toolbarPanel, String searchString,
+			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
 		super(ureq, wControl, "curriculum_element_search");
 		this.toolbarPanel = toolbarPanel;
 		this.secCallback = secCallback;
+		this.lecturesSecCallback = lecturesSecCallback;
 		initForm(ureq);
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			tableEl.quickSearch( ureq, searchString);
@@ -277,7 +281,8 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		} else {
 			Curriculum curriculum = row.getCurriculum();
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, row.getKey()), null);
-			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel, curriculum, element, secCallback);
+			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel, curriculum, element,
+					secCallback, lecturesSecCallback);
 			listenTo(editCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
 			editCtrl.activate(ureq, entries, null);

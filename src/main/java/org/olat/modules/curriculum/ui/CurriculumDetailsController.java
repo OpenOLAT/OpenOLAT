@@ -46,12 +46,16 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumInfos;
-import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesController;
+import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.LectureListRepositoryController;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -74,23 +78,27 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private CloseableModalController cmc;
 	private EditCurriculumController editMetadataCtrl;
 	private CurriculumOverviewController overviewCtrl;
+	private LectureListRepositoryController lectureBlocksCtrl;
 	private CurriculumComposerController implementationsCtrl;
-	private CurriculumElementLecturesController lecturesCtrl;
 	private CurriculumUserManagementController userManagementCtrl;
 	private ConfirmCurriculumDeleteController deleteCurriculumCtrl;
 	
 	private Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
+	private final LecturesSecurityCallback lecturesSecCallback;
 	
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private CurriculumService curriculumService;
 	
 	public CurriculumDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			Curriculum curriculum, CurriculumSecurityCallback secCallback) {
+			Curriculum curriculum, CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
 		super(ureq, wControl);
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
 		this.toolbarPanel = toolbarPanel;
+		this.lecturesSecCallback = lecturesSecCallback;
 		
 		mainVC = createVelocityContainer("curriculum_details");
 		tabPane = new TabbedPane("tabs", getLocale());
@@ -129,7 +137,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private void initTabPane(UserRequest ureq) {
 		// Overview
 		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> {
-			overviewCtrl = new CurriculumOverviewController(uureq, getWindowControl());
+			overviewCtrl = new CurriculumOverviewController(uureq, getWindowControl(), curriculum, lecturesSecCallback);
 			listenTo(overviewCtrl);
 			return overviewCtrl.getInitialComponent();
 		});
@@ -142,7 +150,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			config.setRootElementsOnly(true);
 			config.setFlat(true);
 			implementationsCtrl = new CurriculumComposerController(uureq, getWindowControl(), toolbarPanel,
-					curriculum, null, config, secCallback);
+					curriculum, null, config, secCallback, lecturesSecCallback);
 			listenTo(implementationsCtrl);
 			
 			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
@@ -150,12 +158,16 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			return implementationsCtrl.getInitialComponent();
 		});
 		
-		// Lectures blocks / absences like
-		lecturesTab = tabPane.addTab(ureq, translate("curriculum.lectures"), uureq -> {
-			lecturesCtrl = new CurriculumElementLecturesController(uureq, getWindowControl(), toolbarPanel, curriculum, null, true, secCallback);
-			listenTo(lecturesCtrl);
-			return lecturesCtrl.getInitialComponent();
-		});
+		// Events / lectures blocks
+		if(lectureModule.isEnabled()) {
+			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), uureq -> {
+				WindowControl subControl = addToHistory(uureq, OresHelper
+						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
+				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, curriculum, lecturesSecCallback);
+				listenTo(lectureBlocksCtrl);
+				return lectureBlocksCtrl.getInitialComponent();
+			});
+		}
 		
 		// Metadata
 		tabPane.addTab(ureq, translate("curriculum.metadata"), uureq -> {
@@ -197,7 +209,11 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(deleteCurriculumCtrl == source) {
+		if(overviewCtrl == source) {
+			if(event instanceof ActivateEvent ae) {
+				activate(ureq, ae.getEntries(), null);
+			}
+		} else if(deleteCurriculumCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				toolbarPanel.popController(this);
 				fireEvent(ureq, Event.CHANGED_EVENT);

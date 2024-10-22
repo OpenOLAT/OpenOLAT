@@ -82,6 +82,7 @@ import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
@@ -161,6 +162,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 
 	private int counter = 0;
 	private final RepositoryEntry entry;
+	private final Curriculum curriculum;
 	private final boolean lectureManagementManaged;
 	private final CurriculumElement curriculumElement;
 	private final LecturesSecurityCallback secCallback;
@@ -177,7 +179,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
 		this.entry = entry;
-		this.curriculumElement = null;
+		curriculum = null;
+		curriculumElement = null;
 		this.secCallback = secCallback;
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
@@ -191,7 +194,22 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
 		this.entry = null;
+		curriculum = curriculumElement == null ? null : curriculumElement.getCurriculum();
 		this.curriculumElement = curriculumElement;
+		this.secCallback = secCallback;
+		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
+		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
+		detailsVC = createVelocityContainer("lecture_details");
+		
+		initForm(ureq);
+		loadModel();
+	}
+	
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, Curriculum curriculum, LecturesSecurityCallback secCallback) {
+		super(ureq, wControl, "admin_repository_lectures");
+		entry = null;
+		this.curriculum = curriculum;
+		curriculumElement = null;
 		this.secCallback = secCallback;
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
@@ -207,19 +225,21 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
 			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
 			addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
-			
-			DropdownItem addTaskDropdown = uifactory.addDropdownMenu("import.lectures.dropdown", null, null, formLayout, getTranslator());
-			addTaskDropdown.setOrientation(DropdownOrientation.right);
-			addTaskDropdown.setElementCssClass("o_sel_add_more");
-			addTaskDropdown.setEmbbeded(true);
-			addTaskDropdown.setButton(true);
 
-			importLecturesButton = uifactory.addFormLink("import.lectures", formLayout, Link.LINK);
-			importLecturesButton.setIconLeftCSS("o_icon o_icon_import");
-			importLecturesButton.setElementCssClass("o_sel_repo_import_lectures");
-			addTaskDropdown.addElement(importLecturesButton);
-			
 			deleteLecturesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
+			
+			if(entry != null || curriculumElement != null) {
+				DropdownItem addTaskDropdown = uifactory.addDropdownMenu("import.lectures.dropdown", null, null, formLayout, getTranslator());
+				addTaskDropdown.setOrientation(DropdownOrientation.right);
+				addTaskDropdown.setElementCssClass("o_sel_add_more");
+				addTaskDropdown.setEmbbeded(true);
+				addTaskDropdown.setButton(true);
+				
+				importLecturesButton = uifactory.addFormLink("import.lectures", formLayout, Link.LINK);
+				importLecturesButton.setIconLeftCSS("o_icon o_icon_import");
+				importLecturesButton.setElementCssClass("o_sel_repo_import_lectures");
+				addTaskDropdown.addElement(importLecturesButton);
+			}
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -375,6 +395,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(curriculumElement != null) {
 			displayname = curriculumElement.getDisplayName();
 			externalRef = curriculumElement.getExternalId();
+		} else if(curriculum != null) {
+			displayname = curriculum.getDisplayName();
+			externalRef = curriculum.getExternalId();
 		} else if(entry != null) {
 			displayname = entry.getDisplayname();
 			externalRef = entry.getExternalRef();
@@ -437,6 +460,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			boolean oneLevelOnly =  isFilterSelected(FILTER_ONE_LEVEL_ONLY);
 			searchParams.setCurriculumElementPath(oneLevelOnly ? null : curriculumElement.getMaterializedPathKeys());
 			searchParams.setCurriculumElement(oneLevelOnly ? curriculumElement : null);
+		} else if(curriculum != null) {
+			searchParams.setCurriculum(curriculum);
 		} else if(entry != null) {
 			searchParams.setEntry(entry);
 		}
@@ -623,6 +648,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, readOnly);
 		} else if(curriculumElement != null) {
 			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), curriculumElement, block, readOnly);
+		} else if(block.getEntry() != null) {
+			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), block.getEntry(), block, readOnly);
+		} else if(block.getCurriculumElement() != null) {
+			editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), block.getCurriculumElement(), block, readOnly);
 		} else {
 			showWarning("error.no.entry.curriculum");
 			return;
@@ -637,13 +666,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private void doAddLectureBlock(UserRequest ureq) {
 		if(guardModalController(addLectureCtrl) || !secCallback.canNewLectureBlock()) return;
 		
-		if(entry == null && curriculumElement == null) {
+		if(entry == null && curriculumElement == null && curriculum == null) {
 			showWarning("error.no.entry.curriculum");
 			return;
 		}
 		
 		List<RepositoryEntry> entries = entry == null ? List.of() : List.of(entry);
-		AddLectureContext addLecture = new AddLectureContext(curriculumElement, entries);
+		AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement, entries);
 		addLecture.setEntry(entry);
 		addLecture.setCurriculumElement(curriculumElement);
 		

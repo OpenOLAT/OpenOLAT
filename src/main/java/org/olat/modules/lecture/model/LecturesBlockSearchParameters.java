@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -49,6 +50,7 @@ public class LecturesBlockSearchParameters {
 	private List<? extends IdentityRef> teachersList;
 	private RepositoryEntry entry;
 	private Boolean withTeachers;
+	private Curriculum curriculum;
 	private String curriculumElementPath;
 	private CurriculumElementRef curriculumElement;
 	private List<LectureRollCallStatus> rollCallStatus;
@@ -190,6 +192,14 @@ public class LecturesBlockSearchParameters {
 
 	public void setEntry(RepositoryEntry entry) {
 		this.entry = entry;
+	}
+
+	public Curriculum getCurriculum() {
+		return curriculum;
+	}
+
+	public void setCurriculum(Curriculum curriculum) {
+		this.curriculum = curriculum;
 	}
 
 	public CurriculumElementRef getCurriculumElement() {

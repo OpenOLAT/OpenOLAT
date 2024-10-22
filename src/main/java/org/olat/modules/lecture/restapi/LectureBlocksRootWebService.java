@@ -101,7 +101,7 @@ public class LectureBlocksRootWebService {
 			searchParams.setEndDate(endDate);
 		}
 		searchParams.setManager(getIdentity(httpRequest));
-		List<LectureBlock> blockList = lectureService.getLectureBlocks(searchParams);
+		List<LectureBlock> blockList = lectureService.getLectureBlocks(searchParams, -1, null);
 		List<LectureBlockVO> voList = new ArrayList<>(blockList.size());
 		for(LectureBlock block:blockList) {
 			voList.add(new LectureBlockVO(block, block.getEntry().getKey()));

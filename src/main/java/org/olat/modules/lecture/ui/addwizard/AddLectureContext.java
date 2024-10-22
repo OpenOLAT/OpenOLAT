@@ -22,6 +22,7 @@ package org.olat.modules.lecture.ui.addwizard;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.repository.RepositoryEntry;
@@ -39,12 +40,19 @@ public class AddLectureContext {
 	private LectureBlock lectureBlock;
 	private CurriculumElement curriculumElement;
 	
+	private final Curriculum curriculum;
 	private final CurriculumElement rootElement;
 	private final List<RepositoryEntry> potentielEntries;
 	
-	public AddLectureContext(CurriculumElement rootElement, List<RepositoryEntry> potentielEntries) {
+	public AddLectureContext(Curriculum curriculum, CurriculumElement rootElement,
+			List<RepositoryEntry> potentielEntries) {
+		this.curriculum = curriculum;
 		this.rootElement = rootElement;
 		this.potentielEntries = potentielEntries;
+	}
+	
+	public Curriculum getCurriculum() {
+		return curriculum;
 	}
 
 	public CurriculumElement getRootElement() {
