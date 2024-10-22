@@ -510,13 +510,9 @@ public class SearchInputController extends FormBasicController implements Generi
 					searchResults = doFuzzySearch(ureq, searchString, null, parentCtxt, docType, fileType, rsrcUrl, firstResult, maxReturns);
 				}
 			}
-			
-			if(firstResult == 0 && searchResults != null && searchResults.getException() == null && searchResults.getList().isEmpty()) {
-				showInfo("found.no.result.try.fuzzy.search");
-			}
 			return searchResults;
 		} catch (ParseException e) {
-			if(log.isDebugEnabled()) log.debug("Query cannot be parsed: " + query);
+			if(log.isDebugEnabled()) log.debug("Query cannot be parsed: {}", query);
 			getWindowControl().setWarning(translate("invalid.search.query"));
 		} catch (QueryException e) {
 			getWindowControl().setWarning(translate("invalid.search.query.with.wildcard"));
