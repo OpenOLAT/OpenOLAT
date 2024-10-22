@@ -423,7 +423,7 @@ public class UserCommentDisplayController extends BasicController {
 	}
 
 	private void doPreviewAttachment(UserRequest ureq, VFSLeaf attachmentFile) {
-		if (folderModule.isForceDownload()) {
+		if (folderModule.isForceDownload() || getIdentity() == null) {
 			doDownloadAttachment(ureq, attachmentFile);
 		} else {
 			DocEditorConfigs configs = DocEditorConfigs.builder()
