@@ -510,7 +510,7 @@ public class MediaCenterController extends FormBasicController
 		}
 			
 		if(repositoryEntry != null) {
-			sharedWithEntryTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ENTRY, translate("filter.shared.with.entry"),
+			sharedWithEntryTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_WITH_ENTRY, translate("filter.shared.with.course"),
 					TabSelectionBehavior.reloadData, List.of());
 			sharedWithEntryTab.setElementCssClass("o_sel_media_shared_entry");
 			sharedWithEntryTab.setFiltersExpanded(true);

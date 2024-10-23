@@ -316,7 +316,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 	private void doAddImage(UserRequest ureq) {
 		chooseImageController = new ChooseImageController(ureq, getWindowControl(), true, entry);
 		listenTo(chooseImageController);
-		String title = translate("choose.image");
+		String title = translate("add.others.modal.title");
 		cmc = new CloseableModalController(getWindowControl(), null,
 				chooseImageController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
