@@ -624,4 +624,6 @@ public interface VideoManager {
 	 * @return The name of the file that the downloaded file was stored in, null if unsuccessful.
 	 */
 	public String lookUpThumbnail(String url, VFSContainer targetContainer, String targetUuid);
+
+	public boolean isRestrictedDomain(RepositoryEntry videoEntry);
 }

@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -201,5 +203,29 @@ public class MediaServerModule extends AbstractSpringModule {
 			urls.add(VIMEO_NAME);
 		}
 		return urls;
+	}
+
+	public boolean isRestrictedDomain(String urlString) {
+		if (MediaServerMode.allowAll.equals(getMediaServerMode())) {
+			return false;
+		}
+		try {
+			URL url = new URL(urlString);
+			for (String mediaSrcUrl : getMediaSrcUrls()) {
+				if (urlString.startsWith(mediaSrcUrl)) {
+					return false;
+				}
+			}
+			String domainToTest = url.getHost();
+			for (MediaServer mediaServer : getCustomMediaServers()) {
+				if (domainToTest.endsWith(mediaServer.getDomain())) {
+					return false;
+				}
+			}
+		} catch (MalformedURLException e) {
+			return false;
+		}
+
+		return true;
 	}
 }
