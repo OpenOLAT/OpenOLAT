@@ -163,12 +163,13 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 	@Override
 	public String getUrl(Component source, Object object, String action) {
 		if(object instanceof CurriculumElementRow row && row.getBaseUrl() != null) {
+			String baseUrl = row.getBaseUrl();
 			return switch(action) {
-				case "select" -> row.getBaseUrl().concat(SUB_PATH_OVERVIEW);
-				case "owners" -> row.getBaseUrl() + "/Members/0/Owners/0";
-				case "coaches" -> row.getBaseUrl() + "/Members/0/Coaches/0";
-				case "participants" -> row.getBaseUrl() + "/Members/0/Participants/0";
-				default -> row.getBaseUrl();
+				case "select" -> baseUrl.concat(SUB_PATH_OVERVIEW);
+				case "owners" -> baseUrl.concat("/Members/0/Owners/0");
+				case "coaches" -> baseUrl.concat("/Members/0/Coaches/0");
+				case "participants" -> baseUrl.concat("/Members/0/Participants/0");
+				default -> baseUrl;
 			};
 		}
 		return null;

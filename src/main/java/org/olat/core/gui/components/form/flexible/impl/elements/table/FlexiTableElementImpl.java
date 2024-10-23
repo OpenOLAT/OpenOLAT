@@ -1362,8 +1362,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 			}
 			
-			if(col.getCellRenderer() instanceof ActionDelegateCellRenderer) {
-				ActionDelegateCellRenderer delegateRenderer = (ActionDelegateCellRenderer)col.getCellRenderer();
+			if(col.getCellRenderer() instanceof ActionDelegateCellRenderer delegateRenderer) {
 				List<String> rendererActions = delegateRenderer.getActions();
 				if(rendererActions != null && !rendererActions.isEmpty()) {
 					for(String rendererAction:rendererActions) {

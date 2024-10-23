@@ -263,13 +263,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			if(userManagementCtrl != null) {
 				userManagementCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
-		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type)) {
+		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type) || "CurriculumElement".equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, structuresTab);
 			if(structureCtrl != null) {
 				structureCtrl.activate(ureq, entries, state);
 			}
 		}
-		tabPane.addToHistory(ureq, getWindowControl());
 	}
 	
 	private void cleanUp() {

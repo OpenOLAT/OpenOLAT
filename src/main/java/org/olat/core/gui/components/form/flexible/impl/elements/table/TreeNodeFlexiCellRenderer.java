@@ -38,7 +38,7 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
+public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer, ActionDelegateCellRenderer {
 
 	protected FlexiCellRenderer labelDelegate = new TextFlexiCellRenderer();
 	
@@ -46,6 +46,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 	protected boolean flatBySort;
 	protected boolean flat;
 	protected final String action;
+	private boolean push;
 	
 	public TreeNodeFlexiCellRenderer() {
 		action = "tt-focus";
@@ -95,6 +96,22 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 	
 	public void setFlat(boolean flat) {
 		this.flat = flat;
+	}
+
+	public boolean isPush() {
+		return push;
+	}
+
+	public void setPush(boolean push) {
+		this.push = push;
+	}
+
+	@Override
+	public List<String> getActions() {
+		if(action != null) {
+			return List.of(action);
+		}
+		return List.of();
 	}
 
 	@Override
@@ -184,7 +201,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 		if (withAction && action != null) {
 			NameValuePair pair = new NameValuePair(action, Integer.toString(row));
 			String href = href(source, row);
-			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, false, pair);
+			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, push, pair);
 			
 			if (bold) {
 				target.append("<b>");

@@ -270,7 +270,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, "select"));
 		} else {
 			TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, "select", treeNodeRenderer));
+			treeNodeRenderer.setPush(true);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
 		}
 		
 		DefaultFlexiColumnModel structureCol = new DefaultFlexiColumnModel(ElementCols.structure);
