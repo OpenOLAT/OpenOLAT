@@ -337,6 +337,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.library.LibraryManagerTest.class,
 	org.olat.basesecurity.manager.OrganisationDAOTest.class,
 	org.olat.basesecurity.manager.OrganisationTypeDAOTest.class,
+	org.olat.basesecurity.manager.OrganisationEmailDomainDAOTest.class,
 	org.olat.basesecurity.manager.OrganisationTypeToTypeDAOTest.class,
 	org.olat.basesecurity.manager.OrganisationServiceTest.class,
 	org.olat.basesecurity.manager.OrganisationRoleRightDAOTest.class,

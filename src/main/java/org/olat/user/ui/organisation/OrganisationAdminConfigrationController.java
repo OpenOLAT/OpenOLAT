@@ -23,7 +23,7 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
@@ -39,9 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OrganisationAdminConfigrationController extends FormBasicController {
 	
-	private static final String[] onKeys = new String[] { "on" };
-	
-	private MultipleSelectionElement enableEl;
+	private FormToggle enableEl;
+	private FormToggle emailDomainEnableEl;
 	
 	@Autowired
 	private OrganisationModule organisationModule;
@@ -50,6 +49,7 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 		super(ureq, wControl);
 		
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -57,12 +57,17 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 		setFormDescription("admin.description");
 		setFormContextHelp("manual_admin/administration/Modules_Organisations/");
 		
-		String[] onValues = new String[] { translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("organisation.admin.enabled", formLayout, onKeys, onValues);
+		enableEl = uifactory.addToggleButton("organisation.admin.enabled", "organisation.admin.enabled", translate("on"), translate("off"), formLayout);
+		enableEl.toggle(organisationModule.isEnabled());
 		enableEl.addActionListener(FormEvent.ONCHANGE);
-		if(organisationModule.isEnabled()) {
-			enableEl.select(onKeys[0], true);
-		}
+		
+		emailDomainEnableEl = uifactory.addToggleButton("email.domain", "organisation.admin.email.domain.enabled", translate("on"), translate("off"), formLayout);
+		emailDomainEnableEl.toggle(organisationModule.isEmailDomainEnabled());
+		emailDomainEnableEl.addActionListener(FormEvent.ONCHANGE);
+	}
+
+	private void updateUI() {
+		emailDomainEnableEl.setVisible(enableEl.isOn());
 	}
 
 	@Override
@@ -73,7 +78,11 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableEl == source) {
-			organisationModule.setEnabled(enableEl.isAtLeastSelected(1));
+			organisationModule.setEnabled(enableEl.isOn());
+			updateUI();
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if(emailDomainEnableEl == source) {
+			organisationModule.setEmailDomainEnabled(emailDomainEnableEl.isOn());
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);

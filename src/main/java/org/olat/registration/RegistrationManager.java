@@ -48,6 +48,7 @@ import jakarta.persistence.TemporalType;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -122,6 +123,8 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	@Autowired
 	private RegistrationModule registrationModule;
 	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
 	private OrganisationService organisationService;
 	
 	public Organisation getOrganisationForRegistration() {
@@ -139,6 +142,11 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 
 
 	public boolean validateEmailUsername(String email) {
+		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+			// if organisation e-mail domains are enabled, the domain list is deactivated.
+			return true;
+		}
+		
 		List<String> whiteList = registrationModule.getDomainList();
 		if(whiteList.isEmpty()) {
 			return true;

@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
 import org.olat.core.gui.UserRequest;
@@ -114,6 +115,8 @@ public class RegistrationAdminController extends FormBasicController {
 	private RegistrationModule registrationModule;
 	@Autowired
 	private RegistrationManager registrationManager;
+	@Autowired
+	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -256,11 +259,17 @@ public class RegistrationAdminController extends FormBasicController {
 		domainsContainer = FormLayoutContainer.createDefaultFormLayout("domains", getTranslator());
 		domainsContainer.setRootForm(mainForm);
 		domainsContainer.setFormTitle(translate("admin.registration.domains.title"));
+		domainsContainer.setFormInfo(translate("admin.registration.domains.desc"));
 		formLayout.add(domainsContainer);
 		
-		uifactory.addStaticTextElement("admin.registration.domains.error", null, translate("admin.registration.domains.desc"), domainsContainer);
+		boolean orgEmailDomainEnabled = organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled();
+		if (orgEmailDomainEnabled) {
+			domainsContainer.setFormWarning(translate("admin.registration.organisation.email.domain"));
+		}
+		
 		String domainsList = registrationModule.getDomainListRaw();
 		domainListElement = uifactory.addTextAreaElement("registration.domain.list", "admin.registration.domains", 64000, 10, 65, true, false, domainsList, domainsContainer);
+		domainListElement.setEnabled(!orgEmailDomainEnabled);
 	}
 	
 	private void initPendingPropForm(FormItemContainer formLayout) {
@@ -493,7 +502,7 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		String whiteList = domainListElement.getValue();
 		domainListElement.clearError();
-		if(StringHelper.containsNonWhitespace(whiteList)) {
+		if(domainListElement.isEnabled() && StringHelper.containsNonWhitespace(whiteList)) {
 			List<String> normalizedList = registrationModule.getDomainList(whiteList);
 			List<String> errors = registrationManager.validateWhiteList(normalizedList);
 			if(!errors.isEmpty()) {

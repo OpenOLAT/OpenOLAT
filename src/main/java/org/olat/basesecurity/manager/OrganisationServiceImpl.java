@@ -37,6 +37,8 @@ import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationDataDeletable;
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -46,6 +48,7 @@ import org.olat.basesecurity.OrganisationTypeRef;
 import org.olat.basesecurity.RightProvider;
 import org.olat.basesecurity.model.IdentityToRoleKey;
 import org.olat.basesecurity.model.OrganisationChangeEvent;
+import org.olat.basesecurity.model.OrganisationIdentityEmail;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationMembershipEvent;
@@ -90,6 +93,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	private OrganisationDAO organisationDao;
 	@Autowired
 	private OrganisationTypeDAO organisationTypeDao;
+	@Autowired
+	private OrganisationEmailDomainDAO organisationEmailDomainDao;
 	@Autowired
 	private OrganisationTypeToTypeDAO organisationTypeToTypeDao;
 	@Autowired
@@ -190,6 +195,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		for(Organisation child:children) {
 			deleteOrganisation(child, organisationAlt);
 		}
+		
+		organisationEmailDomainDao.delete(organisation);
 		
 		//TODO organisation: move memberships to default organisation or a lost+found???
 		Group organisationGroup = reloadedOrganisation.getGroup();
@@ -412,6 +419,58 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	@Override
 	public List<OrganisationType> getOrganisationTypes() {
 		return organisationTypeDao.load();
+	}
+	
+	@Override
+	public OrganisationEmailDomain createOrganisationEmailDomain(Organisation organisation, String domain) {
+		return organisationEmailDomainDao.create(organisation, domain);
+	}
+	
+	@Override
+	public OrganisationEmailDomain updateOrganisationEmailDomain(OrganisationEmailDomain emailDomain) {
+		return organisationEmailDomainDao.update(emailDomain);
+	}
+
+	@Override
+	public void deleteOrganisationEmailDomain(OrganisationEmailDomain organisationEmailDomain) {
+		organisationEmailDomainDao.delete(organisationEmailDomain);
+	}
+	
+	@Override
+	public List<OrganisationEmailDomain> getEmailDomains(OrganisationEmailDomainSearchParams searchParams) {
+		return organisationEmailDomainDao.loadEmailDomains(searchParams);
+	}
+	
+	@Override
+	public Map<Long, Integer> getEmailDomainKeyToUsersCount(List<OrganisationEmailDomain> emailDomains) {
+		Map<Long, List<OrganisationEmailDomain>> organisationKeyToDomains = emailDomains.stream()
+				.collect(Collectors.groupingBy(ed -> ed.getOrganisation().getKey()));
+		Map<Long, Integer> emailDomainKeyToUsersCount = emailDomains.stream()
+				.collect(Collectors.toMap(OrganisationEmailDomain::getKey, ed -> Integer.valueOf(0)));
+		
+		List<OrganisationIdentityEmail> organisationIdentityEmails = organisationEmailDomainDao
+				.getOrganisationIdentityEmails(organisationKeyToDomains.keySet());
+		for (OrganisationIdentityEmail organisationIdentityEmail: organisationIdentityEmails) {
+			int atIndex = organisationIdentityEmail.email().lastIndexOf("@");
+			if (atIndex > 0) {
+				List<OrganisationEmailDomain> organisationEmailDomains = organisationKeyToDomains.get(organisationIdentityEmail.organisationKey());
+				if (organisationEmailDomains != null && !organisationEmailDomains.isEmpty()) {
+					String userDomainLowercase = organisationIdentityEmail.email().substring(atIndex + 1).toLowerCase();
+					for (OrganisationEmailDomain emailDomain : organisationEmailDomains) {
+						String domainLowerCase = emailDomain.getDomain().toLowerCase();
+						if (OrganisationEmailDomain.WILDCARD.equals(domainLowerCase) 
+								|| userDomainLowercase.equals(domainLowerCase)
+								|| (emailDomain.isSubdomainsAllowed() && userDomainLowercase.endsWith(domainLowerCase))) {
+							Integer count = emailDomainKeyToUsersCount.get(emailDomain.getKey());
+							count++;
+							emailDomainKeyToUsersCount.put(emailDomain.getKey(), count);
+						}
+					}
+				}
+			}
+		}
+		
+		return emailDomainKeyToUsersCount;
 	}
 
 	@Override

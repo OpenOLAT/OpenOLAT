@@ -19,8 +19,11 @@
  */
 package org.olat.basesecurity.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.AfterClass;
@@ -30,6 +33,7 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.basesecurity.OrganisationEmailDomain;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
@@ -322,5 +326,45 @@ public class OrganisationServiceTest extends OlatTestCase {
 		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
 				null, null, null,
 				null, null, defaultUnitTestOrganisation, null);
+	}
+	
+	@Test
+	public void shouldGetOrganisationIdentityEmails() {
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null);
+		// Regular users
+		createUser(organisation1, random(), "openolat.com");
+		createUser(organisation1, random(), "openolat.com");
+		createUser(organisation1, random(), "sub.openolat.com");
+		createUser(organisation1, random(), "sub2.openolat.com");
+		createUser(organisation1, random(), "openolat2.com");
+		// Other domain
+		createUser(organisation1, random(), "openolat3.com");
+		// Not in query list
+		createUser(organisation2, random(), "openolat.com");
+		
+		OrganisationEmailDomain oedOpenOlat = organisationService.createOrganisationEmailDomain(organisation1, "openolat.com");
+		OrganisationEmailDomain oedOpenOlat2 = organisationService.createOrganisationEmailDomain(organisation1, "openolat2.com");
+		OrganisationEmailDomain oedSubOpenOlat = organisationService.createOrganisationEmailDomain(organisation1, "sub.openolat.com");
+		OrganisationEmailDomain oedOpenOlatSubAllowed = organisationService.createOrganisationEmailDomain(organisation1, "openolat.com");
+		oedOpenOlatSubAllowed.setSubdomainsAllowed(true);
+		oedOpenOlatSubAllowed = organisationService.updateOrganisationEmailDomain(oedOpenOlatSubAllowed);
+		OrganisationEmailDomain oedFrentix = organisationService.createOrganisationEmailDomain(organisation1, "frentix.com");
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long, Integer> emailDomainKeyToUsersCount = organisationService.getEmailDomainKeyToUsersCount(
+				List.of(oedOpenOlat, oedOpenOlat2, oedSubOpenOlat, oedOpenOlatSubAllowed));
+		
+		Assert.assertEquals(Integer.valueOf(2), emailDomainKeyToUsersCount.get(oedOpenOlat.getKey()));
+		Assert.assertEquals(Integer.valueOf(1), emailDomainKeyToUsersCount.get(oedOpenOlat2.getKey()));
+		Assert.assertEquals(Integer.valueOf(1), emailDomainKeyToUsersCount.get(oedSubOpenOlat.getKey()));
+		Assert.assertEquals(Integer.valueOf(4), emailDomainKeyToUsersCount.get(oedOpenOlatSubAllowed.getKey()));
+		Assert.assertNull(emailDomainKeyToUsersCount.get(oedFrentix.getKey()));
+	}
+	
+	private Identity createUser(Organisation organisation, String login, String mailDomain) {
+		User user = userManager.createUser("orged" + login, "orged" + login, login + "@" + mailDomain);
+		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
+				null, null, null, null, null, organisation, null);
 	}
 }
