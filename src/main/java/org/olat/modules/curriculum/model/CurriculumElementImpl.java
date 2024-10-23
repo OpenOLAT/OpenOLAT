@@ -34,6 +34,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
@@ -63,6 +64,7 @@ import org.olat.modules.curriculum.CurriculumLectures;
  */
 @Entity(name="curriculumelement")
 @Table(name="o_cur_curriculum_element")
+@NamedQuery(name="hasCurriculumElementchildren", query="select el.key from curriculumelement el where el.parent.key=:elementKey")
 public class CurriculumElementImpl implements CurriculumElement, Persistable {
 
 	private static final long serialVersionUID = 547658342562646552L;

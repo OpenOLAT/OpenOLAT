@@ -39,6 +39,7 @@ public class CurriculumElementInfosSearchParams {
 	private List<? extends CurriculumRef> curriculums;
 	private List<CurriculumElementRef> curriculumElements;
 	private CurriculumElement parentElement;
+	private boolean parentElementInclusive;
 	
 	private boolean rootElementsOnly;
 	private List<CurriculumElementStatus> statusList;
@@ -49,7 +50,7 @@ public class CurriculumElementInfosSearchParams {
 	
 	public static final CurriculumElementInfosSearchParams searchDescendantsOf(CurriculumElement parentElement) {
 		CurriculumElementInfosSearchParams params = new CurriculumElementInfosSearchParams();
-		params.setParentElement(parentElement);
+		params.setParentElement(parentElement, true);
 		return params;
 	}
 	
@@ -98,13 +99,18 @@ public class CurriculumElementInfosSearchParams {
 	public void setCurriculumElements(List<CurriculumElementRef> curriculumElements) {
 		this.curriculumElements = curriculumElements;
 	}
+	
+	public boolean isParentElementInclusive() {
+		return parentElementInclusive;
+	}
 
 	public CurriculumElement getParentElement() {
 		return parentElement;
 	}
 
-	public void setParentElement(CurriculumElement parentElement) {
+	public void setParentElement(CurriculumElement parentElement, boolean parentElementInclusive) {
 		this.parentElement = parentElement;
+		this.parentElementInclusive = parentElementInclusive;
 	}
 
 	public boolean isRootElementsOnly() {

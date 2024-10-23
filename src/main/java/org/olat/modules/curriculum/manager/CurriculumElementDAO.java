@@ -409,7 +409,11 @@ public class CurriculumElementDAO {
 			sb.and().append("el.key in (:curriculumElementsKeys)");
 		}
 		if(searchParams.getParentElement() != null) {
-			sb.and().append("(el.key=:elementKey or el.materializedPathKeys like :materializedPath)");
+			if(searchParams.isParentElementInclusive()) {
+				sb.and().append("(el.key=:parentElementKey or el.materializedPathKeys like :materializedPath)");
+			} else {
+				sb.and().append("(el.key<>:parentElementKey and el.materializedPathKeys like :materializedPath)");
+			}
 		}
 		if(searchParams.getEntry() != null) {
 			sb.and()
@@ -438,7 +442,7 @@ public class CurriculumElementDAO {
 			rawQuery.setParameter("curriculumElementsKeys", curriculumElementsKeys);
 		}
 		if(searchParams.getParentElement() != null) {
-			rawQuery.setParameter("elementKey", searchParams.getParentElement().getKey());
+			rawQuery.setParameter("parentElementKey", searchParams.getParentElement().getKey());
 			rawQuery.setParameter("materializedPath", searchParams.getParentElement().getMaterializedPathKeys() + "%");
 		}
 		if(searchParams.getEntry() != null) {
@@ -809,6 +813,17 @@ public class CurriculumElementDAO {
 				.createQuery(sb.toString(), CurriculumElement.class)
 				.setParameter("elementKey", curriculumElement.getKey())
 				.getResultList();
+	}
+	
+	public boolean hasChildren(CurriculumElementRef curriculumElement) {
+		List<Long> firstChild = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("hasCurriculumElementchildren", Long.class)
+				.setParameter("elementKey", curriculumElement.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return firstChild != null && !firstChild.isEmpty()
+				&& firstChild.get(0) != null && firstChild.get(0).longValue() > 0;
 	}
 	
 	/**

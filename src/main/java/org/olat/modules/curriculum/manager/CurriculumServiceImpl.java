@@ -698,6 +698,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public List<CurriculumElement> getCurriculumElementsChildren(CurriculumElementRef parentElement) {
 		return curriculumElementDao.getChildren(parentElement);
 	}
+	
+	@Override
+	public boolean hasCurriculumElementChildren(CurriculumElementRef parentElement) {
+		return curriculumElementDao.hasChildren(parentElement);
+	}
 
 	@Override
 	public List<CurriculumElement> getCurriculumElementsDescendants(CurriculumElement parentElement) {

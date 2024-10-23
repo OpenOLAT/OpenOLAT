@@ -92,6 +92,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private ConfirmCurriculumElementDeleteController deleteCurriculumElementCtrl;
 	
 	private Curriculum curriculum;
+	private final boolean hasChildren;
 	private CurriculumElement curriculumElement;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
@@ -110,6 +111,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		this.toolbarPanel = toolbarPanel;
 		this.curriculumElement = curriculumElement;
 		this.lecturesSecCallback = lecturesSecCallback;
+		hasChildren = curriculumService.hasCurriculumElementChildren(curriculumElement);
 		
 		mainVC = createVelocityContainer("curriculum_element_details");
 		tabPane = new TabbedPane("tabs", getLocale());
@@ -145,6 +147,14 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			mainVC.contextPut("externalRef", curriculumElement.getIdentifier());
 		}
 		
+		if(curriculum != null) {
+			if(StringHelper.containsNonWhitespace(curriculum.getIdentifier())) {
+				mainVC.contextPut("curriculumExternalRef", curriculum.getIdentifier());
+			} else {
+				mainVC.contextPut("curriculumExternalRef", curriculum.getDisplayName());
+			}
+		}
+
 		if(curriculumElement.getType() != null) {
 			mainVC.contextPut("typeDisplayName", curriculumElement.getType().getDisplayName());
 		}
@@ -171,23 +181,25 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		});
 		
 		// Implementations
-		structuresTab = tabPane.addTab(ureq, translate("curriculum.structure"), uureq -> {
-			CurriculumComposerConfig config = new CurriculumComposerConfig();
-			config.setTitle(translate("curriculum.structure"), 3, "o_icon_curriculum_structure");
-			config.setDefaultNumOfParticipants(true);
-			config.setRootElementsOnly(false);
-			config.setFlat(false);
-			
-			WindowControl subControl = addToHistory(uureq, OresHelper
-					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_STRUCTURE), null);
-			structureCtrl = new CurriculumComposerController(uureq, subControl, toolbarPanel,
-					curriculum, curriculumElement, config, secCallback, lecturesSecCallback);
-			listenTo(structureCtrl);
-			
-			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
-			structureCtrl.activate(uureq, all, null);
-			return structureCtrl.getInitialComponent();
-		});
+		if(hasChildren) {
+			structuresTab = tabPane.addTab(ureq, translate("curriculum.structure"), uureq -> {
+				CurriculumComposerConfig config = new CurriculumComposerConfig();
+				config.setTitle(translate("curriculum.structure"), 3, "o_icon_curriculum_structure");
+				config.setDefaultNumOfParticipants(true);
+				config.setRootElementsOnly(false);
+				config.setFlat(false);
+				
+				WindowControl subControl = addToHistory(uureq, OresHelper
+						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_STRUCTURE), null);
+				structureCtrl = new CurriculumComposerController(uureq, subControl, toolbarPanel,
+						curriculum, curriculumElement, config, secCallback, lecturesSecCallback);
+				listenTo(structureCtrl);
+				
+				List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
+				structureCtrl.activate(uureq, all, null);
+				return structureCtrl.getInitialComponent();
+			});
+		}
 		
 		// Courses
 		resourcesTab = tabPane.addTab(ureq, translate("tab.resources"), uureq -> {
@@ -238,7 +250,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			tabPane.setSelectedPane(ureq, lecturesTab);
 		} else if(CONTEXT_RESOURCES.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, resourcesTab);
-		} else if(CONTEXT_IMPLEMENTATIONS.equalsIgnoreCase(type) || CONTEXT_STRUCTURE.equalsIgnoreCase(type)) {
+		} else if((CONTEXT_IMPLEMENTATIONS.equalsIgnoreCase(type) || CONTEXT_STRUCTURE.equalsIgnoreCase(type))
+				&& structuresTab >= 0) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			tabPane.setSelectedPane(ureq, structuresTab);
 			if(structureCtrl != null) {

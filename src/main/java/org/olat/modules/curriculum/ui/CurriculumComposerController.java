@@ -44,7 +44,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -281,7 +281,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(curriculum == null, ElementCols.curriculum));
-		DateFlexiCellRenderer dateRenderer = new DateFlexiCellRenderer(getLocale());
+		DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.type));
@@ -464,7 +464,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			searchParams.setCurriculum(curriculum);
 		}
 		if(rootElement != null) {
-			searchParams.setParentElement(rootElement);
+			searchParams.setParentElement(rootElement, false);
 		}
 		if(config.isRootElementsOnly()) {
 			searchParams.setRootElementsOnly(true);

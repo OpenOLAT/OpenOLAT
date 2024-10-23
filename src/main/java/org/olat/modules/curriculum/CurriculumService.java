@@ -309,6 +309,13 @@ public interface CurriculumService {
 	 */
 	public List<CurriculumElement> getCurriculumElementsChildren(CurriculumElementRef parentElement);
 	
+	/**
+	 * 
+	 * @param parentElement
+	 * @return
+	 */
+	public boolean hasCurriculumElementChildren(CurriculumElementRef parentElement);
+	
 
 	public List<CurriculumElement> getCurriculumElementsDescendants(CurriculumElement parentElement);
 	

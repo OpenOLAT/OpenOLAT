@@ -363,7 +363,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private SelectionValue teacherPK(MemberView teacher) {
 		String key = teacher.getIdentityKey().toString();
 		IdentityNames identityNames = teacher.getIdentityNames(userPropertyHandlers);
-		String displayName = StringHelper.escapeHtml(userManager.getUserDisplayName(identityNames));
+		String displayName = userManager.getUserDisplayName(identityNames);
 		
 		try(StringOutput sb = new StringOutput()) {
 			sb.append(displayName);
