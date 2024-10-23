@@ -44,7 +44,7 @@ import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.component.CurriculumElementSmallCellRenderer;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
-import org.olat.modules.curriculum.ui.event.SelectCurriculumElementEvent;
+import org.olat.modules.curriculum.ui.event.SelectCurriculumElementRowEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -114,7 +114,7 @@ public class CurriculumStructureCalloutController extends FormBasicController {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				CurriculumElementRow row = tableModel.getObject(se.getIndex());
-				fireEvent(ureq, new SelectCurriculumElementEvent(row));
+				fireEvent(ureq, new SelectCurriculumElementRowEvent(row));
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

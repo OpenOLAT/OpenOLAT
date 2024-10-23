@@ -19,29 +19,38 @@
  */
 package org.olat.modules.curriculum.ui.event;
 
+import java.util.List;
+
 import org.olat.core.gui.control.Event;
-import org.olat.modules.curriculum.ui.CurriculumElementRow;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.modules.curriculum.CurriculumElement;
 
 /**
  * 
- * Initial date: 18 oct. 2024<br>
+ * Initial date: 23 oct. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SelectCurriculumElementEvent extends Event {
+public class CurriculumElementEvent extends Event {
 
 	private static final long serialVersionUID = -4775987956799651344L;
 
 	public static final String SELECT_ELEMENT = "select-curriculum-element";
 	
-	private final CurriculumElementRow curriculumElement;
+	private final CurriculumElement curriculumElement;
+	private final List<ContextEntry> entries;
 	
-	public SelectCurriculumElementEvent(CurriculumElementRow curriculumElement) {
+	public CurriculumElementEvent(CurriculumElement curriculumElement, List<ContextEntry> entries) {
 		super(SELECT_ELEMENT);
+		this.entries = entries;
 		this.curriculumElement = curriculumElement;
 	}
 	
-	public CurriculumElementRow getEntry() {
+	public List<ContextEntry> getContext() {
+		return entries;
+	}
+	
+	public CurriculumElement getCurriculumElement() {
 		return curriculumElement;
 	}
 }

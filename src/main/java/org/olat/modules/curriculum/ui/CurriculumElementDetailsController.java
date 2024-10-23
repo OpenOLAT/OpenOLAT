@@ -57,6 +57,7 @@ import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.curriculum.ui.event.CurriculumElementEvent;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
@@ -231,8 +232,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-
-		if(CONTEXT_OVERVIEW.equalsIgnoreCase(type) || "Overview".equalsIgnoreCase(type)) {
+		if(CONTEXT_OVERVIEW.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, overviewTab);
 		} else if(CONTEXT_LECTURES.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, lecturesTab);
@@ -256,6 +256,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				structureCtrl.activate(ureq, entries, state);
 			}
 		}
+		tabPane.addToHistory(ureq, getWindowControl());
 	}
 	
 	private void cleanUp() {
@@ -277,6 +278,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(structureCtrl == source || overviewCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
+			} else if(event instanceof CurriculumElementEvent) {
+				fireEvent(ureq, event);
 			}
 		} else if(deleteCurriculumElementCtrl == source) {
 			if(event == Event.DONE_EVENT) {

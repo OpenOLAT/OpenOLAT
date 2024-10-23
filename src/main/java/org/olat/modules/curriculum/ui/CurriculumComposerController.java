@@ -99,7 +99,8 @@ import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
 import org.olat.modules.curriculum.ui.copy.CopySettingsController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
-import org.olat.modules.curriculum.ui.event.SelectCurriculumElementEvent;
+import org.olat.modules.curriculum.ui.event.CurriculumElementEvent;
+import org.olat.modules.curriculum.ui.event.SelectCurriculumElementRowEvent;
 import org.olat.modules.curriculum.ui.event.SelectLectureBlockEvent;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
@@ -158,6 +159,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private int counter;
 	private final boolean managed;
 	private boolean overrideManaged;
+	private final String businessPath;
 	private final Curriculum curriculum;
 	private final CurriculumElement rootElement;
 	private final CurriculumComposerConfig config;
@@ -181,10 +183,11 @@ public class CurriculumComposerController extends FormBasicController implements
 	 * @param config The configuration of the controller
 	 * @param secCallback Security callback
 	 */
-	public CurriculumComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+	CurriculumComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			Curriculum curriculum, CurriculumElement rootElement, CurriculumComposerConfig config,
 			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
 		super(ureq, wControl, "manage_curriculum_structure");
+		businessPath =  BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl());
 		this.toolbarPanel = toolbarPanel;
 		this.config = config;
 		this.secCallback = secCallback;
@@ -502,8 +505,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			resourcesLink.setUserObject(row);
 		}
 
-		String businessPath = CurriculumHelper.getBusinessPath(row);
-		row.setBaseUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath));
+		String path = businessPath + "[CurriculumElement:" + id + "]";
+		row.setBaseUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path));
 		
 		if(row.isCalendarsEnabled()) {
 			FormLink calendarsLink = uifactory.addFormLink("cals_" + (++counter), "calendars", "", null, null, Link.LINK | Link.NONTRANSLATED);
@@ -600,7 +603,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			cleanUp();
 			if(event instanceof SelectReferenceEvent sre) {
 				launch(ureq, sre.getEntry());
-			} else if(event instanceof SelectCurriculumElementEvent scee) {
+			} else if(event instanceof SelectCurriculumElementRowEvent scee) {
 				List<ContextEntry> subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Structure:0]");
 				doOpenCurriculumElementDetails(ureq, scee.getEntry(), subEntries);
 			} else if(event instanceof SelectLectureBlockEvent slbe) {
@@ -610,6 +613,12 @@ public class CurriculumComposerController extends FormBasicController implements
 		} else if(source instanceof CurriculumElementDetailsController) {
 			if(event == Event.CHANGED_EVENT) {
 				loadModel();
+			} else if(event instanceof CurriculumElementEvent cee) {
+				if(rootElement != null) {
+					fireEvent(ureq, event);
+				} else {
+					doOpenCurriculumElementDetails(ureq, cee.getCurriculumElement(), cee.getContext());
+				}
 			}
 		} else if(cmc == source || toolsCalloutCtrl == source) {
 			cleanUp();
@@ -836,24 +845,30 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElementRow row, List<ContextEntry> entries) {
 		CurriculumElement element = curriculumService.getCurriculumElement(row);
+		doOpenCurriculumElementDetails(ureq, element, entries);
+	}
+	
+	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElement element, List<ContextEntry> entries) {
 		if(element == null) {
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
 		} else if(rootElement != null && rootElement.equals(element)) {
 			fireEvent(ureq, new ActivateEvent(entries));
+		} else if(rootElement != null) {
+			fireEvent(ureq, new CurriculumElementEvent(element, entries));
 		} else {
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, row.getKey()), null);
+			WindowControl swControl	= addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey()), null);
 			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel,
 					element.getCurriculum(), element, secCallback, lecturesSecCallback);
 			listenTo(editCtrl);
-			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
+			toolbarPanel.pushController(element.getDisplayName(), editCtrl);
 			editCtrl.activate(ureq, entries, null);
 		}
 	}
 	
 	private void doOpenCurriculumElementInNewWindow(CurriculumElementRow row) {
-		String businessPath = CurriculumHelper.getBusinessPath(row) + "[Overview:0]";
-		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+		String path = "[CurriculumAdmin:0][Curriculums:0][Curriculum:" + row.getCurriculumKey() + "][Implementations:0][CurriculumElement:" + row.getKey() + "][Overview:0]";
+		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
 	

@@ -149,7 +149,9 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			config.setDefaultNumOfParticipants(true);
 			config.setRootElementsOnly(true);
 			config.setFlat(true);
-			implementationsCtrl = new CurriculumComposerController(uureq, getWindowControl(), toolbarPanel,
+			WindowControl subControl = addToHistory(uureq, OresHelper
+					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS), null);
+			implementationsCtrl = new CurriculumComposerController(uureq, subControl, toolbarPanel,
 					curriculum, null, config, secCallback, lecturesSecCallback);
 			listenTo(implementationsCtrl);
 			
