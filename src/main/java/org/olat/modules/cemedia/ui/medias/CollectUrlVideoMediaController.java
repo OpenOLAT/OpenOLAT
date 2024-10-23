@@ -261,6 +261,9 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 		super.formInnerEvent(ureq, source, event);
 
 		if (source == lookUpTitleButton) {
+			if (mediaServerModule.isRestrictedDomain(urlEl.getValue())) {
+				return;
+			}
 			Pair<String, String> titleAndDescription = videoManager.lookUpTitleAndDescription(urlEl.getValue());
 			if (StringHelper.containsNonWhitespace(titleAndDescription.getLeft())) {
 				titleEl.setValue(titleAndDescription.getLeft());
@@ -287,6 +290,9 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 			allOk &= false;
 		} else if (VideoFormatExtended.valueOfUrl(urlEl.getValue()) == null) {
 			urlEl.setErrorKey("error.format.not.supported");
+			allOk &= false;
+		} else if (mediaServerModule.isRestrictedDomain(urlEl.getValue())) {
+			urlEl.setErrorKey("error.video.restricted", null);
 			allOk &= false;
 		}
 
