@@ -21,9 +21,9 @@ package org.olat.basesecurity;
 
 import java.util.Arrays;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -37,6 +37,7 @@ public enum OrganisationManagedFlag {
 	
 	all,
 	 identifier(all),
+	 location(all),
 	 displayName(all),
 	 description(all),
 	 externalId(all),

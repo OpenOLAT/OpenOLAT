@@ -14,6 +14,7 @@ alter table o_cur_element_type add column c_max_repo_entries bigint default -1 n
 alter table o_cur_element_type add column c_allow_as_root bool default true not null;
 
 -- Organisations
+alter table o_org_organisation add column o_location varchar(255);
 create table o_org_email_domain (
   id bigint not null auto_increment,
   creationdate datetime not null,

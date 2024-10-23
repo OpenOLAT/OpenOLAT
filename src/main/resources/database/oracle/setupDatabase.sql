@@ -3878,6 +3878,7 @@ create table o_org_organisation (
   lastmodified date not null,
   o_identifier varchar(64),
   o_displayname varchar(255) not null,
+  o_location varchar(255),
   o_description CLOB,
   o_m_path_keys varchar(255),
   o_external_id varchar(64),

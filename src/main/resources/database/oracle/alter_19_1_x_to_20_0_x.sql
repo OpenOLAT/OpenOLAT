@@ -15,6 +15,7 @@ alter table o_cur_element_type add c_max_repo_entries number(20) default -1 not 
 alter table o_cur_element_type add c_allow_as_root number default 1 not null;
 
 -- Organisations
+alter table o_org_organisation add o_location varchar(255);
 create table o_org_email_domain (
   id number(20) GENERATED ALWAYS AS IDENTITY,
   creationdate date not null,

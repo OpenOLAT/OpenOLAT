@@ -41,6 +41,7 @@ public class OrganisationVO {
 	private Long key;
 	
 	private String identifier;
+	private String location;
 	private String displayName;
 	private String description;
 	private String cssClass;
@@ -50,6 +51,7 @@ public class OrganisationVO {
 	@Schema(required = true, description = "Action to be performed on managedFlagsString", allowableValues = { 
 			"all",
 			 "identifier(all)",
+			 "location(all)",
 			 "displayName(all)",
 			 "description(all)",
 			 "externalId(all)",
@@ -72,6 +74,7 @@ public class OrganisationVO {
 		OrganisationVO vo = new OrganisationVO();
 		vo.setKey(organisation.getKey());
 		vo.setIdentifier(organisation.getIdentifier());
+		vo.setLocation(organisation.getLocation());
 		vo.setDisplayName(organisation.getDisplayName());
 		vo.setDescription(organisation.getDescription());
 		vo.setCssClass(organisation.getCssClass());
@@ -112,6 +115,14 @@ public class OrganisationVO {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	public String getDescription() {

@@ -46,6 +46,10 @@ public interface Organisation extends CreateInfo, ModifiedInfo, OrganisationRef 
 	
 	public void setDisplayName(String displayName);
 	
+	public String getLocation();
+
+	public void setLocation(String location);
+	
 	public String getCssClass();
 	
 	public void setCssClass(String css);
