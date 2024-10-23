@@ -305,6 +305,7 @@ public class MediaCenterController extends FormBasicController
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("withHelp", Boolean.valueOf(config.withHelp()));
 			layoutCont.contextPut("withMediaSelection", Boolean.valueOf(withMediaSelection));
+			layoutCont.contextPut("withAddMedia", withAddMedias);
 		}
 		
 		if(withSelect) {
