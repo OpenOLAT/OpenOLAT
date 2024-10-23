@@ -1904,6 +1904,10 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 
 	@Override
 	public boolean isRestrictedDomain(RepositoryEntry videoEntry) {
+		if (videoEntry == null) {
+			return false;
+		}
+
 		VideoMeta videoMeta = getVideoMetadata(videoEntry.getOlatResource());
 		if (videoMeta == null || !StringHelper.containsNonWhitespace(videoMeta.getUrl())) {
 			return false;

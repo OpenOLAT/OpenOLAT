@@ -78,6 +78,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 
 	public static final String NLS_ERROR_VIDEOREPOENTRYMISSING = "error.videorepoentrymissing";
 	public static final String NLS_ERROR_VIDEOREPOENTRYDELETED = "error.videorepoentrydeleted";
+	public static final String NLS_ERROR_VIDEOREPOENTRYRESTRICTED = "error.videorepoentryrestricted";
 	private static final String NLS_COMMAND_CHOOSEVIDEO = "command.choosevideo";
 	private static final String NLS_COMMAND_CREATEVID = "command.createvideo";
 	private static final String NLS_COMMAND_CHANGEVID = "command.changevideo";
@@ -141,13 +142,16 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 			// fetch repository entry to display the repository entry title of
 			// the chosen cp
 			repositoryEntry = getVideoReference(config, false);
-			if (repositoryEntry == null) { 
+			if (repositoryEntry == null) {
 				// we cannot display the entries name, because the repository
 				// entry had been deleted between the time when it was chosen
 				// here, and now
 				showError(NLS_ERROR_VIDEOREPOENTRYMISSING);
 				videoConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
 				videoConfigurationVc.contextPut(VC_CHOSENVIDEO, translate("no.video.chosen"));
+			} else if (videoManager.isRestrictedDomain(repositoryEntry)) {
+				videoConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
+				videoConfigurationVc.contextPut(VC_CHOSENVIDEO, translate(NLS_ERROR_VIDEOREPOENTRYRESTRICTED));
 			} else {
 				boolean restrictEdit = videoManager.isInUse(repositoryEntry);
 				videoConfigurationVc.contextPut("restrictEdit", restrictEdit);
@@ -240,7 +244,9 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	
 	private void doSelectResource(UserRequest ureq, RepositoryEntry entry) {
 		repositoryEntry = entry;
-		if (repositoryEntry != null) {
+		if (videoManager.isRestrictedDomain(repositoryEntry)) {
+			showWarning(NLS_ERROR_VIDEOREPOENTRYRESTRICTED);
+		} else if (repositoryEntry != null) {
 			setVideoReference(repositoryEntry, config);
 			videoConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
 			String displayname = StringHelper.escapeHtml(repositoryEntry.getDisplayname());
