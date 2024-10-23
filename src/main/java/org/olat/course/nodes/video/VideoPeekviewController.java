@@ -82,6 +82,15 @@ public class VideoPeekviewController  extends BasicController implements Control
 			emptyStateCmp.setTranslator(getTranslator());
 			putInitialPanel(emptyStateCmp);
 			return;
+		} else if (videoManager.isRestrictedDomain(videoEntry)) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_icon_video")
+					.withIndicatorIconCss("o_icon_ban")
+					.withMessageI18nKey(VideoEditController.NLS_ERROR_VIDEOREPOENTRYRESTRICTED)
+					.build();
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
+			emptyStateCmp.setTranslator(getTranslator());
+			putInitialPanel(emptyStateCmp);
 		}
 
 		peekviewVC = createVelocityContainer("peekview");

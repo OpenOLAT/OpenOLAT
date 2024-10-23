@@ -64,6 +64,7 @@ import org.jcodec.common.io.NIOUtils;
 import org.jcodec.common.model.Picture;
 import org.jcodec.scale.AWTUtil;
 import org.json.JSONObject;
+import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.ImageService;
@@ -218,6 +219,8 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	private VideoAssessmentService videoAssessmentService;
 	@Autowired
 	private AVModule avModule;
+	@Autowired
+	private MediaServerModule mediaServerModule;
 
 	/**
 	 * get the configured posterframe
@@ -1897,5 +1900,19 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 			}
 			return false;
 		}
+	}
+
+	@Override
+	public boolean isRestrictedDomain(RepositoryEntry videoEntry) {
+		if (videoEntry == null) {
+			return false;
+		}
+
+		VideoMeta videoMeta = getVideoMetadata(videoEntry.getOlatResource());
+		if (videoMeta == null || !StringHelper.containsNonWhitespace(videoMeta.getUrl())) {
+			return false;
+		}
+
+		return mediaServerModule.isRestrictedDomain(videoMeta.getUrl());
 	}
 }

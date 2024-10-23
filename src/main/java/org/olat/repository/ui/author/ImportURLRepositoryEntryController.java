@@ -22,8 +22,10 @@ package org.olat.repository.ui.author;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.MediaServerModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -50,6 +52,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.modules.video.VideoManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -59,6 +62,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -92,7 +96,11 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
-	
+	@Autowired
+	private MediaServerModule mediaServerModule;
+	@Autowired
+	private VideoManager videoManager;
+
 	public ImportURLRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
@@ -114,7 +122,9 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("cmd.import.ressource.url.desc");
+		String mediaServers = mediaServerModule.getMediaServerNames().stream().collect(Collectors.joining(", "));
+		mediaServers = StringHelper.containsNonWhitespace(mediaServers) ? mediaServers + ", " : "";
+		setFormDescription("cmd.import.ressource.url.desc", new String[]{mediaServers});
 		formLayout.setElementCssClass("o_sel_re_import_url_form");
 		
 		urlEl = uifactory.addTextElement("upload", "upload.url", 512, null, formLayout);
@@ -181,6 +191,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == urlEl) {
 			updateHandlerForUrl();
+			updateTitle();
 			validateResources();
 		}
 	}
@@ -319,6 +330,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		boolean allOk = true;
 		allOk &= validLimitationOnType(handlerForUploadedResources);
 		allOk &= validateHandlers(handlerForUploadedResources);
+		allOk &= validateRestriction();
 		return allOk;
 	}
 	
@@ -339,7 +351,18 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		
 		return allOk;
 	}
-	
+
+	private boolean validateRestriction() {
+		boolean allOk = true;
+
+		if (mediaServerModule.isRestrictedDomain(urlEl.getValue())) {
+			urlEl.setErrorKey("error.media.domain.not.allowed");
+			allOk &= false;
+		}
+
+		return allOk;
+	}
+
 	private boolean validLimitationOnType(List<ResourceHandler> handlers) {
 		boolean allOk = true;
 		
@@ -433,6 +456,18 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			license.setLicenseType(licenseType);
 			license.setLicensor(licensor);
 			licenseService.update(license);
+		}
+	}
+
+	private void updateTitle() {
+		if (mediaServerModule.isRestrictedDomain(urlEl.getValue())) {
+			return;
+		}
+		Pair<String, String> titleAndDescription = videoManager.lookUpTitleAndDescription(urlEl.getValue());
+		if (StringHelper.containsNonWhitespace(titleAndDescription.getLeft())) {
+			String title = titleAndDescription.getLeft();
+			int len = Math.min(title.length(), displaynameEl.getMaxLength());
+			displaynameEl.setValue(title.substring(0, len));
 		}
 	}
 

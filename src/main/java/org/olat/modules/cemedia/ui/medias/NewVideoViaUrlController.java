@@ -86,6 +86,9 @@ public class NewVideoViaUrlController extends FormBasicController {
 		} else if (VideoFormatExtended.valueOfUrl(urlEl.getValue()) == null) {
 			urlEl.setErrorKey("error.format.not.supported");
 			allOk &= false;
+		} else if (mediaServerModule.isRestrictedDomain(urlEl.getValue())) {
+			urlEl.setErrorKey("error.video.restricted");
+			allOk &= false;
 		}
 
 		return allOk;

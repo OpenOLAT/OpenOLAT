@@ -42,6 +42,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.ui.VideoDisplayController;
@@ -79,6 +80,9 @@ public class VideoRunController extends BasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private VideoManager videoManager;
+
 	private CommentLayerController commentLayerController;
 
 	public VideoRunController(ModuleConfiguration config, WindowControl wControl, UserRequest ureq,
@@ -218,6 +222,15 @@ public class VideoRunController extends BasicController {
 			EmptyStateFactory.create("emptyStateCmp", myContent, this, emptyState);
 			main.setContent(myContent);			
 			return;
+		} else if (videoManager.isRestrictedDomain(videoEntry)) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_icon_video")
+					.withIndicatorIconCss("o_icon_ban")
+					.withMessageI18nKey(VideoEditController.NLS_ERROR_VIDEOREPOENTRYRESTRICTED)
+					.build();
+			myContent = createVelocityContainer("novideo");
+			EmptyStateFactory.create("emptyStateCmp", myContent, this, emptyState);
+			main.setContent(myContent);
 		}
 		
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

@@ -164,6 +164,16 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", myContent, this, emptyState);
 			putInitialPanel(emptyStateCmp);
 			return;
+		} else if (videoManager.isRestrictedDomain(videoEntry)) {
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_icon_video")
+					.withIndicatorIconCss("o_icon_ban")
+					.withMessageI18nKey("error.videorepoentryrestricted")
+					.build();
+			myContent = createVelocityContainer("novideo");
+			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", myContent, this, emptyState);
+			putInitialPanel(emptyStateCmp);
+			return;
 		} else {
 			myContent = createVelocityContainer("run");
 		}

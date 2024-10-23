@@ -19,10 +19,14 @@
  */
 package org.olat.modules.cemedia.ui.medias;
 
+import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -30,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.ui.BlockLayoutClassFactory;
@@ -39,6 +44,7 @@ import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.modules.cemedia.ui.MediaVersionChangedEvent;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +61,8 @@ public class VideoViaUrlController extends BasicController {
 
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private MediaServerModule mediaServerModule;
 
 	public VideoViaUrlController(UserRequest ureq, WindowControl wControl, PageElement pageElement,
 								 MediaVersion mediaVersion, RenderingHints hints) {
@@ -69,11 +77,22 @@ public class VideoViaUrlController extends BasicController {
 
 		if (mediaVersion.getVersionMetadata() != null) {
 			String url = mediaVersion.getVersionMetadata().getUrl();
-			VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq, wControl,
-					null, url, false,
-					false, false, false, true);
-			listenTo(videoAudioPlayerController);
-			mainVC.put("videoViaUrl", videoAudioPlayerController.getInitialComponent());
+			if (mediaServerModule.isRestrictedDomain(url)) {
+				EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+						.withIconCss("o_icon_video")
+						.withIndicatorIconCss("o_icon_ban")
+						.withMessageI18nKey("error.video.restricted")
+						.build();
+				EmptyState emptyState = EmptyStateFactory.create("emptyStateCmp", null, this, emptyStateConfig);
+				emptyState.setTranslator(Util.createPackageTranslator(MediaUIHelper.class, getLocale()));
+				mainVC.put("emptyState", emptyState);
+			} else {
+				VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq, wControl,
+						null, url, false,
+						false, false, false, true);
+				listenTo(videoAudioPlayerController);
+				mainVC.put("videoViaUrl", videoAudioPlayerController.getInitialComponent());
+			}
 		}
 
 		if (hints.isExtendedMetadata()) {

@@ -53,6 +53,8 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.spi.youtube.YoutubeProvider;
 import org.olat.modules.video.ui.VideoDisplayAsRuntimeController;
+import org.olat.modules.video.ui.VideoRestrictedMessageController;
+import org.olat.modules.video.ui.VideoRestrictedRuntimeController;
 import org.olat.modules.video.ui.VideoRuntimeController;
 import org.olat.modules.video.ui.editor.VideoEditorController;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
@@ -247,13 +249,23 @@ public class VideoHandler extends FileHandler {
 
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re,  RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
-		return new VideoRuntimeController(ureq, wControl, re, reSecurity, (uureq, wwControl, toolbarPanel, entry, rereSecurity, assessmentMode) -> 
+		if (videoManager.isRestrictedDomain(re)) {
+			String url = videoManager.getVideoMetadata(re.getOlatResource()).getUrl();
+			return new VideoRestrictedRuntimeController(ureq, wControl, re, reSecurity,
+					(uureq, wwControl, toolbarPanel, entry, rereSecurity, assessmentMode) ->
+							new VideoRestrictedMessageController(uureq, wwControl, url));
+		}
+		return new VideoRuntimeController(ureq, wControl, re, reSecurity, (uureq, wwControl, toolbarPanel, entry, rereSecurity, assessmentMode) ->
 			new VideoDisplayAsRuntimeController(uureq, wwControl, entry)
 		);
 	}
 
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
+		if (videoManager.isRestrictedDomain(re)) {
+			String url = videoManager.getVideoMetadata(re.getOlatResource()).getUrl();
+			return new VideoRestrictedMessageController(ureq, wControl, url);
+		}
 		return new VideoEditorController(ureq, wControl, re);
 	}
 	

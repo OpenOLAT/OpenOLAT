@@ -23,6 +23,9 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyState;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -72,7 +75,19 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 											 Identity assessedIdentity, VideoTaskCourseNode courseNode,
 											 boolean showSessionParticipant) {
 		super(ureq, wControl);
-		
+
+		if (videoManager.isRestrictedDomain(videoEntry)) {
+			VelocityContainer vc = createVelocityContainer("novideo");
+			EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
+					.withIconCss("o_icon_video")
+					.withIndicatorIconCss("o_icon_ban")
+					.withMessageI18nKey("error.videorepoentryrestricted")
+					.build();
+			EmptyState emptyState = EmptyStateFactory.create("emptyStateCmp", vc, this, emptyStateConfig);
+			putInitialPanel(emptyState);
+			return;
+		}
+
 		mainVC = createVelocityContainer("play");
 		if(assessedIdentity != null) {
 			String fullname = userManager.getUserDisplayName(assessedIdentity);
