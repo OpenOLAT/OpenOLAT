@@ -55,7 +55,7 @@ public class CurriculumElementOverviewController extends BasicController {
 		super(ureq, wControl);
 
 		List<String> widgets = new ArrayList<>();
-		VelocityContainer mainVC = createVelocityContainer("curriculum_element_overview");
+		VelocityContainer mainVC = createVelocityContainer("curriculum_overview");
 		if(curriculumElement.getParent() != null) {
 			coursesCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement);
 			listenTo(coursesCtrl);

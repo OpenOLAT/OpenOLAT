@@ -479,6 +479,10 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		}
 	}
 	
+	.o_curriculum_widget ~ .o_button_group .o_button_details {
+		margin-top: -2px;
+	}
+	
 	.o_curriculum_widget_table {
 		margin-top: 10px;
 	

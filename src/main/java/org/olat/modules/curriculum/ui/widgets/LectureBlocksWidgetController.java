@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -67,8 +69,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class LectureBlocksWidgetController extends FormBasicController {
-	
+
 	private FormLink lecturesLink;
+	private FormLink minimizeButton;
 	private FormLink addLecturesLink;
 	private FlexiTableElement todayTableEl;
 	private FlexiTableElement nextDaysTableEl;
@@ -76,12 +79,15 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	private LectureBlocksWidgetTableModel nextDaysTableModel;
 	private StaticTextElement eventsTodayEl;
 	private StaticTextElement eventsNextDaysEl;
-	
+
+	private AtomicBoolean minimized;
 	private Curriculum curriculum;
+	private final String preferencesId;
 	private CurriculumElement curriculumElement;
 	private final LecturesSecurityCallback secCallback;
 
 	private StepsMainRunController addLectureCtrl;
+	
 	
 	@Autowired
 	private LectureService lectureService;
@@ -92,6 +98,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 				.createPackageTranslator(CurriculumOverviewController.class, ureq.getLocale()));
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
+		preferencesId = "widget-lectures-cur-" + curriculum.getKey();
 		initForm(ureq);
 		loadModel(ureq.getRequestTimestamp());
 	}
@@ -102,6 +109,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 				.createPackageTranslator(CurriculumElementOverviewController.class, ureq.getLocale()));
 		this.curriculumElement = curriculumElement;
 		this.secCallback = secCallback;
+		preferencesId = "widget-lectures-cur-el-" + curriculumElement.getKey();
 		initForm(ureq);
 		loadModel(ureq.getRequestTimestamp());
 	}
@@ -111,6 +119,19 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		lecturesLink = uifactory.addFormLink("curriculum.lectures", formLayout);
 		lecturesLink.setIconRightCSS("o_icon o_icon_course_next");
 		lecturesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar_day");
+		
+		Boolean minimizedObj = (Boolean)ureq.getUserSession()
+				.getGuiPreferences()
+				.get(LectureBlocksWidgetController.class, preferencesId, Boolean.FALSE);
+		minimized = new AtomicBoolean(minimizedObj != null && minimizedObj.booleanValue());
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("minimized", minimized);
+		}
+		
+		minimizeButton = uifactory.addFormLink("curriculum.minimize", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		minimizeButton.setTitle(translate("curriculum.minimize"));
+		minimizeButton.setElementCssClass("o_button_details");
+		updateMinimizeButton();
 		
 		if(secCallback.canNewLectureBlock()) {
 			addLecturesLink = uifactory.addFormLink("curriculum.add.lectures", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
@@ -136,6 +157,14 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		nextDaysTableModel = new LectureBlocksWidgetTableModel(columnsModel);
 		nextDaysTableEl = initTable(formLayout, "nextDays", nextDaysTableModel);
 		nextDaysTableEl.setEmptyTableMessageKey("empty.next.days.lectures");
+	}
+	
+	private void updateMinimizeButton() {
+		if(minimized.get()) {
+			minimizeButton.setIconLeftCSS("o_icon o_icon_details_expand");
+		} else {
+			minimizeButton.setIconLeftCSS("o_icon o_icon_details_collaps");
+		}
 	}
 
 	private FlexiTableElement initTable(FormItemContainer formLayout, String name, LectureBlocksWidgetTableModel tableModel) {
@@ -232,6 +261,8 @@ public class LectureBlocksWidgetController extends FormBasicController {
 			fireEvent(ureq, new ActivateEvent(entries));
 		} else if(addLecturesLink == source) {
 			doAddLectureBlock(ureq);
+		} else if(minimizeButton == source) {
+			toogle(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -239,6 +270,13 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void toogle(UserRequest ureq) {
+		minimized.set(!minimized.get());
+		updateMinimizeButton();
+		ureq.getUserSession().getGuiPreferences()
+			.putAndSave(LectureBlocksWidgetController.class, preferencesId, Boolean.valueOf(minimized.get()));
 	}
 	
 	private void doAddLectureBlock(UserRequest ureq) {

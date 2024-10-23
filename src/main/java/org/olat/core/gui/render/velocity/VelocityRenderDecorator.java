@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.help.HelpModule;
@@ -869,11 +870,14 @@ public class VelocityRenderDecorator implements Closeable {
 		if("true".equals(obj)) {
 			return true;
 		}
-		if(obj instanceof Boolean) {
-			return ((Boolean)obj).booleanValue();
+		if(obj instanceof Boolean bool) {
+			return bool.booleanValue();
 		}
-		if(obj instanceof ConsumableBoolean) {
-			return ((ConsumableBoolean)obj).isTrue();
+		if(obj instanceof ConsumableBoolean bool) {
+			return bool.isTrue();
+		}
+		if(obj instanceof AtomicBoolean bool) {
+			return bool.get();
 		}
 		return false;
 	}
@@ -882,8 +886,11 @@ public class VelocityRenderDecorator implements Closeable {
 		if("false".equals(obj)) {
 			return true;
 		}
-		if(obj instanceof Boolean) {
-			return !((Boolean)obj).booleanValue();
+		if(obj instanceof Boolean bool) {
+			return bool.booleanValue();
+		}
+		if(obj instanceof AtomicBoolean bool) {
+			return !bool.get();
 		}
 		return false;
 	}
