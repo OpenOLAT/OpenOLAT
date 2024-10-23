@@ -3803,6 +3803,7 @@ create table o_org_organisation (
   lastmodified datetime not null,
   o_identifier varchar(64),
   o_displayname varchar(255) not null,
+  o_location varchar(255),
   o_description mediumtext,
   o_m_path_keys varchar(255),
   o_external_id varchar(64),
@@ -3813,6 +3814,17 @@ create table o_org_organisation (
   fk_root bigint,
   fk_parent bigint,
   fk_type bigint,
+  primary key (id)
+);
+
+create table o_org_email_domain (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  o_domain varchar(255) not null,
+  o_enabled bool default true not null,
+  o_subdomains_allowed bool default false not null,
+  fk_organisation bigint not null,
   primary key (id)
 );
 
@@ -4980,6 +4992,7 @@ alter table o_lic_license_type_activation ENGINE = InnoDB;
 alter table o_lic_license ENGINE = InnoDB;
 alter table o_org_organisation_type ENGINE = InnoDB;
 alter table o_org_organisation ENGINE = InnoDB;
+alter table o_org_email_domain ENGINE = InnoDB;
 alter table o_org_type_to_type ENGINE = InnoDB;
 alter table o_org_role_to_right ENGINE = InnoDB;
 alter table o_re_to_organisation ENGINE = InnoDB;
@@ -5888,6 +5901,8 @@ alter table o_org_organisation add constraint org_to_group_idx foreign key (fk_g
 alter table o_org_organisation add constraint org_to_root_org_idx foreign key (fk_root) references o_org_organisation (id);
 alter table o_org_organisation add constraint org_to_parent_org_idx foreign key (fk_parent) references o_org_organisation (id);
 alter table o_org_organisation add constraint org_to_org_type_idx foreign key (fk_type) references o_org_organisation_type (id);
+
+alter table o_org_email_domain add constraint org_email_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 
 alter table o_org_type_to_type add constraint org_type_to_type_idx foreign key (fk_type) references o_org_organisation_type (id);
 alter table o_org_type_to_type add constraint org_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_org_organisation_type (id);

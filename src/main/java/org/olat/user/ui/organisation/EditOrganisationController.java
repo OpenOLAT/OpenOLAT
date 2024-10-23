@@ -52,6 +52,7 @@ public class EditOrganisationController extends FormBasicController {
 
 	private RichTextElement descriptionEl;
 	private TextElement identifierEl;
+	private TextElement locationEl;
 	private TextElement displayNameEl;
 	private SingleSelection organisationTypeEl;
 	
@@ -152,6 +153,10 @@ public class EditOrganisationController extends FormBasicController {
 			organisationTypeEl.select(typeKeys[0], true);
 		}
 		
+		String location = organisation == null ? "" : organisation.getLocation();
+		locationEl = uifactory.addTextElement("organisation.location", "organisation.location", 255, location, formLayout);
+		locationEl.setEnabled(!OrganisationManagedFlag.isManaged(organisation, OrganisationManagedFlag.location));
+		
 		String description = organisation == null ? "" : organisation.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("organisation.description", "organisation.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
@@ -199,9 +204,14 @@ public class EditOrganisationController extends FormBasicController {
 			//create a new one
 			organisation = organisationService
 					.createOrganisation(displayNameEl.getValue(), identifierEl.getValue(), descriptionEl.getValue(), parentOrganisation, organisationType);
+			if (StringHelper.containsNonWhitespace(locationEl.getValue())) {
+				organisation.setLocation(locationEl.getValue());
+				organisation = organisationService.updateOrganisation(organisation);
+			}
 		} else {
 			organisation = organisationService.getOrganisation(organisation);
 			organisation.setIdentifier(identifierEl.getValue());
+			organisation.setLocation(locationEl.getValue());
 			organisation.setDisplayName(displayNameEl.getValue());
 			organisation.setDescription(descriptionEl.getValue());
 			organisation.setType(organisationType);

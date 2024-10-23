@@ -362,6 +362,7 @@ public class OrganisationsWebService {
 			}
 		}
 		
+		organisationToSave.setLocation(organisation.getLocation());
 		organisationToSave.setCssClass(organisation.getCssClass());
 		organisationToSave.setExternalId(organisation.getExternalId());
 		organisationToSave.setManagedFlags(OrganisationManagedFlag.toEnum(organisation.getManagedFlagsString()));

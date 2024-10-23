@@ -173,6 +173,16 @@ public interface OrganisationService {
 	 * @return The list of organization types
 	 */
 	public List<OrganisationType> getOrganisationTypes();
+	
+	public OrganisationEmailDomain createOrganisationEmailDomain(Organisation organisation, String domain);
+
+	public OrganisationEmailDomain updateOrganisationEmailDomain(OrganisationEmailDomain emailDomain);
+
+	public void deleteOrganisationEmailDomain(OrganisationEmailDomain organisationEmailDomain);
+	
+	public List<OrganisationEmailDomain> getEmailDomains(OrganisationEmailDomainSearchParams searchParams);
+
+	public Map<Long, Integer> getEmailDomainKeyToUsersCount(List<OrganisationEmailDomain> emailDomains);
 
 	/**
 	 * The list of all organizations where the user has the specified roles,

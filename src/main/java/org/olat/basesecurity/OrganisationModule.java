@@ -37,11 +37,14 @@ import org.springframework.stereotype.Service;
 public class OrganisationModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String ORGANISATION_ENABLED = "organisation.enabled";
+	private static final String EMAIL_DOMAIN_ENABLED = "email.domain.enabled";
 	
 	@Value("${organisation.enabled:true}")
 	private boolean enabled;
 	@Value("${organisation.managed.enabled:true}")
 	private boolean managedEnabled;
+	@Value("${organisation.email.domain.enabled:true}")
+	private boolean emailDomainEnabled;
 
 	@Autowired
 	public OrganisationModule(CoordinatorManager coordinatorManager) {
@@ -63,6 +66,11 @@ public class OrganisationModule extends AbstractSpringModule implements ConfigOn
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
 		}
+		
+		String emailDomainEnabledObj = getStringPropertyValue(EMAIL_DOMAIN_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(emailDomainEnabledObj)) {
+			emailDomainEnabled = "true".equals(emailDomainEnabledObj);
+		}
 	}
 
 	@Override
@@ -77,5 +85,14 @@ public class OrganisationModule extends AbstractSpringModule implements ConfigOn
 	
 	public boolean isOrganisationManaged() {
 		return managedEnabled;
+	}
+
+	public boolean isEmailDomainEnabled() {
+		return emailDomainEnabled;
+	}
+
+	public void setEmailDomainEnabled(boolean emailDomainEnabled) {
+		this.emailDomainEnabled = emailDomainEnabled;
+		setStringProperty(EMAIL_DOMAIN_ENABLED, Boolean.toString(emailDomainEnabled), true);
 	}
 }

@@ -3878,6 +3878,7 @@ create table o_org_organisation (
   lastmodified date not null,
   o_identifier varchar(64),
   o_displayname varchar(255) not null,
+  o_location varchar(255),
   o_description CLOB,
   o_m_path_keys varchar(255),
   o_external_id varchar(64),
@@ -3888,6 +3889,17 @@ create table o_org_organisation (
   fk_root number(20),
   fk_parent number(20),
   fk_type number(20),
+  primary key (id)
+);
+
+create table o_org_email_domain (
+  id number(20) GENERATED ALWAYS AS IDENTITY,
+  creationdate date not null,
+  lastmodified date not null,
+  o_domain varchar(255) not null,
+  o_enabled number default 1 not null,
+  o_subdomains_allowed number default 0 not null,
+  fk_organisation number(20) not null,
   primary key (id)
 );
 
@@ -6020,6 +6032,9 @@ alter table o_org_organisation add constraint org_to_parent_org_idx foreign key 
 create index idx_org_to_parent_org_idx on o_org_organisation (fk_parent);
 alter table o_org_organisation add constraint org_to_org_type_idx foreign key (fk_type) references o_org_organisation_type (id);
 create index idx_org_to_org_type_idx on o_org_organisation (fk_type);
+
+alter table o_org_email_domain add constraint org_email_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_org_email_to_org_idx on o_org_email_domain (fk_organisation);
 
 alter table o_org_type_to_type add constraint org_type_to_type_idx foreign key (fk_type) references o_org_organisation_type (id);
 create index idx_org_type_to_type_idx on o_org_type_to_type (fk_type);

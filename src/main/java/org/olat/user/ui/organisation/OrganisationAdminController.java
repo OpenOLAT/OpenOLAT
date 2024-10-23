@@ -53,6 +53,7 @@ public class OrganisationAdminController extends BasicController implements Acti
 	private final Link configurationLink;
 	private final Link organisationListLink;
 	private final Link organisationTypeListLink;
+	private final Link organisationEmailDomainLink;
 	
 	private BreadcrumbPanel stackPanel;
 	private final VelocityContainer mainVC;
@@ -61,6 +62,7 @@ public class OrganisationAdminController extends BasicController implements Acti
 	private OrganisationTypesAdminController typeListCtrl;
 	private OrganisationAdminConfigrationController configurationCtrl;
 	private OrganisationsStructureAdminController organisationListCtrl;
+	private OrganisationEmailDomainAdminController emailDomainCtrl;
 	
 	@Autowired
 	private OrganisationModule organisationModule;
@@ -76,10 +78,14 @@ public class OrganisationAdminController extends BasicController implements Acti
 		segmentView.addSegment(configurationLink, true);
 		organisationListLink = LinkFactory.createLink("organisation.structure", mainVC, this);
 		organisationTypeListLink = LinkFactory.createLink("organisation.types", mainVC, this);
+		organisationEmailDomainLink = LinkFactory.createLink("organisation.email.domains", mainVC, this);
 		doOpenConfiguration(ureq);
 		if(organisationModule.isEnabled()) {
 			segmentView.addSegment(organisationListLink, false);
 			segmentView.addSegment(organisationTypeListLink, false);
+			if (organisationModule.isEmailDomainEnabled()) {
+				segmentView.addSegment(organisationEmailDomainLink, false);
+			}
 		}
 		
 		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
@@ -106,9 +112,13 @@ public class OrganisationAdminController extends BasicController implements Acti
 			if(event == Event.CHANGED_EVENT) {
 				segmentView.removeSegment(organisationListLink);
 				segmentView.removeSegment(organisationTypeListLink);
+				segmentView.removeSegment(organisationEmailDomainLink);
 				if(organisationModule.isEnabled()) {
 					segmentView.addSegment(organisationListLink, false);
 					segmentView.addSegment(organisationTypeListLink, false);
+					if (organisationModule.isEmailDomainEnabled()) {
+						segmentView.addSegment(organisationEmailDomainLink, false);
+					}
 				}
 			}
 		}
@@ -128,6 +138,8 @@ public class OrganisationAdminController extends BasicController implements Acti
 					doOpenOrganisationList(ureq);
 				} else if (clickedLink == organisationTypeListLink) {
 					doOpenOrganisationTypeList(ureq);
+				} else if (clickedLink == organisationEmailDomainLink) {
+					doOpenOrganisationEmailDomains(ureq);
 				}
 			}
 		}
@@ -163,4 +175,15 @@ public class OrganisationAdminController extends BasicController implements Acti
 		addToHistory(ureq, typeListCtrl);
 		mainVC.put("segmentCmp", typeListCtrl.getInitialComponent());
 	}
+
+	private void doOpenOrganisationEmailDomains(UserRequest ureq) {
+		if(emailDomainCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("EMailDomains"), null);
+			emailDomainCtrl = new OrganisationEmailDomainAdminController(ureq, bwControl);
+			listenTo(emailDomainCtrl);
+		}
+		addToHistory(ureq, emailDomainCtrl);
+		mainVC.put("segmentCmp", emailDomainCtrl.getInitialComponent());
+	}
+	
 }
