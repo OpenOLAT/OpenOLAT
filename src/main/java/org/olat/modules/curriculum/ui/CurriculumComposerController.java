@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
@@ -76,27 +74,14 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.wizard.Step;
-import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.mail.MailHelper;
-import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.member.wizard.ImportMemberByUsernamesController;
-import org.olat.course.member.wizard.ImportMember_1_MemberStep;
-import org.olat.course.member.wizard.MembersByNameContext;
-import org.olat.course.member.wizard.MembersContext;
-import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
@@ -107,7 +92,6 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
-import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
@@ -160,7 +144,6 @@ public class CurriculumComposerController extends FormBasicController implements
 	private CloseableModalController cmc;
 	private CopySettingsController copyCtrl;
 	private ReferencesController referencesCtrl;
-	private StepsMainRunController importMembersWizard;
 	private EditCurriculumElementController newElementCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditCurriculumElementController newSubElementCtrl;
@@ -350,7 +333,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(40);
 		tableEl.setSearchEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-composer");
+		String tablePrefsId = (curriculum == null ? "cur-implementations" : "curriculum-composer");
+		tableEl.setAndLoadPersistedPreferences(ureq, tablePrefsId);
 		
 		if(secCallback.canNewCurriculumElement()) {
 			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
@@ -446,9 +430,6 @@ public class CurriculumComposerController extends FormBasicController implements
 	@Override
 	protected void doDispose() {
 		toolbarPanel.removeListener(this);
-		if(!toolbarPanel.isToolbarEnabled()) {
-			toolbarPanel.setToolbarEnabled(true);
-		}
         super.doDispose();
 	}
 	
@@ -599,16 +580,7 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == importMembersWizard) {
-			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				getWindowControl().pop();
-				removeAsListenerAndDispose(importMembersWizard);
-				importMembersWizard = null;
-				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-					loadModel();
-				}
-			}
-		} else if(newElementCtrl == source || newSubElementCtrl == source
+		if(newElementCtrl == source || newSubElementCtrl == source
 				|| moveElementCtrl == source || confirmDeleteCtrl == source
 				|| copyCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -646,6 +618,9 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(curriculumStructureCalloutCtrl);
+		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
+		removeAsListenerAndDispose(newSubElementCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(moveElementCtrl);
 		removeAsListenerAndDispose(newElementCtrl);
@@ -653,6 +628,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(copyCtrl);
 		removeAsListenerAndDispose(cmc);
+		curriculumStructureCalloutCtrl = null;
+		bulkDeleteConfirmationCtrl = null;
+		newSubElementCtrl = null;
 		toolsCalloutCtrl = null;
 		confirmDeleteCtrl = null;
 		moveElementCtrl = null;
@@ -707,11 +685,9 @@ public class CurriculumComposerController extends FormBasicController implements
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculumElementUserManagement(ureq, row, "Owners");
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
+			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
 				tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 				tableEl.reset(false, true, true);// only reload
-			} else if(event instanceof FlexiTableFilterTabEvent) {
-				loadModel();
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doNewCurriculumElement(ureq, null);
 			}
@@ -820,42 +796,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 	}
 	
-	private void doImportMembers(UserRequest ureq, CurriculumElementRow focusedRow) {
-		removeAsListenerAndDispose(importMembersWizard);
-		
-		CurriculumElement focusedElement = focusedRow == null ? null : focusedRow.getCurriculumElement();
-		Curriculum focusedCurriculum = focusedElement == null ? curriculum : focusedElement.getCurriculum();
-		MembersContext membersContext= MembersContext.valueOf(focusedCurriculum, focusedElement, overrideManaged, true);
-		Step start = new ImportMember_1_MemberStep(ureq, membersContext);
-		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
-			addMembers(uureq, runContext);
-			MembersByNameContext membersByNameContext = (MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY);
-			if(!membersByNameContext.getNotFoundNames().isEmpty()) {
-				String notFoundNames = membersByNameContext.getNotFoundNames().stream()
-						.collect(Collectors.joining(", "));
-				showWarning("user.notfound", notFoundNames);
-			}
-			return StepsMainRunController.DONE_MODIFIED;
-		};
-		
-		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("add.member"), "o_sel_group_import_logins_wizard");
-		listenTo(importMembersWizard);
-		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
-	}
-	
-	private void addMembers(UserRequest ureq, StepsRunContext runContext) {
-		Roles roles = ureq.getUserSession().getRoles();
-
-		Set<Identity> members = ((MembersByNameContext)runContext.get(ImportMemberByUsernamesController.RUN_CONTEXT_KEY)).getIdentities();
-		MailTemplate template = (MailTemplate)runContext.get("mailTemplate");
-		MailPackage mailing = new MailPackage(template, getWindowControl().getBusinessControl().getAsString(), template != null);
-		MemberPermissionChangeEvent changes = (MemberPermissionChangeEvent)runContext.get("permissions");
-		List<CurriculumElementMembershipChange> curriculumChanges = changes.generateCurriculumElementMembershipChange(members);
-		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, curriculumChanges, mailing);
-		MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), false, getLocale());
-	}
-	
 	private void doOpenTools(UserRequest ureq, CurriculumElementRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -877,11 +817,6 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private void doOpenCurriculumElementOverview(UserRequest ureq, CurriculumElementRow row) {
 		List<ContextEntry> overview = BusinessControlFactory.getInstance().createCEListFromString("[Overview:0]");
-		doOpenCurriculumElementDetails(ureq, row, overview);
-	}
-	
-	private void doOpenCurriculumElementMetadata(UserRequest ureq, CurriculumElementRow row) {
-		List<ContextEntry> overview = BusinessControlFactory.getInstance().createCEListFromString("[Metadata:0]");
 		doOpenCurriculumElementDetails(ureq, row, overview);
 	}
 	
@@ -1079,11 +1014,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		private final VelocityContainer mainVC;
 		private Link newLink;
 		private Link openLink;
-		private Link editLink;
 		private Link moveLink;
 		private Link copyLink;
 		private Link deleteLink;
-		private Link addMemberLink;
 		private Link manageMembersLink;
 		
 		private CurriculumElementRow row;
@@ -1101,24 +1034,21 @@ public class CurriculumComposerController extends FormBasicController implements
 			openLink.setNewWindow(true, true);
 			links.add("-");
 			
-			if(secCallback.canEditCurriculumElement(element)) {
-				editLink = addLink("edit", "o_icon_edit", links);
-				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
-					moveLink = addLink("move.element", "o_icon_move", links);
-				}
+			if(curriculum != null && secCallback.canEditCurriculumElement(element)) {
+				copyLink = addLink("copy.element", "o_icon_copy", links);
 				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
 					addNewElementLinks(element, links);
 				}
-				copyLink = addLink("copy.element", "o_icon_copy", links);
+				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
+					moveLink = addLink("move.element", "o_icon_move", links);
+				}
 			}
 
 			if(!managed && secCallback.canManagerCurriculumElementUsers(element)) {
 				if(!links.isEmpty()) {
 					links.add("-");
 				}
-				
 				manageMembersLink = addLink("manage.members", "o_icon_group", links);
-				addMemberLink = addLink("add.member", "o_icon_add_member", links);
 			}
 			
 			if(secCallback.canEditCurriculumElement(element) && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.delete)) {
@@ -1164,9 +1094,6 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(openLink == source) {
 				close();
 				doOpenCurriculumElementInNewWindow(row);
-			} else if(editLink == source) {
-				close();
-				doOpenCurriculumElementMetadata(ureq, row);
 			} else if(moveLink == source) {
 				close();
 				doMoveCurriculumElement(ureq, row);
@@ -1179,9 +1106,6 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(copyLink == source) {
 				close();
 				doCopyCurriculumElement(ureq, row);
-			} else if(addMemberLink == source) {
-				close();
-				doImportMembers(ureq, row);
 			} else if(manageMembersLink == source) {
 				close();
 				doOpenCurriculumElementUserManagement(ureq, row, null);
