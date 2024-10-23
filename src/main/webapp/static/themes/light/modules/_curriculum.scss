@@ -422,6 +422,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: $o-widgets-gap;
+	align-items: start;
 	
 	.o_curriculum_widget {
 		border: $o-curriculum-widget-border;
@@ -445,7 +446,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	}
 	
 	.o_curriculum_widget_cards {
-		padding: 0 15px 0 15px;
+		padding: 0 15px 15px 15px;
 	
 		.o_table_flexi.o_rendertype_custom .o_table_row.row {
 			padding: 0;
@@ -583,13 +584,16 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	
 	.o_card_meta {
 		display: flex;
-		flex-direction: column-reverse;
-		justify-content: flex-end;
-	}
-
-	.o_card_status {
-		display: flex;
-		align-items: center;
+		flex-direction: column;
+		justify-content: start;
+		
+		h4 ~ small {
+			order: 1;
+		}
+		
+		> * {
+			order: 2;
+		}
 	}
 }
 

@@ -17,44 +17,26 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui.addwizard;
+package org.olat.modules.curriculum.ui.widgets;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 10 oct. 2024<br>
+ * Initial date: 23 oct. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryEntryRow {
-	
-	private String thumbnailUrl;
-	private final RepositoryEntry entry;
-	
-	public RepositoryEntryRow(RepositoryEntry entry) {
-		this.entry = entry;
-	}
-	
-	public boolean isThumbnailAvailable() {
-		return StringHelper.containsNonWhitespace(thumbnailUrl);
-	}
-	
-	public String getThumbnailUrl() {
-		return thumbnailUrl;
-	}
-	
-	public void setThumbnailUrl(String thumbnailUrl) {
-		this.thumbnailUrl = thumbnailUrl;
-	}
-	
+public record CourseWidgetRow(RepositoryEntry entry, FormLink openLink, String url, String thumbnailUrl, String statusHtml) {
+
 	public Long getKey() {
 		return entry.getKey();
 	}
 	
-	public RepositoryEntry getEntry() {
-		return entry;
+	public boolean isThumbnailAvailable() {
+		return StringHelper.containsNonWhitespace(thumbnailUrl);
 	}
 	
 	public String getDisplayname() {
@@ -63,6 +45,10 @@ public class RepositoryEntryRow {
 	
 	public String getExternalRef() {
 		return entry.getExternalRef();
+	}
+
+	public FormLink getOpenLink() {
+		return openLink;
 	}
 
 	@Override
@@ -75,10 +61,9 @@ public class RepositoryEntryRow {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof RepositoryEntryRow row) {
+		if(obj instanceof CourseWidgetRow row) {
 			return entry != null && entry.equals(row.entry);
 		}
 		return false;
 	}
-
 }

@@ -1,18 +1,20 @@
 <div class="o_curriculum_course_card">
 	<div class="o_thumbnail">
 		<div class="o_thumbnail_file_img">
+			<a href="$row.url" onclick="${f.ffXHREvent("select_entry","${row.getKey()}")}; return false;" title="$r.escapeForHtmlAttribute(${row.displayName()})">
 			#if($row.isThumbnailAvailable())
-				<img src="${row.getThumbnailUrl()}" alt="$r.translate("rentry.pic.alt")">
+				<img src="${row.thumbnailUrl()}" alt="$r.translate("rentry.pic.alt")">
 			#else
 				<div class="o_visual_not_available"></div>
 			#end
+			</a>
 		</div>
 	</div>
 	<div class="o_card_meta">
-		<h4 class="o_card_title">$r.escapeHtml(${row.getDisplayname()})</h4>
-		#if($r.isNotEmpty($row.externalRef))
-			<small>$r.escapeHtml($row.externalRef)</small>
+		<h4 class="o_card_title">$r.render(${row.openLink().getComponent().getComponentName()})</h4>
+		#if($r.isNotEmpty(${row.getExternalRef()}))
+			<small>$r.escapeHtml(${row.getExternalRef()})</small>
 		#end
+		<div class="o_card_status">${row.statusHtml()}</div>
 	</div>
-	<div class="o_card_status">$row.statusHtml</div>
 </div>

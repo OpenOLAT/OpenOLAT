@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -32,18 +33,21 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -51,9 +55,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumListManagerController;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
-import org.olat.modules.lecture.ui.addwizard.RepositoryEntriesDataModel;
-import org.olat.modules.lecture.ui.addwizard.RepositoryEntriesDataModel.EntriesCols;
-import org.olat.modules.lecture.ui.addwizard.RepositoryEntryRow;
+import org.olat.modules.curriculum.ui.widgets.CoursesWidgetDataModel.EntriesCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
@@ -70,7 +72,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	
 	private FormLink coursesLink;
 	private FlexiTableElement entriesTableEl;
-	private RepositoryEntriesDataModel entriesTableModel;
+	private CoursesWidgetDataModel entriesTableModel;
 
 	private final MapperKey mapperThumbnailKey;
 	private final List<RepositoryEntry> repositoryEntries;
@@ -96,6 +98,9 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
+		if(rowObject instanceof CourseWidgetRow entryRow && entryRow.getOpenLink() != null) {
+			return List.of(entryRow.getOpenLink().getComponent());
+		}
 		return List.of();
 	}
 
@@ -116,10 +121,10 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	private void initFormTable(FormItemContainer formLayout) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, EntriesCols.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EntriesCols.displayName));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EntriesCols.externalRef, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EntriesCols.displayName, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EntriesCols.externalRef));
 		
-		entriesTableModel = new RepositoryEntriesDataModel(columnsModel);
+		entriesTableModel = new CoursesWidgetDataModel(columnsModel);
 		entriesTableEl = uifactory.addTableElement(getWindowControl(), "entriesTable", entriesTableModel, 25, false, getTranslator(), formLayout);
 		entriesTableEl.setCustomizeColumns(false);
 		entriesTableEl.setNumOfRowsEnabled(false);
@@ -137,7 +142,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	
 	private void loadModel() {
 		AccessRenderer renderer = new AccessRenderer(getLocale());
-		List<RepositoryEntryRow> rows = new ArrayList<>();
+		List<CourseWidgetRow> rows = new ArrayList<>();
 		for(RepositoryEntry entry:repositoryEntries) {
 			rows.add(forgeRow(entry, renderer));
 		}
@@ -145,15 +150,20 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		entriesTableEl.reset(true, true, true);
 	}
 	
-	private RepositoryEntryRow forgeRow(RepositoryEntry entry, AccessRenderer renderer) {
-		RepositoryEntryRow row = new RepositoryEntryRow(entry);
-		VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
-		if(image != null) {
-			row.setThumbnailUrl(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image));
-		}
+	private CourseWidgetRow forgeRow(RepositoryEntry entry, AccessRenderer renderer) {
+		String displayName = StringHelper.escapeHtml(entry.getDisplayname());
+		FormLink openLink = uifactory.addFormLink("open_" + entry.getKey(), "open", displayName, null, flc, Link.NONTRANSLATED);
+		final String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
+		openLink.setUrl(url);
 		
+		VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
+		String thumbnailUrl = null;
+		if(image != null) {
+			thumbnailUrl = RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image);
+		}
 		String status = renderer.renderEntryStatus(entry);
-		row.setStatusHtml(status);
+		CourseWidgetRow row = new CourseWidgetRow(entry, openLink, url, thumbnailUrl, status);
+		openLink.setUserObject(row);
 		return row;
 	}
 
@@ -163,6 +173,14 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 			List<ContextEntry> entries = BusinessControlFactory.getInstance()
 					.createCEListFromResourceType(CurriculumListManagerController.CONTEXT_RESOURCES);
 			fireEvent(ureq, new ActivateEvent(entries));
+		} else if(source instanceof FormLink link && "open".equals(link.getCmd())
+				&& link.getUserObject() instanceof CourseWidgetRow row) {
+			doOpen(ureq, row);
+		} else if(source instanceof FormLayoutContainer) {
+			String entryKey = ureq.getParameter("select_entry");
+			if(StringHelper.isLong(entryKey)) {
+				doOpen(ureq, Long.valueOf(entryKey));
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -170,6 +188,15 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doOpen(UserRequest ureq, CourseWidgetRow row) {
+		doOpen(ureq, row.getKey());
+	}
+	
+	private void doOpen(UserRequest ureq, Long entryKey) {
+		String businessPath = "[RepositoryEntry:" + entryKey + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private static class EntriesDelegate implements FlexiTableCssDelegate {
