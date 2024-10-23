@@ -333,7 +333,10 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 		removeAsListenerAndDispose(previewCtrl);
 		
 		RepositoryEntry repositoryEntry = getVideoReference(config, false);
-		
+		if (videoManager.isRestrictedDomain(repositoryEntry)) {
+			showWarning("error.videorepoentryrestricted");
+			return;
+		}
 		VideoDisplayOptions options = videoTaskNode.getVideoDisplay(true, false);
 		previewCtrl = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, null, null, options);
 		listenTo(previewCtrl);

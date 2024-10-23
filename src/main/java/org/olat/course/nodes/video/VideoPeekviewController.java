@@ -85,7 +85,7 @@ public class VideoPeekviewController  extends BasicController implements Control
 		} else if (videoManager.isRestrictedDomain(videoEntry)) {
 			EmptyStateConfig emptyState = EmptyStateConfig.builder()
 					.withIconCss("o_icon_video")
-					.withIndicatorIconCss("o_icon_cancelled")
+					.withIndicatorIconCss("o_icon_ban")
 					.withMessageI18nKey(VideoEditController.NLS_ERROR_VIDEOREPOENTRYRESTRICTED)
 					.build();
 			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);

@@ -50,6 +50,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_audio_record { @include o-add-icon('microphone');}
 .o_icon_back { @include o-add-icon('chevron-left');}
 .o_icon_badge { @include o-add-icon('award');}
+.o_icon_ban { @include o-add-icon('ban');}
 .o_icon_banned { @include o-add-icon('flask'); color: $brand-danger;}
 .o_icon_bold { @include o-add-icon('bold');}
 .o_icon_bolt { @include o-add-icon('bolt');}
