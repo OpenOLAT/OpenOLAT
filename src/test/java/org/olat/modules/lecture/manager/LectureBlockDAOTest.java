@@ -777,7 +777,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		// fill a lot of search parameters
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setTeacher(teacher);
-		searchParams.setEntry(entry);
+		searchParams.setRepositoryEntry(entry);
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 		searchParams.setStartDate(CalendarUtils.startOfDay(new Date()));
 		searchParams.setEndDate(CalendarUtils.endOfDay(new Date()));
 		searchParams.addLectureBlockStatus(LectureBlockStatus.values());
@@ -809,7 +810,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		// fill a lot of search parameters
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setManager(admin);
-		searchParams.setEntry(entry);
+		searchParams.setRepositoryEntry(entry);
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 		searchParams.setStartDate(CalendarUtils.startOfDay(new Date()));
 		searchParams.setEndDate(CalendarUtils.endOfDay(new Date()));
 		searchParams.addLectureBlockStatus(LectureBlockStatus.values());
@@ -841,7 +843,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		
 		// fill a lot of search parameters
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
-		searchParams.setEntry(entry);
+		searchParams.setRepositoryEntry(entry);
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 		searchParams.addLectureBlockStatus(LectureBlockStatus.values());
 		
 		List<LectureBlockWithTeachers> infos = lectureBlockDao.getLecturesBlockWithOptionalTeachers(searchParams);

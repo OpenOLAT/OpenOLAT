@@ -59,6 +59,16 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		}
 	}
 	
+	public int getIndexByKey(Long lectureBlockKey) {
+		List<LectureBlockRow> rows = getObjects();
+		for(int i=0; i<rows.size(); i++) {
+			if(lectureBlockKey.equals(rows.get(i).getLectureBlock().getKey())) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	public LectureBlockRow getObject(LectureBlock lectureBlock) {
 		List<LectureBlockRow> rows = this.getObjects();
 		for(int i=0; i<rows.size(); i++) {

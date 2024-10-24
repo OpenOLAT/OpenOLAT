@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -143,7 +144,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		eventsNextDaysEl = uifactory.addStaticTextElement("num.of.events.next.days", "", formLayout);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title, "select",
 				new LectureBlockTitleCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location,
 				new LectureBlockLocationCellRenderer()));
@@ -227,9 +228,11 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	
 	private LecturesBlockSearchParameters getSearchParameters() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(false);
 		if(curriculum != null) {
 			searchParams.setCurriculum(curriculum);
 		} else if(curriculumElement != null) {
+			searchParams.setCurriculum(curriculumElement.getCurriculum());
 			searchParams.setCurriculumElementPath(curriculumElement.getMaterializedPathKeys());
 		}
 		return searchParams;
@@ -263,8 +266,24 @@ public class LectureBlocksWidgetController extends FormBasicController {
 			doAddLectureBlock(ureq);
 		} else if(minimizeButton == source) {
 			toogle(ureq);
+		} else if(todayTableEl == source ) {
+			if(event instanceof SelectionEvent se) {
+				LectureBlockWidgetRow row = todayTableModel.getObject(se.getIndex());
+				doOpen(ureq, row);
+			}
+		} else if(nextDaysTableEl == source) {
+			if(event instanceof SelectionEvent se) {
+				LectureBlockWidgetRow row = nextDaysTableModel.getObject(se.getIndex());
+				doOpen(ureq, row);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doOpen(UserRequest ureq, LectureBlockWidgetRow row) {
+		List<ContextEntry> entries = BusinessControlFactory.getInstance()
+				.createCEListFromString("[Lectures:0][Lecture:" + row.getLectureBlock().getKey() + "]");
+		fireEvent(ureq, new ActivateEvent(entries));
 	}
 
 	@Override

@@ -230,16 +230,12 @@ public class LectureBlockDAO {
 	public long countLectureBlocks(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select count(distinct block.key) from lectureblock block")
-		  .append(" inner join block.entry entry")
-		  .append(" inner join entry.olatResource oRes")
+		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join fetch block.entry entry")
+		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join fetch entry.olatResource oRes")
 		  .append(" left join fetch block.teacherGroup tGroup")
 		  .append(" left join block.curriculumElement curEl");
 		addSearchParametersToQuery(sb, searchParams);
-		sb.and()
-		  .append(" exists (select config.key from lectureentryconfig config")
-		  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
-		  .append(" )");
-
+		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);
 		addSearchParametersToQuery(query, searchParams);
@@ -250,15 +246,11 @@ public class LectureBlockDAO {
 	public List<LectureBlock> searchLectureBlocks(LecturesBlockSearchParameters searchParams, int maxResults, Boolean orderAsc) {
 		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select distinct block from lectureblock block")
-		  .append(" inner join fetch block.entry entry")
-		  .append(" inner join fetch entry.olatResource oRes")
+		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join fetch block.entry entry")
+		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join fetch entry.olatResource oRes")
 		  .append(" left join fetch block.teacherGroup tGroup")
 		  .append(" left join block.curriculumElement curEl");
 		addSearchParametersToQuery(sb, searchParams);
-		sb.and()
-		  .append(" exists (select config.key from lectureentryconfig config")
-		  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
-		  .append(" )");
 		if(orderAsc != null) {
 			sb.append(" order by block.startDate ").append("asc", "desc", orderAsc.booleanValue());
 		}
@@ -748,10 +740,25 @@ public class LectureBlockDAO {
 			sb.and().append(" curEl.key=:curriculumElementKey");
 		} else if(StringHelper.containsNonWhitespace(searchParams.getCurriculumElementPath())) {
 			sb.and().append(" curEl.materializedPathKeys like :curriculumElementPath");
-		} else if(searchParams.getEntry() != null) {
+		} else if(searchParams.getRepositoryEntry() != null) {
 			sb.and().append(" entry.key=:repoEntryKey and config.lectureEnabled=true");
 		} else {
-			sb.and().append(" entry.status not ").in(RepositoryEntryStatusEnum.deleted());
+			sb.and().append("(");
+			if(!searchParams.isLectureConfiguredRepositoryEntry()) {
+				sb.append("entry.key is null or ");
+			}
+			sb.append("entry.status not ").in(RepositoryEntryStatusEnum.deleted()).append(")");
+		}
+		
+		if(searchParams.getCurriculum() != null) {
+			sb.and().append(" curEl.curriculum.key=:curriculumKey");
+		}
+		
+		if(searchParams.isLectureConfiguredRepositoryEntry()) {
+			sb.and()
+			  .append(" exists (select config.key from lectureentryconfig config")
+			  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
+			  .append(" )");
 		}
 		
 		if(searchParams.getLectureBlocks() != null && !searchParams.getLectureBlocks().isEmpty()) {
@@ -834,25 +841,29 @@ public class LectureBlockDAO {
 			query.setParameter("curriculumElementKey", searchParams.getCurriculumElement().getKey());
 		} else if(StringHelper.containsNonWhitespace(searchParams.getCurriculumElementPath())) {
 			query.setParameter("curriculumElementPath", searchParams.getCurriculumElementPath() + "%");
-		} else if(searchParams.getEntry() != null) {
-			query.setParameter("repoEntryKey", searchParams.getEntry().getKey());
+		} else if(searchParams.getRepositoryEntry() != null) {
+			query.setParameter("repoEntryKey", searchParams.getRepositoryEntry().getKey());
+		}
+		
+		if(searchParams.getCurriculum() != null) {
+			query.setParameter("curriculumKey", searchParams.getCurriculum().getKey());
 		}
 		
 		if(searchParams.getLectureBlocks() != null && !searchParams.getLectureBlocks().isEmpty()) {
 			List<Long> lectureBlockKeys = searchParams.getLectureBlocks().stream()
-					.map(LectureBlockRef::getKey).collect(Collectors.toList());
+					.map(LectureBlockRef::getKey).toList();
 			query.setParameter("lectureBlockKeys", lectureBlockKeys);
 		}
 		
 		if(searchParams.getLectureBlockStatus() != null && !searchParams.getLectureBlockStatus().isEmpty()) {
 			List<String> lectureBlockStatus = searchParams.getLectureBlockStatus()
-					.stream().map(LectureBlockStatus::name).collect(Collectors.toList());
+					.stream().map(LectureBlockStatus::name).toList();
 			query.setParameter("lectureBlockStatus", lectureBlockStatus);
 		}
 		
 		if(searchParams.getRollCallStatus() != null && !searchParams.getRollCallStatus().isEmpty()) {
 			List<String> rollCallStatus = searchParams.getRollCallStatus()
-					.stream().map(LectureRollCallStatus::name).collect(Collectors.toList());
+					.stream().map(LectureRollCallStatus::name).toList();
 			query.setParameter("rollCallStatus", rollCallStatus);
 		}
 		

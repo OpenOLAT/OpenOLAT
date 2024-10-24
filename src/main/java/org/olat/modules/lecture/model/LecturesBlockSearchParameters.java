@@ -57,6 +57,12 @@ public class LecturesBlockSearchParameters {
 	private List<LectureBlockStatus> lectureBlockStatus;
 	private List<LectureBlockRef> lectureBlocks;
 	
+	private boolean configuredEntry;
+	
+	public LecturesBlockSearchParameters() {
+		//
+	}
+	
 	public String getSearchString() {
 		return searchString;
 	}
@@ -186,12 +192,20 @@ public class LecturesBlockSearchParameters {
 		this.teachersList = teachersList;
 	}
 
-	public RepositoryEntry getEntry() {
+	public RepositoryEntry getRepositoryEntry() {
 		return entry;
 	}
 
-	public void setEntry(RepositoryEntry entry) {
+	public void setRepositoryEntry(RepositoryEntry entry) {
 		this.entry = entry;
+	}
+
+	public boolean isLectureConfiguredRepositoryEntry() {
+		return configuredEntry;
+	}
+
+	public void setLectureConfiguredRepositoryEntry(boolean enabled) {
+		this.configuredEntry = enabled;
 	}
 
 	public Curriculum getCurriculum() {

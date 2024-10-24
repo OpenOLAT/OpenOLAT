@@ -110,13 +110,11 @@ public class RepositoryEntriesSearchController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == entriesSearchCtrl) {
-			if(event instanceof SelectLectureRepositoryEntryEvent) {
-				SelectLectureRepositoryEntryEvent slree = (SelectLectureRepositoryEntryEvent)event;
+			if(event instanceof SelectLectureRepositoryEntryEvent slree) {
 				doSelectRepositoryEntry(ureq, slree.getEntry());
 			}
 		} else if(source == participantsSearchCtrl) {
-			if(event instanceof SelectLectureIdentityEvent) {
-				SelectLectureIdentityEvent sie = (SelectLectureIdentityEvent)event;
+			if(event instanceof SelectLectureIdentityEvent sie) {
 				doSelectParticipant(ureq, sie.getIdentityKey());
 			}
 		}
@@ -148,8 +146,6 @@ public class RepositoryEntriesSearchController extends BasicController {
 		private RepositoryEntryLectureConfiguration lectureConfig;
 		private final List<UserPropertyHandler> userPropertyHandlers;
 
-		@Autowired
-		private UserManager userManager;
 		@Autowired
 		private LectureModule lectureModule;
 		@Autowired

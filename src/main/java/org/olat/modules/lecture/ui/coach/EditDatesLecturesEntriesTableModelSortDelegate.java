@@ -94,10 +94,10 @@ public class EditDatesLecturesEntriesTableModelSortDelegate extends SortableFlex
 	
 	private class EditDatesLecturesEntryRowComparator implements Comparator<EditDatesLecturesEntryRow> {
 
-		private final Set<EditDatesLecturesEntryRow> selectedRows;
+		private final Set<EditDatesLecturesEntryRow> selectedRowsSet;
 		
 		public EditDatesLecturesEntryRowComparator(Set<EditDatesLecturesEntryRow> selectedRows) {
-			this.selectedRows = selectedRows;
+			this.selectedRowsSet = selectedRows;
 		}
 
 		@Override
@@ -106,8 +106,8 @@ public class EditDatesLecturesEntriesTableModelSortDelegate extends SortableFlex
 			if(o1 == null || o2 == null) {
 				c = compareNullObjects(o1, o2);
 			} else {
-				boolean s1 = selectedRows.contains(o1);
-				boolean s2 = selectedRows.contains(o2);
+				boolean s1 = selectedRowsSet.contains(o1);
+				boolean s2 = selectedRowsSet.contains(o2);
 				c = -Boolean.compare(s1, s2);
 			}
 			

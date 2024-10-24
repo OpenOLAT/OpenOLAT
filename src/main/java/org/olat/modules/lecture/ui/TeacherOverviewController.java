@@ -107,7 +107,8 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 	protected List<LectureBlockRow> getRows(LecturesBlockSearchParameters searchParams) {
 		Identity filterByTeacher = ((Boolean)allTeachersSwitch.getUserObject()).booleanValue() ? null : getIdentity();
 		searchParams.setTeacher(filterByTeacher);
-		searchParams.setEntry(entry);
+		searchParams.setRepositoryEntry(entry);
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 		List<LectureBlockWithTeachers> blocksWithTeachers = lectureService
 				.getLectureBlocksWithTeachers(searchParams);
 		

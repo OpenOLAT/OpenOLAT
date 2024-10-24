@@ -73,10 +73,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -118,7 +121,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureListRepositoryController extends FormBasicController implements FlexiTableComponentDelegate {
+public class LectureListRepositoryController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 
 	private static final String ALL_TAB_ID = "All";
 	private static final String PAST_TAB_ID = "Past";
@@ -460,10 +463,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			boolean oneLevelOnly =  isFilterSelected(FILTER_ONE_LEVEL_ONLY);
 			searchParams.setCurriculumElementPath(oneLevelOnly ? null : curriculumElement.getMaterializedPathKeys());
 			searchParams.setCurriculumElement(oneLevelOnly ? curriculumElement : null);
+			searchParams.setLectureConfiguredRepositoryEntry(false);
 		} else if(curriculum != null) {
 			searchParams.setCurriculum(curriculum);
+			searchParams.setLectureConfiguredRepositoryEntry(false);
 		} else if(entry != null) {
-			searchParams.setEntry(entry);
+			searchParams.setRepositoryEntry(entry);
+			searchParams.setLectureConfiguredRepositoryEntry(true);
 		}
 		
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ROLL_CALL_STATUS);
@@ -529,6 +535,22 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Lecture".equals(type) || "LectureBlock".equals(type)) {
+			int index = tableModel.getIndexByKey(entries.get(0).getOLATResourceable().getResourceableId());
+			if(index >= 0) {
+				int page = index / tableEl.getPageSize();
+				tableEl.setPage(page);
+				doOpenLectureBlockDetails(ureq, tableModel.getObject(index));
+				tableEl.expandDetails(index);
+			}
+		}
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addLectureButton == source) {
 			doAddLectureBlock(ureq);
@@ -547,7 +569,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 						doCloseLectureBlockDetails(row);
 						tableEl.collapseDetails(se.getIndex());
 					} else {
-						this.doOpenLectureBlockDetails(ureq, row);
+						doOpenLectureBlockDetails(ureq, row);
 						tableEl.expandDetails(se.getIndex());
 					}
 				}

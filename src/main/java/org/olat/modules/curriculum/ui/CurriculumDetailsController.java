@@ -198,7 +198,11 @@ public class CurriculumDetailsController extends BasicController implements Acti
 				implementationsCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if(CONTEXT_LECTURES.equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			tabPane.setSelectedPane(ureq, lecturesTab);
+			if(lectureBlocksCtrl != null) {
+				lectureBlocksCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
 		} else if(CONTEXT_OVERVIEW.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, overviewTab);
 		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type)) {
@@ -222,7 +226,8 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		}
+		else if(cmc == source) {
 			cleanUp();
 		}
 	}
