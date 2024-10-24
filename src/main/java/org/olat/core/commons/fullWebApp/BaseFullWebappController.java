@@ -498,11 +498,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 					if (navEl.getExternalUrl() != null && !navEl.isExternalUrlInIFrame()) {
 						ExternalLink extLink = LinkFactory.createExternalLink(linkName, "t", navEl.getExternalUrl());		
 						navSitesVc.put(linkName, extLink);
-						extLink.setName(StringHelper.xssScan(navEl.getTitle()));
+						extLink.setName(StringHelper.escapeHtml(navEl.getTitle()));
 						extLink.setTooltip(navEl.getDescription());
 					} else {						
 						Link link = LinkFactory.createCustomLink(linkName, "t", "", Link.NONTRANSLATED, navSitesVc, this);
-						link.setCustomDisplayText(StringHelper.xssScan(navEl.getTitle()));
+						link.setCustomDisplayText(StringHelper.escapeHtml(navEl.getTitle()));
 						link.setTitle(navEl.getDescription());
 						link.setUserObject(si);
 						if (StringHelper.containsNonWhitespace(navEl.getBusinessPath())) {
@@ -1254,10 +1254,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			dtabs.add(dt);
 			dtabsLinkNames.add(dtabCreateCounter);
 			String linkId = "a" + dtabCreateCounter;
-			String navTitle = StringHelper.xssScan(dt.getNavElement().getTitle());
-			if(!StringHelper.containsNonWhitespace(navTitle)) {
-				navTitle = StringHelper.escapeHtml(dt.getNavElement().getTitle());
-			}
+			String navTitle = StringHelper.escapeHtml(dt.getNavElement().getTitle());
 			Link link = LinkFactory.createCustomLink(linkId, linkId, "", Link.NONTRANSLATED, navTabsVc, this);
 			link.setCustomDisplayText(navTitle);
 			link.setIconLeftCSS("o_icon o_icon-fw ".concat(dt.getNavElement().getIconCSSClass()));
@@ -1272,10 +1269,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			calink.setAriaRole(Link.ARIA_ROLE_BUTTON);
 			calink.setUserObject(dt);
 			
-			String title = StringHelper.xssScan(dt.getTitle());
-			if(StringHelper.containsNonWhitespace(title)) {
-				link.setTitle(translate("resource.opened", title));
-				calink.setTitle(translate("resource.close", title));
+			if(StringHelper.containsNonWhitespace(navTitle)) {
+				link.setTitle(translate("resource.opened", navTitle));
+				calink.setTitle(translate("resource.close", navTitle));
 			}
 
 			Controller dtabCtr = dt.getController();
@@ -1298,11 +1294,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			for (int i = 0; i <= dtabCreateCounter; i++) {
 				Link link = (Link)navTabsVc.getComponent("a" + i);
 				if (link != null && dTab.equals(link.getUserObject())) {
-					// correct link found - updte titel and we are done
-					link.setCustomDisplayText(StringHelper.xssScan(newTitle));
+					link.setCustomDisplayText(StringHelper.escapeHtml(newTitle));
 					return;
-				}				
-			}			
+				}
+			}
 		}
 	}
 	
