@@ -134,6 +134,20 @@
         e.preventDefault();
       });
 
+      slider.on("keydown", function(e) {
+        var newSliderPct = sliderPct;
+        switch (e.which) {
+        case 37: // left
+            newSliderPct -= 0.05;
+            break;
+        case 39: // right
+            newSliderPct += 0.05;
+            break;
+        }
+        sliderPct = minMaxNumber(newSliderPct, 0, 1);
+        adjustSlider(sliderPct);
+      });
+
       container.find("img").on("mousedown", function(event) {
         event.preventDefault();
       });
