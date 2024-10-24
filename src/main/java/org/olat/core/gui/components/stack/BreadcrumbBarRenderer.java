@@ -86,7 +86,10 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 				sb.append(" role='menu'>");
 				for (Link menuCrumb : breadCrumbs) {
 					sb.append("<li class='o_breadcrumb_menu_item'>");
+					String displayText = menuCrumb.getCustomDisplayText();
+					menuCrumb.setCustomDisplayText(StringHelper.escapeHtml(displayText));
 					renderer.render(menuCrumb, sb, args);
+					menuCrumb.setCustomDisplayText(displayText);
 					sb.append("</li>");
 				}
 				sb.append("</ul>");
