@@ -121,6 +121,18 @@ public class AdministrationPage {
 		return this;
 	}
 	
+	public AdministrationPage selectSecurity() {
+		By securityBy = By.cssSelector(".o_sel_secadmin span.o_tree_level_label_leaf>a");
+		OOGraphene.waitElement(securityBy, browser);
+		WebElement linkEl = browser.findElement(By.cssSelector("li.o_sel_secadmin"));
+		if(!linkEl.getAttribute("class").contains("active")) {
+			browser.findElement(securityBy).click();
+			By securityActiveBy = By.cssSelector(".o_sel_secadmin.active span.o_tree_level_label_leaf>a");
+			OOGraphene.waitElement(securityActiveBy, browser);
+		}
+		return this;
+	}
+	
 	public AdministrationPage clearCache(String cacheName) {
 		selectSystemInfo();
 		
@@ -296,6 +308,19 @@ public class AdministrationPage {
 		By jupiterHubConfigBy = By.cssSelector("fieldset.o_sel_jupyterhub_admin_configuration");
 		OOGraphene.waitElement(jupiterHubConfigBy, browser);
 		return new JupyterHubSettingsPage(browser);
+	}
+	
+	public MediaServerPage openMediaServer() {
+		selectLogin()
+			.selectSecurity();
+		
+		By mediaServerBy = By.cssSelector(".o_segments .o_sel_media_server");
+		OOGraphene.waitElement(mediaServerBy, browser);
+		browser.findElement(mediaServerBy).click();
+		By mediaServerSelectedBy = By.cssSelector(".o_segments .btn-primary.o_sel_media_server");
+		OOGraphene.waitElement(mediaServerSelectedBy, browser);
+		
+		return new MediaServerPage(browser);
 	}
 	
 	private void openSubMenu(String liClass) {

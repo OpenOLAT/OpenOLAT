@@ -86,6 +86,7 @@ public class MediaServerController extends FormBasicController {
 		topCont.setFormTitle(translate("media.server.title"));
 
 		FormLayoutContainer middleCont = FormLayoutContainer.createDefaultFormLayout("middleCont", getTranslator());
+		middleCont.setElementCssClass("o_sel_media_server_form");
 		formLayout.add(middleCont);
 
 		SelectionValues modeKV = new SelectionValues();
@@ -110,6 +111,7 @@ public class MediaServerController extends FormBasicController {
 				mediaServersKV.values(), 1);
 
 		addButton = uifactory.addFormLink("media.servers.add", middleCont, Link.BUTTON);
+		addButton.setElementCssClass("o_sel_add_domain");
 		addButton.setLabel("media.servers.custom", null);
 		addButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 

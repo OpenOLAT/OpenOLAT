@@ -72,11 +72,13 @@ public class SecurityAdminController extends BasicController implements Breadcru
 		doOpenConfiguration(ureq);
 		
 		cspLink = LinkFactory.createLink("security.csp.log", mainVC, this);
+		cspLink.setElementCssClass("o_sel_csp");
 		if(cspModule.isContentSecurityPolicyEnabled()) {
 			segmentView.addSegment(cspLink, false);
 		}
 
 		mediaServerLink = LinkFactory.createLink("media.server", mainVC, this);
+		mediaServerLink.setElementCssClass("o_sel_media_server");
 		segmentView.addSegment(mediaServerLink, false);
 
 		putInitialPanel(mainVC);
