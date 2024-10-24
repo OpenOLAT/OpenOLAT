@@ -82,7 +82,7 @@
 		<swagger.ui.version>5.17.14</swagger.ui.version>
 		<com.mysql.version>9.0.0</com.mysql.version>
 		<org.postgresql.version>42.7.3</org.postgresql.version>
-		<org.infinispan.version>15.0.6.Final</org.infinispan.version>
+		<org.infinispan.version>15.0.10.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.25.0</version.selenium>
 		<activemq.artemis.version>2.35.0</activemq.artemis.version>
