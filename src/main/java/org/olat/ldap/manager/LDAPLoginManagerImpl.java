@@ -218,30 +218,35 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	@Override
 	public Identity authenticate(String login, String pwd, AuthenticationStatus status) {
 		LDAPError ldapError = new LDAPError();
-		Identity authenticatedIdentity = authenticate(login, pwd, ldapError);
-		if(!ldapError.isEmpty()) {
-			final String errStr = ldapError.get();
-			if ("login.notauthenticated".equals(errStr)) {
-				// user exists in LDAP, authentication was ok, but user
-				// has not got the OLAT service or has not been created by now
-				status.addError("login.notauthenticated");                           
-			} else {
-				// tell about the error again
-				ldapError.insert(errStr);
+		Identity authenticatedIdentity = null;
+		if(StringHelper.containsNonWhitespace(login) && StringHelper.containsNonWhitespace(pwd)) {
+			authenticatedIdentity = authenticate(login, pwd, ldapError);
+			if(!ldapError.isEmpty()) {
+				final String errStr = ldapError.get();
+				if ("login.notauthenticated".equals(errStr)) {
+					// user exists in LDAP, authentication was ok, but user
+					// has not got the OLAT service or has not been created by now
+					status.addError("login.notauthenticated");
+				} else {
+					// tell about the error again
+					ldapError.insert(errStr);
+				}
 			}
-		}
-
-		if (authenticatedIdentity != null) {
-			status.setStatus(AuthHelper.LOGIN_OK);
-			status.setProvider(LDAPAuthenticationController.PROVIDER_LDAP);
-			try { //prevents database timeout
-				dbInstance.commitAndCloseSession();
-			} catch (Exception e) {
-				log.error("", e);
+	
+			if (authenticatedIdentity != null) {
+				status.setStatus(AuthHelper.LOGIN_OK);
+				status.setProvider(LDAPAuthenticationController.PROVIDER_LDAP);
+				try { //prevents database timeout
+					dbInstance.commitAndCloseSession();
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			} else if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin() || ldapLoginModule.isTryFallbackToOLATPwdOnLogin()) {
+				// try fallback to OLAT provider if configured (Don't replace if with @Autowired, because of dependency cycle)
+				authenticatedIdentity = CoreSpringFactory.getImpl(OLATAuthManager.class).authenticate(null, login, pwd, status);
 			}
-		} else if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin() || ldapLoginModule.isTryFallbackToOLATPwdOnLogin()) {
-			// try fallback to OLAT provider if configured (Don't replace if with @Autowired, because of dependency cycle)
-			authenticatedIdentity = CoreSpringFactory.getImpl(OLATAuthManager.class).authenticate(null, login, pwd, status);
+		} else {
+			status.addError("login.notauthenticated");
 		}
 		return authenticatedIdentity;
 	}
