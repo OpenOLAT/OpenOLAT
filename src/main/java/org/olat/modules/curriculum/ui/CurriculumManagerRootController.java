@@ -132,11 +132,12 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private void doSearch(UserRequest ureq, String searchString) {
 		toolbarPanel.popUpToRootController(ureq);
 		removeAsListenerAndDispose(searchCtrl);
-		
-		searchCtrl = new CurriculumSearchManagerController(ureq, getWindowControl(), toolbarPanel, searchString,
+
+		WindowControl subControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Search", 0l), null);
+		searchCtrl = new CurriculumSearchManagerController(ureq, subControl, toolbarPanel, searchString,
 				secCallback, lecturesSecCallback);
 		listenTo(searchCtrl);
-		toolbarPanel.pushController(translate("curriculum.search"), searchCtrl);
+		toolbarPanel.pushController(translate("curriculum.search.results"), searchCtrl);
 	}
 	
 	private CurriculumListManagerController doOpenCurriculumsList(UserRequest ureq) {

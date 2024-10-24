@@ -32,12 +32,20 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
@@ -53,20 +61,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumStructureCalloutController extends FormBasicController {
+public class CurriculumStructureCalloutController extends FormBasicController implements FlexiTableCssDelegate {
 	
 	private FlexiTableElement tableEl;
 	private CurriculumComposerTableModel tableModel;
 	
-	private final CurriculumElement curriculumElement;
+	private final CurriculumElement rootElement;
+	private final CurriculumElement activeElement;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	
 	public CurriculumStructureCalloutController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement curriculumElement) {
+			CurriculumElement rootElement, CurriculumElement activeElement) {
 		super(ureq, wControl, "structure");
-		this.curriculumElement = curriculumElement;
+		this.rootElement = rootElement;
+		this.activeElement = activeElement;
 		initForm(ureq);
 		loadModel();
 	}
@@ -74,8 +84,8 @@ public class CurriculumStructureCalloutController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, "select", treeNodeRenderer));
+		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(new NameRenderer(), "select");
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.externalRef,
 				new CurriculumElementSmallCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status,
@@ -87,14 +97,39 @@ public class CurriculumStructureCalloutController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(false);
+		if(activeElement != null) {
+			//tableEl.setCssDelegate(this);
+		}
 	}
+	
+	private class NameRenderer implements FlexiCellRenderer {
 
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if(cellValue instanceof String str) {
+				CurriculumElementRow elementRow = tableModel.getObject(row);
+				if(activeElement != null && activeElement.equals(elementRow.getCurriculumElement())) {
+					target.append("<i class='o_icon o_icon-fw o_icon_arrow_right' title=\"").append(translate("element.active"))
+						  .append("\"> </i> <strong>").append(str).append("</strong>");
+				} else {
+					target.append(str);
+				}
+			}
+		}
+	}
+	
 	private void loadModel() {
-		List<CurriculumElement> elements = curriculumService.getCurriculumElementsDescendants(curriculumElement);
+		List<CurriculumElement> elements = curriculumService.getCurriculumElementsDescendants(rootElement);
+		if(activeElement != null && !elements.contains(rootElement)) {
+			elements.add(rootElement);
+		}
+		
 		List<CurriculumElementRow> rows = new ArrayList<>(elements.size());
 		Map<Long, CurriculumElementRow> keyToRows = new HashMap<>();
 		for(CurriculumElement element:elements) {
 			CurriculumElementRow row = new CurriculumElementRow(element);
+			row.setActive(activeElement != null && activeElement.equals(element));
 			rows.add(row);
 			keyToRows.put(element.getKey(), row);
 		}
@@ -108,7 +143,26 @@ public class CurriculumStructureCalloutController extends FormBasicController {
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
-	
+
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		CurriculumElementRow row = tableModel.getObject(pos);
+		if(activeElement != null && activeElement.equals(row.getCurriculumElement())) {
+			return "o_curriculum_element_active";
+		}
+		return null;
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {

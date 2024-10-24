@@ -22,9 +22,11 @@ package org.olat.modules.curriculum.ui;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 
 /**
@@ -36,18 +38,29 @@ import org.olat.modules.curriculum.CurriculumElementType;
 public class CurriculumElementSearchRow implements CurriculumElementRef {
 	
 	private final long numOfResources;
+	private final long numOfParticipants;
+	private final long numOfCoaches;
+	private final long numOfOwners;
+	private final Curriculum curriculum;
 	private final CurriculumElement element;
 	private final CurriculumElementType elementType;
 	
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
+	private final FormLink structureLink;
 	
 	public CurriculumElementSearchRow(CurriculumElement element, long numOfResources,
-			FormLink resourcesLink, FormLink toolsLink) {
+			long numOfParticipants, long numOfCoaches, long numOfOwners,
+			FormLink resourcesLink, FormLink structureLink, FormLink toolsLink) {
 		this.element = element;
+		curriculum = element.getCurriculum();
 		elementType = element.getType();
 		this.numOfResources = numOfResources;
+		this.numOfParticipants = numOfParticipants;
+		this.numOfCoaches = numOfCoaches;
+		this.numOfOwners = numOfOwners;
 		this.toolsLink = toolsLink;
+		this.structureLink = structureLink;
 		this.resourcesLink = resourcesLink;
 	}
 	
@@ -56,12 +69,23 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 		return element.getKey();
 	}
 	
-	public Curriculum getCurriculum() {
-		return element.getCurriculum();
+	public CurriculumElement getCurriculumElement() {
+		return element;
 	}
 	
-	public String getCurriculumDisplayName() {
-		return element.getCurriculum().getDisplayName();
+	public Curriculum getCurriculum() {
+		return curriculum;
+	}
+	
+	public Long getCurriculumKey() {
+		return curriculum.getKey();
+	}
+	
+	public String getCurriculumName() {
+		if(StringHelper.containsNonWhitespace(element.getCurriculum().getIdentifier())) {
+			return curriculum.getIdentifier();
+		}
+		return curriculum.getDisplayName();
 	}
 	
 	public String getDisplayName() {
@@ -88,8 +112,29 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 		return elementType == null ? null : elementType.getDisplayName();
 	}
 	
+	public CurriculumElementStatus getStatus() {
+		CurriculumElementStatus status = element.getElementStatus();
+		return status == null ? CurriculumElementStatus.active : status;
+	}
+	
 	public long getNumOfRessources() {
 		return numOfResources;
+	}
+	
+	public long getNumOfParticipants() {
+		return numOfParticipants;
+	}
+
+	public long getNumOfCoaches() {
+		return numOfCoaches;
+	}
+
+	public long getNumOfOwners() {
+		return numOfOwners;
+	}
+	
+	public long getNumOfMembers() {
+		return numOfOwners + numOfCoaches + numOfParticipants;
 	}
 	
 	public FormLink getToolsLink() {
@@ -98,6 +143,10 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 
 	public FormLink getResourcesLink() {
 		return resourcesLink;
+	}
+	
+	public FormLink getStructureLink() {
+		return structureLink;
 	}
 
 	@Override
@@ -110,8 +159,7 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumElementSearchRow) {
-			CurriculumElementSearchRow row = (CurriculumElementSearchRow)obj;
+		if(obj instanceof CurriculumElementSearchRow row) {
 			return element.equals(row.element);
 		}
 		return false;

@@ -60,6 +60,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	private String baseUrl;
 	
+	private boolean active = false;
 	private boolean acceptedByFilter = true;
 	
 	public CurriculumElementRow(CurriculumElement element) {
@@ -179,6 +180,14 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	public boolean isLearningProgressEnabled() {
 		return CurriculumLearningProgress.isEnabled(element, elementType);
+	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 
 	public boolean isAcceptedByFilter() {

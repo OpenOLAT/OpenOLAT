@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui.event;
 
 import org.olat.core.gui.control.Event;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumElementRow;
 
 /**
@@ -41,7 +42,11 @@ public class SelectCurriculumElementRowEvent extends Event {
 		this.curriculumElement = curriculumElement;
 	}
 	
-	public CurriculumElementRow getEntry() {
+	public CurriculumElementRow getCurriculumElementRow() {
 		return curriculumElement;
+	}
+	
+	public CurriculumElement getCurriculumElement() {
+		return curriculumElement.getCurriculumElement();
 	}
 }

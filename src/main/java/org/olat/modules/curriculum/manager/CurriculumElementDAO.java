@@ -54,6 +54,7 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
@@ -554,7 +555,16 @@ public class CurriculumElementDAO {
 		sb.append("select curEl,")
 		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
 		  .append("  where reToGroup.group.key=bGroup.key")
-		  .append(" ) as numOfElements")
+		  .append(" ) as numOfElements,")
+		  .append(" (select count(distinct participants.identity.key) from bgroupmember as participants")
+		  .append("  where participants.group.key=bGroup.key and participants.role='").append(GroupRoles.participant.name()).append("'")
+		  .append(" ) as numOfParticipants,")
+		  .append(" (select count(distinct coaches.identity.key) from bgroupmember as coaches")
+		  .append("  where coaches.group.key=bGroup.key and coaches.role='").append(GroupRoles.coach.name()).append("'")
+		  .append(" ) as numOfCoaches,")
+		  .append(" (select count(distinct owners.identity.key) from bgroupmember as owners")
+		  .append("  where owners.group.key=bGroup.key and owners.role='").append(GroupRoles.owner.name()).append("'")
+		  .append(" ) as numOfOwners")
 		  .append(" from curriculumelement curEl")
 		  .append(" inner join fetch curEl.curriculum cur")
 		  .append(" inner join fetch cur.group baseGroup")
@@ -564,10 +574,7 @@ public class CurriculumElementDAO {
 		  .append(" left join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
 		  .append(" left join repositoryentry as v on (rel.entry.key=v.key)")
 		  .append(" left join v.olatResource as res");
-		
-		sb.and()
-		  .append(" curEl.status ").in(CurriculumElementStatus.notDeleted());
-		
+
 		// generic search
 		Long key = null;
 		String ref = null;
@@ -669,8 +676,7 @@ public class CurriculumElementDAO {
 			  .likeFuzzy("v.displayname", "entryTextFuzzyRef")
 			  .append(")");
 		}
-		
-		
+
 		// permissions
 		if(params.getManagerIdentity() != null) {
 			sb.and()
@@ -679,6 +685,21 @@ public class CurriculumElementDAO {
 			  .append("  and membership.role").in(CurriculumRoles.curriculummanager, CurriculumRoles.owner, OrganisationRoles.administrator)
 			  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
 			  .append(")");
+		}
+		
+		if(params.getCurriculums() != null && !params.getCurriculums().isEmpty()) {
+			sb.and().append("curEl.curriculum.key in (:curriculumKey)");
+		}
+		
+		if(params.getElementTypes() != null && !params.getElementTypes().isEmpty()) {
+			sb.and().append("elType.key in (:elementTypeKeys)");
+		}
+		
+		if(params.getStatus() != null && !params.getStatus().isEmpty()) {
+			sb.and().append("curEl.status in (:statusList)");
+		} else {
+			sb.and()
+			  .append(" curEl.status ").in(CurriculumElementStatus.notDeleted());
 		}
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -729,6 +750,24 @@ public class CurriculumElementDAO {
 		if(params.getManagerIdentity() != null) {
 			query.setParameter("managerKey", params.getManagerIdentity().getKey());
 		}
+		
+		if(params.getCurriculums() != null && !params.getCurriculums().isEmpty()) {
+			List<Long> curriculumKeys = params.getCurriculums().stream()
+					.map(CurriculumRef::getKey).toList();
+			query.setParameter("curriculumKey", curriculumKeys);
+		}
+		
+		if(params.getElementTypes() != null && !params.getElementTypes().isEmpty()) {
+			List<Long> typeKeys = params.getElementTypes().stream()
+					.map(CurriculumElementTypeRef::getKey).toList();
+			query.setParameter("elementTypeKeys", typeKeys);
+		}
+		
+		if(params.getStatus() != null && !params.getStatus().isEmpty()) {
+			List<String> status = params.getStatus().stream()
+					.map(CurriculumElementStatus::toString).toList();
+			query.setParameter("statusList", status);
+		}
 
 		List<Object[]> rawObjects = query.getResultList();
 		List<CurriculumElementSearchInfos> infos = new ArrayList<>(rawObjects.size());
@@ -736,10 +775,11 @@ public class CurriculumElementDAO {
 		for(Object[] rawObject:rawObjects) {
 			CurriculumElement element = (CurriculumElement)rawObject[0];
 			if(!deduplicates.contains(element)) {
-				Long rawNumOfResources = PersistenceHelper.extractLong(rawObject, 1);
-				long numOfResources = rawNumOfResources == null ? 0l : rawNumOfResources.longValue();
-				
-				infos.add(new CurriculumElementSearchInfos(element, numOfResources));
+				long numOfResources = PersistenceHelper.extractPrimitiveLong(rawObject, 1);
+				long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawObject, 2);
+				long numOfCoaches = PersistenceHelper.extractPrimitiveLong(rawObject, 3);
+				long numOfOwners= PersistenceHelper.extractPrimitiveLong(rawObject, 4);
+				infos.add(new CurriculumElementSearchInfos(element, numOfResources, numOfParticipants, numOfCoaches, numOfOwners));
 				deduplicates.add(element);
 			}
 		}

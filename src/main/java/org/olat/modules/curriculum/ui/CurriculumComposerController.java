@@ -490,7 +490,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		FormLink structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
 		structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_curriculum_structure");
-		structureLink.setTitle(translate("action.more"));
+		structureLink.setTitle(translate("action.structure"));
 		
 		FormLink resourcesLink = null;
 		long refs = element.numOfResources() + element.numOfLectureBlocks();
@@ -606,7 +606,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				launch(ureq, sre.getEntry());
 			} else if(event instanceof SelectCurriculumElementRowEvent scee) {
 				List<ContextEntry> subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Structure:0]");
-				doOpenCurriculumElementDetails(ureq, scee.getEntry(), subEntries);
+				doOpenCurriculumElementDetails(ureq, scee.getCurriculumElement(), subEntries);
 			} else if(event instanceof SelectLectureBlockEvent slbe) {
 				List<ContextEntry> subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Lectures:0]");
 				doOpenCurriculumElementDetails(ureq, slbe.getCurriculumElement(), subEntries);
@@ -674,7 +674,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			doUnOverrideManagedResource();
 		} else if(newGenericElementButton == source) {
 			doNewCurriculumElement(ureq, null);
-		} else if(this.bulkDeleteButton == source) {
+		} else if(bulkDeleteButton == source) {
 			doConfirmBulkDelete(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
@@ -709,7 +709,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				doNewCurriculumElement(ureq, type);
 			} else if("resources".equals(cmd)) {
 				doOpenReferences(ureq, (CurriculumElementRow)link.getUserObject(), link);
-			}  else if("structure".equals(cmd)) {
+			} else if("structure".equals(cmd)) {
 				doOpenStructure(ureq, (CurriculumElementRow)link.getUserObject(), link);
 			} else if("calendars".equals(cmd)) {
 				doOpenCalendars(ureq, (CurriculumElementRow)link.getUserObject());
@@ -895,8 +895,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private void doOpenStructure(UserRequest ureq, CurriculumElementRow row, FormLink link) {
 		CurriculumElement curriculumElement = row.getCurriculumElement();
-		
-		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(), curriculumElement);
+		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(),
+				curriculumElement, null);
 		listenTo(curriculumStructureCalloutCtrl);
 		
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);
@@ -1060,7 +1060,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				}
 			}
 
-			if(!managed && secCallback.canManagerCurriculumElementUsers(element)) {
+			if(secCallback.canManagerCurriculumElementUsers(element)) {
 				if(!links.isEmpty()) {
 					links.add("-");
 				}

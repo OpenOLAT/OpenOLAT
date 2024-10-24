@@ -601,6 +601,10 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	}
 }
 
+.o_curriculum_element_active a {
+	font-weight: bold;
+}
+
 .o_labeled_light {
 	&.o_curriculum_status_preparation {
 		font-weight: normal;

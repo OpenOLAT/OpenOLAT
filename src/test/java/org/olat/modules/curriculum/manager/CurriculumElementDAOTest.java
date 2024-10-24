@@ -420,7 +420,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		List<CurriculumElementSearchInfos> elementsByExternalId = curriculumElementDao.searchElements(adminSearchParams);
 		Assert.assertNotNull(elementsByExternalId);
 		Assert.assertEquals(1, elementsByExternalId.size());
-		Assert.assertEquals(element, elementsByExternalId.get(0).getCurriculumElement());
+		Assert.assertEquals(element, elementsByExternalId.get(0).curriculumElement());
 		
 		//search by identifier 
 		CurriculumElementSearchParams nobodySearchParams = new CurriculumElementSearchParams(nobody);

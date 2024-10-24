@@ -58,31 +58,43 @@ implements SortableFlexiTableDataModel<CurriculumElementSearchRow> {
 
 	@Override
 	public Object getValueAt(CurriculumElementSearchRow row, int col) {
-		switch(COLS[col]) {
-			case key: return row.getKey();
-			case curriculum: return row.getCurriculumDisplayName();
-			case displayName: return row.getDisplayName();
-			case identifier: return row.getIdentifier();
-			case externalId: return row.getExternalID();
-			case beginDate: return row.getBeginDate();
-			case endDate: return row.getEndDate();
-			case typeDisplayName: return row.getCurriculumElementTypeDisplayName();
-			case resources: return row.getResourcesLink();
-			case tools: return row.getToolsLink();
-			default: return "ERROR";
-		}
+		return switch(COLS[col]) {
+			case key -> row.getKey();
+			case curriculum -> row.getCurriculumName();
+			case displayName -> row.getDisplayName();
+			case externalRef -> row.getIdentifier();
+			case externalId -> row.getExternalID();
+			case beginDate -> row.getBeginDate();
+			case endDate -> row.getEndDate();
+			case typeDisplayName -> row.getCurriculumElementTypeDisplayName();
+			case resources -> row.getResourcesLink();
+			case status -> row.getStatus();
+			case numOfMembers -> row.getNumOfMembers();
+			case numOfParticipants -> row.getNumOfParticipants();
+			case numOfCoaches -> row.getNumOfCoaches();
+			case numOfOwners -> row.getNumOfOwners();
+			case structure -> row.getStructureLink();
+			case tools -> row.getToolsLink();
+			default -> "ERROR";
+		};
 	}
 	
 	public enum SearchCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		curriculum("table.header.curriculum"),
 		displayName("table.header.curriculum.element.displayName"),
-		identifier("table.header.curriculum.element.identifier"),
+		externalRef("table.header.external.ref"),
 		externalId("table.header.external.id"),
 		beginDate("table.header.begin.date"),
 		endDate("table.header.end.date"),
 		typeDisplayName("table.header.type"),
 		resources("table.header.resources"),
+		numOfMembers("table.header.num.of.members"),
+		numOfParticipants("table.header.num.of.participants"),
+		numOfCoaches("table.header.num.of.coaches"),
+		numOfOwners("table.header.num.of.owners"),
+		structure("table.header.structure"),
+		status("table.header.status"),
 		tools("table.header.tools");
 		
 		private final String i18nHeaderKey;

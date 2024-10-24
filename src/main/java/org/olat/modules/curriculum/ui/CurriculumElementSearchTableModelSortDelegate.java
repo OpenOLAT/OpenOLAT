@@ -62,7 +62,7 @@ public class CurriculumElementSearchTableModelSortDelegate extends SortableFlexi
 			
 			int c = Long.compare(n1, n2);
 			if(c == 0) {
-				c = compareString(o1.getCurriculumDisplayName(), o2.getCurriculumDisplayName());
+				c = compareString(o1.getCurriculumName(), o2.getCurriculumName());
 			}
 			return c;
 		}

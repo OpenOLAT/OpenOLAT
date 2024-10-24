@@ -20,8 +20,12 @@
 package org.olat.modules.curriculum.model;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
+import org.olat.modules.curriculum.CurriculumRef;
 
 /**
  * 
@@ -40,6 +44,10 @@ public class CurriculumElementSearchParams {
 	private String entryText;
 
 	private Identity managerIdentity;
+	
+	private List<CurriculumRef> curriculums;
+	private List<CurriculumElementStatus> status;
+	private List<CurriculumElementTypeRef> elementTypes;
 	
 	public CurriculumElementSearchParams(Identity managerIdentity) {
 		this.managerIdentity = managerIdentity;
@@ -103,5 +111,29 @@ public class CurriculumElementSearchParams {
 
 	public void setEntryText(String entryText) {
 		this.entryText = entryText;
+	}
+
+	public List<CurriculumRef> getCurriculums() {
+		return curriculums;
+	}
+
+	public void setCurriculums(List<CurriculumRef> curriculums) {
+		this.curriculums = curriculums;
+	}
+
+	public List<CurriculumElementStatus> getStatus() {
+		return status;
+	}
+
+	public void setStatus(List<CurriculumElementStatus> status) {
+		this.status = status;
+	}
+
+	public List<CurriculumElementTypeRef> getElementTypes() {
+		return elementTypes;
+	}
+
+	public void setElementTypes(List<CurriculumElementTypeRef> elementTypes) {
+		this.elementTypes = elementTypes;
 	}
 }

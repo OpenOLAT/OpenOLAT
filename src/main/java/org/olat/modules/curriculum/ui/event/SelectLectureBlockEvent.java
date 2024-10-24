@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui.event;
 
 import org.olat.core.gui.control.Event;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumElementRow;
 import org.olat.modules.lecture.LectureBlock;
 
@@ -38,15 +39,18 @@ public class SelectLectureBlockEvent extends Event {
 	private final LectureBlock lectureBlock;
 	private final CurriculumElementRow curriculumElement;
 	
-	
 	public SelectLectureBlockEvent(LectureBlock lectureBlock, CurriculumElementRow curriculumElement) {
 		super(SELECT_REF);
 		this.lectureBlock = lectureBlock;
 		this.curriculumElement = curriculumElement;
 	}
 	
-	public CurriculumElementRow getCurriculumElement() {
+	public CurriculumElementRow getCurriculumElementRow() {
 		return curriculumElement;
+	}
+	
+	public CurriculumElement getCurriculumElement() {
+		return curriculumElement.getCurriculumElement();
 	}
 	
 	public LectureBlock getLectureBlock() {
