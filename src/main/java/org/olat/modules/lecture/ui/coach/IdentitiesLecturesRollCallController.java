@@ -454,6 +454,7 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		lectureBlocks = lectureService.saveDefaultRollCalls(lectureBlocks, getIdentity(), true);
 		if(!lectureBlocks.isEmpty()) {
 			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+			searchParams.setLectureConfiguredRepositoryEntry(true);
 			searchParams.setLectureBlocks(lectureBlocks);
 			lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, null);
 		}

@@ -193,6 +193,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			Date until = CalendarUtils.endOfDay(cal.getTime());
 			
 			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+			searchParams.setLectureConfiguredRepositoryEntry(true);
 			searchParams.setStartDate(today);
 			searchParams.setEndDate(until);
 			

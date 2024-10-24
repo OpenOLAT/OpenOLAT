@@ -260,6 +260,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		Map<Long, List<Identity>> blockKeyWithTeachersMap = new HashMap<>();
 		if(!blockWithNotices.isEmpty()) {
 			LecturesBlockSearchParameters searchTeachersParams = new LecturesBlockSearchParameters();
+			searchTeachersParams.setLectureConfiguredRepositoryEntry(true);
 			List<LectureBlockRef> lectureBlocks = blockWithNotices.stream()
 					.map(LectureBlockWithNotice::getLectureBlock).collect(Collectors.toList());
 			searchTeachersParams.setLectureBlocks(lectureBlocks);

@@ -243,6 +243,7 @@ public class LecturesCockpitController extends BasicController implements Activa
 		if(!viewAsTeacher) return;
 		
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 		searchParams.setTeacher(getIdentity());
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -1);

@@ -93,6 +93,7 @@ public class LectureBlocksRootWebService {
 		}
 
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 		if(date != null) {
 			Date d = parseDate(date, Locale.ENGLISH);
 			Date startDate = CalendarUtils.removeTime(d);

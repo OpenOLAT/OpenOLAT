@@ -71,6 +71,7 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 	
 	private LecturesBlockSearchParameters getDefaultSearchParameters() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -14);
 		Date start = cal.getTime();
@@ -85,6 +86,7 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 	protected List<LectureBlockRow> getRows(LecturesBlockSearchParameters searchParams) {
 		if(searchParams == null) {
 			searchParams = new LecturesBlockSearchParameters();
+			searchParams.setLectureConfiguredRepositoryEntry(true);
 		}
 		searchParams.setViewAs(getIdentity(), secCallback.viewAs());
 		

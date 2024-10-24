@@ -326,6 +326,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	
 	private void doSearch(SearchLecturesBlockEvent event) {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 		searchParams.setSearchString(event.getSearchString());
 		searchParams.setStartDate(event.getStartDate());
 		searchParams.setEndDate(event.getEndDate());

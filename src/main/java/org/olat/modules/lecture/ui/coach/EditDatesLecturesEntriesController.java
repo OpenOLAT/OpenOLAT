@@ -368,6 +368,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	
 	private Map<RepositoryEntry,Long> getRepositoryEntries() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 
 		searchParams.setViewAs(getIdentity(), secCallback.viewAs());
 		if(noticedIdentity != null) {
@@ -424,6 +425,8 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private void loadLectureBlocks() {
 		List<EditDatesLecturesEntryRow> selected = getSelectedLectures();
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(true);
+		
 		if(noticeWrapper.getPredefinedLectureBlocks() != null && !noticeWrapper.getPredefinedLectureBlocks().isEmpty()) {
 			searchParams.setLectureBlocks(noticeWrapper.getPredefinedLectureBlocks());
 		} else {

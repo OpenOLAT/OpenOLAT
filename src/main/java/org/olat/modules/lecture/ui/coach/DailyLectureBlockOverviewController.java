@@ -240,6 +240,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	
 	protected void loadModel() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 		searchParams.setStartDate(CalendarUtils.startOfDay(currentDate));
 		searchParams.setEndDate(CalendarUtils.endOfDay(currentDate));
 		

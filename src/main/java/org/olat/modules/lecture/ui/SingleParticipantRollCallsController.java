@@ -246,6 +246,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 	
 	private void loadModel() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(true);
 		searchParams.setLectureBlocks(lectureBlocks);
 		List<LectureBlockWithTeachers> lectureBlocksWithTeachers = lectureService.getLectureBlocksWithTeachers(searchParams);
 		

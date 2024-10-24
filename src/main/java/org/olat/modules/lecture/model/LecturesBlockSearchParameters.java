@@ -33,6 +33,7 @@ import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntry;
 
 /**
+ * Search per default on course with lecture configured.
  * 
  * Initial date: 27 juin 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -57,7 +58,7 @@ public class LecturesBlockSearchParameters {
 	private List<LectureBlockStatus> lectureBlockStatus;
 	private List<LectureBlockRef> lectureBlocks;
 	
-	private boolean configuredEntry;
+	private boolean configuredEntry = true;
 	
 	public LecturesBlockSearchParameters() {
 		//
