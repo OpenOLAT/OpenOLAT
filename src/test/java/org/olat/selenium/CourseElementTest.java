@@ -94,9 +94,9 @@ import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.ScormPage;
 import org.olat.selenium.page.repository.UserAccess;
-import org.olat.selenium.page.survey.SurveyEditorPage;
 import org.olat.selenium.page.survey.EvaluationFormPage;
 import org.olat.selenium.page.survey.FormPage;
+import org.olat.selenium.page.survey.SurveyEditorPage;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
@@ -613,10 +613,25 @@ public class CourseElementTest extends Deployments {
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
+		// Admin. add first the domain to the list of allowed domains
+		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
+		adminLoginPage
+			.loginAs(administrator)
+			.resume();
+		
+		NavigationPage.load(browser)
+			.openAdministration()
+			.openMediaServer()
+			.addDomain("SRF", "www.srf.ch")
+			.assertOnDomain("www.srf.ch");
+		
+		// Author add the podcast
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
-		//create a course
+		// Create a course
 		String courseTitle = "Course-With-Podcast-" + UUID.randomUUID();
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
@@ -628,7 +643,7 @@ public class CourseElementTest extends Deployments {
 		String podcastTitle = "ThePodcast - " + UUID.randomUUID();
 		String podcastUrl = "https://www.srf.ch/feed/podcast/sd/6e633013-c03d-4f49-a1b7-d5b58cfed837.xml";
 		
-		//create a course element of type podcast
+		// Create a course element of type podcast
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
 		courseEditor
@@ -637,26 +652,25 @@ public class CourseElementTest extends Deployments {
 			.selectTabFeedContent()
 			.importExternalUrl(podcastTitle, podcastUrl, "FileResource.PODCAST");
 
-		//publish the course
+		// Publish the course
 		courseEditor
 			.publish()
 			.quickPublish();
 		
-		//open the course and see the podcast
+		// Open the course and see the podcast
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
 			.tree()
 			.selectWithTitle(podcastNodeTitle);
 		
-		//check that the title of the podcast is visible
+		// Check that the title of the podcast is visible
 		By podcastElementBy = By.xpath("//div[contains(@class,'o_course_node')]//h2[i[contains(@class,'o_podcast_icon')]]/span");
 		OOGraphene.waitElement(podcastElementBy, browser);
 
 		FeedPage.getFeedPage(browser)
 			.assertOnPodcastEpisodeInClassicTable();
 	}
-	
 	
 	
 	/**
@@ -673,10 +687,24 @@ public class CourseElementTest extends Deployments {
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
+		// Admin. add first the domain to the list of allowed domains
+		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
+		adminLoginPage
+			.loginAs(administrator)
+			.resume();
+		
+		NavigationPage.load(browser)
+			.openAdministration()
+			.openMediaServer()
+			.addDomain("OpenOlat", "www.openolat.com")
+			.assertOnDomain("www.openolat.com");
+		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
-		//create a course
+		// Create a course
 		String courseTitle = "Course-With-Blog-" + UUID.randomUUID().toString();
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
@@ -687,7 +715,7 @@ public class CourseElementTest extends Deployments {
 		String blogNodeTitle = "BlogNode-1";
 		String blogTitle = "Blog - " + UUID.randomUUID();
 		
-		//create a course element of type blog
+		// Create a course element of type blog
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
 		courseEditor
@@ -696,12 +724,12 @@ public class CourseElementTest extends Deployments {
 			.selectTabFeedContent()
 			.importExternalUrl(blogTitle, "https://www.openolat.com/feed/", "FileResource.BLOG");
 
-		//publish the course
+		// Publish the course
 		courseEditor
 			.publish()
 			.quickPublish();
 		
-		//open the course and see the blog
+		// Open the course and see the blog
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
@@ -712,7 +740,6 @@ public class CourseElementTest extends Deployments {
 		FeedPage.getFeedPage(browser)
 			.assertOnBlogEpisodeInClassicTable();
 	}
-
 
 	/**
 	 * An author create a course with a blog, open it, add a post. A student
