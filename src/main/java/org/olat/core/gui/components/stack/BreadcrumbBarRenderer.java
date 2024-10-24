@@ -31,6 +31,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -103,8 +104,8 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 					sb.append("'>");
 					
 					String displayText = crumb.getCustomDisplayText();
-					crumb.setTitle(displayText);
-					crumb.setCustomDisplayText(Formatter.truncate(displayText, 40));
+					crumb.setTitle(StringHelper.escapeHtml(displayText));
+					crumb.setCustomDisplayText(StringHelper.escapeHtml(Formatter.truncate(displayText, 40)));
 					renderer.render(crumb, sb, args);
 					crumb.setTitle(null);
 					crumb.setCustomDisplayText(displayText);
