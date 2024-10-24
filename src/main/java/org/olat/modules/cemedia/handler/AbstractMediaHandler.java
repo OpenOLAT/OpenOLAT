@@ -64,6 +64,7 @@ import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
+import org.olat.modules.cemedia.ui.medias.UploadMedia;
 
 /**
  * 
@@ -133,6 +134,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	
 	@Override
 	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion, CreateVersion createVersion) {
+		return null;
+	}
+
+	@Override
+	public Controller getCollectMetadataController(UserRequest ureq, WindowControl wControl, UploadMedia uploadMedia) {
 		return null;
 	}
 

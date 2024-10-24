@@ -131,10 +131,6 @@ public class CollectFileMediaController extends AbstractCollectMediaController i
 		initForm(ureq);
 	}
 	
-	public Media getMediaReference() {
-		return mediaReference;
-	}
-	
 	@Override
 	public AddElementInfos getUserObject() {
 		return userObject;
