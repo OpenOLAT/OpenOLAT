@@ -208,6 +208,11 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
+	public Controller getCollectMetadataController(UserRequest ureq, WindowControl wControl, UploadMedia uploadMedia) {
+		return new CollectImageMediaController(ureq, wControl, uploadMedia);
+	}
+
+	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
 		return new CollectImageMediaController(ureq, wControl, media, true);
 	}

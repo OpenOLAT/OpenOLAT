@@ -1,3 +1,4 @@
+#if($r.isNotEmpty($off_title) || $withAddMedia || $withHelp)
 <div class="o_header_with_buttons">
 	#if($r.isNotEmpty($off_title))
 	<h3>$off_title</h3>
@@ -12,6 +13,7 @@
 		#end
 	</div>
 </div>
+#end
 <div class="o_media_browser clearfix #if($r.isFalse($withMediaSelection)) o_media_browser_preview #end">$r.render("table")</div>
 #if($r.visible("quota.bar"))
 <div class="o_media_quota o_block_top"><div>$quotaExplain</div>$r.render("quota.bar")</div>

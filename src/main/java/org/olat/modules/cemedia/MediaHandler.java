@@ -31,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.RenderingHints;
+import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.user.manager.ManifestBuilder;
 
 /**
@@ -65,7 +66,9 @@ public interface MediaHandler {
 			Identity author, MediaLog.Action action);
 	
 	Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement element, MediaVersion version, RenderingHints hints);
-	
+
+	Controller getCollectMetadataController(UserRequest ureq, WindowControl wControl, UploadMedia uploadMedia);
+
 	Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion);
 
 	Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion, CreateVersion createVersion);

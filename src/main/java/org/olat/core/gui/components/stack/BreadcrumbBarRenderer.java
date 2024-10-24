@@ -31,6 +31,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -82,12 +83,15 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 				sb.append("<span class='sr-only'>").append(moreLabel).append("</span>");
 				sb.append("</a>");
 				// Menu
-				sb.append("<ul class='o_breadcrumb_menu dropdown-menu' aria-describedby='").append(id).append("_dd'"); 
+				sb.append("<ul class='o_breadcrumb_menu dropdown-menu' aria-describedby='").append(id).append("_dd'");
 				sb.append(" id='").append(id).append("_dm'");
 				sb.append(" role='menu'>");
 				for (Link menuCrumb : breadCrumbs) {
 					sb.append("<li class='o_breadcrumb_menu_item' role='menuitem'>");
+					String displayText = menuCrumb.getCustomDisplayText();
+					menuCrumb.setCustomDisplayText(StringHelper.escapeHtml(displayText));
 					renderer.render(menuCrumb, sb, args);
+					menuCrumb.setCustomDisplayText(displayText);
 					sb.append("</li>");
 				}
 				sb.append("</ul>");
@@ -105,8 +109,8 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 					sb.append("' role='menuitem'>");
 					
 					String displayText = crumb.getCustomDisplayText();
-					crumb.setTitle(displayText);
-					crumb.setCustomDisplayText(Formatter.truncate(displayText, 40));
+					crumb.setTitle(StringHelper.escapeHtml(displayText));
+					crumb.setCustomDisplayText(StringHelper.escapeHtml(Formatter.truncate(displayText, 40)));
 					renderer.render(crumb, sb, args);
 					crumb.setTitle(null);
 					crumb.setCustomDisplayText(displayText);

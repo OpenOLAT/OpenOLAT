@@ -186,6 +186,11 @@ public class AudioHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
+	public Controller getCollectMetadataController(UserRequest ureq, WindowControl wControl, UploadMedia uploadMedia) {
+		return new CollectAudioMediaController(ureq, wControl, uploadMedia, null, true);
+	}
+
+	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
 		return new CollectAudioMediaController(ureq, wControl, media, true);
 	}

@@ -250,7 +250,7 @@
 			.o_fileinput.o_area {
 				border: none;
 				border-style: none;
-				padding: 0;
+				padding: 2px;
 				height: 100%;
 				background: white;
 				
@@ -272,7 +272,7 @@
 				display: flex;
 				align-items: center;
 				width: inherit;
-				height: o-media-browser-card-visual-height-md;
+				height: $o-media-browser-card-visual-height-md;
 			}
 			
 			.o_visual_not_available.o_icon {
@@ -341,7 +341,24 @@
 			.o_media_card_cell {
 				width: $o-media-browser-card-width-sm;
 				height: $o-media-browser-card-height-sm;
-				
+
+				.o_fileElement {
+					width: $o-media-browser-card-width-sm;
+					height: $o-media-browser-card-height-sm;
+				}
+
+				.o_fileinput.o_area {
+					padding: 1px;
+
+					.o_dnd_icon {
+						font-size: 1.5em;
+					}
+
+					.o_dnd_select {
+						margin: 0;
+					}
+				}
+
 				.o_visual_not_available.o_icon {
 					font-size: 2em;
 				}

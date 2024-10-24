@@ -106,10 +106,6 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 		initForm(ureq);
 	}
 
-	public Media getMediaReference() {
-		return mediaReference;
-	}
-
 	@Override
 	public PageElement getPageElement() {
 		return null;

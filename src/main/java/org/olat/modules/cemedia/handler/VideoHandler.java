@@ -240,6 +240,11 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
+	public Controller getCollectMetadataController(UserRequest ureq, WindowControl wControl, UploadMedia uploadMedia) {
+		return new CollectVideoMediaController(ureq, wControl, uploadMedia, null, true);
+	}
+
+	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion mediaVersion) {
 		if (mediaVersion.hasUrl()) {
 			return urlDelegate.getEditMetadataController(ureq, wControl, media, mediaVersion);
