@@ -298,6 +298,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		initialSliderPositionEl.setFocus(false);
 		if (layoutTabComponents.matches(source)) {
 			doChangeLayout(ureq);
 		} else if (alertBoxComponents.matches(source)) {
@@ -307,6 +308,7 @@ public class ImageComparisonInspectorController extends FormBasicController impl
 		} else if (typeEl == source) {
 			doSaveSettings(ureq);
 		} else if (initialSliderPositionEl == source) {
+			initialSliderPositionEl.setFocus(true);
 			doSaveSettings(ureq);
 		} else if (descriptionEl == source) {
 			doSaveSettings(ureq);

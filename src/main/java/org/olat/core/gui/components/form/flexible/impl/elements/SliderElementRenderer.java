@@ -49,9 +49,10 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 				: sec.getMinValue() + (sec.getMaxValue() - sec.getMinValue()) / 2;    // middle of slider
 		
 		String inputId = sec.getFormDispatchId().concat("_sinput");
-		
+		String sliderId = sec.getFormDispatchId().concat("_slider");
+
 		sb.append("<div class='o_slider_wrapper'>");
-		sb.append("<div id='").append(sec.getFormDispatchId()).append("_slider' class='");
+		sb.append("<div id='").append(sliderId).append("' class='");
 		if (sec.hasValue()) {
 			sb.append("o_has_value");
 		} else {
@@ -92,8 +93,12 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 			  .append(" last:'pip',\n")
 			  .append("})");
 		}
-		sb.append("\n");
-		
+		sb.append(";\n");
+		// do this in renderer and not using lastFormFocusEl, because slider handle is created dynamically by jQuery and has no ID:
+		if (sel.hasFocus()) {
+			sb.append("setTimeout(function() { jQuery('#").append(sliderId).append(" .ui-slider-handle').focus(); }, 0);\n");
+		}
+
 		sb.append("});\n")
 		  .append("/* ]]> */</script>\n");
 		sb.append("</div>");
