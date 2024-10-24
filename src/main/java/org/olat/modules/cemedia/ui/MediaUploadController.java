@@ -51,7 +51,6 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
-import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaModule;
@@ -112,10 +111,6 @@ public class MediaUploadController extends AbstractCollectMediaController implem
 		initForm(ureq);
 		initMetadata();
 		updateUILicense();
-	}
-	
-	public Media getMediaReference() {
-		return mediaReference;
 	}
 	
 	@Override

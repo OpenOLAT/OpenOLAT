@@ -520,7 +520,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		}
 
 		Link link = LinkFactory.createLink("crumb_" + stack.size(), getTranslator(), this, Link.NONTRANSLATED);
-		link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
+		link.setCustomDisplayText(displayName);
 		if(StringHelper.containsNonWhitespace(iconLeftCss)) {
 			link.setIconLeftCSS(iconLeftCss);
 		}
@@ -545,7 +545,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 			Link link = stack.get(i);
 			BreadCrumb crumb = (BreadCrumb)link.getUserObject();
 			if(crumb.getController() == ctrl) {
-				link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
+				link.setCustomDisplayText(displayName);
 				if(StringHelper.containsNonWhitespace(iconLeftCss)) {
 					link.setIconLeftCSS(iconLeftCss);
 				} else {
@@ -585,8 +585,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		// 1: remove any stack css from current active stack
 		Component currentComponent = getContent();
 		if (currentComponent != null) {
-			if (currentComponent instanceof StackedPanel) {
-				StackedPanel currentPanel = (StackedPanel) currentComponent;
+			if (currentComponent instanceof StackedPanel currentPanel) {
 				String currentStackCss = currentPanel.getCssClass();
 				removeCssClass(currentStackCss);
 			}
@@ -595,8 +594,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		super.setContent(newContent);
 		// 3: add new stack css  
 		if (newContent != null) {
-			if (newContent instanceof StackedPanel) {
-				StackedPanel newPanel = (StackedPanel) newContent;
+			if (newContent instanceof StackedPanel newPanel) {
 				String newStackCss = newPanel.getCssClass();
 				addCssClass(newStackCss);
 			}
@@ -613,17 +611,15 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		if(stack.size() < 2) { 
 			// special case: root crumb
 			Link link = stack.get(0);
-			String unescapedText = StringHelper.unescapeHtml(link.getCustomDisplayText());
-			unescapedText = StringHelper.xssScan(unescapedText);
-			closeText = getTranslator().translate("doclose", unescapedText);
+			String text = StringHelper.xssScan(link.getCustomDisplayText());
+			closeText = getTranslator().translate("doclose", text);
 			showClose = isShowCloseLinkForRootCrumb();
 			backLink.setTitle(closeText);
 			backLink.setAriaLabel(closeText);
 		} else {
 			Link link = stack.get(stack.size()-1);
-			String unescapedText = StringHelper.unescapeHtml(link.getCustomDisplayText());
-			unescapedText = StringHelper.xssScan(unescapedText);
-			closeText = getTranslator().translate("doclose", unescapedText);
+			String text = StringHelper.xssScan(link.getCustomDisplayText());
+			closeText = getTranslator().translate("doclose", text);
 			showClose = isShowCloseLink();
 			backLink.setTitle(getTranslator().translate("back"));
 			backLink.setAriaLabel(getTranslator().translate("back"));

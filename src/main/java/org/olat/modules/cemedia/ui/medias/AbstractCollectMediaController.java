@@ -106,6 +106,10 @@ public abstract class AbstractCollectMediaController extends FormBasicController
 		}
 	}
 
+	public Media getMediaReference() {
+		return mediaReference;
+	}
+
 	protected void createRelationsController(UserRequest ureq) {
 		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
 		relationsCtrl.setOpenClose(false);

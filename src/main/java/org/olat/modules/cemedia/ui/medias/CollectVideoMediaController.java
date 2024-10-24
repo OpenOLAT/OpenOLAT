@@ -98,14 +98,10 @@ public class CollectVideoMediaController extends AbstractCollectMediaController 
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))), metadataOnly);
 		quota = mediaService.getQuota(getIdentity(), ureq.getUserSession().getRoles());
 		this.uploadedMedia = uploadedMedia;
-		setBusinessPath(businessPath);
+		setBusinessPath(businessPath == null ? wControl.getBusinessControl().getAsString() : businessPath);
 		initForm(ureq);
 	}
 	
-	public Media getMediaReference() {
-		return mediaReference;
-	}
-
 	@Override
 	public AddElementInfos getUserObject() {
 		return userObject;

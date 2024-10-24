@@ -139,6 +139,7 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	@Override
 	public boolean acceptMimeType(String mimeType) {
 		return StringHelper.containsNonWhitespace(mimeType)
+				&& !AudioHandler.mimeTypes.contains(mimeType)
 				&& !ImageHandler.mimeTypes.contains(mimeType)
 				&& !VideoHandler.mimeTypes.contains(mimeType);
 	}
@@ -208,6 +209,11 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, PageElement pageElement, MediaVersion version, RenderingHints hints) {
 		return new FileMediaController(ureq, wControl, pageElement, version, hints);
+	}
+
+	@Override
+	public Controller getCollectMetadataController(UserRequest ureq, WindowControl wControl, UploadMedia uploadMedia) {
+		return new CollectFileMediaController(ureq, wControl, uploadMedia);
 	}
 
 	@Override
