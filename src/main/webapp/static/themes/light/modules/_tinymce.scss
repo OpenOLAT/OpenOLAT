@@ -151,6 +151,10 @@ body.tox-dialog__disable-scroll {
 	overflow: scroll !important;
 }
 
+dialog.dialog .tox .tox-dialog-wrap__backdrop {
+	background: none;
+}
+
 // Show ok / cancel button on very small devices
 @media (max-width: 470px) {
 	.mce-foot {

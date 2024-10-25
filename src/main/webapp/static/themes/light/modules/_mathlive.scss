@@ -8,6 +8,7 @@ math-field,
 	padding: $padding-base-vertical $padding-base-horizontal;
 	border: 1px solid $input-border;
 	border-radius: $input-border-radius;
+	display: block;
 }
 
 math-field:focus,
@@ -18,4 +19,14 @@ math-field:focus-within,
 	border-color: $input-border-focus;
     outline: 0;
     @include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
+}
+
+math-field::part(menu-toggle) {
+	display: none;
+}
+dialog math-field::part(menu-toggle) {
+	display: flex;
+}
+dialog math-field::part(virtual-keyboard-toggle) {
+	display: none;
 }
