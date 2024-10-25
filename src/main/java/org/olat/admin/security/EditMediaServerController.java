@@ -62,10 +62,12 @@ public class EditMediaServerController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String name = mediaServer != null ? mediaServer.getName() : null;
 		nameEl = uifactory.addTextElement("media.server.name", 80, name, formLayout);
+		nameEl.setElementCssClass("o_sel_media_server_name");
 		nameEl.setMandatory(true);
 
 		String domain = mediaServer != null ? mediaServer.getDomain() : null;
 		domainEl = uifactory.addTextElement("media.server.domain", 256, domain, formLayout);
+		domainEl.setElementCssClass("o_sel_media_server_domain");
 		domainEl.setMandatory(true);
 		domainEl.setExampleKey("media.server.domain.example", null);
 
@@ -81,15 +83,15 @@ public class EditMediaServerController extends FormBasicController {
 
 		nameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		domainEl.clearError();
 		if (!StringHelper.containsNonWhitespace(domainEl.getValue())) {
-			domainEl.setErrorKey("form.legende.mandatory", null);
+			domainEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (!mediaServerModule.isValidDomain(domainEl.getValue())) {
-			domainEl.setErrorKey("media.server.domain.error", null);
+			domainEl.setErrorKey("media.server.domain.error");
 			allOk &= false;
 		}
 

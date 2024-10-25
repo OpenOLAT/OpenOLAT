@@ -99,7 +99,7 @@ public class GroupTaskPage {
 		OOGraphene.waitElement(taskBy, browser);
 		// Firefox seems to need double scrollTo to understand
 		OOGraphene.scrollBottom(By.cssSelector("#o_step_assignement_content table>tbody"), browser);
-		OOGraphene.clickAndWait(taskBy, browser);
+		OOGraphene.click(taskBy, browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}

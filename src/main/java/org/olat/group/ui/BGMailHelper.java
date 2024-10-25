@@ -306,10 +306,10 @@ public class BGMailHelper {
 			         .append(" (").append(groupUrl).append(")");
 			groupNameWithUrl = sb.toString();
 	
-			String description;
+			String description = null;
 			if(group instanceof BusinessGroup businessGroup) {
 				description = businessGroup.getDescription(); 
-			} else {
+			} else if(group.getKey() != null) {
 				description = CoreSpringFactory.getImpl(BusinessGroupDAO.class).loadDescription(group.getKey());
 			}
 			groupDescription = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
