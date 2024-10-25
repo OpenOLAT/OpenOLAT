@@ -49,6 +49,7 @@ import org.olat.modules.topicbroker.TBEnrollmentProcess;
 import org.olat.modules.topicbroker.TBEnrollmentStats;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
+import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
@@ -79,6 +80,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private TBEnrollmentRunOverviewController enrollmentRunOverviewCtrl;
 
 	private TBBroker broker;
+	private final TBSecurityCallback secCallback;
 	private final List<Identity> identities;
 	private final List<TBParticipant> participants;
 	private final List<TBTopic> topics;
@@ -90,9 +92,10 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private TopicBrokerService topicBrokerService;
 
 	public TBEnrollmentManualProcessController(UserRequest ureq, WindowControl wControl, TBBroker broker,
-			TBParticipantCandidates participantCandidates) {
+			TBSecurityCallback secCallback, TBParticipantCandidates participantCandidates) {
 		super(ureq, wControl, "enrollment_manual_process");
 		this.broker = broker;
+		this.secCallback = secCallback;
 		participantCandidates.refresh();
 		identities = participantCandidates.getAllIdentities();
 		
@@ -138,9 +141,10 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		emailCont.setRootForm(mainForm);
 		formLayout.add("email", emailCont);
 		
-		emailNotificationEl = uifactory.addCheckboxesHorizontal("enrollment.manual.email.notification", emailCont, KEYS,
-				new String[] { translate("enrollment.manual.email.notification.value") });
-		emailNotificationEl.select(KEYS[0], true);
+		emailNotificationEl = uifactory.addCheckboxesHorizontal("enrollment.manual.notification", emailCont, KEYS,
+				new String[] { translate("enrollment.manual.notification.value") });
+		emailNotificationEl.select(KEYS[0], secCallback.canSendNotification());
+		emailNotificationEl.setEnabled(secCallback.canSendNotification());
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

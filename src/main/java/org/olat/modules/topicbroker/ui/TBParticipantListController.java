@@ -64,6 +64,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -114,8 +115,10 @@ public class TBParticipantListController extends FormBasicController implements 
 	private FlexiFiltersTab tabEnrolledPartially;
 	private FlexiFiltersTab tabEnrolledFully;
 	private FormLink bulkEmailButton;
+	private FormLink bulkEmailNotificationButton;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private FormLink enrollmentManualStartLink;
+	private FormLink notificationsLink;
 	private TBParticipantDataModel dataModel;
 	private FlexiTableElement tableEl;
 	private VelocityContainer detailsVC;
@@ -123,6 +126,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	private CloseableModalController cmc;
 	private TBEnrollmentManualProcessController enrollmentManualCtrl;
 	private ContactFormController contactCtrl;
+	private ConfirmationController notificationConfirmationCtrl;
 
 	private TBBroker broker;
 	private final TBSecurityCallback secCallback;
@@ -166,6 +170,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		initForm(ureq);
 		initBulkLinks();
 		initFilterTabs(ureq);
+		updateCommandUI();
 		loadModel(ureq);
 	}
 	
@@ -237,6 +242,10 @@ public class TBParticipantListController extends FormBasicController implements 
 			updateEnrollmentManualUI();
 		}
 		
+		notificationsLink = uifactory.addFormLink("participants.notifications", formLayout, Link.BUTTON);
+		notificationsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
+		notificationsLink.setVisible(false);
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		FlexiTableSortOptions sortOptions = null;
@@ -294,10 +303,23 @@ public class TBParticipantListController extends FormBasicController implements 
 		bulkEmailButton = uifactory.addFormLink("participants.bulk.email", flc, Link.BUTTON);
 		bulkEmailButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 		tableEl.addBatchButton(bulkEmailButton);
+		
+		bulkEmailNotificationButton = uifactory.addFormLink("participants.bulk.notification", flc, Link.BUTTON);
+		bulkEmailNotificationButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
+		bulkEmailNotificationButton.setVisible(false);
+		tableEl.addBatchButton(bulkEmailNotificationButton);
+	}
+	
+	private void updateCommandUI() {
+		if (TBBrokerStatus.enrollmentDone == TBUIFactory.getBrokerStatus(broker) && secCallback.canSendNotification()) {
+			notificationsLink.setVisible(true);
+			bulkEmailNotificationButton.setVisible(true);
+		}
 	}
 	
 	public void reload(UserRequest ureq) {
 		broker = topicBrokerService.getBroker(broker);
+		updateCommandUI();
 		updateBrokerStatusUI();
 		updateBrokerConfigUI();
 		updateEnrollmentManualUI();
@@ -522,6 +544,12 @@ public class TBParticipantListController extends FormBasicController implements 
 				cmc.deactivate();
 			}
 			cleanUp();
+		} else if (source == notificationConfirmationCtrl) {
+			if (event == Event.DONE_EVENT) {
+				doSendNotification((List<Identity>)notificationConfirmationCtrl.getUserObject());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (source instanceof TBParticipantSelectionsController) {
 			if (event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
@@ -535,9 +563,11 @@ public class TBParticipantListController extends FormBasicController implements 
 	private void cleanUp() {
 		removeAsListenerAndDispose(enrollmentManualCtrl);
 		removeAsListenerAndDispose(contactCtrl);
+		removeAsListenerAndDispose(notificationConfirmationCtrl);
 		removeAsListenerAndDispose(cmc);
 		enrollmentManualCtrl = null;
 		contactCtrl = null;
+		notificationConfirmationCtrl = null;
 		cmc = null;
 	}
 
@@ -545,8 +575,12 @@ public class TBParticipantListController extends FormBasicController implements 
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == enrollmentManualStartLink) {
 			doEnrollmentManual(ureq);
-		} else if (bulkEmailButton == source) {
+		} else if (source == notificationsLink) {
+			doConfirmNotification(ureq);
+		} else if (source == bulkEmailButton) {
 			doBulkEmail(ureq);
+		} else if (source == bulkEmailNotificationButton) {
+			doBulkNotification(ureq);
 		} else if (source == tableEl) {
 			if (event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -592,7 +626,8 @@ public class TBParticipantListController extends FormBasicController implements 
 	private void doEnrollmentManual(UserRequest ureq) {
 		if (guardModalController(enrollmentManualCtrl)) return;
 		
-		enrollmentManualCtrl = new TBEnrollmentManualProcessController(ureq, getWindowControl(), broker, participantCandidates);
+		enrollmentManualCtrl = new TBEnrollmentManualProcessController(
+				ureq, getWindowControl(), broker, secCallback, participantCandidates);
 		listenTo(enrollmentManualCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -635,6 +670,51 @@ public class TBParticipantListController extends FormBasicController implements 
 				true, translate("participants.bulk.email"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doBulkNotification(UserRequest ureq) {
+		if (guardModalController(contactCtrl)) return;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			showWarning("participants.bulk.email.empty.selection");
+			return;
+		}
+		
+		List<Long> selectedIdentityKeys = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.map(TBParticipantRow::getIdentityKey)
+				.filter(Objects::nonNull)
+				.toList();
+		List<Identity> selectedIdentities = securityManager.loadIdentityByKeys(selectedIdentityKeys);
+		
+		doConfirmNotification(ureq, selectedIdentities);
+	}
+	
+	private void doConfirmNotification(UserRequest ureq) {
+		doConfirmNotification(ureq, participantCandidates.getVisibleIdentities());
+	}
+	
+	private void doConfirmNotification(UserRequest ureq, List<Identity> identities) {
+		if (guardModalController(notificationConfirmationCtrl)) return;
+		
+		notificationConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
+				translate("participants.notifications.mgs", String.valueOf(identities.size())),
+				null,
+				translate("participants.notifications.button"));
+		notificationConfirmationCtrl.setUserObject(identities);
+		listenTo(notificationConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				notificationConfirmationCtrl.getInitialComponent(), true, translate("participants.notifications"),
+				true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doSendNotification(List<Identity> identities) {
+		topicBrokerService.sendEnrollmentEmails(broker, identities);
 	}
 
 }

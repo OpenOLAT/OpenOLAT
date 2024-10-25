@@ -54,6 +54,8 @@ public interface TopicBrokerService {
 	
 	public void updateEnrollmentProcessDone(Identity doer, TBBrokerRef broker, boolean sendEmails);
 	
+	public void sendEnrollmentEmails(TBBroker broker, List<Identity> identities);
+	
 	public TBBroker getOrCreateBroker(Identity doer, RepositoryEntry repositoryEntry, String subIdent);
 
 	public TBBroker getBroker(RepositoryEntry repositoryEntry, String subIdent);

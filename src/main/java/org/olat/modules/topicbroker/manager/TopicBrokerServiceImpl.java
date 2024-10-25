@@ -250,12 +250,13 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			auditLogDao.create(TBAuditLog.Action.brokerEnrollmentDone, before, after, doer, reloadedBroker);
 			
 			if (sendEmails) {
-				sendEnrollmentEmails(reloadedBroker);
+				sendEnrollmentEmails(reloadedBroker, null);
 			}
 		}
 	}
 	
-	private void sendEnrollmentEmails(TBBroker broker) {
+	@Override
+	public void sendEnrollmentEmails(final TBBroker broker, final List<Identity> identities) {
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(broker.getRepositoryEntry().getKey());
 		
 		if (repositoryEntry == null || repositoryEntry.getEntryStatus().decommissioned()) {
@@ -274,17 +275,20 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		
 		TBParticipantSearchParams participantSearchParams = new TBParticipantSearchParams();
 		participantSearchParams.setBroker(broker);
+		participantSearchParams.setIdentities(identities);
 		Map<Long, TBParticipant> identityKeyToParticipant = getParticipants(participantSearchParams).stream()
 				.collect(Collectors.toMap(participant -> participant.getIdentity().getKey(), Function.identity()));
 		
 		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 		selectionSearchParams.setBroker(broker);
+		selectionSearchParams.setIdentities(identities);
 		selectionSearchParams.setEnrolledOrMaxSortOrder(Integer.valueOf(-1)); // only enrollments
 		selectionSearchParams.setFetchTopic(true);
 		Map<Long, List<TBSelection>> identityKeyToEnrolledSelections = getSelections(selectionSearchParams).stream()
 				.collect(Collectors.groupingBy(selction -> selction.getParticipant().getIdentity().getKey()));
 		
 		selectionSearchParams.setEnrolledOrMaxSortOrder(Integer.valueOf(1));
+		selectionSearchParams.setIdentities(identities);
 		selectionSearchParams.setFetchTopic(false);
 		selectionSearchParams.setFetchParticipant(true);
 		Set<Long> identityKeysWithSelections = getSelections(selectionSearchParams).stream()
@@ -293,7 +297,9 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 		
 		TopicBrokerCourseNodeParticipantCandidates participantCandidates = new TopicBrokerCourseNodeParticipantCandidates(
 				null, repositoryEntry, true);
-		for (Identity identity : participantCandidates.getAllIdentities()) {
+		
+		List<Identity> recipients = identities != null? identities: participantCandidates.getAllIdentities();
+		for (Identity identity : recipients) {
 			// Users without selection do not get an e-mail. They are not interested at all.
 			if (identityKeysWithSelections.contains(identity.getKey())) {
 				mailing.sendEnrollmentEmail(identity,
