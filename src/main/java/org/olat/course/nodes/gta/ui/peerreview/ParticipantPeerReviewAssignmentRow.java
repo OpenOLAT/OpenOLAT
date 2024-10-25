@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.ui.peerreview;
 
 import org.olat.core.gui.components.boxplot.BoxPlot;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.gta.Task;
@@ -38,8 +39,11 @@ public class ParticipantPeerReviewAssignmentRow {
 	private BoxPlot boxPlot;
 	private FormItem ratingItem;
 	private FormLink viewSessionLink;
+	private FormLink openTaskFileLink;
 	private FormLink executeSessionLink;
+	private DownloadLink downloadTaskFileLink;
 	
+	private final String taskName;
 	private final String assigneeFullName;
 	private final String assessedFullName;
 	private final Integer numOfDocumentsToReview;
@@ -50,6 +54,7 @@ public class ParticipantPeerReviewAssignmentRow {
 		this.assignment = assignment;
 		this.assigneeFullName = assigneeFullName;
 		this.assessedFullName = assessedFullName;
+		this.taskName = task.getTaskName();
 		this.numOfDocumentsToReview = task.getSubmissionNumOfDocs();
 	}
 	
@@ -73,19 +78,19 @@ public class ParticipantPeerReviewAssignmentRow {
 		return assessedFullName;
 	}
 	
-	public double getProgress() {
-		return 0.0d;
+	public String getTaskName() {
+		return taskName;
 	}
 	
 	public TaskReviewAssignmentStatus getStatus() {
 		return assignment == null ? null : assignment.getStatus();
 	}
 
-	public FormLink getExecuteSessionLink() {
+	public FormLink getActionSessionLink() {
 		return executeSessionLink;
 	}
 
-	public void setExecuteSessionLink(FormLink executeSessionLink) {
+	public void setActionSessionLink(FormLink executeSessionLink) {
 		this.executeSessionLink = executeSessionLink;
 	}
 
@@ -111,5 +116,21 @@ public class ParticipantPeerReviewAssignmentRow {
 
 	public void setRatingItem(FormItem ratingItem) {
 		this.ratingItem = ratingItem;
+	}
+	
+	public DownloadLink getDownloadTaskFileLink() {
+		return downloadTaskFileLink;
+	}
+
+	public void setDownloadTaskFileLink(DownloadLink downloadTaskFileLink) {
+		this.downloadTaskFileLink = downloadTaskFileLink;
+	}
+
+	public FormLink getOpenTaskFileLink() {
+		return openTaskFileLink;
+	}
+
+	public void setOpenTaskFileLink(FormLink openTaskFileLink) {
+		this.openTaskFileLink = openTaskFileLink;
 	}
 }

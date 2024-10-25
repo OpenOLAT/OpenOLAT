@@ -144,6 +144,10 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 		tableEl.setRowRenderer(rowVC, this);
 		tableEl.setCssDelegate(this);
 	}
+	
+	public void setEmptyMessage(String i18nKey) {
+		tableEl.setEmptyTableSettings(i18nKey, null, "o_icon_fileupload");
+	}
 
 	@Override
 	public String getWrapperCssClass(FlexiTableRendererType type) {

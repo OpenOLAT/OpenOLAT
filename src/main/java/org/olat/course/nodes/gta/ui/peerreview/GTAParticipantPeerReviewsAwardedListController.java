@@ -19,13 +19,22 @@
  */
 package org.olat.course.nodes.gta.ui.peerreview;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorDisplayInfo;
+import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -39,8 +48,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAPeerReviewManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
@@ -49,6 +64,8 @@ import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.model.SessionParticipationListStatistics;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
+import org.olat.course.nodes.gta.model.TaskDefinition;
+import org.olat.course.nodes.gta.ui.GTAUIFactory;
 import org.olat.course.nodes.gta.ui.component.TaskReviewAssignmentStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.peerreview.GTAParticipantPeerReviewTableModel.ReviewCols;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -62,7 +79,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class GTAParticipantPeerReviewsAwardedListController extends AbstractParticipantPeerReviewsAwardedListController {
-	
+
+	private static final String CMD_VIEW = "view";
+	private static final String CMD_PREVIEW = "preview";
 	private static final String CMD_EXECUTE = "execute";
 
 	private FlexiTableElement tableEl;
@@ -70,15 +89,23 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 	private GTAParticipantPeerReviewTableModel tableModel;
 	private final BreadcrumbedStackedPanel stackPanel;
 
+	private final Roles roles;
 	private final Task assignedTask;
 	private final boolean readOnly;
 	private final TaskList taskList;
+	private final File tasksFolder;
 	private final CourseEnvironment courseEnv;
+	private final VFSContainer tasksContainer;
 
 	private CloseableModalController cmc;
+	private Controller evaluationViewFormExecCtrl;
 	private ConfirmCloseReviewsController confirmCloseReviewsCtrl;
-	private GTAEvaluationFormExecutionController evaluationFormExecCtrl;
+	private GTAEvaluationFormExecutionController evaluationReviewFormExecCtrl;
 	
+	@Autowired
+	private GTAManager gtaManager;
+	@Autowired
+	private DocEditorService docEditorService;
 	@Autowired
 	private GTAPeerReviewManager peerReviewManager;
 	
@@ -90,6 +117,9 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 		this.readOnly = readOnly;
 		this.taskList = taskList;
 		this.courseEnv = courseEnv;
+		roles = ureq.getUserSession().getRoles();
+		tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
+		tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 
 		initForm(ureq);
 		loadModel();
@@ -107,11 +137,12 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.assessedIdentity));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.taskName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.numOfDocuments));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.plot));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.sessionStatus,
 				new TaskReviewAssignmentStatusCellRenderer(getLocale(), true)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.executeReview));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.actionReview));
 		
 		tableModel = new GTAParticipantPeerReviewTableModel(columnsModel, getLocale());
 		
@@ -143,6 +174,11 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 		SessionParticipationListStatistics statisticsList = peerReviewManager.loadStatistics(taskList, assignments, getIdentity(), gtaNode, statusForStats);
 		Map<EvaluationFormParticipation, SessionParticipationStatistics> statisticsMap = statisticsList.toParticipationsMap();
 		
+		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		Map<String,TaskDefinition> fileNameToDefinitions = taskDefinitions.stream()
+				.filter(def -> Objects.nonNull(def.getFilename()))
+				.collect(Collectors.toMap(TaskDefinition::getFilename, Function.identity(), (u, v) -> u));
+
 		int count = 0;
 		List<ParticipantPeerReviewAssignmentRow> rows = new ArrayList<>(assignments.size());
 		for(TaskReviewAssignment assignment:assignments) {
@@ -150,34 +186,77 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 			if(assignment.getParticipation() != null) {
 				statistics = statisticsMap.get(assignment.getParticipation());
 			}
-			rows.add(forgeRow(assignment, assignment.getTask(), statistics, ++count));
+			rows.add(forgeRow(assignment, assignment.getTask(), fileNameToDefinitions, statistics, ++count));
 		}
 		tableModel.setObjects(rows);
 	}
 	
-	@Override
-	protected ParticipantPeerReviewAssignmentRow forgeRow(TaskReviewAssignment assignment, Task task, SessionParticipationStatistics sessionStatistics, int pos) {
+	protected ParticipantPeerReviewAssignmentRow forgeRow(TaskReviewAssignment assignment, Task task,
+			Map<String,TaskDefinition> fileNameToDefinitions, SessionParticipationStatistics sessionStatistics, int pos) {
 		ParticipantPeerReviewAssignmentRow row = super.forgeRow(assignment, task, sessionStatistics, pos);
 		// Start evaluation link
 		if(!readOnly && (assignment.getParticipation() == null || assignment.getStatus() == null
 				|| assignment.getStatus() ==  TaskReviewAssignmentStatus.open
 				|| assignment.getStatus() == TaskReviewAssignmentStatus.inProgress)
 				&& task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
-			String executeLinkName = "execute-" + (++counter);
-			FormLink executeLink = uifactory.addFormLink(executeLinkName, CMD_EXECUTE, "review.execute", null, flc, Link.LINK);
-			executeLink.setUserObject(row);
-			row.setExecuteSessionLink(executeLink);
+			forgeActionLink(row, CMD_EXECUTE, "review.execute");
+		} else if(assignment.getParticipation() != null && task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit
+				&& assignment.getStatus() == TaskReviewAssignmentStatus.done) {
+			forgeActionLink(row, CMD_VIEW, "review.view");
+		} else if(task.getTaskStatus() == TaskProcess.assignment || task.getTaskStatus() == TaskProcess.submit) {
+			forgeActionLink(row, CMD_PREVIEW, "review.view");
+		}
+		
+		String taskName = task.getTaskName();
+		if(StringHelper.containsNonWhitespace(taskName)) {
+			forgeOpenDocument(row, task, fileNameToDefinitions);
 		}
 		return row;
 	}
 
+	private void forgeOpenDocument(ParticipantPeerReviewAssignmentRow row, Task task, Map<String,TaskDefinition> fileNameToDefinitions) {
+		String taskName = task.getTaskName();
+		TaskDefinition taskDefinition = fileNameToDefinitions.get(taskName);
+		if(taskDefinition != null) {
+			VFSItem item = tasksContainer.resolve(taskDefinition.getFilename());
+			if(item instanceof VFSLeaf vfsLeaf) {
+				DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, vfsLeaf,
+						item.getMetaInfo(), true, DocEditorService.MODES_VIEW);
+				// If possible retrieve openLink to open document in editor, or make a download link
+				if (editorInfo.isEditorAvailable()) {
+					FormLink openLink = uifactory.addFormLink("open_" + (++counter), "open", taskDefinition.getFilename(), null, flc, Link.NONTRANSLATED);
+					openLink.setIconLeftCSS("o_icon o_icon-fw " + CSSHelper.createFiletypeIconCssClassFor(taskDefinition.getFilename()));
+					if (editorInfo.isNewWindow()) {
+						openLink.setNewWindow(true, true, false);
+					}
+					row.setOpenTaskFileLink(openLink);
+					openLink.setUserObject(item);
+				} else {
+					File file = new File(tasksFolder, taskDefinition.getFilename());
+					DownloadLink downloadLink = uifactory.addDownloadLink("task_" + (++counter), taskDefinition.getFilename(), null, file, tableEl);
+					row.setDownloadTaskFileLink(downloadLink);
+				}
+			}
+		}
+	}
+	
+	private void forgeActionLink(ParticipantPeerReviewAssignmentRow row, String cmd, String i18nLink) {
+		FormLink viewLink = uifactory.addFormLink("action-" + (++counter), cmd, i18nLink, null, flc, Link.LINK);
+		viewLink.setUserObject(row);
+		row.setActionSessionLink(viewLink);
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(evaluationFormExecCtrl == source) {
+		if(evaluationReviewFormExecCtrl == source) {
 			doCloseReviewController();
 			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				loadModel();
 			}
+		} else if(evaluationViewFormExecCtrl == source) {
+			doCloseViewController();
+			cmc.deactivate();
+			cleanUp();
 		} else if(confirmCloseReviewsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, event);
@@ -201,9 +280,20 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(closeReviewsButton == source) {
 			doCloseReviews(ureq);
-		} else if(source instanceof FormLink link && CMD_EXECUTE.equals(link.getCmd())
-				&& link.getUserObject() instanceof ParticipantPeerReviewAssignmentRow sessionRow) {
-			doStartReview(ureq, sessionRow);
+		} else if(source instanceof FormLink link) {
+			if(CMD_EXECUTE.equals(link.getCmd())
+					&& link.getUserObject() instanceof ParticipantPeerReviewAssignmentRow sessionRow) {
+				doStartReview(ureq, sessionRow);
+			} else if(CMD_VIEW.equals(link.getCmd())
+					&& link.getUserObject() instanceof ParticipantPeerReviewAssignmentRow sessionRow) {
+				doViewReview(ureq, sessionRow);
+			} else if(CMD_PREVIEW.equals(link.getCmd())
+					&& link.getUserObject() instanceof ParticipantPeerReviewAssignmentRow sessionRow) {
+				doPreviewReview(ureq, sessionRow);
+			} else if ("open".equalsIgnoreCase(link.getCmd())
+					&& link.getUserObject() instanceof VFSLeaf vfsLeaf) {
+				doOpenMedia(ureq, vfsLeaf);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -214,7 +304,7 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 	}
 	
 	private void doStartReview(UserRequest ureq, ParticipantPeerReviewAssignmentRow sessionRow) {
-		removeAsListenerAndDispose(evaluationFormExecCtrl);
+		removeAsListenerAndDispose(evaluationReviewFormExecCtrl);
 		
 		String mode = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW,
 				GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW_DEFAULT);
@@ -223,18 +313,18 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 		GTAEvaluationFormExecutionOptions options = GTAEvaluationFormExecutionOptions.valueOf(true, false, anonym, assessedFullName, true, true, false);
 		
 		TaskReviewAssignment assignment = sessionRow.getAssignment();
-		evaluationFormExecCtrl = new GTAEvaluationFormExecutionController(ureq, getWindowControl(),
+		evaluationReviewFormExecCtrl = new GTAEvaluationFormExecutionController(ureq, getWindowControl(),
 				assignment, courseEnv, gtaNode,	options, true, false);
-		listenTo(evaluationFormExecCtrl);
+		listenTo(evaluationReviewFormExecCtrl);
 		
-		stackPanel.pushController(assessedFullName, evaluationFormExecCtrl);
+		stackPanel.pushController(assessedFullName, evaluationReviewFormExecCtrl);
 	}
 	
 	private void doCloseReviewController() {
-		stackPanel.popController(evaluationFormExecCtrl);
+		stackPanel.popController(evaluationReviewFormExecCtrl);
 		
-		removeAsListenerAndDispose(evaluationFormExecCtrl);
-		evaluationFormExecCtrl = null;
+		removeAsListenerAndDispose(evaluationReviewFormExecCtrl);
+		evaluationReviewFormExecCtrl = null;
 	}
 	
 	private void doCloseReviews(UserRequest ureq) {
@@ -251,5 +341,58 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 				confirmCloseReviewsCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doViewReview(UserRequest ureq, ParticipantPeerReviewAssignmentRow sessionRow) {
+		removeAsListenerAndDispose(evaluationViewFormExecCtrl);
+
+		TaskReviewAssignment assignment = sessionRow.getAssignment();
+		GTAEvaluationFormExecutionOptions options = getExecutionOptions(sessionRow);
+		if(assignment.getStatus() == TaskReviewAssignmentStatus.done) {
+			evaluationViewFormExecCtrl = new GTAEvaluationFormExecutionController(ureq, getWindowControl(),
+					assignment, courseEnv, gtaNode, options, false, false);
+			listenTo(evaluationViewFormExecCtrl);
+			
+			String assessedFullName = sessionRow.getAssessedIdentityName();
+			stackPanel.pushController(assessedFullName, evaluationViewFormExecCtrl);
+		}
+	}
+	
+	private GTAEvaluationFormExecutionOptions getExecutionOptions(ParticipantPeerReviewAssignmentRow sessionRow) {
+		String mode = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW,
+				GTACourseNode.GTASK_PEER_REVIEW_FORM_OF_REVIEW_DEFAULT);
+		boolean anonym = GTACourseNode.GTASK_PEER_REVIEW_DOUBLE_BLINDED_REVIEW.equals(mode)
+				|| GTACourseNode.GTASK_PEER_REVIEW_SINGLE_BLINDED_REVIEW.equals(mode);
+		String reviewerFullName = sessionRow.getReviewerName();
+		return GTAEvaluationFormExecutionOptions.valueOf(false, true, anonym, reviewerFullName, false, false, false);
+	}
+	
+	private void doPreviewReview(UserRequest ureq, ParticipantPeerReviewAssignmentRow sessionRow) {
+		removeAsListenerAndDispose(evaluationViewFormExecCtrl);
+		
+		TaskReviewAssignment assignment = sessionRow.getAssignment();
+		GTAEvaluationFormExecutionOptions options = getExecutionOptions(sessionRow);
+		evaluationViewFormExecCtrl = new GTAEvaluationFormInProgressController(ureq, getWindowControl(),
+				assignment, gtaNode, options);
+		listenTo(evaluationViewFormExecCtrl);
+			
+		String assessedFullName = sessionRow.getAssessedIdentityName();
+		stackPanel.pushController(assessedFullName, evaluationViewFormExecCtrl);
+	}
+	
+	private void doCloseViewController() {
+		stackPanel.popController(evaluationViewFormExecCtrl);
+		
+		removeAsListenerAndDispose(evaluationViewFormExecCtrl);
+		evaluationViewFormExecCtrl = null;
+	}
+	
+	private void doOpenMedia(UserRequest ureq, VFSLeaf vfsLeaf) {
+		addToHistory(ureq, this);
+
+		DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, vfsLeaf, vfsLeaf.getName(), DocEditor.Mode.EDIT, null);
+		Controller docEditorCtrl = docEditorService.openDocument(ureq, getWindowControl(), configs, DocEditorService.MODES_VIEW)
+				.getController();
+		listenTo(docEditorCtrl);
 	}
 }
