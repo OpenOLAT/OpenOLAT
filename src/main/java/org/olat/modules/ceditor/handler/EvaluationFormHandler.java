@@ -192,7 +192,8 @@ public class EvaluationFormHandler implements PageElementHandler {
 	private List<Identity> getCoachesAndReviewers(List<AccessRights> accessRights) {
 		List<Identity> identities = new ArrayList<>(accessRights.size());
 		for(AccessRights accessRight:accessRights) {
-			if(ContentRoles.coach == accessRight.getRole() || ContentRoles.reviewer == accessRight.getRole() || ContentRoles.invitee == accessRight.getRole()) {
+			if(!identities.contains(accessRight.getIdentity())
+					&& (ContentRoles.coach == accessRight.getRole() || ContentRoles.reviewer == accessRight.getRole() || ContentRoles.invitee == accessRight.getRole())) {
 				identities.add(accessRight.getIdentity());
 			}
 		}

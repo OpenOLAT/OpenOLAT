@@ -269,19 +269,17 @@ public class MultiEvaluationFormController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == ownerLink) {
 					doOpenEvalutationForm(ureq, owner);
 				} else if(clickedLink == compareLink) {
 					doOpenOverview(ureq);
-				} else if (clickedLink instanceof Link) {
-					Link link = (Link)clickedLink;
+				} else if (clickedLink instanceof Link link) {
 					Object uobject = link.getUserObject();
-					if(uobject instanceof Identity) {
-						doOpenEvalutationForm(ureq, (Identity)uobject);
+					if(uobject instanceof Identity ident) {
+						doOpenEvalutationForm(ureq, ident);
 					}
 				}
 			}
@@ -290,7 +288,7 @@ public class MultiEvaluationFormController extends BasicController {
 
 	private void doOpenEvalutationForm(UserRequest ureq, Identity evaluator) {
 		boolean ro = readOnly || !evaluator.equals(getIdentity());
-		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || !owner.equals(evaluator));
+		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || owner.equals(evaluator));
 		EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, evaluator);
 		currentEvalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, ro, doneButton, !doneButton, null);
 		listenTo(currentEvalutionFormCtrl);
