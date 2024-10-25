@@ -287,6 +287,18 @@
 	}
 }
 
+form {
+	.o_form {
+		&.o_badge_wiz_criteria_step {
+			.o_markdown_element {
+				.form-control.ProseMirror {
+					min-height: 5em;
+				}
+			}
+		}
+	}
+}
+
 .o_badge_wiz_summary_step, .o_badge_criteria_view {
 	.o_small_badge {
 		max-width: 250px;
@@ -499,7 +511,9 @@ span.o_labeled_light {
 
 .o_badge_course_selector_selections {
 	overflow-y: auto;
-	max-height: unset;
+	min-height: 140px;
+	max-height: 240px;
+	padding-right: 4px;
 
 	label.control-label {
 		color: $text-color;

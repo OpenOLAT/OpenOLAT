@@ -42,6 +42,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.translator.Translator;
@@ -71,6 +73,7 @@ public class CourseSelectorElementImpl extends FormItemImpl implements CourseSel
 	private Translator badgesTranslator;
 
 	private CourseSelectorController courseSelectorCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController courseBrowserCtrl;
 
@@ -159,14 +162,16 @@ public class CourseSelectorElementImpl extends FormItemImpl implements CourseSel
 		if (courseSelectorCtrl == source) {
 			if (event instanceof CourseSelectorController.ApplyEvent applyEvent) {
 				selectedKeys = applyEvent.getKeys();
-				cmc.deactivate();
+				calloutCtrl.deactivate();
 				cleanUp();
 				updateButtonUI(true);
 			} else if (event == CourseSelectorController.BROWSE_EVENT) {
-				cmc.deactivate();
+				calloutCtrl.deactivate();
 				cleanUp();
 				doOpenBrowser(ureq);
 			}
+		} else if (calloutCtrl == source) {
+			cleanUp();
 		} else if (courseBrowserCtrl == source) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry repositoryEntry = courseBrowserCtrl.getSelectedEntry();
@@ -187,6 +192,7 @@ public class CourseSelectorElementImpl extends FormItemImpl implements CourseSel
 		courseSelectorCtrl = cleanUp(courseSelectorCtrl);
 		courseBrowserCtrl = cleanUp(courseBrowserCtrl);
 		cmc = cleanUp(cmc);
+		calloutCtrl = cleanUp(calloutCtrl);
 	}
 
 	private <T extends Controller> T cleanUp(T ctrl) {
@@ -215,10 +221,11 @@ public class CourseSelectorElementImpl extends FormItemImpl implements CourseSel
 		courseSelectorCtrl = new CourseSelectorController(ureq, wControl, visibleCourses, selectedKeys);
 		courseSelectorCtrl.addControllerListener(this);
 
-		cmc = new CloseableModalController(wControl, getTranslator().translate("close"),
-				courseSelectorCtrl.getInitialComponent());
-		cmc.activate();
-		cmc.addControllerListener(this);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, courseSelectorCtrl.getInitialComponent(),
+				button.getFormDispatchId(), "", true, "",
+				new CalloutSettings(false, CalloutSettings.CalloutOrientation.bottomOrTop, false, null));
+		calloutCtrl.addControllerListener(this);
+		calloutCtrl.activate();
 	}
 
 	private void doOpenBrowser(UserRequest ureq) {
