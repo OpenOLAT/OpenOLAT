@@ -53,7 +53,7 @@ public class MathJaxDirectiveProvider implements CSPDirectiveProvider {
 
 	@Override
 	public Collection<String> getConnectSrcUrls() {
-		return null;
+		return getUrls();
 	}
 
 	@Override
