@@ -39,6 +39,8 @@ import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -53,12 +55,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.InfoPanel;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -78,6 +83,7 @@ import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBBrokerStatus;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBParticipantCandidates;
+import org.olat.modules.topicbroker.TBParticipantCandidates.FilterGroup;
 import org.olat.modules.topicbroker.TBParticipantSearchParams;
 import org.olat.modules.topicbroker.TBSecurityCallback;
 import org.olat.modules.topicbroker.TBSelection;
@@ -99,6 +105,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TBParticipantListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 	
+	private static final String FILTER_GROUPS = "groups";
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_BOOSTED = "Boosted";
 	private static final String TAB_ID_OPEN_SELECTION = "OpenSelection";
@@ -169,6 +176,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		
 		initForm(ureq);
 		initBulkLinks();
+		initFilters();
 		initFilterTabs(ureq);
 		updateCommandUI();
 		loadModel(ureq);
@@ -225,6 +233,22 @@ public class TBParticipantListController extends FormBasicController implements 
 		tableEl.setSelectedFilterTab(ureq, tab);
 		detailsOpenIdentityKeys = null;
 		loadModel(ureq);
+	}
+	
+	private void initFilters() {
+		List<FilterGroup> filterGroups = participantCandidates.getFilterGroups();
+		if (filterGroups == null || filterGroups.isEmpty()) {
+			return;
+		}
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(1);
+		
+		SelectionValues groupValues = new SelectionValues();
+		filterGroups.forEach(group -> groupValues.add(new SelectionValue(
+				group.key(), StringHelper.escapeHtml(group.name()), null,
+				"o_icon o_icon-fw " + group.iconCss(), null, true)));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.groups"), FILTER_GROUPS, groupValues, true));
+		
+		tableEl.setFilters(true, filters, false, false);
 	}
 
 	@Override
@@ -328,24 +352,26 @@ public class TBParticipantListController extends FormBasicController implements 
 	}
 
 	private void loadModel(UserRequest ureq) {
+		List<Identity> filteredIdentities = getFilterIdentitities();
+		
 		TBParticipantSearchParams participantSearchParams = new TBParticipantSearchParams();
 		participantSearchParams.setBroker(broker);
-		participantSearchParams.setIdentities(identities);
+		participantSearchParams.setIdentities(filteredIdentities);
 		participantSearchParams.setFetchIdentity(true);
 		Map<Long, TBParticipant> identityKeyToParticipant = topicBrokerService.getParticipants(participantSearchParams).stream()
 				.collect(Collectors.toMap(particioant -> particioant.getIdentity().getKey(), Function.identity()));
 		
 		TBSelectionSearchParams selectionSearchParams = new TBSelectionSearchParams();
 		selectionSearchParams.setBroker(broker);
-		selectionSearchParams.setIdentities(identities);
+		selectionSearchParams.setIdentities(filteredIdentities);
 		selectionSearchParams.setFetchIdentity(true);
 		selectionSearchParams.setFetchTopic(true);
 		Map<Long, List<TBSelection>> identityKeyToSelections = topicBrokerService.getSelections(selectionSearchParams).stream()
 				.sorted((s1, s2) -> Integer.compare(s1.getSortOrder(), s2.getSortOrder()))
 				.collect(Collectors.groupingBy(selection -> selection.getParticipant().getIdentity().getKey()));
 		
-		List<TBParticipantRow> rows = new ArrayList<>(identities.size());
-		for (Identity identity : identities) {
+		List<TBParticipantRow> rows = new ArrayList<>(filteredIdentities.size());
+		for (Identity identity : filteredIdentities) {
 			TBParticipantRow row = new TBParticipantRow(identity, userPropertyHandlers, getLocale());
 			row.setBroker(broker);
 			row.setMaxSelections(broker.getMaxSelections());
@@ -382,6 +408,27 @@ public class TBParticipantListController extends FormBasicController implements 
 					tableEl.expandDetails(index);
 				});
 		}
+	}
+
+	private List<Identity> getFilterIdentitities() {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters != null && !filters.isEmpty()) {
+			for (FlexiTableFilter filter : filters) {
+				if (FILTER_GROUPS.equals(filter.getFilter())) {
+					List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+					if (values != null && !values.isEmpty()) {
+						Set<Long> identityKeys = participantCandidates.getFilterGroups().stream()
+								.filter(group -> values.contains(group.key()))
+								.flatMap(group -> group.identityKeys().stream())
+								.collect(Collectors.toSet());
+						ArrayList<Identity> filteredIdentities = new ArrayList<>(identities);
+						filteredIdentities.removeIf(identity -> !identityKeys.contains(identity.getKey()));
+						return filteredIdentities;
+					}
+				}
+			}
+		}
+		return identities;
 	}
 
 	private void applyFilters(List<TBParticipantRow> rows) {
