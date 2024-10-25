@@ -13,10 +13,12 @@
 	$r.render("documents")
 </fieldset>
 #end
+#if($r.available("form-execution"))
 <fieldset class="o_block">
 	<legend>$r.translate("review.assessment")</legend>
 	$r.render("form-execution")
 </fieldset>
+#end
 #if($r.available("rating"))
 	$r.render("rating")
 #end

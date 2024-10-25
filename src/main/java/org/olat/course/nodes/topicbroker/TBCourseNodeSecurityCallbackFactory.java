@@ -34,8 +34,8 @@ import org.olat.modules.topicbroker.TBSecurityCallback;
  */
 public class TBCourseNodeSecurityCallbackFactory {
 	
-	public static final TBSecurityCallback ADMIN_SEC_CALLBACK = new TBCourseNodeSecurityCallback(true, true, true, true);
-	private static final TBSecurityCallback RO_SEC_CALLBACK = new TBCourseNodeSecurityCallback(false, false, false, false);
+	public static final TBSecurityCallback ADMIN_SEC_CALLBACK = new TBCourseNodeSecurityCallback(true, true, true, true, true);
+	private static final TBSecurityCallback RO_SEC_CALLBACK = new TBCourseNodeSecurityCallback(false, false, false, false, false);
 	
 	public static final TBSecurityCallback createSecurityCallback(TopicBrokerCourseNode courseNode,
 			UserCourseEnvironment userCourseEnvironment) {
@@ -51,7 +51,7 @@ public class TBCourseNodeSecurityCallbackFactory {
 		boolean canEditTopics = nodeRightService.isGranted(configs, userCourseEnvironment, TopicBrokerCourseNode.EDIT_TOPIC);
 		boolean canEditSelections = nodeRightService.isGranted(configs, userCourseEnvironment, TopicBrokerCourseNode.EDIT_SELECTIONS);
 		
-		return new TBCourseNodeSecurityCallback(true, canEditTopics, canEditSelections, false);
+		return new TBCourseNodeSecurityCallback(true, canEditTopics, canEditSelections, false, true);
 	}
 	
 	public static final class TBCourseNodeSecurityCallback implements TBSecurityCallback {
@@ -60,13 +60,15 @@ public class TBCourseNodeSecurityCallbackFactory {
 		private final boolean canEditTopics;
 		private final boolean canEditSelections;
 		private final boolean canStartManualEnrollment;
+		private final boolean canSendNotification;
 		
 		public TBCourseNodeSecurityCallback(boolean canEdit, boolean canEditTopics, boolean canEditSelections,
-				boolean canStartManualEnrollment) {
+				boolean canStartManualEnrollment, boolean canSendNotification) {
 			this.canEdit = canEdit;
 			this.canEditTopics = canEditTopics;
 			this.canEditSelections = canEditSelections;
 			this.canStartManualEnrollment = canStartManualEnrollment;
+			this.canSendNotification = canSendNotification;
 		}
 		
 		@Override
@@ -87,6 +89,11 @@ public class TBCourseNodeSecurityCallbackFactory {
 		@Override
 		public boolean canStartManualEnrollment() {
 			return canStartManualEnrollment;
+		}
+
+		@Override
+		public boolean canSendNotification() {
+			return canSendNotification;
 		}
 
 	}

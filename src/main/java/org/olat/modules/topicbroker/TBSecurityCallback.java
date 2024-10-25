@@ -35,4 +35,6 @@ public interface TBSecurityCallback {
 
 	public boolean canStartManualEnrollment();
 	
+	public boolean canSendNotification();
+	
 }

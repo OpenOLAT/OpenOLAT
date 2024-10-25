@@ -178,7 +178,7 @@ public class GTAEvaluationFormExecutionController extends BasicController {
 					updateAssignmentAndScore();
 				}
 				fireEvent(ureq, event);
-			} else if(event instanceof ProgressEvent pe) {
+			} else if(event instanceof ProgressEvent) {
 				updateAssignmentStatus(TaskReviewAssignmentStatus.inProgress);
 			}
 		} else if(ratingCtrl == source) {

@@ -288,7 +288,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 			urlEl.setErrorKey("error.format.not.supported");
 			allOk &= false;
 		} else if (mediaServerModule.isRestrictedDomain(urlEl.getValue())) {
-			urlEl.setErrorKey("error.video.restricted", null);
+			urlEl.setErrorKey("error.video.restricted");
 			allOk &= false;
 		}
 

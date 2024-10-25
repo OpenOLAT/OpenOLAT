@@ -73,6 +73,7 @@ public class CalloutSettings {
 
 	public enum CalloutOrientation {
 		top,
-		bottom
+		bottom,
+		bottomOrTop
 	}
 }

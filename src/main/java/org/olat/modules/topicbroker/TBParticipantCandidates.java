@@ -20,6 +20,7 @@
 package org.olat.modules.topicbroker;
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.id.Identity;
 
@@ -37,6 +38,10 @@ public interface TBParticipantCandidates {
 	
 	List<Identity> getVisibleIdentities();
 	
+	List<FilterGroup> getFilterGroups();
+	
 	void refresh();
+	
+	record FilterGroup(String key, String name, String iconCss, Set<Long> identityKeys) { }
 
 }

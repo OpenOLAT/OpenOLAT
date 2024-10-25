@@ -8,6 +8,29 @@
 </dialog>
 <script>
 "use strict";
+
+function positionBottomOrTopCallout(target, callout) {
+	if (target.length === 0 || callout.length === 0) {
+		return;
+	}
+
+	var targetRect = target.get(0).getBoundingClientRect();
+	var calloutRect = callout.get(0).getBoundingClientRect();
+	var topOffset = {
+		left: targetRect.x + (targetRect.width - calloutRect.width) / 2,
+		top: targetRect.y - calloutRect.height,
+	};
+	var bottomOffset = {
+		left: topOffset.left,
+		top: targetRect.y + targetRect.height,
+	};
+	if ((bottomOffset.top + calloutRect.height) <= window.innerHeight) {
+		callout.offset(bottomOffset);
+	} else {
+		callout.offset(topOffset);
+	}
+}
+
 jQuery(function() {
 	jQuery('#callout_$r.getCId()').each(function(index, el) {
 		if(el != null && !el.open) {
@@ -52,7 +75,8 @@ jQuery(function() {
 						left: Math.round((targetOffset.left + targetEl.outerWidth()) - callout.outerWidth()/2 -1)
 					});
 				}
-				
+			} else if (orientation === 'bottomOrTop') {
+				positionBottomOrTopCallout(targetEl, callout);
 			} else {
 				if(targetOffset.left >= 0 && callout.outerWidth() > 50 && targetOffset.left <= ((callout.outerWidth() - targetEl.outerWidth()) / 2)) {
 					## left edge case: show at left border

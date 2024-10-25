@@ -333,6 +333,10 @@ public class GroupDAO {
 	}
 	
 	public List<GroupMembership> getMemberships(Collection<Long> groupKeys, Collection<String> roles) {
+		if (groupKeys == null || groupKeys.isEmpty()) {
+			return List.of();
+		}
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select membership");
 		sb.append("  from bgroupmember membership");

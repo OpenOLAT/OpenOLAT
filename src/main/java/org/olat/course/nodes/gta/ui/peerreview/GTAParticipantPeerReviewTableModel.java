@@ -70,12 +70,22 @@ implements SortableFlexiTableDataModel<ParticipantPeerReviewAssignmentRow> {
 			case plot -> row.getBoxPlot();
 			case ratingYesNo, ratingStars -> row.getRatingItem();
 			case sessionStatus -> row;
-			case executeReview -> row.getExecuteSessionLink();
+			case actionReview -> row.getActionSessionLink();
 			case viewReview -> row.getViewSessionLink();
+			case taskName -> getTask(row);
 			default -> "ERROR";
 		};
 	}
 	
+	private Object getTask(ParticipantPeerReviewAssignmentRow row) {
+		if (row.getOpenTaskFileLink() == null && row.getDownloadTaskFileLink() == null) {
+			return row.getTaskName();
+		}
+		if (row.getOpenTaskFileLink() == null) {
+			return row.getDownloadTaskFileLink();
+		}
+		return row.getOpenTaskFileLink();
+	}
 	
 	public enum ReviewCols implements FlexiSortableColumnDef {
 		assessedIdentity("table.header.reviewed.identity"),
@@ -85,8 +95,9 @@ implements SortableFlexiTableDataModel<ParticipantPeerReviewAssignmentRow> {
 		ratingYesNo("table.header.review.rating.helpful"),
 		ratingStars("table.header.review.rating.stars"),
 		sessionStatus("table.header.review.status"),
-		executeReview("table.header.review.execute"),
+		actionReview("table.header.review.action"),
 		viewReview("table.header.review.view"),
+		taskName("table.header.task")
 		;
 		
 		private final String i18nKey;
@@ -102,7 +113,7 @@ implements SortableFlexiTableDataModel<ParticipantPeerReviewAssignmentRow> {
 
 		@Override
 		public boolean sortable() {
-			return this != plot && this != executeReview && this != viewReview;
+			return this != plot && this != actionReview && this != viewReview;
 		}
 
 		@Override
