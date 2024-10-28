@@ -210,7 +210,7 @@ $r.render("jsCssRawHtmlHeader", "post-theme")
 </style>
 
 ## Page title
-<title>$windowTitle.getValue()</title>
+<title>$r.escapeHtml($windowTitle.getValue())</title>
 </head>
 
 <body onload="o_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end o_lang_$r.getLanguageCode() $pageSizeCss">

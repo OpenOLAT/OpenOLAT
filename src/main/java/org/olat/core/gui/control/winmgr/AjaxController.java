@@ -244,7 +244,8 @@ public class AjaxController extends DefaultController {
 	private void appendBusinessPathInfos(UserRequest ureq, Writer writer) throws IOException {
 		ChiefController ctrl = wboImpl.getChiefController();
 		String documentTitle = ctrl == null ? "" : ctrl.getWindow().getTitle().getValue();
-		writer.append(",\"documentTitle\":").append(JSONObject.quote(documentTitle));
+		String escapedDocumentTitle = JSONObject.quote(documentTitle);
+		writer.append(",\"documentTitle\":").append(escapedDocumentTitle);
 
 		StringBuilder bc = new StringBuilder(128);
 		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
