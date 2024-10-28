@@ -1144,6 +1144,7 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_participants { @include o-add-icon('user-group');}
 .o_icon_tb_enrollments { @include o-add-icon('clipboard-list');}
 .o_icon_tb_topics { @include o-add-icon('circle', false);}
+.o_icon_tb_notification { @include o-add-icon('envelope-open-text');}
 .o_icon_tb_selection_enrolled { @include o-add-icon('check-circle');}
 .o_icon_tb_selection_surplus { @include o-add-icon('circle-minus');}
 .o_icon_tb_selection_not_enrolled { @include o-add-icon('n');}

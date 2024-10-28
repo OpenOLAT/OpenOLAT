@@ -122,7 +122,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	private FlexiFiltersTab tabEnrolledPartially;
 	private FlexiFiltersTab tabEnrolledFully;
 	private FormLink bulkEmailButton;
-	private FormLink bulkEmailNotificationButton;
+	private FormLink bulkNotificationButton;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private FormLink enrollmentManualStartLink;
 	private FormLink notificationsLink;
@@ -267,7 +267,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		}
 		
 		notificationsLink = uifactory.addFormLink("participants.notifications", formLayout, Link.BUTTON);
-		notificationsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
+		notificationsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_tb_notification");
 		notificationsLink.setVisible(false);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -328,16 +328,16 @@ public class TBParticipantListController extends FormBasicController implements 
 		bulkEmailButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 		tableEl.addBatchButton(bulkEmailButton);
 		
-		bulkEmailNotificationButton = uifactory.addFormLink("participants.bulk.notification", flc, Link.BUTTON);
-		bulkEmailNotificationButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
-		bulkEmailNotificationButton.setVisible(false);
-		tableEl.addBatchButton(bulkEmailNotificationButton);
+		bulkNotificationButton = uifactory.addFormLink("participants.bulk.notification", flc, Link.BUTTON);
+		bulkNotificationButton.setIconLeftCSS("o_icon o_icon-fw o_icon_tb_notification");
+		bulkNotificationButton.setVisible(false);
+		tableEl.addBatchButton(bulkNotificationButton);
 	}
 	
 	private void updateCommandUI() {
 		if (TBBrokerStatus.enrollmentDone == TBUIFactory.getBrokerStatus(broker) && secCallback.canSendNotification()) {
 			notificationsLink.setVisible(true);
-			bulkEmailNotificationButton.setVisible(true);
+			bulkNotificationButton.setVisible(true);
 		}
 	}
 	
@@ -626,7 +626,7 @@ public class TBParticipantListController extends FormBasicController implements 
 			doConfirmNotification(ureq);
 		} else if (source == bulkEmailButton) {
 			doBulkEmail(ureq);
-		} else if (source == bulkEmailNotificationButton) {
+		} else if (source == bulkNotificationButton) {
 			doBulkNotification(ureq);
 		} else if (source == tableEl) {
 			if (event instanceof SelectionEvent) {
@@ -724,7 +724,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		if (selectedIndex == null || selectedIndex.isEmpty()) {
-			showWarning("participants.bulk.email.empty.selection");
+			showWarning("participants.bulk.notification.empty.selection");
 			return;
 		}
 		
@@ -736,19 +736,50 @@ public class TBParticipantListController extends FormBasicController implements 
 				.toList();
 		List<Identity> selectedIdentities = securityManager.loadIdentityByKeys(selectedIdentityKeys);
 		
-		doConfirmNotification(ureq, selectedIdentities);
+		int identitiesSize = selectedIdentities.size();
+		TBSelectionSearchParams searchParams = new TBSelectionSearchParams();
+		searchParams.setBroker(broker);
+		searchParams.setIdentities(selectedIdentities);
+		Set<Long> identityKeysWithSelection = topicBrokerService.getSelections(searchParams).stream()
+				.map(selection -> selection.getParticipant().getIdentity().getKey())
+				.collect(Collectors.toSet());
+		
+		selectedIdentities.removeIf(identity -> !identityKeysWithSelection.contains(identity.getKey()));
+		int numIdentitiesWithoutSelection = identitiesSize - identityKeysWithSelection.size();
+		
+		if (selectedIdentities.size() == 0) {
+			showWarning("participants.bulk.notification.empty.selection");
+			return;
+		}
+		
+		doConfirmNotification(ureq, selectedIdentities, numIdentitiesWithoutSelection);
 	}
 	
 	private void doConfirmNotification(UserRequest ureq) {
-		doConfirmNotification(ureq, participantCandidates.getVisibleIdentities());
+		ArrayList<Identity> visibleIdentities = new ArrayList<>(participantCandidates.getVisibleIdentities());
+		
+		int identitiesSize = visibleIdentities.size();
+		TBSelectionSearchParams searchParams = new TBSelectionSearchParams();
+		searchParams.setBroker(broker);
+		searchParams.setIdentities(visibleIdentities);
+		Set<Long> identityKeysWithSelection = topicBrokerService.getSelections(searchParams).stream()
+				.map(selection -> selection.getParticipant().getIdentity().getKey())
+				.collect(Collectors.toSet());
+		
+		visibleIdentities.removeIf(identity -> !identityKeysWithSelection.contains(identity.getKey()));
+		int numIdentitiesWithoutSelection = identitiesSize - identityKeysWithSelection.size();
+		
+		doConfirmNotification(ureq, visibleIdentities, numIdentitiesWithoutSelection);
 	}
 	
-	private void doConfirmNotification(UserRequest ureq, List<Identity> identities) {
+	private void doConfirmNotification(UserRequest ureq, List<Identity> identities, int numIdentitiesWithoutSelection) {
 		if (guardModalController(notificationConfirmationCtrl)) return;
 		
-		notificationConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
-				translate("participants.notifications.mgs", String.valueOf(identities.size())),
-				null,
+		String message = translate("participants.notifications.mgs", String.valueOf(identities.size()));
+		if (numIdentitiesWithoutSelection > 0) {
+			message += " " + translate("participants.notifications.mgs.without.selection");
+		}
+		notificationConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message, null,
 				translate("participants.notifications.button"));
 		notificationConfirmationCtrl.setUserObject(identities);
 		listenTo(notificationConfirmationCtrl);
