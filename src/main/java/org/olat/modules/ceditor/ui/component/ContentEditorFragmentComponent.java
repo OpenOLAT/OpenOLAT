@@ -225,7 +225,6 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 					}
 					break;
 				case "inspect_fragment":
-					
 					break;
 				case "add_element_above":
 					String aboveLinkId = "o_cmore_".concat(getDispatchID());

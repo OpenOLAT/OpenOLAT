@@ -82,7 +82,7 @@ public class Deployments {
 		if(dumbster != null) {
 			overrideSettings.put("smtp.port", String.valueOf(dumbster.getPort()));
 			overrideSettings.put("smtp.host", "localhost");
-			log.info("Simple smtp server started on port: " + dumbster.getPort());
+			log.info("Simple smtp server started on port: {}", dumbster.getPort());
 		}
 		//overrideSettings.put("ldap.enable", "false");
 		return ArquillianDeployments.createDeployment(overrideSettings);
@@ -172,12 +172,12 @@ public class Deployments {
 			if(driver instanceof ChromeDriver chromeDriver) {
 				DevTools devTools = chromeDriver.getDevTools();
 				devTools.createSessionIfThereIsNotOne();
-				devTools.send(org.openqa.selenium.devtools.v127.log.Log.enable());
-				devTools.send(org.openqa.selenium.devtools.v127.console.Console.enable());
-				devTools.addListener(org.openqa.selenium.devtools.v127.log.Log.entryAdded(), logEntry -> {
+				devTools.send(org.openqa.selenium.devtools.v129.log.Log.enable());
+				devTools.send(org.openqa.selenium.devtools.v129.console.Console.enable());
+				devTools.addListener(org.openqa.selenium.devtools.v129.log.Log.entryAdded(), logEntry -> {
 					log.warn("Chrome: {} {}", logEntry.getLevel(), logEntry.getText());
 				});
-				devTools.addListener(org.openqa.selenium.devtools.v127.console.Console.messageAdded(), logEntry -> {
+				devTools.addListener(org.openqa.selenium.devtools.v129.console.Console.messageAdded(), logEntry -> {
 					log.warn("Chrome console: {} {}", logEntry.getLevel(), logEntry.getText());
 				});
 			}

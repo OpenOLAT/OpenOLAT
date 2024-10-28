@@ -277,17 +277,17 @@ public class PageEditorV2Controller extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == addElementButton) {
-			doCloseAllEditionEvent(ureq);
+			doCloseAllEditionEvent(ureq, null);
 			openAddElementDialog(ureq);
 		} else if (source == addLayoutButton) {
-			doCloseAllEditionEvent(ureq);
+			doCloseAllEditionEvent(ureq, null);
 			openAddLayoutCallout(ureq);
 		} else if(source == importContentButton) {
 			fireEvent(ureq, new ImportEvent());
 		} else if(event instanceof EditElementEvent e) {
 			doCloseEditionEvent(ureq, e.getElementId());
-		} else if(event instanceof CloseElementsEvent) {
-			doCloseAllEditionEvent(ureq);
+		} else if(event instanceof CloseElementsEvent cee) {
+			doCloseAllEditionEvent(ureq, cee.getEditedFragmentId());
 		} else if(event instanceof CloseInspectorsEvent) {
 			doCloseAllInspectorsEvent(ureq);
 		} else if(event instanceof OpenAddElementEvent aee) {
@@ -381,11 +381,14 @@ public class PageEditorV2Controller extends BasicController {
 		}, fragmentComponent, false).visitAll(ureq);
 	}
 
-	private void doCloseAllEditionEvent(UserRequest ureq) {
+	private void doCloseAllEditionEvent(UserRequest ureq, String editedFragmentId) {
 		new ComponentTraverser((comp, uureq) -> {
 			if(comp instanceof ContentEditorFragment elementCmp) {
 				if(elementCmp.isEditMode()) {
 					elementCmp.setEditMode(false);
+				} else if(elementCmp.getComponentName().equals(editedFragmentId)) {
+					elementCmp.setEditMode(false);
+					elementCmp.setDirty(true);
 				}
 				if(comp instanceof ContentEditorFragmentComponent fragmentComponent) {
 					doNotifyEditModeAwareComponents(uureq, fragmentComponent, null);
@@ -603,7 +606,7 @@ public class PageEditorV2Controller extends BasicController {
 			return null;
 		}
 		
-		doCloseAllEditionEvent(ureq);
+		doCloseAllEditionEvent(ureq, null);
 		PageElement clonedElement = cloneHandler.clonePageElement(element);
 		ContentEditorFragment clonedFragment = null;
 		if (clonedElement != null) {

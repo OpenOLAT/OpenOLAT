@@ -30,9 +30,19 @@ import org.olat.core.gui.control.Event;
 public class CloseElementsEvent extends Event {
 
 	private static final long serialVersionUID = 4308317625088526014L;
+	
+	private String editedFragmentId;
 
 	public CloseElementsEvent() {
 		super("ed-close-elements");
 	}
+	
+	public CloseElementsEvent(String editedFragmentId) {
+		super("ed-close-elements");
+		this.editedFragmentId = editedFragmentId;
+	}
 
+	public String getEditedFragmentId() {
+		return editedFragmentId;
+	}
 }
