@@ -61,6 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CollectUrlVideoMediaController extends AbstractCollectMediaController implements PageElementAddController {
+	private static final int MAX_NUMBER_OF_PLATFORMS_TO_DISPLAY = 4;
 
 	private TextElement titleEl;
 	private TextElement urlEl;
@@ -124,7 +125,8 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (!isMetadataOnly()) {
-			String servers = MediaUIHelper.toHtmlListItems(mediaServerModule.getMediaServerNames());
+			String servers = MediaUIHelper.toHtmlListItems(mediaServerModule.getMediaServerNames(), getTranslator(),
+					MAX_NUMBER_OF_PLATFORMS_TO_DISPLAY);
 			setFormInfo("add.video.via.url.info", new String[]{servers});
 		}
 		initMetadataForm(formLayout);

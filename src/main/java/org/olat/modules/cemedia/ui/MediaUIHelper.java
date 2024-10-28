@@ -558,7 +558,21 @@ public class MediaUIHelper {
 		}
 	}
 
-	public static String toHtmlListItems(List<String> items) {
+	public static String toHtmlListItems(List<String> mediaServerNames, Translator translator, int maxNbItems) {
+		int nbPlatforms = mediaServerNames.size();
+		if (nbPlatforms > maxNbItems) {
+			mediaServerNames = mediaServerNames.subList(0, maxNbItems);
+			if (nbPlatforms == (maxNbItems + 1)) {
+				mediaServerNames.add(translator.translate("add.video.via.url.other.platforms.sg"));
+			} else {
+				String otherPlatforms = Integer.toString(nbPlatforms - maxNbItems);
+				mediaServerNames.add(translator.translate("add.video.via.url.other.platforms.pl", otherPlatforms));
+			}
+		}
+		return toHtmlListItems(mediaServerNames);
+	}
+
+	private static String toHtmlListItems(List<String> items) {
 		return items.stream().map((item) -> "<li>" + item + "</li>").collect(Collectors.joining());
 	}
 }

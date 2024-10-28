@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class NewVideoViaUrlController extends FormBasicController {
+	private static final int MAX_NUMBER_OF_PLATFORMS_TO_DISPLAY = 4;
 
 	private TextElement urlEl;
 
@@ -64,7 +65,9 @@ public class NewVideoViaUrlController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String servers = MediaUIHelper.toHtmlListItems(mediaServerModule.getMediaServerNames());
+		String servers = MediaUIHelper.toHtmlListItems(mediaServerModule.getMediaServerNames(), getTranslator(),
+				MAX_NUMBER_OF_PLATFORMS_TO_DISPLAY);
+
 		setFormInfo("add.video.via.url.info", new String[]{servers});
 
 		urlEl = uifactory.addTextElement("artefact.url", 512, "", formLayout);

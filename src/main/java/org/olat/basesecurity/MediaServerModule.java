@@ -56,13 +56,17 @@ public class MediaServerModule extends AbstractSpringModule {
 
 	public static final String YOUTUBE_KEY = "youtube";
 	public static final String VIMEO_KEY = "vimeo";
-	public static final String[] PREDEFINED_KEYS = { YOUTUBE_KEY, VIMEO_KEY };
+	public static final String NANOO_TV_KEY = "nanootv";
+	public static final String[] PREDEFINED_KEYS = { YOUTUBE_KEY, VIMEO_KEY, NANOO_TV_KEY };
 
 	public static final String YOUTUBE_NAME = "YouTube";
 	public static final String VIMEO_NAME = "Vimeo";
+	public static final String NANOO_TV_NAME = "nanoo.tv";
+	public static final String PANOPTO_NAME = "Panopto"; // currently not configurable and added as a constant
 
 	public static final String YOUTUBE_MEDIA_SRC = "https://youtu.be https://www.youtube.com";
 	public static final String VIMEO_MEDIA_SRC = "https://vimeo.com https://player.vimeo.com";
+	public static final String NANOO_TV_MEDIA_SRC = "https://nanoo.tv";
 
 	private MediaServerMode mode;
 
@@ -191,10 +195,20 @@ public class MediaServerModule extends AbstractSpringModule {
 		if (isAllowAll() || isMediaServerEnabled(VIMEO_KEY)) {
 			urls.addAll(Arrays.stream(VIMEO_MEDIA_SRC.split(" ")).toList());
 		}
+		if (isAllowAll() || isMediaServerEnabled(NANOO_TV_KEY)) {
+			urls.addAll(Arrays.stream(NANOO_TV_MEDIA_SRC.split(" ")).toList());
+		}
 		return urls;
 	}
 
 	public List<String> getMediaServerNames() {
+		ArrayList<String> result = new ArrayList<>(getPredefinedMediaServerNames());
+		result.addAll(getCustomMediaServerNames());
+		result.add(PANOPTO_NAME);
+		return result;
+	}
+
+	private List<String> getPredefinedMediaServerNames() {
 		List<String> urls = new ArrayList<>();
 		if (isAllowAll() || isMediaServerEnabled(YOUTUBE_KEY)) {
 			urls.add(YOUTUBE_NAME);
@@ -202,7 +216,14 @@ public class MediaServerModule extends AbstractSpringModule {
 		if (isAllowAll() || isMediaServerEnabled(VIMEO_KEY)) {
 			urls.add(VIMEO_NAME);
 		}
+		if (isAllowAll() || isMediaServerEnabled(NANOO_TV_KEY)) {
+			urls.add(NANOO_TV_NAME);
+		}
 		return urls;
+	}
+
+	private List<String> getCustomMediaServerNames() {
+		return getCustomMediaServers().stream().map(MediaServer::getName).collect(Collectors.toList());
 	}
 
 	public boolean isRestrictedDomain(String urlString) {
