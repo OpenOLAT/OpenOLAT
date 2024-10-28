@@ -224,22 +224,22 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			} else if (customDisplayText != null) {
 				//link is not translated but has custom text
 				if (StringHelper.containsNonWhitespace(customDisplayText)) {
-					sb.append(customDisplayText);					
+					sb.append(customDisplayText, link.getEscapeMode());					
 				} else {
 					// a11y: try adding something invisible but speakable for screenreaders
-					if(title != null) {
-						sb.append("<span class='visually-hidden'>" + title + "</span>");
+					if(StringHelper.containsNonWhitespace(title)) {
+						sb.append("<span class='sr-only'>").appendHtmlEscaped(title).append("</span>");
 					}
 				}
 				
 			} else if (nontranslated) {
 				if (StringHelper.containsNonWhitespace(i18n)) {
 					// link name is not a i18n key
-					sb.append(i18n);
+					sb.append(i18n, link.getEscapeMode());
 				} else {
 					// a11y: try adding something invisible but speakable for screenreaders
-					if(title != null) {
-						sb.append("<span class='visually-hidden'>" + title + "</span>");
+					if(StringHelper.containsNonWhitespace(title)) {
+						sb.append("<span class='sr-only'>").appendHtmlEscaped(title).append("</span>");
 					}
 				}
 			} else {
@@ -321,7 +321,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append("></i> "); // one space needed
 			}			
 
-			sb.append("<span>").append(text).append("</span>");
+			sb.append("<span>").append(text, link.getEscapeMode()).append("</span>");
 			
 			// CSS icon
 			if (link.getIconRightCSS() != null) {

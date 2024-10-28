@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.BreadcrumbBar;
 import org.olat.core.gui.render.RenderResult;
@@ -31,7 +32,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -85,11 +85,9 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 				sb.append(" id='").append(id).append("_dm'");
 				sb.append(" role='menu'>");
 				for (Link menuCrumb : breadCrumbs) {
+					menuCrumb.setEscapeMode(EscapeMode.html);
 					sb.append("<li class='o_breadcrumb_menu_item'>");
-					String displayText = menuCrumb.getCustomDisplayText();
-					menuCrumb.setCustomDisplayText(StringHelper.escapeHtml(displayText));
 					renderer.render(menuCrumb, sb, args);
-					menuCrumb.setCustomDisplayText(displayText);
 					sb.append("</li>");
 				}
 				sb.append("</ul>");
@@ -97,6 +95,7 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 				
 				for (int i = 0; i < breadCrumbs.size(); i++) {
 					Link crumb = breadCrumbs.get(i);
+					crumb.setEscapeMode(EscapeMode.html);
 					sb.append("<li class='o_breadcrumb_crumb o_display_none");
 					if (i == 0) {
 						sb.append(" o_first_crumb");
@@ -107,8 +106,8 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 					sb.append("'>");
 					
 					String displayText = crumb.getCustomDisplayText();
-					crumb.setTitle(StringHelper.escapeHtml(displayText));
-					crumb.setCustomDisplayText(StringHelper.escapeHtml(Formatter.truncate(displayText, 40)));
+					crumb.setTitle(displayText);
+					crumb.setCustomDisplayText(Formatter.truncate(displayText, 40));
 					renderer.render(crumb, sb, args);
 					crumb.setTitle(null);
 					crumb.setCustomDisplayText(displayText);
