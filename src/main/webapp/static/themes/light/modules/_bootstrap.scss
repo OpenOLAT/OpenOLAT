@@ -84,6 +84,10 @@ body .modal-body.alert {
 	border-radius:0;
 }
 
+body .o_modal_large_login .modal-lg {
+	width: calc(100%);
+}
+
 body .o_modal_large .modal-lg {
 	width: calc(100% - 70px);
 }

@@ -23,9 +23,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.login.CatalogLoginAuthProvidersController;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -35,20 +38,30 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class WebCatalogAuthController extends BasicController {
 
-	protected WebCatalogAuthController(UserRequest ureq, WindowControl wControl) {
+	public WebCatalogAuthController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
-		
+
+		CatalogLoginAuthProvidersController loginAuthProvidersCtrl = new CatalogLoginAuthProvidersController(ureq, wControl, entry);
+
 		EmptyState emptyState = EmptyStateFactory.create("auth", null, this);
 		emptyState.setMessageTranslated(translate("noTransOnlyParam", "under progress"));
 		emptyState.setIconCss("o_icon_login");
 		emptyState.setIndicatorIconCss("_o_not_valid");
-		putInitialPanel(emptyState);
-		
+
+		listenTo(loginAuthProvidersCtrl);
+		putInitialPanel(loginAuthProvidersCtrl.getInitialComponent());
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source instanceof CatalogLoginAuthProvidersController && event == Event.CANCELLED_EVENT) {
+			fireEvent(ureq, event);
+		}
 	}
 
 }

@@ -495,12 +495,12 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		//
 	}
 	
-	private void doStart(UserRequest ureq, Long repositoryEntrykey) {
+	private void doStart(UserRequest ureq, Long repositoryEntryKey) {
 		if (searchParams.isWebPublish()) {
-			doLogin(ureq);
+			doLogin(ureq, repositoryEntryKey);
 		} else {
 			try {
-				String businessPath = "[RepositoryEntry:" + repositoryEntrykey + "]";
+				String businessPath = "[RepositoryEntry:" + repositoryEntryKey + "]";
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 			} catch (CorruptedCourseException e) {
 				showError("error.corrupted");
@@ -544,7 +544,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getKey());
 		if (entry != null) {
 			if (searchParams.isWebPublish()) {
-				doLogin(ureq);
+				doLogin(ureq, row.getKey());
 			} else {
 				AccessResult acResult = acService.isAccessible(entry, getIdentity(), row.isMember(), searchParams.isGuestOnly(), null, false);
 				if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
@@ -563,9 +563,10 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		}
 	}
 
-	private void doLogin(UserRequest ureq) {
+	private void doLogin(UserRequest ureq, Long repositoryEntryKey) {
 		if (guardModalController(authCtrl)) return;
-		authCtrl = new WebCatalogAuthController(ureq, getWindowControl());
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(repositoryEntryKey);
+		authCtrl = new WebCatalogAuthController(ureq, getWindowControl(), entry);
 		listenTo(authCtrl);
 		
 		String title = Util.createPackageTranslator(UserAuthenticationEditController.class, getLocale()).translate("change.providers");

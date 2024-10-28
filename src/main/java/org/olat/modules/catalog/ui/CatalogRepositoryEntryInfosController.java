@@ -143,11 +143,12 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 
 	private void doShowLogin(UserRequest ureq) {
 		if (guardModalController(authCtrl)) return;
-		authCtrl = new WebCatalogAuthController(ureq, getWindowControl());
+		authCtrl = new WebCatalogAuthController(ureq, getWindowControl(), getEntry());
 		listenTo(authCtrl);
 		
 		String title = Util.createPackageTranslator(UserAuthenticationEditController.class, getLocale()).translate("change.providers");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), authCtrl.getInitialComponent(), true, title, true);
+		cmc.setCustomWindowCSS("o_modal_large_login");
 		listenTo(cmc);
 		cmc.activate();
 	}

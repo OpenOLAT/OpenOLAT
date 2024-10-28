@@ -1,0 +1,36 @@
+<div class="o_login clearfix" style="padding: 0 0 0 0;">
+	<div class="o_login_box_wrapper">
+		<div class="o_login_box">
+			<div class="o_login_logo"></div>
+			<div class="o_login_welcome">$r.translate("login.button")</div>
+			<div class="o_login_provider">
+				#foreach($provider in $providers)
+					#if($foreach.index != 0 && $r.visible($provider) && $r.isFalse($startLogin))
+						<div class="divider">$r.translate("login.or")</div>
+					#end
+					$r.render($provider)
+				#end
+
+				#if ($r.visible("menu.register"))
+					<div class="divider">$r.translate("login.new.by")</div>
+					<div class="o_login_register_wrapper">
+						$r.render("menu.register") $r.translate("menu.register.to.use")
+					</div>
+				#end
+			</div>
+			<div class="o_login_help">
+				#if ($r.available("menu.pw") || $r.available("faq"))
+					$r.translate("menu.help.need")
+					<ul class="list-unstyled o_login_pw_wrapper">
+						#if($r.available("menu.pw"))
+							<li>$r.render("menu.pw")</li>
+						#end
+						#if($r.available("faq"))
+							<li>$r.render("faq")</li>
+						#end
+					</ul>
+				#end
+			</div>
+		</div>
+	</div>
+</div>

@@ -129,6 +129,10 @@ public class AuthHelper {
 	 * @return True if success, false otherwise.
 	 */
 	public static int doLogin(Identity identity, String authProvider, UserRequest ureq) {
+		return doLogin(identity, authProvider, ureq, null);
+	}
+
+	public static int doLogin(Identity identity, String authProvider, UserRequest ureq, String redirectPath) {
 		int initializeStatus = initializeLogin(identity, authProvider, ureq, false);
 		if (initializeStatus != LOGIN_OK) {
 			return initializeStatus; // login not successful
@@ -152,7 +156,10 @@ public class AuthHelper {
 
 		RedirectMediaResource redirect;
 		String redirectTo = (String)ureq.getUserSession().getEntry("redirect-bc");
-		if(StringHelper.containsNonWhitespace(redirectTo)) {
+		if(StringHelper.containsNonWhitespace(redirectPath)) {
+			String url = WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + redirectPath + "?oow=" + currentWindow.getDispatchID();
+			redirect = new RedirectMediaResource(url);
+		} else if(StringHelper.containsNonWhitespace(redirectTo)) {
 			String url = WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + redirectTo + "?oow=" + currentWindow.getDispatchID();
 			redirect = new RedirectMediaResource(url);
 		} else {

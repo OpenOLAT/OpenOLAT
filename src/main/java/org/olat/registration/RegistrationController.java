@@ -103,8 +103,9 @@ public class RegistrationController extends BasicController implements Activatea
 
 	private Panel regarea;
 	private Link loginButton;
-	private VelocityContainer myContent;	
-	
+	private VelocityContainer myContent;
+	private final boolean isCancelNonDispatch;
+
 	private WizardInfoController wizInfoController;
 	private DisclaimerController disclaimerController;
 	private EmailSendingForm emailSendForm;
@@ -150,9 +151,10 @@ public class RegistrationController extends BasicController implements Activatea
 	 * @param ureq The user request
 	 * @param wControl The window control
 	 */
-	public RegistrationController(UserRequest ureq, WindowControl wControl) {
+	public RegistrationController(UserRequest ureq, WindowControl wControl, boolean isCancelNonDispatch) {
 		super(ureq, wControl);
-	
+		this.isCancelNonDispatch = isCancelNonDispatch;
+
 		if (!registrationModule.isSelfRegistrationEnabled()) {
 			String contact = WebappHelper.getMailConfig("mailSupport");
 			String text = translate("reg.error.disabled.body", contact);
@@ -235,6 +237,7 @@ public class RegistrationController extends BasicController implements Activatea
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.invitation = invitation;
+		this.isCancelNonDispatch = false;
 		
 		disclaimerForm = registrationModule.isDisclaimerEnabled();
 		emailValidationStep = false;
@@ -309,8 +312,7 @@ public class RegistrationController extends BasicController implements Activatea
 			if (event == Event.DONE_EVENT) {
 				displayDisclaimer(ureq);
 				ureq.getUserSession().removeEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
-			} else if (event instanceof LanguageChangedEvent) {
-				LanguageChangedEvent lcev = (LanguageChangedEvent)event;
+			} else if (event instanceof LanguageChangedEvent lcev) {
 				setLocale(lcev.getNewLocale(), true);
 				myContent.contextPut("text", translate("select.language.description"));
 			}
@@ -353,7 +355,11 @@ public class RegistrationController extends BasicController implements Activatea
 	}
 	
 	private void cancel(UserRequest ureq) {
-		ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
+		if (isCancelNonDispatch) {
+			fireEvent(ureq, Event.CANCELLED_EVENT);
+		} else {
+			ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
+		}
 	}
 	
 	/**
