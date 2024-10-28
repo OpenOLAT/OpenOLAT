@@ -26,8 +26,6 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
-import org.olat.core.gui.components.emptystate.EmptyStateItem;
-import org.olat.core.gui.components.emptystate.EmptyStatePrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -72,7 +70,6 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private FormSubmit applyLink;
 	private FormLink runStartLink;
 	private DropdownItem runsDropdown;
-	private EmptyStateItem emptyState;
 	private MultipleSelectionElement emailNotificationEl;
 
 	private CloseableModalController cmc;
@@ -114,25 +111,17 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		
 		initForm(ureq);
 		updateEnrollmentDone();
+		doRunEnrollmentProcess();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		runStartLink = uifactory.addFormLink("enrollment.manual.run.start", formLayout, Link.BUTTON);
-		runStartLink.setIconLeftCSS("o_icon o_icon-lg o_icon_tb_run_start");
-		
 		runsDropdown = uifactory.addDropdownMenu("enrollment.manual.runs", null, formLayout, getTranslator());
 		runsDropdown.setOrientation(DropdownOrientation.right);
 		runsDropdown.setIconCSS("o_icon o_icon-lg o_icon_tb_run");
 		runsDropdown.setVisible(false);
 		
-		emptyState = uifactory.addEmptyState("emptyState", null, formLayout);
-		emptyState.setIconCss("o_icon o_icon_tb_run_start");
-		emptyState.setMessageI18nKey("enrollment.manual.empty");
-		emptyState.setButtonI18nKey("enrollment.manual.run.start");
-		emptyState.setButtonLeftIconCss("o_icon o_icon-lg o_icon_tb_run_start");
-		
-		enrollmentRunOverviewCtrl = new TBEnrollmentRunOverviewController(ureq, getWindowControl(), mainForm, broker);
+		enrollmentRunOverviewCtrl = new TBEnrollmentRunOverviewController(ureq, getWindowControl(), mainForm, broker, topics);
 		listenTo(enrollmentRunOverviewCtrl);
 		formLayout.add("runOverview", enrollmentRunOverviewCtrl.getInitialFormItem());
 		
@@ -149,6 +138,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		applyLink = uifactory.addFormSubmitButton("enrollment.manual.apply", buttonLayout);
+		runStartLink = uifactory.addFormLink("enrollment.manual.run.again", buttonLayout, Link.BUTTON);
+		runStartLink.setIconLeftCSS("o_icon o_icon-lg o_icon_tb_run");
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
@@ -186,10 +177,6 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == runStartLink) {
 			doRunEnrollmentProcess();
-		} else if (source == emptyState) {
-			if (event instanceof EmptyStatePrimaryActionEvent) {
-				doRunEnrollmentProcess();
-			}
 		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if (cmd.startsWith(CMD_SELECT_RUN)) {
@@ -259,7 +246,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private void doRunEnrollmentProcess() {
 		Date startDate = new Date();
 		TBEnrollmentProcess process = new DefaultEnrollmentProcess(broker, topics, selections);
-		TBEnrollmentStats enrollmentStats = topicBrokerService.getEnrollmentStats(broker, identities, participants, process.getPreviewSelections());
+		TBEnrollmentStats enrollmentStats = topicBrokerService.getEnrollmentStats(broker, identities, participants,
+				topics, process.getPreviewSelections());
 		
 		EnrollmentProcessWrapper wrapper = new EnrollmentProcessWrapper(startDate, process, enrollmentStats);
 		runs.add(wrapper);
@@ -277,10 +265,9 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		EnrollmentProcessWrapper wrapper = runs.get(runNo - 1);
 		selectedProcessWrapper = wrapper;
 		
-		flc.contextPut("displayRun", String.valueOf(runNo));
 		runsDropdown.setTranslatedLabel(translate("enrollment.manual.run.num", String.valueOf(runNo),
 				String.valueOf(selectedProcessWrapper.getStats().getNumEnrollments())));
-		runsDropdown.setVisible(true);
+		runsDropdown.setVisible(runs.size() > 1);
 		
 		enrollmentRunOverviewCtrl.updateModel(wrapper.getStats());
 		

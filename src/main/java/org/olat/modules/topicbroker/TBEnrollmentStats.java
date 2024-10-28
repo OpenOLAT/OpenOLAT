@@ -35,6 +35,12 @@ public interface TBEnrollmentStats {
 	
 	int getNumEnrollments(int selectionSortOrder);
 	
+	int getNumEnrollments(TBTopicRef topic);
+	
+	int getNumTopicsTotal();
+	
+	int getNumTopicsMinReached();
+	
 	int getNumWaitingList();
 	
 	int getNumMissing();

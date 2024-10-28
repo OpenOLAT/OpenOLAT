@@ -41,6 +41,7 @@ import org.olat.modules.topicbroker.TBTopicRef;
 public class TBTopicRow implements TBTopicRef {
 
 	private final TBTopic topic;
+	private String minParticipantsString;
 	private int minEnrollments;
 	private int numEnrollments;
 	private String enrolledString;
@@ -81,6 +82,14 @@ public class TBTopicRow implements TBTopicRef {
 		return topic.getMinParticipants();
 	}
 
+	public String getMinParticipantsString() {
+		return minParticipantsString;
+	}
+
+	public void setMinParticipantsString(String minParticipantsString) {
+		this.minParticipantsString = minParticipantsString;
+	}
+
 	public Integer getMaxParticipants() {
 		return topic.getMaxParticipants();
 	}
@@ -96,7 +105,7 @@ public class TBTopicRow implements TBTopicRef {
 	public void setMinEnrollments(int minEnrollments) {
 		this.minEnrollments = minEnrollments;
 	}
-
+	
 	public int getNumEnrollments() {
 		return numEnrollments;
 	}
