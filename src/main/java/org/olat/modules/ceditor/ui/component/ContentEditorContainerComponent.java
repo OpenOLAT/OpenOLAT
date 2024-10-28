@@ -149,6 +149,7 @@ public class ContentEditorContainerComponent extends AbstractComponent implement
 					break;
 				case "add_to_container":
 					// First stop editing
+					log.info("Add to container");
 					fireEvent(ureq, new CloseElementsEvent());
 					// Open the callout
 					String linkId =	"o_ccad_" + getElementId() + "_" + columns;

@@ -9,12 +9,12 @@ jQuery(function() {
 
 	var overrideWithTemplateVariables = function(jInspector) {
 		if ("$offsetLeft" && "$offsetTop") {
-			var width = jInspector.width();
-			var height = jInspector.height();
-			var windowWidth = window.innerWidth;
-			var windowHeight = window.innerHeight;
-			var x = parseInt("$offsetLeft");
-			var y = parseInt("$offsetTop");
+			let width = jInspector.width();
+			let height = jInspector.height();
+			let windowWidth = window.innerWidth;
+			let windowHeight = window.innerHeight;
+			let x = parseInt("$offsetLeft");
+			let y = parseInt("$offsetTop");
 			if (!isNaN(x) && !isNaN(y)) {
 				if (x > 0 && y > 0 && x < (windowWidth - width) && y < (windowHeight - height)) {
 					jInspector.css("left", `${x}px`);
@@ -28,19 +28,19 @@ jQuery(function() {
 
 	var initializePosition = function() {
 		if(inspectorPosition()) {
-			var jInspector = jQuery(".o_page_inspector");
+			let jInspector = jQuery(".o_page_inspector");
 
 			if (overrideWithTemplateVariables(jInspector)) {
 				return;
 			}
 
-			var jFragment = jInspector.closest(".o_page_fragment_edit");
+			let jFragment = jInspector.closest(".o_page_fragment_edit");
 			if(jFragment != null) {
-				var fragmentEl = jFragment.get(0);
-				var fragmentRect = fragmentEl.getBoundingClientRect();
+				let fragmentEl = jFragment.get(0);
+				let fragmentRect = fragmentEl.getBoundingClientRect();
 
-				var left = fragmentRect.right;
-				var inspectorWidth = jInspector.width();
+				let left = fragmentRect.right;
+				let inspectorWidth = jInspector.width();
 				if (inspectorWidth < window.innerWidth) {
 					if (left < 0) {
 						left = 0;
@@ -50,11 +50,11 @@ jQuery(function() {
 					}
 				}
 
-				var top = fragmentRect.top;
+				let top = fragmentRect.top;
 				if(fragmentEl.classList.contains("o_page_container_edit")) {
 					top += 26;
 				}
-				var inspectorHeight = jInspector.height();
+				let inspectorHeight = jInspector.height();
 				if (inspectorHeight < window.innerHeight) {
 					if (top < 0) {
 						top = 0;
@@ -71,21 +71,21 @@ jQuery(function() {
 	}
 
 	var inspectorPosition = function() {
-		var jInspector = jQuery(".o_page_inspector");
+		let jInspector = jQuery(".o_page_inspector");
 		if(jInspector.length === 0) {
 			return false;
 		}
 		
-		var inspectorWidth = jInspector.width();
-		var editedFragment = jInspector.get(0).closest(".o_page_fragment_edit");
+		let inspectorWidth = jInspector.width();
+		let editedFragment = jInspector.get(0).closest(".o_page_fragment_edit");
 		if(editedFragment != null) {
-			var fragmentRect = editedFragment.getBoundingClientRect();
-			var mainEl = document.getElementById("o_main_container");
-			var mainRect = mainEl.getBoundingClientRect();
-			var totalWidth = window.innerWidth;
-			var scrollbarWidth = 18;// Approximation
+			let fragmentRect = editedFragment.getBoundingClientRect();
+			let mainEl = document.getElementById("o_main_container");
+			let mainRect = mainEl.getBoundingClientRect();
+			let totalWidth = window.innerWidth;
+			let scrollbarWidth = 18;// Approximation
 			
-			var left = mainRect.right - 10;
+			let left = mainRect.right - 10;
 			if(left + inspectorWidth + scrollbarWidth > totalWidth) {
 				left = totalWidth - scrollbarWidth - inspectorWidth;
 			}
@@ -109,20 +109,20 @@ jQuery(function() {
 	* if it's fully visible.
 	*/
 	var inspectorVisibility = function() {
-		var jInspector = jQuery(".o_page_inspector");
+		let jInspector = jQuery(".o_page_inspector");
 		if(jInspector.length > 0) {
-			var editedFragmentEl = jInspector.get(0).closest(".o_page_fragment_edit");
+			let editedFragmentEl = jInspector.get(0).closest(".o_page_fragment_edit");
 	
-			var el = editedFragmentEl;
-			var fragmentRect = editedFragmentEl.getBoundingClientRect();
-			var top = el.offsetTop;
-			var height = el.offsetHeight;
+			let el = editedFragmentEl;
+			let fragmentRect = editedFragmentEl.getBoundingClientRect();
+			let top = el.offsetTop;
+			let height = el.offsetHeight;
 			while(el.offsetParent) {
 				el = el.offsetParent;
 				top += el.offsetTop;
 			}
 	
-			var visible = top < (window.pageYOffset + window.innerHeight) && (top + height) > window.pageYOffset;
+			let visible = top < (window.pageYOffset + window.innerHeight) && (top + height) > window.pageYOffset;
 			if(!visible) {
 				hideInspector(jInspector);
 			}
@@ -133,12 +133,16 @@ jQuery(function() {
 	}
 
 	var dragInspector = function() {
-		var dragState = null;
-
-		var jInspector = jQuery(".o_page_inspector");
-		var inspectorEl = jInspector.get(0);
-		var jInspectorHeader = jQuery(".o_page_inspector .o_ceditor_inspector_header");
-		var inspectorHeader = jInspectorHeader.get(0);
+		let jInspector = jQuery(".o_page_inspector");
+		if(jInspector.length == 0) {
+			return;
+		}
+		
+		let dragState = null;
+		let inspectorEl = jInspector.get(0);
+		let jInspectorHeader = jQuery(".o_page_inspector .o_ceditor_inspector_header");
+		let inspectorHeader = jInspectorHeader.get(0);
+		
 		inspectorHeader.onmousedown = dragStart;
 		inspectorHeader.ontouchstart = touchStart;
 
@@ -151,20 +155,20 @@ jQuery(function() {
 		}
 
 		function updateDragStateAndInspector(coordinateSource) {
-			var dx = coordinateSource.clientX - dragState.x0;
-			var dy = coordinateSource.clientY - dragState.y0;
-			var newOffsetLeft = dragState.inspectorOffsetLeft + dx;
-			var newOffsetTop = dragState.inspectorOffsetTop + dy;
+			let dx = coordinateSource.clientX - dragState.x0;
+			let dy = coordinateSource.clientY - dragState.y0;
+			let newOffsetLeft = dragState.inspectorOffsetLeft + dx;
+			let newOffsetTop = dragState.inspectorOffsetTop + dy;
 			inspectorEl.style.left = `${newOffsetLeft}px`;
 			inspectorEl.style.top = `${newOffsetTop}px`;
 		}
 
 		function checkFinalPosition() {
-			var x = inspectorEl.offsetLeft;
-			var y = inspectorEl.offsetTop;
-			var width = jInspector.width();
-			var windowWidth = window.innerWidth;
-			var windowHeight = window.innerHeight;
+			let x = inspectorEl.offsetLeft;
+			let y = inspectorEl.offsetTop;
+			let width = jInspector.width();
+			let windowWidth = window.innerWidth;
+			let windowHeight = window.innerHeight;
 
 			if (x > windowWidth || y > windowHeight || x < -width || y < 0) {
 				hideInspector(jInspector);
