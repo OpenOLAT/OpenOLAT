@@ -54,9 +54,7 @@ public class CalendarPortlet extends AbstractPortlet {
 	private Controller runCtr;
 	private Locale locale;
 	
-	/**
-	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
-	 */
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		CalendarPortlet p = new CalendarPortlet();
 		p.setName(this.getName());
@@ -66,19 +64,13 @@ public class CalendarPortlet extends AbstractPortlet {
 		return p;
 	}
 	
-	
-
 	@Override
 	public boolean isEnabled() {
 		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
 		return calendarModule.isEnabled() && super.isEnabled();
 	}
 
-
-
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
-	 */
+	@Override
 	public String getTitle() {
 		Date date = new Date();
 		String today = DateFormat.getDateInstance(DateFormat.MEDIUM, this.locale).format(date);
@@ -92,32 +84,24 @@ public class CalendarPortlet extends AbstractPortlet {
 		this.locale = locale;
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
-	 */
+	@Override
 	public String getDescription() {
 		return getTranslator().translate("calendar.description");
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(this.runCtr != null) runCtr.dispose();
 		this.runCtr = new CalendarPortletRunController(ureq, wControl);
 		return this.runCtr.getInitialComponent();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Disposable#dispose(boolean)
-	 */
+	@Override
 	public void dispose() {
 		disposeRunComponent();
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
-	 */
+	@Override
 	public String getCssClass() {
 		Calendar cal = Calendar.getInstance();
 		int day = cal.get(Calendar.DAY_OF_MONTH);
@@ -125,9 +109,7 @@ public class CalendarPortlet extends AbstractPortlet {
 		return "o_day_" + day + " o_month_" + month + " o_portlet_cal";
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#disposeRunComponent(boolean)
-	 */
+	@Override
 	public void disposeRunComponent() {
 		if (this.runCtr != null) {
 			this.runCtr.dispose();

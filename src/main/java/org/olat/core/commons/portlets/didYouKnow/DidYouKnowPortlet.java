@@ -46,17 +46,12 @@ import org.olat.core.util.Util;
 public class DidYouKnowPortlet extends AbstractPortlet {
 	private Controller runCtr;
 
-	
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
-	 */
+	@Override
 	public String getTitle() {
 		return getTranslator().translate("didYouKnow.title");
 	}	
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
-	 */
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Portlet p = new DidYouKnowPortlet();
 		p.setName(this.getName());
@@ -65,40 +60,29 @@ public class DidYouKnowPortlet extends AbstractPortlet {
 		return p;
 	}
 
-
-	/**
-	 * @see org.olat.core.gui.control.Disposable#dispose(boolean)
-	 */
+	@Override
 	public void dispose() {
 		disposeRunComponent();
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(this.runCtr != null) runCtr.dispose();
 		this.runCtr = new DidYouKnowPortletRunController(ureq, wControl);
 		return this.runCtr.getInitialComponent();
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
-	 */
+	@Override
 	public String getDescription() {
 		return getTranslator().translate("didYouKnow.description");
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
-	 */
+	@Override
 	public String getCssClass() {
 		return "o_portlet_dyk";
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#disposeRunComponent(boolean)
-	 */
+	@Override
 	public void disposeRunComponent() {
 		if (this.runCtr != null) {
 			this.runCtr.dispose();

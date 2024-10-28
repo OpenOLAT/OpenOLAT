@@ -36,6 +36,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.badge.Badge;
 import org.olat.core.gui.components.form.flexible.FormBaseComponent;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
@@ -124,6 +125,7 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 	private boolean forceFlexiDirtyFormWarning = false;
 
 	private Badge badge;
+	private EscapeMode escapeMode = EscapeMode.none;
 	private Component innerComponent;
 	private boolean newWindow;
 	private boolean newWindowAfterDispatchUrl;
@@ -246,6 +248,14 @@ public class Link extends AbstractComponent implements ComponentCollection, Form
 
 	public void setGhost(boolean ghost) {
 		this.ghost = ghost;
+	}
+
+	public EscapeMode getEscapeMode() {
+		return escapeMode;
+	}
+
+	public void setEscapeMode(EscapeMode escapeMode) {
+		this.escapeMode = escapeMode;
 	}
 
 	/**

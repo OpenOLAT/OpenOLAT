@@ -45,9 +45,8 @@ import org.olat.core.util.Util;
 public class QuickstartPortlet extends AbstractPortlet {
 	private Controller runCtr;
 	
-	/**
-	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
-	 */
+
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Portlet p = new QuickstartPortlet();
 		p.setName(this.getName());
@@ -56,46 +55,34 @@ public class QuickstartPortlet extends AbstractPortlet {
 		return p;
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
-	 */
+	@Override
 	public String getTitle() {
 		return getTranslator().translate("quickstart.title");
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
-	 */
+	@Override
 	public String getDescription() {
 		return getTranslator().translate("quickstart.description");
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(this.runCtr != null) runCtr.dispose();
 		this.runCtr = new QuickstartPortletRunController(ureq, wControl);
 		return this.runCtr.getInitialComponent();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Disposable#dispose(boolean)
-	 */
+	@Override
 	public void dispose() {
 		disposeRunComponent();
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
-	 */
+	@Override
 	public String getCssClass() {
 		return "o_portlet_quickstart";
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#disposeRunComponent(boolean)
-	 */
+	@Override
 	public void disposeRunComponent() {
 		if (this.runCtr != null) {
 			this.runCtr.dispose();

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
@@ -161,6 +162,17 @@ public class StringOutput extends Writer {
 	 */
 	public StringOutput append(StringBuilder buffer) {
 		sb.append(buffer);
+		return this;
+	}
+	
+	public StringOutput append(String str, EscapeMode escapeMode) {
+		if(escapeMode == null || escapeMode == EscapeMode.none) {
+			sb.append(str);
+		} else if(escapeMode == EscapeMode.html) {
+			appendHtmlEscaped(str);
+		} else if(escapeMode == EscapeMode.antisamy) {
+			appendScanned(str);
+		}
 		return this;
 	}
 	
