@@ -46,10 +46,8 @@ import org.olat.course.assessment.model.UserEfficiencyStatementLight;
  */
 public class EfficiencyStatementsPortlet extends AbstractPortlet {
 	private EfficiencyStatementsPortletRunController runCtr;
-	
-	/**
-	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
-	 */
+
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Translator translator = Util.createPackageTranslator(EfficiencyStatementsPortlet.class, ureq.getLocale());
 		EfficiencyStatementsPortlet p = new EfficiencyStatementsPortlet();
@@ -59,54 +57,43 @@ public class EfficiencyStatementsPortlet extends AbstractPortlet {
 		p.setTranslator(translator);
 		return p;
 	}
-	
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
-	 */
+
+	@Override
 	public String getTitle() {
 		return getTranslator().translate("efficiencyStatementsPortlet.title");
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
-	 */
+	@Override
 	public String getDescription() {
 		return getTranslator().translate("efficiencyStatementsPortlet.description");
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(runCtr != null) runCtr.dispose();
 		runCtr = new EfficiencyStatementsPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
 		return runCtr.getInitialComponent();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Disposable#dispose(boolean)
-	 */
+	@Override
 	public void dispose() {
 		disposeRunComponent();
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
-	 */
+	@Override
 	public String getCssClass() {
 		return "o_portlet_eff";
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#disposeRunComponent(boolean)
-	 */
+	@Override
 	public void disposeRunComponent() {
 		if (this.runCtr != null) {
 			this.runCtr.dispose();
 			this.runCtr = null;
 		}
 	}
-	
+
+	@Override
 	public PortletToolController<UserEfficiencyStatementLight> getTools(UserRequest ureq, WindowControl wControl) {
 		if (runCtr == null) {
 			runCtr = new EfficiencyStatementsPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());

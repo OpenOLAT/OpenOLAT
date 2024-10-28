@@ -55,9 +55,7 @@ public class InstitutionPortlet extends AbstractPortlet {
 	public static final String HTTP_REQUEST_ATTRIBUT="catalog_node_id";
 	private Controller runCtr;
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
-	 */
+	@Override
 	public String getTitle() {
 		String title = getConfiguration().get("title_" + getTranslator().getLocale().toString());
 		if (title == null) {
@@ -66,9 +64,7 @@ public class InstitutionPortlet extends AbstractPortlet {
 		return title;
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
-	 */
+	@Override
 	public String getDescription() {
 		String desc = getConfiguration().get("description_" + getTranslator().getLocale().toString());
 		if (desc == null) {
@@ -77,9 +73,7 @@ public class InstitutionPortlet extends AbstractPortlet {
 		return desc;
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.gui.control.WindowControl, org.olat.gui.UserRequest, java.util.Map)
-	 */
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		if (institutions == null) init();
 		InstitutionPortlet p = new InstitutionPortlet();
@@ -92,25 +86,19 @@ public class InstitutionPortlet extends AbstractPortlet {
 		return p;
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.gui.control.WindowControl, org.olat.gui.UserRequest)
-	 */
+	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(this.runCtr != null) runCtr.dispose();
 		this.runCtr =  new InstitutionPortletRunController(ureq, wControl);
 		return runCtr.getInitialComponent();
 	}
 
-	/**
-	 * @see org.olat.gui.control.Disposable#dispose(boolean)
-	 */
+	@Override
 	public void dispose() {
 		disposeRunComponent();
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
-	 */
+	@Override
 	public String getCssClass() {
 		return cssWrapperClass;
 	}

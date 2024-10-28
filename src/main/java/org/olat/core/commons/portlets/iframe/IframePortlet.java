@@ -48,9 +48,8 @@ public class IframePortlet extends AbstractPortlet {
 	private IframePortletRunController runCtr;
 	private String cssWrapperClass = "o_portlet_iframe";
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
-	 */
+
+	@Override
 	public String getTitle() {
 		String title = getConfiguration().get("title_" + getTranslator().getLocale().toString());
 		if (title == null) {
@@ -59,9 +58,7 @@ public class IframePortlet extends AbstractPortlet {
 		return title;
 	}	
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
-	 */
+	@Override
 	public String getDescription() {
 		String desc = getConfiguration().get("description_" + getTranslator().getLocale().toString());
 		if (desc == null) {
@@ -70,9 +67,8 @@ public class IframePortlet extends AbstractPortlet {
 		return desc;
 	}	
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
-	 */
+
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		IframePortlet p = new IframePortlet();
 		p.setName(this.getName());
@@ -84,25 +80,20 @@ public class IframePortlet extends AbstractPortlet {
 		return p;
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest)
-	 */
+
+	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(this.runCtr != null) runCtr.dispose();
 		this.runCtr = new IframePortletRunController(ureq, wControl, getConfiguration());
 		return this.runCtr.getInitialComponent();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Disposable#dispose(boolean)
-	 */
+	@Override
 	public void dispose() {
 		disposeRunComponent();
 	}
-	
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
-	 */
+
+	@Override
 	public String getCssClass() {
 		return cssWrapperClass;
 	}
@@ -115,9 +106,7 @@ public class IframePortlet extends AbstractPortlet {
 		this.cssWrapperClass = cssWrapperClass;
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#disposeRunComponent(boolean)
-	 */
+	@Override
 	public void disposeRunComponent() {
 		if (runCtr != null) {
 			runCtr.dispose();
