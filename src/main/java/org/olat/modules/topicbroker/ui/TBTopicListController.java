@@ -297,7 +297,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		titleColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(titleColumn);
 		
-		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(TopicCols.minParticipants);
+		DefaultFlexiColumnModel minParticipantsColumn = new DefaultFlexiColumnModel(TopicCols.minParticipants, new TextFlexiCellRenderer(EscapeMode.none));
 		minParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		minParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(minParticipantsColumn);
@@ -425,6 +425,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			row.setSortOrder(topic.getSortOrder());
 			row.setCreatedByDisplayname(userManager.getUserDisplayName(topic.getCreator().getKey()));
 			row.setMinEnrollments(topic.getMinParticipants() != null ? topic.getMinParticipants() : 0);
+			row.setMinParticipantsString(topic.getMinParticipants() != null? topic.getMinParticipants().toString(): null);
 			
 			forgeSelections(row, topic, topicKeyToSelections, fullyEnrolledParticipantKeys);
 			
@@ -577,7 +578,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 				row.setWaitingListString(waitingListString);
 			}
 		} else {
-			if (0 < numEnrollments && numEnrollments < topic.getMinParticipants()) {
+			if (0 < row.getNumEnrollments() && row.getNumEnrollments() < row.getMinParticipants()) {
 				String enrolledString = "<span title=\"" + translate("topic.selections.message.enrollments.less.min") + "\"><i class=\"o_icon o_icon_error\"></i> ";
 				enrolledString += row.getEnrolledString();
 				enrolledString += "</span>";

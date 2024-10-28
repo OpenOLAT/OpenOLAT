@@ -30,6 +30,8 @@ import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBEnrollmentStats;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
+import org.olat.modules.topicbroker.TBTopic;
+import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.ui.TBUIFactory;
 
 
@@ -43,14 +45,17 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 
 	private final int numIdentities;
 	private Map<Integer, Integer> selectionSortOrderToNum = new HashMap<>();
+	private Map<Long, Integer> topicKeyToNum = new HashMap<>();
 	private int numRequiredEnrollments = 0;
 	private int numEnrollments = 0;
+	private final int numTopicsTotal;
 	private int numWaitingList = 0;
 	private int numMissing = 0;
 	
 	public TBEnrollmentStatsCalculation(TBBroker broker, List<Identity> identities,
-			List<TBParticipant> participants, List<TBSelection> selections) {
+			List<TBParticipant> participants, List<TBTopic> topics, List<TBSelection> selections) {
 		numIdentities = identities.size();
+		numTopicsTotal = topics.size();
 		
 		Map<Long, TBParticipant> identityKeyToParticipant = participants.stream().collect(Collectors.toMap(participant -> participant.getIdentity().getKey(), Function.identity()));
 		Map<Long, List<TBSelection>> identityKeyToSelections = selections.stream()
@@ -71,6 +76,10 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 					Integer currentCount = selectionSortOrderToNum.getOrDefault(sortOrder, Integer.valueOf(0));
 					selectionSortOrderToNum.put(sortOrder, currentCount + 1);
 					participantNumEnrollments++;
+					
+					Long topicKey = selection.getTopic().getKey();
+					Integer currentTopicCount = topicKeyToNum.getOrDefault(topicKey, Integer.valueOf(0));
+					topicKeyToNum.put(topicKey, currentTopicCount + 1);
 				} else {
 					participantNumWaitingList++;
 				}
@@ -109,6 +118,23 @@ public class TBEnrollmentStatsCalculation implements TBEnrollmentStats {
 	@Override
 	public int getNumEnrollments(int selectionSortOrder) {
 		return selectionSortOrderToNum.getOrDefault(Integer.valueOf(selectionSortOrder), Integer.valueOf(0)).intValue();
+	}
+
+	@Override
+	public int getNumEnrollments(TBTopicRef topic) {
+		return topicKeyToNum.getOrDefault(topic.getKey(), Integer.valueOf(0)).intValue();
+	}
+
+	@Override
+	public int getNumTopicsTotal() {
+		return numTopicsTotal;
+	}
+
+	@Override
+	public int getNumTopicsMinReached() {
+		// If a topic did not reached the minimum number of participants,
+		// all enrollments were removed by the enrollment process.
+		return topicKeyToNum.size();
 	}
 
 	@Override

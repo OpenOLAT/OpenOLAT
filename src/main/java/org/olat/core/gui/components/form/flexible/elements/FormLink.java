@@ -24,6 +24,7 @@
 */
 package org.olat.core.gui.components.form.flexible.elements;
 
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkPopupSettings;
@@ -129,6 +130,10 @@ public interface FormLink extends FormItem {
 	public void setLinkTitle(String i18nKey);
 	
 	public String getLinkTitleText();
+	
+	public EscapeMode getEscapeMode();
+	
+	public void setEscapeMode(EscapeMode mode);
 	
 	public void setUrl(String url);
 	

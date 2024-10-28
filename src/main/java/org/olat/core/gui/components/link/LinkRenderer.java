@@ -230,7 +230,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				renderer.render(link.getInnerComponent(), sb, args);
 			} else {
 				if (StringHelper.containsNonWhitespace(linkText)) {
-					sb.append(linkText);					
+					sb.append(linkText, link.getEscapeMode());					
 				} else {
 					// a11y: try adding something invisible but speakable for screenreaders, but only if not already added during 
 					if(isIconLink && StringHelper.containsNonWhitespace(title)) {
@@ -317,7 +317,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			}			
 
 			if (StringHelper.containsNonWhitespace(linkText)) {				
-				sb.append("<span>").append(linkText).append("</span>");
+				sb.append("<span>").append(linkText, link.getEscapeMode()).append("</span>");
 			}
 			
 			// CSS icon

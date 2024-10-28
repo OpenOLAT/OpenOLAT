@@ -26,6 +26,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
@@ -168,6 +169,16 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	public void setForceOwnDirtyFormWarning(boolean warning) {
 		ownDirtyFormWarning = warning;
 		component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
+	}
+	
+	@Override
+	public EscapeMode getEscapeMode() {
+		return component.getEscapeMode();
+	}
+
+	@Override
+	public void setEscapeMode(EscapeMode escapeMode) {
+		component.setEscapeMode(escapeMode);
 	}
 
 	/*

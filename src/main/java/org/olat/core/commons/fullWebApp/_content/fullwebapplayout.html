@@ -210,10 +210,11 @@ $r.render("jsCssRawHtmlHeader", "post-theme")
 </style>
 
 ## Page title
-<title>$windowTitle.getValue()</title>
+<title>$r.escapeHtml($windowTitle.getValue())</title>
 </head>
 
 <body onload="o_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end o_lang_$r.getLanguageCode() $pageSizeCss">
+<h1 id='o_top' class="sr-only" data-nosnippet>$r.escapeHtml($windowTitle.getValue())</h1>	
 <div id="o_bg"></div>
 ## if in debug mode, it is a invisible component which is only visible by wrapping debug information around all other
 ## components.
@@ -240,7 +241,6 @@ $r.renderForce("development")
 ## IE can't render empty div's properly which results in an ugly white bar.
 <div id="o_messages" class="hidden-print" data-nosnippet>$r.renderForce("guimessage")</div>
 ## ---- END #o_messages ---
-<a id='o_top' aria-hidden="true" data-nosnippet></a>	
 ## ---- START #o_header ---
 #if($screenMode.standardScreen)
 <div id="o_header_wrapper" data-nosnippet> 
@@ -319,11 +319,11 @@ $r.render("stickymsg")
 
 ## ----- START #o_footer_wrapper ----------
 #if($screenMode.standardScreen && $r.available("footerComponent"))
-<div id="o_footer_wrapper">
+<footer id="o_footer_wrapper">
 	<div id="o_footer_container" class="o_container_offcanvas container-fluid">
 		$r.render("footerComponent")
 	</div>
-</div>
+</footer>
 #end
 ## ---- END #o_footer_wrapper ---
 

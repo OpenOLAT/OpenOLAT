@@ -256,8 +256,8 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		if(!StringHelper.containsNonWhitespace(newTitle)) {
 			return;
 		}
-		newTitle = StringHelper.escapeJavascriptExtended(newTitle);
-		if(!StringHelper.containsNonWhitespace(newTitle)) {
+		String escapedNewTitle = StringHelper.escapeJavascriptExtended(newTitle);
+		if(!StringHelper.containsNonWhitespace(escapedNewTitle)) {
 			return;
 		}
 		

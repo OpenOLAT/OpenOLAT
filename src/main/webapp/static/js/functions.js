@@ -588,6 +588,7 @@ function o_aexecute(command, parameters) {
 			break;
 		case "setdocumenttitle":
 			document.title = parameters["title"];
+			jQuery('h1#o_top').text(parameters["title"]);// Text to prevent JS execution
 			break;
 		case "setbusinesspath":
 			o_info.businessPath = parameters["url"];

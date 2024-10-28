@@ -66,7 +66,7 @@ public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> {
 		switch(COLS[col]) {
 		case identifier: return row.getIdentifier();
 		case title: return row.getTitle();
-		case minParticipants: return row.getMinParticipants();
+		case minParticipants: return row.getMinParticipantsString();
 		case maxParticipants: return row.getMaxParticipants();
 		case enrolled: return row.getEnrolledString();
 		case waitingList: return row.getWaitingListString();

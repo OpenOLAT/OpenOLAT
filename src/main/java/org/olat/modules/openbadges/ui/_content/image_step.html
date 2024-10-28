@@ -3,9 +3,6 @@
 
 	#if($chooseTemplate)
 	<legend>$r.translate("form.choose.a.template")</legend>
-	<div class="o_template_language">
-		$r.render("form.template.language", "barebones", "form")
-	</div>
 	<div class="o_template_tags">
 		#foreach($tagInfo in $tagInfos)
 		<span class="o_tag o_selection_tag o_tag_clickable #if($tagInfo.isSelected()) o_tag_selected #end"

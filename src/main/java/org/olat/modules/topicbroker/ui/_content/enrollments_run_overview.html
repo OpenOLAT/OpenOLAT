@@ -1,2 +1,10 @@
 $r.render("widgets")
-$r.render("table")
+<div class="o_block_top">
+	$r.render("scope")
+	#if($r.visible("enrollmenttable"))
+		$r.render("enrollmenttable")
+	#end
+	#if($r.visible("topictable"))
+		$r.render("topictable")
+	#end
+</div>

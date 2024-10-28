@@ -46,9 +46,7 @@ public class InfoMsgPortlet extends AbstractPortlet {
 	
 	private Controller runCtr;
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.gui.control.WindowControl, org.olat.gui.UserRequest, java.util.Map)
-	 */
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Portlet p = new InfoMsgPortlet();
 		p.setName(this.getName());
@@ -57,32 +55,24 @@ public class InfoMsgPortlet extends AbstractPortlet {
 		return p;
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
-	 */
+	@Override
 	public String getTitle() {
 		return getTranslator().translate("title");
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
-	 */
+	@Override
 	public String getDescription() {
 		return getTranslator().translate("description");
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.gui.control.WindowControl, org.olat.gui.UserRequest)
-	 */
+	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(this.runCtr != null) runCtr.dispose();
 		this.runCtr = new InfoMsgPortletRunController(ureq, wControl);
 		return this.runCtr.getInitialComponent();
 	}
 
-	/**
-	 * @see org.olat.gui.control.Disposable#dispose(boolean)
-	 */
+	@Override
 	public void dispose() {
 		//disposeRunComponent(asynchronous);
 		if (this.runCtr != null) {
@@ -91,16 +81,12 @@ public class InfoMsgPortlet extends AbstractPortlet {
 		}
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
-	 */
+	@Override
 	public String getCssClass() {
 		return "o_portlet_infomsg";
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#disposeRunComponent(boolean)
-	 */
+	@Override
 	public void disposeRunComponent() {
 		// nothing to dispose
 	}

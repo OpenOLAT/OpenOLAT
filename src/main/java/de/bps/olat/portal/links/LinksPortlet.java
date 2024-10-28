@@ -230,10 +230,8 @@ public class LinksPortlet extends AbstractPortlet {
 		saveLinkList(content);
 	}
 	
-		
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
-	 */
+
+	@Override
 	public String getTitle() {
 		return getTranslator().translate("portlet.title");
 	}	
@@ -242,33 +240,25 @@ public class LinksPortlet extends AbstractPortlet {
 		content = null;
 		init();
 	}
-	
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
-	 */
+
+	@Override
 	public String getDescription() {
 		return getTranslator().translate("portlet.description");
 	}	
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.gui.control.WindowControl, org.olat.gui.UserRequest)
-	 */
+	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(this.runCtr != null) runCtr.dispose();
 		this.runCtr = new LinksPortletRunController(ureq, wControl);
 		return runCtr.getInitialComponent();
 	}
 
-	/**
-	 * @see org.olat.gui.control.Disposable#dispose(boolean)
-	 */
+	@Override
 	public void dispose() {
 		disposeRunComponent();
 	}
-	
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
-	 */
+
+	@Override
 	public String getCssClass() {
 		return cssWrapperClass;
 	}

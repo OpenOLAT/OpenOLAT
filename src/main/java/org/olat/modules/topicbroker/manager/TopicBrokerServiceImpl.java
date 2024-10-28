@@ -1194,8 +1194,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 
 	@Override
 	public TBEnrollmentStats getEnrollmentStats(TBBroker broker, List<Identity> identities,
-			List<TBParticipant> participants, List<TBSelection> selections) {
-		return new TBEnrollmentStatsCalculation(broker, identities, participants, selections);
+			List<TBParticipant> participants, List<TBTopic> topics, List<TBSelection> selections) {
+		return new TBEnrollmentStatsCalculation(broker, identities, participants, topics, selections);
 	}
 	
 	@Override

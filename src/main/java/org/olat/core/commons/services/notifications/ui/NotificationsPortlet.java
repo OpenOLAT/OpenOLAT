@@ -47,9 +47,8 @@ import org.olat.core.util.Util;
 public class NotificationsPortlet extends AbstractPortlet {
 	private NotificationsPortletRunController runCtr;
 	
-	/**
-	 * @see org.olat.gui.control.generic.portal.AbstractPortlet#createInstance(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, java.util.Map)
-	 */
+
+	@Override
 	public Portlet createInstance(WindowControl wControl, UserRequest ureq, Map<String,String> configuration) {
 		Translator translator = Util.createPackageTranslator(NotificationsPortlet.class, ureq.getLocale());
 		NotificationsPortlet p = new NotificationsPortlet();
@@ -59,54 +58,45 @@ public class NotificationsPortlet extends AbstractPortlet {
 		p.setTranslator(translator);
 		return p;
 	}
-	
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
-	 */
+
+	@Override
 	public String getTitle() {
 		return getTranslator().translate("notificationsPortlet.title");
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
-	 */
+	@Override
 	public String getDescription() {
 		return getTranslator().translate("notificationsPortlet.description");
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getInitialRunComponent(org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	public Component getInitialRunComponent(WindowControl wControl, UserRequest ureq) {
 		if(this.runCtr != null) runCtr.dispose();
 		this.runCtr = new NotificationsPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
 		return this.runCtr.getInitialComponent();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Disposable#dispose(boolean)
-	 */
+	@Override
 	public void dispose() {
 		disposeRunComponent();
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
-	 */
+
+	@Override
 	public String getCssClass() {
 		return "o_portlet_noti";
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#disposeRunComponent(boolean)
-	 */
+
+	@Override
 	public void disposeRunComponent() {
 		if (this.runCtr != null) {
 			this.runCtr.dispose();
 			this.runCtr = null;
 		}
 	}
-	
+
+	@Override
 	public PortletToolController<Subscriber> getTools(UserRequest ureq, WindowControl wControl) {
 		if (runCtr == null) {
 			this.runCtr = new NotificationsPortletRunController(wControl, ureq, getTranslator(), getName(), getDefaultMaxEntries());
