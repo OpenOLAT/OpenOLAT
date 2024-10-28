@@ -144,6 +144,12 @@ public class FunctionCommand extends Command {
 		return valueOf(Functions.SCROLL_TO_ID, "elemId", elemId);
 	}
 	
+	/**
+	 * The title will be escaped for JSON. Don't escape for quotes.
+	 * 
+	 * @param title The title of the document
+	 * @return The function
+	 */
 	public static FunctionCommand setDocumentTitle(String title) {
 		return valueOf(Functions.SET_DOCUMENT_TITLE, "title", title);
 	}

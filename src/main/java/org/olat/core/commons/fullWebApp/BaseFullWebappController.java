@@ -312,7 +312,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		// Set initial title
 		getWindow().setTitle(translate("page.appname") + " - " + translate("page.title"));
-		mainVc.contextPut("windowTitle", getWindow().getTitle());
+		setWindowTitle();
 	}
 	
 	@Override
@@ -428,6 +428,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	@Override
 	public WindowControl getWindowControl() {
 		return super.getWindowControl();
+	}
+	
+	private void setWindowTitle() {
+		mainVc.contextPut("windowTitle", getWindow().getTitle());
 	}
 	
 	public void setStartBusinessPath(String path) {
@@ -1431,7 +1435,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			getTranslator().setLocale(lce.getNewLocale());
 			initialize(ureq);
 			initializeBase(ureq, initialPanel);
-			mainVc.contextPut("windowTitle", getWindow().getTitle());
+			setWindowTitle();
 			initialPanel.setContent(mainVc);
 			
 			reload = Boolean.TRUE;
