@@ -215,6 +215,7 @@ public class ContentEditorPage extends ContentViewPage {
 				OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
 			} catch (Exception e2) {
 				OOGraphene.takeScreenshot("Close edit fragment", browser);
+				throw e2;
 			}
 		}
 		return this;
