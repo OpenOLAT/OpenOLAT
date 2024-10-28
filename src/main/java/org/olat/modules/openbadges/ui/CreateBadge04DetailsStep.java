@@ -43,9 +43,12 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.manager.BadgeClassDAO;
 import org.olat.modules.openbadges.v2.Constants;
@@ -93,11 +96,13 @@ public class CreateBadge04DetailsStep extends BasicStep {
 		private List<BadgeClassDAO.NameAndVersion> usedNameVersionTuples;
 		private List<String> usedNames;
 		private SingleSelection linkedInOrganizationEl;
-		private final SelectionValues availableLanguagesKV;
-		private SingleSelection availableLanguagesEl;
+		private final SelectionValues languagesKV;
+		private SingleSelection languageEl;
 
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
+		@Autowired
+		private I18nManager i18nManager;
 
 		private enum Expiration {
 			never, validFor
@@ -113,6 +118,8 @@ public class CreateBadge04DetailsStep extends BasicStep {
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
 				createContext = createBadgeClassWizardContext;
 			}
+
+			languagesKV = openBadgesManager.getAvailableLanguages(getLocale());
 
 			expirationKV = new SelectionValues();
 			expirationKV.add(SelectionValues.entry(Expiration.never.name(), translate("form.never")));
@@ -139,17 +146,49 @@ public class CreateBadge04DetailsStep extends BasicStep {
 				usedNames = openBadgesManager.getBadgeClassNames(isEditMode, badgeClass);
 			}
 
-			availableLanguagesKV = openBadgesManager.getAvailableLanguages(getLocale());
-
 			initForm(ureq);
+			updateFromTemplate();
 		}
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-			if (source == expiration) {
+			if (source == languageEl) {
+				doSelectLanguage();
+			} else if (source == expiration) {
 				updateUI();
 			}
 			super.formInnerEvent(ureq, source, event);
+		}
+
+		private void doSelectLanguage() {
+			BadgeClass badgeClass = createContext.getBadgeClass();
+			badgeClass.setLanguage(languageEl.getSelectedKey());
+			createContext.setLocale(i18nManager.getLocaleOrDefault(languageEl.getSelectedKey()));
+			updateFromTemplate();
+		}
+
+		private void updateFromTemplate() {
+			Long templateKey = createContext.getSelectedTemplateKey();
+			if (templateKey == null || CreateBadgeClassWizardContext.OWN_BADGE_KEY.equals(templateKey)) {
+				return;
+			}
+			BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
+			updateTitleAndDescription(template);
+		}
+
+		private void updateTitleAndDescription(BadgeTemplate template) {
+			Translator translator = OpenBadgesUIFactory.getTranslator(createContext.getLocale());
+			String templateName = OpenBadgesUIFactory.translateTemplateName(translator, template.getIdentifier());
+			String templateDescription = OpenBadgesUIFactory.translateTemplateDescription(translator, template.getIdentifier());
+
+			BadgeClass badgeClass = createContext.getBadgeClass();
+			badgeClass.setNameWithScan(createContext.getBadgeName(templateName));
+			if (StringHelper.containsNonWhitespace(templateDescription)) {
+				badgeClass.setDescriptionWithScan(templateDescription);
+			}
+
+			nameEl.setValue(badgeClass.getName());
+			descriptionEl.setValue(badgeClass.getDescriptionWithScan());
 		}
 
 		private void updateUI() {
@@ -248,7 +287,7 @@ public class CreateBadge04DetailsStep extends BasicStep {
 			badgeClass.setNameWithScan(nameEl.getValue());
 			badgeClass.setVersionWithScan(versionEl.getValue());
 			badgeClass.setDescriptionWithScan(descriptionEl.getValue());
-			badgeClass.setLanguage(availableLanguagesEl.getSelectedKey());
+			badgeClass.setLanguage(languageEl.getSelectedKey());
 			issuer.setNameWithScan(issuerNameEl.getValue());
 			if (StringHelper.containsNonWhitespace(issuerUrlEl.getValue())) {
 				issuer.setUrl(issuerUrlEl.getValue());
@@ -291,6 +330,12 @@ public class CreateBadge04DetailsStep extends BasicStep {
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
+			languageEl = uifactory.addDropdownSingleselect("form.language", formLayout,
+					languagesKV.keys(), languagesKV.values());
+			languageEl.select(badgeClass.getLanguage(), true);
+			languageEl.setHelpTextKey("form.language.help", null);
+			languageEl.addActionListener(FormEvent.ONCHANGE);
+
 			nameEl = uifactory.addTextElement("form.name", 80, badgeClass.getName(), formLayout);
 			nameEl.setElementCssClass("o_sel_badge_name");
 			nameEl.setMandatory(true);
@@ -305,11 +350,6 @@ public class CreateBadge04DetailsStep extends BasicStep {
 			descriptionEl.setMandatory(true);
 			descriptionEl.setHelpTextKey("form.description.help", null);
 			descriptionEl.setPlaceholderKey("form.description.placeholder", null);
-
-			availableLanguagesEl = uifactory.addDropdownSingleselect("form.language", formLayout,
-					availableLanguagesKV.keys(), availableLanguagesKV.values());
-			availableLanguagesEl.select(badgeClass.getLanguage(), true);
-			availableLanguagesEl.setHelpTextKey("form.language.help", null);
 
 			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuer.getName(), formLayout);
 			issuerNameEl.setMandatory(true);

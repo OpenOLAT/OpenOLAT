@@ -22,6 +22,7 @@ package org.olat.modules.openbadges.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.json.JSONObject;
@@ -31,6 +32,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -188,6 +190,7 @@ public class CreateBadgeClassWizardContext {
 	private List<Identity> earners;
 	private boolean startFromScratch = false;
 	private Long sourceBadgeClassKey;
+	private Locale locale;
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry, CourseNode courseNode,
 										 RepositoryEntrySecurity reSecurity, Translator translator) {
@@ -220,6 +223,9 @@ public class CreateBadgeClassWizardContext {
 		initCriteria();
 		issuer = new Profile(badgeClassImpl);
 		badgeClass = badgeClassImpl;
+
+		I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+		locale = i18nManager.getLocaleOrDefault(null);
 	}
 
 	public CreateBadgeClassWizardContext(BadgeClass badgeClass, RepositoryEntrySecurity reSecurity) {
@@ -234,6 +240,9 @@ public class CreateBadgeClassWizardContext {
 		badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
 		this.badgeClass = badgeClass;
 		issuer = new Profile(badgeClass);
+
+		I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+		locale = i18nManager.getLocaleOrDefault(badgeClass.getLanguage());
 	}
 
 	private void initCriteria() {
@@ -400,6 +409,14 @@ public class CreateBadgeClassWizardContext {
 
 	public void setSourceBadgeClassKey(Long sourceBadgeClassKey) {
 		this.sourceBadgeClassKey = sourceBadgeClassKey;
+	}
+
+	public Locale getLocale() {
+		return locale;
+	}
+
+	public void setLocale(Locale locale) {
+		this.locale = locale;
 	}
 
 	public void copyFromExistingBadge(Translator translator) {
