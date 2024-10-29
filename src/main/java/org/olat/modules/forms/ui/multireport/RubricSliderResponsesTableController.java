@@ -239,7 +239,11 @@ public class RubricSliderResponsesTableController extends FormBasicController im
 		} else if(tableEl == source) {
 			if(event instanceof DetailsToggleEvent toggleEvent) {
 				RubricSliderResponseRow row = tableModel.getObject(toggleEvent.getRowIndex());
-				doOpenDetails(ureq, row);
+				if(toggleEvent.isVisible()) {
+					doOpenDetails(ureq, row);
+				} else {
+					doCloseDetails(row);
+				}
 			}
 		}
 	}
@@ -269,5 +273,14 @@ public class RubricSliderResponsesTableController extends FormBasicController im
 		flc.add(responsesListCtrl.getInitialFormItem());
 		row.setDetailsCtrl(responsesListCtrl);
 		detailsVC.put(row.getDetailsControllerName(), row.getDetailsControllerComponent());
+	}
+
+	private void doCloseDetails(RubricSliderResponseRow row) {
+		if(row.getDetailsCtrl() != null) {
+			flc.remove(row.getDetailsCtrl().getInitialFormItem());
+			detailsVC.remove(row.getDetailsControllerName());
+			removeAsListenerAndDispose(row.getDetailsCtrl());
+			row.setDetailsCtrl(null);
+		}
 	}
 }

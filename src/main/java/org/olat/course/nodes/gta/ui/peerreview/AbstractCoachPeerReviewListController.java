@@ -284,7 +284,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 			thirdQuartile = statistics.thirdQuartile();
 		}
 		
-		BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), statistics.maxSteps(),
+		BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), (int)statistics.maxStepsValue(),
 				(float)min, (float)max, (float)average,
 				(float)firstQuartile, (float)thirdQuartile, (float)median, null);
 		row.setAssessmentPlot(assessmentsPlot);

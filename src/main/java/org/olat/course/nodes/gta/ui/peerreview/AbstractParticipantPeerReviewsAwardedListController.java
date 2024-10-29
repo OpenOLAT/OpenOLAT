@@ -128,7 +128,7 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 			}
 
 			String id = Integer.toString(counter++);
-			BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), sessionStatistics.statistics().maxSteps(),
+			BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), (int)sessionStatistics.statistics().maxStepsValue(),
 					(float)min, (float)max, (float)average,
 					(float)firstQuartile, (float)thirdQuartile, (float)median, null);
 			row.setBoxPlot(assessmentsPlot);
