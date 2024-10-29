@@ -324,15 +324,18 @@ public class MSServiceImpl implements MSService {
 		for (AbstractElement element : form.getElements()) {
 			if (Rubric.TYPE.equals(element.getType())) {
 				Rubric rubric = (Rubric) element;
-				float rubricAvgMin = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, true))
+				Double dRubricAvgMin = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, true))
 						.getTotalStatistic()
-						.getAvg().floatValue();
-				float rubricAvgMax = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, false))
+						.getAvg();
+				Double dRubricAvgMax = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, false))
 						.getTotalStatistic()
-						.getAvg().floatValue();
+						.getAvg();
+				
+				double rubricAvgMin = dRubricAvgMin == null ? 0.0d : dRubricAvgMin.doubleValue();
+				double rubricAvgMax = dRubricAvgMax == null ? 0.0d : dRubricAvgMax.doubleValue();
 				// switch if descending scale
 				if (rubricAvgMin > rubricAvgMax) {
-					float temp = rubricAvgMin;
+					double temp = rubricAvgMin;
 					rubricAvgMin = rubricAvgMax;
 					rubricAvgMax = temp;
 				}
