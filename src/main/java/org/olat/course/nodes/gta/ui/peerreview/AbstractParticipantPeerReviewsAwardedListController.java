@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.ui.peerreview;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.boxplot.BoxPlot;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -43,6 +44,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractParticipantPeerReviewsAwardedListController extends FormBasicController {
 	
 	protected int counter = 0;
+	protected final boolean withYesNoRating;
+	protected final boolean withStarsRating;
 	protected final GTACourseNode gtaNode;
 	
 	@Autowired
@@ -51,6 +54,12 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 	public AbstractParticipantPeerReviewsAwardedListController(UserRequest ureq, WindowControl wControl, String pageName, GTACourseNode gtaNode) {
 		super(ureq, wControl, pageName, Util.createPackageTranslator(GTAParticipantController.class, ureq.getLocale()));
 		this.gtaNode = gtaNode;
+		
+		boolean qualityFeedback = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW_QUALITY_FEEDBACK, false);
+		String qualityFeedbackType = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_QUALITY_FEEDBACK_TYPE,
+					GTACourseNode.GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_YES_NO);
+		withYesNoRating = qualityFeedback && GTACourseNode.GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_YES_NO.equals(qualityFeedbackType);
+		withStarsRating = qualityFeedback && GTACourseNode.GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_STARS.equals(qualityFeedbackType);
 	}
 	
 	protected ParticipantPeerReviewAssignmentRow forgeRow(TaskReviewAssignment assignment, Task task,
@@ -75,7 +84,27 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 		
 		ParticipantPeerReviewAssignmentRow row = new ParticipantPeerReviewAssignmentRow(assignment, task,
 				executorFullName, assessedIdentityFullName);
-		// Some loading
+		forgeBoxPlot(row, sessionStatistics);
+		forgeRating(row, assignment);
+		return row;
+	}
+	
+	protected ParticipantPeerReviewAssignmentRow forgeRating(ParticipantPeerReviewAssignmentRow row,
+			TaskReviewAssignment assignment) {
+		FormItem ratingItem = null;
+		float rating = assignment.getRating() == null ? 0.0f : assignment.getRating().floatValue();
+		if(withYesNoRating) {
+			ratingItem = uifactory.addRatingItemYesNo("rating-" + (++counter), null, rating, 5, false, null);
+		} else if(withStarsRating) {
+			ratingItem = uifactory.addRatingItem("rating-" + (++counter), null, rating, 5, false, null);
+		}
+		row.setRatingItem(ratingItem);
+		return row;
+	}
+	
+	protected ParticipantPeerReviewAssignmentRow forgeBoxPlot(ParticipantPeerReviewAssignmentRow row,
+			SessionParticipationStatistics sessionStatistics) {
+	// Some loading
 		
 		double progressVal = 0.0d;
 		
@@ -83,7 +112,6 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 				&& sessionStatistics.statistics() != SessionStatistics.NO_STATISTICS) {
 			progressVal = sessionStatistics.statistics().progress() * 100f;
 		}
-
 
 		if(progressVal > 0.0d) {
 			double firstQuartile = 0.0d;
@@ -100,7 +128,7 @@ public abstract class AbstractParticipantPeerReviewsAwardedListController extend
 			}
 
 			String id = Integer.toString(counter++);
-			BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), sessionStatistics.statistics().maxSteps(),
+			BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), (int)sessionStatistics.statistics().maxStepsValue(),
 					(float)min, (float)max, (float)average,
 					(float)firstQuartile, (float)thirdQuartile, (float)median, null);
 			row.setBoxPlot(assessmentsPlot);

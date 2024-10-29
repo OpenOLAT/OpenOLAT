@@ -84,8 +84,6 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 	private GTAParticipantPeerReviewTableModel tableModel;
 	
 	private Task task;
-	private final boolean withYesNoRating;
-	private final boolean withStarsRating;
 	private final CourseEnvironment courseEnv;
 	
 	private CloseableModalController cmc;
@@ -104,12 +102,6 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 		this.task = task;
 		this.courseEnv = courseEnv;
 		
-		boolean qualityFeedback = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW_QUALITY_FEEDBACK, false);
-		String qualityFeedbackType = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_QUALITY_FEEDBACK_TYPE,
-					GTACourseNode.GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_YES_NO);
-		withYesNoRating = qualityFeedback && GTACourseNode.GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_YES_NO.equals(qualityFeedbackType);
-		withStarsRating = qualityFeedback && GTACourseNode.GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_STARS.equals(qualityFeedbackType);
-
 		initForm(ureq);
 		loadModel();
 	}
@@ -196,13 +188,13 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 		double min = 0.0d;
 		double max = 0.0d;
 		double average = 0.0d;
-		int maxSteps = 5;
+		double maxSteps = 5;
 		
 		if(sessionStatistics != null) {
 			min = sessionStatistics.min();
 			max = sessionStatistics.max();
 			average = sessionStatistics.average();
-			maxSteps = sessionStatistics.maxSteps();
+			maxSteps = sessionStatistics.maxStepsValue();
 			if(sessionStatistics.numOfQuestions() > 10) {
 				firstQuartile = sessionStatistics.firstQuartile();
 				median = sessionStatistics.median();
@@ -210,7 +202,7 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 			}
 		}
 
-		assessmentsPlot = new BoxPlot("plot-assessments", maxSteps,
+		assessmentsPlot = new BoxPlot("plot-assessments", (int)maxSteps,
 				(float)min, (float)max, (float)average,
 				(float)firstQuartile, (float)thirdQuartile, (float)median, null);
 		assessmentsWidget.setContent(assessmentsPlot);

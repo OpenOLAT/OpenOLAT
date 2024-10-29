@@ -74,6 +74,7 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 	private final List<ParticipantKeyTopicKey> withdrawSelections = new ArrayList<>();
 
 	// To get the order of the enrolled selections
+	private BigDecimal costs;
 	private List<ParticipantKeyTopicKey> enrolledSelections;
 	private List<MatchingTopic> topics;
 	private Set<Long> participantKeysFullyEnrolled;
@@ -250,6 +251,7 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 		participant.setNumEnrollments(participant.getNumEnrollments()+1);
 		participant.setBudget(participant.getBudget().subtract(cost));
 		topic.setNumEnrollments(topic.getNumEnrollments()+1);
+		costs = costs.add(cost);
 		
 		infos.setBudgetAfter(Float.valueOf(participant.getBudget().floatValue()));
 		infos.setNumEnrollments(Integer.valueOf(participant.getNumEnrollments()));
@@ -263,6 +265,7 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 	}
 
 	private void reset() {
+		costs = BigDecimal.ZERO;
 		participantKeysFullyEnrolled = new HashSet<>();
 		enrolledSelections = new ArrayList<>();
 		
@@ -360,6 +363,10 @@ public class DefaultEnrollmentProcess implements TBEnrollmentProcess {
 				((TBTransientSelection)selection).setEnrolled(false);
 			}
 		}
+	}
+	
+	public long getCosts() {
+		return costs.longValue();
 	}
 
 	@Override

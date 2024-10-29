@@ -72,6 +72,10 @@
 	}
 }
 
+.o_table_wrapper .table-striped>tbody>tr:nth-of-type(odd) .o_rating.o_rating_yesno .o_rating_items .o_icon {
+	color: $brand-info;
+}
+
 .o_comments {
 
 	.o_button_container {

@@ -64,6 +64,7 @@ import org.olat.modules.topicbroker.TBCustomFieldDefinitionRef;
 import org.olat.modules.topicbroker.TBCustomFieldDefinitionSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldSearchParams;
 import org.olat.modules.topicbroker.TBCustomFieldType;
+import org.olat.modules.topicbroker.TBEnrollmentProcessor;
 import org.olat.modules.topicbroker.TBEnrollmentStats;
 import org.olat.modules.topicbroker.TBGroupRestrictionInfo;
 import org.olat.modules.topicbroker.TBParticipant;
@@ -74,6 +75,7 @@ import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
+import org.olat.modules.topicbroker.TopicBrokerModule;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.model.TBBrokerImpl;
 import org.olat.modules.topicbroker.model.TBCustomFieldDefinitionImpl;
@@ -100,6 +102,8 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private TopicBrokerModule topicBrokerModule;
 	@Autowired
 	private TBBrokerDAO brokerDao;
 	@Autowired
@@ -1157,7 +1161,7 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 			topicSearchParams.setBroker(broker);
 			List<TBTopic> topics = getTopics(topicSearchParams);
 			
-			new DefaultEnrollmentProcess(broker, topics, selections).persist(null);
+			createProcessor(broker, topics, selections).getBest().persist(null);
 		}
 		updateEnrollmentProcessDone(null, broker, true);
 		dbInstance.commitAndCloseSession();
@@ -1196,6 +1200,11 @@ public class TopicBrokerServiceImpl implements TopicBrokerService {
 	public TBEnrollmentStats getEnrollmentStats(TBBroker broker, List<Identity> identities,
 			List<TBParticipant> participants, List<TBTopic> topics, List<TBSelection> selections) {
 		return new TBEnrollmentStatsCalculation(broker, identities, participants, topics, selections);
+	}
+	
+	@Override
+	public TBEnrollmentProcessor createProcessor(TBBroker broker, List<TBTopic> topics, List<TBSelection> selections) {
+		return new TBEnrollmentProcessorImpl(topicBrokerModule.getRuns(), broker, topics, selections);
 	}
 	
 	@Override

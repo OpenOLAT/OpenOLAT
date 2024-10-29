@@ -284,7 +284,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 			thirdQuartile = statistics.thirdQuartile();
 		}
 		
-		BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), statistics.maxSteps(),
+		BoxPlot assessmentsPlot = new BoxPlot("plot-assessments-".concat(id), (int)statistics.maxStepsValue(),
 				(float)min, (float)max, (float)average,
 				(float)firstQuartile, (float)thirdQuartile, (float)median, null);
 		row.setAssessmentPlot(assessmentsPlot);
@@ -295,7 +295,8 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		// tools
 		String linkName = "tools-" + counter++;
 		FormLink toolsLink = uifactory.addFormLink(linkName, toolsCmd, "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fw o_icon-lg");
+		toolsLink.setIconRightCSS("o_icon o_icon-fw o_icon-lg o_icon_actions");
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		flc.add(linkName, toolsLink);
 		

@@ -372,6 +372,7 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 	protected FormLink forgeToolsLink(CoachedParticipantRow identityRow) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++count), TOOLS_CMD, "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(identityRow);
 		return toolsLink;
 	}

@@ -135,7 +135,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 		} else if(rating.getCurrentRating() > 0.0f) {
 			renderYesOrNo(sb, rating, labels.get(1), "yes", true, ubu, translator);
 		} else if(rating.getCurrentRating() < 0.0f) {
-			renderYesOrNo(sb, rating, labels.get(1), "no", true, ubu, translator);
+			renderYesOrNo(sb, rating, labels.get(0), "no", true, ubu, translator);
 		}
 	}
 	

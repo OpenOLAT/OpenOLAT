@@ -117,11 +117,16 @@ class RubricSliderNamedResponseListTableController extends FormBasicController {
 			for(int i=0; i<stepValues.size(); i++) {
 				SelectionValue val = stepValues.get(i);
 				DefaultFlexiColumnModel stepColumn = new DefaultFlexiColumnModel(val.getKey(), STEPS_OFFSET + i);
-				if(StringHelper.containsNonWhitespace(val.getValue())) {
-					stepColumn.setHeaderLabel(val.getValue());
+				
+				String label = "";
+				if(rubric.getStepLabels() != null && i<rubric.getStepLabels().size()) {
+					label = rubric.getStepLabels().get(i).getLabel();
+				}  else if(StringHelper.containsNonWhitespace(val.getValue())) {
+					label = val.getValue();
 				} else {
-					stepColumn.setHeaderLabel(val.getKey());
+					label = val.getKey();
 				}
+				stepColumn.setHeaderLabel(label);
 				stepColumn.setCellRenderer(new DiscreteCellRenderer(i));
 				columnsModel.addFlexiColumnModel(stepColumn);
 			}
