@@ -23,7 +23,6 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -102,24 +101,18 @@ public class TBrokerPage {
 	}
 	
 	public TBrokerPage confirmEnrollment(int numOfEnrollment) {
-		By runBy = By.xpath("//dialog//div[contains(@class,'o_button_group_right')]/a[i[contains(@class,'o_icon_tb_run_start')]]");
+		By enrollmentsBy = By.xpath("//dialog//div[contains(@class,'o_widget_content')]//span[contains(@class,'o_widget_figure_value')][text()[contains(.,'" + numOfEnrollment + "')]]");
+		OOGraphene.waitElement(enrollmentsBy, browser);
+		
+		By runBy = By.xpath("//dialog//div[contains(@class,'buttons')]/button[contains(@class,'btn-primary')]");
 		OOGraphene.waitElement(runBy, browser);
 		browser.findElement(runBy).click();
 		
-		By enrollmentStatsBy = By.xpath("//dialog//div[contains(@class,'o_widget')][div/div[@class='o_widget_icon']/i[contains(@class,'o_icon_tb_enrollments')]]/div[@class='o_widget_content']//span[contains(@class,'o_widget_figure_value')][text()[contains(.,'" + numOfEnrollment + "')]]");
-		OOGraphene.waitElement(enrollmentStatsBy, browser);
+		OOGraphene.waitModalDialog(browser, ".o_sel_confirm_form");
 		
-		By useBy = By.xpath("//dialog//div[contains(@class,'buttons')]/button[contains(@class,'btn-primary')][contains(@class,'o_button_dirty')]");
-		OOGraphene.waitElement(useBy, browser);
-		OOGraphene.click(useBy, browser);
-
-		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_confirm_form");
-		
-		By confirmElBy = By.cssSelector("dialog.dialog fieldset.o_sel_confirm_form label>input[type='checkbox']");
-		WebElement confirmEl = browser.findElement(confirmElBy);
-		OOGraphene.check(confirmEl, Boolean.TRUE);
-		
-		By confirmBy = By.cssSelector("dialog.dialog fieldset.o_sel_confirm_form a.o_sel_confirm");
+		By checkConfirmBy = By.cssSelector("dialog.dialog .o_sel_confirm_form input[name=confirmation]");
+		OOGraphene.check(browser.findElement(checkConfirmBy), Boolean.TRUE);
+		By confirmBy = By.cssSelector("dialog.dialog .o_sel_confirm_form a.o_sel_confirm");
 		browser.findElement(confirmBy).click();
 		
 		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_confirm_form");
