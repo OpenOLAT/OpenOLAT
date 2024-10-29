@@ -1,7 +1,7 @@
 #if($enrollmentDone)
 	<div class="o_warning_with_icon">$r.translate("enrollment.manual.done")</div>
 #else
-	<div class="o_important_with_icon">$r.translate("enrollment.manual.info")</div>
+	<div class="o_important_with_icon">$r.translate("enrollment.manual.info.runs", $processRuns)</div>
 	<div class="o_button_group o_button_group_right">
 		#if($r.available("enrollment.manual.runs") && $r.visible("enrollment.manual.runs"))
 			$r.render("enrollment.manual.runs")
@@ -9,7 +9,7 @@
 	</div>
 	
 	<fieldset class="o_block_large">
-		<legend>$r.translate("enrollment.manual.results")</legend>
+		<legend>$r.translate("enrollment.manual.result")</legend>
 		$r.render("runOverview")
 	</fieldset>
 	<div class="o_block">

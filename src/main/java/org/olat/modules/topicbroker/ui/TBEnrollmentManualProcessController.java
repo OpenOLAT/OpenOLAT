@@ -52,8 +52,8 @@ import org.olat.modules.topicbroker.TBSelection;
 import org.olat.modules.topicbroker.TBSelectionSearchParams;
 import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicSearchParams;
+import org.olat.modules.topicbroker.TopicBrokerModule;
 import org.olat.modules.topicbroker.TopicBrokerService;
-import org.olat.modules.topicbroker.manager.DefaultEnrollmentProcess;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -86,6 +86,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 	private EnrollmentProcessWrapper selectedProcessWrapper;
 	
 	@Autowired
+	private TopicBrokerModule topicBrokerModule;
+	@Autowired
 	private TopicBrokerService topicBrokerService;
 
 	public TBEnrollmentManualProcessController(UserRequest ureq, WindowControl wControl, TBBroker broker,
@@ -116,6 +118,8 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		flc.contextPut("processRuns", String.valueOf(topicBrokerModule.getRuns()));
+		
 		runsDropdown = uifactory.addDropdownMenu("enrollment.manual.runs", null, formLayout, getTranslator());
 		runsDropdown.setOrientation(DropdownOrientation.right);
 		runsDropdown.setIconCSS("o_icon o_icon-lg o_icon_tb_run");
@@ -245,7 +249,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 
 	private void doRunEnrollmentProcess() {
 		Date startDate = new Date();
-		TBEnrollmentProcess process = new DefaultEnrollmentProcess(broker, topics, selections);
+		TBEnrollmentProcess process = topicBrokerService.createProcessor(broker, topics, selections).getBest();
 		TBEnrollmentStats enrollmentStats = topicBrokerService.getEnrollmentStats(broker, identities, participants,
 				topics, process.getPreviewSelections());
 		
