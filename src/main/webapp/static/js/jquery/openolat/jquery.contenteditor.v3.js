@@ -24,7 +24,7 @@
 (function($) {
 	"use strict";
     $.fn.ceditor = function(options) {
-    	var editor = this.data("data-oo-ceditor");
+    	let editor = this.data("data-oo-ceditor");
     	if(typeof editor === "undefined" || editor == null) {
     		editor = new ContentEditor(this.get(0), options);
     		this.data("data-oo-ceditor", editor);
@@ -61,9 +61,9 @@
 	};
 	
 	function initDrake(settings) {
-		var $settings = settings;
+		let $settings = settings;
 
-		var containers = [];
+		let containers = [];
 		jQuery('.o_page_container_slot-inner').each(function(index, slot) {
 			containers.push(slot);
 		});
@@ -87,10 +87,10 @@
 		}).on('out', function (el, container) {
 			jQuery(container).removeClass('oo-drop-accepted');
 		}).on('cloned', function (clone, original, container) {
-			var tinyClonedFrame = jQuery(clone).find('.o_richtext_mce iframe');
-			var tinyOriginalFrame = jQuery(original).find('.o_richtext_mce iframe');
+			let tinyClonedFrame = jQuery(clone).find('.o_richtext_mce iframe');
+			let tinyOriginalFrame = jQuery(original).find('.o_richtext_mce iframe');
 			if (tinyClonedFrame.length > 0 && tinyOriginalFrame.length > 0) {
-				var frameDocument = tinyOriginalFrame.get(0).contentWindow.document;
+				let frameDocument = tinyOriginalFrame.get(0).contentWindow.document;
 				tinyClonedFrame.get(0).srcdoc = '<!DOCTYPE html><html>' + frameDocument.head.innerHTML + frameDocument.body.innerHTML + '</html>';
 			}
 		}).on('drop', function(el, target, source, sibling) {
@@ -101,13 +101,13 @@
 	}
 	
 	function cancel(settings, el, container) {
-		var draggedId = jQuery(el).data('oo-page-fragment');
-		var jContainer = jQuery(container);
+		let draggedId = jQuery(el).data('oo-page-fragment');
+		let jContainer = jQuery(container);
 		if(jContainer.hasClass("o_page_container_slot-inner")) {
-			var jContainerSlot = jContainer.closest(".o_page_container_slot");
-			var slotId = jContainerSlot.data('oo-slot');
-			var componentUrl = jContainerSlot.data("oo-content-editor-url");
-			var containerId = jContainerSlot.data('oo-page-fragment');
+			let jContainerSlot = jContainer.closest(".o_page_container_slot");
+			let slotId = jContainerSlot.data('oo-slot');
+			let componentUrl = jContainerSlot.data("oo-content-editor-url");
+			let containerId = jContainerSlot.data('oo-page-fragment');
 
 			o_afterserver();
 
@@ -117,8 +117,8 @@
 	}
 	
 	function drop(settings, el, targetContainer, sourceContainer, sibling) {
-		var position;
-		var targetId = null;
+		let position;
+		let targetId = null;
 		if(sibling) {
 			position = "top";
 			targetId = jQuery(sibling).data('oo-page-fragment');
@@ -126,36 +126,36 @@
 			position = "bottom";
 		}
 
-		var draggedId = jQuery(el).data('oo-page-fragment');
-		var jTargetContainer = jQuery(targetContainer);
+		let draggedId = jQuery(el).data('oo-page-fragment');
+		let jTargetContainer = jQuery(targetContainer);
 		if(jTargetContainer.hasClass("o_page_container_slot-inner")) {
-			var jContainerSlot = jTargetContainer.closest(".o_page_container_slot");
-			var slotId = jContainerSlot.data('oo-slot');
-			var componentUrl = jContainerSlot.data("oo-content-editor-url");
-			var containerId = jContainerSlot.data('oo-page-fragment');
+			let jContainerSlot = jTargetContainer.closest(".o_page_container_slot");
+			let slotId = jContainerSlot.data('oo-slot');
+			let componentUrl = jContainerSlot.data("oo-content-editor-url");
+			let containerId = jContainerSlot.data('oo-page-fragment');
 
 			o_afterserver();
 
-			var fragmentContent = '';
-			var richTextJ = jQuery(el).find('.o_richtext_mce');
+			let fragmentContent = '';
+			let richTextJ = jQuery(el).find('.o_richtext_mce');
 			if (richTextJ.length > 0) {
-				var tinyId = richTextJ.get(0).id.replace('_diw', '');
-				var tiny = tinymce.get(tinyId);
+				let tinyId = richTextJ.get(0).id.replace('_diw', '');
+				let tiny = tinymce.get(tinyId);
 				fragmentContent = tiny.getContent();
 			}
 
 			o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_fragment", "fragment", containerId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position, "content", fragmentContent);
 			return true;
 		} else if(jTargetContainer.hasClass("o_legacy_container")) {
-			var containerId = null;
-			var componentUrl;
+			let containerId = null;
+			let componentUrl;
 			
 			if(sibling) {
 				componentUrl = jQuery(sibling).data('oo-content-editor-url');
 			} else {
-				var partEls = jTargetContainer.children(".o_page_part.o_page_part_view");
+				let partEls = jTargetContainer.children(".o_page_part.o_page_part_view");
 				if(partEls.length > 0) {
-					var partEl = jQuery(partEls.get(partEls.length - 1));
+					let partEl = jQuery(partEls.get(partEls.length - 1));
 					targetId = partEl.data('oo-page-fragment');
 					componentUrl = partEl.data("oo-content-editor-url");
 				} else {
@@ -170,11 +170,11 @@
 	}
 	
 	function closeMathLive() {
-		var mf = document.getElementById('mathlive');
+		let mf = document.getElementById('mathlive');
 		if(mf) {
 			mf.executeCommand("hideVirtualKeyboard");
 		}
-		var mlk = document.querySelector('body>div.ML__keyboard.is-visible');
+		let mlk = document.querySelector('body>div.ML__keyboard.is-visible');
 		if(mlk) {
 			jQuery(mlk).removeClass("is-visible");
 		}
@@ -183,10 +183,13 @@
 	function unfocusEditor() {
 		try {
 			if(o_info.lastFormFocusEl) {
-				var focusedEl = jQuery(".o_page_content_editor #" + o_info.lastFormFocusEl);
+				let focusedEl = jQuery(".o_page_content_editor #" + o_info.lastFormFocusEl);
 				if(focusedEl.length > 0) {
 					o_info.lastFormFocusEl = 0;
 				}
+			}
+			if(document.activeElement) {
+				document.activeElement.blur();
 			}
 		} catch(e) {
 			if(window.console) console.log(e);
@@ -196,13 +199,15 @@
 	function initWindowListener(settings) {
 		if(o_info.contentEditorWindowListener === undefined || o_info.contentEditorWindowListener == null) {
 			o_info.contentEditorWindowListener = function(e) {
-				var componentUrl = jQuery(".o_page_content_editor").data("oo-content-editor-url");
+				let componentUrl = jQuery(".o_page_content_editor").data("oo-content-editor-url");
+				let editFragmentId = jQuery(".o_page_fragment_edit.o_fragment_edited").data("oo-page-fragment");
+				
 				if(componentUrl === undefined || componentUrl == null) {
 					jQuery(window).off('click', o_info.contentEditorWindowListener);
 					o_info.contentEditorWindowListener = null;
 				} else {
-					var jTarget = jQuery(e.target);
-					var excludedEls = jTarget.closest(".o_page_add_in_container").length > 0 
+					let jTarget = jQuery(e.target);
+					let excludedEls = jTarget.closest(".o_page_add_in_container").length > 0 
 						// Modal dialogs
 						|| jTarget.closest(".o_popover").length > 0
 						|| jTarget.closest(".o_layered_panel .popover").length > 0
@@ -234,26 +239,26 @@
 						|| jQuery(".o_ceditor_callout").length > 0;
 					
 					if(!excludedEls) {
-						var edited = jTarget.closest(".o_fragment_edited").length > 0;
-						var parts = jTarget.closest(".o_page_part");
+						let edited = jTarget.closest(".o_fragment_edited").length > 0;
+						let parts = jTarget.closest(".o_page_part");
 						if(jTarget.hasClass('o_page_container_tools')) {
-							var containerUrl = jTarget.data("oo-content-editor-url");
+							let containerUrl = jTarget.data("oo-content-editor-url");
 							closeMathLive();
 							o_XHREvent(containerUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'edit_fragment', 'fragment', jTarget.data('oo-page-fragment'));
 						} else if(parts.length == 1) {
-							var element = jQuery(parts.get(0));
-							var elementUrl = element.data("oo-content-editor-url");
+							let element = jQuery(parts.get(0));
+							let elementUrl = element.data("oo-content-editor-url");
 							closeMathLive();
 							o_XHREvent(elementUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'edit_fragment', 'fragment', element.data('oo-page-fragment'));
 						} else if(!edited) {
 							closeMathLive();
-							o_afterserver();
 							unfocusEditor();
-							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment', 'ignore-validating-error', 'oo-ignore-validating-error');
+							o_afterserver();
+							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_edit_fragment', 'edited-fragment', editFragmentId, 'ignore-validating-error', 'oo-ignore-validating-error');
 						} else if(jTarget.closest(".o_ceditor_inspector_header").length > 0 && jTarget.closest("a").length > 0) {
 							closeMathLive();
-							o_afterserver();
 							unfocusEditor();
+							o_afterserver();
 							o_XHREvent(componentUrl, false, false, '_csrf', settings.csrfToken, 'cid', 'close_inspector', 'ignore-validating-error', 'oo-ignore-validating-error');
 						}
 					}

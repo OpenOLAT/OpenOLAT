@@ -45,7 +45,7 @@ import org.olat.modules.ceditor.ui.event.PositionEnum;
  *
  */
 public class ContentEditorComponent extends AbstractComponent implements ComponentCollection, ComponentEventListener, ControllerEventListener {
-	
+
 	private static final ContentEditorComponentRenderer RENDERER = new ContentEditorComponentRenderer();
 
 	private List<Component> rootComponents = new ArrayList<>();
@@ -58,8 +58,9 @@ public class ContentEditorComponent extends AbstractComponent implements Compone
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
+		String editedFragmentId = ureq.getParameter("edited-fragment");
 		if("close_edit_fragment".equals(cmd)) {
-			fireEvent(ureq, new CloseElementsEvent());
+			fireEvent(ureq, new CloseElementsEvent(editedFragmentId));
 		} else if("close_inspector".equals(cmd)) {
 			fireEvent(ureq, new CloseInspectorsEvent());
 		} else if("drop_fragment".equals(cmd)) {

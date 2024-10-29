@@ -208,20 +208,14 @@ public class ContentEditorPage extends ContentViewPage {
 			OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
 		} catch(Exception e) {
 			OOGraphene.waitingALittleBit();
-			log.info("Close edit fragment (alt 1): {}", alternativeContainerBy);
+			log.info("Close edit fragment (2): {}", alternativeContainerBy);
 			browser.findElement(alternativeContainerBy).click();
 			OOGraphene.waitBusy(browser);
-			
 			try {
 				OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
 			} catch (Exception e2) {
 				OOGraphene.takeScreenshot("Close edit fragment", browser);
-				
-				// Try again
-				OOGraphene.waitingALittleLonger();
-				log.info("Close edit fragment (2 alt): {}", alternativeContainerBy);
-				browser.findElement(alternativeContainerBy).click();
-				OOGraphene.waitElementDisappears(By.className("o_fragment_edited"), 5, browser);
+				throw e2;
 			}
 		}
 		return this;

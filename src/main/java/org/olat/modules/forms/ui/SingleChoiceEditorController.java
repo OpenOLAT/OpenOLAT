@@ -149,7 +149,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof TextElement te) {
+		if (source instanceof TextElement) {
 			doSave(ureq);
 		} else if (addChoiceEl == source) {
 			doSave(ureq);

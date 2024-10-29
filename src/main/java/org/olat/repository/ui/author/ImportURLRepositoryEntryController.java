@@ -72,6 +72,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class ImportURLRepositoryEntryController extends FormBasicController {
+	private static int MAX_NUMBER_OF_VIDEO_TYPES_TO_DISPLAY = 5;
+
+	private static final String MP4_NAME = "MP4";
+	private static final String M3U8_NAME = "m3u8";
 
 	private String[] limitTypes;
 	private RepositoryEntry importedEntry;
@@ -122,8 +126,21 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String mediaServers = mediaServerModule.getMediaServerNames().stream().collect(Collectors.joining(", "));
-		mediaServers = StringHelper.containsNonWhitespace(mediaServers) ? mediaServers + ", " : "";
+		List<String> mediaServerNames = mediaServerModule.getMediaServerNames();
+		mediaServerNames.add(0, MP4_NAME);
+		mediaServerNames.add(1, M3U8_NAME);
+		int nbOthers = mediaServerNames.size();
+		if (nbOthers > MAX_NUMBER_OF_VIDEO_TYPES_TO_DISPLAY) {
+			mediaServerNames = mediaServerNames.subList(0, MAX_NUMBER_OF_VIDEO_TYPES_TO_DISPLAY);
+			if (nbOthers == (MAX_NUMBER_OF_VIDEO_TYPES_TO_DISPLAY + 1)) {
+				mediaServerNames.add(translate("cmd.import.ressource.url.desc.other.sg"));
+			} else {
+				String otherPlatforms = Integer.toString(nbOthers - MAX_NUMBER_OF_VIDEO_TYPES_TO_DISPLAY);
+				mediaServerNames.add(translate("cmd.import.ressource.url.desc.other.pl", otherPlatforms));
+			}
+		}
+
+		String mediaServers = mediaServerNames.stream().collect(Collectors.joining(", "));
 		setFormDescription("cmd.import.ressource.url.desc", new String[]{mediaServers});
 		formLayout.setElementCssClass("o_sel_re_import_url_form");
 		

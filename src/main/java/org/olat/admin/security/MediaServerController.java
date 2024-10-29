@@ -107,6 +107,7 @@ public class MediaServerController extends FormBasicController {
 		SelectionValues mediaServersKV = new SelectionValues();
 		mediaServersKV.add(SelectionValues.entry(MediaServerModule.YOUTUBE_KEY, MediaServerModule.YOUTUBE_NAME));
 		mediaServersKV.add(SelectionValues.entry(MediaServerModule.VIMEO_KEY, MediaServerModule.VIMEO_NAME));
+		mediaServersKV.add(SelectionValues.entry(MediaServerModule.NANOO_TV_KEY, MediaServerModule.NANOO_TV_NAME));
 		mediaServersEl = uifactory.addCheckboxesVertical("media.servers", middleCont, mediaServersKV.keys(),
 				mediaServersKV.values(), 1);
 
@@ -154,6 +155,7 @@ public class MediaServerController extends FormBasicController {
 		if (mediaServersVisible) {
 			mediaServersEl.select(MediaServerModule.YOUTUBE_KEY, mediaServerModule.isMediaServerEnabled(MediaServerModule.YOUTUBE_KEY));
 			mediaServersEl.select(MediaServerModule.VIMEO_KEY, mediaServerModule.isMediaServerEnabled(MediaServerModule.VIMEO_KEY));
+			mediaServersEl.select(MediaServerModule.NANOO_TV_KEY, mediaServerModule.isMediaServerEnabled(MediaServerModule.NANOO_TV_KEY));
 			tableEl.setVisible(tableModel.getRowCount() > 0);
 		}
 	}
@@ -253,6 +255,7 @@ public class MediaServerController extends FormBasicController {
 		if (MediaServerMode.configure.equals(mediaServerModule.getMediaServerMode())) {
 			mediaServerModule.setMediaServerEnabled(MediaServerModule.YOUTUBE_KEY, mediaServersEl.isKeySelected(MediaServerModule.YOUTUBE_KEY));
 			mediaServerModule.setMediaServerEnabled(MediaServerModule.VIMEO_KEY, mediaServersEl.isKeySelected(MediaServerModule.VIMEO_KEY));
+			mediaServerModule.setMediaServerEnabled(MediaServerModule.NANOO_TV_KEY, mediaServersEl.isKeySelected(MediaServerModule.NANOO_TV_KEY));
 		}
 	}
 }
