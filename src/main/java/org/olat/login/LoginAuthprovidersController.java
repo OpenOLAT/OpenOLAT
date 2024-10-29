@@ -487,7 +487,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(registrationCtrl);
 		
-		registrationCtrl = new RegistrationController(ureq, getWindowControl());
+		registrationCtrl = new RegistrationController(ureq, getWindowControl(), false);
 		listenTo(registrationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), registrationCtrl.getInitialComponent());
