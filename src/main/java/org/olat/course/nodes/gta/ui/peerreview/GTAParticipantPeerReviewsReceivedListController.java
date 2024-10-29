@@ -196,13 +196,13 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 		double min = 0.0d;
 		double max = 0.0d;
 		double average = 0.0d;
-		int maxSteps = 5;
+		double maxSteps = 5;
 		
 		if(sessionStatistics != null) {
 			min = sessionStatistics.min();
 			max = sessionStatistics.max();
 			average = sessionStatistics.average();
-			maxSteps = sessionStatistics.maxSteps();
+			maxSteps = sessionStatistics.maxStepsValue();
 			if(sessionStatistics.numOfQuestions() > 10) {
 				firstQuartile = sessionStatistics.firstQuartile();
 				median = sessionStatistics.median();
@@ -210,7 +210,7 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 			}
 		}
 
-		assessmentsPlot = new BoxPlot("plot-assessments", maxSteps,
+		assessmentsPlot = new BoxPlot("plot-assessments", (int)maxSteps,
 				(float)min, (float)max, (float)average,
 				(float)firstQuartile, (float)thirdQuartile, (float)median, null);
 		assessmentsWidget.setContent(assessmentsPlot);

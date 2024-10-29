@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.manager;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +30,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.gta.model.SessionStatistics;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.StepCounts;
+import org.olat.modules.forms.model.StepCountsBuilder;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
@@ -86,7 +89,8 @@ public class SessionStatisticsCalculator {
 		double progress = calculateProgress(collector.getNumOfResponses() + collector.getNumOfResponsesWithNothing(), collector.getNumOfSilders());
 		
 		return new SessionStatistics(progress, min, max, average, sum,
-				firstQuartile, median, thirdQuartile, collector.getNumOfResponses(), collector.getMaxSteps());
+				firstQuartile, median, thirdQuartile,
+				collector.getNumOfResponses(), collector.getMaxSteps(), collector.getMaxStepsValue());
 	}
 	
 	private void collectValuesBySession(Collector collector, Map<String, List<EvaluationFormResponse>> responsesMap) {
@@ -96,6 +100,9 @@ public class SessionStatisticsCalculator {
 			if (Rubric.TYPE.equals(element.getType())) {
 				Rubric rubric = (Rubric) element;
 				collector.addSliders(rubric.getSliders().size());
+				
+				double stepsValue = getMaxStepsValue(rubric);
+				collector.addMaxStepsValue(stepsValue);
 				collector.addSteps(rubric.getSteps());
 				
 				for(Slider slider:rubric.getSliders()) {
@@ -109,8 +116,8 @@ public class SessionStatisticsCalculator {
 						} else if(StringHelper.containsNonWhitespace(sliderResponse.getStringuifiedResponse())
 								&& sliderResponse.getNumericalResponse() != null) {
 							collector.incrementNumOfResponses();
-						
-							double val = sliderResponse.getNumericalResponse().doubleValue() * weight;
+
+							double val = getValue(rubric, sliderResponse) * weight;
 							collector.addValue(val);
 							values.add(val);
 						}
@@ -120,6 +127,20 @@ public class SessionStatisticsCalculator {
 		}
 		
 		collector.addSessionSum(calculateSum(values));
+	}
+	
+	private double getMaxStepsValue(Rubric rubric) {
+		return rubric.getScaleType().getStepValue(rubric.getSteps(), rubric.getEnd());
+	}
+	
+	private double getValue(Rubric rubric, EvaluationFormResponse sliderResponse) {
+		BigDecimal response = sliderResponse.getNumericalResponse();
+		StepCounts stepCounts = StepCountsBuilder.builder(rubric.getSteps())
+				.withCount(response.intValue(), Long.valueOf(1))
+				.build();
+		
+		double val = response.doubleValue();
+		return rubric.getScaleType().getStepValue(stepCounts.getNumberOfSteps(), val);
 	}
 	
 	private double calculateSum(List<Double> values) {
@@ -177,6 +198,7 @@ public class SessionStatisticsCalculator {
 		private int numOfResponsesWithNothing = 0;
 		
 		private int maxSteps = 0;
+		private double maxStepsValue = 0.0d;
 		
 		public void addSteps(int steps) {
 			if(steps > maxSteps) {
@@ -184,8 +206,18 @@ public class SessionStatisticsCalculator {
 			}
 		}
 		
+		public void addMaxStepsValue(double val) {
+			if(val > maxStepsValue) {
+				maxStepsValue = val;
+			}
+		}
+		
 		public int getMaxSteps() {
 			return maxSteps;
+		}
+		
+		public double getMaxStepsValue() {
+			return maxStepsValue;
 		}
 		
 		public void addValue(double val) {
