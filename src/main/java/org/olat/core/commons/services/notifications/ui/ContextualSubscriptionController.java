@@ -101,6 +101,7 @@ public class ContextualSubscriptionController extends BasicController {
 		}
 
 		subscribeButton = LinkFactory.createLink("command.subscribe", "subscribe", getTranslator(), myContent, this, Link.BUTTON + Link.NONTRANSLATED);
+		subscribeButton.setTitle(translate("command.subscribe"));
 		subscribeButton.setCustomDisplayText("");
 		toggleSubscriptionIcon();
 		subscribeButton.setIconRightCSS("o_icon o_icon-fw o_icon_caret");

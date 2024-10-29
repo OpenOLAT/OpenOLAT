@@ -84,8 +84,6 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 	private GTAParticipantPeerReviewTableModel tableModel;
 	
 	private Task task;
-	private final boolean withYesNoRating;
-	private final boolean withStarsRating;
 	private final CourseEnvironment courseEnv;
 	
 	private CloseableModalController cmc;
@@ -104,12 +102,6 @@ public class GTAParticipantPeerReviewsReceivedListController extends AbstractPar
 		this.task = task;
 		this.courseEnv = courseEnv;
 		
-		boolean qualityFeedback = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW_QUALITY_FEEDBACK, false);
-		String qualityFeedbackType = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_QUALITY_FEEDBACK_TYPE,
-					GTACourseNode.GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_YES_NO);
-		withYesNoRating = qualityFeedback && GTACourseNode.GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_YES_NO.equals(qualityFeedbackType);
-		withStarsRating = qualityFeedback && GTACourseNode.GTASK_VALUE_PEER_REVIEW_QUALITY_FEEDBACK_STARS.equals(qualityFeedbackType);
-
 		initForm(ureq);
 		loadModel();
 	}

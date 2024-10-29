@@ -295,6 +295,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel markCol = new DefaultFlexiColumnModel(CGCols.mark);
 		markCol.setExportable(false);
+		markCol.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
 		columnsModel.addFlexiColumnModel(markCol);
 
 		int i=0;
@@ -640,6 +641,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		FormLink markLink = uifactory.addFormLink("mark_" + assessableIdentity.getIdentityKey(), "mark", "", null, null, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(mark != null ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		markLink.setUserObject(assessableIdentity.getIdentityKey());
+		markLink.setTitle(translate("bookmark"));
 
 		Date syntheticSubmissionDate = null;
 		boolean hasSubmittedDocument = false;
@@ -682,6 +684,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++count), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		toolsLink.setTitle(translate("action.more"));
 		
 		CoachedIdentityRow row = new CoachedIdentityRow(assessableIdentity, task, taskDefinition,
 				submissionDueDate, lateSubmissionDueDate, syntheticSubmissionDate, hasSubmittedDocument,

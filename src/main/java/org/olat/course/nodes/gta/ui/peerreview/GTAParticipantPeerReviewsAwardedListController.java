@@ -142,13 +142,17 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.plot));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.sessionStatus,
 				new TaskReviewAssignmentStatusCellRenderer(getLocale(), true)));
+		if(withYesNoRating) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.ratingYesNo));
+		} else if(withStarsRating) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.ratingStars));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReviewCols.actionReview));
 		
 		tableModel = new GTAParticipantPeerReviewTableModel(columnsModel, getLocale());
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "awarded.reviews", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
-		
 		tableEl.setEmptyTableMessageKey("table.awarded.reviews.empty");
 	}
 	
@@ -255,7 +259,6 @@ public class GTAParticipantPeerReviewsAwardedListController extends AbstractPart
 			}
 		} else if(evaluationViewFormExecCtrl == source) {
 			doCloseViewController();
-			cmc.deactivate();
 			cleanUp();
 		} else if(confirmCloseReviewsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
