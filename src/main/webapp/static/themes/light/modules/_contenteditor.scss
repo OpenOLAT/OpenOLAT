@@ -2455,6 +2455,12 @@ table.o_ce_table {
 			}
 		}
 	}
+
+	.o_alert_mode {
+		> p:last-child {
+			margin-bottom: 0;
+		}
+	}
 }
 
 /* Page / form: editor mode */
