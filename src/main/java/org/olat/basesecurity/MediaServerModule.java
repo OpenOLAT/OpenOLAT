@@ -38,6 +38,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -68,7 +69,18 @@ public class MediaServerModule extends AbstractSpringModule {
 	public static final String VIMEO_MEDIA_SRC = "https://vimeo.com https://player.vimeo.com";
 	public static final String NANOO_TV_MEDIA_SRC = "https://nanoo.tv";
 
-	private MediaServerMode mode;
+
+	@Value("${media.server.mode:configure}")
+	private String mode;
+
+	@Value("${media.server.youtube:true}")
+	private String youtube;
+
+	@Value("${media.server.vimeo:true}")
+	private String vimeo;
+
+	@Value("${media.server.nanootv:true}")
+	private String nanootv;
 
 	private Map<String, Boolean> mediaServersEnabled;
 
@@ -95,14 +107,21 @@ public class MediaServerModule extends AbstractSpringModule {
 	}
 
 	private void updateProperties() {
+		String modeFromOlatProperties = mode;
+
 		String mediaServerModeObj = getStringPropertyValue(MEDIA_SERVER_MODE, true);
 		if (StringHelper.containsNonWhitespace(mediaServerModeObj)) {
-			mode = MediaServerMode.valueOf(mediaServerModeObj);
-		} else {
-			mode = MediaServerMode.configure;
+			mode = mediaServerModeObj;
+		} else if (!StringHelper.containsNonWhitespace(modeFromOlatProperties)) {
+			mode = MediaServerMode.configure.name();
 		}
 
 		mediaServersEnabled = new HashMap<>();
+		Map<String, Boolean> mediaServersFromOlatProperties = new HashMap<>();
+		mediaServersFromOlatProperties.put(YOUTUBE_KEY, Boolean.valueOf(youtube));
+		mediaServersFromOlatProperties.put(VIMEO_KEY, Boolean.valueOf(vimeo));
+		mediaServersFromOlatProperties.put(NANOO_TV_KEY, Boolean.valueOf(nanootv));
+
 		for (String key : PREDEFINED_KEYS) {
 			String enabledObj = getStringPropertyValue(MEDIA_SERVER_ENABLED + "." + key, true);
 			if (Boolean.TRUE.toString().equals(enabledObj)) {
@@ -110,7 +129,7 @@ public class MediaServerModule extends AbstractSpringModule {
 			} else if (Boolean.FALSE.toString().equals(enabledObj)) {
 				mediaServersEnabled.put(key, Boolean.FALSE);
 			} else {
-				mediaServersEnabled.put(key, Boolean.TRUE);
+				mediaServersEnabled.put(key, mediaServersFromOlatProperties.get(key));
 			}
 		}
 
@@ -129,12 +148,12 @@ public class MediaServerModule extends AbstractSpringModule {
 	}
 
 	public MediaServerMode getMediaServerMode() {
-		return mode;
+		return MediaServerMode.secureValueOf(mode, MediaServerMode.configure);
 	}
 
 	public void setMediaServerMode(MediaServerMode mediaServerMode) {
-		mode = mediaServerMode;
-		setStringProperty(MEDIA_SERVER_MODE, mediaServerMode.name(), true);
+		mode = mediaServerMode.name();
+		setStringProperty(MEDIA_SERVER_MODE, mode, true);
 	}
 
 	private boolean isAllowAll() {
