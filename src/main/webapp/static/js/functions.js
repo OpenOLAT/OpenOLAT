@@ -1034,24 +1034,26 @@ function o_ainvoke(r) {
 				}		
 			} else {
 				if (o_info.debug) o_log("could not find window??");
-			}
-			
-			if(o_info.latexit) {
-				try {
-					if(typeof window.MathJax !== "undefined" && typeof window.MathJax.typeset !== "undefined") {
-						window.MathJax.typeset();
-						o_info.latexit = false;
-					} else {
-						o_mathjax();
-					}
-				} catch(e) {
-					if (window.console) console.log("error MathJax: ", e);
-				}
 			}	
 		}
 
 		// let everybody know dom replacement has finished
 		jQuery(document).trigger("oo.dom.replacement.after");
+	}
+	
+	if(o_info.latexit) {
+		setTimeout(() => {
+			try {
+				if(typeof window.MathJax !== "undefined" && typeof window.MathJax.typeset !== "undefined") {
+					o_info.latexit = false;
+					window.MathJax.typeset();
+				} else {
+					o_mathjax();
+				}
+			} catch(e) {
+				if (window.console) console.log("error MathJax: ", e);
+			}
+		});
 	}
 	
 	// Scroll or focus, but not both to prevent jumping up and down

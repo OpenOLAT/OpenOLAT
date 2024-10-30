@@ -129,7 +129,8 @@
 				#if($assignment.content && $assignment.content.length() > 0)
 				<h5>$r.translate("assignment.content")</h5>
 				<div class="o_desc">
-					$r.xssScan($assignment.content)
+					#set($assignmentContent = $r.xssScan($assignment.content))
+					$r.formatLatexFormulas($assignmentContent)
 				</div>
 				#end
 				
