@@ -66,6 +66,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.MultiUserEvent;
@@ -451,16 +452,12 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		List<OrganisationIdentityEmail> organisationIdentityEmails = organisationEmailDomainDao
 				.getOrganisationIdentityEmails(organisationKeyToDomains.keySet());
 		for (OrganisationIdentityEmail organisationIdentityEmail: organisationIdentityEmails) {
-			int atIndex = organisationIdentityEmail.email().lastIndexOf("@");
-			if (atIndex > 0) {
+			String userDomainLowerCase = getDomainLowerCase(organisationIdentityEmail.email());
+			if (StringHelper.containsNonWhitespace(userDomainLowerCase)) {
 				List<OrganisationEmailDomain> organisationEmailDomains = organisationKeyToDomains.get(organisationIdentityEmail.organisationKey());
 				if (organisationEmailDomains != null && !organisationEmailDomains.isEmpty()) {
-					String userDomainLowercase = organisationIdentityEmail.email().substring(atIndex + 1).toLowerCase();
 					for (OrganisationEmailDomain emailDomain : organisationEmailDomains) {
-						String domainLowerCase = emailDomain.getDomain().toLowerCase();
-						if (OrganisationEmailDomain.WILDCARD.equals(domainLowerCase) 
-								|| userDomainLowercase.equals(domainLowerCase)
-								|| (emailDomain.isSubdomainsAllowed() && userDomainLowercase.endsWith(domainLowerCase))) {
+						if (isEmailDomainAllowed(emailDomain, userDomainLowerCase)) {
 							Integer count = emailDomainKeyToUsersCount.get(emailDomain.getKey());
 							count++;
 							emailDomainKeyToUsersCount.put(emailDomain.getKey(), count);
@@ -471,6 +468,53 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		}
 		
 		return emailDomainKeyToUsersCount;
+	}
+	
+	@Override
+	public List<OrganisationEmailDomain> getEnabledEmailDomains(OrganisationRef organisation) {
+		if (organisation == null ) {
+			return List.of();
+		}
+		
+		OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+		searchParams.setOrganisations(List.of(organisation));
+		searchParams.setEnabled(Boolean.TRUE);
+		return getEmailDomains(searchParams);
+	}
+	
+	@Override
+	public boolean isEmailDomainAllowed(List<OrganisationEmailDomain> emailDomains, String emailAddress) {
+		if (emailDomains == null || emailDomains.isEmpty()) {
+			// no email restriction means all domains are ok
+			return true;
+		}
+		
+		String domainLowerCase = getDomainLowerCase(emailAddress);
+		if (!StringHelper.containsNonWhitespace(domainLowerCase)) {
+			return false;
+		}
+		return emailDomains.stream()
+				.filter(OrganisationEmailDomain::isEnabled)
+				.anyMatch(emailDomain -> isEmailDomainAllowed(emailDomain, domainLowerCase));
+	}
+
+	private boolean isEmailDomainAllowed(OrganisationEmailDomain emailDomain, String domainLowerCase) {
+		String organisationDomainLowerCase = emailDomain.getDomain().toLowerCase();
+		return OrganisationEmailDomain.WILDCARD.equals(organisationDomainLowerCase)
+				|| domainLowerCase.equals(organisationDomainLowerCase)
+				|| (emailDomain.isSubdomainsAllowed() && domainLowerCase.endsWith("." + organisationDomainLowerCase));
+	}
+	
+	private String getDomainLowerCase(String emailAddress) {
+		if (!StringHelper.containsNonWhitespace(emailAddress)) {
+			return "";
+		}
+		
+		int atIndex = emailAddress.lastIndexOf("@");
+		if (atIndex > 0) {
+			return emailAddress.substring(atIndex + 1).toLowerCase();
+		}
+		return "";
 	}
 
 	@Override

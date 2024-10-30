@@ -95,6 +95,9 @@ public class OrganisationEmailDomainDAO {
 		if (searchParams.getDomains() != null && !searchParams.getDomains().isEmpty()) {
 			sb.and().append("emaildomain.domain in :domains");
 		}
+		if (searchParams.getEnabled() != null) {
+			sb.and().append("emaildomain.enabled = ").append(searchParams.getEnabled());
+		}
 		
 		TypedQuery<OrganisationEmailDomain> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), OrganisationEmailDomain.class);

@@ -22,15 +22,22 @@ package org.olat.admin.user;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -43,11 +50,20 @@ public class SelectOrganisationController extends FormBasicController {
 	private SingleSelection organisationEl;
 	
 	private final List<Organisation> organisations;
+	private final Identity editedIdentity;
 	
-	public SelectOrganisationController(UserRequest ureq, WindowControl wControl, List<Organisation> organisations) {
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
+
+	public SelectOrganisationController(UserRequest ureq, WindowControl wControl, List<Organisation> organisations, Identity editedIdentity) {
 		super(ureq, wControl);
 		this.organisations = new ArrayList<>(organisations);
+		this.editedIdentity = editedIdentity;
+		
 		initForm(ureq);
+		updateEmailDomainUI();
 	}
 
 	@Override
@@ -61,7 +77,11 @@ public class SelectOrganisationController extends FormBasicController {
 		}
 		organisationEl = uifactory.addDropdownSingleselect("select.organisation", formLayout,
 				theKeys.toArray(new String[theKeys.size()]), theValues.toArray(new String[theValues.size()]));
-
+		organisationEl.select(organisationEl.getKey(1), true);
+		if (editedIdentity != null && organisationModule.isEmailDomainEnabled()) {
+			organisationEl.addActionListener(FormEvent.ONCHANGE);
+		}
+		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
@@ -79,6 +99,26 @@ public class SelectOrganisationController extends FormBasicController {
 			}
 		}
 		return organisation;
+	}
+
+	private void updateEmailDomainUI() {
+		if (editedIdentity != null && organisationModule.isEmailDomainEnabled()) {
+			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> Long.valueOf(organisationEl.getSelectedKey()));
+			boolean emailDomainAllowed = organisationService.isEmailDomainAllowed(emailDomains, editedIdentity.getUser().getEmail());
+			if (!emailDomainAllowed) {
+				organisationEl.setWarningKey("error.email.domain.not.allowed");
+			} else {
+				organisationEl.clearWarning();
+			}
+		}
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == organisationEl) {
+			updateEmailDomainUI();
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

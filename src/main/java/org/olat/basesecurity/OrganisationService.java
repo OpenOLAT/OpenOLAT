@@ -184,6 +184,10 @@ public interface OrganisationService {
 
 	public Map<Long, Integer> getEmailDomainKeyToUsersCount(List<OrganisationEmailDomain> emailDomains);
 
+	public List<OrganisationEmailDomain> getEnabledEmailDomains(OrganisationRef organisation);
+	
+	public boolean isEmailDomainAllowed(List<OrganisationEmailDomain> emailDomains, String emailAddress);
+
 	/**
 	 * The list of all organizations where the user has the specified roles,
 	 * with inheritance in the organization structure dependent of the role.

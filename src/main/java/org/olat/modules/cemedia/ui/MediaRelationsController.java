@@ -526,7 +526,7 @@ public class MediaRelationsController extends FormBasicController {
 	private void doSelectOrganisation(UserRequest ureq) {
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.managersRoles());
-		selectOrganisationCtrl = new SelectOrganisationController(ureq, getWindowControl(), organisations);
+		selectOrganisationCtrl = new SelectOrganisationController(ureq, getWindowControl(), organisations, null);
 		listenTo(selectOrganisationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

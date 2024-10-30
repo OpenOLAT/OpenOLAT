@@ -1,4 +1,9 @@
 <div>$message</div>
+#if($emailDomainWarning)
+	<div class="o_warning">
+		<i class="o_icon o_icon-lg o_icon_important"> </i> $emailDomainWarning
+	</div>
+#end
 <div class="o_button_group">
 	$r.render("cancel")
 	$r.render("convert.invitee.to.user")

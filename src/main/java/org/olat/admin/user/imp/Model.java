@@ -27,12 +27,14 @@ package org.olat.admin.user.imp;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.admin.user.imp.ImportStep01.ImportStepForm01;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -48,12 +50,17 @@ public class Model extends DefaultFlexiTableDataModel<Identity> {
 
 	private final Locale locale;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final Set<String> usernameEmailNotInOrganisation;
+	private final String usernameEmailNotInOrganisationWarning;
 
 	public Model(List<Identity> objects, FlexiTableColumnModel columnModel,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+			List<UserPropertyHandler> userPropertyHandlers, Set<String> usernameEmailNotInOrganisation,
+			String usernameEmailNotInOrganisationWarning, Locale locale) {
 		super(columnModel);
+		this.usernameEmailNotInOrganisationWarning = usernameEmailNotInOrganisationWarning;
 		this.locale = locale;
 		this.userPropertyHandlers = userPropertyHandlers;
+		this.usernameEmailNotInOrganisation = usernameEmailNotInOrganisation;
 		setObjects(objects);
 	}
 
@@ -77,7 +84,15 @@ public class Model extends DefaultFlexiTableDataModel<Identity> {
 			// get user property for this column for an already existing user
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(propCol);
 			String value = userPropertyHandler.getUserProperty(ident.getUser(), locale);
-			return (value == null ? "n/a" : value);
+			if (value == null) {
+				return "n/a";
+			}
+			if (UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
+				if (usernameEmailNotInOrganisation.contains(ident.getName())) {
+					value= "<span title=\"" + usernameEmailNotInOrganisationWarning + "\"><i class=\"o_icon o_icon_warn\"></i> " + value + "</span>";
+				}
+			}
+			return value;
 		}
 		return "ERROR";
 	}

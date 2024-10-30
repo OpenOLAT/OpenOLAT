@@ -33,6 +33,7 @@ public class OrganisationEmailDomainSearchParams {
 	
 	private Collection<Long> organisationKeys;
 	private Collection<String> domains;
+	private Boolean enabled;
 
 	public Collection<Long> getOrganisationKeys() {
 		return organisationKeys;
@@ -48,6 +49,14 @@ public class OrganisationEmailDomainSearchParams {
 
 	public void setDomains(Collection<String> domains) {
 		this.domains = domains;
+	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
 	}
 	
 }

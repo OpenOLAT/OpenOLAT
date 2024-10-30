@@ -32,12 +32,17 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -120,9 +125,11 @@ class ImportStep00 extends BasicStep {
 		private List<UpdateIdentity> updateIdents;
 		private List<TransientIdentity> newIdents;
 		private List<UserPropertyHandler> userPropertyHandlers;
+		private Set<String> usernameEmailNotInOrganisation;
 		
 		private final SyntaxValidator passwordSyntaxValidator;
 		private final SyntaxValidator usernameSyntaxValidator;
+		private List<OrganisationEmailDomain> emailDomains;
 
 		@Autowired
 		private UserManager um;
@@ -137,6 +144,10 @@ class ImportStep00 extends BasicStep {
 		@Autowired
 		private BaseSecurity securityManager;
 		@Autowired
+		private OrganisationModule organisationModule;
+		@Autowired
+		private OrganisationService organisationService;
+		@Autowired
 		private LDAPLoginModule ldapModule;
 		@Autowired
 		private ShibbolethModule shibbolethModule;
@@ -146,6 +157,11 @@ class ImportStep00 extends BasicStep {
 			flc.setTranslator(getTranslator());
 			usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
 			passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
+			
+			if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+				emailDomains = organisationService.getEnabledEmailDomains(userImportContext.getPreselectedOrganisation());
+			}
+			
 			initForm(ureq);
 		}
 
@@ -156,6 +172,7 @@ class ImportStep00 extends BasicStep {
 			addToRunContext("idents", idents);
 			addToRunContext("newIdents", newIdents);
 			addToRunContext("updateIdents", updateIdents);
+			addToRunContext("usernameEmailNotInOrganisation", usernameEmailNotInOrganisation);
 			addToRunContext("validImport", Boolean.TRUE);
 			boolean newUsers = false;
 			if (!newIdents.isEmpty()) {
@@ -182,6 +199,7 @@ class ImportStep00 extends BasicStep {
 			idents = new ArrayList<>();
 			newIdents = new ArrayList<>();
 			updateIdents = new ArrayList<>();
+			usernameEmailNotInOrganisation = new HashSet<>(1);
 			
 			// Note: some values are fix and required: login, pwd and lang, those
 			// can not be configured in the config file
@@ -467,6 +485,15 @@ class ImportStep00 extends BasicStep {
 							break;
 						} else {
 							importedInstitutionalEmails.add(thisValue);
+						}
+					}
+				}
+				
+				if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+					if (thisKey.equals(UserConstants.EMAIL)) {
+						boolean emailDomainAllowed = organisationService.isEmailDomainAllowed(emailDomains, thisValue);
+						if (!emailDomainAllowed) {
+							usernameEmailNotInOrganisation.add(ud.getName());
 						}
 					}
 				}

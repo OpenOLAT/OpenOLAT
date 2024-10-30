@@ -333,20 +333,20 @@ public class OrganisationServiceTest extends OlatTestCase {
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null);
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null);
 		// Regular users
-		createUser(organisation1, random(), "openolat.com");
-		createUser(organisation1, random(), "openolat.com");
-		createUser(organisation1, random(), "sub.openolat.com");
-		createUser(organisation1, random(), "sub2.openolat.com");
-		createUser(organisation1, random(), "openolat2.com");
+		createUser(organisation1, random(), "openolat.org");
+		createUser(organisation1, random(), "openolat.org");
+		createUser(organisation1, random(), "sub.openolat.org");
+		createUser(organisation1, random(), "sub2.openolat.org");
+		createUser(organisation1, random(), "openolat2.org");
 		// Other domain
-		createUser(organisation1, random(), "openolat3.com");
+		createUser(organisation1, random(), "openolat3.org");
 		// Not in query list
-		createUser(organisation2, random(), "openolat.com");
+		createUser(organisation2, random(), "openolat.org");
 		
-		OrganisationEmailDomain oedOpenOlat = organisationService.createOrganisationEmailDomain(organisation1, "openolat.com");
-		OrganisationEmailDomain oedOpenOlat2 = organisationService.createOrganisationEmailDomain(organisation1, "openolat2.com");
-		OrganisationEmailDomain oedSubOpenOlat = organisationService.createOrganisationEmailDomain(organisation1, "sub.openolat.com");
-		OrganisationEmailDomain oedOpenOlatSubAllowed = organisationService.createOrganisationEmailDomain(organisation1, "openolat.com");
+		OrganisationEmailDomain oedOpenOlat = organisationService.createOrganisationEmailDomain(organisation1, "openolat.org");
+		OrganisationEmailDomain oedOpenOlat2 = organisationService.createOrganisationEmailDomain(organisation1, "openolat2.org");
+		OrganisationEmailDomain oedSubOpenOlat = organisationService.createOrganisationEmailDomain(organisation1, "sub.openolat.org");
+		OrganisationEmailDomain oedOpenOlatSubAllowed = organisationService.createOrganisationEmailDomain(organisation1, "openolat.org");
 		oedOpenOlatSubAllowed.setSubdomainsAllowed(true);
 		oedOpenOlatSubAllowed = organisationService.updateOrganisationEmailDomain(oedOpenOlatSubAllowed);
 		OrganisationEmailDomain oedFrentix = organisationService.createOrganisationEmailDomain(organisation1, "frentix.com");
@@ -367,4 +367,45 @@ public class OrganisationServiceTest extends OlatTestCase {
 		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
 				null, null, null, null, null, organisation, null);
 	}
+	
+	@Test
+	public void shouldCheckIfEmailDomainAllowed() {
+		// Simple domain
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null);
+		OrganisationEmailDomain emailDomain = organisationService.createOrganisationEmailDomain(organisation, "openolat.org");
+		List<OrganisationEmailDomain> emailDomains = List.of(emailDomain);
+		dbInstance.commitAndCloseSession();
+		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@openolat.org"));
+		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@OPENOLAT.ORG"));
+		Assert.assertFalse(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@example.openolat.org"));
+		Assert.assertFalse(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@exampleopenolat.org"));
+		Assert.assertFalse(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@frentix.com"));
+		
+		// Domain with sub domains allowed
+		emailDomain.setSubdomainsAllowed(true);
+		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@openolat.org"));
+		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@OPENOLAT.ORG"));
+		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@example.openolat.org"));
+		Assert.assertFalse(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@exampleopenolat.org"));
+		Assert.assertFalse(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@frentix.com"));
+		
+		// Disabled domain
+		emailDomain.setEnabled(false);
+		Assert.assertFalse(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@openolat.org"));
+		Assert.assertFalse(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@OPENOLAT.ORG"));
+		Assert.assertFalse(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@example.openolat.org"));
+		Assert.assertFalse(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@exampleopenolat.org"));
+		Assert.assertFalse(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@frentix.com"));
+		
+		// Wildcard domain
+		OrganisationEmailDomain emailDomainWildcard = organisationService.createOrganisationEmailDomain(organisation, OrganisationEmailDomain.WILDCARD);
+		emailDomains = List.of(emailDomain, emailDomainWildcard);
+		dbInstance.commitAndCloseSession();
+		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@openolat.org"));
+		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@OPENOLAT.ORG"));
+		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@example.openolat.org"));
+		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@exampleopenolat.org"));
+		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@frentix.com"));
+	}
+
 }

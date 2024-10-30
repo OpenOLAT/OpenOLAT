@@ -151,6 +151,26 @@ public class OrganisationEmailDomainDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldFiler_enabled() {
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null);
+		OrganisationEmailDomain emailDomain1 = sut.create(organisation, random());
+		OrganisationEmailDomain emailDomain2 = sut.create(organisation, random());
+		emailDomain2.setEnabled(false);
+		emailDomain2 = sut.update(emailDomain2);
+		dbInstance.commitAndCloseSession();
+		
+		OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+		searchParams.setOrganisations(List.of(organisation));
+		assertThat(sut.loadEmailDomains(searchParams)).containsExactlyInAnyOrder(emailDomain1, emailDomain2);
+		
+		searchParams.setEnabled(Boolean.TRUE);
+		assertThat(sut.loadEmailDomains(searchParams)).containsExactlyInAnyOrder(emailDomain1);
+		
+		searchParams.setEnabled(Boolean.FALSE);
+		assertThat(sut.loadEmailDomains(searchParams)).containsExactlyInAnyOrder(emailDomain2);
+	}
+	
+	@Test
 	public void shouldGetOrganisationIdentityEmails() {
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null);
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null);

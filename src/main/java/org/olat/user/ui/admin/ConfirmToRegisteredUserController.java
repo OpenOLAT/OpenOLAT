@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Invitation;
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
@@ -38,6 +40,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.user.UserManager;
@@ -62,6 +65,8 @@ public class ConfirmToRegisteredUserController extends FormBasicController {
 	@Autowired
 	private InvitationService invitationService;
 	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
 	private OrganisationService organisationService;
 	
 	public ConfirmToRegisteredUserController(UserRequest ureq, WindowControl wControl, Identity identityToModify) {
@@ -82,6 +87,17 @@ public class ConfirmToRegisteredUserController extends FormBasicController {
 			};
 			String message = translate("convert.invitee.to.user.text", i18nArgs);
 			layoutCont.contextPut("message", message);
+			
+			if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+				Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
+				List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(defaultOrganisation);
+				if (organisationService.isEmailDomainAllowed(emailDomains, identityToModify.getUser().getEmail())) {
+					String emailDomainWarning = translate("error.email.domain.not.available",
+							StringHelper.escapeHtml(identityToModify.getUser().getEmail()),
+							StringHelper.escapeHtml(defaultOrganisation.getDisplayName()));
+					layoutCont.contextPut("emailDomainWarning", emailDomainWarning);
+				}
+			}
 		}
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());

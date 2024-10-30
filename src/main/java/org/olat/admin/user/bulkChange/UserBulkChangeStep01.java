@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -43,6 +45,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.Roles;
@@ -94,6 +97,8 @@ class UserBulkChangeStep01 extends BasicStep {
 		@Autowired
 		private UserManager userManager;
 		@Autowired
+		private OrganisationModule organisationModule;
+		@Autowired
 		private OrganisationService organisationService;
 
 		public UserBulkChangeStepForm01(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
@@ -133,17 +138,51 @@ class UserBulkChangeStep01 extends BasicStep {
 			if(source instanceof MultipleSelectionElement check
 					&& check.getUserObject() instanceof RoleChange change) {
 				change.set().setVisible(change.check().isAtLeastSelected(1));
+				validateOrganisationEmailDomain();
 			} else if(source instanceof SingleSelection actionEl
 					&& actionEl.getUserObject() instanceof RoleChange change) {
 				if(OrganisationRoles.user.equals(change.role())) {
 					if(actionEl.isOneSelected() && "remove".equals(actionEl.getSelectedKey())) {
 						actionEl.setWarningKey("warning.remove.user");
 					} else {
-						actionEl.setWarningKey(null);
+						actionEl.clearWarning();
+					}
+				}
+				validateOrganisationEmailDomain();
+			} else if (source == organisationEl) {
+				validateOrganisationEmailDomain();
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
+
+		private void validateOrganisationEmailDomain() {
+			organisationEl.clearWarning();
+			if (!organisationModule.isEmailDomainEnabled()) {
+				return;
+			}
+			
+			boolean roleAddUserRoleOnly = false;
+			for (RoleChange change:roleChanges) {
+				if (change.set().isVisible() && change.set().isOneSelected() && change.set().getSelectedKey().equals("add")) {
+					if (OrganisationRoles.user == change.role()) {
+						roleAddUserRoleOnly = true;
+					} else {
+						// E-mail domain restricts only user role.
+						organisationEl.clearWarning();
+						return;
 					}
 				}
 			}
-			super.formInnerEvent(ureq, source, event);
+			
+			if (roleAddUserRoleOnly) {
+				List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> Long.valueOf(organisationEl.getSelectedKey()));
+				for (Identity identity : userBulkChanges.getIdentitiesToEdit()) {
+					if (!organisationService.isEmailDomainAllowed(emailDomains, identity.getUser().getEmail())) {
+						organisationEl.setWarningKey("error.email.domain");
+						return;
+					}
+				}
+			}
 		}
 
 		@Override
@@ -186,6 +225,7 @@ class UserBulkChangeStep01 extends BasicStep {
 					organisationEl = uifactory.addDropdownSingleselect("organisations", "organisations", innerFormLayout,
 							keys, orgKeyValues.values());
 					organisationEl.select(keys[0], true);
+					organisationEl.addActionListener(FormEvent.ONCHANGE);
 				}
 			} else {
 				Organisation organisation = organisationService.getOrganisation(userBulkChanges.getOrganisation());

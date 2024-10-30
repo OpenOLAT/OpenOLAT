@@ -36,6 +36,8 @@ import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -178,6 +180,8 @@ class NewUserForm extends FormBasicController {
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private RegistrationManager registrationManager;
+	@Autowired
+	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
 
@@ -369,9 +373,21 @@ class NewUserForm extends FormBasicController {
 		
 		// organization
 		organisationsElement.clearError();
+		organisationsElement.clearWarning();
 		if(organisationsElement.isVisible() && !organisationsElement.isOneSelected()) {
 			organisationsElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		}
+		
+		// Organisation e-mail domain
+		if (emailTextElement.isVisible() && ! emailTextElement.hasError()
+				&& organisationsElement.isVisible() && !organisationsElement.hasError() && organisationsElement.isOneSelected()
+				&& organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> Long.valueOf(organisationsElement.getSelectedKey()));
+			boolean emailDomainAllowed = organisationService.isEmailDomainAllowed(emailDomains, emailTextElement.getValue());
+			if (!emailDomainAllowed) {
+				emailTextElement.setWarningKey("error.email.domain.not.allowed");
+			}
 		}
 		
 		// expiration

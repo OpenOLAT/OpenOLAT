@@ -25,9 +25,11 @@
 package org.olat.admin.user.imp;
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.admin.user.imp.Model.ModelCols;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -38,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -48,6 +51,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,6 +143,8 @@ class ImportStep01 extends BasicStep {
 			List<UpdateIdentity> updateIdents = (List<UpdateIdentity>) getFromRunContext("updateIdents");
 			@SuppressWarnings("unchecked")
 			List<TransientIdentity> newIdents = (List<TransientIdentity>) getFromRunContext("newIdents");
+			@SuppressWarnings("unchecked")
+			Set<String> usernameEmailNotInOrganisation = (Set<String>) getFromRunContext("usernameEmailNotInOrganisation");
 			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("step1", getTranslator(), velocity_root + "/step1.html");
 			formLayoutVertical.add(textContainer);
 
@@ -186,11 +192,16 @@ class ImportStep01 extends BasicStep {
 			int colPos = USER_PROPS_OFFSET;
 			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, true);
 			for (UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
-				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
+				DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++);
+				if (UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
+					columnModel.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.none));
+				}
+				tableColumnModel.addFlexiColumnModel(columnModel);
 			}
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ModelCols.expiration, new DateFlexiCellRenderer(getLocale())));
 
-			Model tableDataModel = new Model(idents, tableColumnModel, userPropertyHandlers, getLocale());
+			Model tableDataModel = new Model(idents, tableColumnModel, userPropertyHandlers,
+					usernameEmailNotInOrganisation, translate("error.email.domain.not.allowed"), getLocale());
 			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
 		}
 	}

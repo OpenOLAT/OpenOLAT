@@ -408,7 +408,7 @@ public class UserRolesController extends FormBasicController {
 		
 		List<Organisation> upgradeableToOrganisations = new ArrayList<>(manageableOrganisations);
 		upgradeableToOrganisations.removeAll(organisations);
-		selectOrganisationCtrl = new SelectOrganisationController(ureq, getWindowControl(), upgradeableToOrganisations);
+		selectOrganisationCtrl = new SelectOrganisationController(ureq, getWindowControl(), upgradeableToOrganisations, editedIdentity);
 		listenTo(selectOrganisationCtrl);
 		
 		String title = translate("rightsForm.add.to.organisation");
