@@ -216,13 +216,16 @@ public class RubricSliderResponsesTableController extends FormBasicController im
 	private BoxPlot forgeBoxPlot(SliderStatistic sliderStatistic) {
 		int numOfSteps = sliderStatistic.getNumberOfSteps();
 		Double average = sliderStatistic.getAvg();
-		float min = sliderStatistic.getMin();
-		float max = sliderStatistic.getMax();
+
+		double min = rubric.getScaleType().getStepValue(numOfSteps, sliderStatistic.getMin());
+		double max = rubric.getScaleType().getStepValue(numOfSteps, sliderStatistic.getMax());
+		double maxStepValue = rubric.getScaleType().getStepValue(numOfSteps, numOfSteps);
+
 		Double firstQuartile = sliderStatistic.getFirstQuartile();
 		Double thirdQuartile = sliderStatistic.getThirdQuartile();
 		Double median = sliderStatistic.getMedian();
 		
-		return new BoxPlot("plot-assessments-" + (count++), numOfSteps, min, max, toFloat(average),
+		return new BoxPlot("plot-assessments-" + (count++), (int)maxStepValue, (float)min, (float)max, toFloat(average),
 				toFloat(firstQuartile), toFloat(thirdQuartile), toFloat(median), null);
 	}
 	
