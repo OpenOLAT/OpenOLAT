@@ -399,7 +399,7 @@ public class CPDisplayController extends BasicController implements Activateable
 			return new CPPrintController(lureq, lwcontrol, ctm, rootContainer);
 		};
 		MediaResource resource = pdfService.convert("toPdf", getIdentity(), pdfControllerCreator,
-				getWindowControl(), PdfOutputOptions.valueOf(MediaType.screen, Integer.valueOf(10), null));
+				getWindowControl(), PdfOutputOptions.valueOf(MediaType.print, Double.valueOf(0.393701d), null));
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 

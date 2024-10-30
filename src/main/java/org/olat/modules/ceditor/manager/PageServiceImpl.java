@@ -747,7 +747,7 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 				return new PageRunController(uureq, wwControl, null,
 						BinderSecurityCallbackFactory.getReadOnlyCallback(), page, pageSettings, false);
 			};
-			PdfOutputOptions outputOptions = PdfOutputOptions.valueOf(MediaType.screen, Integer.valueOf(0), new PageRange(1, 1));
+			PdfOutputOptions outputOptions = PdfOutputOptions.valueOf(MediaType.screen, Double.valueOf(0.0d), new PageRange(1, 1));
 			pdfService.convert(identity, creator, wControl, outputOptions, out);
 			out.flush();
 		} catch(IOException e) {

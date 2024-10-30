@@ -27,10 +27,10 @@ package org.olat.core.commons.services.pdf;
  */
 public class PdfOutputOptions {
 	
-	private Integer marginLeft;
-	private Integer marginRight;
-	private Integer marginTop;
-	private Integer marginBottom;
+	private Double marginLeft;
+	private Double marginRight;
+	private Double marginTop;
+	private Double marginBottom;
 	private MediaType emulatedMediaType;
 	
 	private PageRange pageRange;
@@ -46,7 +46,7 @@ public class PdfOutputOptions {
 	 * @param margin Set the top, bottom, left and right margin (support: Gotenberg)
 	 * @return The options object
 	 */
-	public static PdfOutputOptions valueOf(MediaType emulatedMediaType, Integer margin, PageRange range) {
+	public static PdfOutputOptions valueOf(MediaType emulatedMediaType, Double margin, PageRange range) {
 		PdfOutputOptions options = new PdfOutputOptions();
 		options.setEmulatedMediaType(emulatedMediaType);
 		options.setMarginLeft(margin);
@@ -57,35 +57,35 @@ public class PdfOutputOptions {
 		return options;
 	}
 
-	public Integer getMarginLeft() {
+	public Double getMarginLeft() {
 		return marginLeft;
 	}
 
-	public void setMarginLeft(Integer marginLeft) {
+	public void setMarginLeft(Double marginLeft) {
 		this.marginLeft = marginLeft;
 	}
 
-	public Integer getMarginRight() {
+	public Double getMarginRight() {
 		return marginRight;
 	}
 
-	public void setMarginRight(Integer marginRight) {
+	public void setMarginRight(Double marginRight) {
 		this.marginRight = marginRight;
 	}
 
-	public Integer getMarginTop() {
+	public Double getMarginTop() {
 		return marginTop;
 	}
 
-	public void setMarginTop(Integer marginTop) {
+	public void setMarginTop(Double marginTop) {
 		this.marginTop = marginTop;
 	}
 
-	public Integer getMarginBottom() {
+	public Double getMarginBottom() {
 		return marginBottom;
 	}
 
-	public void setMarginBottom(Integer marginBottom) {
+	public void setMarginBottom(Double marginBottom) {
 		this.marginBottom = marginBottom;
 	}
 
