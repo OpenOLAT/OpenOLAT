@@ -43,12 +43,14 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.Logger;
 import org.jamwiki.utils.Utilities;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -344,6 +346,7 @@ public class Wiki implements WikiContainer, Serializable {
 		int counter = 0;
 		
 		Formatter f = Formatter.getInstance(locale);
+		Translator translator = Util.createPackageTranslator(WikiMainController.class, locale);
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		
 		for (Iterator<WikiPage> iter = pages.iterator(); iter.hasNext();) {
@@ -354,14 +357,11 @@ public class Wiki implements WikiContainer, Serializable {
 				sb.append(page.getPageName());
 				sb.append("]] ");
 				sb.append(f.formatDateAndTime(new Date(page.getModificationTime())));
-				sb.append(" Author: ");
 				long author = page.getModifyAuthor();
 				if (author != 0) {
 					String authorFullname = userManager.getUserDisplayName(author);
 					if(StringHelper.containsNonWhitespace(authorFullname)) {
-						sb.append(" Author: ").append(authorFullname);
-					} else {
-						sb.append("???");
+						sb.append(". ").append(translator.translate("author", authorFullname));
 					}
 				}
 				sb.append("\n");
