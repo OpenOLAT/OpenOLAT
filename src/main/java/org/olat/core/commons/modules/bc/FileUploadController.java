@@ -75,13 +75,13 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalImpl;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -414,7 +414,7 @@ public class FileUploadController extends FormBasicController {
 			}
 			unlockDialogBox.deactivate();
 			
-			existingVFSItem.delete();
+			existingVFSItem.deleteSilently();
 			newFile.rename(fileName);
 			// ... and notify listeners.
 			finishUpload(ureq, true);
@@ -458,7 +458,7 @@ public class FileUploadController extends FormBasicController {
 				//someone play with the configuration
 				// Overwrite...
 				String fileName = existingVFSItem.getName();
-				existingVFSItem.delete();
+				existingVFSItem.deleteSilently();
 				newFile.rename(fileName);
 				
 				// ... and notify listeners.
@@ -474,7 +474,7 @@ public class FileUploadController extends FormBasicController {
 			} else {
 				// Overwrite...
 				String fileName = existingVFSItem.getName();
-				existingVFSItem.delete();
+				existingVFSItem.deleteSilently();
 				newFile.rename(fileName);
 				
 				// ... and notify listeners.

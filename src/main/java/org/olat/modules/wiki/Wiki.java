@@ -423,17 +423,18 @@ public class Wiki implements WikiContainer, Serializable {
 		return pages;
 	}
 
-	/**
-	 * FIXME:gs increase performance
-	 * @param imageName
-	 * @return
-	 */
 	public boolean mediaFileExists(String imageName) {
 		List<VFSItem> mediaFiles = getMediaFileList();
-		if (mediaFiles.size() == 0) return false;
-		for (Iterator<VFSItem> iter = mediaFiles.iterator(); iter.hasNext();) {
-			VFSLeaf leaf = (VFSLeaf) iter.next();
-			if (leaf.getName().equals(Utilities.encodeForURL(imageName))) return true;
+		if (mediaFiles.isEmpty()) {
+			return false;
+		}
+		
+		for (VFSItem vfsItem : mediaFiles) {
+			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+				if (vfsLeaf.getName().equals(Utilities.encodeForURL(imageName))) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}
