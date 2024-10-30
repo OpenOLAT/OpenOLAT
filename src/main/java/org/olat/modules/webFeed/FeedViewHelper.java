@@ -394,6 +394,7 @@ public class FeedViewHelper {
 					String basePath = baseUri + "/" + item.getGuid();
 					Filter mediaUrlFilter = FilterFactory.getBaseURLToMediaRelativeURLFilter(basePath);
 					itemContent = mediaUrlFilter.filter(content);
+					itemContent = Formatter.formatLatexFormulas(itemContent);
 				}
 			}
 		}

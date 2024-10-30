@@ -1,4 +1,4 @@
-@media print {
+@media print, screen {
 	div.o_offline_cp, div.o_offline_cp * {
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
@@ -11,6 +11,10 @@
 	
 	.o_offline_cp_header .o_offline_cp_printed {
    		display: none;
+	}
+	
+	.o_offline_cp_content {
+		width: calc(100vw - 20mm);
 	}
 
    	.o_offline_cp_footer {

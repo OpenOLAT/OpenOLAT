@@ -31,6 +31,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfOutputOptions.MediaType;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -398,7 +399,7 @@ public class CPDisplayController extends BasicController implements Activateable
 			return new CPPrintController(lureq, lwcontrol, ctm, rootContainer);
 		};
 		MediaResource resource = pdfService.convert("toPdf", getIdentity(), pdfControllerCreator,
-				getWindowControl(), PdfOutputOptions.defaultOptions());
+				getWindowControl(), PdfOutputOptions.valueOf(MediaType.screen, Integer.valueOf(10), null));
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 
@@ -410,7 +411,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	public void selectTreeNode(UserRequest ureq, String newUri) {
 		TreeNode newNode = ctm.lookupTreeNodeByHref(newUri);
 		if (newNode == null && newUri.contains("?")) {
-			// remove any url paramters in case it is not an html5 app. E.g. some ELML contents
+			// remove any URL parameters in case it is not an html5 app. E.g. some ELML contents
 			newUri = newUri.substring(0, newUri.indexOf("?"));
 			newNode = ctm.lookupTreeNodeByHref(newUri);
 		}
