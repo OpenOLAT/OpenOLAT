@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.gui.control.OlatDmzTopNavController;
 import org.olat.gui.control.OlatFooterController;
 
 /**
@@ -44,6 +45,7 @@ public class DmzBFWCParts implements BaseFullWebappControllerParts {
 	
 	private ControllerCreator contentControllerCreator;
 	private boolean showTopNav = true; // default
+	private boolean showGoToLoginLink = false;
 
 	@Override
 	public LockableController createFooterController(UserRequest ureq, WindowControl wControl) {
@@ -76,11 +78,13 @@ public class DmzBFWCParts implements BaseFullWebappControllerParts {
 			if (CoreSpringFactory.containsBean("fullWebApp.DMZTopNavControllerCreator")) {
 				ControllerCreator headerControllerCreator = (ControllerCreator)  CoreSpringFactory.getBean("fullWebApp.DMZTopNavControllerCreator");
 				topNavCtr = (LockableController)headerControllerCreator.createController(ureq, wControl);
+				if (showGoToLoginLink && topNavCtr instanceof OlatDmzTopNavController topNavCtrl) {
+					topNavCtrl.enableGoToLoginLink();
+				}
 			}
 			return topNavCtr;
-		} else {
-			return null;
 		}
+		return null;
 	}
 	
 	public void setContentControllerCreator(ControllerCreator contentControllerCreator){
@@ -106,5 +110,13 @@ public class DmzBFWCParts implements BaseFullWebappControllerParts {
 	 */
 	public void showTopNav(boolean showTopNavController) {
 		this.showTopNav = showTopNavController ;
+	}
+
+	public boolean isShowGoToLoginLink() {
+		return showGoToLoginLink;
+	}
+
+	public void setShowGoToLoginLink(boolean showGoToLoginLink) {
+		this.showGoToLoginLink = showGoToLoginLink;
 	}
 }

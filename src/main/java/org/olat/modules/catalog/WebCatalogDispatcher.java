@@ -147,6 +147,7 @@ public class WebCatalogDispatcher implements Dispatcher {
 		}
 		
 		DmzBFWCParts bfwcParts = new DmzBFWCParts();
+		bfwcParts.setShowGoToLoginLink(true);
 		AutoCreator controllerCreator = new AutoCreator();
 		controllerCreator.setClassName(WebCatalogMainController.class.getName());
 		bfwcParts.setContentControllerCreator(controllerCreator);

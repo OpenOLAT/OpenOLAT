@@ -38,6 +38,7 @@ import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -47,6 +48,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.login.AboutController;
@@ -54,7 +56,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class OlatDmzTopNavController extends BasicController implements LockableController {
 	
-	private Link impressumLink, aboutLink;
+	private final VelocityContainer mainVC;
+	private final Link impressumLink;
+	private final Link aboutLink;
 	
 	private AboutController aboutCtr;
 	private LanguageChooserController languageChooserC;
@@ -65,18 +69,18 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 	private HelpModule helpModule;
 	@Autowired
 	private I18nModule i18nModule;
-	
+
 	public OlatDmzTopNavController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
 		// Add translator for help plugins
 		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator()));
 		
-		VelocityContainer vc = createVelocityContainer("dmztopnav");
+		mainVC = createVelocityContainer("dmztopnav");
 		
 		// impressum
-		vc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
-		impressumLink = LinkFactory.createLink("_top_nav_dmz_impressum", "topnav.impressum", vc, this);
+		mainVC.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
+		impressumLink = LinkFactory.createLink("_top_nav_dmz_impressum", "topnav.impressum", mainVC, this);
 		impressumLink.setSuppressDirtyFormWarning(true);
 		impressumLink.setTitle("topnav.impressum.alt");
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
@@ -87,14 +91,14 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 		if (helpModule.isHelpEnabled()) {
 			List<String> helpPlugins = new ArrayList<>();
 			for (HelpLinkSPI helpLinkSPI : helpModule.getDMZHelpPlugins()) {
-				helpPlugins.add(helpLinkSPI.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, vc, false).getComponentName());
+				helpPlugins.add(helpLinkSPI.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, mainVC, false).getComponentName());
 			}
-			vc.contextPut("helpPlugins", helpPlugins);
+			mainVC.contextPut("helpPlugins", helpPlugins);
 		}
 		// about link
 		aboutLink = AboutController.aboutLinkFactory("top.menu.about", getLocale(), this, true, false);
 		aboutLink.setSuppressDirtyFormWarning(true);
-		vc.put("topnav.about", aboutLink);
+		mainVC.put("topnav.about", aboutLink);
 
 		//choosing language 
 		if (i18nModule.getEnabledLanguageKeys().size() > 1) {
@@ -102,9 +106,19 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 			//DOKU:pb:2008-01 listenTo(languageChooserC); not necessary as LanguageChooser sends a MultiUserEvent
 			//which is catched by the BaseFullWebappController. This one is then 
 			//responsible to recreate the GUI with the new Locale
-			vc.put("languageChooser", languageChooserC.getInitialComponent());
+			mainVC.put("languageChooser", languageChooserC.getInitialComponent());
 		}
-		putInitialPanel(vc);		
+		putInitialPanel(mainVC);	
+	}
+
+	public void enableGoToLoginLink() {
+		ExternalLink goToLoginLink = LinkFactory.createExternalLink("login", "login",
+				Settings.getServerContextPathURI() + "/" + Settings.getLoginPath());
+		goToLoginLink.setElementCssClass("btn btn-default o_button_ghost");
+		goToLoginLink.setIconLeftCSS("o_icon o_icon-lg o_icon_login");
+		goToLoginLink.setName(translate("topnav.login"));
+		goToLoginLink.setTarget("_self");
+		mainVC.put("login", goToLoginLink);
 	}
 
 	@Override
