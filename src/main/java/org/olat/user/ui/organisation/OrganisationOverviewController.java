@@ -20,6 +20,7 @@
 package org.olat.user.ui.organisation;
 
 import org.olat.admin.privacy.PrivacyAdminController;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -36,6 +37,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -49,6 +51,7 @@ public class OrganisationOverviewController extends BasicController {
 	private final Link resourcesLink;
 	private final Link userManagementLink;
 	private final Link roleConfigLink;
+	private final Link emailDomainsLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
@@ -56,8 +59,12 @@ public class OrganisationOverviewController extends BasicController {
 	private OrganisationResourceListController resourcesCtrl;
 	private OrganisationUserManagementController userMgmtCtrl;
 	private OrganisationRoleEditController roleConfigCtrl;
+	private OrganisationEmailDomainAdminController emailDomainsCtrl;
 	
 	private final Organisation organisation;
+	
+	@Autowired
+	private OrganisationModule organisationModul;
 
 	public OrganisationOverviewController(UserRequest ureq, WindowControl wControl, Organisation organisation) {
 		super(ureq, wControl);
@@ -77,6 +84,10 @@ public class OrganisationOverviewController extends BasicController {
 		roleConfigLink = LinkFactory.createLink("admin.props.linemanagers", mainVC, this);
 		if (organisation.isDefault() || organisation.getParent() == null) {
 			segmentView.addSegment(roleConfigLink, false);
+		}
+		emailDomainsLink = LinkFactory.createLink("organisation.email.domains", mainVC, this);
+		if (organisationModul.isEmailDomainEnabled()) {
+			segmentView.addSegment(emailDomainsLink, false);
 		}
 		putInitialPanel(mainVC);
 		doOpenMetadadata(ureq);
@@ -111,6 +122,8 @@ public class OrganisationOverviewController extends BasicController {
 					doOpenResources(ureq);
 				} else if (clickedLink == roleConfigLink) {
 					doOpenRoleConfig(ureq);
+				} else if(clickedLink == emailDomainsLink) {
+					doOpenEmailDomains(ureq);
 				}
 			}
 		}
@@ -160,4 +173,16 @@ public class OrganisationOverviewController extends BasicController {
 		addToHistory(ureq, roleConfigCtrl);
 		mainVC.put("segmentCmp", roleConfigCtrl.getInitialComponent());
 	}
+
+	private void doOpenEmailDomains(UserRequest ureq) {
+		if (emailDomainsCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("EMailDomains"), null);
+			emailDomainsCtrl = new OrganisationEmailDomainAdminController(ureq, bwControl, organisation);
+			listenTo(emailDomainsCtrl);
+		}
+		
+		addToHistory(ureq, emailDomainsCtrl);
+		mainVC.put("segmentCmp", emailDomainsCtrl.getInitialComponent());
+	}
+	
 }

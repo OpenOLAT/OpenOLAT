@@ -59,10 +59,11 @@ public class OrganisationEmailDomainController extends FormBasicController imple
 	@Autowired
 	private OrganisationService organisationService;
 
-	protected OrganisationEmailDomainController(UserRequest ureq, WindowControl wControl, OrganisationEmailDomain emailDomain) {
+	protected OrganisationEmailDomainController(UserRequest ureq, WindowControl wControl, Organisation organisation,
+			OrganisationEmailDomain emailDomain) {
 		super(ureq, wControl);
 		this.emailDomain = emailDomain;
-		organisations = organisationService.getOrganisations();
+		organisations = organisation != null? List.of(organisation): organisationService.getOrganisations();
 		
 		initForm(ureq);
 	}
@@ -74,8 +75,10 @@ public class OrganisationEmailDomainController extends FormBasicController imple
 		organisationsEl.setMandatory(true);
 		if (emailDomain != null) {
 			organisationsEl.select(emailDomain.getOrganisation().getKey().toString(), true);
-			organisationsEl.setEnabled(false);
+		} else {
+			organisationsEl.select(organisationsEl.getKey(0), true);
 		}
+		organisationsEl.setEnabled(emailDomain == null && organisations.size() > 1);
 		
 		String domain = emailDomain != null? emailDomain.getDomain(): null;
 		domainEl = uifactory.addTextElement("organisation.email.domain.domain", 255, domain, formLayout);

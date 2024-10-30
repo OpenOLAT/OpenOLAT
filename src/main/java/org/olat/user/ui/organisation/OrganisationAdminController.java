@@ -179,7 +179,7 @@ public class OrganisationAdminController extends BasicController implements Acti
 	private void doOpenOrganisationEmailDomains(UserRequest ureq) {
 		if(emailDomainCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("EMailDomains"), null);
-			emailDomainCtrl = new OrganisationEmailDomainAdminController(ureq, bwControl);
+			emailDomainCtrl = new OrganisationEmailDomainAdminController(ureq, bwControl, null);
 			listenTo(emailDomainCtrl);
 		}
 		addToHistory(ureq, emailDomainCtrl);

@@ -49,6 +49,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.user.ui.organisation.OrganisationEmailDomainDataModel.OrganisationEmailDomainCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,12 +78,15 @@ public class OrganisationEmailDomainAdminController extends FormBasicController 
 	private ConfirmationController deleteConfirmationCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ToolsController toolsCtrl;
+
+	private final Organisation organisation;
 	
 	@Autowired
 	private OrganisationService organisationService;
 
-	protected OrganisationEmailDomainAdminController(UserRequest ureq, WindowControl wControl) {
+	protected OrganisationEmailDomainAdminController(UserRequest ureq, WindowControl wControl, Organisation organisation) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.organisation = organisation;
 		
 		initForm(ureq);
 		loadModel();
@@ -125,6 +129,9 @@ public class OrganisationEmailDomainAdminController extends FormBasicController 
 	
 	private void loadModel() {
 		OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+		if (organisation != null) {
+			searchParams.setOrganisations(List.of(organisation));
+		}
 		List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
 		Map<Long, Integer> emailDomainKeyToUsersCount = organisationService.getEmailDomainKeyToUsersCount(emailDomains);
 		
@@ -215,7 +222,7 @@ public class OrganisationEmailDomainAdminController extends FormBasicController 
 	private void doEditEmailDomain(UserRequest ureq, OrganisationEmailDomain emailDomain) {
 		if (guardModalController(editCtrl)) return;
 		
-		editCtrl = new OrganisationEmailDomainController(ureq, getWindowControl(), emailDomain);
+		editCtrl = new OrganisationEmailDomainController(ureq, getWindowControl(), organisation, emailDomain);
 		listenTo(editCtrl);
 		
 		String title = translate("organisation.email.domain.edit");
