@@ -414,7 +414,7 @@ public class FileUploadController extends FormBasicController {
 			}
 			unlockDialogBox.deactivate();
 			
-			existingVFSItem.delete();
+			existingVFSItem.deleteSilently();
 			newFile.rename(fileName);
 			// ... and notify listeners.
 			finishUpload(ureq, true);
@@ -458,7 +458,7 @@ public class FileUploadController extends FormBasicController {
 				//someone play with the configuration
 				// Overwrite...
 				String fileName = existingVFSItem.getName();
-				existingVFSItem.delete();
+				existingVFSItem.deleteSilently();
 				newFile.rename(fileName);
 				
 				// ... and notify listeners.
@@ -474,7 +474,7 @@ public class FileUploadController extends FormBasicController {
 			} else {
 				// Overwrite...
 				String fileName = existingVFSItem.getName();
-				existingVFSItem.delete();
+				existingVFSItem.deleteSilently();
 				newFile.rename(fileName);
 				
 				// ... and notify listeners.

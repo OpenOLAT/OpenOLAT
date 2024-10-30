@@ -809,33 +809,34 @@ public class WikiMainController extends BasicController implements Activateable2
 
 		List<VFSItem> filelist = wiki.getMediaFileListWithMetadata();
 		Map<String, MediaFileElement> files = new HashMap<>();
-		for (Iterator<VFSItem> iter = filelist.iterator(); iter.hasNext();) {
-			VFSLeaf elem = (VFSLeaf) iter.next();
-			if (elem.getName().endsWith(METADATA_SUFFIX)) { // *.metadata files
-															// go here
-				Properties p = new Properties();
-				try {
-					p.load(elem.getInputStream());
-					MediaFileElement mediaFileElement = new MediaFileElement(elem.getName(),
-							p.getProperty(MEDIA_FILE_CREATED_BY), p.getProperty(MEDIA_FILE_CREATIONDATE));
-					mediaFileElement.setDeletedBy(p.getProperty(MEDIA_FILE_DELETED_BY));
-					mediaFileElement.setDeletionDate(p.getProperty(MEDIA_FILE_DELETIONDATE));
-					files.put(p.getProperty(MEDIA_FILE_FILENAME), mediaFileElement);
-				} catch (IOException e) {
-					throw new OLATRuntimeException("Could'n read properties from media file: " + elem.getName(), e);
+		for (VFSItem vfsItem : filelist) {
+			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+				if (vfsLeaf.getName().endsWith(METADATA_SUFFIX)) {
+					Properties p = new Properties();
+					try {
+						p.load(vfsLeaf.getInputStream());
+						MediaFileElement mediaFileElement = new MediaFileElement(vfsLeaf.getName(),
+								p.getProperty(MEDIA_FILE_CREATED_BY), p.getProperty(MEDIA_FILE_CREATIONDATE));
+						mediaFileElement.setDeletedBy(p.getProperty(MEDIA_FILE_DELETED_BY));
+						mediaFileElement.setDeletionDate(p.getProperty(MEDIA_FILE_DELETIONDATE));
+						files.put(p.getProperty(MEDIA_FILE_FILENAME), mediaFileElement);
+					} catch (IOException e) {
+						throw new OLATRuntimeException("Could'n read properties from media file: " + vfsLeaf.getName(), e);
+					}
 				}
 			}
 		}
-		for (Iterator<VFSItem> iter = filelist.iterator(); iter.hasNext();) {
-			VFSLeaf elem = (VFSLeaf) iter.next();
-			if (!elem.getName().endsWith(METADATA_SUFFIX)) {
-				if (!files.containsKey(elem.getName())) {
-					// legacy file without metadata
-					files.put(elem.getName(), new MediaFileElement(elem.getName(), 0, elem.getLastModified()));
-				} else {
-					// file with metadata, update name
-					MediaFileElement element = files.get(elem.getName());
-					element.setFileName(elem.getName());
+		for (VFSItem vfsItem : filelist) {
+			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+				if (!vfsLeaf.getName().endsWith(METADATA_SUFFIX)) {
+					if (!files.containsKey(vfsLeaf.getName())) {
+						// legacy file without metadata
+						files.put(vfsLeaf.getName(), new MediaFileElement(vfsLeaf.getName(), 0, vfsLeaf.getLastModified()));
+					} else {
+						// file with metadata, update name
+						MediaFileElement element = files.get(vfsLeaf.getName());
+						element.setFileName(vfsLeaf.getName());
+					}
 				}
 			}
 		}
