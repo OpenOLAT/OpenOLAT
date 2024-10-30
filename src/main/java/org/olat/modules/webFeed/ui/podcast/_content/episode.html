@@ -54,7 +54,7 @@
 				</div>
 			</div>
 
-			<div class="o_feed_content o_feed_detail_content o_math">
+			<div class="o_feed_content o_feed_detail_content">
 				$!helper.getItemDescriptionForBrowser($item)
 				#set($podId = $r.getUniqueId())
 				#if ($!item.getEnclosure())
@@ -84,7 +84,6 @@
 					</div>
 				#end
 			</div>
-			$r.mathJax("")
 		</div>
 
 		<div class="o_block_footer">

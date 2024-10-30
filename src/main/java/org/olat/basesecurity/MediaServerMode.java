@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * Initial date: 2024-10-03<br>
  *
@@ -27,4 +29,15 @@ package org.olat.basesecurity;
 public enum MediaServerMode {
 	allowAll,
 	configure;
+
+	public static MediaServerMode secureValueOf(String value, MediaServerMode defaultValue) {
+		if (StringHelper.containsNonWhitespace(value)) {
+			for (MediaServerMode mode: MediaServerMode.values()) {
+				if (mode.name().equalsIgnoreCase(value)) {
+					return mode;
+				}
+			}
+		}
+		return defaultValue;
+	}
 }

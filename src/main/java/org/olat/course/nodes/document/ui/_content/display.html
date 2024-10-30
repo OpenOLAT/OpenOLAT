@@ -18,7 +18,7 @@
 			#end
 			<div class="o_cnd_info">
 				#if($item.description)
-					<div>$item.description</div>
+					<div>$r.formatLatexFormulas($item.description)</div>
 				#end
 				<div class="text-muted small">
 					#if($item.fileSize)
