@@ -1015,9 +1015,13 @@ public class OOGraphene {
 		return new ExpectedCondition<>() {
 			@Override
 			public WebElement apply(WebDriver driver) {
-				OOGraphene.scrollTableRight(tableLocator, driver);
-				WebElement element = driver.findElement(locator);
-				return element.isDisplayed() ? element : null;
+				try {
+					OOGraphene.scrollTableRight(tableLocator, driver);
+					WebElement element = driver.findElement(locator);
+					return element.isDisplayed() ? element : null;
+				} catch (StaleElementReferenceException e) {
+					return null;
+				}
 			}
 
 			@Override
