@@ -129,7 +129,7 @@ public class TopicBrokerMailing {
 		@Override
 		public void putVariablesInMailContext(VelocityContext context, Identity recipient) {
 			fillContextWithStandardIdentityValues(context, recipient, translator.getLocale());
-			putVariablesInMailContext(context, "recipientDisplayName", userManager.getUserDisplayName(recipient));
+			putVariablesInMailContext(context, "recipientDisplayName", StringHelper.escapeHtml(userManager.getUserDisplayName(recipient)));
 			
 			String withdrawDeadline = Formatter.getInstance(translator.getLocale()).formatDate(broker.getWithdrawEndDate());
 			putVariablesInMailContext(context, "withdrawDeadline", withdrawDeadline);
