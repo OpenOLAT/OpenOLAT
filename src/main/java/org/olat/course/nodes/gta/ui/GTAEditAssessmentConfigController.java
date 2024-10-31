@@ -970,7 +970,7 @@ public class GTAEditAssessmentConfigController extends FormBasicController imple
 	
 	private int getNumberOfAssessments() {	
 		List<EvaluationFormSession> sessions = msService.getSessions(courseEntry, gtaNode.getIdent(), GTACourseNode.getEvaluationFormProvider());
-		return sessions.size();
+		return sessions == null ? 0 : sessions.size();
 	}
 	
 	private MinMax calculateUIMinMax() {
