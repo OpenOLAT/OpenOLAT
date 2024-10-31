@@ -105,7 +105,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		submissionCtrl = new GTASubmissionEditController(ureq, getWindowControl(), config);
 		listenTo(submissionCtrl);
 		//feedback: peer review or revisions
-		peerReviewCtrl = new GTAPeerReviewEditController(ureq, getWindowControl(), stackPanel, config);
+		peerReviewCtrl = new GTAPeerReviewEditController(ureq, getWindowControl(), stackPanel, gtaNode, courseEntry);
 		listenTo(peerReviewCtrl);
 		revisionCtrl = new GTARevisionAndCorrectionEditController(ureq, getWindowControl(), config);
 		listenTo(revisionCtrl);
@@ -218,7 +218,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(peerReviewCtrl);
-				peerReviewCtrl = new GTAPeerReviewEditController(ureq, getWindowControl(), stackPanel, config);
+				peerReviewCtrl = new GTAPeerReviewEditController(ureq, getWindowControl(), stackPanel, gtaNode, courseEntry);
 				listenTo(peerReviewCtrl);
 				myTabbedPane.replaceTab(peerReviewPos, peerReviewCtrl.getInitialComponent());
 			}
