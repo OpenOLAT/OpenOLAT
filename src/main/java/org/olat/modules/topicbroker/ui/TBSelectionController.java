@@ -461,6 +461,10 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 
 	private void applyFilers(List<TBSelectionRow> rows) {
+		if (selectionTableEl.getSelectedFilterTab() == null) {
+			return;
+		}
+		
 		if (selectionTableEl.getSelectedFilterTab() == tabEnrolled) {
 			rows.removeIf(row -> !row.isEnrolled());
 		} else if (selectionTableEl.getSelectedFilterTab() == tabNotEnrolled) {
