@@ -208,7 +208,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		if(organisationModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(isMultiOrganisations, CurriculumCols.organisation));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.numOfElements, CONTEXT_IMPLEMENTATIONS));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfElements, CONTEXT_IMPLEMENTATIONS));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfPreparationRootElements, CONTEXT_PREPARATION));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfProvisionalRootElements, CONTEXT_PROVISIONAL));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfConfirmedRootElements, CONTEXT_CONFIRMED));
@@ -493,6 +493,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 					doOpenCurriculumDetails(ureq, tableModel.getObject(se.getIndex()));
 				} else if("lectures".equals(cmd)) {
 					doOpenCurriculumLectures(ureq, tableModel.getObject(se.getIndex()));
+				} else if(CONTEXT_IMPLEMENTATIONS.equals(cmd)) {
+					doOpenCurriculumImplementations(ureq, tableModel.getObject(se.getIndex()));
 				} else if(CurriculumElementStatus.isValueOf(cmd.toLowerCase())) {
 					doOpenCurriculumImplementations(ureq, tableModel.getObject(se.getIndex()), cmd);
 				}
@@ -602,6 +604,12 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private void doOpenCurriculumDetails(UserRequest ureq, CurriculumRow row) {
 		doOpenCurriculumDetails(ureq, row, List.of());
+	}
+	
+	private void doOpenCurriculumImplementations(UserRequest ureq, CurriculumRow row) {
+		List<ContextEntry> context = BusinessControlFactory.getInstance()
+				.createCEListFromString("[Implementations:0]");
+		doOpenCurriculumDetails(ureq, row, context);
 	}
 	
 	private void doOpenCurriculumImplementations(UserRequest ureq, CurriculumRow row, String status) {

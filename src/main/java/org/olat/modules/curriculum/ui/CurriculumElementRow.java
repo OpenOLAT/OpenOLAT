@@ -59,6 +59,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	private FormLink learningProgressLink;
 	
 	private String baseUrl;
+	private String curriculumUrl;
 	
 	private boolean active = false;
 	private boolean acceptedByFilter = true;
@@ -214,14 +215,17 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		return hasChildren;
 	}
 
+	@Override
 	public Long getParentKey() {
 		return parentKey;
 	}
-	
+
+	@Override
 	public Integer getPos() {
 		return element.getPos();
 	}
-	
+
+	@Override
 	public Integer getPosCurriculum() {
 		return element.getPosCurriculum();
 	}
@@ -301,6 +305,14 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 
 	public void setBaseUrl(String baseUrl) {
 		this.baseUrl = baseUrl;
+	}
+
+	public String getCurriculumUrl() {
+		return curriculumUrl;
+	}
+
+	public void setCurriculumUrl(String curriculumUrl) {
+		this.curriculumUrl = curriculumUrl;
 	}
 
 	@Override

@@ -474,7 +474,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private void forgeCalendarsLink(CurriculumElementWithViewsRow row) {
 		if(row.isCalendarsEnabled()) {
 			FormLink calendarLink = uifactory.addFormLink("cals_" + (++counter), "calendars", "calendars", null, null, Link.LINK);
-			calendarLink.setIconLeftCSS("o_icon o_icon-fw o_icon_timetable");
+			calendarLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
 			calendarLink.setUserObject(row);
 			row.setCalendarsLink(calendarLink);
 		}

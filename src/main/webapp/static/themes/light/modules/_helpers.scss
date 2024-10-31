@@ -267,6 +267,11 @@
 	gap: 10px;
 }
 
+/* need some empty block before and after */
+.o_mega_buttons_3_centered {
+	grid-template-columns: 3fr repeat(3, minmax(207px, 1fr)) 3fr;
+}
+
 /* Call to action button */
 .btn.o_button_call_to_action {
 	font-size: floor($font-size-base * 1.3);

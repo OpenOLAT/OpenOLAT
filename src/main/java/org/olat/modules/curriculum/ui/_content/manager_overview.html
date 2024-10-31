@@ -1,7 +1,12 @@
 <h2><i class="o_icon o_icon_curriculum" aria-hidden="true"> </i> $r.translate("curriculum.management")</h2>
 $r.render("searchField")
-<div class="o_button_group clearfix">
-	$r.render("curriculum.browser")
-	$r.render("curriculum.implementations")
-	$r.render("curriculum.lectures")
-</div>
+<ul class="o_mega_buttons o_mega_buttons_3_centered">
+	<li aria-hidden="true"></li>
+	<li>$r.render("curriculum.browser")</li>
+	<li>$r.render("curriculum.implementations")</li>
+	<li>$r.render("curriculum.lectures")</li>
+	<li aria-hidden="true"></li>
+</ul>
+#if($r.available("dashboard"))
+	$r.render("dashboard")
+#end

@@ -127,7 +127,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	protected static final String FILTER_STATUS = "Status";
 	protected static final String FILTER_CURRICULUM = "Curriculum";
 	
-	private static final String CMD_ADD_ELEMENT = "add-element";
+	protected static final String CMD_ADD_ELEMENT = "add-element";
+	protected static final String CMD_SELECT_CURRICULUM = "select-cur";
 
 	private Map<String,FlexiFiltersTab> statusTabMap;
 	
@@ -266,13 +267,17 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void initFormTable(FormItemContainer formLayout, UserRequest ureq) {	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.key));
+		
+		DefaultFlexiColumnModel nameCol;
 		if(config.isFlat()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, "select"));
+			nameCol = new DefaultFlexiColumnModel(ElementCols.displayName, "select");
 		} else {
 			TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
 			treeNodeRenderer.setPush(true);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
+			nameCol = new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer);
 		}
+		nameCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(nameCol);
 		
 		DefaultFlexiColumnModel structureCol = new DefaultFlexiColumnModel(ElementCols.structure);
 		structureCol.setIconHeader("o_icon o_icon-lg o_icon_curriculum_structure");
@@ -281,7 +286,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.externalId));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(curriculum == null, ElementCols.curriculum));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(curriculum == null, ElementCols.curriculum,
+				CMD_SELECT_CURRICULUM));
 		DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate, dateRenderer));
@@ -313,7 +319,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		
 		DefaultFlexiColumnModel progressCol = new DefaultFlexiColumnModel(withOptions, ElementCols.learningProgress);
-		progressCol.setIconHeader("o_icon o_icon-lg o_CourseModule_icon");
+		progressCol.setIconHeader("o_icon o_icon-lg o_icon_progress");
 		columnsModel.addFlexiColumnModel(progressCol);
 
 		if(secCallback.canEditCurriculumElements() || (!managed && secCallback.canManagerCurriculumElementsUsers())) {
@@ -333,7 +339,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		} else {			
 			tableEl.setEmptyTableSettings("table.curriculum.element.empty", null, "o_icon_curriculum_element");
 		}
-		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(40);
 		tableEl.setSearchEnabled(true);
@@ -403,7 +408,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		FlexiFiltersTab relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
-						List.of(CurriculumElementStatus.preparation.name(), CurriculumElementStatus.preparation.name(),
+						List.of(CurriculumElementStatus.preparation.name(), CurriculumElementStatus.provisional.name(),
 								CurriculumElementStatus.confirmed.name(), CurriculumElementStatus.active.name() ))));
 		relevantTab.setFiltersExpanded(true);
 		tabs.add(relevantTab);
@@ -456,7 +461,13 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 		tableModel.setObjects(rows);
+		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
+	}
+	
+	private void filterModel() {
+		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+		tableEl.reset(false, true, true);// only reload
 	}
 	
 	private CurriculumElementInfosSearchParams getSearchParams() {
@@ -508,10 +519,12 @@ public class CurriculumComposerController extends FormBasicController implements
 
 		String path = businessPath + "[CurriculumElement:" + id + "]";
 		row.setBaseUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path));
+		String curriculumPath = CurriculumHelper.getCurriculumBusinessPath(row.getCurriculumKey());
+		row.setCurriculumUrl(BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(curriculumPath));
 		
 		if(row.isCalendarsEnabled()) {
 			FormLink calendarsLink = uifactory.addFormLink("cals_" + (++counter), "calendars", "", null, null, Link.LINK | Link.NONTRANSLATED);
-			calendarsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_timetable");
+			calendarsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_calendar");
 			calendarsLink.setTitle(translate("calendars"));
 			row.setCalendarsLink(calendarsLink);
 			calendarsLink.setUserObject(row);
@@ -532,7 +545,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		if(row.isLearningProgressEnabled()) {
 			FormLink learningProgressLink = uifactory.addFormLink("lp_" + (++counter), "learning.progress", "", null, null, Link.LINK | Link.NONTRANSLATED);
-			learningProgressLink.setIconLeftCSS("o_icon o_icon-lg o_CourseModule_icon");
+			learningProgressLink.setIconLeftCSS("o_icon o_icon-lg o_icon_progress");
 			learningProgressLink.setTitle(translate("learning.progress"));
 			row.setLearningProgressLink(learningProgressLink);
 			learningProgressLink.setUserObject(row);
@@ -694,10 +707,12 @@ public class CurriculumComposerController extends FormBasicController implements
 				} else if("owners".equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculumElementUserManagement(ureq, row, "Owners");
+				} else if(CMD_SELECT_CURRICULUM.equals(cmd)) {
+					CurriculumElementRow row = tableModel.getObject(se.getIndex());
+					doOpenCurriculum(ureq, row);
 				}
 			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
-				tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
-				tableEl.reset(false, true, true);// only reload
+				filterModel();
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doNewCurriculumElement(ureq, null);
 			}
@@ -823,6 +838,11 @@ public class CurriculumComposerController extends FormBasicController implements
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
+	}
+	
+	private void doOpenCurriculum(UserRequest ureq, CurriculumElementRow row) {
+		String curriculumPath = CurriculumHelper.getCurriculumBusinessPath(row.getCurriculumKey());
+		NewControllerFactory.getInstance().launch(curriculumPath, ureq, getWindowControl());
 	}
 	
 	private void doOpenCurriculumElementOverview(UserRequest ureq, CurriculumElementRow row) {
@@ -1011,8 +1031,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void launch(UserRequest ureq, RepositoryEntryRef ref) {
-		String businessPath = "[RepositoryEntry:" + ref.getKey() + "]";
-		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
+		String coursePath = "[RepositoryEntry:" + ref.getKey() + "]";
+		if(!NewControllerFactory.getInstance().launch(coursePath, ureq, getWindowControl())) {
 			tableEl.reloadData();
 		}
 	}
@@ -1048,11 +1068,11 @@ public class CurriculumComposerController extends FormBasicController implements
 			
 			openLink = addLink("open.new.tab", "o_icon_arrow_up_right_from_square", links);
 			openLink.setNewWindow(true, true);
-			links.add("-");
 			
 			if(curriculum != null && secCallback.canEditCurriculumElement(element)) {
+				links.add("-");
 				copyLink = addLink("copy.element", "o_icon_copy", links);
-				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
+				if(element.getParent() != null && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
 					addNewElementLinks(element, links);
 				}
 				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
@@ -1061,9 +1081,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 
 			if(secCallback.canManagerCurriculumElementUsers(element)) {
-				if(!links.isEmpty()) {
-					links.add("-");
-				}
+				links.add("-");
 				manageMembersLink = addLink("manage.members", "o_icon_group", links);
 			}
 			
@@ -1073,7 +1091,6 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 
 			mainVC.contextPut("links", links);
-			
 			putInitialPanel(mainVC);
 		}
 		

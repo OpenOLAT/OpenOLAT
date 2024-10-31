@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import static org.olat.modules.curriculum.ui.CurriculumComposerController.CMD_SELECT_CURRICULUM;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB_PATH_OVERVIEW;
 
 import java.util.ArrayList;
@@ -169,6 +170,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 				case "owners" -> baseUrl.concat("/Members/0/Owners/0");
 				case "coaches" -> baseUrl.concat("/Members/0/Coaches/0");
 				case "participants" -> baseUrl.concat("/Members/0/Participants/0");
+				case CMD_SELECT_CURRICULUM -> row.getCurriculumUrl();
 				default -> baseUrl;
 			};
 		}

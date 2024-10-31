@@ -19,11 +19,16 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 
 /**
  * 
@@ -31,7 +36,7 @@ import org.olat.core.gui.control.WindowControl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumManagerEventsController extends FormBasicController {
+public class CurriculumManagerEventsController extends FormBasicController implements Activateable2 {
 	
 	public CurriculumManagerEventsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "manager_events");
@@ -45,10 +50,12 @@ public class CurriculumManagerEventsController extends FormBasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		//
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
-	
-
 }

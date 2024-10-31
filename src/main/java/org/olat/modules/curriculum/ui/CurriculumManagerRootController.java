@@ -37,7 +37,11 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,11 +59,16 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
 
+	private CurriculumDashboardController overviewCtrl;
 	private CurriculumManagerEventsController eventsCtrl;
 	private CurriculumSearchManagerController searchCtrl;
 	private CurriculumComposerController implementationsCtrl;
 	private CurriculumListManagerController curriculumListCtrl;
 	private final CurriculumSearchHeaderController searchFieldCtrl;
+	private LectureBlocksWidgetController lectureBlocksWidgetCtrl; 
+
+	@Autowired
+	private LectureModule lectureModule;
 	
 	public CurriculumManagerRootController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
@@ -74,19 +83,33 @@ public class CurriculumManagerRootController extends BasicController implements 
 		listenTo(searchFieldCtrl);
 		mainVC.put("searchField", searchFieldCtrl.getInitialComponent());
 
-		curriculumsLink = LinkFactory.createLink("curriculum.browser", "curriculums", getTranslator(), mainVC, this, Link.BUTTON_LARGE);
-		curriculumsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum");
-		curriculumsLink.setElementCssClass("o_sel_cur_browser");
+		curriculumsLink = LinkFactory.createLink("curriculum.browser", "curriculums", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		curriculumsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_curriculum");
+		curriculumsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_browser");
 		
-		implementationsLink = LinkFactory.createLink("curriculum.implementations", "implementations", getTranslator(), mainVC, this, Link.BUTTON_LARGE);
-		implementationsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_implementations");
-		implementationsLink.setElementCssClass("o_sel_cur_implementations");
+		implementationsLink = LinkFactory.createLink("curriculum.implementations", "implementations", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		implementationsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_curriculum_implementations");
+		implementationsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_implementations");
 		
-		lecturesBlocksLink = LinkFactory.createLink("curriculum.lectures", "lecturesblocks", getTranslator(), mainVC, this, Link.BUTTON_LARGE);
-		lecturesBlocksLink.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar_day");
-		lecturesBlocksLink.setElementCssClass("o_sel_cur_lectures");
-
+		lecturesBlocksLink = LinkFactory.createLink("curriculum.lectures", "lecturesblocks", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		lecturesBlocksLink.setIconLeftCSS("o_icon o_icon-xl o_icon_calendar_day");
+		lecturesBlocksLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_lectures");
+		
+		initDashboard(ureq);
 		putInitialPanel(mainVC);
+	}
+	
+	private void initDashboard(UserRequest ureq) {
+		overviewCtrl = new CurriculumDashboardController(ureq, getWindowControl());
+		listenTo(overviewCtrl);
+		
+		if(lectureModule.isEnabled()) {
+			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(), lecturesSecCallback);
+			listenTo(lectureBlocksWidgetCtrl);
+			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
+		}
+		
+		mainVC.put("dashboard", overviewCtrl.getInitialComponent());
 	}
 
 	@Override
@@ -106,6 +129,9 @@ public class CurriculumManagerRootController extends BasicController implements 
 			} else {
 				doOpenImplementations(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
+		} else if("Lectures".equalsIgnoreCase(type) || "Events".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenLecturesBlocks(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		} 
 	}
 
@@ -114,6 +140,10 @@ public class CurriculumManagerRootController extends BasicController implements 
 		if(searchFieldCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				doSearch(ureq, searchFieldCtrl.getSearchString());
+			}
+		} else if(lectureBlocksWidgetCtrl == source) {
+			if(event instanceof ActivateEvent ae) {
+				doOpenLecturesBlocks(ureq).activate(ureq, ae.getEntries(), null);
 			}
 		}
 	}
@@ -172,12 +202,13 @@ public class CurriculumManagerRootController extends BasicController implements 
 		return implementationsCtrl;
 	}
 	
-	private void doOpenLecturesBlocks(UserRequest ureq) {
+	private CurriculumManagerEventsController doOpenLecturesBlocks(UserRequest ureq) {
 		toolbarPanel.popUpToRootController(ureq);
 		removeAsListenerAndDispose(eventsCtrl);
 		
 		eventsCtrl = new CurriculumManagerEventsController(ureq, getWindowControl());
 		listenTo(eventsCtrl);
 		toolbarPanel.pushController(translate("curriculum.lectures"), eventsCtrl);
+		return eventsCtrl;
 	}
 }

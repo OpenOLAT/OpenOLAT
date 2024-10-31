@@ -29,11 +29,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
-import org.olat.modules.lecture.LectureModule;
-import org.olat.modules.lecture.ui.LecturesSecurityCallback;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,37 +36,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumOverviewController extends BasicController {
+public class CurriculumDashboardController extends BasicController {
 
-	private LectureBlocksWidgetController lectureBlocksCtrl;
+	private final VelocityContainer mainVC;
 	
-	@Autowired
-	private LectureModule lectureModule;
+	private final List<String> widgets = new ArrayList<>();
 	
-	public CurriculumOverviewController(UserRequest ureq, WindowControl wControl,
-			Curriculum curriculum, LecturesSecurityCallback lecturesSecCallback) {
+	public CurriculumDashboardController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
-		List<String> widgets = new ArrayList<>();
-		VelocityContainer mainVC = createVelocityContainer("curriculum_overview");
-		
-		if(lectureModule.isEnabled()) {
-			lectureBlocksCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(), curriculum, lecturesSecCallback);
-			listenTo(lectureBlocksCtrl);
-			mainVC.put("lectures", lectureBlocksCtrl.getInitialComponent());
-			widgets.add("lectures");
-		}
-
+		mainVC = createVelocityContainer("curriculum_overview");
 		mainVC.contextPut("widgets", widgets);
 		putInitialPanel(mainVC);
 	}
 	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(lectureBlocksCtrl == source) {
-			fireEvent(ureq, event);
-		}
-		super.event(ureq, source, event);
+	protected void addWidget(String name, Controller widget) {
+		widgets.add(name);
+		mainVC.put(name, widget.getInitialComponent());
 	}
 
 	@Override

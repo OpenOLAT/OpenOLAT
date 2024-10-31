@@ -135,6 +135,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_crosshairs { @include o-add-icon('crosshairs');}
 .o_icon_curriculum { @include o-add-icon('cubes');}
 .o_icon_curriculum_element { @include o-add-icon('cube');}
+.o_icon_curriculum_implementation_avatar { @include o-add-icon('circle-play');}
 .o_icon_curriculum_implementations { @include o-add-icon('square-share-nodes');}
 .o_icon_curriculum_structure { @include o-add-icon('sitemap');}
 .o_icon_customize { @include o-add-icon('gear');}
@@ -352,7 +353,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_principal { @include o-add-icon('eye');}
 .o_icon_print { @include o-add-icon('print');}
 .o_icon_private { @include o-add-icon('print');}
-.o_icon_progress { @include o-add-icon('circle', false);}
+.o_icon_progress { @include o-add-icon('arrow-up-right-dots');}
 .o_icon_progress_success { @include o-add-icon('check'); color: #e5efe5}
 .o_icon_progress_danger { @include o-add-icon('times'); color: #efe5e5}
 .o_icon_provider_adfs { @include o-add-brand-icon('windows');}

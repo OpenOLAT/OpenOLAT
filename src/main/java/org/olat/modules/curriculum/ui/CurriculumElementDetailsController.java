@@ -29,6 +29,7 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -43,6 +44,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -58,6 +62,8 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.event.CurriculumElementEvent;
+import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
+import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
@@ -78,17 +84,22 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private int userManagerTab;
 
 	private Link deleteButton;
+	private Link structureButton;
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
 	
 	private CloseableModalController cmc;
+	private CoursesWidgetController coursesWidgetCtrl;
 	private CurriculumComposerController structureCtrl;
-	private CurriculumElementOverviewController overviewCtrl;
+	private CurriculumDashboardController overviewCtrl;
 	private EditCurriculumElementController editMetadataCtrl;
 	private LectureListRepositoryController lectureBlocksCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CurriculumElementResourceListController resourcesCtrl;
+	private LectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	private CurriculumElementUserManagementController userManagementCtrl;
+	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
 	private ConfirmCurriculumElementDeleteController deleteCurriculumElementCtrl;
 	
 	private Curriculum curriculum;
@@ -142,17 +153,24 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			mainVC.put(commandsDropdown.getComponentName(), commandsDropdown);
 		}
 		
+		structureButton = LinkFactory.createCustomLink("structure", "structure", "", Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
+		structureButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
+		structureButton.setTitle(translate("action.structure"));
+		
+		mainVC.contextPut("level", getLevel());
 		mainVC.contextPut("displayName", curriculumElement.getDisplayName());
 		if(StringHelper.containsNonWhitespace(curriculumElement.getIdentifier())) {
 			mainVC.contextPut("externalRef", curriculumElement.getIdentifier());
 		}
 		
 		if(curriculum != null) {
+			String avatar;
 			if(StringHelper.containsNonWhitespace(curriculum.getIdentifier())) {
-				mainVC.contextPut("curriculumExternalRef", curriculum.getIdentifier());
+				avatar = curriculum.getIdentifier();
 			} else {
-				mainVC.contextPut("curriculumExternalRef", curriculum.getDisplayName());
+				avatar = curriculum.getDisplayName();
 			}
+			mainVC.contextPut("curriculumExternalRef", avatar);
 		}
 
 		if(curriculumElement.getType() != null) {
@@ -170,14 +188,16 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		}
 		mainVC.contextPut("dates", dates.toString());
 	}
+	
+	private Integer getLevel() {
+		int count = curriculumElement.getMaterializedPathKeys() == null ? 0 :
+			StringUtils.countMatches(curriculumElement.getMaterializedPathKeys(), '/') - 2;
+		return Integer.valueOf(count);
+	}
 
 	private void initTabPane(UserRequest ureq) {
 		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> {
-			WindowControl subControl = addToHistory(uureq, OresHelper
-					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
-			overviewCtrl = new CurriculumElementOverviewController(uureq, subControl, curriculumElement, lecturesSecCallback);
-			listenTo(overviewCtrl);
-			return overviewCtrl.getInitialComponent();
+			return createDashBoard(uureq).getInitialComponent();
 		});
 		
 		// Implementations
@@ -238,6 +258,31 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			return editMetadataCtrl.getInitialComponent();
 		});
 	}
+	
+	private CurriculumDashboardController createDashBoard(UserRequest ureq) {
+		removeAsListenerAndDispose(overviewCtrl);
+		removeAsListenerAndDispose(coursesWidgetCtrl);
+		removeAsListenerAndDispose(lectureBlocksWidgetCtrl);
+		
+		WindowControl subControl = addToHistory(ureq, OresHelper
+				.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
+		overviewCtrl = new CurriculumDashboardController(ureq, subControl);
+		listenTo(overviewCtrl);
+		
+		if(curriculumElement.getParent() != null) {
+			coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement);
+			listenTo(coursesWidgetCtrl);
+			overviewCtrl.addWidget("courses", coursesWidgetCtrl);
+		}
+		
+		if(lectureModule.isEnabled()) {
+			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
+					curriculumElement, lecturesSecCallback);
+			listenTo(lectureBlocksWidgetCtrl);
+			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
+		}
+		return overviewCtrl;
+	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -282,12 +327,14 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(deleteButton == source) {
 			doConfirmDeleteCurriculumElement(ureq);
+		} else if(structureButton == source) {
+			doOpenStructure( ureq, structureButton);
 		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(structureCtrl == source || overviewCtrl == source) {
+		if(structureCtrl == source || coursesWidgetCtrl == source || lectureBlocksWidgetCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			} else if(event instanceof CurriculumElementEvent) {
@@ -303,6 +350,21 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		} else if(cmc == source) {
 			cleanUp();
 		}
+	}
+	
+	private void doOpenStructure(UserRequest ureq, Link link) {
+		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(curriculumElement);
+		CurriculumElement rootElement = parentLine.get(0);
+		
+		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(),
+				rootElement, null);
+		listenTo(curriculumStructureCalloutCtrl);
+		
+		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				curriculumStructureCalloutCtrl.getInitialComponent(), "o_c" + link.getDispatchID(), "", true, "", settings);
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
 	}
 	
 	private void doConfirmDeleteCurriculumElement(UserRequest ureq) {

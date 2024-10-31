@@ -393,7 +393,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 }
 
 .o_curriculum_avatar {
-	display: flex;
+	display: grid;
 	align-items: start;
 	justify-content: right;
 	
@@ -404,12 +404,23 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	min-width: $o-curriculum-avatar-width-medium;
 	width: $o-curriculum-avatar-width-medium;
 	height: $o-curriculum-avatar-height-medium;
-	padding: 10px 10px 10px calc($o-curriculum-avatar-width-medium / 4);
+	padding: 10px;
 
 	.o_curriculum_avatar_ref {
 		font-size: $o-curriculum-avatar-font-size-medium;
-		text-wrap: nowrap;
+		padding-left: 20px;
 		overflow: hidden;
+		height: 1.3em;
+		text-align: right;
+		word-break: break-all;
+		justify-self: end;
+		align-self: start;
+	}
+	
+	.o_curriculum_avatar_icon {
+		font-size: $o-curriculum-avatar-font-size-large;
+		justify-self: start;
+		align-self: end;
 	}
 }
 
@@ -565,7 +576,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		border-radius: $o-curriculum-widget-card-border-radius;
 		background-color: #fff;
 		
-		.o_thumbnail {
+		.o_thumbnail, .o_visual_not_available {
 			width: 120px;
 			height: 80px;
 			
@@ -573,6 +584,13 @@ $o-curriculum-entry-bg							: #CCFFCC;
 				max-width: 120px;
 				max-height: 120px;
 			}
+		}
+		
+		.o_visual_not_available {
+			background-image:url('#{$o-images-path}no_preview.png');
+			background-repeat:no-repeat;
+			background-position:50% 50%;		
+			background-size: contain;
 		}
 	}
 	

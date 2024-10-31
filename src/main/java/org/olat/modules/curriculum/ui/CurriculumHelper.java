@@ -31,8 +31,21 @@ import org.olat.modules.curriculum.CurriculumElement;
  */
 public class CurriculumHelper {
 	
+	public static final int AVATAR_MAX_LENGTH = 9;
+	
 	private CurriculumHelper() {
 		//
+	}
+	
+	public static String truncateAvatar(String ref) {
+		if(ref != null && ref.length() > AVATAR_MAX_LENGTH) {
+			ref = ref.substring(0, AVATAR_MAX_LENGTH);
+		}
+		return ref;
+	}
+	
+	public static String getCurriculumBusinessPath(Long curriculumKey) {
+		return "[CurriculumAdmin:0][Curriculum:" + curriculumKey + "]";
 	}
 	
 	public static String getLabel(CurriculumElement element, Translator translator) {

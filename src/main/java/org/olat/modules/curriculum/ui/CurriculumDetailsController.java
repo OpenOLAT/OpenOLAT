@@ -53,6 +53,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
@@ -77,11 +78,12 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	
 	private CloseableModalController cmc;
 	private EditCurriculumController editMetadataCtrl;
-	private CurriculumOverviewController overviewCtrl;
+	private CurriculumDashboardController overviewCtrl;
 	private LectureListRepositoryController lectureBlocksCtrl;
 	private CurriculumComposerController implementationsCtrl;
 	private CurriculumUserManagementController userManagementCtrl;
 	private ConfirmCurriculumDeleteController deleteCurriculumCtrl;
+	private LectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	
 	private Curriculum curriculum;
 	private final CurriculumSecurityCallback secCallback;
@@ -137,9 +139,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private void initTabPane(UserRequest ureq) {
 		// Overview
 		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> {
-			overviewCtrl = new CurriculumOverviewController(uureq, getWindowControl(), curriculum, lecturesSecCallback);
-			listenTo(overviewCtrl);
-			return overviewCtrl.getInitialComponent();
+			return createDashboard(uureq).getInitialComponent();
 		});
 
 		// Implementations
@@ -184,6 +184,20 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			listenTo(userManagementCtrl);
 			return userManagementCtrl.getInitialComponent();
 		});
+	}
+	
+	private CurriculumDashboardController createDashboard(UserRequest ureq) {
+		removeAsListenerAndDispose(lectureBlocksWidgetCtrl);
+		removeAsListenerAndDispose(overviewCtrl);
+		
+		overviewCtrl = new CurriculumDashboardController(ureq, getWindowControl());
+		listenTo(overviewCtrl);
+		if(lectureModule.isEnabled()) {
+			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(), curriculum, lecturesSecCallback);
+			listenTo(lectureBlocksWidgetCtrl);
+			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
+		}
+		return overviewCtrl;
 	}
 
 	@Override
