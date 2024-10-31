@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -42,32 +43,35 @@ import org.olat.core.util.Util;
  */
 public class ConfirmationController extends FormBasicController {
 	
+	public enum ButtonType { regular, danger, submitPrimary }
+	
+	private FormSubmit submitLink;
 	private FormLink confirmLink;
 	private MultipleSelectionElement confirmationEl;
 	
 	private final String message;
 	private final String confirmation;
 	private final String confirmButton;
-	private final boolean confirmDanger;
+	private final ButtonType confirmButtonType;
 	private Object userObject;
 	
 	public ConfirmationController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
 			String confirmButton) {
-		this(ureq, wControl, message, confirmation, confirmButton, false);
+		this(ureq, wControl, message, confirmation, confirmButton, ButtonType.regular);
 	}
 	
 	public ConfirmationController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
-			String confirmButton, boolean confirmDanger) {
-		this(ureq, wControl, message, confirmation, confirmButton, confirmDanger, true);
+			String confirmButton, ButtonType confirmButtonType) {
+		this(ureq, wControl, message, confirmation, confirmButton, confirmButtonType, true);
 	}
 
 	public ConfirmationController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
-			String confirmButton, boolean confirmDanger, boolean init) {
+			String confirmButton, ButtonType confirmButtonType, boolean init) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.message = message;
 		this.confirmation = confirmation;
 		this.confirmButton = confirmButton;
-		this.confirmDanger = confirmDanger;
+		this.confirmButtonType = confirmButtonType;
 		
 		if (init) {
 			initForm(ureq);
@@ -94,7 +98,7 @@ public class ConfirmationController extends FormBasicController {
 		formLayout.add(messageCont);
 		messageCont.contextPut("message", message);
 		
-		FormLayoutContainer confirmCont = createConfirmContainer();
+		FormLayoutContainer confirmCont =  FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
 		formLayout.add("confirm", confirmCont);
 		confirmCont.setRootForm(mainForm);
 		confirmCont.setElementCssClass("o_sel_confirm_form");
@@ -108,19 +112,22 @@ public class ConfirmationController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		confirmCont.add(buttonsCont);
-		confirmLink = uifactory.addFormLink("confirm", buttonsCont, Link.BUTTON + Link.NONTRANSLATED);
-		confirmLink.setElementCssClass("o_sel_confirm");
-		confirmLink.setI18nKey(confirmButton);
-		if (confirmDanger) {
-			confirmLink.setElementCssClass("btn-danger");
+		if (confirmCont.getFormComponents().size() <= 1) { // 1 is the buttonsCont
+			buttonsCont.setElementCssClass("o_button_group_right");
+		}
+		
+		if (ButtonType.submitPrimary == confirmButtonType) {
+			submitLink = uifactory.addFormSubmitButton("confirm", "confirm", "noTransOnlyParam", new String[] {confirmButton}, buttonsCont);
+			submitLink.setElementCssClass("o_sel_confirm");
+		} else {
+			confirmLink = uifactory.addFormLink("confirm", buttonsCont, Link.BUTTON + Link.NONTRANSLATED);
+			confirmLink.setElementCssClass("o_sel_confirm");
+			confirmLink.setI18nKey(confirmButton);
+			if (ButtonType.danger == confirmButtonType) {
+				confirmLink.setElementCssClass("btn-danger");
+			}
 		}
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-	}
-	
-	protected FormLayoutContainer createConfirmContainer() {
-		return StringHelper.containsNonWhitespace(confirmation)
-				? FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator())
-				: FormLayoutContainer.createVerticalFormLayout("confirm", getTranslator());
 	}
 	
 	@Override
@@ -149,7 +156,9 @@ public class ConfirmationController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		if (ButtonType.submitPrimary == confirmButtonType) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
 	}
 
 	@Override

@@ -70,6 +70,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -780,7 +781,7 @@ public class TBParticipantListController extends FormBasicController implements 
 			message += " " + translate("participants.notifications.mgs.without.selection");
 		}
 		notificationConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message, null,
-				translate("participants.notifications.button"));
+				translate("participants.notifications.button"), ButtonType.submitPrimary);
 		notificationConfirmationCtrl.setUserObject(identities);
 		listenTo(notificationConfirmationCtrl);
 		

@@ -51,6 +51,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBCustomField;
@@ -287,7 +288,7 @@ public class TBCustomFieldDefinitionListController extends FormBasicController {
 		deleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
 				translate("custom.field.def.delete.confirmation.message", StringHelper.escapeHtml(reloadedDefinition.getName()), String.valueOf(customFields.size())),
 				translate("custom.field.def.delete.confirmation.confirm"),
-				translate("custom.field.def.delete.confirmation.button"), true);
+				translate("custom.field.def.delete.confirmation.button"), ButtonType.danger);
 		deleteConfirmationCtrl.setUserObject(reloadedDefinition);
 		listenTo(deleteConfirmationCtrl);
 		

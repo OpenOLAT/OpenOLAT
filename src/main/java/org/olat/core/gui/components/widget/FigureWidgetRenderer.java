@@ -42,7 +42,9 @@ public class FigureWidgetRenderer extends WidgetRenderer {
 		
 		sb.append("<div class=\"o_widget_main o_widget_main_figure\">");
 		
-		sb.append("<div class=\"o_widget_figure o_flex_item_max\">");
+		sb.append("<div class=\"o_widget_figure o_flex_item_max\"");
+		appendTitle(sb, widget);
+		sb.append(">");
 		sb.append("<span class=\"o_widget_figure_value ");
 		if (StringHelper.containsNonWhitespace(widget.getValueCssClass())) {
 			sb.append(widget.getValueCssClass());
@@ -60,6 +62,17 @@ public class FigureWidgetRenderer extends WidgetRenderer {
 		
 		renderAdditional(renderer, sb, args, widget);
 		sb.append("</div>");
+	}
+
+	/**
+	 * If description is too long, it is cropped by css. In this case we want to add
+	 * a title. Since we can't do this dynamically, our best guess is to add the
+	 * title depending on the length of the description.
+	 */
+	private void appendTitle(StringOutput sb, FigureWidget widget) {
+		if (StringHelper.containsNonWhitespace(widget.getDesc()) && widget.getDesc().length() >= 30) {
+			sb.append(" title=\"").append(widget.getValue()).append(" ").append(widget.getDesc()).append("\"");
+		}
 	}
 
 }

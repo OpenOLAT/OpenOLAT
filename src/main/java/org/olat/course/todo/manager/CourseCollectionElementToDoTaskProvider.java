@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -179,7 +180,7 @@ public class CourseCollectionElementToDoTaskProvider implements ToDoProvider, To
 		return new ConfirmationController(ureq, wControl,
 				translator.translate("task.delete.conformation.message", StringHelper.escapeHtml(ToDoUIFactory.getDisplayName(translator, toDoTask))),
 				translator.translate("task.delete.confirmation.confirm"),
-				translator.translate("delete"), true);
+				translator.translate("delete"), ButtonType.danger);
 	}
 	
 	private ToDoTask getToDoTask(ToDoTaskRef toDoTaskRef, boolean active) {

@@ -84,6 +84,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.DomWrapperElement;
@@ -990,7 +991,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		deleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
 				translate("topic.delete.confirmation.message", StringHelper.escapeHtml(reloadedTopic.getTitle())),
 				translate("topic.delete.confirmation.confirm"),
-				translate("topic.delete.confirmation.button"), true);
+				translate("topic.delete.confirmation.button"), ButtonType.danger);
 		deleteConfirmationCtrl.setUserObject(new TopicRefs(List.of(reloadedTopic)));
 		listenTo(deleteConfirmationCtrl);
 		

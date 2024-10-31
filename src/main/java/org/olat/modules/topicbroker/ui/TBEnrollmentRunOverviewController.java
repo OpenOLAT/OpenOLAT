@@ -215,13 +215,17 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 		
 		TBEnrollmentRunRow rowWaitingList = new TBEnrollmentRunRow();
 		rowWaitingList.setPriority(translate("selection.status.waiting.list"));
-		String waitingListString = "<span><i class=\"o_icon o_icon_warn\"></i> " + enrollmentStats.getNumWaitingList() + "</span>";
+		String waitingListString = enrollmentStats.getNumWaitingList() == 0
+				? String.valueOf(enrollmentStats.getNumWaitingList())
+				: "<span><i class=\"o_icon o_icon_warn\"></i> " + enrollmentStats.getNumWaitingList() + "</span>";
 		rowWaitingList.setEnrollments(waitingListString);
 		enrollmentRows.add(rowWaitingList);
 		
 		TBEnrollmentRunRow rowMissing = new TBEnrollmentRunRow();
 		rowMissing.setPriority(translate("selection.missing"));
-		String missingString = "<span><i class=\"o_icon o_icon_error\"></i> " + enrollmentStats.getNumMissing() + "</span>";
+		String missingString = enrollmentStats.getNumMissing() == 0
+				? String.valueOf(enrollmentStats.getNumMissing())
+				: "<span><i class=\"o_icon o_icon_error\"></i> " + enrollmentStats.getNumMissing() + "</span>";
 		rowMissing.setEnrollments(missingString);
 		enrollmentRows.add(rowMissing);
 		

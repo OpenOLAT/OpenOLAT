@@ -29,6 +29,9 @@ package org.olat.core.commons.modules.singlepage;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.basesecurity.MediaServerMode;
+import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.gui.UserRequest;
@@ -93,7 +96,10 @@ public class SinglePageController extends BasicController implements Activateabl
 	private String g_curURI;
 	private VFSContainer g_new_rootContainer;
 	private Long courseRepoKey;
-	
+
+	@Autowired
+	MediaServerModule mediaServerModule;
+
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks) {
 		//default behavior is to show the home link in a single page
@@ -196,9 +202,21 @@ public class SinglePageController extends BasicController implements Activateabl
 			
 		idc.setCurrentURI(startURI);
 		myContent.put("content", idc.getInitialComponent());
-		
+
+		configureMediaServerRestrictions(myContent);
+
 		mainP.setContent(myContent);
 		mainPanel = putInitialPanel(mainP);
+	}
+
+	private void configureMediaServerRestrictions(VelocityContainer myContent) {
+		boolean restrict = MediaServerMode.configure.equals(mediaServerModule.getMediaServerMode());
+		myContent.contextPut("restrictMediaServers", restrict);
+		if (restrict) {
+			myContent.contextPut("mediaServerRestrictedWarning", translate("error.restricted"));
+			myContent.contextPut("mediaServerUrls", mediaServerModule.getMediaServerUrls());
+			mediaServerModule.getMediaSrcUrls();
+		}
 	}
 
 	/**

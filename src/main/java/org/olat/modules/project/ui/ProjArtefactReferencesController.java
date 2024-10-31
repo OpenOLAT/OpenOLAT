@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.StringHelper;
@@ -543,7 +544,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 		
 		String message = translate("reference.delete.message", StringHelper.escapeHtml(row.getDisplayName()));
 		deleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message,
-				translate("reference.delete.confirm"), translate("reference.delete.button"), true);
+				translate("reference.delete.confirm"), translate("reference.delete.button"), ButtonType.danger);
 		deleteConfirmationCtrl.setUserObject(row);
 		listenTo(deleteConfirmationCtrl);
 		

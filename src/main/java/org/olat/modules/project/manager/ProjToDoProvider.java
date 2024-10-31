@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -182,7 +183,7 @@ public class ProjToDoProvider implements ToDoProvider, ToDoContextFilter {
 		return new ConfirmationController(ureq, wControl,
 				translator.translate("todo.delete.confirmation.message", StringHelper.escapeHtml(ToDoUIFactory.getDisplayName(translator, toDoTask))),
 				translator.translate("todo.delete.confirmation.confirm"),
-				translator.translate("todo.delete.confirmation.button"), true);
+				translator.translate("todo.delete.confirmation.button"), ButtonType.danger);
 	}
 	
 }

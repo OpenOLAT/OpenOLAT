@@ -140,7 +140,7 @@ public class TBEnrollmentManualProcessController extends FormBasicController {
 		emailNotificationEl.setEnabled(secCallback.canSendNotification());
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add("buttons", buttonLayout);
+		emailCont.add("buttons", buttonLayout);
 		applyLink = uifactory.addFormSubmitButton("enrollment.manual.apply", buttonLayout);
 		runStartLink = uifactory.addFormLink("enrollment.manual.run.again", buttonLayout, Link.BUTTON);
 		runStartLink.setIconLeftCSS("o_icon o_icon-lg o_icon_tb_run");

@@ -40,7 +40,7 @@ public class BulkDeleteConfirmationController extends ConfirmationController {
 
 	public BulkDeleteConfirmationController(UserRequest ureq, WindowControl wControl, String message,
 			String confirmation, String confirmButton, String label, List<String> values, String showAllI18nKey) {
-		super(ureq, wControl, message, confirmation, confirmButton, true, false);
+		super(ureq, wControl, message, confirmation, confirmButton, ButtonType.danger, false);
 		this.label = label;
 		this.values = values;
 		this.showAllI18nKey = showAllI18nKey;
@@ -53,11 +53,6 @@ public class BulkDeleteConfirmationController extends ConfirmationController {
 		StaticListElement deleteValuesEl = uifactory.addStaticListElement("delete.values", null, values, confirmCont);
 		deleteValuesEl.setLabel(label, null, false);
 		deleteValuesEl.setShowAllI18nKey(showAllI18nKey);
-	}
-	
-	@Override
-	protected FormLayoutContainer createConfirmContainer() {
-		return FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
 	}
 	
 }

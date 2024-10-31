@@ -240,6 +240,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			sb.append("  var oTop = jQuery('#").append(domID).append("_diw").append("').offset().top;\n")
 			  .append("  var cssHeight = (oTop + 300 > window.innerHeight) ? '300px': 'calc(100vh - ' + (oTop + 53) + 'px)';\n");
 		}
+
+		config.appendMediaRestrictionCode(sb, translator);
+
 		sb.append("  jQuery('#").append(domID).append("').tinymce({\n")
 		  .append("    selector: '#").append(domID).append("',\n")
 		  .append("    script_url: '").append(baseUrl).append("',\n")

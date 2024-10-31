@@ -68,8 +68,12 @@ var BPlayer = {
 			args.errorCallback = function(mediaElement, originalNode, player){};
 		}
 
+		var allowUrl = BPlayer._isUrlAllowed(videoUrl);
+
 		// Finally, load player library and play video
-		if(provider == "nanoo" || videoUrl.indexOf('nanoo.tv/') >= 0) {
+		if (!allowUrl) {
+			BPlayer._showRestrictedWarning(domId, args);
+		} else if (provider == "nanoo" || videoUrl.indexOf('nanoo.tv/') >= 0) {
 			BPlayer._loadNanooTv(domId, args);
 		} else {
 			// After loading immediately insert HTML5 player
@@ -114,7 +118,47 @@ var BPlayer = {
 				});
 		}
 	},
-	
+
+	_isUrlAllowed : function(url) {
+		var oInfo = BPlayer._oInfo(window);
+		if (!oInfo) {
+			return true;
+		}
+		if (!oInfo.mediaServerMode) {
+			return true;
+		}
+		if (oInfo.mediaServerMode === 'allowAll') {
+			return true;
+		}
+		if (!oInfo.mediaServers) {
+			return false;
+		}
+		for (var i = 0; i < oInfo.mediaServers.length; i++) {
+			if (url.indexOf(oInfo.mediaServers[i]) !== -1) {
+				return true;
+			}
+		}
+		if (url.indexOf(oInfo.serverUri) !== -1) {
+			return true;
+		}
+		return false;
+	},
+
+	_showRestrictedWarning : function(domId, config) {
+		var frameName = domId + "_frame";
+		var oInfo = BPlayer._oInfo(window);
+		var poster = "<div id='" + frameName + "' class='mejs__container' role='application' style='width:" + config.width + "px; height:" + config.height + "px; overflow:hidden; overflow-x:hidden; overflow-y:hidden;'>"
+			+ "<div class='mejs__layers'>"
+			+ "<div class='mejs__overay mejs__layer o_warning' style='margin: 0; width: " + config.width + "px; height: " + config.height + "px;'>"
+			+ "<span>" + oInfo.mediaServerRestrictedWarning + "</span>"
+			+ "</div>"
+			+ "</div>"
+			+ "</div>";
+		var jDomEl = jQuery('#' + domId);
+		jDomEl.append(jQuery(poster));
+		jDomEl.css("border", "none");
+	},
+
 	_loadNanooTv : function(domId, config) {
 		var frameName = domId + "_frame";
 		for(var i=jQuery('#' + frameName).length; i-->0; ) {
@@ -502,7 +546,20 @@ var BPlayer = {
 		else if (win.opener) return BPlayer._isOODebug(win.opener);
 		else if (win.parent) return BPlayer._isOODebug(win.parent);
 		else return false;		
-	}
+	},
+
+	_oInfo: function(win) {
+		if (win.o_info) {
+			return win.o_info;
+		}
+		if (win.opener) {
+			return BPlayer._oInfo(win.opener);
+		}
+		if (win.parent) {
+			return BPlayer._oInfo(win.parent);
+		}
+		return null;
+	},
 };
 
 // init debug flag only once
