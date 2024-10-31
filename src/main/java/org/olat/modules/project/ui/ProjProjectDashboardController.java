@@ -44,6 +44,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -643,7 +644,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		deleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
 				translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.message", project), Integer.toString(numOfMembers)),
 				translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.confirm", project)),
-				translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.button", project)), true);
+				translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.button", project)), ButtonType.danger);
 		listenTo(deleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),

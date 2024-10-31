@@ -53,6 +53,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -193,7 +194,8 @@ public class VFSTrashController extends FormBasicController {
 		String message = metadata.isDirectory()
 				? translate("delete.permanently.confirmation.message.leaf", StringHelper.escapeHtml(metadata.getFilename()))
 				: translate("delete.permanently.confirmation.message.container", StringHelper.escapeHtml(metadata.getFilename()));
-		deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message, null, translate("delete"), true);
+		deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message, null,
+				translate("delete"), ButtonType.danger);
 		deletePermanentlyConfirmationCtrl.setUserObject(metadata);
 		listenTo(deletePermanentlyConfirmationCtrl);
 		

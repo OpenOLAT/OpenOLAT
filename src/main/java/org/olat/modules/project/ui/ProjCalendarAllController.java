@@ -85,6 +85,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -1222,7 +1223,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		milestoneDeleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
 				translate("milestone.delete.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), milestone))),
 				translate("milestone.delete.confirmation.confirm"),
-				translate("milestone.delete.confirmation.button"), true);
+				translate("milestone.delete.confirmation.button"), ButtonType.danger);
 		milestoneDeleteConfirmationCtrl.setUserObject(milestone);
 		listenTo(milestoneDeleteConfirmationCtrl);
 		

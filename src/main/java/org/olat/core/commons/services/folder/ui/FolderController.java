@@ -142,6 +142,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.OLATResourceable;
@@ -2786,7 +2787,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				? "delete.softly.confirmation.message.container"
 				: "delete.softly.confirmation.message.leaf";
 		deleteSoftlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
-				translate(messageKey, StringHelper.escapeHtml(vfsItem.getName())), null, translate("delete"), true);
+				translate(messageKey, StringHelper.escapeHtml(vfsItem.getName())), null, translate("delete"),
+				ButtonType.danger);
 		deleteSoftlyConfirmationCtrl.setUserObject(vfsItem);
 		listenTo(deleteSoftlyConfirmationCtrl);
 		
@@ -2853,7 +2855,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		
 		deleteSoftlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
-				translate("delete.softly.confirmation.message"), null, translate("delete"), true);
+				translate("delete.softly.confirmation.message"), null, translate("delete"), ButtonType.danger);
 		deleteSoftlyConfirmationCtrl.setUserObject(selecteditems);
 		listenTo(deleteSoftlyConfirmationCtrl);
 		
@@ -2917,7 +2919,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		String message = vfsItem instanceof VFSLeaf
 				? translate("delete.permanently.confirmation.message.leaf", StringHelper.escapeHtml(vfsItem.getName()))
 				: translate("delete.permanently.confirmation.message.container", StringHelper.escapeHtml(vfsItem.getName()));
-		deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message, null, translate("delete"), true);
+		deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message, null,
+				translate("delete"), ButtonType.danger);
 		deletePermanentlyConfirmationCtrl.setUserObject(vfsItem);
 		listenTo(deletePermanentlyConfirmationCtrl);
 		

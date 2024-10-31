@@ -93,6 +93,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
@@ -1049,7 +1050,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		}
 		
 		String message = translate("file.delete.softly.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file)));
-		deleteSoftlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message, null, translate("delete"), true);
+		deleteSoftlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), message, null, translate("delete"), ButtonType.danger);
 		deleteSoftlyConfirmationCtrl.setUserObject(file);
 		listenTo(deleteSoftlyConfirmationCtrl);
 		
@@ -1076,7 +1077,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
 				translate("file.delete.permanently.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(file))),
 				translate("file.delete.permanently.confirmation.confirm"),
-				translate("delete"), true);
+				translate("delete"), ButtonType.danger);
 		deletePermanentlyConfirmationCtrl.setUserObject(file);
 		listenTo(deletePermanentlyConfirmationCtrl);
 		

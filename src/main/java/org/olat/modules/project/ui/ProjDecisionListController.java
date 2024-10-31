@@ -71,6 +71,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -658,7 +659,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 		deleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
 				translate("decision.delete.confirmation.message", StringHelper.escapeHtml(ProjectUIFactory.getDisplayName(getTranslator(), decision))),
 				translate("decision.delete.confirmation.confirm"),
-				translate("decision.delete.confirmation.button"), true);
+				translate("decision.delete.confirmation.button"), ButtonType.danger);
 		deleteConfirmationCtrl.setUserObject(decision);
 		listenTo(deleteConfirmationCtrl);
 		
@@ -683,7 +684,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 		bulkDeleteConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(), 
 				translate("decision.bulk.delete.message", Integer.toString(selectedIndex.size())),
 				translate("decision.bulk.delete.confirm"),
-				translate("decision.bulk.delete.button"), true);
+				translate("decision.bulk.delete.button"), ButtonType.danger);
 		listenTo(bulkDeleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),

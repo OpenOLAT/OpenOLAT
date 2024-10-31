@@ -84,6 +84,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -1039,7 +1040,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
 					translate("feed.item.confirm.delete", StringHelper.escapeHtml(item.getTitle())),
 					translate("feed.item.confirmation.confirm.delete"),
-					translate("delete"), true);
+					translate("delete"), ButtonType.danger);
 			deletePermanentlyConfirmationCtrl.setUserObject(feedItems);
 			activateModalDialog(deletePermanentlyConfirmationCtrl, translate("feed.item.delete.permanently.title"));
 		} else {
