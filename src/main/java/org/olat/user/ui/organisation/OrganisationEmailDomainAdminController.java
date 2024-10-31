@@ -49,6 +49,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.user.ui.organisation.OrganisationEmailDomainDataModel.OrganisationEmailDomainCols;
@@ -239,7 +240,7 @@ public class OrganisationEmailDomainAdminController extends FormBasicController 
 						String.valueOf(emailDomainRow.getNumIdentitieswithDomain()),
 						StringHelper.escapeHtml(emailDomainRow.getEmailDomain().getOrganisation().getDisplayName())),
 				null,
-				translate("organisation.email.domain.disable.confirm.button"), false);
+				translate("organisation.email.domain.disable.confirm.button"), ButtonType.regular);
 		disableConfirmationCtrl.setUserObject(emailDomainRow.getEmailDomain());
 		listenTo(disableConfirmationCtrl);
 		
@@ -263,7 +264,7 @@ public class OrganisationEmailDomainAdminController extends FormBasicController 
 						StringHelper.escapeHtml(emailDomain.getDomain()),
 						StringHelper.escapeHtml(emailDomain.getOrganisation().getDisplayName())),
 				null,
-				translate("organisation.email.domain.delete.confirm.button"), true);
+				translate("organisation.email.domain.delete.confirm.button"), ButtonType.danger);
 		deleteConfirmationCtrl.setUserObject(emailDomain);
 		listenTo(deleteConfirmationCtrl);
 		
