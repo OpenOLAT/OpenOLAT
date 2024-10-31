@@ -59,6 +59,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.repository.RepositoryEntry;
@@ -89,9 +90,11 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 	private ComponentWrapperElement referenceEl;
 	private IconPanelLabelTextContent iconPanelContent;
 	private IconPanelLabelTextContent iconPanelSettings;
-	
+
+	private final GTACourseNode gtaNode;
 	private int numberOfAssessments = 0;
 	private final ModuleConfiguration config;
+	private final RepositoryEntry courseEntry;
 
 	private EvaluationFormExecutionController previewCtr;
 	private EvaluationFormSettingsController settingsCtrl;
@@ -105,12 +108,20 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 	private EvaluationFormManager evaluationFormManager;
 	
 	public GTAPeerReviewEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			ModuleConfiguration config) {
+			GTACourseNode gtaNode, RepositoryEntry courseEntry) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		this.config = config;
+		config = gtaNode.getModuleConfiguration();
+		this.gtaNode = gtaNode;
 		this.stackPanel = stackPanel;
+		this.courseEntry = courseEntry;
+		numberOfAssessments = getNumberOfAssessments();
 		
 		initForm(ureq);
+	}
+	
+	private int getNumberOfAssessments() {	
+		List<EvaluationFormSession> sessions = msService.getSessions(courseEntry, gtaNode.getIdent(), GTACourseNode.getPeerReviewEvaluationFormProvider());
+		return sessions == null ? 0 : sessions.size();
 	}
 
 	@Override
@@ -485,7 +496,8 @@ public class GTAPeerReviewEditController extends FormBasicController implements 
 		public SettingsContentProvider getSettingsContentProvider() {
 			return settingsProvider;
 		}
-		
+
+		@Override
 		public boolean canCreate() {
 			return numberOfAssessments == 0;
 		}
