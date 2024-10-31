@@ -172,6 +172,10 @@ public class TinyConfig {
 				.enableFeature("media")
 				.enableFeature("olatmovieviewer");
 	}
+
+	public boolean isMovieViewerEnabled() {
+		return plugins != null && plugins.indexOf("olatmovieviewer") >= 0;
+	}
 	
 	public TinyConfig enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext, boolean inlineChoice) {
 		TinyConfig config = enableFeature("olatqti");

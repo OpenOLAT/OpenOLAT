@@ -28,8 +28,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.MediaServerMode;
+import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
@@ -1272,5 +1275,22 @@ public class RichTextConfiguration implements Disposable {
 			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.singletonList(contentMapperKey));
 			contentMapperKey = null;
 		}
+	}
+
+	public void appendMediaRestrictionCode(StringOutput sb, Translator translator) {
+		if (!tinyConfig.isMovieViewerEnabled()) {
+			return;
+		}
+
+		MediaServerModule mediaServerModule = CoreSpringFactory.getImpl(MediaServerModule.class);
+		if (MediaServerMode.allowAll.equals(mediaServerModule.getMediaServerMode())) {
+			return;
+		}
+
+		sb.append("  o_info.mediaServerMode = 'configure';\n");
+		sb.append("  o_info.mediaServerRestrictedWarning = '").append(translator.translate("error.media.restricted")).append("';\n");
+		String mediaServersString = mediaServerModule.getMediaServerUrls().stream()
+				.map(mediaServerUrl -> "'" + mediaServerUrl + "'").collect(Collectors.joining(","));
+		sb.append("  o_info.mediaServers = [").append(mediaServersString).append("];\n");
 	}
 }
