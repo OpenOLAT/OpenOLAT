@@ -6,3 +6,17 @@
 	#end
 	<div class="o_content clearfix">$r.render("content")</div>
 </div>
+#if($restrictMediaServers)
+<script>
+"use strict";
+jQuery().ready(function() {
+	o_info.mediaServerMode = 'configure';
+	o_info.mediaServers = [
+		#foreach($mediaServerUrl in $mediaServerUrls)
+		"${mediaServerUrl}",
+		#end
+	];
+	o_info.mediaServerRestrictedWarning = `${mediaServerRestrictedWarning}`;
+});
+</script>
+#end

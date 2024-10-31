@@ -220,6 +220,30 @@ public class MediaServerModule extends AbstractSpringModule {
 		return urls;
 	}
 
+	public List<String> getMediaServerUrls() {
+		ArrayList<String> result = new ArrayList<>(getPredefinedMediaServerUrls());
+		result.addAll(getCustomMediaServerUrls());
+		return result;
+	}
+
+	private List<String> getPredefinedMediaServerUrls() {
+		List<String> urls = new ArrayList<>();
+		if (isAllowAll() || isMediaServerEnabled(YOUTUBE_KEY)) {
+			urls.addAll(Arrays.stream(YOUTUBE_MEDIA_SRC.split(" ")).toList());
+		}
+		if (isAllowAll() || isMediaServerEnabled(VIMEO_KEY)) {
+			urls.addAll(Arrays.stream(VIMEO_MEDIA_SRC.split(" ")).toList());
+		}
+		if (isAllowAll() || isMediaServerEnabled(NANOO_TV_KEY)) {
+			urls.addAll(Arrays.stream(NANOO_TV_MEDIA_SRC.split(" ")).toList());
+		}
+		return urls;
+	}
+
+	private Collection<String> getCustomMediaServerUrls() {
+		return getCustomMediaServers().stream().map(MediaServer::getDomain).collect(Collectors.toList());
+	}
+
 	public List<String> getMediaServerNames() {
 		ArrayList<String> result = new ArrayList<>(getPredefinedMediaServerNames());
 		result.addAll(getCustomMediaServerNames());
@@ -228,17 +252,17 @@ public class MediaServerModule extends AbstractSpringModule {
 	}
 
 	private List<String> getPredefinedMediaServerNames() {
-		List<String> urls = new ArrayList<>();
+		List<String> names = new ArrayList<>();
 		if (isAllowAll() || isMediaServerEnabled(YOUTUBE_KEY)) {
-			urls.add(YOUTUBE_NAME);
+			names.add(YOUTUBE_NAME);
 		}
 		if (isAllowAll() || isMediaServerEnabled(VIMEO_KEY)) {
-			urls.add(VIMEO_NAME);
+			names.add(VIMEO_NAME);
 		}
 		if (isAllowAll() || isMediaServerEnabled(NANOO_TV_KEY)) {
-			urls.add(NANOO_TV_NAME);
+			names.add(NANOO_TV_NAME);
 		}
-		return urls;
+		return names;
 	}
 
 	private List<String> getCustomMediaServerNames() {
