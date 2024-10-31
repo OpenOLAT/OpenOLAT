@@ -25,8 +25,10 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.SUB
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -34,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 
@@ -43,14 +46,26 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel<CurriculumElementRow> implements FlexiBusinessPathModel {
+public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel<CurriculumElementRow>
+implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElementRow> {
 
 	private static final ElementCols[] COLS = ElementCols.values();
 	
-	public CurriculumComposerTableModel(FlexiTableColumnModel columnModel) {
+	private final Locale locale;
+	
+	public CurriculumComposerTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
 	}
 	
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<CurriculumElementRow> views = new CurriculumComposerTableSortDelegate(orderBy, this, locale).sort();
+			super.setObjects(views);
+		}
+	}
+
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty() && filters.get(0) != null)) {	
@@ -182,10 +197,15 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		CurriculumElementRow element = getObject(row);
 		return element.hasChildren();
 	}
-
+	
 	@Override
 	public Object getValueAt(int row, int col) {
 		CurriculumElementRow element = getObject(row);
+		return getValueAt(element, col);
+	}
+	
+	@Override
+	public Object getValueAt(CurriculumElementRow element, int col) {
 		return switch(COLS[col]) {
 			case key -> element.getKey();
 			case displayName -> element.getDisplayName();
@@ -253,7 +273,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return this != tools && this != structure;
 		}
 
 		@Override

@@ -91,15 +91,12 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status,
 				new CurriculumStatusCellRenderer(getTranslator())));
 
-		tableModel = new CurriculumComposerTableModel(columnsModel);
+		tableModel = new CurriculumComposerTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 5000, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_curriculum_structure o_table_reduced");
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(false);
-		if(activeElement != null) {
-			//tableEl.setCssDelegate(this);
-		}
 	}
 	
 	private class NameRenderer implements FlexiCellRenderer {

@@ -330,7 +330,13 @@ public class CurriculumComposerController extends FormBasicController implements
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 		
-		tableModel = new CurriculumComposerTableModel(columnsModel);
+		if(!config.isFlat()) {
+			for(int i=columnsModel.getColumnCount(); i-->0; ) {
+				columnsModel.getColumnModel(i).setSortable(false);
+			}
+		}
+		
+		tableModel = new CurriculumComposerTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_curriculum_el_listing");		
