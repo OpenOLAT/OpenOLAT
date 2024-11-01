@@ -594,8 +594,7 @@ public class WikiManager {
 		//delete all version files of the page
 		List<VFSItem> leafs = versionsContainer.getItems(new VFSLeafFilter());
 		if (leafs.size() > 0) {
-			for (Iterator<VFSItem> iter = leafs.iterator(); iter.hasNext();) {
-				VFSLeaf leaf = (VFSLeaf) iter.next();
+			 for (VFSItem leaf : leafs) {
 				String filename = leaf.getName();
 				if (filename.startsWith(page.getPageId())) {
 					leaf.deleteSilently();
