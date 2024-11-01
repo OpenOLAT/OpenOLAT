@@ -300,7 +300,6 @@ public class CourseEditorPageFragment {
 		By saveBy = By.cssSelector("div.modal-content div.o_button_group a.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	

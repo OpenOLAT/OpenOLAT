@@ -52,6 +52,8 @@ import org.olat.selenium.page.course.CheckListConfigPage;
 import org.olat.selenium.page.course.CheckListPage;
 import org.olat.selenium.page.course.ContactConfigPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
+import org.olat.selenium.page.course.CourseNodeSelectionConfigurationPage;
+import org.olat.selenium.page.course.CourseNodeSelectionPage;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.DialogConfigurationPage;
 import org.olat.selenium.page.course.DialogPage;
@@ -2061,6 +2063,134 @@ public class CourseElementTest extends Deployments {
 		
 		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
 		Assert.assertEquals(1, messages.size());
+	}
+	
+	/**
+	 * An author creates a learn path course with a course node selection
+	 * course element and two folders elements. Published the course and add
+	 * a participant. The participant log in, opens the course and choose a folder
+	 * to see. The author checks after what the participant has done.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithCourseNodeSelection()
+	throws IOException, URISyntaxException {	
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course CNS " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		// Create a course element of type "Course node selection"
+		String nodeTitle = "Choose folders";
+		String folderOneTitle = "Folder one";
+		String folderTwoTitle = "Folder two";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("cns")
+			.nodeTitle(nodeTitle);
+		
+		CourseNodeSelectionConfigurationPage cnsConfigurationPage = new CourseNodeSelectionConfigurationPage(browser);
+		cnsConfigurationPage
+			.selectConfiguration()
+			.setNumOfSelections(1)
+			.saveConfiguration();
+		
+		courseEditor
+			.createNode("bc")
+			.nodeTitle(folderOneTitle);
+		courseEditor
+			.createNode("bc")
+			.nodeTitle(folderTwoTitle);
+		
+		courseEditor
+			.moveUnder(nodeTitle);
+		courseEditor
+			.selectNode(folderOneTitle)
+			.moveUnder(nodeTitle);
+		
+		CoursePageFragment courseRuntime = courseEditor
+			.autoPublish();
+		courseRuntime
+			.settings()
+			.accessConfiguration()
+			.setAccessToRegisteredUser()
+			.clickToolbarBack();
+		courseRuntime
+			.changeStatus(RepositoryEntryStatusEnum.published);
+		
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		members
+			.clickToolbarBack();
+		
+		// Author log out
+		new UserToolsPage(browser)
+			.logout();
+				
+		// Participant comes in and choose the folder two
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(participant);
+		
+		NavigationPage ryomouNavBar = NavigationPage.load(browser);
+		ryomouNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment course = new CoursePageFragment(browser);
+		MenuTreePageFragment menuTree = course
+			.tree()
+			.assertWithTitleSelected(nodeTitle);
+		
+		CourseNodeSelectionPage courseNodeSelectionPage = new CourseNodeSelectionPage(browser);
+		courseNodeSelectionPage
+			.assertOnCourseNodeSelection()
+			.selectCourseNode(folderTwoTitle);
+		
+		menuTree
+			.selectWithTitle(folderTwoTitle);
+		course
+			.assertOnTitle(folderTwoTitle)
+			.assertOnLearnPathNodeDone(nodeTitle)
+			.assertOnLearnPathNodeDone(folderTwoTitle);
+		
+		// Participant log out
+		new UserToolsPage(browser)
+			.logout();
+				
+		// Author comes in and do the self test
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author)
+			.resume();
+		
+		new CoursePageFragment(browser)
+			.tree()
+			.assertWithTitleSelected(nodeTitle);
+
+		// Open details and check that the participant chooses node two
+		new CourseNodeSelectionPage(browser)
+			.assertOnCourseNodeSelectedBy(participant)
+			.openDetails(participant)
+			.assertOnDetailsSelectedNode(participant, folderTwoTitle);
 	}
 	
 	/**
