@@ -1018,7 +1018,7 @@ create table o_ac_billing_address (
   id bigserial,
   creationdate timestamp not null,
   lastmodified timestamp not null,
-  a_identifier varchar(255) not null,
+  a_identifier varchar(255),
   a_name_line_1 varchar(255),
   a_name_line_2 varchar(255),
   a_address_line_1 varchar(255),
@@ -5047,7 +5047,6 @@ create index idx_ac_billing_to_ident_idx on o_ac_billing_address (fk_identity);
 alter table o_ac_order add constraint ord_billing_idx foreign key (fk_billing_address) references o_ac_billing_address (id);
 create index idx_ord_billing_idx on o_ac_order (fk_billing_address);
 
-create index idx_orderpart_order_idx on o_ac_order_part (fk_order_id);
 create index ac_order_to_delivery_idx on o_ac_order (fk_delivery_id);
 
 alter table o_ac_order_part add constraint ord_part_ord_ctx foreign key (fk_order_id) references o_ac_order (order_id);
