@@ -50,6 +50,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
@@ -129,6 +130,10 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 	@JoinColumn(name="fk_order_id")
 	@OrderColumn(name="pos")
 	private List<OrderPart> parts;
+	
+	@ManyToOne(targetEntity=BillingAddressImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_billing_address", nullable=true, insertable=true, updatable=true)
+	private BillingAddress billingAddress;
 	
 	public OrderImpl() {
 		//
@@ -270,6 +275,15 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 		if(discount == null) {
 			discount = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
 		}
+	}
+
+	@Override
+	public BillingAddress getBillingAddress() {
+		return billingAddress;
+	}
+
+	public void setBillingAddress(BillingAddress billingAddress) {
+		this.billingAddress = billingAddress;
 	}
 
 	@Override

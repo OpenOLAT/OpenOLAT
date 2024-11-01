@@ -23,8 +23,11 @@ package org.olat.resource.accesscontrol.manager;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.Query;
 import jakarta.persistence.TemporalType;
@@ -38,6 +41,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
@@ -115,6 +119,16 @@ public class ACOrderDAO {
 
 	public Order save(Order order, OrderStatus status) {
 		((OrderImpl)order).setOrderStatus(status);
+		if(order.getKey() == null) {
+			dbInstance.saveObject(order);
+		} else {
+			dbInstance.updateObject(order);
+		}
+		return order;
+	}
+
+	public Order save(Order order, BillingAddress billingAddress) {
+		((OrderImpl)order).setBillingAddress(billingAddress);
 		if(order.getKey() == null) {
 			dbInstance.saveObject(order);
 		} else {
@@ -498,4 +512,21 @@ public class ACOrderDAO {
 		Long orderKey = Long.valueOf(orderNr);
 		return loadOrderByKey(orderKey);
 	}
+	
+	public Map<Long, Long> getBillingAddressKeyToOrderCount(Collection<BillingAddress> billingAddresss) {
+		String query = """
+				select order.billingAddress.key
+				     , count(*)
+				  from acorder order
+				 where order.billingAddress.key in :billingAddressKeys
+				 group by order.billingAddress.key
+				""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Object[].class)
+				.setParameter("billingAddressKeys", billingAddresss.stream().map(BillingAddress::getKey).toList())
+				.getResultList()
+				.stream()
+				.collect(Collectors.toMap(row -> (Long)row[0], row -> (Long)row[1]));
+	}
+	
 }

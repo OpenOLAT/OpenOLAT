@@ -1096,6 +1096,28 @@ create table o_ac_auto_advance_order (
 );
 
 -- access cart
+create table o_ac_billing_address (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  a_identifier varchar(255),
+  a_name_line_1 varchar(255),
+  a_name_line_2 varchar(255),
+  a_address_line_1 varchar(255),
+  a_address_line_2 varchar(255),
+  a_address_line_3 varchar(255),
+  a_address_line_4 varchar(255),
+  a_pobox varchar(255),
+  a_region varchar(255),
+  a_zip varchar(255),
+  a_city varchar(255),
+  a_country varchar(255),
+  a_enabled  bool default true not null,
+  fk_organisation bigint,
+  fk_identity bigint,
+  primary key (id)
+);
+
 create table if not exists o_ac_order (
     order_id bigint NOT NULL,
   version mediumint unsigned not null,
@@ -1110,6 +1132,7 @@ create table if not exists o_ac_order (
     discount_currency_code VARCHAR(3),
     order_status VARCHAR(32) default 'NEW',
   fk_delivery_id bigint,
+  fk_billing_address bigint,
     primary key (order_id)
 );
 
@@ -4830,6 +4853,7 @@ alter table o_ac_offer ENGINE = InnoDB;
 alter table o_ac_offer_to_organisation ENGINE = InnoDB;
 alter table o_ac_method ENGINE = InnoDB;
 alter table o_ac_offer_access ENGINE = InnoDB;
+alter table o_ac_billing_address ENGINE = InnoDB;
 alter table o_ac_order ENGINE = InnoDB;
 alter table o_ac_order_part ENGINE = InnoDB;
 alter table o_ac_order_line ENGINE = InnoDB;
@@ -5232,6 +5256,9 @@ alter table o_ac_offer_to_organisation add constraint rel_oto_org_idx foreign ke
 
 alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 alter table o_ac_offer_access add constraint off_to_meth_off_ctx foreign key (fk_offer_id) references o_ac_offer (offer_id);
+
+alter table o_ac_billing_address add constraint ac_billing_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+alter table o_ac_billing_address add constraint ac_billing_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 
 create index ac_order_to_delivery_idx on o_ac_order (fk_delivery_id);
 

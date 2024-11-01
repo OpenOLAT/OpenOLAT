@@ -75,6 +75,8 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.AccessTransaction;
+import org.olat.resource.accesscontrol.BillingAddress;
+import org.olat.resource.accesscontrol.BillingAddressSearchParams;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferOrganisationSelection;
@@ -132,6 +134,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	private ACOfferToOrganisationDAO offerToOrganisationDAO;
 	@Autowired
 	private ACMethodDAO methodManager;
+	@Autowired
+	private ACBillingAddressDAO billingAddressDao;
 	@Autowired
 	private ACOrderDAO orderManager;
 	@Autowired
@@ -762,6 +766,36 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Override
 	public List<OfferAccess> getOfferAccess(Offer offer, boolean valid) {
 		return methodManager.getOfferAccess(offer, valid);
+	}
+	
+	@Override
+	public BillingAddress createBillingAddress(Organisation organisation, Identity identity) {
+		return billingAddressDao.create(organisation, identity);
+	}
+	
+	@Override
+	public BillingAddress updateBillingAddress(BillingAddress billingAddress) {
+		return billingAddressDao.update(billingAddress);
+	}
+	
+	@Override
+	public void deleteBillingAddress(BillingAddress billingAddress) {
+		billingAddressDao.delete(billingAddress);
+	}
+	
+	@Override
+	public List<BillingAddress> getBillingAddresses(BillingAddressSearchParams searchParams) {
+		return billingAddressDao.loadBillingAddresses(searchParams);
+	}
+
+	@Override
+	public Map<Long, Long> getBillingAddressKeyToOrderCount(Collection<BillingAddress> billingAddresss) {
+		return orderManager.getBillingAddressKeyToOrderCount(billingAddresss);
+	}
+	
+	@Override
+	public Order addBillingAddress(Order order, BillingAddress billingAddress) {
+		return orderManager.save(order, billingAddress);
 	}
 
 	@Override

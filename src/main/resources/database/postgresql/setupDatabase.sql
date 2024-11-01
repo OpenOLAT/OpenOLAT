@@ -1014,6 +1014,28 @@ create table o_ac_auto_advance_order (
 );
 
 -- access cart
+create table o_ac_billing_address (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  a_identifier varchar(255) not null,
+  a_name_line_1 varchar(255),
+  a_name_line_2 varchar(255),
+  a_address_line_1 varchar(255),
+  a_address_line_2 varchar(255),
+  a_address_line_3 varchar(255),
+  a_address_line_4 varchar(255),
+  a_pobox varchar(255),
+  a_region varchar(255),
+  a_zip varchar(255),
+  a_city varchar(255),
+  a_country varchar(255),
+  a_enabled bool default true not null,
+  fk_organisation int8,
+  fk_identity int8,
+  primary key (id)
+);
+
 create table o_ac_order (
     order_id int8 NOT NULL,
   version int4 not null,
@@ -1028,6 +1050,7 @@ create table o_ac_order (
     discount_currency_code VARCHAR(3),
     order_status VARCHAR(32) default 'NEW',
   fk_delivery_id int8,
+  fk_billing_address int8,
     primary key (order_id)
 );
 
@@ -5016,6 +5039,15 @@ create index idx_offeracc_method_idx on o_ac_offer_access (fk_method_id);
 alter table o_ac_offer_access add constraint off_to_meth_off_ctx foreign key (fk_offer_id) references o_ac_offer (offer_id);
 create index idx_offeracc_offer_idx on o_ac_offer_access (fk_offer_id);
 
+alter table o_ac_billing_address add constraint ac_billing_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_ac_billing_to_org_idx on o_ac_billing_address (fk_organisation);
+alter table o_ac_billing_address add constraint ac_billing_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_ac_billing_to_ident_idx on o_ac_billing_address (fk_identity);
+
+alter table o_ac_order add constraint ord_billing_idx foreign key (fk_billing_address) references o_ac_billing_address (id);
+create index idx_ord_billing_idx on o_ac_order (fk_billing_address);
+
+create index idx_orderpart_order_idx on o_ac_order_part (fk_order_id);
 create index ac_order_to_delivery_idx on o_ac_order (fk_delivery_id);
 
 alter table o_ac_order_part add constraint ord_part_ord_ctx foreign key (fk_order_id) references o_ac_order (order_id);

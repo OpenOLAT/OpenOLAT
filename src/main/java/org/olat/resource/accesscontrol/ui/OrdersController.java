@@ -30,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -86,27 +85,6 @@ public class OrdersController extends FormBasicController implements Activateabl
 	@Autowired
 	private AccessControlModule acModule;
 
-	/**
-	 * Constructor that shows table with title and description for identity of user
-	 * session.
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 */
-	public OrdersController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "orders");
-		this.identity = getIdentity();
-		initForm(ureq);
-	}
-
-	/**
-	 * Constructor that shows table without title and description for the given
-	 * identity, e.g. for an admin interface. 
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param identity
-	 */
 	public OrdersController(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.identity = identity;
@@ -139,12 +117,6 @@ public class OrdersController extends FormBasicController implements Activateabl
 		filters.add(new FlexiTableFilter(translate("order.status.payed"), OrderStatus.PAYED.name()));
 		filters.add(new FlexiTableFilter(translate("order.status.error"), OrderStatus.ERROR.name()));
 		tableEl.setFilters("", filters, false);
-
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("title", translate("orders.my"));
-			layoutCont.contextPut("description", translate("orders.my.desc"));
-		}
 	}
 
 	@Override

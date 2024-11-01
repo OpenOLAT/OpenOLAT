@@ -46,7 +46,7 @@ public class HomeOrdersActionExtension extends UserToolExtension  {
 	
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl wControl, Object arg) {
-		return new OrdersController(ureq, wControl);
+		return new HomeOrdersController(ureq, wControl);
 	}
 	
 	@Override

@@ -150,6 +150,7 @@
 		<class>org.olat.resource.accesscontrol.model.OrderPartImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OrderLineImpl</class>
 		<class>org.olat.resource.accesscontrol.model.OfferAccessImpl</class>
+		<class>org.olat.resource.accesscontrol.model.BillingAddressImpl</class>
 		<class>org.olat.resource.accesscontrol.model.AccessTransactionImpl</class>
 		<class>org.olat.resource.accesscontrol.model.FreeAccessMethod</class>
 		<class>org.olat.resource.accesscontrol.model.TokenAccessMethod</class>

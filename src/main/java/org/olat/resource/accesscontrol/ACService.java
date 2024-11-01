@@ -241,9 +241,21 @@ public interface ACService {
 	public void deletedLinkToMethod(OfferAccess link);
 
 	public List<OfferAccess> getOfferAccess(Offer offer, boolean valid);
+	
+	public BillingAddress createBillingAddress(Organisation organisation, Identity identity);
+	
+	public BillingAddress updateBillingAddress(BillingAddress billingAddress);
+
+	public void deleteBillingAddress(BillingAddress billingAddress);
+	
+	public List<BillingAddress> getBillingAddresses(BillingAddressSearchParams searchParams);
+
+	public Map<Long, Long> getBillingAddressKeyToOrderCount(Collection<BillingAddress> billingAddresss);
+
+	public Order addBillingAddress(Order order, BillingAddress billingAddress);
 
 	public Order loadOrderByKey(Long key);
-
+	
 	public List<Order> findOrders(Identity delivery, OrderStatus... status);
 
 	public List<AccessTransaction> findAccessTransactions(Order order);

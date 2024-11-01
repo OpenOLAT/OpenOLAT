@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -130,12 +131,15 @@ public class ACOrderManagerTest extends OlatTestCase {
 		Order order = acOrderManager.createOrder(ident1);
 		OrderPart part = acOrderManager.addOrderPart(order);
 		OrderLine item = acOrderManager.addOrderLine(part, offer);
-		
 		assertNotNull(order);
 		assertNotNull(order.getDelivery());
 		assertEquals(ident1, order.getDelivery());
 		acOrderManager.save(order);
+		dbInstance.commitAndCloseSession();
 		
+		order = acOrderManager.loadOrderByKey(order.getKey());
+		BillingAddress billingAddress = acService.createBillingAddress(JunitTestHelper.getDefaultOrganisation(), null);
+		acService.addBillingAddress(order, billingAddress);
 		dbInstance.commitAndCloseSession();
 		
 		//check what's on DB
@@ -158,6 +162,8 @@ public class ACOrderManagerTest extends OlatTestCase {
 		OrderLine retrievedItem = retrievedPart.getOrderLines().get(0);
 		assertNotNull(retrievedItem.getOffer());
 		assertEquals(offer, retrievedItem.getOffer());
+		
+		assertEquals(order.getBillingAddress(), billingAddress);
 	}
 	
 	@Test
@@ -584,5 +590,29 @@ public class ACOrderManagerTest extends OlatTestCase {
 		OLATResource r =  resourceManager.createOLATResourceInstance(resourceable);
 		dbInstance.saveObject(r);
 		return r;
+	}
+	
+	@Test
+	public void getBillingAddressKeyToOrderCount() {
+		BillingAddress billingAddress1 = acService.createBillingAddress(null, null);
+		BillingAddress billingAddress2 = acService.createBillingAddress(null, null);
+		BillingAddress billingAddress3 = acService.createBillingAddress(null, null);
+		BillingAddress billingAddress4 = acService.createBillingAddress(null, null);
+		Order order11 = acOrderManager.createOrder(ident1);
+		acService.addBillingAddress(order11, billingAddress1);
+		Order order12 = acOrderManager.createOrder(ident1);
+		acService.addBillingAddress(order12, billingAddress1);
+		Order order21 = acOrderManager.createOrder(ident1);
+		acService.addBillingAddress(order21, billingAddress2);
+		Order order41 = acOrderManager.createOrder(ident1);
+		acService.addBillingAddress(order41, billingAddress4);
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long, Long> billingAddressKeyToOrderCount = acOrderManager.getBillingAddressKeyToOrderCount(
+				List.of(billingAddress1, billingAddress2, billingAddress3));
+		Assert.assertEquals(Long.valueOf(2), billingAddressKeyToOrderCount.get(billingAddress1.getKey()));
+		Assert.assertEquals(Long.valueOf(1), billingAddressKeyToOrderCount.get(billingAddress2.getKey()));
+		Assert.assertNull(billingAddressKeyToOrderCount.get(billingAddress3.getKey()));
+		Assert.assertNull(billingAddressKeyToOrderCount.get(billingAddress4.getKey()));
 	}
 }

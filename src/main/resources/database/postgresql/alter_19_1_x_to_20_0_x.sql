@@ -32,3 +32,36 @@ create index idx_org_email_to_org_idx on o_org_email_domain (fk_organisation);
 
 -- Catalog
 alter table o_ca_launcher add column c_web_enabled bool default true not null;
+
+-- Access control
+create table o_ac_billing_address (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  a_identifier varchar(255),
+  a_name_line_1 varchar(255),
+  a_name_line_2 varchar(255),
+  a_address_line_1 varchar(255),
+  a_address_line_2 varchar(255),
+  a_address_line_3 varchar(255),
+  a_address_line_4 varchar(255),
+  a_pobox varchar(255),
+  a_region varchar(255),
+  a_zip varchar(255),
+  a_city varchar(255),
+  a_country varchar(255),
+  a_enabled bool default true not null,
+  fk_organisation int8,
+  fk_identity int8,
+  primary key (id)
+);
+alter table o_ac_order add column fk_billing_address int8;
+
+alter table o_ac_billing_address add constraint ac_billing_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_ac_billing_to_org_idx on o_ac_billing_address (fk_organisation);
+alter table o_ac_billing_address add constraint ac_billing_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_ac_billing_to_ident_idx on o_ac_billing_address (fk_identity);
+
+alter table o_ac_order add constraint ord_billing_idx foreign key (fk_billing_address) references o_ac_billing_address (id);
+create index idx_ord_billing_idx on o_ac_order (fk_billing_address);
+

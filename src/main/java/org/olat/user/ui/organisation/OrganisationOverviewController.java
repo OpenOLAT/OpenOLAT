@@ -37,6 +37,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.resource.accesscontrol.ui.BillingAddressListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,6 +52,7 @@ public class OrganisationOverviewController extends BasicController {
 	private final Link resourcesLink;
 	private final Link userManagementLink;
 	private final Link roleConfigLink;
+	private final Link billingAddressesLink;
 	private final Link emailDomainsLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
@@ -59,6 +61,7 @@ public class OrganisationOverviewController extends BasicController {
 	private OrganisationResourceListController resourcesCtrl;
 	private OrganisationUserManagementController userMgmtCtrl;
 	private OrganisationRoleEditController roleConfigCtrl;
+	private BillingAddressListController billingAddressesCtrl;
 	private OrganisationEmailDomainAdminController emailDomainsCtrl;
 	
 	private final Organisation organisation;
@@ -85,6 +88,8 @@ public class OrganisationOverviewController extends BasicController {
 		if (organisation.isDefault() || organisation.getParent() == null) {
 			segmentView.addSegment(roleConfigLink, false);
 		}
+		billingAddressesLink = LinkFactory.createLink("organisation.billing.addresses", mainVC, this);
+		segmentView.addSegment(billingAddressesLink, false);
 		emailDomainsLink = LinkFactory.createLink("organisation.email.domains", mainVC, this);
 		if (organisationModul.isEmailDomainEnabled()) {
 			segmentView.addSegment(emailDomainsLink, false);
@@ -122,6 +127,8 @@ public class OrganisationOverviewController extends BasicController {
 					doOpenResources(ureq);
 				} else if (clickedLink == roleConfigLink) {
 					doOpenRoleConfig(ureq);
+				} else if(clickedLink == billingAddressesLink) {
+					doOpenBillingAddresses(ureq);
 				} else if(clickedLink == emailDomainsLink) {
 					doOpenEmailDomains(ureq);
 				}
@@ -172,6 +179,17 @@ public class OrganisationOverviewController extends BasicController {
 
 		addToHistory(ureq, roleConfigCtrl);
 		mainVC.put("segmentCmp", roleConfigCtrl.getInitialComponent());
+	}
+
+	private void doOpenBillingAddresses(UserRequest ureq) {
+		if (billingAddressesCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("BillingAddresses"), null);
+			billingAddressesCtrl = new BillingAddressListController(ureq, bwControl, organisation, null);
+			listenTo(billingAddressesCtrl);
+		}
+		
+		addToHistory(ureq, billingAddressesCtrl);
+		mainVC.put("segmentCmp", billingAddressesCtrl.getInitialComponent());
 	}
 
 	private void doOpenEmailDomains(UserRequest ureq) {

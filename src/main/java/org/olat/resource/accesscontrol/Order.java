@@ -54,4 +54,7 @@ public interface Order {
 	public List<OrderPart> getParts();
 	
 	public void recalculate();
+	
+	public BillingAddress getBillingAddress();
+	
 }
