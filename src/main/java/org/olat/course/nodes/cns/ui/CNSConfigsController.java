@@ -53,9 +53,11 @@ public class CNSConfigsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.config");
+		formLayout.setElementCssClass("o_sel_cns_configuration_form");
 		
 		requiredSelectionsEl = uifactory.addTextElement("config.required.selections", 10,
 				moduleConfig.getStringValue(CNSCourseNode.CONFIG_KEY_REQUIRED_SELECTIONS), formLayout);
+		requiredSelectionsEl.setElementCssClass("o_sel_cns_selections");
 		requiredSelectionsEl.setMandatory(true);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
