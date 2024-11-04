@@ -50,6 +50,7 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -64,7 +65,9 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.IpListValidator;
 import org.olat.course.assessment.manager.SafeExamBrowserValidator;
 import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -209,6 +212,30 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		return null;
 	}
 	
+	private Integer getDisadvantageCompensation(TransientAssessmentMode mode) {
+		if(assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode)) {
+			RepositoryEntryRef entryRef = new RepositoryEntryRefImpl(mode.getRepositoryEntryKey());
+			boolean disadvantageCompensation = disadvantageCompensationService.isActiveDisadvantageCompensation(getIdentity(), entryRef, mode.getElementList());
+			if(!disadvantageCompensation) {
+				return null;
+			}
+			
+			List<DisadvantageCompensation> compensations = disadvantageCompensationService.getActiveDisadvantageCompensations(getIdentity(), entryRef, mode.getElementList());
+			
+			int compensationExtraTime = 0;
+			if(compensations != null) {
+				for(DisadvantageCompensation compensation:compensations) {
+					int extraTime = compensation.getExtraTime() == null ? 0 : compensation.getExtraTime().intValue();
+					if(extraTime > compensationExtraTime) {
+						compensationExtraTime = extraTime;
+					}		
+				}
+			}
+			return Integer.valueOf(compensationExtraTime);
+		}
+		return null;
+	}
+	
 	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode, Boolean useHeaders) {
 		Date now = new Date();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
@@ -217,9 +244,14 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		if(mode.isManual() && ((Status.end.equals(mode.getStatus()) && EndStatus.all.equals(mode.getEndStatus())) || Status.none.equals(mode.getStatus()))) {
 			return null;
 		}
-		// Check if automatic is out of bounds
-		if(!mode.isManual() && (beginWithLeadTime.after(now) || now.after(endWithFollowupTime))) {
-			return null;
+		// Check if automatic is out of bounds, disadvantage by manual is controlled by status
+		Integer extraTime = null;
+		if(!mode.isManual()) {
+			extraTime = getDisadvantageCompensation(mode);
+			endWithFollowupTime = addExtraTimeToDate(endWithFollowupTime, extraTime);
+			if(beginWithLeadTime.after(now) || now.after(endWithFollowupTime)) {
+				return null;
+			}
 		} 
 		
 		ResourceGuard guard = guards.getGuardFor(mode);
@@ -271,7 +303,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 			Link go = guard.getGo();
 			Link cont = guard.getContinue();
 			ExternalLink quit = guard.getQuitSEB();
-			state = updateButtons(mode, now, go, cont, quit);
+			state = updateButtons(mode, now, extraTime, go, cont, quit);
 			if(go.isVisible()) {
 				assessmentModeCoordinationService.waitFor(getIdentity(), mode);
 			}
@@ -292,12 +324,19 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 				|| (useHeaders != null && !useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, url, safeExamBrowserKeys, configurationKey));
 	}
 	
-	private String updateButtons(TransientAssessmentMode mode, Date now, Link go, Link cont, ExternalLink quit) {
+	private static final Date addExtraTimeToDate(Date date, Integer extraTime) {
+		if(extraTime == null || extraTime.intValue() < 0) {
+			return date;
+		}
+		return DateUtils.addSeconds(date, extraTime.intValue());
+	}
+	
+	private String updateButtons(TransientAssessmentMode mode, Date now, Integer extraTime, Link go, Link cont, ExternalLink quit) {
 		String state;
 		if(mode.isManual()) {
 			state = updateButtonsManual(mode, go, cont, quit);
 		} else {
-			state = updateButtonsAuto(mode, now, go, cont, quit);
+			state = updateButtonsAuto(mode, now, extraTime, go, cont, quit);
 		}
 		return state;
 	}
@@ -357,11 +396,11 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		return false;
 	}
 	
-	private String updateButtonsAuto(TransientAssessmentMode mode, Date now, Link go, Link cont, ExternalLink quitSEB) {
+	private String updateButtonsAuto(TransientAssessmentMode mode, Date now, Integer extraTime, Link go, Link cont, ExternalLink quitSEB) {
 		Date begin = mode.getBegin();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
-		Date end = mode.getEnd();
-		Date endWithLeadTime = mode.getEndWithFollowupTime();
+		Date end = addExtraTimeToDate(mode.getEnd(), extraTime);
+		Date endWithLeadTime = addExtraTimeToDate(mode.getEndWithFollowupTime(), extraTime);
 		
 		String state;
 		if(beginWithLeadTime.compareTo(now) <= 0 && begin.compareTo(now) > 0) {
