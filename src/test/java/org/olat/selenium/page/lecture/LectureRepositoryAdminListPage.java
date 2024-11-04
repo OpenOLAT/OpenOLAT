@@ -44,7 +44,7 @@ public class LectureRepositoryAdminListPage {
 	}
 	
 	public LectureRepositoryAdminListPage assertOnLectureBlock(String title) {
-		By titleBy = By.xpath("//div[contains(@class,'o_table_flexi')]//td[text()[contains(.,'" + title + "')]]");
+		By titleBy = By.xpath("//div[contains(@class,'o_table_flexi')]//td/a[text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(titleBy, browser);
 		return this;
 	}
@@ -57,14 +57,14 @@ public class LectureRepositoryAdminListPage {
 	}
 	
 	public ImportLecturesBlocksWizard importLecturesBlocks() {
-		By importLecturesBy = By.cssSelector("div.o_sel_repo_lectures_list a.o_sel_repo_import_lectures");
+		By moreBy = By.xpath("//div[contains(@class,'o_button_group_right')]/div[@class='btn-group'][a[contains(@class,'o_sel_repo_add_lecture')]]/div/button[contains(@class,'o_sel_add_more')]");
+		OOGraphene.waitElement(moreBy, browser);
+		browser.findElement(moreBy).click();
+		
+		By importLecturesBy = By.cssSelector("div.o_sel_repo_lectures_list ul.o_sel_add_more a.o_sel_repo_import_lectures");
+		OOGraphene.waitElement(importLecturesBy, browser);
 		browser.findElement(importLecturesBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return new ImportLecturesBlocksWizard(browser);
 	}
-	
-
-	
-	
-
 }

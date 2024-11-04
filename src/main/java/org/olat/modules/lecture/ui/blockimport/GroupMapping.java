@@ -59,7 +59,7 @@ public class GroupMapping {
 
 	public void setBusinessGroup(BusinessGroup businessGroup) {
 		this.businessGroup = businessGroup;
-		group = businessGroup.getBaseGroup();
+		group = businessGroup == null ? null : businessGroup.getBaseGroup();
 	}
 
 	public CurriculumElement getCurriculumElement() {
@@ -68,7 +68,7 @@ public class GroupMapping {
 
 	public void setCurriculumElement(CurriculumElement curriculumElement) {
 		this.curriculumElement = curriculumElement;
-		group = curriculumElement.getGroup();
+		group = curriculumElement == null ? null : curriculumElement.getGroup();
 	}
 
 	public enum Type {

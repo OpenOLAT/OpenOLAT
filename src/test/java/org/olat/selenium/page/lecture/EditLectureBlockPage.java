@@ -41,6 +41,15 @@ public class EditLectureBlockPage {
 		this.browser = browser;
 	}
 	
+	public EditLectureBlockPage assertOnSelectResource() {
+		return this;
+	}
+	
+	public EditLectureBlockPage nextToLectureBlockSettings() {
+		OOGraphene.nextStep(browser);
+		return this;
+	}
+	
 	public EditLectureBlockPage setTitle(String title) {
 		By titleBy = By.cssSelector("fieldset.o_sel_repo_edit_lecture_form div.o_sel_repo_lecture_title input[type=text]");
 		browser.findElement(titleBy).sendKeys(title);
@@ -99,10 +108,14 @@ public class EditLectureBlockPage {
 	}
 	
 	public EditLectureBlockPage save() {
+		OOGraphene.finishStep(browser, false);
+		
+		/*
 		By saveBy = By.cssSelector("fieldset.o_sel_repo_edit_lecture_form button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
+		*/
 		return this;
 	}
 
