@@ -68,7 +68,6 @@ public class OrganisationEmailDomainAdminController extends FormBasicController 
 	private static final String CMD_DEACTIVATE = "deactivate";
 	private static final String CMD_DELETE = "delete";
 	
-	private FormLayoutContainer dummyCont;
 	private FormLink createLink;
 	private FlexiTableElement tableEl;
 	private OrganisationEmailDomainDataModel dataModel;
@@ -95,9 +94,6 @@ public class OrganisationEmailDomainAdminController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		dummyCont = FormLayoutContainer.createBareBoneFormLayout("dummy", getTranslator());
-		dummyCont.setRootForm(mainForm);
-		
 		FormLayoutContainer titleCont = FormLayoutContainer.createDefaultFormLayout("title", getTranslator());
 		titleCont.setFormTitle(translate("organisation.email.domains"));
 		titleCont.setRootForm(mainForm);
@@ -144,6 +140,7 @@ public class OrganisationEmailDomainAdminController extends FormBasicController 
 			
 			FormLink toolsLink = uifactory.addFormLink("tools_" + row.getEmailDomain().getKey(), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+			toolsLink.setTitle(translate("table.action"));
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 			
