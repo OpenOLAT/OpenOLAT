@@ -147,9 +147,22 @@ public class RegistrationController extends BasicController implements Activatea
 	private InvitationService invitationService;
 
 	/**
-	 * Controller implementing registration workflow.
+	 * Controller implementing registration workflow. Constructor used
+	 * by creator in spring configuration.
+	 * 
 	 * @param ureq The user request
 	 * @param wControl The window control
+	 */
+	public RegistrationController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, false);
+	}
+	
+	/**
+	 * Controller implementing registration workflow.
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param isCancelNonDispatch true, cancel send an event instead of a HTTP redirect
 	 */
 	public RegistrationController(UserRequest ureq, WindowControl wControl, boolean isCancelNonDispatch) {
 		super(ureq, wControl);
