@@ -156,6 +156,8 @@ class UserBulkChangeStep01 extends BasicStep {
 		}
 
 		private void validateOrganisationEmailDomain() {
+			if(organisationEl == null) return;
+			
 			organisationEl.clearWarning();
 			if (!organisationModule.isEmailDomainEnabled()) {
 				return;

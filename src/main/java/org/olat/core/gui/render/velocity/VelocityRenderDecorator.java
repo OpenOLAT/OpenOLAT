@@ -887,7 +887,7 @@ public class VelocityRenderDecorator implements Closeable {
 			return true;
 		}
 		if(obj instanceof Boolean bool) {
-			return bool.booleanValue();
+			return !bool.booleanValue();
 		}
 		if(obj instanceof AtomicBoolean bool) {
 			return !bool.get();
@@ -907,8 +907,8 @@ public class VelocityRenderDecorator implements Closeable {
 		boolean empty;
 		if(obj == null) {
 			empty = true;
-		} else if(obj instanceof String) {
-			empty = !StringHelper.containsNonWhitespace((String)obj) || "<p></p>".equals(obj);
+		} else if(obj instanceof String str) {
+			empty = !StringHelper.containsNonWhitespace(str) || "<p></p>".equals(str);
 		} else if(obj instanceof Collection) {
 			empty = ((Collection<?>)obj).isEmpty();
 		} else if(obj instanceof Map) {
