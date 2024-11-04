@@ -186,7 +186,7 @@ public class CourseSelectorController extends FormBasicController {
 		} else if (applyButton == source) {
 			doApply(ureq);
 		} else if (quickSearchEl == source) {
-			doQuickSearch();
+			doQuickSearch(ureq);
 		} else if (resetQuickSearchButton == source) {
 			doResetQuickSearch();
 		}
@@ -226,7 +226,7 @@ public class CourseSelectorController extends FormBasicController {
 		fireEvent(ureq, new ApplyEvent(keys));
 	}
 
-	private void doQuickSearch() {
+	private void doQuickSearch(UserRequest ureq) {
 		resultsNoneEl.setVisible(false);
 		resultsMoreEl.setVisible(false);
 
@@ -260,6 +260,8 @@ public class CourseSelectorController extends FormBasicController {
 		resultsNoneEl.getComponent().setDirty(true);
 		resultsEl.getComponent().setDirty(true);
 		resultsMoreEl.getComponent().setDirty(true);
+
+		fireEvent(ureq, RESIZED_EVENT);
 	}
 
 	private Set<RepositoryEntry> searchCourses(String searchText) {
@@ -309,4 +311,5 @@ public class CourseSelectorController extends FormBasicController {
 			return keys;
 		}
 	}
+	public static final Event RESIZED_EVENT = new Event("course-selector-resized");
 }

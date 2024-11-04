@@ -165,6 +165,8 @@ public class CourseSelectorElementImpl extends FormItemImpl implements CourseSel
 				calloutCtrl.deactivate();
 				cleanUp();
 				updateButtonUI(true);
+			} else if (event == CourseSelectorController.RESIZED_EVENT) {
+				calloutCtrl.handleResized();
 			} else if (event == CourseSelectorController.BROWSE_EVENT) {
 				calloutCtrl.deactivate();
 				cleanUp();
