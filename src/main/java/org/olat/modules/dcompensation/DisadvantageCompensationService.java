@@ -57,6 +57,8 @@ public interface DisadvantageCompensationService {
 	 */
 	public DisadvantageCompensation getActiveDisadvantageCompensation(IdentityRef identity, RepositoryEntryRef entry, String subIdent);
 	
+	public List<DisadvantageCompensation> getActiveDisadvantageCompensations(IdentityRef identity, RepositoryEntryRef entry, List<String> subIdent);
+	
 	public boolean isActiveDisadvantageCompensation(IdentityRef identity, RepositoryEntryRef entry, List<String> subIdents);
 	
 	/**

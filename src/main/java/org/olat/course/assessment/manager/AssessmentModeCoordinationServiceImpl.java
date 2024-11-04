@@ -598,6 +598,13 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	}
 
 	@Override
+	public boolean isDisadvantageCompensationExtensionTime(TransientAssessmentMode assessmentMode) {
+		Status status = assessmentMode.getStatus();
+		EndStatus endStatus = assessmentMode.getEndStatus();
+		return endStatus == EndStatus.withoutDisadvantage && (status == Status.followup || status == Status.end);
+	}
+
+	@Override
 	public AssessmentMode startAssessment(AssessmentMode mode) {
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		mode = ensureStatusOfMode(mode, Status.assessment);

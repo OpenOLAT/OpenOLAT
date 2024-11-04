@@ -205,6 +205,7 @@ public class AssessmentModePage {
 	 */
 	public AssessmentModePage startAssessment() {
 		try {
+			OOGraphene.waitingALittleLonger();
 			By startBy = By.cssSelector("dialog.dialog div.modal-body div.o_button_group.o_sel_checked a.o_sel_assessment_start");
 			OOGraphene.waitElement(startBy, Duration.ofSeconds(10), Duration.ofSeconds(1), browser);
 			browser.findElement(startBy).click();
