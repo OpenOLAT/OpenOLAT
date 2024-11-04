@@ -24,7 +24,9 @@ function positionBottomOrTopCallout(target, callout) {
 		left: topOffset.left,
 		top: targetRect.y + targetRect.height,
 	};
-	if ((bottomOffset.top + calloutRect.height) <= window.innerHeight) {
+	var topDist = topOffset.top;
+	var bottomDist = window.innerHeight - (bottomOffset.top + calloutRect.height);
+	if (bottomDist > topDist || bottomDist > (calloutRect.height / 3)) {
 		callout.offset(bottomOffset);
 	} else {
 		callout.offset(topOffset);
@@ -76,6 +78,9 @@ jQuery(function() {
 					});
 				}
 			} else if (orientation === 'bottomOrTop') {
+				targetEl.on('resize', function() {
+					positionBottomOrTopCallout(targetEl, callout);
+				});
 				positionBottomOrTopCallout(targetEl, callout);
 			} else {
 				if(targetOffset.left >= 0 && callout.outerWidth() > 50 && targetOffset.left <= ((callout.outerWidth() - targetEl.outerWidth()) / 2)) {

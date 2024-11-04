@@ -586,6 +586,11 @@ function o_aexecute(command, parameters) {
 		case "closedialog":
 			jQuery('#' + parameters["dialogid"]).dialog('destroy').remove();
 			break;
+		case "resizecallout":
+			setTimeout(function() {
+				jQuery('#' + parameters["calloutid"]).trigger("resize");
+			}, 0);
+			break;
 		case "setdocumenttitle":
 			document.title = parameters["title"];
 			jQuery('h1#o_top').text(parameters["title"]);// Text to prevent JS execution

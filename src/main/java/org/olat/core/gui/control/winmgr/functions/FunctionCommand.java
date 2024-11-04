@@ -43,6 +43,7 @@ public class FunctionCommand extends Command {
 		SHOW_TOOLTIP("showtooltip"),
 		CLOSE_LIGHTBOX("closelightbox"),
 		CLOSE_DIALOG("closedialog"),
+		RESIZE_CALLOUT("resizecallout"),
 		DISPOSE_AUDIO_RECORDER("disposeaudiorecorder"),
 		DISPOSE_VIDEO_RECORDER("disposevideorecorder"),
 		SCROLL_TO_ID("scrolltoid"),
@@ -127,7 +128,11 @@ public class FunctionCommand extends Command {
 	public static FunctionCommand closeDialog(String boxId) {
 		return valueOf(Functions.CLOSE_DIALOG, "dialogid", boxId);
 	}
-	
+
+	public static FunctionCommand resizeCallout(String calloutId) {
+		return valueOf(Functions.RESIZE_CALLOUT, "calloutid", calloutId);
+	}
+
 	public static FunctionCommand closeLightBox(String boxId) {
 		return valueOf(Functions.CLOSE_LIGHTBOX, "boxid", boxId);
 	}
