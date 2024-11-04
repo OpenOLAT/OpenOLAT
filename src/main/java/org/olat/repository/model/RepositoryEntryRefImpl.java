@@ -49,8 +49,7 @@ public class RepositoryEntryRefImpl implements RepositoryEntryRef {
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;
-		} else if (obj instanceof RepositoryEntryRefImpl) {
-			RepositoryEntryRefImpl ref = (RepositoryEntryRefImpl)obj;
+		} else if (obj instanceof RepositoryEntryRefImpl ref) {
 			return repoKey != null && repoKey.equals(ref.getKey());
 		}
 		return false;

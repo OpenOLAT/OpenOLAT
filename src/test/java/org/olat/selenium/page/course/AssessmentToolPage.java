@@ -220,9 +220,21 @@ public class AssessmentToolPage {
 	 * @return Itself
 	 */
 	public AssessmentToolPage assertProgress(UserVO user, int progress) {
-		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div/div[@class='progress'][div[@title='" + progress + "%']]");
-		By tableBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]");
-		OOGraphene.waitElementWithScrollTableRight(tableBy, progressBy, Duration.ofSeconds(15), Duration.ofSeconds(1), browser);
+		try {
+			By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td/div/div[@class='progress'][div[@title='" + progress + "%']]");
+			By tableBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]");
+			OOGraphene.waitElementWithScrollTableRight(tableBy, progressBy, Duration.ofSeconds(15), Duration.ofSeconds(1), browser);
+		} catch (Exception e) {
+			log.error("Assert progress", e);
+			OOGraphene.takeScreenshot("Assert progress", browser);
+			
+			By progressBarBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td/div/div[@class='progress']/div[@class='progress-bar']");
+			List<WebElement> progressBarEls = browser.findElements(progressBarBy);
+			for(WebElement progressBarEl:progressBarEls) {
+				log.error("Progress title _{}_", progressBarEl.getAttribute("title"));
+			}
+			throw e;
+		}
 		return this;
 	}
 	
