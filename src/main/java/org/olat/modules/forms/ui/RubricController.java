@@ -71,7 +71,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	private static final String NO_RESPONSE_KEY = "enabled";
 	private static final String[] NO_RESPONSE_KEYS = new String[] { NO_RESPONSE_KEY };
 	
-	private final Rubric rubric;
+	private Rubric rubric;
 	private List<SliderWrapper> sliderWrappers;
 	private Map<String, EvaluationFormResponse> rubricResponses = new HashMap<>();
 	private Map<String, EvaluationFormResponse> commentResponses = new HashMap<>();
@@ -356,7 +356,10 @@ public class RubricController extends FormBasicController implements EvaluationF
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(event instanceof ChangePartEvent) {
+		if(event instanceof ChangePartEvent cpe) {
+			if(cpe.getElement() instanceof Rubric r) {
+				rubric = r;
+			}
 			updateForm();
 			setBlockLayoutClass(rubric.getLayoutSettings());
 		}

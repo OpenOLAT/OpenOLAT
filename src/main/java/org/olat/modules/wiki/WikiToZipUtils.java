@@ -72,21 +72,22 @@ public class WikiToZipUtils {
 		sb.append("<html><head>");
 		sb.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">");
 		sb.append("</head><body><ul>");
-		for (Iterator<VFSItem> iter = vfsLeaves.iterator(); iter.hasNext();) {
-			VFSLeaf element = (VFSLeaf) iter.next();
-			if (element.getName().endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
-				hasProperties = true;
-				Properties p = new Properties();
-				try {
-					p.load(element.getInputStream());
-				} catch (IOException e) {
-					throw new AssertException("Wiki propterties couldn't be read! ", e);
+		for (VFSItem vfsItem : vfsLeaves) {
+			if (vfsItem instanceof VFSLeaf vfsLeaf) {
+				if (vfsLeaf.getName().endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
+					hasProperties = true;
+					Properties p = new Properties();
+					try {
+						p.load(vfsLeaf.getInputStream());
+					} catch (IOException e) {
+						throw new AssertException("Wiki propterties couldn't be read! ", e);
+					}
+					sb.append("<li>");
+					sb.append(p.getProperty(WikiManager.PAGENAME));
+					sb.append(" ----> ");
+					sb.append(vfsLeaf.getName().substring(0, vfsLeaf.getName().indexOf('.')));
+					sb.append("</li>");
 				}
-				sb.append("<li>");
-				sb.append(p.getProperty(WikiManager.PAGENAME));
-				sb.append(" ----> ");
-				sb.append(element.getName().substring(0, element.getName().indexOf('.')));
-				sb.append("</li>");
 			}
 		}
 		sb.append("</ul></body></html>");

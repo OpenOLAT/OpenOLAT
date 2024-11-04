@@ -53,6 +53,8 @@ public interface AssessmentModeCoordinationService {
 	
 	public boolean isDisadvantageCompensationExtensionTime(AssessmentMode assessmentMode);
 	
+	public boolean isDisadvantageCompensationExtensionTime(TransientAssessmentMode assessmentMode);
+	
 	/**
 	 * Send events for all assessment modes for the specified course.
 	 * 
