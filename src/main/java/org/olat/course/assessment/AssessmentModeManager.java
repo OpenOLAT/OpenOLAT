@@ -178,11 +178,11 @@ public interface AssessmentModeManager {
 	 * Disadvantage compensations are taken in account.
 	 * 
 	 * @param entry The course
-	 * @param date The date
+	 * @param subIdent The course element identifier
+	 * @param identity The assessed identity
 	 * @return true if the course is in assessment mode
 	 */
 	public boolean isInAssessmentMode(RepositoryEntryRef entry, String subIdent, IdentityRef identity);
-
 	
 	/**
 	 * Returns the list of current assessment modes for the specified

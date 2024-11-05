@@ -62,9 +62,11 @@ import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.manager.DisadvantageCompensationDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -601,6 +603,42 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		Status status = assessmentMode.getStatus();
 		EndStatus endStatus = assessmentMode.getEndStatus();
 		return endStatus == EndStatus.withoutDisadvantage && (status == Status.followup || status == Status.end);
+	}
+
+	@Override
+	public Integer getDisadvantageCompensationExtensionTime(TransientAssessmentMode mode, IdentityRef identity) {
+		if(isDisadvantageCompensationExtensionTime(mode)) {
+			RepositoryEntryRef entry = new RepositoryEntryRefImpl(mode.getRepositoryEntryKey());
+			return getDisadvantageCompensation(entry, identity, mode.getElementList());
+		}
+		return null;
+	}
+
+	@Override
+	public Integer getDisadvantageCompensationExtensionTime(AssessmentMode mode, IdentityRef identity) {
+		if(isDisadvantageCompensationExtensionTime(mode)) {
+			return getDisadvantageCompensation(mode.getRepositoryEntry(), identity, mode.getElementAsList());
+		}
+		return null;
+	}
+	
+	private Integer getDisadvantageCompensation(RepositoryEntryRef entry, IdentityRef identity, List<String> subIdents) {
+		boolean disadvantageCompensation = disadvantageCompensationDao.isActiveDisadvantagedUser(identity, entry, subIdents);
+		if(!disadvantageCompensation) {
+			return null;
+		}
+		
+		List<DisadvantageCompensation> compensations = disadvantageCompensationDao.getActiveDisadvantageCompensations(identity, entry, subIdents);
+		int compensationExtraTime = 0;
+		if(compensations != null) {
+			for(DisadvantageCompensation compensation:compensations) {
+				int extraTime = compensation.getExtraTime() == null ? 0 : compensation.getExtraTime().intValue();
+				if(extraTime > compensationExtraTime) {
+					compensationExtraTime = extraTime;
+				}		
+			}
+		}
+		return Integer.valueOf(compensationExtraTime);
 	}
 
 	@Override
