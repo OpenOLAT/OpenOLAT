@@ -27,6 +27,7 @@ package org.olat.course.run;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -73,6 +74,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -88,7 +90,10 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentEvents;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.ui.ConfirmRecertificationController;
@@ -198,6 +203,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private CertificatesManager certificateManager;
 	@Autowired 
 	private CourseDisclaimerManager disclaimerManager;
+	@Autowired
+	private AssessmentModeManager assessmentModeManager;
+	@Autowired
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 
 	/**
 	 * Constructor for the run main controller
@@ -263,7 +272,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		if(assessmentMode != null && assessmentMode.isRestrictAccessElements()) {
 			Status assessmentStatus = assessmentMode.getStatus();
-			if(assessmentStatus == Status.assessment) {
+			EndStatus assessmentEndStatus = assessmentMode.getEndStatus();
+			
+			if(assessmentStatus == Status.assessment
+					|| (assessmentStatus == Status.end && assessmentEndStatus == EndStatus.withoutDisadvantage
+						&& assessmentModeManager.isDisadvantagedUser(assessmentMode, getIdentity()))) {
 				visibilityFilter = new AssessmentModeTreeFilter(re, wControl.getWindowBackOffice().getChiefController());
 			} else if(assessmentStatus == Status.leadtime || assessmentStatus == Status.followup) {
 				visibilityFilter = new InvisibleTreeFilter();
@@ -398,6 +411,29 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	public boolean isDisclaimerAccepted() {
 		return disclaimerAccepted;
+	}
+	
+	public boolean isInDisadvantageCompensation(AssessmentMode assessmentMode, UserRequest ureq) {
+		Status assessmentStatus = assessmentMode.getStatus();
+		EndStatus assessmentEndStatus = assessmentMode.getEndStatus();
+		if(assessmentStatus == Status.end && assessmentEndStatus == EndStatus.withoutDisadvantage) {
+			boolean compensation = assessmentModeManager.isDisadvantagedUser(assessmentMode, getIdentity());
+			if(compensation) {
+				if(assessmentMode.isManualBeginEnd()) {
+					return true;
+				}
+				
+				Integer extraTime = assessmentModeCoordinationService.getDisadvantageCompensationExtensionTime(assessmentMode, getIdentity());
+				Date endDate = assessmentMode.getEnd();
+				if(extraTime != null && extraTime.intValue() > 0) {
+					endDate = DateUtils.addSeconds(endDate, extraTime.intValue());
+				}
+				if(endDate.after(ureq.getRequestTimestamp())) {
+					return true;
+				}	
+			}
+		}
+		return false;
 	}
 	
 	public boolean isRecertificationAvailable() {

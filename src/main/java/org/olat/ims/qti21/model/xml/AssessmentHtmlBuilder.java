@@ -351,7 +351,24 @@ public class AssessmentHtmlBuilder {
 				underlineAttributes.addAttributes(attributes);
 				underlineAttributes.addAttribute("style", "text-decoration: underline;");
 				attributes = underlineAttributes;
+			} else if("a".equalsIgnoreCase(localName)) {
+				AttributesImpl attributesCleaned = new AttributesImpl("");
+				
+				boolean href = false;
+				for(int i=0; i<attributes.getLength(); i++) {
+					String name = attributes.getLocalName(i);
+					String value = attributes.getValue(i);
+					attributesCleaned.addAttribute(name, value);
+					if(name.equalsIgnoreCase("href") && StringHelper.containsNonWhitespace(value)) {
+						href = true;
+					}
+				}
+				if(!href) {
+					attributesCleaned.addAttribute("href", "javascript:;");
+				}
+				attributes = new AttributesDelegate(attributesCleaned);
 			}
+			
 			super.startElement(uri, localName, qName, attributes);
 		}
 

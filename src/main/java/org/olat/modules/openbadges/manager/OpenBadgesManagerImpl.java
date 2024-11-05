@@ -1189,6 +1189,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				String uuid = OpenBadgesFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
+		}
+
+		for (BadgeClass badgeClass : getBadgeClasses(null)) {
+			BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+			if (!badgeCriteria.isAwardAutomatically()) {
+				continue;
+			}
 			if (isGlobalBadge(badgeClass) && badgeCriteria.allGlobalBadgeConditionsMet(recipient, null)) {
 				String uuid = OpenBadgesFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);

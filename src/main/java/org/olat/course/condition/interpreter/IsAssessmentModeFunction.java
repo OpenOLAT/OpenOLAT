@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -91,9 +92,9 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 		boolean open = false;
 		if(inStack != null && inStack.length == 2) {
 			String nodeId = (String) inStack[0];
-			open = isAssessmentModeActive(ident, nodeId) || isScoreUserVisible(nodeId);
+			open = isAssessmentModeActive(ident, nodeId, chiefController) || isScoreUserVisible(nodeId);
 		} else {
-			open = isAssessmentModeActive(ident, null);
+			open = isAssessmentModeActive(ident, null, chiefController);
 		}
 		return open ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}
@@ -110,8 +111,8 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 			return Boolean.FALSE;
 		}
 		
-		if (foundNode instanceof STCourseNode) {
-			return isScoreUserVisible((STCourseNode)foundNode, sa, courseAssessmentService);
+		if (foundNode instanceof STCourseNode stNode) {
+			return isScoreUserVisible(stNode, sa, courseAssessmentService);
 		}
 		ScoreEvaluation se = sa.evalCourseNode(foundNode);
 		// check if the results are visible
@@ -169,10 +170,20 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 		return Boolean.FALSE;
 	}
 	
-	private boolean isAssessmentModeActive(Identity identity, String nodeId) {
-		RepositoryEntry entry = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		AssessmentModeManager assessmentModeMgr = CoreSpringFactory.getImpl(AssessmentModeManager.class);
-		return assessmentModeMgr.isInAssessmentMode(entry, nodeId, identity);
+	private boolean isAssessmentModeActive(Identity identity, String nodeId, ChiefController chiefController) {
+		Long resourceId = getUserCourseEnv().getCourseEnvironment().getCourseResourceableId();
+		LockResourceInfos lockResourceInfos = chiefController.getLockResourceInfos();
+		if(lockResourceInfos != null && lockResourceInfos.getLockResource() != null
+				&& lockResourceInfos.getLockResource().getResourceableId().equals(resourceId)
+				&& lockResourceInfos.getLockMode() != null) {
+			List<String> elementList = lockResourceInfos.getLockMode().getElementList();
+			if(elementList == null || elementList.isEmpty() || elementList.contains(nodeId)) {
+				RepositoryEntry entry = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				AssessmentModeManager assessmentModeMgr = CoreSpringFactory.getImpl(AssessmentModeManager.class);
+				return assessmentModeMgr.isInAssessmentMode(entry, nodeId, identity);
+			}
+		}
+		return false;
 	}
 
 	@Override
