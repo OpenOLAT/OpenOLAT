@@ -126,6 +126,7 @@ public class TransientAssessmentMode implements Serializable, LockRequest {
 		this.displayName = displayName;
 	}
 
+	@Override
 	public Long getRepositoryEntryKey() {
 		return repositoryEntryKey;
 	}
