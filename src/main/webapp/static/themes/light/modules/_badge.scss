@@ -482,6 +482,13 @@ span.o_labeled_light {
 	padding-right: 0;
 }
 
+dialog.popover {
+	.popover-content {
+		&:has(.o_badge_course_selector) {
+			margin-top: 0;
+		}
+	}
+}
 
 .o_badge_course_selector_button {
 	display: flex;

@@ -34,6 +34,7 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.util.ZIndexWrapper;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.logging.OLATRuntimeException;
 
@@ -333,6 +334,12 @@ public class CloseableCalloutWindowController extends BasicController implements
 		} else {
 			// Remove component from stack
 			getWindowControl().pop();
+		}
+	}
+
+	public void handleResized() {
+		if (CalloutSettings.CalloutOrientation.bottomOrTop.equals(settings.getOrientation())) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.resizeCallout(getDOMTarget()));
 		}
 	}
 }
