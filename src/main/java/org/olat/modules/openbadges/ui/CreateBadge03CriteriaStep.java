@@ -92,7 +92,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		return new CreateBadgeCriteriaForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "criteria_step");
 	}
 
-	private static class CreateBadgeCriteriaForm extends StepFormBasicController {
+	private class CreateBadgeCriteriaForm extends StepFormBasicController {
 
 		private SingleSelection newRule;
 		private ArrayList<ConditionRow> conditionRows;
@@ -365,6 +365,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		@Override
 		protected void formNext(UserRequest ureq) {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
+			boolean oldAwardAutomatically = badgeCriteria.isAwardAutomatically();
 			boolean awardAutomatically = KEY_AUTOMATIC.equals(awardProcedureCards.getSelectedKey());
 			badgeCriteria.setDescriptionWithScan(descriptionEl.getValue());
 			badgeCriteria.setAwardAutomatically(awardAutomatically);
@@ -372,6 +373,11 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 			String xml = BadgeCriteriaXStream.toXml(badgeCriteria);
 			createContext.getBadgeClass().setCriteria(xml);
+
+			if (oldAwardAutomatically != awardAutomatically) {
+				setNextStep(new CreateBadge04DetailsStep(ureq, createBadgeClassContext));
+				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+			}
 
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
