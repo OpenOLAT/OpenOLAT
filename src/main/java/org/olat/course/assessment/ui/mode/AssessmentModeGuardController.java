@@ -118,7 +118,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		mainVC.contextPut("guards", guards);
 		mainVC.contextPut("checked", "not-checked");
 		
-		mainContinueButton = LinkFactory.createCustomLink("continue-main", "continue-main", "current.mode.continue", Link.BUTTON, mainVC, this);
+		mainContinueButton = LinkFactory.createCustomLink("continue-main", "continue-main", "continue-main", "current.mode.continue", Link.BUTTON, mainVC, this);
 		mainContinueButton.setElementCssClass("o_sel_assessment_continue");
 		mainContinueButton.setCustomEnabledLinkCSS("btn btn-primary");
 		mainContinueButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
@@ -325,7 +325,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	}
 	
 	private static final Date addExtraTimeToDate(Date date, Integer extraTime) {
-		if(extraTime == null || extraTime.intValue() < 0) {
+		if(extraTime == null || extraTime.intValue() <= 0) {
 			return date;
 		}
 		return DateUtils.addSeconds(date, extraTime.intValue());
@@ -450,12 +450,14 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	private ResourceGuard createGuard(TransientAssessmentMode mode) {
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 
-		Link goButton = LinkFactory.createCustomLink("go-" + id, "go", "current.mode.start", Link.BUTTON, mainVC, this);
+		String goId = "go-".concat(id);
+		Link goButton = LinkFactory.createCustomLink(goId, goId, "go", "current.mode.start", Link.BUTTON, mainVC, this);
 		goButton.setElementCssClass("o_sel_assessment_start");
 		goButton.setCustomEnabledLinkCSS("btn btn-primary");
 		goButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
 		
-		Link continueButton = LinkFactory.createCustomLink("continue-" + id, "continue", "current.mode.continue", Link.BUTTON, mainVC, this);
+		String continueId = "continue-".concat(id);
+		Link continueButton = LinkFactory.createCustomLink(continueId, continueId, "continue", "current.mode.continue", Link.BUTTON, mainVC, this);
 		continueButton.setCustomEnabledLinkCSS("btn btn-primary");
 		continueButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
 		

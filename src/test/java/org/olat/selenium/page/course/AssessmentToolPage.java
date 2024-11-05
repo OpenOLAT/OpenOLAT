@@ -247,9 +247,12 @@ public class AssessmentToolPage {
 	public AssessmentToolPage assertTablePassed(UserVO user) {
 		By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td/div/i[contains(@class,'o_icon_passed') and not(contains(@class,'o_icon_passed_undefined'))]");
 		try {// This is an ugly hack to force chrome to update its window on Linux
-			OOGraphene.waitElementSlowly(doneBy, 10, browser);
+			OOGraphene.waitElementPresenceSlowly(doneBy, 10, browser);
 		} catch(Exception e) {
-
+			log.warn("Try a second time, takes a screenshot for chrome on linux.");
+			// On linux, the screenshot update the window of chrome
+			OOGraphene.takeScreenshot("Status passed", browser);
+			OOGraphene.waitElementSlowly(doneBy, 10, browser);
 		}
 		return this;
 	}

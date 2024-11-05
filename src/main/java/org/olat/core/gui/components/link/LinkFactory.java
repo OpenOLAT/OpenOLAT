@@ -189,12 +189,13 @@ public class LinkFactory {
 	 * @param listener 
 	 * @return the link component
 	 */
-	
 	public static Link createCustomLink(String name, String cmd, String i18nKey, int presentation, VelocityContainer vc, ComponentEventListener listener){
 		return new Link(name, cmd, i18nKey, presentation, vc, listener);
 	}
 	
-
+	public static Link createCustomLink(String id, String name, String cmd, String i18nKey, int presentation, VelocityContainer vc, ComponentEventListener listener){
+		return new Link(id, name, cmd, i18nKey, presentation, vc, listener);
+	}
 	
 	public static Link createToolLink(String name, String label, ComponentEventListener listener){
 		Link link = new Link(name, name, label, Link.LINK | Link.NONTRANSLATED, null, listener);
