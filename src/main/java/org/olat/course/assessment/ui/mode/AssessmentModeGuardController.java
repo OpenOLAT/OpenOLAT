@@ -65,9 +65,7 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.IpListValidator;
 import org.olat.course.assessment.manager.SafeExamBrowserValidator;
 import org.olat.course.assessment.model.TransientAssessmentMode;
-import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -118,7 +116,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		mainVC.contextPut("guards", guards);
 		mainVC.contextPut("checked", "not-checked");
 		
-		mainContinueButton = LinkFactory.createCustomLink("continue-main", "continue-main", "current.mode.continue", Link.BUTTON, mainVC, this);
+		mainContinueButton = LinkFactory.createCustomLink("continue-main", "continue-main", "continue-main", "current.mode.continue", Link.BUTTON, mainVC, this);
 		mainContinueButton.setElementCssClass("o_sel_assessment_continue");
 		mainContinueButton.setCustomEnabledLinkCSS("btn btn-primary");
 		mainContinueButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
@@ -212,30 +210,6 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		return null;
 	}
 	
-	private Integer getDisadvantageCompensation(TransientAssessmentMode mode) {
-		if(assessmentModeCoordinationService.isDisadvantageCompensationExtensionTime(mode)) {
-			RepositoryEntryRef entryRef = new RepositoryEntryRefImpl(mode.getRepositoryEntryKey());
-			boolean disadvantageCompensation = disadvantageCompensationService.isActiveDisadvantageCompensation(getIdentity(), entryRef, mode.getElementList());
-			if(!disadvantageCompensation) {
-				return null;
-			}
-			
-			List<DisadvantageCompensation> compensations = disadvantageCompensationService.getActiveDisadvantageCompensations(getIdentity(), entryRef, mode.getElementList());
-			
-			int compensationExtraTime = 0;
-			if(compensations != null) {
-				for(DisadvantageCompensation compensation:compensations) {
-					int extraTime = compensation.getExtraTime() == null ? 0 : compensation.getExtraTime().intValue();
-					if(extraTime > compensationExtraTime) {
-						compensationExtraTime = extraTime;
-					}		
-				}
-			}
-			return Integer.valueOf(compensationExtraTime);
-		}
-		return null;
-	}
-	
 	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode, Boolean useHeaders) {
 		Date now = new Date();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
@@ -247,7 +221,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		// Check if automatic is out of bounds, disadvantage by manual is controlled by status
 		Integer extraTime = null;
 		if(!mode.isManual()) {
-			extraTime = getDisadvantageCompensation(mode);
+			extraTime = assessmentModeCoordinationService.getDisadvantageCompensationExtensionTime(mode, getIdentity());
 			endWithFollowupTime = addExtraTimeToDate(endWithFollowupTime, extraTime);
 			if(beginWithLeadTime.after(now) || now.after(endWithFollowupTime)) {
 				return null;
@@ -325,7 +299,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	}
 	
 	private static final Date addExtraTimeToDate(Date date, Integer extraTime) {
-		if(extraTime == null || extraTime.intValue() < 0) {
+		if(extraTime == null || extraTime.intValue() <= 0) {
 			return date;
 		}
 		return DateUtils.addSeconds(date, extraTime.intValue());
@@ -450,12 +424,14 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 	private ResourceGuard createGuard(TransientAssessmentMode mode) {
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 
-		Link goButton = LinkFactory.createCustomLink("go-" + id, "go", "current.mode.start", Link.BUTTON, mainVC, this);
+		String goId = "go-".concat(id);
+		Link goButton = LinkFactory.createCustomLink(goId, goId, "go", "current.mode.start", Link.BUTTON, mainVC, this);
 		goButton.setElementCssClass("o_sel_assessment_start");
 		goButton.setCustomEnabledLinkCSS("btn btn-primary");
 		goButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
 		
-		Link continueButton = LinkFactory.createCustomLink("continue-" + id, "continue", "current.mode.continue", Link.BUTTON, mainVC, this);
+		String continueId = "continue-".concat(id);
+		Link continueButton = LinkFactory.createCustomLink(continueId, continueId, "continue", "current.mode.continue", Link.BUTTON, mainVC, this);
 		continueButton.setCustomEnabledLinkCSS("btn btn-primary");
 		continueButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
 		
