@@ -26,7 +26,7 @@ function positionBottomOrTopCallout(target, callout) {
 	};
 	var topDist = topOffset.top;
 	var bottomDist = window.innerHeight - (bottomOffset.top + calloutRect.height);
-	if (bottomDist > topDist || bottomDist > (calloutRect.height / 3)) {
+	if (bottomDist > topDist) {
 		callout.offset(bottomOffset);
 	} else {
 		callout.offset(topOffset);
