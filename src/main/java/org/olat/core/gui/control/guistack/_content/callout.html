@@ -26,9 +26,12 @@ function positionBottomOrTopCallout(target, callout) {
 	};
 	var topDist = topOffset.top;
 	var bottomDist = window.innerHeight - (bottomOffset.top + calloutRect.height);
+	var documentScrollTop = jQuery(document).scrollTop();
 	if (bottomDist > topDist) {
+		bottomOffset.top += documentScrollTop;
 		callout.offset(bottomOffset);
 	} else {
+		topOffset.top += documentScrollTop;
 		callout.offset(topOffset);
 	}
 }
