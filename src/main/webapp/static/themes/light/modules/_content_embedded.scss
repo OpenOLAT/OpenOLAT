@@ -275,6 +275,16 @@ a.b_link_forward {
 
 	}
 }
+a.b_link_download {
+	color: $o-content-link-color; /* need something for tiny */
+	@include o-add-icon('download', true);
+	@include o-add-icon-font();
+	&:before {
+		padding-right: 0.25em;
+		padding-left: 0.25em;
+
+	}
+}
 
 /* image and video styles */
 img {
