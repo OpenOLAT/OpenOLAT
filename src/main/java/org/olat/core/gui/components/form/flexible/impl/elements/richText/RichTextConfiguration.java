@@ -1218,9 +1218,11 @@ public class RichTextConfiguration implements Disposable {
 				.append("  {title: 'Border', value: 'b_with_border'}\n").append("],\n");
 		tinyMenuSb.append("link_class_list: [\n").append("  {title: '', value: ''},\n")
 				.append("  {title: 'Extern', value: 'b_link_extern'},\n")
+				.append("  {title: 'Forward', value: 'b_link_forward'},\n")
+				.append("  {title: 'Download', value: 'b_link_download'},\n")
 				.append("  {title: 'Mail', value: 'b_link_mailto'},\n")
-				.append("  {title: 'Tel', value: 'b_link_tel'},\n")
-				.append("  {title: 'Forward', value: 'b_link_forward'}\n").append("],\n");
+				.append("  {title: 'Tel', value: 'b_link_tel'}\n")
+				.append("],\n");
 		// predefined table styles selectable in a menu
 		tinyMenuSb.append("table_class_list: [\n").append("  {title: 'No style', value: ''},\n")
 				.append("  {title: 'Default', value: 'b_default'},\n")

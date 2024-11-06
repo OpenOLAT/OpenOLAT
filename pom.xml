@@ -79,7 +79,7 @@
 		<io.jsonwebtoken>0.12.6</io.jsonwebtoken>
 		<io.undertow>2.3.18.Final</io.undertow>
 		<jackson.version>2.18.1</jackson.version>
-		<swagger.ui.version>5.17.14</swagger.ui.version>
+		<swagger.ui.version>5.18.0</swagger.ui.version>
 		<com.mysql.version>9.1.0</com.mysql.version>
 		<org.postgresql.version>42.7.4</org.postgresql.version>
 		<org.infinispan.version>15.0.10.Final</org.infinispan.version>
@@ -1743,7 +1743,7 @@
 		<dependency>
 			<groupId>com.webauthn4j</groupId>
 			<artifactId>webauthn4j-core</artifactId>
-			<version>0.27.0.RELEASE</version>
+			<version>0.28.0.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -2183,7 +2183,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.14.0</version>
+			<version>1.14.1</version>
 		</dependency>
 		<!-- End Microsoft Graph -->
 		<!-- Lucene dependencies -->

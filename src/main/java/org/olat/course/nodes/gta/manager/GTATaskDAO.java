@@ -76,7 +76,8 @@ public class GTATaskDAO {
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			sb.append(" inner join fetch task.businessGroup bGroup");
 		} else {
-			sb.append(" inner join fetch task.identity identity");
+			sb.append(" inner join fetch task.identity ident")
+			  .append(" inner join fetch ident.user identUser");
 		}
 		sb.append(" where tasklist.key=:taskListKey");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Task.class)

@@ -59,7 +59,7 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.ScaleType;
-
+import org.olat.modules.forms.model.xml.StepLabel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -608,6 +608,12 @@ public class RubricInspectorController extends FormBasicController implements Pa
 			rubric.setStart(1);
 			rubric.setEnd(steps);
 			rubric.setSteps(steps);
+			
+			List<StepLabel> labels = rubric.getStepLabels();
+			if(labels != null && labels.size() > steps) {
+				List<StepLabel> reducedLabels = labels.subList(0, steps);
+				rubric.setStepLabels(new ArrayList<>(reducedLabels));
+			}
 		}
 		
 		rubric.setName(nameEl.getValue());
