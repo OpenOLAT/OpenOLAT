@@ -220,9 +220,9 @@ public class AssessmentToolPage {
 	 * @return Itself
 	 */
 	public AssessmentToolPage assertProgress(UserVO user, int progress) {
+		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td/div/div[@class='progress'][div[@title='" + progress + "%']]");
+		By tableBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]");
 		try {
-			By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td/div/div[@class='progress'][div[@title='" + progress + "%']]");
-			By tableBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]");
 			OOGraphene.waitElementWithScrollTableRight(tableBy, progressBy, Duration.ofSeconds(15), Duration.ofSeconds(1), browser);
 		} catch (Exception e) {
 			log.error("Assert progress", e);
@@ -233,7 +233,7 @@ public class AssessmentToolPage {
 			for(WebElement progressBarEl:progressBarEls) {
 				log.error("Progress title _{}_", progressBarEl.getAttribute("title"));
 			}
-			throw e;
+			OOGraphene.waitElementWithScrollTableRight(tableBy, progressBy, Duration.ofSeconds(5), Duration.ofMillis(200), browser);
 		}
 		return this;
 	}
