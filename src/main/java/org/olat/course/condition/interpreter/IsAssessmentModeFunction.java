@@ -177,7 +177,7 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 				&& lockResourceInfos.getLockResource().getResourceableId().equals(resourceId)
 				&& lockResourceInfos.getLockMode() != null) {
 			List<String> elementList = lockResourceInfos.getLockMode().getElementList();
-			if(elementList == null || elementList.isEmpty() || elementList.contains(nodeId)) {
+			if(nodeId == null || elementList == null || elementList.isEmpty() || elementList.contains(nodeId)) {
 				RepositoryEntry entry = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				AssessmentModeManager assessmentModeMgr = CoreSpringFactory.getImpl(AssessmentModeManager.class);
 				return assessmentModeMgr.isInAssessmentMode(entry, nodeId, identity);
