@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui;
+package org.olat.modules.curriculum.ui.member;
 
 import java.util.Locale;
 
@@ -74,7 +74,7 @@ implements SortableFlexiTableDataModel<CurriculumMemberRow> {
 			}
 		}
 		
-		int propPos = col - CurriculumElementUserManagementController.USER_PROPS_OFFSET;
+		int propPos = col - CurriculumUserManagementController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
 	

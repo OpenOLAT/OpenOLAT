@@ -17,40 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui;
+package org.olat.modules.curriculum.ui.member;
 
-import java.util.List;
 import java.util.Locale;
 
-import org.olat.basesecurity.GroupMembershipInheritance;
-import org.olat.modules.curriculum.model.CurriculumMember;
-import org.olat.user.UserPropertiesRow;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
- * Initial date: 9 mai 2018<br>
+ * Initial date: 17 juil. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumMemberRow extends UserPropertiesRow {
-	
-	private final String role;
-	private final GroupMembershipInheritance inheritanceMode;
-	
-	public CurriculumMemberRow(CurriculumMember member, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		super(member.getIdentity(), userPropertyHandlers, locale);
-		role = member.getRole();
-		inheritanceMode = member.getInheritanceMode();
-	}
-	
-	public String getRole() {
-		return role;
-	}
-	
-	public GroupMembershipInheritance getInheritanceMode() {
-		return inheritanceMode;
-	}
+public class CurriculumUserManagementTableSortDelegate extends SortableFlexiTableModelDelegate<CurriculumMemberRow> {
 
-
+	public CurriculumUserManagementTableSortDelegate(SortKey orderBy, CurriculumUserManagementTableModel model, Locale locale) {
+		super(orderBy, model, locale);
+	}
 }

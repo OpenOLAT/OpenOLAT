@@ -19,88 +19,38 @@
  */
 package org.olat.modules.curriculum.ui.member;
 
-import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
-import org.olat.basesecurity.IdentityRef;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.id.Identity;
-import org.olat.group.ui.main.CourseMembership;
-import org.olat.modules.coach.model.CompletionStats;
+import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
- * Initial date: 19 oct. 2020<br>
+ * Initial date: 9 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumMemberRow implements IdentityRef, CompletionStats {
-
-	private Date firstTime;
-	private Double averageCompletion;
-	private final Identity identity;
-	private final CourseMembership membership;
+public class CurriculumMemberRow extends UserPropertiesRow {
 	
-	private FormLink toolsLink;
+	private final String role;
+	private final GroupMembershipInheritance inheritanceMode;
 	
-	public CurriculumMemberRow(Identity identity, CourseMembership membership, Date firstTime, Double averageCompletion) {
-		this.identity = identity;
-		this.membership = membership;
-		this.firstTime = firstTime;
-		this.averageCompletion = averageCompletion;
+	public CurriculumMemberRow(CurriculumMember member, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		super(member.getIdentity(), userPropertyHandlers, locale);
+		role = member.getRole();
+		inheritanceMode = member.getInheritanceMode();
 	}
 	
-	@Override
-	public Long getKey() {
-		return identity == null ? null : identity.getKey();
+	public String getRole() {
+		return role;
 	}
 	
-	public Identity getIdentity() {
-		return identity;
+	public GroupMembershipInheritance getInheritanceMode() {
+		return inheritanceMode;
 	}
 
-	public CourseMembership getMembership() {
-		return membership;
-	}
 
-	public Date getFirstTime() {
-		return firstTime;
-	}
-
-	public void setFirstTime(Date firstTime) {
-		this.firstTime = firstTime;
-	}
-
-	@Override
-	public Double getAverageCompletion() {
-		return averageCompletion;
-	}
-
-	@Override
-	public void setAverageCompletion(Double averageCompletion) {
-		this.averageCompletion = averageCompletion;
-	}
-
-	public FormLink getToolsLink() {
-		return toolsLink;
-	}
-
-	public void setToolsLink(FormLink toolsLink) {
-		this.toolsLink = toolsLink;
-	}
-
-	@Override
-	public int hashCode() {
-		return identity == null ? 2365912 : identity.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		if(obj instanceof CurriculumMemberRow row) {
-			return identity != null && identity.equals(row.getIdentity());
-		}
-		return false;
-	}
 }
