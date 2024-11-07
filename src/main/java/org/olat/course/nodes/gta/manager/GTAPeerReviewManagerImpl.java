@@ -180,6 +180,25 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 	}
 
 	@Override
+	public int deleteAssignments(TaskList taskList) {
+		int count = 0;
+		List<TaskReviewAssignment> assignments = taskReviewAssignmentDao.getAllAssignments(taskList);
+		for(TaskReviewAssignment assignment:assignments) {
+			EvaluationFormParticipation participation = assignment.getParticipation();
+			dbInstance.getCurrentEntityManager().remove(assignment);
+			dbInstance.commit();
+			count++;
+			if(participation != null) {
+				evaluationFormManager.deleteParticipation(participation, true);
+				count++;
+			}
+			dbInstance.commit();
+		}
+		dbInstance.commit();
+		return count;
+	}
+
+	@Override
 	public List<TaskReviewAssignment> getAssignmentsForTask(Task task, boolean withRemovedOnes) {
 		if(task == null || task.getKey() == null) return new ArrayList<>();
 		return withRemovedOnes

@@ -159,6 +159,18 @@ public class GTATaskReviewAssignmentDAO {
 				.getResultList();
 	}
 	
+	protected List<TaskReviewAssignment> getAllAssignments(TaskList taskList) {
+		String query = """
+				select assignment from taskreviewasssignment assignment
+				left join fetch assignment.participation as surveyParticipation
+				where task.taskList.key=:taskListKey""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, TaskReviewAssignment.class)
+				.setParameter("taskListKey", taskList.getKey())
+				.getResultList();
+	}
+	
 	
 	public List<Identity> findAssignees(TaskList taskList, List<TaskReviewAssignmentStatus> status) {
 		if(status == null || status.isEmpty()) {
@@ -183,5 +195,9 @@ public class GTATaskReviewAssignmentDAO {
 	public TaskReviewAssignment updateAssignment(TaskReviewAssignment assignment) {
 		((TaskReviewAssignmentImpl)assignment).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(assignment);
+	}
+	
+	public int deleteTaskReviewAssignments() {
+		return 0;
 	}
 }

@@ -84,5 +84,13 @@ public class GTATaskDAO {
 				.setParameter("taskListKey", taskList.getKey())
 				.getResultList();
 	}
+	
+	public int deleteTask(TaskList taskList) {
+		String deleteTasks = "delete from gtatask as task where task.taskList.key=:taskListKey";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(deleteTasks)
+			.setParameter("taskListKey", taskList.getKey())
+			.executeUpdate();
+	}
 
 }
