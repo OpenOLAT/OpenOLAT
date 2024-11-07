@@ -260,7 +260,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setCssDelegate(tableModel);
 		tableEl.setCustomizeColumns(true);
-		if (feedRss.isInternal()) {
+		if (feedRss.isInternal() && feedSecCallback.mayCreateItems()) {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
 		}
@@ -1037,8 +1037,10 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		List<Item> modifiableFeedItems = new ArrayList<>(feedItems);
 
 		if (!modifiableFeedItems.isEmpty() && modifiableFeedItems.stream()
-				.anyMatch(item -> item.getAuthorKey() != null
-						&& !item.getAuthorKey().equals(getIdentity().getKey()))
+				.anyMatch(item ->
+						(item.getAuthorKey() == null && feedSecCallback.mayDeleteItems())
+						|| (item.getAuthorKey() != null
+						&& !item.getAuthorKey().equals(getIdentity().getKey())))
 				&& !feedSecCallback.mayDeleteItems()) {
 			modifiableFeedItems.removeIf(item -> !item.getAuthorKey().equals(getIdentity().getKey()));
 		}
