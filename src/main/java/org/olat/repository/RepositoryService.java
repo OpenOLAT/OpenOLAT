@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
@@ -479,5 +480,28 @@ public interface RepositoryService {
 	 * @return auditLogs List
 	 */
 	List<RepositoryEntryAuditLog> getAuditLogs(RepositoryEntryAuditLogSearchParams searchParams);
-	
+
+	/**
+	 * Performs a check on 'entry' without modifying it.
+	 * Returns true if the runtimeType of the 'entry' can be switched to the desired 'runtimeType'.
+	 *
+	 * @param entry The repositoryEntry to perform the check for.
+	 * @param runtimeType The desired runtimeType.
+	 * @return True if the runtimeType of the 'entry' could be changed to the desired 'runtimeType'.
+	 */
+	boolean canSwitchTo(RepositoryEntry entry, RepositoryEntryRuntimeType runtimeType);
+
+	/**
+	 * Returns the set of runtime types that are possible for the provided 'entries'.
+	 *
+	 * The type 'curricular' will only be returned if the CurriculumModule is enabled.
+	 *
+	 * Returns all possible runtime types for all 'entries'. It is possible, that not all items in 'entries'
+	 * can be set to all returned types. The returned set is the union of all possible values for the individual
+	 * items in 'entries'.
+	 *
+	 * @param entries Repository entries to get the set of runtime types for.
+	 * @return A set of runtimeType objects that are possible for the 'entries'.
+	 */
+	Set<RepositoryEntryRuntimeType> getPossibleRuntimeTypes(Collection<RepositoryEntry> entries);
 }

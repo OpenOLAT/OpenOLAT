@@ -74,8 +74,10 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.course.todo.CourseToDoService;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureService;
@@ -198,6 +200,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private NotificationsManager notificationsManager;
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private LTI13Service lti13Service;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -1108,5 +1116,68 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		reToGroupDao.removeRelation(organisation.getGroup());
 		
 		return true;
+	}
+
+	@Override
+	public boolean canSwitchTo(RepositoryEntry entry, RepositoryEntryRuntimeType runtimeType) {
+		if (hasUserManaged(entry)) {
+			return false;
+		}
+
+		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			switch (runtimeType) {
+				case embedded -> {
+					return false;
+				}
+				case standalone -> {
+					if (curriculumService.getCuriculumElementCount(entry) > 0) {
+						return false;
+					}
+				}
+				case curricular -> {
+					if (!canSwitchToCurricular(entry)) {
+						return false;
+					}
+				}
+			}
+		} else {
+			if (runtimeType == RepositoryEntryRuntimeType.curricular) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private boolean canSwitchToCurricular(RepositoryEntry entry) {
+		Map<String, Long> roleToCount = this.reToGroupDao.getRoleToCountMemebers(entry);
+
+		if (roleToCount.containsKey(GroupRoles.participant.name()) && roleToCount.get(GroupRoles.participant.name()) > 0) {
+			return false;
+		}
+		if (roleToCount.containsKey(GroupRoles.coach.name()) && roleToCount.get(GroupRoles.coach.name()) > 0) {
+			return false;
+		}
+		if (!lti13Service.getContexts(entry).isEmpty()) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public Set<RepositoryEntryRuntimeType> getPossibleRuntimeTypes(Collection<RepositoryEntry> entries) {
+		HashSet<RepositoryEntryRuntimeType> types = new HashSet<>();
+		for (RepositoryEntry entry : entries) {
+			if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+				types.add(RepositoryEntryRuntimeType.standalone);
+				if (curriculumModule.isEnabled()) {
+					types.add(RepositoryEntryRuntimeType.curricular);
+				}
+			} else {
+				types.add(RepositoryEntryRuntimeType.standalone);
+				types.add(RepositoryEntryRuntimeType.embedded);
+			}
+		}
+		return types;
 	}
 }

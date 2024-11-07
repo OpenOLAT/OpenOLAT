@@ -30,12 +30,14 @@ import org.olat.core.logging.activity.LearningResourceLoggingAction;
  */
 public enum RepositoryEntryRuntimeType {
 	standalone,
-	embedded;
-	
+	embedded,
+	curricular;
+
 	public static ILoggingAction loggingAction(RepositoryEntryRuntimeType status) {
 		switch(status) {
 			case standalone: return LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_STANDALONE;
 			case embedded: return LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_EMBEDDED;
+			case curricular: return LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_CURRICULAR;
 			default: return null;
 		}
 	}

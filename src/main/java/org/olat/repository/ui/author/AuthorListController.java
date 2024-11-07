@@ -747,6 +747,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		SelectionValues runtimeTypeKV = new SelectionValues();
 		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(), translate("runtime.type.".concat(RepositoryEntryRuntimeType.standalone.name()))));
 		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.embedded.name(), translate("runtime.type.".concat(RepositoryEntryRuntimeType.embedded.name()))));
+		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.curricular.name(), translate("runtime.type.".concat(RepositoryEntryRuntimeType.curricular.name()))));
 		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.runtime.type"),
 				AuthorSourceFilter.RUNTIMETYPE.name(), runtimeTypeKV, false));
 

@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author;
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -81,21 +82,51 @@ public class ModifyRuntimeTypeController extends FormBasicController {
 			layoutCont.contextPut("r_info", translate("change.runtime.type.info"));
 			layoutCont.contextPut("r_info_help_url", "manual_user/learningresources/Access_configuration/");
 		}
-		
+
+		Set<RepositoryEntryRuntimeType> runtimeTypes = repositoryService.getPossibleRuntimeTypes(entries);
 		SelectionValues runtimeTypeKV = new SelectionValues();
-		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.embedded.name(),
-				translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".title"),
-				translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".desc"), "o_icon o_icon_link", null, true));
-		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(),
-				translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".title"),
-				translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"), "o_icon o_icon_people", null, true));
-		
+		if (runtimeTypes.contains(RepositoryEntryRuntimeType.embedded)) {
+			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.embedded.name(),
+					translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".title"),
+					translate("runtime.type." + RepositoryEntryRuntimeType.embedded.name() + ".desc"), "o_icon o_icon_link", null, true));
+		}
+		if (runtimeTypes.contains(RepositoryEntryRuntimeType.standalone)) {
+			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(),
+					translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".title"),
+					translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"), "o_icon o_icon_people", null, true));
+		}
+		if (runtimeTypes.contains(RepositoryEntryRuntimeType.curricular)) {
+			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.curricular.name(),
+					translate("runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".title"),
+					translate("runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".desc"), "o_icon o_icon_curriculum", null, false));
+		}
+
 		runtimeTypeEl = uifactory.addCardSingleSelectHorizontal("cif.runtime.type", "cif.runtime.type", formLayout, runtimeTypeKV);
+		if (allEntriesHaveTheSameRuntimeType()) {
+			runtimeTypeEl.select(entries.get(0).getRuntimeType().name(), true);
+		}
 		runtimeTypeEl.addActionListener(FormEvent.ONCHANGE);
 
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("change", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+
+	private boolean allEntriesHaveTheSameRuntimeType() {
+		if (entries == null || entries.isEmpty()) {
+			return false;
+		}
+		if (entries.size() == 1) {
+			return true;
+		}
+		for (int i = 1; i < entries.size(); i++) {
+			RepositoryEntryRuntimeType lastType = entries.get(i - 1).getRuntimeType();
+			RepositoryEntryRuntimeType currentType = entries.get(i).getRuntimeType();
+			if (currentType != lastType) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
@@ -141,8 +172,7 @@ public class ModifyRuntimeTypeController extends FormBasicController {
 		if (entry.getRuntimeType() == runtimeType) {
 			return false;
 		}
-		if((runtimeType == RepositoryEntryRuntimeType.embedded && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName()))
-				|| repositoryService.hasUserManaged(entry)) {
+		if (!repositoryService.canSwitchTo(entry, runtimeType)) {
 			return false;
 		}
 		
