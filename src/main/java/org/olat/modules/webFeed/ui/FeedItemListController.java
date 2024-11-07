@@ -740,6 +740,14 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private void bulkUpdateFeedItemTags(List<String> tagDisplayNames) {
 		List<Item> selectedItems = tableEl.getMultiSelectedIndex().stream().map(r -> tableModel.getObject(r).getItem()).toList();
 
+		// if the current user has no rights to edit items
+		if (!feedSecCallback.mayEditItems()) {
+			// then filter the selectedItems list and only keep items, which belong to the user
+			selectedItems = selectedItems.stream()
+					.filter(item -> item.getAuthorKey() != null
+							&& item.getAuthorKey().equals(getIdentity().getKey())).toList();
+		}
+
 		feedManager.bulkAddTags(selectedItems, tagDisplayNames);
 		updateWholeModel();
 		deactivateAndCleanUp();
@@ -1044,16 +1052,17 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		boolean hasItems = !modifiableFeedItems.isEmpty();
 
 		boolean hasRemovableItem = modifiableFeedItems.stream().anyMatch(item -> {
-			boolean isAuthorKeyNullAndDeletable = item.getAuthorKey() == null && feedSecCallback.mayDeleteItems();
+			boolean isAuthorKeyNullAndItemNotDeletable = item.getAuthorKey() == null && isDeletionNotAllowed;
 			boolean isAuthorDifferentFromCurrentUser = item.getAuthorKey() != null && !item.getAuthorKey().equals(getIdentity().getKey());
-			return isAuthorKeyNullAndDeletable || isAuthorDifferentFromCurrentUser;
+			return isAuthorKeyNullAndItemNotDeletable || isAuthorDifferentFromCurrentUser;
 		});
 
-		if (hasItems && hasRemovableItem && isDeletionNotAllowed) {
+		if (hasItems && isDeletionNotAllowed && hasRemovableItem) {
 			// Remove items that don't belong to the current user's identity
 			modifiableFeedItems.removeIf(item ->
-					(item.getAuthorKey() == null && feedSecCallback.mayDeleteItems()) ||
-							(item.getAuthorKey() != null && !item.getAuthorKey().equals(getIdentity().getKey())));
+					item.getAuthorKey() == null ||
+							(item.getAuthorKey() != null && !item.getAuthorKey().equals(getIdentity().getKey()))
+			);
 		}
 
 		if (modifiableFeedItems.size() == 1) {
@@ -1097,7 +1106,26 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private void doBulkRemoveTags(UserRequest ureq) {
 		if (guardModalController(bulkRemoveTagsCtrl)) return;
 
-		List<Long> selectedItemKeys = tableEl.getMultiSelectedIndex().stream().map(r -> tableModel.getObject(r).getItem().getKey()).toList();
+		// Get the selected items from the table
+		List<Item> selectedItems = tableEl.getMultiSelectedIndex().stream()
+				.map(r -> tableModel.getObject(r).getItem())
+				.toList();
+
+		// Filter selected items based on edit permissions
+		boolean canEditItems = feedSecCallback.mayEditItems();
+		if (!canEditItems) {
+			selectedItems = selectedItems.stream()
+					.filter(item -> {
+						Long authorKey = item.getAuthorKey();
+						return authorKey != null && authorKey.equals(getIdentity().getKey());
+					})
+					.toList();
+		}
+
+		// Extract keys from the filtered list of selected items
+		List<Long> selectedItemKeys = selectedItems.stream()
+				.map(Item::getKey)
+				.toList();
 
 		List<TagInfo> selectedTagInfos = feedManager.getTagInfosForFeedItems(feedRss, selectedItemKeys);
 		bulkRemoveTagsCtrl = new FeedBulkRemoveTagsController(ureq, getWindowControl(), selectedTagInfos);
