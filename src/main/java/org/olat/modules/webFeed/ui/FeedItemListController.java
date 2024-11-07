@@ -289,7 +289,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	protected void initMultiSelectionTools(FormLayoutContainer formLayout) {
-		if (!tagInfos.isEmpty()) {
+		if (!tagInfos.isEmpty() && feedSecCallback.mayEditItems()) {
 			bulkAddTags = uifactory.addFormLink("bulk.add.tags", "bulk.add.tags", "bulk.add.tags", formLayout, Link.BUTTON);
 			bulkAddTags.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			tableEl.addBatchButton(bulkAddTags);
@@ -788,7 +788,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 	private void handleDeleteConfirmationEvent(UserRequest ureq, Controller source, Event event) {
 		List<Item> feedItemsToDelete = getFeedItemsToDelete(source);
-		if (event == Event.DONE_EVENT) {
+		if (event == Event.DONE_EVENT && !feedItemsToDelete.isEmpty()) {
 			handleItemsDeletion(ureq, feedItemsToDelete);
 		}
 		deactivateAndCleanUp();
@@ -1034,16 +1034,23 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private void doConfirmDeleteFeedItems(UserRequest ureq, List<Item> feedItems) {
 		if (guardModalController(deletePermanentlyConfirmationCtrl)) return;
 
-		if (feedItems.size() == 1) {
-			Item item = feedItems.get(0);
+		List<Item> modifiableFeedItems = new ArrayList<>(feedItems);
+
+		if (modifiableFeedItems.stream().anyMatch(item -> !item.getAuthorKey().equals(getIdentity().getKey()))
+				&& !feedSecCallback.mayDeleteItems()) {
+			modifiableFeedItems.removeIf(item -> !item.getAuthorKey().equals(getIdentity().getKey()));
+		}
+
+		if (modifiableFeedItems.size() == 1) {
+			Item item = modifiableFeedItems.get(0);
 			deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
 					translate("feed.item.confirm.delete", StringHelper.escapeHtml(item.getTitle())),
 					translate("feed.item.confirmation.confirm.delete"),
 					translate("delete"), true);
-			deletePermanentlyConfirmationCtrl.setUserObject(feedItems);
+			deletePermanentlyConfirmationCtrl.setUserObject(modifiableFeedItems);
 			activateModalDialog(deletePermanentlyConfirmationCtrl, translate("feed.item.delete.permanently.title"));
 		} else {
-			doConfirmBulkDeletePermanently(ureq, feedItems);
+			doConfirmBulkDeletePermanently(ureq, modifiableFeedItems);
 		}
 	}
 
