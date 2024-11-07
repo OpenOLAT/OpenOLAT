@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.manager.GroupMembershipHistoryDAO;
 import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
@@ -146,6 +147,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	private NotificationsManager notificationsManager;
 	@Autowired
 	private InfoMessageFrontendManager infoMessageManager;
+	@Autowired
+	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -871,6 +874,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			// 3) Delete the relations
 			businessGroupRelationDao.deleteRelationsToRepositoryEntry(group);
 			assessmentModeDao.deleteAssessmentModesToGroup(group);
+			groupMembershipHistoryDao.deleteMembershipHistory(group.getBaseGroup());
 			// 4) delete properties
 			propertyManager.deleteProperties(null, group, null, null, null);
 			propertyManager.deleteProperties(null, null, group, null, null);

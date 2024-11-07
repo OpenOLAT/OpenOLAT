@@ -55,6 +55,8 @@ import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 
 /**
  * 
@@ -146,6 +148,10 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@OneToMany(targetEntity=CurriculumElementToTaxonomyLevelImpl.class, fetch=FetchType.LAZY)
 	@JoinColumn(name="fk_cur_element")
 	private Set<CurriculumElementToTaxonomyLevel> taxonomyLevels;
+	
+	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_resource", nullable=true, insertable=true, updatable=true)
+	private OLATResource resource;
 	
 	@Override
 	public Long getKey() {
@@ -466,6 +472,15 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	}
 
 	@Override
+	public OLATResource getResource() {
+		return resource;
+	}
+
+	public void setResource(OLATResource resource) {
+		this.resource = resource;
+	}
+
+	@Override
 	public int hashCode() {
 		return key == null ? 28562153 : key.hashCode();
 	}
@@ -475,8 +490,7 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof CurriculumElementImpl) {
-			CurriculumElementImpl el = (CurriculumElementImpl)obj;
+		if(obj instanceof CurriculumElementImpl el) {
 			return getKey() != null && getKey().equals(el.getKey());
 		}
 		return false;

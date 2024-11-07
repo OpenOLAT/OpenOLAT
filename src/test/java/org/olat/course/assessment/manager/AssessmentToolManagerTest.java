@@ -181,9 +181,9 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(curriculumElement2, entry, false);
 		
-		curriculumService.addMember(curriculumElement1, assessedIdentity6, CurriculumRoles.participant);
-		curriculumService.addMember(curriculumElement2, assessedIdentity7, CurriculumRoles.participant);
-		curriculumService.addMember(curriculumElement1, coach, CurriculumRoles.coach);
+		curriculumService.addMember(curriculumElement1, assessedIdentity6, CurriculumRoles.participant, author);
+		curriculumService.addMember(curriculumElement2, assessedIdentity7, CurriculumRoles.participant, author);
+		curriculumService.addMember(curriculumElement1, coach, CurriculumRoles.coach, author);
 		
 		dbInstance.commitAndCloseSession();
 		

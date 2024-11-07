@@ -27,7 +27,6 @@ package org.olat.repository;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -43,10 +42,13 @@ import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.manager.GroupMembershipHistoryDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
@@ -65,6 +67,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -134,6 +137,8 @@ public class RepositoryManager {
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
+	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
@@ -1484,8 +1489,12 @@ public class RepositoryManager {
 		List<Identity> addIdentities = iae.getAddIdentities();
 		List<Identity> reallyAddedId = new ArrayList<>();
 		for (Identity identity : addIdentities) {
+			Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
 			if (!repositoryEntryRelationDao.hasRole(identity, re, GroupRoles.owner.name())) {
 				repositoryEntryRelationDao.addRole(identity, re, GroupRoles.owner.name());
+				groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
+						GroupRoles.owner.name(), GroupMembershipStatus.active, null, null, ureqIdentity);
+				
 				reallyAddedId.add(identity);
 				ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 				ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
@@ -1540,8 +1549,12 @@ public class RepositoryManager {
 	}
 
 	private void removeOwner(Identity ureqIdentity, Identity identity, RepositoryEntry re, MailPackage mailing) {
+		Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.owner.name());
 		if(rows > 0) {
+			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
+					GroupRoles.owner.name(), GroupMembershipStatus.removed, null, null, ureqIdentity);
+			
 			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
 	
 			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
@@ -1598,19 +1611,11 @@ public class RepositoryManager {
 				}
 
 				if(mustAccept) {
-					ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, re.getOlatResource());
-					if(olderReservation == null) {
-						Calendar cal = Calendar.getInstance();
-						cal.add(Calendar.MONTH, 6);
-						Date expiration = cal.getTime();
-						ResourceReservation reservation =
-								reservationDao.createReservation(identityToAdd, "repo_tutors", expiration, re.getOlatResource());
-						if(reservation != null) {
-							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing);
-						}
+					if(addInternalCoachReservation(identityToAdd, re, ureqIdentity)) {
+						RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing);
 					}
 				} else {
-					addInternalTutors(ureqIdentity, identityToAdd, re, reallyAddedId);
+					addInternalCoaches(ureqIdentity, identityToAdd, re, reallyAddedId);
 					RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addTutor, mailing);
 				}
 
@@ -1618,16 +1623,33 @@ public class RepositoryManager {
 		}
 		iae.setIdentitiesAddedEvent(reallyAddedId);
 	}
+	
+	private boolean addInternalCoachReservation(Identity identityToAdd, RepositoryEntry re, Identity actor) {
+		ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, re.getOlatResource());
+		if(olderReservation == null) {
+			Date expiration =  DateUtils.addMonth(new Date(), 6);
+			Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
+			reservationDao.createReservation(identityToAdd, "repo_tutors", expiration, Boolean.TRUE, re.getOlatResource());
+			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identityToAdd,
+					GroupRoles.coach.name(), GroupMembershipStatus.reservation, null, null, actor);
+			return true;
+		}
+		return false;
+	}
 
 	/**
-	 * Internal method to add tutors, it makes no check.
+	 * Internal method to add coaches, it makes no check.
 	 * @param ureqIdentity
 	 * @param identity
 	 * @param re
 	 * @param reallyAddedId
 	 */
-	private void addInternalTutors(Identity ureqIdentity, Identity identity, RepositoryEntry re, List<Identity> reallyAddedId) {
-		repositoryEntryRelationDao.addRole(identity, re, GroupRoles.coach.name());
+	private void addInternalCoaches(Identity ureqIdentity, Identity identity, RepositoryEntry re, List<Identity> reallyAddedId) {
+		Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
+		repositoryEntryRelationDao.addRole(identity, defaultGroup, GroupRoles.coach.name());
+		groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
+				GroupRoles.coach.name(), GroupMembershipStatus.active, null, null, ureqIdentity);
+
 		reallyAddedId.add(identity);
 		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
@@ -1659,8 +1681,12 @@ public class RepositoryManager {
 	}
 
 	private void removeTutor(Identity ureqIdentity, Identity identity, RepositoryEntry re, MailPackage mailing) {
+		Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.coach.name());
 		if(rows > 0) {
+			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
+					GroupRoles.coach.name(), GroupMembershipStatus.removed, null, null, ureqIdentity);
+			
 			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
 			
 			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
@@ -1689,7 +1715,6 @@ public class RepositoryManager {
 		List<Identity> reallyAddedId = new ArrayList<>();
 		for (Identity identityToAdd : addIdentities) {
 			if (!repositoryEntryRelationDao.hasRole(identityToAdd, re, GroupRoles.participant.name())) {
-
 				boolean mustAccept = true;
 				if(ureqIdentity != null && ureqIdentity.equals(identityToAdd)) {
 					mustAccept = false;//adding itself, we hope that he knows what he makes
@@ -1700,20 +1725,8 @@ public class RepositoryManager {
 				}
 
 				if(mustAccept) {
-					ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, re.getOlatResource());
-					if(olderReservation == null) {
-						Calendar cal = Calendar.getInstance();
-						cal.add(Calendar.MONTH, 6);
-						Date expiration = cal.getTime();
-						ResourceReservation reservation =
-								reservationDao.createReservation(identityToAdd, "repo_participant", expiration, re.getOlatResource());
-						if(reservation != null) {
-							RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing);
-						}
-						
-						dbInstance.commit();
-						RepositoryEntryMembershipModifiedEvent event = RepositoryEntryMembershipModifiedEvent.roleParticipantAddPending(identityToAdd, re);
-						sendDeferredEvent(event, re);
+					if(addInternalParticipantReservation(ureqIdentity, identityToAdd, re)) {
+						RepositoryMailing.sendEmail(ureqIdentity, identityToAdd, re, RepositoryMailing.Type.addParticipant, mailing);
 					}
 				} else {
 					addInternalParticipant(ureqIdentity, identityToAdd, re);
@@ -1724,6 +1737,29 @@ public class RepositoryManager {
 		}
 		iae.setIdentitiesAddedEvent(reallyAddedId);
 	}
+	
+	/**
+	 * @param ureqIdentity The actor
+	 * @param identity The identity which want to get a role
+	 * @param re The repository entry
+	 * @return true if a new reservation is created
+	 */
+	private boolean addInternalParticipantReservation(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
+		OLATResource resource = re.getOlatResource();
+		ResourceReservation reservation = reservationDao.loadReservation(identity, resource);
+		if(reservation == null) {
+			Date expiration = DateUtils.addMonth(new Date(), 6);
+			Group group = repositoryEntryRelationDao.getDefaultGroup(re);
+			reservationDao.createReservation(identity, "repo_participant", expiration, Boolean.TRUE, re.getOlatResource());
+			groupMembershipHistoryDao.createMembershipHistory(group, identity, GroupRoles.participant.name(), GroupMembershipStatus.reservation, null, null, ureqIdentity);
+			
+			dbInstance.commit();
+			RepositoryEntryMembershipModifiedEvent event = RepositoryEntryMembershipModifiedEvent.roleParticipantAddPending(identity, re);
+			sendDeferredEvent(event, re);
+			return true;
+		}
+		return false;
+	}
 
 	/**
 	 * This is for internal usage only. The method dosn't make any check.
@@ -1732,7 +1768,9 @@ public class RepositoryManager {
 	 * @param re
 	 */
 	private void addInternalParticipant(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
-		repositoryEntryRelationDao.addRole(identity, re, GroupRoles.participant.name());
+		Group group = repositoryEntryRelationDao.getDefaultGroup(re);
+		repositoryEntryRelationDao.addRole(identity, group, GroupRoles.participant.name());
+		groupMembershipHistoryDao.createMembershipHistory(group, identity, GroupRoles.participant.name(), GroupMembershipStatus.active, null, null, ureqIdentity);
 		
 		RepositoryEntryMembershipModifiedEvent deferredEvent = RepositoryEntryMembershipModifiedEvent.roleParticipantAdded(identity, re);
 		dbInstance.commit();
@@ -1768,8 +1806,12 @@ public class RepositoryManager {
 	}
 
 	private void removeParticipant(Identity ureqIdentity, Identity identity, RepositoryEntry re, MailPackage mailing, boolean sendMail) {
+		Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.participant.name());
 		if(rows > 0) {
+			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
+					GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null, ureqIdentity);
+			
 			if(sendMail) {
 				RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing);
 			}

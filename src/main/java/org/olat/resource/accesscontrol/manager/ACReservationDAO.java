@@ -44,7 +44,7 @@ public class ACReservationDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public ResourceReservation createReservation(Identity identity, String type, Date expirationDate, OLATResource resource) {
+	public ResourceReservation createReservation(Identity identity, String type, Date expirationDate, Boolean userConfirmable, OLATResource resource) {
 		ResourceReservationImpl reservation = new ResourceReservationImpl();
 		reservation.setCreationDate(new Date());
 		reservation.setLastModified(reservation.getCreationDate());
@@ -52,6 +52,7 @@ public class ACReservationDAO {
 		reservation.setResource(resource);
 		reservation.setExpirationDate(expirationDate);
 		reservation.setType(type);
+		reservation.setUserConfirmable(userConfirmable == null ? Boolean.TRUE : userConfirmable);
 		dbInstance.getCurrentEntityManager().persist(reservation);
 		return reservation;
 	}

@@ -25,6 +25,7 @@ import java.util.Set;
 import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -106,6 +107,8 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	public Group getGroup();
 	
 	public Set<CurriculumElementToTaxonomyLevel> getTaxonomyLevels();
+	
+	public OLATResource getResource();
 	
 
 }

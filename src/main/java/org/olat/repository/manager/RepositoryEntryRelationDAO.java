@@ -204,6 +204,10 @@ public class RepositoryEntryRelationDAO {
 		groupDao.addMembershipOneWay(group, identity, role);
 	}
 	
+	public void addRole(Identity identity, Group group, String role) {
+		groupDao.addMembershipOneWay(group, identity, role);
+	}
+	
 	public int removeRole(IdentityRef identity, RepositoryEntryRef re, String role) {
 		Group group = getDefaultGroup(re);
 		if(group != null) {

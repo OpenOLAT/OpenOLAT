@@ -37,6 +37,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.basesecurity.manager.GroupMembershipHistoryDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseService;
@@ -143,6 +144,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
+	@Autowired
+	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -707,6 +710,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if(defaultGroup != null) {
 			groupDao.removeMemberships(defaultGroup);
 		}
+		groupMembershipHistoryDao.deleteMembershipHistory(defaultGroup);
 		reToGroupDao.removeRelations(reloadedEntry);
 		dbInstance.commit();
 		

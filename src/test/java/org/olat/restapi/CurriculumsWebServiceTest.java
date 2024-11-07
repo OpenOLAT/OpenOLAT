@@ -576,9 +576,9 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		
 		curriculumService.addRepositoryEntry(element1, entryLecture1, false);
 		curriculumService.addRepositoryEntry(element2, entryLecture2, false);
-		curriculumService.addMember(element1, participant1, CurriculumRoles.participant);
-		curriculumService.addMember(element1, participant2, CurriculumRoles.participant);
-		curriculumService.addMember(element2, participant2, CurriculumRoles.participant);
+		curriculumService.addMember(element1, participant1, CurriculumRoles.participant, author);
+		curriculumService.addMember(element1, participant2, CurriculumRoles.participant, author);
+		curriculumService.addMember(element2, participant2, CurriculumRoles.participant, author);
 		dbInstance.commitAndCloseSession();
 
 		lectureParticipantSummaryDao.createSummary(entryLecture1, participant1, DateUtils.addDays(new Date(), -2));
@@ -674,7 +674,7 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		
 		curriculumService.addRepositoryEntry(element, entryLecture1, false);
 		curriculumService.addRepositoryEntry(element, entryLecture2, false);
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, author);
 		dbInstance.commitAndCloseSession();
 
 		lectureParticipantSummaryDao.createSummary(entryLecture1, participant, DateUtils.addDays(new Date(), -2));

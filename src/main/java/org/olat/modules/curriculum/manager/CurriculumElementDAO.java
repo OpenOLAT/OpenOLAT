@@ -68,6 +68,8 @@ import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -84,6 +86,8 @@ public class CurriculumElementDAO {
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
+	@Autowired
+	private OLATResourceManager olatResourceManager;
 	
 	public CurriculumElement createCurriculumElement(String identifier, String displayName,
 			CurriculumElementStatus status, Date beginDate, Date endDate, CurriculumElementRef parentRef,
@@ -119,8 +123,17 @@ public class CurriculumElementDAO {
 			dbInstance.getCurrentEntityManager().merge(curriculum);
 		}
 		element.setMaterializedPathKeys(getMaterializedPathKeys(parent, element));
+		createResource(element);
+		element.setResource(null);
 		dbInstance.getCurrentEntityManager().merge(element);
 		return element;
+	}
+	
+	public OLATResource createResource(CurriculumElement element) {
+		OLATResource resource =  olatResourceManager.createOLATResourceInstance(element);
+		olatResourceManager.saveOLATResource(resource);
+		((CurriculumElementImpl)element).setResource(resource);
+		return resource;
 	}
 	
 	/**

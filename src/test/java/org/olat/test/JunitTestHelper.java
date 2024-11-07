@@ -98,10 +98,18 @@ public class JunitTestHelper {
 			maildomain = "mytrashmail.com";
 		}
 	}
-	
+
+	private static Identity defaultActor;
 	private static Identity defaultAuthor;
 	private static Identity defaultAdministrator;
 	private static Organisation defaultOrganisation;
+	
+	public static final Identity getDefaultActor() {
+		if(defaultActor == null) {
+			defaultActor = createAndPersistIdentityAsRndAuthor("the-actor");
+		}
+		return defaultActor;
+	}
 	
 	public static final Identity getDefaultAuthor() {
 		if(defaultAuthor == null) {

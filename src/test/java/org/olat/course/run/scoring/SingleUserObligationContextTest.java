@@ -135,12 +135,14 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, organisationService.getDefaultOrganisation());
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
 		CurriculumElement curriculumElementOther = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
+
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		curriculumService.addMember(curriculumElement, participant, CurriculumRoles.participant);
+		curriculumService.addMember(curriculumElement, participant, CurriculumRoles.participant, actor);
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		curriculumService.addMember(curriculumElement, coach, CurriculumRoles.coach);
+		curriculumService.addMember(curriculumElement, coach, CurriculumRoles.coach, actor);
 		Identity participantOther = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		curriculumService.addMember(curriculumElementOther, participantOther, CurriculumRoles.participant);
+		curriculumService.addMember(curriculumElementOther, participantOther, CurriculumRoles.participant, actor);
 		dbInstance.commitAndCloseSession();
 		
 		SingleUserObligationContext sutParticipant = new SingleUserObligationContext();

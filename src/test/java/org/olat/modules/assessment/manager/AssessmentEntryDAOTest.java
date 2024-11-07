@@ -928,6 +928,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getEntryRootCompletionsByCurriculumElement() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18a");
 		Identity assessedIdentityOther = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18b");
 		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -947,15 +948,15 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(curEle1, entry1, false);
 		curriculumService.addRepositoryEntry(curEle1, entry2, false);
 		curriculumService.addRepositoryEntry(curEle1, entry4, false);
-		curriculumService.addMember(curEle1, assessedIdentity, CurriculumRoles.participant);
-		curriculumService.addMember(curEle1, assessedIdentityOther, CurriculumRoles.participant);
+		curriculumService.addMember(curEle1, assessedIdentity, CurriculumRoles.participant, actor);
+		curriculumService.addMember(curEle1, assessedIdentityOther, CurriculumRoles.participant, actor);
 		
 		CurriculumElement curEle12 = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, curEle1, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(curEle12, entry1, false);
 		curriculumService.addRepositoryEntry(curEle12, entry3, false);
-		curriculumService.addMember(curEle12, assessedIdentity, CurriculumRoles.participant);
+		curriculumService.addMember(curEle12, assessedIdentity, CurriculumRoles.participant, actor);
 		
 		AssessmentEntry nodeAssessment1Root = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry1,
 				random(), Boolean.TRUE, null);
@@ -1001,6 +1002,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getEntryRootCompletionsByIdenttiyAndCurriculumElement() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18a");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18b");
 		Identity assessedIdentityOther = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18o");
@@ -1021,22 +1023,22 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(curEle1, entry1, false);
 		curriculumService.addRepositoryEntry(curEle1, entry2, false);
 		curriculumService.addRepositoryEntry(curEle1, entry4, false);
-		curriculumService.addMember(curEle1, assessedIdentity1, CurriculumRoles.participant);
-		curriculumService.addMember(curEle1, assessedIdentity2, CurriculumRoles.participant);
-		curriculumService.addMember(curEle1, assessedIdentityOther, CurriculumRoles.participant);
+		curriculumService.addMember(curEle1, assessedIdentity1, CurriculumRoles.participant, actor);
+		curriculumService.addMember(curEle1, assessedIdentity2, CurriculumRoles.participant,actor);
+		curriculumService.addMember(curEle1, assessedIdentityOther, CurriculumRoles.participant, actor);
 		
 		CurriculumElement curEle12 = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, curEle1, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(curEle12, entry1, false);
 		curriculumService.addRepositoryEntry(curEle12, entry3, false);
-		curriculumService.addMember(curEle12, assessedIdentity1, CurriculumRoles.participant);
+		curriculumService.addMember(curEle12, assessedIdentity1, CurriculumRoles.participant, actor);
 		
 		CurriculumElement curEle2 = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(curEle2, entryOther, false);
-		curriculumService.addMember(curEle12, assessedIdentity1, CurriculumRoles.participant);
+		curriculumService.addMember(curEle12, assessedIdentity1, CurriculumRoles.participant, actor);
 		
 		// identity 1
 		AssessmentEntry nodeAssessment1Root = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry1,

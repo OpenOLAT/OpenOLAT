@@ -546,7 +546,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				int currentCount = businessGroupService.countMembers(reloadedGroup, GroupRoles.participant.name());
 				int reservations = reservationDao.countReservations(resource, BusinessGroupService.GROUP_PARTICIPANT);
 				if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
-					reservationDao.createReservation(identity, offer.getMethod().getType(), null, resource);
+					reservationDao.createReservation(identity, offer.getMethod().getType(), null, Boolean.TRUE, resource);
 					reserved = true;
 				}
 			}

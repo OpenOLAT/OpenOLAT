@@ -887,12 +887,13 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	public void shouldFilterDataCollectionsByReportAccessGroupRoleOfCurriculumElements() {
 		Identity reportViewer = JunitTestHelper.createAndPersistIdentityAsRndUser("report-viewer");
 		CurriculumRoles reportViewerRole = CurriculumRoles.owner;
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("executer");
 		CurriculumRoles executorRole = CurriculumRoles.participant;
 		// Everything fulfilled: Data collection has participant of the curriculum element
 		CurriculumElement element = qualityTestHelper.createCurriculumElement();
-		curriculumService.addMember(element, reportViewer, reportViewerRole);
-		curriculumService.addMember(element, executor, executorRole);
+		curriculumService.addMember(element, reportViewer, reportViewerRole, actor);
+		curriculumService.addMember(element, executor, executorRole, actor);
 		QualityDataCollection dc = qualityTestHelper.createDataCollection();
 		dc = qualityService.updateDataCollectionStatus(dc, FINISHED);
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
@@ -902,8 +903,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		qualityService.updateReportAccess(ra);
 		// Report viewer has other curriculum element role
 		CurriculumElement elementOtherRole = qualityTestHelper.createCurriculumElement();
-		curriculumService.addMember(elementOtherRole, reportViewer, CurriculumRoles.participant);
-		curriculumService.addMember(elementOtherRole, executor, executorRole);
+		curriculumService.addMember(elementOtherRole, reportViewer, CurriculumRoles.participant, actor);
+		curriculumService.addMember(elementOtherRole, executor, executorRole, actor);
 		QualityDataCollection dcOtherRole = qualityTestHelper.createDataCollection();
 		dcOtherRole = qualityService.updateDataCollectionStatus(dcOtherRole, FINISHED);
 		List<EvaluationFormParticipation> participationsOtherRole = qualityService.addParticipations(dcOtherRole, singletonList(executor));
@@ -913,7 +914,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		qualityService.updateReportAccess(raOtherRole);
 		// Report viewer is not member in the curriculum element
 		CurriculumElement elementNotMember = qualityTestHelper.createCurriculumElement();
-		curriculumService.addMember(elementOtherRole, executor, executorRole);
+		curriculumService.addMember(elementOtherRole, executor, executorRole, actor);
 		QualityDataCollection dcNotMember = qualityTestHelper.createDataCollection();
 		dcNotMember = qualityService.updateDataCollectionStatus(dcNotMember, FINISHED);
 		List<EvaluationFormParticipation> participationsNotMember = qualityService.addParticipations(dcNotMember, singletonList(executor));
@@ -923,8 +924,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		qualityService.updateReportAccess(raNotMember);
 		// Data collection is not finished
 		CurriculumElement elementNotFinished = qualityTestHelper.createCurriculumElement();
-		curriculumService.addMember(elementNotFinished, reportViewer, reportViewerRole);
-		curriculumService.addMember(elementNotFinished, executor, executorRole);
+		curriculumService.addMember(elementNotFinished, reportViewer, reportViewerRole, actor);
+		curriculumService.addMember(elementNotFinished, executor, executorRole, actor);
 		QualityDataCollection dcNotFinished = qualityTestHelper.createDataCollection();
 		dcNotFinished = qualityService.updateDataCollectionStatus(dcNotFinished, QualityDataCollectionStatus.RUNNING);
 		List<EvaluationFormParticipation> participationsNotFinished = qualityService.addParticipations(dcNotFinished, singletonList(executor));
@@ -934,16 +935,16 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		qualityService.updateReportAccess(raNotFinished);
 		// Data collection has no report access configured
 		CurriculumElement elementNoAccess = qualityTestHelper.createCurriculumElement();
-		curriculumService.addMember(elementNoAccess, reportViewer, reportViewerRole);
-		curriculumService.addMember(elementNoAccess, executor, executorRole);
+		curriculumService.addMember(elementNoAccess, reportViewer, reportViewerRole, actor);
+		curriculumService.addMember(elementNoAccess, executor, executorRole, actor);
 		QualityDataCollection dcNoAccess = qualityTestHelper.createDataCollection();
 		dcNoAccess = qualityService.updateDataCollectionStatus(dcNoAccess, FINISHED);
 		List<EvaluationFormParticipation> participationsNoAccess = qualityService.addParticipations(dcNoAccess, singletonList(executor));
 		qualityService.createContextBuilder(dcNoAccess, participationsNoAccess.get(0), elementNoAccess, executorRole).build();
 		// Report user has access denied
 		CurriculumElement elementAccessDenied = qualityTestHelper.createCurriculumElement();
-		curriculumService.addMember(elementAccessDenied, reportViewer, reportViewerRole);
-		curriculumService.addMember(elementAccessDenied, executor, executorRole);
+		curriculumService.addMember(elementAccessDenied, reportViewer, reportViewerRole, actor);
+		curriculumService.addMember(elementAccessDenied, executor, executorRole, actor);
 		QualityDataCollection dcAccessDenied = qualityTestHelper.createDataCollection();
 		dcAccessDenied = qualityService.updateDataCollectionStatus(dcAccessDenied, FINISHED);
 		List<EvaluationFormParticipation> participationsAccessDenied = qualityService.addParticipations(dcAccessDenied, singletonList(executor));

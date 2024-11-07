@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,33 +14,49 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.basesecurity;
 
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.resource.OresHelper;
+import java.util.Date;
+
+import org.olat.core.id.Identity;
+import org.olat.resource.OLATResource;
 
 /**
  * 
- * Initial date: 6 juin 2018<br>
+ * Initial date: 1 nov. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumElementShort extends CurriculumElementRef, OLATResourceable {
+public interface GroupMembershipHistory {
 	
-	public String getDisplayName();
+	public Date getCreationDate();
+
+	public String getRole();
 	
-	public CurriculumElementManagedFlag[] getManagedFlags();
+	public GroupMembershipStatus getStatus();
 
-	@Override
-	default String getResourceableTypeName() {
-		return OresHelper.calculateTypeName(CurriculumElement.class);
-	}
 
-	@Override
-	default Long getResourceableId() {
-		return getKey();
-	}
+	public OLATResource getTransferOrigin();
+
+	public OLATResource getTransferDestination();
+
+	public Identity getCreator();
+	
+	
+	public String getNote();
+
+	public void setNote(String note);
+
+	public String getAdminNote();
+
+	public void setAdminNote(String adminNote);
+	
+
+	public Group getGroup();
+
+	public Identity getIdentity();
+
 }

@@ -432,7 +432,7 @@ public interface CurriculumService {
 	 * @param member The identity to make a member of
 	 * @param role The role of the member
 	 */
-	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role);
+	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor);
 	
 	/**
 	 * Remove a member of the curriculum element and discard all its roles.
@@ -440,7 +440,7 @@ public interface CurriculumService {
 	 * @param element The curriculum element
 	 * @param member The identity to remove
 	 */
-	public void removeMember(CurriculumElement element, IdentityRef member);
+	public void removeMember(CurriculumElement element, Identity member, Identity actor);
 	
 	/**
 	 * Remove the membership of a user with the specified role.
@@ -449,7 +449,7 @@ public interface CurriculumService {
 	 * @param member The identity which loose the membership
 	 * @param role The role
 	 */
-	public void removeMember(CurriculumElement element, IdentityRef member, CurriculumRoles role);
+	public void removeMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor);
 	
 	/**
 	 * Remove the members of the curriculum elements linked to the repository entry.<br>
@@ -458,7 +458,7 @@ public interface CurriculumService {
 	 * @param entry The repository entry
 	 * @param members The memberss
 	 */
-	public void removeMembers(CurriculumElement element, List<Identity> members, boolean overrideManaged);
+	public void removeMembers(CurriculumElement element, List<Identity> members, boolean overrideManaged, Identity actor);
 	
 	/**
 	 * The all list of repository entries hold by the specified curriculum element.

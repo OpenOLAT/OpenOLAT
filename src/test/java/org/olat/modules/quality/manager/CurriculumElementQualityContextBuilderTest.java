@@ -147,9 +147,9 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		repositoryTaxonomyDao.createRelation(entry, taxonomyLevelRepo);
 		dbInstance.commit();
 		
-		curriculumService.addMember(curriculumElement, executor, CurriculumRoles.participant);
-		curriculumService.addMember(curriculumElement, executor, CurriculumRoles.coach);
-		curriculumService.addMember(otherCurriculumElement, executor, CurriculumRoles.participant);
+		curriculumService.addMember(curriculumElement, executor, CurriculumRoles.participant, executor);
+		curriculumService.addMember(curriculumElement, executor, CurriculumRoles.coach, executor);
+		curriculumService.addMember(otherCurriculumElement, executor, CurriculumRoles.participant, executor);
 		dbInstance.commitAndCloseSession();
 
 		curriculumElement = curriculumService.getCurriculumElement(curriculumElement);

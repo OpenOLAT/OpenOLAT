@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,33 +14,29 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
-
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.resource.OresHelper;
+package org.olat.basesecurity;
 
 /**
  * 
- * Initial date: 6 juin 2018<br>
+ * Initial date: 1 nov. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumElementShort extends CurriculumElementRef, OLATResourceable {
+public enum GroupMembershipStatus {
 	
-	public String getDisplayName();
-	
-	public CurriculumElementManagedFlag[] getManagedFlags();
+	booking,
+	parent_booking,
+	transfer,
+	reservation,
+	active,
+	declined,
+	cancel,
+	cancelWithFee,
+	resourceDeleted,
+	finished,
+	removed;
 
-	@Override
-	default String getResourceableTypeName() {
-		return OresHelper.calculateTypeName(CurriculumElement.class);
-	}
-
-	@Override
-	default Long getResourceableId() {
-		return getKey();
-	}
 }

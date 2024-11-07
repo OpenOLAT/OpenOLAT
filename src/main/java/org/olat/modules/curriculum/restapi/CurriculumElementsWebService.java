@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -688,7 +690,7 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
 	@ApiResponse(responseCode = "409", description = "The role is not allowed")
 	public Response putMembers(@PathParam("curriculumElementKey") Long curriculumElementKey,
-			CurriculumElementMemberVO membership) {
+			CurriculumElementMemberVO membership, @Context HttpServletRequest httpRequest) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -705,7 +707,8 @@ public class CurriculumElementsWebService {
 		if(!CurriculumRoles.isValueOf(role)) {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
-		curriculumService.addMember(curriculumElement, identity, CurriculumRoles.valueOf(role));
+		Identity actor = getIdentity(httpRequest);
+		curriculumService.addMember(curriculumElement, identity, CurriculumRoles.valueOf(role), actor);
 		return Response.ok().build();
 	}
 	
@@ -724,7 +727,7 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
 	public Response deleteMembers(@PathParam("curriculumElementKey") Long curriculumElementKey,
-			@PathParam("identityKey") Long identityKey) {
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -736,8 +739,7 @@ public class CurriculumElementsWebService {
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		
-		curriculumService.removeMember(curriculumElement, identity);
+		curriculumService.removeMember(curriculumElement, identity, getIdentity(httpRequest));
 		return Response.ok().build();
 	}
 	
@@ -882,8 +884,9 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "200", description = "The membership was added")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
-	public Response putParticipant(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
-		return putMember(curriculumElementKey, identityKey, CurriculumRoles.participant);
+	public Response putParticipant(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return putMember(curriculumElementKey, identityKey, CurriculumRoles.participant, getIdentity(httpRequest));
 	}
 	
 	/**
@@ -900,8 +903,9 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "200", description = "The membership was added")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
-	public Response putCoach(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
-		return putMember(curriculumElementKey, identityKey, CurriculumRoles.coach);
+	public Response putCoach(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return putMember(curriculumElementKey, identityKey, CurriculumRoles.coach, getIdentity(httpRequest));
 	}
 	
 	/**
@@ -918,8 +922,9 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "200", description = "The membership was added")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
-	public Response putOwner(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
-		return putMember(curriculumElementKey, identityKey, CurriculumRoles.owner);
+	public Response putOwner(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return putMember(curriculumElementKey, identityKey, CurriculumRoles.owner, getIdentity(httpRequest));
 	}
 	
 	/**
@@ -936,8 +941,9 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "200", description = "The membership was added")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
-	public Response putCurriculumElementOwner(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
-		return putMember(curriculumElementKey, identityKey, CurriculumRoles.curriculumelementowner);
+	public Response putCurriculumElementOwner(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return putMember(curriculumElementKey, identityKey, CurriculumRoles.curriculumelementowner, getIdentity(httpRequest));
 	}
 	
 	/**
@@ -954,11 +960,12 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "200", description = "The membership was added")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
-	public Response putMasterCoach(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
-		return putMember(curriculumElementKey, identityKey, CurriculumRoles.mastercoach);
+	public Response putMasterCoach(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return putMember(curriculumElementKey, identityKey, CurriculumRoles.mastercoach, getIdentity(httpRequest));
 	}
 	
-	private Response putMember(Long curriculumElementKey, Long identityKey, CurriculumRoles role) {
+	private Response putMember(Long curriculumElementKey, Long identityKey, CurriculumRoles role, Identity actor) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -971,7 +978,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
-		curriculumService.addMember(curriculumElement, identity, role);
+		curriculumService.addMember(curriculumElement, identity, role, actor);
 		return Response.ok().build();
 	}
 	
@@ -995,8 +1002,9 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "404", description = "The curriculum element not found")
 	@ApiResponse(responseCode = "409", description = "The role is not allowed")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putParticipants(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] participants) {
-		return putMembers(curriculumElementKey, participants, CurriculumRoles.participant);
+	public Response putParticipants(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			UserVO[] participants, @Context HttpServletRequest httpRequest) {
+		return putMembers(curriculumElementKey, participants, CurriculumRoles.participant, getIdentity(httpRequest));
 	}
 	
 	/**
@@ -1015,8 +1023,9 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "404", description = "The curriculum element not found")
 	@ApiResponse(responseCode = "409", description = "The role is not allowed")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] coaches) {
-		return putMembers(curriculumElementKey, coaches, CurriculumRoles.coach);
+	public Response putCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			UserVO[] coaches, @Context HttpServletRequest httpRequest) {
+		return putMembers(curriculumElementKey, coaches, CurriculumRoles.coach, getIdentity(httpRequest));
 	}
 	
 	/**
@@ -1035,8 +1044,9 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "404", description = "The curriculum element not found")
 	@ApiResponse(responseCode = "409", description = "The role is not allowed")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putOwners(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] owners) {
-		return putMembers(curriculumElementKey, owners, CurriculumRoles.owner);
+	public Response putOwners(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			UserVO[] owners, @Context HttpServletRequest httpRequest) {
+		return putMembers(curriculumElementKey, owners, CurriculumRoles.owner, getIdentity(httpRequest));
 	}
 	
 	/**
@@ -1055,8 +1065,9 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "404", description = "The curriculum element not found")
 	@ApiResponse(responseCode = "409", description = "The role is not allowed")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putMasterCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] masterCoaches) {
-		return putMembers(curriculumElementKey, masterCoaches, CurriculumRoles.mastercoach);
+	public Response putMasterCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			UserVO[] masterCoaches, @Context HttpServletRequest httpRequest) {
+		return putMembers(curriculumElementKey, masterCoaches, CurriculumRoles.mastercoach, getIdentity(httpRequest));
 	}
 	
 	/**
@@ -1075,11 +1086,12 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "404", description = "The curriculum element not found")
 	@ApiResponse(responseCode = "409", description = "The role is not allowed")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putCurriculumManagers(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] coaches) {
-		return putMembers(curriculumElementKey, coaches, CurriculumRoles.curriculumelementowner);
+	public Response putCurriculumManagers(@PathParam("curriculumElementKey") Long curriculumElementKey,
+			UserVO[] coaches, @Context HttpServletRequest httpRequest) {
+		return putMembers(curriculumElementKey, coaches, CurriculumRoles.curriculumelementowner, getIdentity(httpRequest));
 	}
 	
-	private Response putMembers(Long curriculumElementKey, UserVO[] members, CurriculumRoles role) {
+	private Response putMembers(Long curriculumElementKey, UserVO[] members, CurriculumRoles role, Identity actor) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -1091,7 +1103,7 @@ public class CurriculumElementsWebService {
 		for(UserVO member:members) {
 			Identity identity = securityManager.loadIdentityByKey(member.getKey());
 			if(identity != null) {
-				curriculumService.addMember(curriculumElement, identity, role);
+				curriculumService.addMember(curriculumElement, identity, role, actor);
 			}
 		}
 		return Response.ok().build();
@@ -1112,8 +1124,8 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element not found")
 	public Response deleteParticipant(@PathParam("curriculumElementKey") Long curriculumElementKey,
-			@PathParam("identityKey") Long identityKey) {
-		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.participant);
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.participant, httpRequest);
 	}
 	
 	/**
@@ -1131,8 +1143,8 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element not found")
 	public Response deleteCoach(@PathParam("curriculumElementKey") Long curriculumElementKey,
-			@PathParam("identityKey") Long identityKey) {
-		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.coach);
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.coach, httpRequest);
 	}
 	
 	/**
@@ -1150,8 +1162,8 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element not found")
 	public Response deleteOwner(@PathParam("curriculumElementKey") Long curriculumElementKey,
-			@PathParam("identityKey") Long identityKey) {
-		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.owner);
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.owner, httpRequest);
 	}
 	
 	/**
@@ -1169,8 +1181,8 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element not found")
 	public Response deleteMasterCoach(@PathParam("curriculumElementKey") Long curriculumElementKey,
-			@PathParam("identityKey") Long identityKey) {
-		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.mastercoach);
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.mastercoach, httpRequest);
 	}
 	
 	/**
@@ -1188,11 +1200,11 @@ public class CurriculumElementsWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element not found")
 	public Response deleteCurriculumManager(@PathParam("curriculumElementKey") Long curriculumElementKey,
-			@PathParam("identityKey") Long identityKey) {
-		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.curriculumelementowner);
+			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
+		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.curriculumelementowner, httpRequest);
 	}
 	
-	private Response deleteMember(Long curriculumElementKey, Long identityKey, CurriculumRoles role) {
+	private Response deleteMember(Long curriculumElementKey, Long identityKey, CurriculumRoles role, HttpServletRequest httpRequest) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -1205,7 +1217,7 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		curriculumService.removeMember(curriculumElement, identity, role);
+		curriculumService.removeMember(curriculumElement, identity, role, getIdentity(httpRequest));
 		return Response.ok().build();
 	}
 	

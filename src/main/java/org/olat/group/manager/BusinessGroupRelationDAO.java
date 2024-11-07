@@ -109,13 +109,27 @@ public class BusinessGroupRelationDAO {
 		 return memberships.size() > 0;
 	}
 	
-	public Group getGroup(BusinessGroupRef businessGroup) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select baseGroup from businessgroup as bgroup ")
-		  .append(" inner join bgroup.baseGroup as baseGroup")
-		  .append(" where bgroup.key=:businessGroupKey");
+	public Group getGroup(BusinessGroup businessGroup) {
+		Group group = null;
+		try {
+			group = businessGroup.getBaseGroup();
+			if(group == null) {
+				group = getBaseGroup(businessGroup);
+			}
+		} catch(Exception e) {
+			log.warn("", e);
+			group = getBaseGroup(businessGroup);
+		}
+		return group;
+	}
+	
+	private Group getBaseGroup(BusinessGroupRef businessGroup) {
+		String sb = """
+			select baseGroup from businessgroup as bgroup
+			inner join bgroup.baseGroup as baseGroup
+			where bgroup.key=:businessGroupKey""";
 
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Group.class)
+		return dbInstance.getCurrentEntityManager().createQuery(sb, Group.class)
 				.setParameter("businessGroupKey", businessGroup.getKey())
 				.getSingleResult();
 	}

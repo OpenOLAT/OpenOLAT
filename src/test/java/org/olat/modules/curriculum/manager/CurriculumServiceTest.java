@@ -150,7 +150,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element, publishedEntry, false);
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, author);
 		dbInstance.commitAndCloseSession();
 
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
@@ -193,7 +193,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element1, publishedEntry, false);
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
-		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element1, participant, CurriculumRoles.participant, author);
 		dbInstance.commitAndCloseSession();
 
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
@@ -227,7 +227,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element2, entry, false);
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
-		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element1, participant, CurriculumRoles.participant, author);
 		dbInstance.commitAndCloseSession();
 
 		List<CurriculumElement> myElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.values());
@@ -252,9 +252,10 @@ public class CurriculumServiceTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
+		Identity actor = JunitTestHelper.getDefaultActor();
 		RepositoryEntry entry = qualityTestHelper.createFormEntry();
 		Organisation organisation = organisationService.getDefaultOrganisation();
-		QualityDataCollection dataCollection = qualityService.createDataCollection(Collections.singletonList(organisation), entry);
+		QualityDataCollection dataCollection = qualityService.createDataCollection(List.of(organisation), entry);
 		dataCollection.setTopicCurriculumElement(element1);
 		qualityService.updateDataCollection(dataCollection);
 		dbInstance.commit();
@@ -262,7 +263,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element2, entry, false);
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
-		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element1, participant, CurriculumRoles.participant, actor);
 		dbInstance.commitAndCloseSession();
 
 		List<CurriculumElement> myElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.values());
@@ -292,7 +293,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
-
+		Identity actor = JunitTestHelper.getDefaultActor();
 		RepositoryEntry entry = qualityTestHelper.createFormEntry();
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		QualityDataCollection dataCollection = qualityService.createDataCollection(Collections.singletonList(organisation), entry);
@@ -303,7 +304,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element2, entry, false);
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
-		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element1, participant, CurriculumRoles.participant, actor);
 		dbInstance.commitAndCloseSession();
 
 		List<CurriculumElement> myElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.values());

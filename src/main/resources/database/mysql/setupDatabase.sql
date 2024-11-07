@@ -59,6 +59,21 @@ create table o_bs_group_member (
    primary key (id)
 );
 
+create table o_bs_group_member_history (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  g_role varchar(24) not null,
+  g_status varchar(32) not null,
+  g_note varchar(2000),
+  g_admin_note varchar(2000),
+  fk_transfer_origin_id bigint,
+  fk_transfer_destination_id bigint,
+  fk_creator_id bigint,
+  fk_group_id bigint not null,
+  fk_identity_id bigint not null,
+  primary key (id)
+);
+
 create table o_bs_grant (
    id bigint not null,
    creationdate datetime not null,
@@ -1183,6 +1198,7 @@ create table  if not exists o_ac_reservation (
    version mediumint unsigned not null,
    expirationdate datetime,
    reservationtype varchar(32),
+   userconfirmable bool not null default true,
    fk_identity bigint not null,
    fk_resource bigint not null,
    primary key (reservation_id)
@@ -3924,6 +3940,7 @@ create table o_cur_curriculum_element (
   c_lectures varchar(16),
   c_learning_progress varchar(16),
   fk_group bigint not null,
+  fk_resource bigint,
   fk_parent bigint,
   fk_curriculum bigint not null,
   fk_curriculum_parent bigint,
@@ -4783,6 +4800,7 @@ alter table o_property ENGINE = InnoDB;
 alter table o_bs_secgroup ENGINE = InnoDB;
 alter table o_bs_group ENGINE = InnoDB;
 alter table o_bs_group_member ENGINE = InnoDB;
+alter table o_bs_group_member_history ENGINE = InnoDB;
 alter table o_bs_relation_role ENGINE = InnoDB;
 alter table o_bs_relation_right ENGINE = InnoDB;
 alter table o_bs_relation_role_to_right ENGINE = InnoDB;
@@ -5112,10 +5130,18 @@ alter table o_bs_group_member add constraint member_identity_ctx foreign key (fk
 alter table o_bs_group_member add constraint member_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 create index group_role_member_idx on o_bs_group_member (fk_group_id,g_role,fk_identity_id);
 
+alter table o_gp_business add constraint gp_to_group_business_ctx foreign key (fk_group_id) references o_bs_group (id);
+
+alter table o_bs_group_member_history add constraint hist_transfer_origin_idx foreign key (fk_transfer_origin_id) references o_olatresource (resource_id);
+alter table o_bs_group_member_history add constraint hist_transfer_dest_idx foreign key (fk_transfer_destination_id) references o_olatresource (resource_id);
+
+alter table o_bs_group_member_history add constraint hist_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
+alter table o_bs_group_member_history add constraint hist_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+
+alter table o_bs_group_member_history add constraint history_group_idx foreign key (fk_group_id) references o_bs_group (id);
+
 alter table o_re_to_group add constraint re_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 alter table o_re_to_group add constraint re_to_group_re_ctx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
-
-alter table o_gp_business add constraint gp_to_group_business_ctx foreign key (fk_group_id) references o_bs_group (id);
 
 -- business group
 alter table o_gp_business add constraint idx_bgp_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
@@ -5945,6 +5971,7 @@ alter table o_cur_curriculum_element add constraint cur_el_to_group_idx foreign 
 alter table o_cur_curriculum_element add constraint cur_el_to_cur_el_idx foreign key (fk_parent) references o_cur_curriculum_element (id);
 alter table o_cur_curriculum_element add constraint cur_el_to_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
 alter table o_cur_curriculum_element add constraint cur_el_type_to_el_type_idx foreign key (fk_type) references o_cur_element_type (id);
+alter table o_cur_curriculum_element add constraint cur_el_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);
 
 alter table o_cur_element_type_to_type add constraint cur_type_to_type_idx foreign key (fk_type) references o_cur_element_type (id);
 alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_cur_element_type (id);

@@ -332,8 +332,8 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 		// Restrict to a single curriculum element
 		CurriculumElementWhiteListController.setCurriculumElementRefs(configs, Collections.singletonList(curriculumElement));
 		
-		curriculumService.addMember(curriculumElement, JunitTestHelper.createAndPersistIdentityAsUser(random()), CurriculumRoles.coach);
-		curriculumService.addMember(curriculumElement, JunitTestHelper.createAndPersistIdentityAsUser(random()), CurriculumRoles.coach);
+		curriculumService.addMember(curriculumElement, JunitTestHelper.createAndPersistIdentityAsUser(random()), CurriculumRoles.coach, null);
+		curriculumService.addMember(curriculumElement, JunitTestHelper.createAndPersistIdentityAsUser(random()), CurriculumRoles.coach, null);
 		
 		dbInstance.commitAndCloseSession();
 		return configs;

@@ -633,7 +633,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(element, entry, false);
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, teacher);
 		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
 		dbInstance.commitAndCloseSession();
 
@@ -677,6 +677,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	
 	@Test
 	public void searchCurriculumElements_byMasterCoach() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("masterCoach-23");
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-23a");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-23b");
@@ -691,9 +692,9 @@ public class LectureBlockDAOTest extends OlatTestCase {
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commit();
-		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach);
-		curriculumService.addMember(element, participant1, CurriculumRoles.participant);
-		curriculumService.addMember(element, participant2, CurriculumRoles.participant);
+		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach, actor);
+		curriculumService.addMember(element, participant1, CurriculumRoles.participant, actor);
+		curriculumService.addMember(element, participant2, CurriculumRoles.participant, actor);
 		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
 		dbInstance.commitAndCloseSession();
 
@@ -727,8 +728,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commit();
 		organisationService.addMember(curOrganisation, lectureManager, OrganisationRoles.lecturemanager);
-		curriculumService.addMember(element, participant1, CurriculumRoles.participant);
-		curriculumService.addMember(element, participant2, CurriculumRoles.participant);
+		curriculumService.addMember(element, participant1, CurriculumRoles.participant, lectureManager);
+		curriculumService.addMember(element, participant2, CurriculumRoles.participant, lectureManager);
 		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
 		dbInstance.commitAndCloseSession();
 
@@ -1123,6 +1124,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	
 	@Test
 	public void isMasterCoach() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("master-coach-3");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-mc-4");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -1137,8 +1139,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commit();
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
-		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, actor);
+		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach, actor);
 		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
 		dbInstance.commitAndCloseSession();
 
@@ -1152,6 +1154,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getMasterCoaches() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("master-coach-1");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-mc-2");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -1166,8 +1169,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commit();
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
-		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, actor);
+		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach, actor);
 		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
 		dbInstance.commitAndCloseSession();
 

@@ -28,6 +28,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -43,6 +44,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_20.0.0";
 
 	private static final String UPDATE_CURRICULUM_ELEMENT = "UPDATE CURRICULUM ELEMENT";
+	private static final String UPDATE_CURRICULUM_ELEMENT_RESOURCE = "UPDATE CURRICULUM ELEMENT RESOURCE";
 	
 	private static final int BATCH_SIZE = 1000;
 	
@@ -50,6 +52,8 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 
 	public OLATUpgrade_20_0_0() {
 		super();
@@ -72,6 +76,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 
 		boolean allOk = true;
 		allOk &= updateCurriculumElement(upgradeManager, uhd);
+		allOk &= updateCurriculumElementResource(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -136,10 +141,55 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
+	private boolean updateCurriculumElementResource(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(UPDATE_CURRICULUM_ELEMENT_RESOURCE)) {
+			try {
+
+				log.info("Start add resource to curriculum elements.");
+
+				int counter = 0;
+				int newResources = 0;
+				List<CurriculumElement> elements;
+				do {
+					elements = getCurriculumElements(counter, BATCH_SIZE);
+					if(!elements.isEmpty()) {
+						for(int i=0; i<elements.size(); i++) {
+							CurriculumElement element = elements.get(i);
+							if(element.getResource() == null) {
+								curriculumElementDao.createResource(element);
+								curriculumService.updateCurriculumElement(element);
+								newResources++;
+							}
+							
+							if(i % 25 == 0) {
+								dbInstance.commitAndCloseSession();
+							}
+						}
+						counter += elements.size();
+						log.info(Tracing.M_AUDIT, "Check resource of {} curriculum elements", counter);
+					}
+					dbInstance.commitAndCloseSession();
+				} while (!elements.isEmpty());
+				
+				log.info("Add resource to {} curriculum elements.", newResources);
+		
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+		
+			uhd.setBooleanDataValue(UPDATE_CURRICULUM_ELEMENT_RESOURCE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
 	private List<CurriculumElement> getCurriculumElements(int offset, int maxResults) {
 		String query = """
 				select el from curriculumelement el
 				left join fetch el.type curElementType
+				left join fetch el.resource curElRes
 				order by el.key""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, CurriculumElement.class)
@@ -147,5 +197,4 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
-	
 }

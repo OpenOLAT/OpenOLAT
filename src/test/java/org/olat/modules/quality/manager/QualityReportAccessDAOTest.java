@@ -439,8 +439,8 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		repositoryService.addRole(executor, entryNoParticipation, executorRole.name());
 		// Report Viewer is member of the curriculum element
 		CurriculumElement element = qualityTestHelper.createCurriculumElement();
-		curriculumService.addMember(element, reportViewerElement, CurriculumRoles.owner);
-		curriculumService.addMember(element, executor, CurriculumRoles.participant);
+		curriculumService.addMember(element, reportViewerElement, CurriculumRoles.owner, executor);
+		curriculumService.addMember(element, executor, CurriculumRoles.participant, executor);
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
 		qualityService.createContextBuilder(dc, participations.get(0), element, CurriculumRoles.participant).build();
 		

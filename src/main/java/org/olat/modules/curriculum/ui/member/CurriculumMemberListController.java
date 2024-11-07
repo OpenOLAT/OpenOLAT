@@ -506,7 +506,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 		List<CurriculumElement> elements = Collections.singletonList(curriculumElement);
 		elements = curriculumService.filterElementsWithoutManagerRole(elements, roles);
 		for(CurriculumElement element:elements) {
-			curriculumService.removeMembers(element, members, overrideManaged);
+			curriculumService.removeMembers(element, members, overrideManaged, getIdentity());
 		}
 		reloadModel();
 		dbInstance.commitAndCloseSession();

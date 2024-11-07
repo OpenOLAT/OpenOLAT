@@ -169,10 +169,11 @@ public class ExampleData extends OlatTestCase {
 	
 	private void createCurriculum(Organisation org, Parameter param) {
 		Curriculum cur = createIfNotExists(new CurriculumInput(param.getName(), param.getIdentifier(), org));
+		Identity actor = JunitTestHelper.getDefaultActor();
 
 		Collection<Identity> participants = createIdentities(param.getMinNumberParticipants(), param.getMaxNumberParticipants());
 		for (int i = 1; i <= param.getNumberLevel1(); i++) {
-			createCurriculumElementLevel1(cur, param, participants, i);
+			createCurriculumElementLevel1(cur, param, participants, i, actor);
 		}
 	}
 	
@@ -187,38 +188,41 @@ public class ExampleData extends OlatTestCase {
 		return identities;
 	}
 	
-	private void createCurriculumElementLevel1(Curriculum cur, Parameter param, Collection<Identity> participants, int index) {
+	private void createCurriculumElementLevel1(Curriculum cur, Parameter param,
+			Collection<Identity> participants, int index, Identity actor) {
 		String name = cur.getDisplayName() + " " + param.getNameLevel1() + index;
 		String identifier = cur.getIdentifier() + param.getIdentifierDelim() + param.getIdentifierLevel1() + index;
 		CurriculumElement element = createIfNotExists("", new CurriculumElementInput(name, identifier, cur, null));
 		
 		for (int i = 1; i <= param.getNumberLevel2(); i++) {
-			createCurriculumElementLevel2(element, param, participants, i);
+			createCurriculumElementLevel2(element, param, participants, i, actor);
 		}
 	}
 	
-	private void createCurriculumElementLevel2(CurriculumElement parent, Parameter param, Collection<Identity> participants, int index) {
+	private void createCurriculumElementLevel2(CurriculumElement parent, Parameter param,
+			Collection<Identity> participants, int index, Identity actor) {
 		String name = parent.getDisplayName() + " " + param.getNameLevel2() + index;
 		String identifier = parent.getIdentifier() + param.getIdentifierDelim() + param.getIdentifierLevel2() + index;
 		CurriculumElement element = createIfNotExists("", new CurriculumElementInput(name, identifier, parent.getCurriculum(), parent));
 		
 		for (int i = 1; i <= param.getNumberLevel3(); i++) {
-			createCurriculumElementLevel3(element, param, participants, i);
+			createCurriculumElementLevel3(element, param, participants, i, actor);
 		}
 	}
 	
-	private void createCurriculumElementLevel3(CurriculumElement parent, Parameter param, Collection<Identity> participants, int index) {
+	private void createCurriculumElementLevel3(CurriculumElement parent, Parameter param,
+			Collection<Identity> participants, int index, Identity actor) {
 		String name = parent.getDisplayName() + " " + param.getNameLevel3() + index;
 		String identifier = parent.getIdentifier() + param.getIdentifierDelim() + param.getIdentifierLevel3() + index;
 		CurriculumElement element = createIfNotExists("", new CurriculumElementInput(name, identifier, parent.getCurriculum(), parent));
 		
 		for (Identity identity: participants) {
 			curriculumService.addMember(element.getCurriculum(), identity, CurriculumRoles.participant);
-			curriculumService.addMember(element, identity, CurriculumRoles.participant);
+			curriculumService.addMember(element, identity, CurriculumRoles.participant, actor);
 		}
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gen");
 		curriculumService.addMember(element.getCurriculum(), coach, CurriculumRoles.coach);
-		curriculumService.addMember(element, coach, CurriculumRoles.coach);
+		curriculumService.addMember(element, coach, CurriculumRoles.coach, actor);
 		
 		for (int i = 0; i < param.getNumberCourses(); i++) {
 			Identity admin = JunitTestHelper.findIdentityByLogin("administrator");

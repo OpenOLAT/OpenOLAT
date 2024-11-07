@@ -82,6 +82,8 @@ public class ResourceReservationImpl implements CreateInfo, Persistable, Resourc
 	private Date expirationDate;
 	@Column(name="reservationtype", nullable=true, insertable=true, updatable=true)
 	private String type;
+	@Column(name="userconfirmable", nullable=false, insertable=true, updatable=true)
+	private Boolean userConfirmable;
 
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
@@ -152,6 +154,15 @@ public class ResourceReservationImpl implements CreateInfo, Persistable, Resourc
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	@Override
+	public Boolean getUserConfirmable() {
+		return userConfirmable;
+	}
+
+	public void setUserConfirmable(Boolean userConfirmable) {
+		this.userConfirmable = userConfirmable;
 	}
 
 	@Override

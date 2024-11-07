@@ -923,8 +923,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 				curriculum);
 		dbInstance.commit();
 		curriculumService.addRepositoryEntry(element, entry, false);
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
-		curriculumService.addMember(element, coach, CurriculumRoles.coach);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, author);
+		curriculumService.addMember(element, coach, CurriculumRoles.coach, author);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
@@ -969,8 +969,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 				curriculum);
 		dbInstance.commit();
 		curriculumService.addRepositoryEntry(element, entry, false);
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
-		curriculumService.addMember(element, coach, CurriculumRoles.coach);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, author);
+		curriculumService.addMember(element, coach, CurriculumRoles.coach, author);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
@@ -1197,8 +1197,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 				curriculum);
 		dbInstance.commit();
 		curriculumService.addRepositoryEntry(element, entry, false);
-		curriculumService.addMember(element, participant1, CurriculumRoles.participant);
-		curriculumService.addMember(element, coach1, CurriculumRoles.coach);
+		curriculumService.addMember(element, participant1, CurriculumRoles.participant, author);
+		curriculumService.addMember(element, coach1, CurriculumRoles.coach, author);
 		dbInstance.commitAndCloseSession();
 		
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-23");
@@ -1245,10 +1245,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		curriculumService.addRepositoryEntry(element1, entry, false);
 		curriculumService.addRepositoryEntry(element2, entry, false);
-		curriculumService.addMember(element1, participant1, CurriculumRoles.participant);
-		curriculumService.addMember(element2, participant2, CurriculumRoles.participant);
-		curriculumService.addMember(element1, coach1, CurriculumRoles.coach);
-		curriculumService.addMember(element2, coach1, CurriculumRoles.coach);
+		curriculumService.addMember(element1, participant1, CurriculumRoles.participant, author);
+		curriculumService.addMember(element2, participant2, CurriculumRoles.participant, author);
+		curriculumService.addMember(element1, coach1, CurriculumRoles.coach, author);
+		curriculumService.addMember(element2, coach1, CurriculumRoles.coach, author);
 		dbInstance.commitAndCloseSession();
 		
 		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-23");

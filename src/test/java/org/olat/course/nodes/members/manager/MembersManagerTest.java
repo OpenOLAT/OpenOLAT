@@ -101,7 +101,7 @@ public class MembersManagerTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, entry, false);
 
 		Identity curriculumElementOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-2b");
-		curriculumService.addMember(element, curriculumElementOwner, CurriculumRoles.owner);
+		curriculumService.addMember(element, curriculumElementOwner, CurriculumRoles.owner, author);
 		
 		List<Long> ownersKeys = membersManager.getOwnersKeys(entry);
 		Assert.assertEquals(2, ownersKeys.size());
@@ -229,9 +229,9 @@ public class MembersManagerTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, entry, false);
 
 	    Identity part4 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-17");
-		curriculumService.addMember(element, part4, CurriculumRoles.participant);
+		curriculumService.addMember(element, part4, CurriculumRoles.participant, author);
 	    Identity part5 = JunitTestHelper.createAndPersistIdentityAsRndUser("mem-p-18");
-		curriculumService.addMember(element, part5, CurriculumRoles.participant);
+		curriculumService.addMember(element, part5, CurriculumRoles.participant, author);
 		
 	    dbInstance.commitAndCloseSession();
 		

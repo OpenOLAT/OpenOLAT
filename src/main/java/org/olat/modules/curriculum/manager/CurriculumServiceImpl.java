@@ -39,11 +39,13 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.basesecurity.manager.GroupMembershipHistoryDAO;
 import org.olat.basesecurity.model.IdentityToRoleKey;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
@@ -154,6 +156,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private LectureBlockToGroupDAO lectureBlockToGroupDao;
 	@Autowired
 	private RepositoryEntryMyCourseQueries myCourseQueries;
+	@Autowired
+	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -547,6 +551,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		for(CurriculumDataDeletable deleteDelegate:deleteDelegates.values()) {
 			delete &= deleteDelegate.deleteCurriculumElementData(reloadedElement);
 		}
+		
+		groupMembershipHistoryDao.deleteMembershipHistory(reloadedElement.getGroup());
 
 		if(delete) {
 			curriculumElementDao.deleteCurriculumElement(reloadedElement);
@@ -793,7 +799,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		int count = 0;
 		for(CurriculumElementMembershipChange change:changes) {
-			updateCurriculumElementMembership(change);
+			updateCurriculumElementMembership(change, doer);
 			if(++count % 100 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
@@ -826,71 +832,73 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 	}
 	
-	private void updateCurriculumElementMembership(CurriculumElementMembershipChange changes) {
+	private void updateCurriculumElementMembership(CurriculumElementMembershipChange changes, Identity actor) {
 		CurriculumElement element = changes.getElement();
 		
 		if(changes.getCurriculumElementOwner() != null) {
 			if(changes.getCurriculumElementOwner().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner);
+				addMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner, actor);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner);
+				removeMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner, actor);
 			}
 		}
 		
 		if(changes.getMasterCoach() != null) {
 			if(changes.getMasterCoach().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.mastercoach);
+				addMember(element, changes.getMember(), CurriculumRoles.mastercoach, actor);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.mastercoach);
+				removeMember(element, changes.getMember(), CurriculumRoles.mastercoach, actor);
 			}
 		}
 		
 		if(changes.getRepositoryEntryOwner() != null) {
 			if(changes.getRepositoryEntryOwner().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.owner);
+				addMember(element, changes.getMember(), CurriculumRoles.owner, actor);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.owner);
+				removeMember(element, changes.getMember(), CurriculumRoles.owner, actor);
 			}
 		}
 
 		if(changes.getCoach() != null) {
 			if(changes.getCoach().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.coach);
+				addMember(element, changes.getMember(), CurriculumRoles.coach, actor);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.coach);
+				removeMember(element, changes.getMember(), CurriculumRoles.coach, actor);
 			}
 		}
 
 		if(changes.getParticipant() != null) {
 			if(changes.getParticipant().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.participant);
+				addMember(element, changes.getMember(), CurriculumRoles.participant, actor);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.participant);
+				removeMember(element, changes.getMember(), CurriculumRoles.participant, actor);
 			}
 		}
 	}
 
 	@Override
-	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role) {
+	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor) {
 		GroupMembershipInheritance inheritanceMode;
 		if(CurriculumRoles.isInheritedByDefault(role)) {
 			inheritanceMode = GroupMembershipInheritance.root;
 		} else {
 			inheritanceMode = GroupMembershipInheritance.none;
 		}
-		addMember(element, member, role, inheritanceMode);
+		addMember(element, member, role, inheritanceMode, actor);
 		dbInstance.commit();
 	}
 	
-	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, GroupMembershipInheritance inheritanceMode) {
+	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, GroupMembershipInheritance inheritanceMode, Identity actor) {
 		if(inheritanceMode == GroupMembershipInheritance.inherited) {
 			throw new AssertException("Inherited are automatic");
 		}
 		
 		List<CurriculumElementMembershipEvent> events = new ArrayList<>();
-		GroupMembership membership = groupDao.getMembership(element.getGroup(), member, role.name());
+		Group elementGroup = element.getGroup();
+		GroupMembership membership = groupDao.getMembership(elementGroup, member, role.name());
 		if(membership == null) {
-			groupDao.addMembershipOneWay(element.getGroup(), member, role.name(), inheritanceMode);
+			groupDao.addMembershipOneWay(elementGroup, member, role.name(), inheritanceMode);
+			groupMembershipHistoryDao.createMembershipHistory(elementGroup, member, role.name(), GroupMembershipStatus.active, null, null, actor);
 			events.add(CurriculumElementMembershipEvent.identityAdded(element, member, role));
 		} else if(membership.getInheritanceMode() != inheritanceMode) {
 			groupDao.updateInheritanceMode(membership, inheritanceMode);
@@ -899,9 +907,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(inheritanceMode == GroupMembershipInheritance.root) {
 			List<CurriculumElement> descendants = curriculumElementDao.getDescendants(element);
 			for(CurriculumElement descendant:descendants) {
-				GroupMembership inheritedMembership = groupDao.getMembership(descendant.getGroup(), member, role.name());
+				Group descendantGroup = descendant.getGroup();
+				GroupMembership inheritedMembership = groupDao.getMembership(descendantGroup, member, role.name());
 				if(inheritedMembership == null) {
-					groupDao.addMembershipOneWay(descendant.getGroup(), member, role.name(), GroupMembershipInheritance.inherited);
+					groupDao.addMembershipOneWay(descendantGroup, member, role.name(), GroupMembershipInheritance.inherited);
 					events.add(CurriculumElementMembershipEvent.identityAdded(element, member, role));
 				} else if(inheritedMembership.getInheritanceMode() == GroupMembershipInheritance.none) {
 					groupDao.updateInheritanceMode(inheritedMembership, GroupMembershipInheritance.inherited);
@@ -914,11 +923,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public void removeMember(CurriculumElement element, IdentityRef member) {
+	public void removeMember(CurriculumElement element, Identity member, Identity actor) {
 		List<CurriculumElementMembershipEvent> events = new ArrayList<>();
 
-		List<GroupMembership> memberships = groupDao.getMemberships(element.getGroup(), member);
-		groupDao.removeMembership(element.getGroup(), member);
+		Group elementGroup = element.getGroup();
+		List<GroupMembership> memberships = groupDao.getMemberships(elementGroup, member);
+		groupDao.removeMembership(elementGroup, member);
+		groupMembershipHistoryDao.createMembershipHistory(elementGroup, member,
+				GroupRoles.owner.name(), GroupMembershipStatus.removed, null, null, actor);
 		
 		CurriculumElementNode elementNode = null;
 		for(GroupMembership membership:memberships) {
@@ -965,11 +977,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public void removeMember(CurriculumElement element, IdentityRef member, CurriculumRoles role) {
+	public void removeMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor) {
+		Group elementGroup = element.getGroup();
 		List<CurriculumElementMembershipEvent> events = new ArrayList<>();
-		GroupMembership membership = groupDao.getMembership(element.getGroup(), member, role.name());
-		
-		groupDao.removeMembership(element.getGroup(), member, role.name());
+		GroupMembership membership = groupDao.getMembership(elementGroup, member, role.name());
+		groupDao.removeMembership(elementGroup, member, role.name());
+		groupMembershipHistoryDao.createMembershipHistory(elementGroup, member,
+				role.name(), GroupMembershipStatus.removed, null, null, actor);
 		events.add(CurriculumElementMembershipEvent.identityRemoved(element, member, role));
 		
 		if(membership != null && (membership.getInheritanceMode() == GroupMembershipInheritance.root
@@ -988,7 +1002,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public void removeMembers(CurriculumElement element, List<Identity> members, boolean overrideManaged) {
+	public void removeMembers(CurriculumElement element, List<Identity> members, boolean overrideManaged, Identity actor) {
 		List<CurriculumElementMembershipEvent> events = new ArrayList<>();
 		if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.members) || overrideManaged) {
 			for(Identity member:members) {

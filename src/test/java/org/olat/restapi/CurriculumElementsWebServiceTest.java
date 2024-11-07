@@ -874,6 +874,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getMemberships()
 	throws IOException, URISyntaxException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-1");
 
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 5", "REST-p-5-organisation", "", defaultUnitTestOrganisation, null);
@@ -886,7 +887,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		curriculumService.addMember(element, member, CurriculumRoles.participant);
+		curriculumService.addMember(element, member, CurriculumRoles.participant, actor);
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -906,6 +907,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getUsers()
 	throws IOException, URISyntaxException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-6");
 		
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 8", "REST-p-8-organisation", "", defaultUnitTestOrganisation, null);
@@ -918,7 +920,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		curriculumService.addMember(element, member, CurriculumRoles.participant);
+		curriculumService.addMember(element, member, CurriculumRoles.participant, actor);
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -937,6 +939,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getUsers_curriculumElementOwners()
 	throws IOException, URISyntaxException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-6");
 		
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 8", "REST-p-8-organisation", "", defaultUnitTestOrganisation, null);
@@ -949,7 +952,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		curriculumService.addMember(element, member, CurriculumRoles.curriculumelementowner);
+		curriculumService.addMember(element, member, CurriculumRoles.curriculumelementowner, actor);
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -969,6 +972,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getParticipants()
 	throws IOException, URISyntaxException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-7");
 		
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 9", "REST-p-9-organisation", "", defaultUnitTestOrganisation, null);
@@ -981,7 +985,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		curriculumService.addMember(element, member, CurriculumRoles.participant);
+		curriculumService.addMember(element, member, CurriculumRoles.participant, actor);
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -1000,6 +1004,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getCoaches()
 	throws IOException, URISyntaxException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-10");
 		
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 10", "REST-p-10-organisation", "", defaultUnitTestOrganisation, null);
@@ -1012,7 +1017,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		curriculumService.addMember(element, member, CurriculumRoles.coach);
+		curriculumService.addMember(element, member, CurriculumRoles.coach, actor);
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -1031,6 +1036,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getMasterCoaches()
 	throws IOException, URISyntaxException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-10");
 		
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 10", "REST-p-10-organisation", "", defaultUnitTestOrganisation, null);
@@ -1043,7 +1049,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		curriculumService.addMember(element, member, CurriculumRoles.mastercoach);
+		curriculumService.addMember(element, member, CurriculumRoles.mastercoach, actor);
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -1062,6 +1068,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getCurriculumOwners()
 	throws IOException, URISyntaxException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-10");
 		
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 10", "REST-p-10-organisation", "", defaultUnitTestOrganisation, null);
@@ -1074,7 +1081,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 		
-		curriculumService.addMember(element, member, CurriculumRoles.curriculumelementowner);
+		curriculumService.addMember(element, member, CurriculumRoles.curriculumelementowner, actor);
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -1320,7 +1327,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void removeMembership()
 	throws IOException, URISyntaxException {
-		
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-1");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 5", "REST-p-5-organisation", "", defaultUnitTestOrganisation, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elements", false, organisation);
@@ -1332,7 +1339,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 
-		curriculumService.addMember(element, member, CurriculumRoles.participant);
+		curriculumService.addMember(element, member, CurriculumRoles.participant, actor);
 		dbInstance.commitAndCloseSession();
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -1352,7 +1359,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void removeParticipant()
 	throws IOException, URISyntaxException {
-		
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-21");
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-22");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 21", "REST-p-21-organisation", "", defaultUnitTestOrganisation, null);
@@ -1365,8 +1372,8 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
-		curriculumService.addMember(element, coach, CurriculumRoles.coach);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, actor);
+		curriculumService.addMember(element, coach, CurriculumRoles.coach, actor);
 		dbInstance.commitAndCloseSession();
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -1386,6 +1393,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void removeCoach()
 	throws IOException, URISyntaxException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-23");
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-24");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 24", "REST-p-24-organisation", "", defaultUnitTestOrganisation, null);
@@ -1398,8 +1406,8 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
-		curriculumService.addMember(element, coach, CurriculumRoles.coach);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, actor);
+		curriculumService.addMember(element, coach, CurriculumRoles.coach, actor);
 		dbInstance.commitAndCloseSession();
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
@@ -1419,6 +1427,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void removeMasterCoach()
 	throws IOException, URISyntaxException {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-30");
 		Identity mastercoach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-31");
 		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 32", "REST-p-32-organisation", "", defaultUnitTestOrganisation, null);
@@ -1431,8 +1440,8 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(defaultUnitTestAdministrator));
 
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
-		curriculumService.addMember(element, mastercoach, CurriculumRoles.mastercoach);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, actor);
+		curriculumService.addMember(element, mastercoach, CurriculumRoles.mastercoach, actor);
 		dbInstance.commitAndCloseSession();
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())

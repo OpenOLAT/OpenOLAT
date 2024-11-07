@@ -153,6 +153,7 @@ import org.junit.runners.Suite;
 	org.olat.basesecurity.manager.AuthenticationDAOTest.class,
 	org.olat.basesecurity.manager.AuthenticationHistoryDAOTest.class,
 	org.olat.basesecurity.manager.GroupDAOTest.class,
+	org.olat.basesecurity.manager.GroupMembershipHistoryDAOTest.class,
 	org.olat.basesecurity.manager.IdentityDAOTest.class,
 	org.olat.basesecurity.manager.RelationRightDAOTest.class,
 	org.olat.basesecurity.manager.RelationRoleDAOTest.class,

@@ -26,11 +26,11 @@ import java.util.Set;
 
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.UserTableDataModel;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
-import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -98,6 +98,8 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -256,7 +258,8 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		for(CurriculumMemberRow memberToRemove:membersToRemove) {
 			if(CurriculumRoles.isValueOf(memberToRemove.getRole())) {
 				CurriculumRoles role = CurriculumRoles.valueOf(memberToRemove.getRole());
-				curriculumService.removeMember(curriculumElement, new IdentityRefImpl(memberToRemove.getIdentityKey()), role);
+				Identity member = securityManager.loadIdentityByKey(memberToRemove.getIdentityKey());
+				curriculumService.removeMember(curriculumElement, member, role, getIdentity());
 			}
 		}
 		loadModel(true);
@@ -294,7 +297,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	
 	private void doAddMember(List<Identity> identitiesToAdd, CurriculumRoles role) {
 		for(Identity identityToAdd:identitiesToAdd) {
-			curriculumService.addMember(curriculumElement, identityToAdd, role);
+			curriculumService.addMember(curriculumElement, identityToAdd, role, getIdentity());
 		}
 		loadModel(true);
 	}

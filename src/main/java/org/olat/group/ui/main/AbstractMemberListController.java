@@ -851,7 +851,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			List<CurriculumElement> elements = curriculumService.getCurriculumElements(repoEntry);
 			elements = curriculumService.filterElementsWithoutManagerRole(elements, roles);
 			for(CurriculumElement element:elements) {
-				curriculumService.removeMembers(element, members, overrideManaged);
+				curriculumService.removeMembers(element, members, overrideManaged, getIdentity());
 			}
 			businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource(), mailing, overrideManaged);
 			repositoryManager.removeMembers(getIdentity(), members, repoEntry, mailing);

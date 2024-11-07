@@ -21,7 +21,6 @@ package org.olat.group.manager;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -36,10 +35,12 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.basesecurity.manager.GroupMembershipHistoryDAO;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.commons.info.InfoMessage;
@@ -53,6 +54,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailPackage;
@@ -140,6 +142,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private BusinessGroupQueries businessGroupQueries;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDAO;
+	@Autowired
+	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
@@ -817,25 +821,30 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			}
 
 			if(mustAccept) {
-				ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, group.getResource());
-				if(olderReservation == null) {
-					Calendar cal = Calendar.getInstance();
-					cal.add(Calendar.MONTH, 6);
-					Date expiration = cal.getTime();
-					ResourceReservation reservation =
-							reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_COACH, expiration, group.getResource());
-					if(reservation != null) {
-						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addCoach, mailing);
-						// logging
-						log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to group with key {}",
-							ureqIdentity.getKey(), identityToAdd.getKey(), group.getKey());
-					}
+				if(internalAddCoachReservation(identityToAdd, group, ureqIdentity)) {
+					BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addCoach, mailing);
 				}
 			} else {
 				internalAddCoach(ureqIdentity, identityToAdd, group, events);
 				BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addCoach, mailing);
 			}
 			return true;
+		}
+		return false;
+	}
+	
+	private boolean internalAddCoachReservation(Identity identityToAdd, BusinessGroup businessGroup, Identity actor) {
+		ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, businessGroup.getResource());
+		if(olderReservation == null) {
+			Date expiration = DateUtils.addMonth(new Date(), 6);
+			ResourceReservation reservation =
+					reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_COACH, expiration, Boolean.TRUE, businessGroup.getResource());
+			if(reservation != null) {
+				// logging
+				log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to group with key {}",
+					actor.getKey(), identityToAdd.getKey(), businessGroup.getKey());
+				return true;
+			}
 		}
 		return false;
 	}
@@ -869,25 +878,33 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			}
 			
 			if(mustAccept) {
-				ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, group.getResource());
-				if(olderReservation == null) {
-					Calendar cal = Calendar.getInstance();
-					cal.add(Calendar.MONTH, 6);
-					Date expiration = cal.getTime();
-					ResourceReservation reservation =
-							reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_PARTICIPANT, expiration, group.getResource());
-					if(reservation != null) {
-						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addParticipant, mailing);
-					}
-
-					BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent
-							.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADD_PENDING_EVENT, group, identityToAdd);
-					events.add(event);
+				if(internalAddParticipantReservation(identityToAdd, group, ureqIdentity, events)) {
+					BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addParticipant, mailing);
 				}
 			} else {
 				internalAddParticipant(ureqIdentity, identityToAdd, group, events);
 				BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addParticipant, mailing);
 			}
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean internalAddParticipantReservation(Identity identityToAdd, BusinessGroup businesGroup,
+			Identity actor, List<BusinessGroupModifiedEvent.Deferred> events) {
+		OLATResource resource = businesGroup.getResource();
+		ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, resource);
+		if(olderReservation == null) {
+			Date expiration = DateUtils.addMonth(new Date(), 6);
+			Group group = businessGroupRelationDAO.getGroup(businesGroup);
+			reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_PARTICIPANT,
+							expiration, Boolean.TRUE, resource);
+			groupMembershipHistoryDao.createMembershipHistory(group, identityToAdd,
+					GroupRoles.participant.name(), GroupMembershipStatus.reservation, null, null, actor);
+
+			BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent
+					.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADD_PENDING_EVENT, businesGroup, identityToAdd);
+			events.add(event);
 			return true;
 		}
 		return false;
@@ -901,20 +918,23 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	 * @param group
 	 * @param syncIM
 	 */
-	private void internalAddParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group,
+	private void internalAddParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup businessGroup,
 			List<BusinessGroupModifiedEvent.Deferred> events) {
 		
-		businessGroupRelationDAO.addRole(identityToAdd, group, GroupRoles.participant.name());
+		Group group = businessGroupRelationDAO.getGroup(businessGroup);
+		businessGroupRelationDAO.addRole(identityToAdd, businessGroup, GroupRoles.participant.name());
+		groupMembershipHistoryDao.createMembershipHistory(group, identityToAdd,
+				GroupRoles.participant.name(), GroupMembershipStatus.active, null, null, ureqIdentity);
 
 		// notify currently active users of this business group
-		BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identityToAdd);
+		BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, businessGroup, identityToAdd);
 		if(events != null) {
 			events.add(event);
 		}
 		// do logging
-		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToAdd));
+		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_ADDED, getClass(), LoggingResourceable.wrap(businessGroup), LoggingResourceable.wrap(identityToAdd));
 		log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to group with key {}",
-			ureqIdentity.getKey(), identityToAdd.getKey(), group.getKey());
+			ureqIdentity.getKey(), identityToAdd.getKey(), businessGroup.getKey());
 		// send notification mail in your controller!
 	}
 
@@ -976,26 +996,30 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 	}
 
-	private void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group, boolean blockTransfer,
+	private void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup businessGroup, boolean blockTransfer,
 			MailPackage mailing, List<BusinessGroupModifiedEvent.Deferred> events) {
-		boolean removed = businessGroupRelationDAO.removeRole(identity, group, GroupRoles.participant.name());
+		Group group = businessGroupRelationDAO.getGroup(businessGroup);
+		boolean removed = businessGroupRelationDAO.removeRole(identity, businessGroup, GroupRoles.participant.name());
 		if(removed) {
+			groupMembershipHistoryDao.createMembershipHistory(group, identity,
+					GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null, ureqIdentity);
+			
 			// notify currently active users of this business group
-			BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group, identity);
+			BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, businessGroup, identity);
 			if(events != null) {
 				events.add(event);
 			}
 			// do logging
-			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_REMOVED, getClass(), LoggingResourceable.wrap(identity), LoggingResourceable.wrap(group));
+			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_REMOVED, getClass(), LoggingResourceable.wrap(identity), LoggingResourceable.wrap(businessGroup));
 			log.info(Tracing.M_AUDIT, "Identity(.key):{} removed identity '{}' from group with key {}",
-				ureqIdentity.getKey(), identity.getKey(), group.getKey());
+				ureqIdentity.getKey(), identity.getKey(), businessGroup.getKey());
 			// Check if a waiting-list with auto-close-ranks is configurated
-			if (!blockTransfer && group.getWaitingListEnabled().booleanValue() && group.getAutoCloseRanksEnabled().booleanValue() ) {
+			if (!blockTransfer && businessGroup.getWaitingListEnabled().booleanValue() && businessGroup.getAutoCloseRanksEnabled().booleanValue() ) {
 				// even when doOnlyPostRemovingStuff is set to true we really transfer the first Identity here
-				transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group, null, events);
+				transferFirstIdentityFromWaitingToParticipant(ureqIdentity, businessGroup, null, events);
 			}	
 			// send mail
-			BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.removeParticipant, mailing);
+			BusinessGroupMailing.sendEmail(ureqIdentity, identity, businessGroup, MailType.removeParticipant, mailing);
 		}
 	}
 	
@@ -1448,17 +1472,22 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 	}
 	
-	private void removeOwner(Identity ureqIdentity, Identity identityToRemove, BusinessGroup group,
+	private void removeOwner(Identity ureqIdentity, Identity identityToRemove, BusinessGroup businessGroup,
 			List<BusinessGroupModifiedEvent.Deferred> events) {
 		
-		businessGroupRelationDAO.removeRole(identityToRemove, group, GroupRoles.coach.name());
+		Group group = businessGroupRelationDAO.getGroup(businessGroup);
+		businessGroupRelationDAO.removeRole(identityToRemove, businessGroup, GroupRoles.coach.name());
+		groupMembershipHistoryDao.createMembershipHistory(group, identityToRemove,
+				GroupRoles.coach.name(), GroupMembershipStatus.removed, null, null, ureqIdentity);
 		
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.Deferred event;
 		if (identityToRemove.getKey().equals(ureqIdentity.getKey()) ) {
-			event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.MYSELF_ASOWNER_REMOVED_EVENT, group, identityToRemove);
+			event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.MYSELF_ASOWNER_REMOVED_EVENT,
+					businessGroup, identityToRemove);
 		} else {
-			event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group, identityToRemove);
+			event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT,
+					businessGroup, identityToRemove);
 		}
 		if(events != null) {
 			events.add(event);
@@ -1467,7 +1496,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		// do logging
 		log.info(Tracing.M_AUDIT, "Identity(.key):{} removed identiy '{}' from group with key {}",
 			ureqIdentity.getKey(), identityToRemove.getKey(), group.getKey());
-		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToRemove));
+		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
+				LoggingResourceable.wrap(businessGroup), LoggingResourceable.wrap(identityToRemove));
 	}
 	
 	@Override

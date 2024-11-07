@@ -878,7 +878,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		//create a reservation
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR, 6);
-		ResourceReservation reservation = reservationDao.createReservation(id, BusinessGroupService.GROUP_PARTICIPANT, cal.getTime(), group.getResource());
+		ResourceReservation reservation = reservationDao.createReservation(id, BusinessGroupService.GROUP_PARTICIPANT, cal.getTime(), Boolean.TRUE, group.getResource());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reservation);
 		Assert.assertEquals(BusinessGroupService.GROUP_PARTICIPANT, reservation.getType());
@@ -906,7 +906,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		//create a reservation
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR, 6);
-		ResourceReservation reservation = reservationDao.createReservation(id, BusinessGroupService.GROUP_COACH, cal.getTime(), group.getResource());
+		ResourceReservation reservation = reservationDao.createReservation(id, BusinessGroupService.GROUP_COACH, cal.getTime(), Boolean.TRUE, group.getResource());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reservation);
 		
@@ -935,7 +935,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		//create a reservation
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR, 6);
-		ResourceReservation reservation = reservationDao.createReservation(id, BusinessGroupService.GROUP_PARTICIPANT, cal.getTime(), group.getResource());
+		ResourceReservation reservation = reservationDao.createReservation(id, BusinessGroupService.GROUP_PARTICIPANT, cal.getTime(), Boolean.TRUE, group.getResource());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reservation);
 		
@@ -964,7 +964,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		//create a reservation
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR, 6);
-		ResourceReservation reservation = reservationDao.createReservation(id, BusinessGroupService.GROUP_PARTICIPANT, cal.getTime(), group.getResource());
+		ResourceReservation reservation = reservationDao.createReservation(id, BusinessGroupService.GROUP_PARTICIPANT, cal.getTime(), Boolean.TRUE, group.getResource());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reservation);
 		
@@ -995,7 +995,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		//create a reservation
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR, 6);
-		ResourceReservation reservation = reservationDao.createReservation(id, BusinessGroupService.GROUP_COACH, cal.getTime(), group.getResource());
+		ResourceReservation reservation = reservationDao.createReservation(id, BusinessGroupService.GROUP_COACH, cal.getTime(), Boolean.TRUE, group.getResource());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reservation);
 		

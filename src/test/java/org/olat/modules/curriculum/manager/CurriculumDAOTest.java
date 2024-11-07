@@ -356,7 +356,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, entry, true);
 		dbInstance.commit();
 		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
-		curriculumService.addMember(element, owner, CurriculumRoles.curriculumelementowner);
+		curriculumService.addMember(element, owner, CurriculumRoles.curriculumelementowner, manager);
 		dbInstance.commitAndCloseSession();
 		
 		// search curriculum for the owner of a part of the curriculum
@@ -391,13 +391,14 @@ public class CurriculumDAOTest extends OlatTestCase {
 	@Test
 	public void getMyCurriculums() {
 		// add a curriculum with a coach in an element
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-MY-1", "My Curriculum 1", "Short desc.", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
-		curriculumService.addMember(element, id, CurriculumRoles.participant);
+		curriculumService.addMember(element, id, CurriculumRoles.participant, actor);
 		dbInstance.commitAndCloseSession();
 		
 		// get my curriculums
@@ -409,6 +410,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 	
 	@Test
 	public void hasMyCurriculums() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		// add a curriculum with a coach in an element
 		Identity idWithCurriculum = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-for-fun-1");
 		Identity idWithout = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-for-fun-2");
@@ -417,7 +419,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
-		curriculumService.addMember(element, idWithCurriculum, CurriculumRoles.participant);
+		curriculumService.addMember(element, idWithCurriculum, CurriculumRoles.participant, actor);
 		dbInstance.commitAndCloseSession();
 		
 		// has curriculums?

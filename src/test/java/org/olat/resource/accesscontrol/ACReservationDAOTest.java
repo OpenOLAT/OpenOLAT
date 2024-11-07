@@ -76,7 +76,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.HOUR, 1);
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", cal.getTime(), resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", cal.getTime(), Boolean.TRUE, resource);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reservation);
 		Assert.assertNotNull(reservation.getKey());
@@ -94,7 +94,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//check by load
@@ -115,7 +115,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
 		dbInstance.commitAndCloseSession();
 		
 		sleep(3100);
@@ -136,17 +136,17 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation1 = acReservationDao.createReservation(id, "test", null, resource);
+		ResourceReservation reservation1 = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
 		dbInstance.commitAndCloseSession();
 		
 		Calendar cal2 = Calendar.getInstance();
 		cal2.add(Calendar.SECOND, +2);
-		ResourceReservation reservation2 = acReservationDao.createReservation(id, "test", cal2.getTime(), resource);
+		ResourceReservation reservation2 = acReservationDao.createReservation(id, "test", cal2.getTime(), Boolean.TRUE, resource);
 		dbInstance.commitAndCloseSession();
 		
 		Calendar cal3 = Calendar.getInstance();
 		cal3.add(Calendar.SECOND, +10);
-		ResourceReservation reservation3 = acReservationDao.createReservation(id, "test", cal3.getTime(), resource);
+		ResourceReservation reservation3 = acReservationDao.createReservation(id, "test", cal3.getTime(), Boolean.TRUE, resource);
 		dbInstance.commitAndCloseSession();
 		
 		sleep(3100);
@@ -173,11 +173,11 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation1 = acReservationDao.createReservation(id1, "test", null, resource);
+		ResourceReservation reservation1 = acReservationDao.createReservation(id1, "test", null, Boolean.TRUE, resource);
 		Assert.assertNotNull(reservation1);
-		ResourceReservation reservation2 = acReservationDao.createReservation(id2, "test", null, resource);
+		ResourceReservation reservation2 = acReservationDao.createReservation(id2, "test", null, Boolean.TRUE, resource);
 		Assert.assertNotNull(reservation2);
-		ResourceReservation reservation3 = acReservationDao.createReservation(id3, "test", null, resource);
+		ResourceReservation reservation3 = acReservationDao.createReservation(id3, "test", null, Boolean.TRUE, resource);
 		Assert.assertNotNull(reservation3);
 		dbInstance.commitAndCloseSession();
 		
@@ -196,11 +196,11 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
 
-		ResourceReservation reservation1 = acReservationDao.createReservation(id1, "test_count", null, resource);
+		ResourceReservation reservation1 = acReservationDao.createReservation(id1, "test_count", null, Boolean.TRUE, resource);
 		Assert.assertNotNull(reservation1);
-		ResourceReservation reservation2 = acReservationDao.createReservation(id2, "test_count", null, resource);
+		ResourceReservation reservation2 = acReservationDao.createReservation(id2, "test_count", null, Boolean.TRUE, resource);
 		Assert.assertNotNull(reservation2);
-		ResourceReservation reservation3 = acReservationDao.createReservation(id3, "test", null, resource);
+		ResourceReservation reservation3 = acReservationDao.createReservation(id3, "test", null, Boolean.TRUE, resource);
 		Assert.assertNotNull(reservation3);
 		dbInstance.commitAndCloseSession();
 		
@@ -214,7 +214,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		//create 3 identities and 3 reservations
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-4-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//count reservations
@@ -237,7 +237,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		//create 3 identities and 3 reservations
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-5-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
-		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, resource);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
 		dbInstance.commitAndCloseSession();
 		
 		//count reservations
@@ -268,10 +268,10 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-8-");
 		OLATResource resource1 = JunitTestHelper.createRandomResource();
 		OLATResource resource2 = JunitTestHelper.createRandomResource();
-		ResourceReservation reservation1_1 = acReservationDao.createReservation(id1, "test", null, resource1);
-		ResourceReservation reservation1_2 = acReservationDao.createReservation(id1, "test", null, resource2);
-		ResourceReservation reservation2_1 = acReservationDao.createReservation(id2, "test", null, resource1);
-		ResourceReservation reservation2_2 = acReservationDao.createReservation(id2, "test", null, resource2);
+		ResourceReservation reservation1_1 = acReservationDao.createReservation(id1, "test", null, Boolean.TRUE, resource1);
+		ResourceReservation reservation1_2 = acReservationDao.createReservation(id1, "test", null, Boolean.TRUE, resource2);
+		ResourceReservation reservation2_1 = acReservationDao.createReservation(id2, "test", null, Boolean.TRUE, resource1);
+		ResourceReservation reservation2_2 = acReservationDao.createReservation(id2, "test", null, Boolean.TRUE, resource2);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reservation1_1);
 		Assert.assertNotNull(reservation1_2);
@@ -301,9 +301,9 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-7-");
 		OLATResource resource1 = JunitTestHelper.createRandomResource();
 		OLATResource resource2 = JunitTestHelper.createRandomResource();
-		ResourceReservation reservation1_1 = acReservationDao.createReservation(id, "test delete 1", null, resource1);
-		ResourceReservation reservation1_2 = acReservationDao.createReservation(id, "test delete 2", null, resource1);
-		ResourceReservation reservation2_1 = acReservationDao.createReservation(id, "test delete 3", null, resource2);
+		ResourceReservation reservation1_1 = acReservationDao.createReservation(id, "test delete 1", null, Boolean.TRUE, resource1);
+		ResourceReservation reservation1_2 = acReservationDao.createReservation(id, "test delete 2", null, Boolean.TRUE, resource1);
+		ResourceReservation reservation2_1 = acReservationDao.createReservation(id, "test delete 3", null, Boolean.TRUE, resource2);
 		dbInstance.commitAndCloseSession();
 
 		acReservationDao.deleteReservations(resource1);

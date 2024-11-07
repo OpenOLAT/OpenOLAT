@@ -172,10 +172,10 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
-		curriculumService.addMember(element, participant, CurriculumRoles.participant);
-		curriculumService.addMember(element, participant, CurriculumRoles.coach);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, author);
+		curriculumService.addMember(element, participant, CurriculumRoles.coach, author);
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-re-part2");
-		curriculumService.addMember(element, participant2, CurriculumRoles.participant);
+		curriculumService.addMember(element, participant2, CurriculumRoles.participant, author);
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commitAndCloseSession();
 		

@@ -57,6 +57,21 @@ create table o_bs_group_member (
    primary key (id)
 );
 
+create table o_bs_group_member_history (
+  id bigserial,
+  creationdate timestamp not null,
+  g_role varchar(24) not null,
+  g_status varchar(32) not null,
+  g_note varchar(2000),
+  g_admin_note varchar(2000),
+  fk_transfer_origin_id int8,
+  fk_transfer_destination_id int8,
+  fk_creator_id int8,
+  fk_group_id int8 not null,
+  fk_identity_id int8 not null,
+  primary key (id)
+);
+
 create table o_bs_grant (
    id int8 not null,
    creationdate timestamp not null,
@@ -1101,6 +1116,7 @@ create table o_ac_reservation (
    version int4 not null,
    expirationdate timestamp,
    reservationtype varchar(32),
+   userconfirmable bool not null default true,
    fk_identity int8 not null,
    fk_resource int8 not null,
    primary key (reservation_id)
@@ -3945,6 +3961,7 @@ create table o_cur_curriculum_element (
   c_lectures varchar(16),
   c_learning_progress varchar(16),
   fk_group int8 not null,
+  fk_resource int8,
   fk_parent int8,
   fk_curriculum int8 not null,
   fk_curriculum_parent int8,
@@ -4845,6 +4862,19 @@ alter table o_bs_group_member add constraint member_group_ctx foreign key (fk_gr
 create index member_to_identity_idx on o_bs_group_member (fk_identity_id);
 create index member_to_group_idx on o_bs_group_member (fk_group_id);
 create index group_role_member_idx on o_bs_group_member (fk_group_id,g_role,fk_identity_id);
+
+alter table o_bs_group_member_history add constraint hist_transfer_origin_idx foreign key (fk_transfer_origin_id) references o_olatresource (resource_id);
+create index idx_hist_transfer_origin_idx on o_bs_group_member_history (fk_transfer_origin_id);
+alter table o_bs_group_member_history add constraint hist_transfer_dest_idx foreign key (fk_transfer_destination_id) references o_olatresource (resource_id);
+create index idx_hist_transfer_dest_idx on o_bs_group_member_history (fk_transfer_destination_id);
+
+alter table o_bs_group_member_history add constraint hist_creator_idx foreign key (fk_creator_id) references o_bs_identity (id);
+create index idx_hist_creator_idx on o_bs_group_member_history (fk_creator_id);
+alter table o_bs_group_member_history add constraint hist_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_hist_ident_idx on o_bs_group_member_history (fk_identity_id);
+
+alter table o_bs_group_member_history add constraint history_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_history_group_idx on o_bs_group_member_history (fk_group_id);
 
 alter table o_re_to_group add constraint re_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 alter table o_re_to_group add constraint re_to_group_re_ctx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
@@ -6050,6 +6080,8 @@ alter table o_cur_curriculum_element add constraint cur_el_to_cur_idx foreign ke
 create index idx_cur_el_to_cur_idx on o_cur_curriculum_element (fk_curriculum);
 alter table o_cur_curriculum_element add constraint cur_el_type_to_el_type_idx foreign key (fk_type) references o_cur_element_type (id);
 create index idx_cur_el_type_to_el_type_idx on o_cur_curriculum_element (fk_type);
+alter table o_cur_curriculum_element add constraint cur_el_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);
+create index idx_cur_el_resource_idx on o_cur_curriculum_element (fk_resource);
 
 alter table o_cur_element_type_to_type add constraint cur_type_to_type_idx foreign key (fk_type) references o_cur_element_type (id);
 create index idx_cur_type_to_type_idx on o_cur_element_type_to_type (fk_type);
