@@ -207,4 +207,29 @@ public class GTATaskReviewAssignmentDAOTest extends OlatTestCase {
 		Assertions.assertThat(invalidAssignees)
 			.isEmpty();
 	}
+	
+	@Test
+	public void deleteAssignment() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-to-review-1");
+		Identity assignee = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-assignee-1");
+		
+		RepositoryEntry re = GTAManagerTest.deployGTACourse();
+		GTACourseNode node = GTAManagerTest.getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+
+		//select
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, new File("bg1.txt"));
+		dbInstance.commitAndCloseSession();
+		
+		Task task = response.getTask();
+		TaskReviewAssignment assignment = reviewAssignmentDao.createAssignment(task, assignee);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(assignment);
+		Assert.assertNotNull(assignment.getKey());
+		
+		gtaManager.deleteTaskList(re, node);
+	}
 }

@@ -104,39 +104,39 @@ public class MemberListPage {
 	}
 	
 	public MemberListPage assertOnOwner(String name) {
-		By ownerBy = By.xpath("//div[contains(@class,'o_sel_owners')]//div[@class='o_cmember_info_wrapper']/a/span[contains(text(),'" + name + "')]");
+		By ownerBy = By.xpath("//div[contains(@class,'o_sel_owners')]//div[@class='o_cmember_info_wrapper']/a/span[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(ownerBy, browser);
 		return this;
 	}
 	
 	public MemberListPage assertOnNotOwner(String name) {
-		By ownerBy = By.xpath("//div[contains(@class,'o_sel_owners')]//div[@class='o_cmember_info_wrapper']/a/span[contains(text(),'" + name + "')]");
+		By ownerBy = By.xpath("//div[contains(@class,'o_sel_owners')]//div[@class='o_cmember_info_wrapper']/a/span[text()[contains(.,'" + name + "')]]");
 		List<WebElement> ownersEl = browser.findElements(ownerBy);
 		Assert.assertEquals(0, ownersEl.size());
 		return this;
 	}
 	
 	public MemberListPage assertOnCoach(String name) {
-		By coachBy = By.xpath("//div[contains(@class,'o_sel_coaches')]//div[@class='o_cmember_info_wrapper']/a/span[contains(text(),'" + name + "')]");
+		By coachBy = By.xpath("//div[contains(@class,'o_sel_coaches')]//div[@class='o_cmember_info_wrapper']/a/span[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(coachBy, browser);
 		return this;
 	}
 	
 	public MemberListPage assertOnNotCoach(String name) {
-		By coachBy = By.xpath("//div[contains(@class,'o_sel_coaches')]//div[@class='o_cmember_info_wrapper']/a/span[contains(text(),'" + name + "')]");
+		By coachBy = By.xpath("//div[contains(@class,'o_sel_coaches')]//div[@class='o_cmember_info_wrapper']/a/span[text()[contains(.,'" + name + "')]]");
 		List<WebElement> coachEls = browser.findElements(coachBy);
 		Assert.assertEquals(0, coachEls.size());
 		return this;
 	}
 	
 	public MemberListPage assertOnParticipant(String name) {
-		By participantBy = By.xpath("//div[contains(@class,'o_sel_participants')]//div[@class='o_cmember_info_wrapper']/a/span[contains(text(),'" + name + "')]");
+		By participantBy = By.xpath("//div[contains(@class,'o_sel_participants')]//div[@class='o_cmember_info_wrapper']/a/span[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(participantBy, browser);
 		return this;
 	}
 	
 	public MemberListPage assertOnNotParticipant(String name) {
-		By participantBy = By.xpath("//div[contains(@class,'o_sel_participants')]//div[@class='o_cmember_info_wrapper']/a/span[contains(text(),'" + name + "')]");
+		By participantBy = By.xpath("//div[contains(@class,'o_sel_participants')]//div[@class='o_cmember_info_wrapper']/a/span[text()[contains(.,'" + name + "')]]");
 		List<WebElement> participantEls = browser.findElements(participantBy);
 		Assert.assertEquals(0, participantEls.size());
 		return this;
@@ -150,7 +150,7 @@ public class MemberListPage {
 	 */
 	public MemberListPage assertOnPeekview(int row, int number) {
 		try {
-			By rowBy = By.xpath("//div[contains(@class,'o_portlet_table')]//div[@class='o_table_wrapper']/div/div/table/tbody/tr[" + row + "]/td[contains(text(),'" + number+ "')]");
+			By rowBy = By.xpath("//div[contains(@class,'o_portlet_table')]//div[@class='o_table_wrapper']/div/div/table/tbody/tr[" + row + "]/td[text()[contains(.,'" + number+ "')]]");
 			OOGraphene.waitElement(rowBy, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("MembersPeekview_" + row + "_" + number, browser);
@@ -160,25 +160,25 @@ public class MemberListPage {
 	}
 	
 	public MemberListPage assertOnTableOwner(String name) {
-		By ownerBy = By.xpath("//div[@class='o_sel_cmembers_owners']//table//td/a[contains(text(),'" + name + "')]");
+		By ownerBy = By.xpath("//div[@class='o_sel_cmembers_owners']//table//td/a[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(ownerBy, browser);
 		return this;
 	}
 	
 	public MemberListPage assertOnTableCoach(String name) {
-		By coachBy = By.xpath("//div[@class='o_sel_cmembers_coaches']//table//td/a[contains(text(),'" + name + "')]");
+		By coachBy = By.xpath("//div[@class='o_sel_cmembers_coaches']//table//td/a[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(coachBy, browser);
 		return this;
 	}
 	
 	public MemberListPage assertOnTableParticipant(String name) {
-		By participantBy = By.xpath("//div[@class='o_sel_cmembers_participants']//table//td/a[contains(text(),'" + name + "')]");
+		By participantBy = By.xpath("//div[@class='o_sel_cmembers_participants']//table//td/a[text()[contains(.,'" + name + "')]]");
 		OOGraphene.waitElement(participantBy, browser);
 		return this;
 	}
 	
 	public MemberListPage assertOnTableNotParticipant(String name) {
-		By participantBy = By.xpath("//div[@class='o_sel_cmembers_participants']//table//td/a[contains(text(),'" + name + "')]");
+		By participantBy = By.xpath("//div[@class='o_sel_cmembers_participants']//table//td/a[text()[contains(.,'" + name + "')]]");
 		List<WebElement> participantEls = browser.findElements(participantBy);
 		Assert.assertEquals(0, participantEls.size());
 		return this;

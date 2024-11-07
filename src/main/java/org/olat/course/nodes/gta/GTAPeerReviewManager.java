@@ -50,6 +50,8 @@ public interface GTAPeerReviewManager {
 	
 	List<TaskReviewAssignment> getAssignmentsOfReviewer(TaskList taskList, Identity reviewer);
 	
+	int deleteAssignments(TaskList taskList);
+	
 	TaskReviewAssignment createAssignment(Task task, Identity assignee);
 	
 	TaskReviewAssignment updateAssignment(TaskReviewAssignment assignment);
