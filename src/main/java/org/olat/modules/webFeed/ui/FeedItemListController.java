@@ -289,7 +289,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	protected void initMultiSelectionTools(FormLayoutContainer formLayout) {
-		if (!tagInfos.isEmpty() && feedSecCallback.mayEditItems()) {
+		if (!tagInfos.isEmpty()) {
 			bulkAddTags = uifactory.addFormLink("bulk.add.tags", "bulk.add.tags", "bulk.add.tags", formLayout, Link.BUTTON);
 			bulkAddTags.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			tableEl.addBatchButton(bulkAddTags);
@@ -1036,13 +1036,24 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 		List<Item> modifiableFeedItems = new ArrayList<>(feedItems);
 
-		if (!modifiableFeedItems.isEmpty() && modifiableFeedItems.stream()
-				.anyMatch(item ->
-						(item.getAuthorKey() == null && feedSecCallback.mayDeleteItems())
-						|| (item.getAuthorKey() != null
-						&& !item.getAuthorKey().equals(getIdentity().getKey())))
-				&& !feedSecCallback.mayDeleteItems()) {
-			modifiableFeedItems.removeIf(item -> !item.getAuthorKey().equals(getIdentity().getKey()));
+		// Check if modifiableFeedItems has elements
+		// and current user has no delete right for items
+		// and the list contains any item which is either corrupt
+		// or where the user is not the author
+		boolean isDeletionNotAllowed = !feedSecCallback.mayDeleteItems();
+		boolean hasItems = !modifiableFeedItems.isEmpty();
+
+		boolean hasRemovableItem = modifiableFeedItems.stream().anyMatch(item -> {
+			boolean isAuthorKeyNullAndDeletable = item.getAuthorKey() == null && feedSecCallback.mayDeleteItems();
+			boolean isAuthorDifferentFromCurrentUser = item.getAuthorKey() != null && !item.getAuthorKey().equals(getIdentity().getKey());
+			return isAuthorKeyNullAndDeletable || isAuthorDifferentFromCurrentUser;
+		});
+
+		if (hasItems && hasRemovableItem && isDeletionNotAllowed) {
+			// Remove items that don't belong to the current user's identity
+			modifiableFeedItems.removeIf(item ->
+					(item.getAuthorKey() == null && feedSecCallback.mayDeleteItems()) ||
+							(item.getAuthorKey() != null && !item.getAuthorKey().equals(getIdentity().getKey())));
 		}
 
 		if (modifiableFeedItems.size() == 1) {
