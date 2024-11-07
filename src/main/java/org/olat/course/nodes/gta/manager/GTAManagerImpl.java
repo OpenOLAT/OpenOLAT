@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 import jakarta.persistence.CacheRetrieveMode;
 import jakarta.persistence.CacheStoreMode;
 import jakarta.persistence.LockModeType;
-import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
@@ -806,11 +805,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		if(taskList != null) {
 			numOfDeletedObjects += taskRevisionDateDao.deleteTaskRevisionDate(taskList);
 			numOfDeletedObjects += taskRevisionDao.deleteTaskRevision(taskList);
-			
-			String deleteTasks = "delete from gtatask as task where task.taskList.key=:taskListKey";
-			numOfDeletedObjects += dbInstance.getCurrentEntityManager().createQuery(deleteTasks)
-				.setParameter("taskListKey", taskList.getKey())
-				.executeUpdate();
+			numOfDeletedObjects += peerReviewManager.deleteAssignments(taskList); // Make commits
+			numOfDeletedObjects += taskDao.deleteTask(taskList);
 			numOfDeletedObjects += gtaMarkDao.deleteMark(taskList);
 			dbInstance.getCurrentEntityManager().remove(taskList);
 			numOfDeletedObjects++;
@@ -825,19 +821,14 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			.setParameter("entryKey", entry.getKey())
 			.getResultList();
 		
-		String deleteTasks = "delete from gtatask as task where task.taskList.key=:taskListKey";
-		Query deleteTaskQuery = dbInstance.getCurrentEntityManager().createQuery(deleteTasks);
-
+		
 		int numOfDeletedObjects = 0;
 		for(TaskList taskList:taskLists) {
-			int numOfRevisionDates = taskRevisionDateDao.deleteTaskRevisionDate(taskList);
-			numOfDeletedObjects += numOfRevisionDates;
-			int numOfRevisions = taskRevisionDao.deleteTaskRevision(taskList);
-			numOfDeletedObjects += numOfRevisions;
-			int numOfTasks = deleteTaskQuery.setParameter("taskListKey", taskList.getKey()).executeUpdate();
-			numOfDeletedObjects += numOfTasks;
-			int numOfMarks = gtaMarkDao.deleteMark(taskList);
-			numOfDeletedObjects += numOfMarks;
+			numOfDeletedObjects += taskRevisionDateDao.deleteTaskRevisionDate(taskList);
+			numOfDeletedObjects += taskRevisionDao.deleteTaskRevision(taskList);
+			numOfDeletedObjects += peerReviewManager.deleteAssignments(taskList);// Makes commits
+			numOfDeletedObjects += taskDao.deleteTask(taskList);
+			numOfDeletedObjects += gtaMarkDao.deleteMark(taskList);
 		}
 		
 		String deleteTaskLists = "delete from gtatasklist as tasks where tasks.entry.key=:entryKey";

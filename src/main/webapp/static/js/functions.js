@@ -821,7 +821,7 @@ function o_avideo(command, parameters) {
 			videoContinueAt(parameters["elementId"], parameters["timeInSeconds"]);
 			break;
 		case "videopause":
-			videoPause(parameters["elementId"]);
+			videoPause(parameters["elementId"], parameters["timeInSeconds"]);
 			break;
 		case "videoselecttime":
 			videoSelectTime(parameters["elementId"], parameters["timeInSeconds"]);
