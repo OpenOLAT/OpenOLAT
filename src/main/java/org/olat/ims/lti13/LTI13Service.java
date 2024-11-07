@@ -89,7 +89,9 @@ public interface LTI13Service {
 	public LTI13Context getContextByKey(Long key);
 	
 	public LTI13Context getContext(RepositoryEntryRef entry, String subIdent);
-	
+
+	public List<LTI13Context> getContexts(RepositoryEntryRef entry);
+
 	public LTI13Context getContextByContextId(String contextId);
 
 	public LTI13Context getContextBackwardCompatibility(String deploymentKey, RepositoryEntryRef entry, String subIdent);

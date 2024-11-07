@@ -138,7 +138,20 @@ public class LTI13ContextDAO {
 			.setParameter("subIdent", subIdent)
 			.getResultList();
 	}
-	
+
+	public List<LTI13Context> loadContextsBy(RepositoryEntryRef entry) {
+		String query = """
+				select context from lticontext as context
+				inner join fetch context.deployment as deployment
+				inner join fetch deployment.tool tool
+				where context.entry.key=:entryKey""";
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, LTI13Context.class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+	}
+
 	public List<LTI13Context> loadContexts(LTI13Tool tool) {
 		String query = """
 				select context from lticontext as context

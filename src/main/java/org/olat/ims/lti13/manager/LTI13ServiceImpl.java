@@ -441,6 +441,11 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
+	public List<LTI13Context> getContexts(RepositoryEntryRef entry) {
+		return lti13ContextDao.loadContextsBy(entry);
+	}
+
+	@Override
 	public LTI13ToolDeployment getToolDeploymentByKey(Long key) {
 		return lti13ToolDeploymentDao.loadDeploymentByKey(key);
 	}

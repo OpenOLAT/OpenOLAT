@@ -138,6 +138,38 @@ public class LTI13ContextDAOTest extends OlatTestCase {
 			.isNotNull()
 			.containsExactly(ltiContext);
 	}
+
+	@Test
+	public void loadContextsByRepositoryEntry() {
+		String toolName = "LTI 1.3 context - 3.1";
+		String toolUrl = "https://www.openolat.com/tool";
+		String clientId = UUID.randomUUID().toString();
+		String initiateLoginUrl = "https://www.openolat.com/lti/api/login_init";
+		String redirectUrl = "https://www.openolat.com/lti/api/login";
+		LTI13Tool commonTool = lti13ToolDao.createTool(toolName, toolUrl, clientId, initiateLoginUrl, redirectUrl, LTI13ToolType.EXTERNAL);
+
+		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-3.1");
+		RepositoryEntry course1 = JunitTestHelper.deployBasicCourse(author1);
+
+		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("lti-13-author-3.2");
+		RepositoryEntry course2 = JunitTestHelper.deployBasicCourse(author2);
+
+		LTI13ToolDeployment deployment1 = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, commonTool);
+		LTI13Context ltiContext1 = lti13ContextDao.createContext(null, deployment1, course1, "123456", null);
+		LTI13ToolDeployment deployment2 = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, commonTool);
+		LTI13Context ltiContext2 = lti13ContextDao.createContext(null, deployment2, course1, "234567", null);
+		LTI13ToolDeployment deployment3 = lti13ToolDeploymentDao.createDeployment(null, LTI13ToolDeploymentType.SINGLE_CONTEXT, null, commonTool);
+		LTI13Context ltiContext3 = lti13ContextDao.createContext(null, deployment3, course2, "345678", null);
+
+		dbInstance.commitAndCloseSession();
+
+		List<LTI13Context> reloadedContexts = lti13ContextDao.loadContextsBy(course1);
+		assertThat(reloadedContexts)
+				.isNotNull()
+				.contains(ltiContext1)
+				.contains(ltiContext2)
+				.doesNotContain(ltiContext3);
+	}
 	
 	@Test
 	public void loadContextsByTool() {
