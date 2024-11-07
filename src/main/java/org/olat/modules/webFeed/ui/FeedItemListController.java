@@ -1036,7 +1036,9 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 		List<Item> modifiableFeedItems = new ArrayList<>(feedItems);
 
-		if (modifiableFeedItems.stream().anyMatch(item -> !item.getAuthorKey().equals(getIdentity().getKey()))
+		if (!modifiableFeedItems.isEmpty() && modifiableFeedItems.stream()
+				.anyMatch(item -> item.getAuthorKey() != null
+						&& !item.getAuthorKey().equals(getIdentity().getKey()))
 				&& !feedSecCallback.mayDeleteItems()) {
 			modifiableFeedItems.removeIf(item -> !item.getAuthorKey().equals(getIdentity().getKey()));
 		}
