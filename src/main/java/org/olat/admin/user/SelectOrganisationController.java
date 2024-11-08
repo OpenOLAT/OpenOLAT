@@ -77,9 +77,11 @@ public class SelectOrganisationController extends FormBasicController {
 		}
 		organisationEl = uifactory.addDropdownSingleselect("select.organisation", formLayout,
 				theKeys.toArray(new String[theKeys.size()]), theValues.toArray(new String[theValues.size()]));
-		organisationEl.select(organisationEl.getKey(1), true);
-		if (editedIdentity != null && organisationModule.isEmailDomainEnabled()) {
-			organisationEl.addActionListener(FormEvent.ONCHANGE);
+		if (organisationEl.getKeys().length > 0) {
+			organisationEl.select(organisationEl.getKey(0), true);
+			if (editedIdentity != null && organisationModule.isEmailDomainEnabled()) {
+				organisationEl.addActionListener(FormEvent.ONCHANGE);
+			}
 		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -102,7 +104,7 @@ public class SelectOrganisationController extends FormBasicController {
 	}
 
 	private void updateEmailDomainUI() {
-		if (editedIdentity != null && organisationModule.isEmailDomainEnabled()) {
+		if (editedIdentity != null && organisationModule.isEmailDomainEnabled() && organisationEl.isOneSelected()) {
 			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> Long.valueOf(organisationEl.getSelectedKey()));
 			boolean emailDomainAllowed = organisationService.isEmailDomainAllowed(emailDomains, editedIdentity.getUser().getEmail());
 			if (!emailDomainAllowed) {
