@@ -850,6 +850,9 @@ public class MediaDAO {
 		int count = 0;
 		List<MediaVersion> versions = media.getVersions();
 		if(versions != null) {
+			for (MediaVersion version : versions) {
+				removeMetadataReference(version);
+			}
 			for(MediaVersion version:versions) {
 				deleteMedia(version);
 				count++;
@@ -859,7 +862,15 @@ public class MediaDAO {
 		count++;
 		return count;
 	}
-	
+
+	private void removeMetadataReference(MediaVersion mediaVersion) {
+		VFSMetadata metadata = mediaVersion.getMetadata();
+		if (metadata != null) {
+			mediaVersion.setMetadata(null);
+			update(mediaVersion);
+		}
+	}
+
 	private void deleteMedia(MediaVersion mediaVersion) {
 		if(mediaVersion == null) return;
 		
@@ -868,10 +879,6 @@ public class MediaDAO {
 			VFSItem item = container.resolve(mediaVersion.getRootFilename());
 			if(item instanceof VFSLeaf leaf) {
 				VFSMetadata metadata = mediaVersion.getMetadata();
-				if (metadata != null) {
-					mediaVersion.setMetadata(null);
-					update(mediaVersion);
-				}
 				leaf.deleteSilently();
 				if (metadata != null && (metadata.isTranscoded() || metadata.isInTranscoding())) {
 					vfsTranscodingService.deleteMasterFile(leaf);
