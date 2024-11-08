@@ -20,6 +20,7 @@
 package org.olat.user.ui.organisation;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.basesecurity.OrganisationEmailDomain;
 import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
@@ -110,10 +111,10 @@ public class OrganisationEmailDomainController extends FormBasicController imple
 		if (!StringHelper.containsNonWhitespace(domainEl.getValue())) {
 			domainEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else {
+		} else if (emailDomain == null || !Objects.equals(emailDomain.getDomain(), domainEl.getValue())){ 
 			OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
 			searchParams.setOrganisations(List.of(() -> Long.valueOf(organisationsEl.getSelectedKey())));
-			searchParams.setDomains(List.of(domainEl.getValue()));
+			searchParams.setDomains(List.of(domainEl.getValue().toLowerCase()));
 			if (!organisationService.getEmailDomains(searchParams).isEmpty()) {
 				domainEl.setErrorKey("organisation.email.domain.error.duplicate");
 				allOk &= false;
@@ -136,7 +137,7 @@ public class OrganisationEmailDomainController extends FormBasicController imple
 			emailDomain = organisationService.createOrganisationEmailDomain(organisation, domainEl.getValue());
 		}
 		
-		emailDomain.setDomain(domainEl.getValue());
+		emailDomain.setDomain(domainEl.getValue().toLowerCase());
 		emailDomain.setEnabled(enabledEl.isOn());
 		emailDomain.setSubdomainsAllowed(subdomainsAllowedEl.isOn());
 		
