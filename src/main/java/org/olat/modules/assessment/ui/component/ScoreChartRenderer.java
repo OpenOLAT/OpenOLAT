@@ -53,7 +53,7 @@ public class ScoreChartRenderer extends DefaultComponentRenderer {
 		double scoreAvg = getScoreAvg(scoreToCount);
 		long yMax = getYMax(scoreToCount);
 		
-		sb.append("<div id='d").append(cmpId).append("d3holder' class='d3chart' style='width:400px;height:80px'></div>\n")
+		sb.append("<div id='d").append(cmpId).append("d3holder' class='d3chart o_score_chart' style='width:400px;height:80px'></div>\n")
 		  .append("<script>\n")
 		  .append("/* <![CDATA[ */ ")
 		  .append("jQuery(function () {\n")
@@ -143,7 +143,7 @@ public class ScoreChartRenderer extends DefaultComponentRenderer {
 		StringBuilder sb = new StringBuilder();
 		for (int i = min; i <= max; i++) {
 			Long count = scoreToCount.getOrDefault(Integer.valueOf(i), Long.valueOf(0));
-			sb.append("[\"").append(i).append("\",").append(count).append("]");
+			sb.append("[").append(i).append(",").append(count).append("]");
 			if (i != max) {
 				sb.append(",");
 			}

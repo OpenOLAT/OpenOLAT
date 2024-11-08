@@ -683,6 +683,18 @@
 		}
 	}
 }
+.o_score_chart {
+	&.d3chart {
+		.axis {
+			line {
+				&:has(+text) {
+					// Hide double lines
+					display: none;
+				}
+			}
+		}
+	}
+}
 #o_assessment_tool_main {
 	.o_assessment_tool_header {
 		display: flex;
