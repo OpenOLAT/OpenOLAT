@@ -164,7 +164,7 @@ public class WikiRunController extends BasicController implements Activateable2 
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
+		if(entries == null || entries.isEmpty() || wikiCtr == null) return;
 		wikiCtr.activate(ureq, entries, state);
 	}
 
