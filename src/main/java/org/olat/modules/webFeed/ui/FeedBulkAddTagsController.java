@@ -41,15 +41,25 @@ public class FeedBulkAddTagsController extends FormBasicController {
 	private TagSelection tagsEl;
 
 	private final List<TagInfo> tagInfos;
+	private final int numOfPermittedItems;
+	private final int numOfSelectedItems;
 
-	protected FeedBulkAddTagsController(UserRequest ureq, WindowControl wControl, List<TagInfo> tagInfos) {
+	protected FeedBulkAddTagsController(UserRequest ureq, WindowControl wControl, List<TagInfo> tagInfos,
+										int numOfPermittedItems, int numOfSelectedItems) {
 		super(ureq, wControl);
 		this.tagInfos = tagInfos;
+		this.numOfPermittedItems = numOfPermittedItems;
+		this.numOfSelectedItems = numOfSelectedItems;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// check if the selection contains any not permitted entries
+		if (numOfPermittedItems != numOfSelectedItems) {
+			setFormWarning("msg.selection.partly.authorized",
+					new String[] {String.valueOf(numOfPermittedItems), String.valueOf(numOfSelectedItems)});
+		}
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagInfos);
 
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());

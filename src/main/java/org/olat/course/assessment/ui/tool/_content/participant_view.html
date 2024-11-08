@@ -1,17 +1,19 @@
 <div class="o_assessment_preformance_summary o_block_large">
-	<fieldset>
-		<legend class="o_aps_header">
-			<div class="o_aps_title">
-				$title
-			</div>
-			#if($hasStatusField)
-				<div class="o_aps_status">
-					<span class='o_labeled $statusLabelCss'><i class='o_icon o_icon-fw $statusIconCss'> </i> $statusText</span>
+	#if ($r.isNotEmpty($title))
+		<fieldset>
+			<legend class="o_aps_header">
+				<div class="o_aps_title">
+					$title
 				</div>
-			#end
-		</legend>
-	</fieldset>
-	$r.render("results")
+				#if($hasStatusField)
+					<div class="o_aps_status">
+						<span class='o_labeled $statusLabelCss'><i class='o_icon o_icon-fw $statusIconCss'> </i> $statusText</span>
+					</div>
+				#end
+			</legend>
+		</fieldset>
+		$r.render("results")
+	#end
 </div>
 
 #if($resultsVisible)
