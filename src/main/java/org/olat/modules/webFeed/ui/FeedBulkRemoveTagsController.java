@@ -41,16 +41,27 @@ import org.olat.core.gui.control.WindowControl;
 public class FeedBulkRemoveTagsController extends FormBasicController {
 
 	private final List<TagInfo> selectedTagInfos;
+	private final int numOfPermittedItems;
+	private final int numOfSelectedItems;
 
-	protected FeedBulkRemoveTagsController(UserRequest ureq, WindowControl wControl, List<TagInfo> selectedTagInfos) {
+	protected FeedBulkRemoveTagsController(UserRequest ureq, WindowControl wControl, List<TagInfo> selectedTagInfos,
+										   int numOfPermittedItems, int numOfSelectedItems) {
 		super(ureq, wControl, "bulk_remove_tags");
 		this.selectedTagInfos = selectedTagInfos;
+		this.numOfPermittedItems = numOfPermittedItems;
+		this.numOfSelectedItems = numOfSelectedItems;
 		selectedTagInfos.sort(Comparator.comparing(TagInfo::getCount).reversed().thenComparing(t -> t.getDisplayName().toLowerCase()));
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// check if the selection contains any not permitted entries
+		if(numOfPermittedItems != numOfSelectedItems) {
+			setFormWarning("msg.selection.partly.authorized",
+					new String[] {String.valueOf(numOfPermittedItems), String.valueOf(numOfSelectedItems)});
+		}
+
 		TagComponentFactory.createTagComponent("removeTags", selectedTagInfos, flc.getFormItemComponent(), this, true);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());

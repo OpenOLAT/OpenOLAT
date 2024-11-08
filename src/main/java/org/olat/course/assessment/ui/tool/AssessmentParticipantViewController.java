@@ -160,14 +160,14 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		roles = ureq.getUserSession().getRoles();
 		
 		mainVC = createVelocityContainer("participant_view");
-		
-		setTitle(translate("personal.title"));
+			
 		exposeToVC(ureq);
 		
 		putInitialPanel(mainVC);
 	}
 
 	private void exposeToVC(UserRequest ureq) {
+		boolean hasPerformanceSummary = false;
 		widgetGroup = WidgetFactory.createWidgetGroup("results", mainVC);
 		
 		passedWidget = null;
@@ -184,6 +184,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		// Attempts
 		boolean hasAttempts = assessmentConfig.hasAttempts();
 		if (hasAttempts) {
+			hasPerformanceSummary = true;
 			attemptsWidget = WidgetFactory.createFigureWidget("attempts", null, translate("attempts.yourattempts"), "o_icon_attempts");
 			attemptsWidget.setValueCssClass("o_sel_attempts");
 			
@@ -202,6 +203,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		ProgressBar scoreProgress = null;
 		if (hasScore) {
+			hasPerformanceSummary = true;
 			scoreWidget = WidgetFactory.createFigureWidget("score", null, translate("score"), "o_icon_score");
 			scoreWidget.setValueCssClass("o_sel_score");
 			
@@ -267,6 +269,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		// Rubrics
 		boolean hasFormEvaluation = assessmentConfig.hasFormEvaluation();
 		if(hasFormEvaluation) {
+			hasPerformanceSummary = true;
 			List<RubricValue> statistics = formEvaluationSupplier.getRubricStatistics(assessmentConfig.getFormEvaluationScoreMode());
 			rubricsWidgets = new ArrayList<>(statistics.size());
 			
@@ -309,6 +312,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		// Grade
 		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
 		if (hasGrade) {
+			hasPerformanceSummary = true;
 			String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEval.getGradeSystemIdent())
 					? assessmentEval.getGradeSystemIdent()
 					: gradeSystemSupplier.getGradeSystem().getIdentifier();
@@ -327,6 +331,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		// Passed
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		if (hasPassed) {
+			hasPerformanceSummary = true;
 			passedWidget = WidgetFactory.createTextWidget("passed", null, translate("passed.success.status"), "o_icon_success_status");
 			if (resultsVisible) {
 				if (assessmentEval.getPassed() == null) {
@@ -360,6 +365,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 				|| AssessmentEntryStatus.done == assessmentEval.getAssessmentStatus();
 		mainVC.contextPut("hasStatusField", Boolean.valueOf(hasStatus));
 		if (hasStatus) {
+			hasPerformanceSummary = true;
 			String statusText = null;
 			String statusIconCss = null;
 			String statusLabelCss = null;
@@ -387,6 +393,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		String rawComment = assessmentEval.getComment();
 		boolean hasComment = assessmentConfig.hasComment() && StringHelper.containsNonWhitespace(rawComment);
 		if (hasComment) {
+			hasPerformanceSummary = true;
 			StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
 			if (comment != null && !comment.isEmpty()) {
 				mainVC.contextPut("comment", StringHelper.xssScan(comment));
@@ -396,6 +403,7 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		
 		// Assessment documents
 		if (assessmentConfig.hasIndividualAsssessmentDocuments()) {
+			hasPerformanceSummary = true;
 			List<VFSLeaf> documents = assessmentDocumentsSupplier.getIndividualAssessmentDocuments();
 			VelocityContainer docsVC = createVelocityContainer("individual_assessment_docs");
 			List<DocumentWrapper> wrappers = new ArrayList<>(documents.size());
@@ -424,6 +432,10 @@ public class AssessmentParticipantViewController extends BasicController impleme
 		widgetGroup.add(attemptsWidget);
 		widgetGroup.addAll(rubricsWidgets);
 		widgetGroup.add(createBadgesWidget(ureq));
+		
+		if (hasPerformanceSummary) {
+			setTitle(translate("personal.title"));
+		}
 	}
 
 	private ComponentWidget createBadgesWidget(UserRequest ureq) {
