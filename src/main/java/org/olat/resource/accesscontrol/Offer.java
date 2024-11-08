@@ -57,6 +57,25 @@ public interface Offer extends OfferRef {
 	
 	public void setPrice(Price price);
 	
+	/*
+	 * CostCenter, cancellingFee, cancellingFeeDeadlineDays, etc. are deliberately
+	 * not copied to the OrderLine, OrderPart and Order. We therefore keep the data
+	 * model simple. And since many areas of the GUI in particular would not have to
+	 * be adapted if multiple relationships were to be used effectively, the data
+	 * model would also have to be extended.
+	 */
+	public CostCenter getCostCenter();
+
+	public void setCostCenter(CostCenter costCenter);
+
+	public Price getCancellingFee();
+
+	public void setCancellingFee(Price cancellingFee);
+
+	public Integer getCancellingFeeDeadlineDays();
+
+	public void setCancellingFeeDeadlineDays(Integer cancellingFeeDeadlineDays);
+	
 	public String getDescription();
 	
 	public void setDescription(String description);

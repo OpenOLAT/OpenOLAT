@@ -78,6 +78,9 @@ public class ACBillingAddressDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select billingaddress");
 		sb.append("  from acbillingaddress billingaddress");
+		if (searchParams.getBillingAddressKeys() != null && !searchParams.getBillingAddressKeys().isEmpty()) {
+			sb.and().append("billingaddress.key in :billingAddressesKeys");
+		}
 		if (searchParams.getOrganisationKeys() != null && !searchParams.getOrganisationKeys().isEmpty()) {
 			sb.and().append("billingaddress.organisation.key in :organisationKeys");
 		}
@@ -91,6 +94,9 @@ public class ACBillingAddressDAO {
 		TypedQuery<BillingAddress> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BillingAddress.class);
 		
+		if (searchParams.getBillingAddressKeys() != null && !searchParams.getBillingAddressKeys().isEmpty()) {
+			query.setParameter("billingAddressesKeys", searchParams.getBillingAddressKeys());
+		}
 		if (searchParams.getOrganisationKeys() != null && !searchParams.getOrganisationKeys().isEmpty()) {
 			query.setParameter("organisationKeys", searchParams.getOrganisationKeys());
 		}

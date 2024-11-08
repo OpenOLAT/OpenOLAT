@@ -136,6 +136,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 			addNoSelectionEntry();
 		}
 		component.setOptionsAndValues(this.keys, this.values, this.cssClasses);
+		component.setDirty(true);
 	}
 	
 	@Override

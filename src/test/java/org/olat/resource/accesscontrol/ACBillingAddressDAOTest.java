@@ -86,6 +86,19 @@ public class ACBillingAddressDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldFiler_keys() {
+		BillingAddress billingaAddress1 = sut.create(null, null);
+		BillingAddress billingaAddress2 = sut.create(null, null);
+		sut.create(null, null);
+		dbInstance.commitAndCloseSession();
+		
+		BillingAddressSearchParams searchParams = new BillingAddressSearchParams();
+		searchParams.setBillingAddresses(List.of(billingaAddress1, billingaAddress2));
+		List<BillingAddress> billingaAddresses = sut.loadBillingAddresses(searchParams);
+		assertThat(billingaAddresses).containsExactlyInAnyOrder(billingaAddress1, billingaAddress2);
+	}
+	
+	@Test
 	public void shouldFiler_organisations() {
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null);
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null);

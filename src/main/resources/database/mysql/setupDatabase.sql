@@ -1038,6 +1038,16 @@ create table o_mail_attachment (
 );
 
 -- access control
+create table o_ac_cost_center (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  a_name varchar(255),
+  a_account varchar(255),
+  a_enabled  bool default true not null,
+  primary key (id)
+);
+
 create table  if not exists o_ac_offer (
   offer_id bigint NOT NULL,
   creationdate datetime,
@@ -1058,8 +1068,12 @@ create table  if not exists o_ac_offer (
   token varchar(255),
   price_amount DECIMAL(12,4),
   price_currency_code VARCHAR(3),
+  cancelling_fee_amount decimal(12,4),
+  cancelling_fee_currency_code varchar(3),
+  cancelling_fee_deadline_days int,
   offer_desc VARCHAR(2000),
   fk_resource_id bigint,
+  fk_cost_center bigint,
   primary key (offer_id)
 );
 
@@ -1146,6 +1160,8 @@ create table if not exists o_ac_order (
     discount_amount DECIMAL(12,4),
     discount_currency_code VARCHAR(3),
     order_status VARCHAR(32) default 'NEW',
+    purchase_order_number varchar(100),
+    order_comment mediumtext,
   fk_delivery_id bigint,
   fk_billing_address bigint,
     primary key (order_id)

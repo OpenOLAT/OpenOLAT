@@ -30,6 +30,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.resource.accesscontrol.AccessControlModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,11 +43,14 @@ public class HomeOrdersController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	private final Link ordersLink;
-	private final Link billingAddressesLink;
+	private Link billingAddressesLink;
 	private final SegmentViewComponent segmentView;
 
 	private OrdersController ordersCtrl;
 	private BillingAddressListController billingAddressesCtrl;
+	
+	@Autowired
+	private AccessControlModule acModule;
 
 	public HomeOrdersController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -56,9 +61,10 @@ public class HomeOrdersController extends BasicController {
 		segmentView.setDontShowSingleSegment(true);
 		ordersLink = LinkFactory.createLink("segment.orders", mainVC, this);
 		segmentView.addSegment(ordersLink, true);
-		billingAddressesLink = LinkFactory.createLink("segment.billing.addresses", mainVC, this);
-		segmentView.addSegment(billingAddressesLink, false);
-
+		if (acModule.isInvoiceEnabled()) {
+			billingAddressesLink = LinkFactory.createLink("segment.billing.addresses", mainVC, this);
+			segmentView.addSegment(billingAddressesLink, false);
+		}
 		doOpenOrders(ureq);
 		putInitialPanel(mainVC);
 	}

@@ -39,6 +39,7 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.OfferOrganisationSelection;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
+import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutAccessHandler;
 import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
@@ -80,6 +81,7 @@ public class AccessControlAdminController extends FormBasicController {
 		methodKeys = new String[] {
 			FreeAccessHandler.METHOD_TYPE,
 			TokenAccessHandler.METHOD_TYPE,
+			InvoiceAccessHandler.METHOD_TYPE,
 			PaypalAccessHandler.METHOD_TYPE,
 			PaypalCheckoutAccessHandler.METHOD_TYPE,
 			METHOD_AUTO
@@ -108,6 +110,7 @@ public class AccessControlAdminController extends FormBasicController {
 		methods = uifactory.addCheckboxesVertical("ac.methods", formLayout, methodKeys, methodValues, 1);
 		methods.select(FreeAccessHandler.METHOD_TYPE, acModule.isFreeEnabled());
 		methods.select(TokenAccessHandler.METHOD_TYPE, acModule.isTokenEnabled());
+		methods.select(InvoiceAccessHandler.METHOD_TYPE, acModule.isInvoiceEnabled());
 		methods.select(PaypalAccessHandler.METHOD_TYPE, acModule.isPaypalEnabled());
 		methods.select(PaypalCheckoutAccessHandler.METHOD_TYPE, acModule.isPaypalCheckoutEnabled());
 		methods.select(METHOD_AUTO, acModule.isAutoEnabled());
@@ -163,6 +166,7 @@ public class AccessControlAdminController extends FormBasicController {
 		Collection<String> selectedMethods = methods.getSelectedKeys();
 		acModule.setFreeEnabled(selectedMethods.contains(FreeAccessHandler.METHOD_TYPE));
 		acModule.setTokenEnabled(selectedMethods.contains(TokenAccessHandler.METHOD_TYPE));
+		acModule.setInvoiceEnabled(selectedMethods.contains(InvoiceAccessHandler.METHOD_TYPE));
 		boolean paypalEnabled = selectedMethods.contains(PaypalAccessHandler.METHOD_TYPE);
 		acModule.setPaypalEnabled(paypalEnabled);
 		boolean paypalCheckoutEnabled = selectedMethods.contains(PaypalCheckoutAccessHandler.METHOD_TYPE);

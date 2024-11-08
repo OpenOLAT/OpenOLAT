@@ -242,6 +242,18 @@ public interface ACService {
 
 	public List<OfferAccess> getOfferAccess(Offer offer, boolean valid);
 	
+	public CostCenter createCostCenter();
+	
+	public CostCenter updateCostCenter(CostCenter costCenter);
+
+	public void deleteCostCenter(CostCenter costCenter);
+	
+	public List<CostCenter> getCostCenters(CostCenterSearchParams searchParams);
+
+	public Map<Long, Long> getCostCenterKeyToOfferCount(Collection<CostCenter> costCenters);
+
+	public Offer addCostCenter(Offer ofer, CostCenter costCenter);
+	
 	public BillingAddress createBillingAddress(Organisation organisation, Identity identity);
 	
 	public BillingAddress updateBillingAddress(BillingAddress billingAddress);
@@ -253,6 +265,8 @@ public interface ACService {
 	public Map<Long, Long> getBillingAddressKeyToOrderCount(Collection<BillingAddress> billingAddresss);
 
 	public Order addBillingAddress(Order order, BillingAddress billingAddress);
+	
+	public Order updateOrder(Order order);
 
 	public Order loadOrderByKey(Long key);
 	
@@ -268,5 +282,7 @@ public interface ACService {
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
 			OrderStatus[] status, int firstResult, int maxResults,
 			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy);
+	
+	public boolean hasOrder(OfferRef offer);
 
 }

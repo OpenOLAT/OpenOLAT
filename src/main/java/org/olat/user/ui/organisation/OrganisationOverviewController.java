@@ -37,6 +37,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ui.BillingAddressListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,6 +69,8 @@ public class OrganisationOverviewController extends BasicController {
 	
 	@Autowired
 	private OrganisationModule organisationModul;
+	@Autowired
+	private AccessControlModule acModule;
 
 	public OrganisationOverviewController(UserRequest ureq, WindowControl wControl, Organisation organisation) {
 		super(ureq, wControl);
@@ -89,7 +92,9 @@ public class OrganisationOverviewController extends BasicController {
 			segmentView.addSegment(roleConfigLink, false);
 		}
 		billingAddressesLink = LinkFactory.createLink("organisation.billing.addresses", mainVC, this);
-		segmentView.addSegment(billingAddressesLink, false);
+		if (acModule.isInvoiceEnabled()) {
+			segmentView.addSegment(billingAddressesLink, false);
+		}
 		emailDomainsLink = LinkFactory.createLink("organisation.email.domains", mainVC, this);
 		if (organisationModul.isEmailDomainEnabled()) {
 			segmentView.addSegment(emailDomainsLink, false);

@@ -37,14 +37,10 @@ public class AccessEvent extends Event {
 	public static final String ACCESS_FAILED = "access-failed";
 	public static final String ACCESS_OK = "access-ok";
 	
-	public static final AccessEvent ACCESS_FAILED_EVENT = new AccessEvent();
+	public static final AccessEvent ACCESS_FAILED_EVENT = new AccessEvent(ACCESS_FAILED);
 	public static final AccessEvent ACCESS_OK_EVENT = new AccessEvent(ACCESS_OK);
 	
 	private final String message;
-	
-	public AccessEvent() {
-		this(ACCESS_FAILED, null);
-	}
 	
 	public AccessEvent(String cmd) {
 		this(cmd, null);

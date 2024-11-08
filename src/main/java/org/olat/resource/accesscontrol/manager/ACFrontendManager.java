@@ -77,6 +77,8 @@ import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.AccessTransaction;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.BillingAddressSearchParams;
+import org.olat.resource.accesscontrol.CostCenter;
+import org.olat.resource.accesscontrol.CostCenterSearchParams;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferOrganisationSelection;
@@ -134,6 +136,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	private ACOfferToOrganisationDAO offerToOrganisationDAO;
 	@Autowired
 	private ACMethodDAO methodManager;
+	@Autowired
+	private ACCostCenterDAO costCenterDao;
 	@Autowired
 	private ACBillingAddressDAO billingAddressDao;
 	@Autowired
@@ -481,7 +485,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				transactionManager.save(transaction);
 				dbInstance.commit();
 				log.info(Tracing.M_AUDIT, "Access granted to: {} for {}", link, identity);
-				return new AccessResult(true);
+				return new AccessResult(true, order);
 			} else {
 				log.info(Tracing.M_AUDIT, "Access error to: {} for {}", link, identity);
 			}
@@ -769,6 +773,36 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 	
 	@Override
+	public CostCenter createCostCenter() {
+		return costCenterDao.create();
+	}
+	
+	@Override
+	public CostCenter updateCostCenter(CostCenter costCenter) {
+		return costCenterDao.update(costCenter);
+	}
+
+	@Override
+	public void deleteCostCenter(CostCenter costCenter) {
+		costCenterDao.delete(costCenter);
+	}
+	
+	@Override
+	public List<CostCenter> getCostCenters(CostCenterSearchParams searchParams) {
+		return costCenterDao.loadCostCenters(searchParams);
+	}
+
+	@Override
+	public Map<Long, Long> getCostCenterKeyToOfferCount(Collection<CostCenter> costCenters) {
+		return accessManager.getCostCenterKeyToOfferCount(costCenters);
+	}
+
+	@Override
+	public Offer addCostCenter(Offer ofer, CostCenter costCenter) {
+		return accessManager.save(ofer, costCenter);
+	}
+	
+	@Override
 	public BillingAddress createBillingAddress(Organisation organisation, Identity identity) {
 		return billingAddressDao.create(organisation, identity);
 	}
@@ -796,6 +830,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Override
 	public Order addBillingAddress(Order order, BillingAddress billingAddress) {
 		return orderManager.save(order, billingAddress);
+	}
+	
+	@Override
+	public Order updateOrder(Order order) {
+		return orderManager.save(order);
 	}
 
 	@Override
@@ -934,6 +973,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	 */
 	private Date dateNow() {
 		return CalendarUtils.removeTime(new Date());
+	}
+
+	@Override
+	public boolean hasOrder(OfferRef offer) {
+		return orderManager.hasOrder(offer);
 	}
 
 	@Override

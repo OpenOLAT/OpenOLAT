@@ -41,6 +41,14 @@ public interface Order {
 	
 	public OrderStatus getOrderStatus();
 	
+	public String getPurchaseOrderNumber();
+	
+	public void setPurchaseOrderNumber(String purchaseOrderNumber);
+	
+	public String getComment();
+	
+	public void setComment(String comment);
+	
 	public Identity getDelivery();
 	
 	public String getCurrencyCode();

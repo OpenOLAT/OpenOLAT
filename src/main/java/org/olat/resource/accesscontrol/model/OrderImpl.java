@@ -98,6 +98,10 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 	private boolean valid;
 	@Column(name="order_status", nullable=true, insertable=true, updatable=true)
 	private String orderStatus;
+	@Column(name="purchase_order_number", nullable=true, insertable=true, updatable=true)
+	private String purchaseOrderNumber;
+	@Column(name="order_comment", nullable=true, insertable=true, updatable=true)
+	private String comment;
 	
 	@Embedded
     @AttributeOverrides( {
@@ -202,6 +206,26 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 
 	public void setOrderStatusStr(String orderStatus) {
 		this.orderStatus = orderStatus;
+	}
+
+	@Override
+	public String getPurchaseOrderNumber() {
+		return purchaseOrderNumber;
+	}
+
+	@Override
+	public void setPurchaseOrderNumber(String purchaseOrderNumber) {
+		this.purchaseOrderNumber = purchaseOrderNumber;
+	}
+
+	@Override
+	public String getComment() {
+		return comment;
+	}
+
+	@Override
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 
 	@Override

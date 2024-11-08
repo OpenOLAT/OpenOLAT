@@ -44,6 +44,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OfferRef;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
@@ -112,6 +113,7 @@ public class ACOrderDAO {
 		if(order.getKey() == null) {
 			dbInstance.saveObject(order);
 		} else {
+			((OrderImpl)order).setLastModified(new Date());
 			dbInstance.updateObject(order);
 		}
 		return order;
@@ -122,6 +124,7 @@ public class ACOrderDAO {
 		if(order.getKey() == null) {
 			dbInstance.saveObject(order);
 		} else {
+			((OrderImpl)order).setLastModified(new Date());
 			dbInstance.updateObject(order);
 		}
 		return order;
@@ -132,6 +135,7 @@ public class ACOrderDAO {
 		if(order.getKey() == null) {
 			dbInstance.saveObject(order);
 		} else {
+			((OrderImpl)order).setLastModified(new Date());
 			dbInstance.updateObject(order);
 		}
 		return order;
@@ -511,6 +515,25 @@ public class ACOrderDAO {
 	public Order loadOrderByNr(String orderNr) {
 		Long orderKey = Long.valueOf(orderNr);
 		return loadOrderByKey(orderKey);
+	}
+	
+	public boolean hasOrder(OfferRef offer) {
+		if (offer == null) {
+			return false;
+		}
+		
+		String query = """
+				select orderline.key
+				  from acorderline orderline
+				 where orderline.offer.key = :offerKey
+				""";
+		
+		return !dbInstance.getCurrentEntityManager()
+			.createQuery(query, Long.class)
+			.setParameter("offerKey", offer.getKey())
+			.setMaxResults(1)
+			.getResultList()
+			.isEmpty();
 	}
 	
 	public Map<Long, Long> getBillingAddressKeyToOrderCount(Collection<BillingAddress> billingAddresss) {

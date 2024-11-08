@@ -72,7 +72,11 @@ public class BillingAddressController extends FormBasicController implements Con
 		
 		initForm(ureq);
 	}
-
+	
+	public BillingAddress getBillingAddress() {
+		return billingAddress;
+	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (billingAddress != null && ureq.getUserSession().getRoles().isAdministrator()) {

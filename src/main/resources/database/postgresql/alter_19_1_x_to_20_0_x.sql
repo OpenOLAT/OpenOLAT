@@ -72,6 +72,15 @@ create index idx_history_group_idx on o_bs_group_member_history (fk_group_id);
 
 
 -- Access control
+create table o_ac_cost_center (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  a_name varchar(255),
+  a_account varchar(255),
+  a_enabled bool default true not null,
+  primary key (id)
+);
 create table o_ac_billing_address (
   id bigserial,
   creationdate timestamp not null,
@@ -93,7 +102,16 @@ create table o_ac_billing_address (
   fk_identity int8,
   primary key (id)
 );
+alter table o_ac_offer add column cancelling_fee_amount decimal;
+alter table o_ac_offer add column cancelling_fee_currency_code varchar(3);
+alter table o_ac_offer add column cancelling_fee_deadline_days int8;
+alter table o_ac_offer add column fk_cost_center int8;
+alter table o_ac_order add column purchase_order_number varchar(100);
+alter table o_ac_order add column order_comment text;
 alter table o_ac_order add column fk_billing_address int8;
+
+alter table o_ac_offer add constraint ac_offer_to_cc_idx foreign key (fk_cost_center) references o_ac_cost_center (id);
+create index idx_ac_offer_to_cc_idx on o_ac_offer (fk_cost_center);
 
 alter table o_ac_billing_address add constraint ac_billing_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_ac_billing_to_org_idx on o_ac_billing_address (fk_organisation);

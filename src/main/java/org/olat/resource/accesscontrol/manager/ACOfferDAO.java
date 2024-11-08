@@ -21,9 +21,11 @@
 package org.olat.resource.accesscontrol.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OrganisationRef;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.CostCenter;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.model.OfferImpl;
@@ -245,6 +248,33 @@ public class ACOfferDAO {
 			offer = dbInstance.getCurrentEntityManager().merge(offer);
 		}
 		return offer;
+	}
+	
+	public Offer save(Offer offer, CostCenter costCenter) {
+		((OfferImpl)offer).setCostCenter(costCenter);
+		if(offer.getKey() == null) {
+			dbInstance.saveObject(offer);
+		} else {
+			((OfferImpl)offer).setLastModified(new Date());
+			dbInstance.updateObject(offer);
+		}
+		return offer;
+	}
+	
+	public Map<Long, Long> getCostCenterKeyToOfferCount(Collection<CostCenter> costCenters) {
+		String query = """
+				select offer.costCenter.key
+				     , count(*)
+				  from acoffer offer
+				 where offer.costCenter.key in :costCenterKeys
+				 group by offer.costCenter.key
+				""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Object[].class)
+				.setParameter("costCenterKeys", costCenters.stream().map(CostCenter::getKey).toList())
+				.getResultList()
+				.stream()
+				.collect(Collectors.toMap(row -> (Long)row[0], row -> (Long)row[1]));
 	}
 	
 }

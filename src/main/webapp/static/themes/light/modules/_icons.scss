@@ -902,6 +902,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_guest_icon { @include o-add-icon('user-circle');}
 .o_ac_token_icon { @include o-add-icon('key');}
 .o_ac_free_icon { @include o-add-icon('gift');}
+.o_ac_invoice_icon { @include o-add-icon('receipt');}
 .o_ac_group_icon { @include o-add-icon('users', false);}
 .o_ac_membersonly_icon { @include o-add-icon('lock');}
 .o_ac_guests_icon { @include o-add-icon('user-circle', false);}

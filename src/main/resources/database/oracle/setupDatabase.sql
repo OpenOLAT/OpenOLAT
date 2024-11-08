@@ -1007,6 +1007,15 @@ create table o_mail_attachment (
 );
 
 -- Access control
+create table o_ac_cost_center (
+  id number(20) GENERATED ALWAYS AS IDENTITY,
+  creationdate date not null,
+  lastmodified date not null,
+  a_name varchar(255),
+  a_account varchar(255),
+  a_enabled number default 1 not null,
+  primary key (id)
+);
 create table o_ac_offer (
   offer_id number(20) NOT NULL,
   creationdate date,
@@ -1027,8 +1036,12 @@ create table o_ac_offer (
   catalog_web_publish number default 0 not null,
   price_amount number(20,2),
   price_currency_code VARCHAR(3 char),
+  cancelling_fee_amount number(20,2),
+  cancelling_fee_currency_code varchar(3 char),
+  cancelling_fee_deadline_days number(20),
   offer_desc VARCHAR(2000 char),
   fk_resource_id number(20),
+  fk_cost_center number(20),
   primary key (offer_id)
 );
 
@@ -1101,6 +1114,8 @@ create table o_ac_order (
   discount_amount number(20,2),
   discount_currency_code VARCHAR(3 char),
   order_status VARCHAR(32 char) default 'NEW',
+  purchase_order_number varchar(100),
+  order_comment varchar(4000),
   fk_delivery_id number(20),
   fk_billing_address number(20),
   primary key (order_id)
@@ -5108,6 +5123,8 @@ create index idx_re_to_lev_tax_lev_idx on o_re_to_tax_level (fk_taxonomy_level);
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
 create index idx_offer_guest_idx on o_ac_offer (guest_access);
 create index idx_offer_open_idx on o_ac_offer (open_access);
+alter table o_ac_offer add constraint ac_offer_to_cc_idx foreign key (fk_cost_center) references o_ac_cost_center (id);
+create index idx_ac_offer_to_cc_idx on o_ac_offer (fk_cost_center);
 
 alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
 create index idx_rel_oto_offer_idx on o_ac_offer_to_organisation (fk_offer);

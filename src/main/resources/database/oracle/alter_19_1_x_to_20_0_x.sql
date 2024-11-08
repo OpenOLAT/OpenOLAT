@@ -72,6 +72,15 @@ create index idx_history_group_idx on o_bs_group_member_history (fk_group_id);
 
 
 -- Access control
+create table o_ac_cost_center (
+  id number(20) GENERATED ALWAYS AS IDENTITY,
+  creationdate date not null,
+  lastmodified date not null,
+  a_name varchar(255),
+  a_account varchar(255),
+  a_enabled number default 1 not null,
+  primary key (id)
+);
 create table o_ac_billing_address (
   id number(20) GENERATED ALWAYS AS IDENTITY,
   creationdate date not null,
@@ -93,7 +102,16 @@ create table o_ac_billing_address (
   fk_identity number(20),
   primary key (id)
 );
-alter table o_ac_order add fk_billing_address number(20);
+alter table o_ac_offer add column cancelling_fee_amount number(20,2);
+alter table o_ac_offer add column cancelling_fee_currency_code varchar(3 char);
+alter table o_ac_offer add column cancelling_fee_deadline_days number(20);
+alter table o_ac_offer add column fk_cost_center number(20);
+alter table o_ac_order add column purchase_order_number varchar(100);
+alter table o_ac_order add column order_comment varchar(4000);
+alter table o_ac_order add column fk_billing_address number(20);
+
+alter table o_ac_offer add constraint ac_offer_to_cc_idx foreign key (fk_cost_center) references o_ac_cost_center (id);
+create index idx_ac_offer_to_cc_idx on o_ac_offer (fk_cost_center);
 
 alter table o_ac_billing_address add constraint ac_billing_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_ac_billing_to_org_idx on o_ac_billing_address (fk_organisation);

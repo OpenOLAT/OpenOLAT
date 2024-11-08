@@ -956,6 +956,16 @@ create table o_mail_attachment (
 );
 
 -- access control
+create table o_ac_cost_center (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  a_name varchar(255),
+  a_account varchar(255),
+  a_enabled bool default true not null,
+  primary key (id)
+);
+
 create table o_ac_offer (
   offer_id int8 NOT NULL,
   creationdate timestamp,
@@ -976,8 +986,12 @@ create table o_ac_offer (
   token varchar(255),
   price_amount DECIMAL,
   price_currency_code VARCHAR(3),
+  cancelling_fee_amount decimal,
+  cancelling_fee_currency_code varchar(3),
+  cancelling_fee_deadline_days int8,
   offer_desc VARCHAR(2000),
   fk_resource_id int8,
+  fk_cost_center int8,
   primary key (offer_id)
 );
 
@@ -1064,6 +1078,8 @@ create table o_ac_order (
     discount_amount DECIMAL,
     discount_currency_code VARCHAR(3),
     order_status VARCHAR(32) default 'NEW',
+    purchase_order_number varchar(100),
+    order_comment text,
   fk_delivery_id int8,
   fk_billing_address int8,
     primary key (order_id)
@@ -5058,6 +5074,8 @@ create unique index idc_re_edu_type_ident on o_re_educational_type (r_identifier
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
 create index idx_offer_guest_idx on o_ac_offer (guest_access);
 create index idx_offer_open_idx on o_ac_offer (open_access);
+alter table o_ac_offer add constraint ac_offer_to_cc_idx foreign key (fk_cost_center) references o_ac_cost_center (id);
+create index idx_ac_offer_to_cc_idx on o_ac_offer (fk_cost_center);
 
 alter table o_ac_offer_to_organisation add constraint rel_oto_offer_idx foreign key (fk_offer) references o_ac_offer(offer_id);
 create index idx_rel_oto_offer_idx on o_ac_offer_to_organisation (fk_offer);

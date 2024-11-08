@@ -21,6 +21,7 @@
 package org.olat.resource.accesscontrol;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -38,11 +39,11 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
-import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.manager.ACOrderDAO;
 import org.olat.resource.accesscontrol.manager.ACTransactionDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -78,9 +79,6 @@ public class ACOrderManagerTest extends OlatTestCase {
 	private DB dbInstance;
 	
 	@Autowired
-	private ACOfferDAO acOfferManager;
-	
-	@Autowired
 	private ACTransactionDAO acTransactionManager;
 	
 	@Autowired
@@ -111,7 +109,6 @@ public class ACOrderManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testManagers() {
-		assertNotNull(acOfferManager);
 		assertNotNull(acService);
 		assertNotNull(dbInstance);
 		assertNotNull(acMethodManager);
@@ -615,4 +612,23 @@ public class ACOrderManagerTest extends OlatTestCase {
 		Assert.assertNull(billingAddressKeyToOrderCount.get(billingAddress3.getKey()));
 		Assert.assertNull(billingAddressKeyToOrderCount.get(billingAddress4.getKey()));
 	}
+	
+	@Test
+	public void hasOrder() {
+		RepositoryEntry repositoryEntry = JunitTestHelper.createRandomRepositoryEntry(ident2);
+		OLATResource randomOres = repositoryEntry.getOlatResource();
+		Offer offer = acService.createOffer(randomOres, "TestSaveOrder");
+		offer = acService.save(offer);
+		dbInstance.commitAndCloseSession();
+		
+		assertFalse(acOrderManager.hasOrder(offer));
+		
+		AccessMethod method = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
+		OfferAccess access = acMethodManager.createOfferAccess(offer, method);
+		acService.accessResource(ident1, access, null);
+		dbInstance.commitAndCloseSession();
+		
+		assertTrue(acOrderManager.hasOrder(offer));
+	}
+	
 }

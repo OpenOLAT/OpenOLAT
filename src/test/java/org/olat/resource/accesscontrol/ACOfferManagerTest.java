@@ -27,8 +27,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
@@ -42,6 +44,7 @@ import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferToOrganisationDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferImpl;
+import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -92,6 +95,10 @@ public class ACOfferManagerTest extends OlatTestCase {
 		}
 		offer.setValidFrom(new Date());
 		offer.setValidTo(new Date());
+		BigDecimal cancellingFeeAmount = new BigDecimal("10.00");
+		Price cancellingFee = new PriceImpl(cancellingFeeAmount, "USD");
+		offer.setCancellingFee(cancellingFee);
+		offer.setCancellingFeeDeadlineDays(10);
 		//and save the offer
 		acOfferManager.saveOffer(offer);
 
@@ -116,11 +123,56 @@ public class ACOfferManagerTest extends OlatTestCase {
 			OfferImpl offerImpl = (OfferImpl)savedOffer;
 			assertEquals("token1", offerImpl.getToken());
 		}
-		assertNotNull(offer.getValidFrom());
-		assertNotNull(offer.getValidTo());
+		assertNotNull(savedOffer.getValidFrom());
+		assertNotNull(savedOffer.getValidTo());
+		assertEquals(cancellingFeeAmount.doubleValue(), savedOffer.getCancellingFee().getAmount().doubleValue(), 0.001);
+		assertEquals("USD", savedOffer.getCancellingFee().getCurrencyCode());
+		assertEquals(Integer.valueOf(10), savedOffer.getCancellingFeeDeadlineDays());
 		assertEquals(testOres.getResourceableId(), savedOffer.getResourceId());
 		assertEquals(testOres.getResourceableTypeName(), savedOffer.getResourceTypeName());
 		assertEquals("TestSaveOffer", savedOffer.getResourceDisplayName());
+	}
+	
+	@Test
+	public void addCostCenter() {
+		OLATResource testOres = JunitTestHelper.createRandomResource();
+		dbInstance.commitAndCloseSession();
+
+		//create an offer
+		Offer offer = acOfferManager.createOffer(testOres, "TestSaveOffer");
+		CostCenter center = acService.createCostCenter();
+		acOfferManager.save(offer, center);
+		dbInstance.commitAndCloseSession();
+		
+		Offer reloadedOffer = acOfferManager.findOfferByResource(testOres, true, null, false, null, null).get(0);
+		assertEquals(center, reloadedOffer.getCostCenter());
+	}
+	
+	@Test
+	public void getCostCenterKeyToOfferCount() {
+		OLATResource testOres = JunitTestHelper.createRandomResource();
+		dbInstance.commitAndCloseSession();
+		
+		CostCenter center1 = acService.createCostCenter();
+		CostCenter center2 = acService.createCostCenter();
+		CostCenter center3 = acService.createCostCenter();
+		CostCenter center4 = acService.createCostCenter();
+		Offer offer11 = acOfferManager.createOffer(testOres, "TestSaveOffer");
+		Offer offer12 = acOfferManager.createOffer(testOres, "TestSaveOffer");
+		Offer offer21 = acOfferManager.createOffer(testOres, "TestSaveOffer");
+		Offer offer41 = acOfferManager.createOffer(testOres, "TestSaveOffer");
+		acOfferManager.save(offer11, center1);
+		acOfferManager.save(offer12, center1);
+		acOfferManager.save(offer21, center2);
+		acOfferManager.save(offer41, center4);
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long, Long> centerKeyToOfferCount = acOfferManager.getCostCenterKeyToOfferCount(List.of(center1, center2, center3));
+		
+		assertEquals(Long.valueOf(2), centerKeyToOfferCount.get(center1.getKey()));
+		assertEquals(Long.valueOf(1), centerKeyToOfferCount.get(center2.getKey()));
+		assertNull(centerKeyToOfferCount.get(center3.getKey()));
+		assertNull(centerKeyToOfferCount.get(center4.getKey()));
 	}
 
 	@Test

@@ -66,6 +66,15 @@ alter table o_bs_group_member_history add constraint history_group_idx foreign k
 
 
 -- Access control
+create table o_ac_cost_center (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  a_name varchar(255),
+  a_account varchar(255),
+  a_enabled  bool default true not null,
+  primary key (id)
+);
 create table o_ac_billing_address (
   id bigint not null auto_increment,
   creationdate datetime not null,
@@ -87,9 +96,18 @@ create table o_ac_billing_address (
   fk_identity bigint,
   primary key (id)
 );
+alter table o_ac_offer add column cancelling_fee_amount decimal(12,4);
+alter table o_ac_offer add column cancelling_fee_currency_code varchar(3);
+alter table o_ac_offer add column cancelling_fee_deadline_days int;
+alter table o_ac_offer add column fk_cost_center bigint;
+alter table o_ac_order add column purchase_order_number varchar(100);
+alter table o_ac_order add column order_comment mediumtext;
 alter table o_ac_order add column fk_billing_address bigint;
 
+alter table o_ac_cost_center ENGINE = InnoDB;
 alter table o_ac_billing_address ENGINE = InnoDB;
+
+alter table o_ac_offer add constraint ac_offer_to_cc_idx foreign key (fk_cost_center) references o_ac_cost_center (id);
 
 alter table o_ac_billing_address add constraint ac_billing_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 alter table o_ac_billing_address add constraint ac_billing_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);

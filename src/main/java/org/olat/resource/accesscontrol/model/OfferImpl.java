@@ -45,6 +45,7 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
+import org.olat.resource.accesscontrol.CostCenter;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.Price;
 
@@ -122,6 +123,15 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
     @AttributeOverride(name="amount", column = @Column(name="price_amount"))
     @AttributeOverride(name="currencyCode", column = @Column(name="price_currency_code"))
 	private PriceImpl price;
+	@Embedded
+	@AttributeOverride(name="amount", column = @Column(name="cancelling_fee_amount"))
+	@AttributeOverride(name="currencyCode", column = @Column(name="cancelling_fee_currency_code"))
+	private PriceImpl cancellingFee;
+	@Column(name="cancelling_fee_deadline_days", nullable=true, insertable=true, updatable=true)
+	private Integer cancellingFeeDeadlineDays;
+	@ManyToOne(targetEntity=CostCenterImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_cost_center", nullable=true, insertable=true, updatable=true)
+	private CostCenter costCenter;
 	
 	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_resource_id", nullable=false, insertable=true, updatable=false)
@@ -317,6 +327,36 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	@Override
 	public void setPrice(Price price) {
 		this.price = (PriceImpl)price;
+	}
+
+	@Override
+	public Price getCancellingFee() {
+		return cancellingFee;
+	}
+
+	@Override
+	public void setCancellingFee(Price cancellingFee) {
+		this.cancellingFee = (PriceImpl)cancellingFee;
+	}
+
+	@Override
+	public Integer getCancellingFeeDeadlineDays() {
+		return cancellingFeeDeadlineDays;
+	}
+
+	@Override
+	public void setCancellingFeeDeadlineDays(Integer cancellingFeeDeadlineDays) {
+		this.cancellingFeeDeadlineDays = cancellingFeeDeadlineDays;
+	}
+
+	@Override
+	public CostCenter getCostCenter() {
+		return costCenter;
+	}
+
+	@Override
+	public void setCostCenter(CostCenter costCenter) {
+		this.costCenter = costCenter;
 	}
 
 	@Override

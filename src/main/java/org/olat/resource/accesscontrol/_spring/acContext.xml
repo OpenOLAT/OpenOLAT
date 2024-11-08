@@ -86,4 +86,28 @@
 		</property>
 		<property name="order" value="7600" />
 	</bean>
+	
+
+	<!--  Invoice -->
+	<bean id="invoiceAccessHandler" class="org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler"/>
+	
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.invoice" init-method="initExtensionPoints">
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.resource.accesscontrol.provider.invoice.ui.InvoiceAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="invoice" />
+		<property name="i18nActionKey" value="invoice.menu.title"/>
+		<property name="i18nDescriptionKey" value="invoice.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.resource.accesscontrol.provider.invoice.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="paymentsParent" /> 
+		<property name="order" value="7220" />
+	</bean>
+	
 </beans>

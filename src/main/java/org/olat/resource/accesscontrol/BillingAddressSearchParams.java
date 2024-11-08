@@ -32,9 +32,22 @@ import org.olat.core.id.OrganisationRef;
  */
 public class BillingAddressSearchParams {
 
+	private Collection<Long> billingAddressKeys;
 	private Collection<Long> organisationKeys;
 	private Collection<Long> identityKeys;
 	private Boolean enabled;
+
+	public Collection<Long> getBillingAddressKeys() {
+		return billingAddressKeys;
+	}
+
+	public void setBillingAddressKeys(Collection<Long> billingAddressKeys) {
+		this.billingAddressKeys = billingAddressKeys;
+	}
+
+	public void setBillingAddresses(Collection<BillingAddress> billingAddresses) {
+		this.billingAddressKeys = billingAddresses != null? billingAddresses.stream().map(BillingAddress::getKey).toList(): null;
+	}
 
 	public Collection<Long> getOrganisationKeys() {
 		return organisationKeys;

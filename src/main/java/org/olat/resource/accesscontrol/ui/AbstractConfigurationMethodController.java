@@ -81,7 +81,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private final boolean edit;
 	
 	@Autowired
-	private ACService acService;
+	protected ACService acService;
 	@Autowired
 	private CatalogV2Module catalogModule;
 	@Autowired

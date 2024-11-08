@@ -36,6 +36,7 @@ public class AccessResult {
 	
 	private final boolean accessible;
 	private List<OfferAccess> availableMethods;
+	private Order order;
 	
 	public AccessResult(boolean accessible) {
 		this(accessible, Collections.emptyList());
@@ -46,6 +47,11 @@ public class AccessResult {
 		this.availableMethods = availableMethods;
 	}
 
+	public AccessResult(boolean accessible, Order order) {
+		this.accessible = accessible;
+		this.order = order;
+	}
+
 	public boolean isAccessible() {
 		return accessible;
 	}
@@ -53,4 +59,9 @@ public class AccessResult {
 	public List<OfferAccess> getAvailableMethods() {
 		return availableMethods;
 	}
+
+	public Order getOrder() {
+		return order;
+	}
+	
 }
