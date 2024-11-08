@@ -738,27 +738,25 @@ public class FeedItemListController extends FormBasicController implements Flexi
 
 
 	private void bulkUpdateFeedItemTags(List<String> tagDisplayNames) {
-		List<Item> selectedItems = tableEl.getMultiSelectedIndex().stream().map(r -> tableModel.getObject(r).getItem()).toList();
+		List<Item> selectedAuthorisedItemList = getSelectedAuthorisedItemList();
 
-		// if the current user has no rights to edit items
-		if (!feedSecCallback.mayEditItems()) {
-			// then filter the selectedItems list and only keep items, which belong to the user
-			selectedItems = selectedItems.stream()
-					.filter(item -> item.getAuthorKey() != null
-							&& item.getAuthorKey().equals(getIdentity().getKey())).toList();
+		if (!selectedAuthorisedItemList.isEmpty()) {
+			feedManager.bulkAddTags(selectedAuthorisedItemList, tagDisplayNames);
+			updateWholeModel();
 		}
-
-		feedManager.bulkAddTags(selectedItems, tagDisplayNames);
-		updateWholeModel();
 		deactivateAndCleanUp();
 	}
 
 	private void bulkRemoveFeedItemTags(List<String> tagDisplayNames) {
-		List<Item> selectedItems = tableEl.getMultiSelectedIndex().stream().map(r -> tableModel.getObject(r).getItem()).toList();
+		List<Item> selectedAuthorisedItemList = getSelectedAuthorisedItemList();
 
-		feedManager.bulkRemoveTags(selectedItems, tagDisplayNames);
+		feedManager.bulkRemoveTags(selectedAuthorisedItemList, tagDisplayNames);
 		updateWholeModel();
 		deactivateAndCleanUp();
+	}
+
+	private List<Item> getSelectedItems() {
+		return tableEl.getMultiSelectedIndex().stream().map(r -> tableModel.getObject(r).getItem()).toList();
 	}
 
 	private void updateViewAndSidebar(UserRequest ureq) {
@@ -1057,28 +1055,39 @@ public class FeedItemListController extends FormBasicController implements Flexi
 			return isAuthorKeyNullAndItemNotDeletable || isAuthorDifferentFromCurrentUser;
 		});
 
+		boolean partlyDeletePermission = false;
 		if (hasItems && isDeletionNotAllowed && hasRemovableItem) {
 			// Remove items that don't belong to the current user's identity
 			modifiableFeedItems.removeIf(item ->
 					item.getAuthorKey() == null ||
 							(item.getAuthorKey() != null && !item.getAuthorKey().equals(getIdentity().getKey()))
 			);
+			partlyDeletePermission = true;
 		}
 
 		if (modifiableFeedItems.size() == 1) {
 			Item item = modifiableFeedItems.get(0);
+			String confirmationMessage = translate("feed.item.confirm.delete", StringHelper.escapeHtml(item.getTitle()));
+			// if any item got removed from the selection because the user is not allowed to delete it
+			// then alter the message
+			if (feedItems.size() != modifiableFeedItems.size()) {
+				confirmationMessage = confirmationMessage + " " + translate("feed.item.confirm.delete.partly");
+			}
+
 			deletePermanentlyConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
-					translate("feed.item.confirm.delete", StringHelper.escapeHtml(item.getTitle())),
+					confirmationMessage,
 					translate("feed.item.confirmation.confirm.delete"),
 					translate("delete"), true);
 			deletePermanentlyConfirmationCtrl.setUserObject(modifiableFeedItems);
 			activateModalDialog(deletePermanentlyConfirmationCtrl, translate("feed.item.delete.permanently.title"));
+		} else if (modifiableFeedItems.isEmpty()) {
+			showWarning("msg.selection.empty");
 		} else {
-			doConfirmBulkDeletePermanently(ureq, modifiableFeedItems);
+			doConfirmBulkDeletePermanently(ureq, modifiableFeedItems, partlyDeletePermission);
 		}
 	}
 
-	private void doConfirmBulkDeletePermanently(UserRequest ureq, List<Item> feedItems) {
+	private void doConfirmBulkDeletePermanently(UserRequest ureq, List<Item> feedItems, boolean partlyDeletePermission) {
 		if (guardModalController(bulkDeleteConfirmationCtrl)) return;
 
 		List<String> feedItemTitles = feedItems.stream()
@@ -1086,8 +1095,13 @@ public class FeedItemListController extends FormBasicController implements Flexi
 				.sorted()
 				.toList();
 
+		String confirmationMessage = translate("feed.item.confirm.bulk.delete", String.valueOf(feedItems.size()));
+		if (partlyDeletePermission) {
+			confirmationMessage = confirmationMessage + " " + translate("feed.item.confirm.delete.partly");
+		}
+
 		bulkDeleteConfirmationCtrl = new BulkDeleteConfirmationController(ureq, getWindowControl(),
-				translate("feed.item.confirm.bulk.delete", String.valueOf(feedItems.size())),
+				confirmationMessage,
 				translate("feed.item.confirmation.confirm.bulk.delete", String.valueOf(feedItems.size())),
 				translate("delete"),
 				translate("feed.item.confirm.bulk.delete.permanently.label"), feedItemTitles,
@@ -1099,17 +1113,38 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	private void doBulkAddTags(UserRequest ureq) {
 		if (guardModalController(bulkAddTagsCtrl)) return;
 
-		bulkAddTagsCtrl = new FeedBulkAddTagsController(ureq, getWindowControl(), tagInfos);
-		activateModalDialog(bulkAddTagsCtrl, translate("feed.item.bulk.add.tags.title"));
+		List<Item> authorisedItemList = getSelectedAuthorisedItemList();
+
+		if (authorisedItemList.isEmpty()) {
+			showWarning("msg.selection.empty");
+		} else {
+			bulkAddTagsCtrl = new FeedBulkAddTagsController(ureq, getWindowControl(), tagInfos, authorisedItemList.size(), getSelectedItems().size());
+			activateModalDialog(bulkAddTagsCtrl, translate("feed.item.bulk.add.tags.title"));
+		}
 	}
 
 	private void doBulkRemoveTags(UserRequest ureq) {
 		if (guardModalController(bulkRemoveTagsCtrl)) return;
 
-		// Get the selected items from the table
-		List<Item> selectedItems = tableEl.getMultiSelectedIndex().stream()
-				.map(r -> tableModel.getObject(r).getItem())
+		List<Item> authorisedItemList = getSelectedAuthorisedItemList();
+
+		// Extract keys from the filtered list of selected items
+		List<Long> selectedItemKeys = authorisedItemList.stream()
+				.map(Item::getKey)
 				.toList();
+
+		if (selectedItemKeys.isEmpty()) {
+			showWarning("msg.selection.empty");
+		} else {
+			List<TagInfo> selectedTagInfos = feedManager.getTagInfosForFeedItems(feedRss, selectedItemKeys);
+			bulkRemoveTagsCtrl = new FeedBulkRemoveTagsController(ureq, getWindowControl(), selectedTagInfos, authorisedItemList.size(), getSelectedItems().size());
+			activateModalDialog(bulkRemoveTagsCtrl, translate("feed.item.bulk.remove.tags.title"));
+		}
+	}
+
+	private List<Item> getSelectedAuthorisedItemList() {
+		// Get the selected items from the table
+		List<Item> selectedItems = getSelectedItems();
 
 		// Filter selected items based on edit permissions
 		boolean canEditItems = feedSecCallback.mayEditItems();
@@ -1122,14 +1157,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 					.toList();
 		}
 
-		// Extract keys from the filtered list of selected items
-		List<Long> selectedItemKeys = selectedItems.stream()
-				.map(Item::getKey)
-				.toList();
-
-		List<TagInfo> selectedTagInfos = feedManager.getTagInfosForFeedItems(feedRss, selectedItemKeys);
-		bulkRemoveTagsCtrl = new FeedBulkRemoveTagsController(ureq, getWindowControl(), selectedTagInfos);
-		activateModalDialog(bulkRemoveTagsCtrl, translate("feed.item.bulk.remove.tags.title"));
+		return selectedItems;
 	}
 
 	@Override

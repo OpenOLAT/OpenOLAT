@@ -1,5 +1,8 @@
 #if($r.available("removeTags"))
 	<div class="o_feed_tags o_feed_tags_bulk_remove">
+		#if($off_warn)
+			<p class="o_warning_with_icon">$off_warn</p>
+		#end
 		$r.render("removeTags")
 		$r.render("button_layout")
 	</div>
