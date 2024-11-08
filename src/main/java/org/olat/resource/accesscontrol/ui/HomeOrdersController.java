@@ -41,7 +41,7 @@ public class HomeOrdersController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	private final Link ordersLink;
-	private final Link billingAdressesLink;
+	private final Link billingAddressesLink;
 	private final SegmentViewComponent segmentView;
 
 	private OrdersController ordersCtrl;
@@ -56,8 +56,8 @@ public class HomeOrdersController extends BasicController {
 		segmentView.setDontShowSingleSegment(true);
 		ordersLink = LinkFactory.createLink("segment.orders", mainVC, this);
 		segmentView.addSegment(ordersLink, true);
-		billingAdressesLink = LinkFactory.createLink("segment.billing.addresses", mainVC, this);
-		segmentView.addSegment(billingAdressesLink, false);
+		billingAddressesLink = LinkFactory.createLink("segment.billing.addresses", mainVC, this);
+		segmentView.addSegment(billingAddressesLink, false);
 
 		doOpenOrders(ureq);
 		putInitialPanel(mainVC);
@@ -72,8 +72,8 @@ public class HomeOrdersController extends BasicController {
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == ordersLink) {
 					doOpenOrders(ureq);
-				} else if (clickedLink == billingAdressesLink){
-					doOpenBillingAdresses(ureq);
+				} else if (clickedLink == billingAddressesLink){
+					doOpenBillingAddresses(ureq);
 				}
 			}
 		}
@@ -87,7 +87,7 @@ public class HomeOrdersController extends BasicController {
 		mainVC.put("segmentCmp", ordersCtrl.getInitialComponent());
 	}
 
-	private void doOpenBillingAdresses(UserRequest ureq) {
+	private void doOpenBillingAddresses(UserRequest ureq) {
 		if(billingAddressesCtrl == null) {
 			billingAddressesCtrl = new BillingAddressListController(ureq, getWindowControl(), null, getIdentity());
 			listenTo(billingAddressesCtrl);
