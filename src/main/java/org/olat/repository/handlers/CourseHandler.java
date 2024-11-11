@@ -166,8 +166,9 @@ public class CourseHandler implements RepositoryHandler {
 			Object createObject, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
+		RepositoryEntryRuntimeType runtimeType = repositoryService.getDefaultRuntimeType(resource);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
-						RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.standalone, organisation);
+						RepositoryEntryStatusEnum.preparation, runtimeType, organisation);
 		DBFactory.getInstance().commit();
 
 		ICourse course = CourseFactory.createCourse(re, null, displayname);
