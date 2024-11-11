@@ -96,7 +96,7 @@ public class AuthoringEditAccessController extends BasicController {
 		this.readOnly = readOnly;
 		
 		mainVC = createVelocityContainer("editproptabpub");
-		if(!"CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+		if(repositoryService.canEditRuntimeType(entry)) {
 			initRuntimeType(ureq, mainVC);
 		}
 		initAccessShare(ureq, mainVC);

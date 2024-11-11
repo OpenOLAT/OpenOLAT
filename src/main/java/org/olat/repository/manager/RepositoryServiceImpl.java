@@ -1120,10 +1120,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public boolean canSwitchTo(RepositoryEntry entry, RepositoryEntryRuntimeType runtimeType) {
-		if (hasUserManaged(entry)) {
-			return false;
-		}
-
 		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			switch (runtimeType) {
 				case embedded -> {
@@ -1147,6 +1143,25 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		}
 
 		return true;
+	}
+
+	@Override
+	public Set<RepositoryEntryRuntimeType> allowedRuntimeTypes(RepositoryEntry entry) {
+		Set<RepositoryEntryRuntimeType> runtimeTypes = new HashSet<>();
+
+		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			if (curriculumService.getCuriculumElementCount(entry) == 0) {
+				runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
+			}
+			if (curriculumModule.isEnabled() && canSwitchToCurricular(entry)) {
+				runtimeTypes.add(RepositoryEntryRuntimeType.curricular);
+			}
+		} else {
+			runtimeTypes.add(RepositoryEntryRuntimeType.embedded);
+			runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
+		}
+
+		return runtimeTypes;
 	}
 
 	private boolean canSwitchToCurricular(RepositoryEntry entry) {
@@ -1179,6 +1194,31 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			}
 		}
 		return types;
+	}
+
+	@Override
+	public Set<RepositoryEntryRuntimeType> getPossibleRuntimeTypes(RepositoryEntry entry) {
+		HashSet<RepositoryEntryRuntimeType> types = new HashSet<>();
+		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			types.add(RepositoryEntryRuntimeType.standalone);
+			if (curriculumModule.isEnabled()) {
+				types.add(RepositoryEntryRuntimeType.curricular);
+			}
+		} else {
+			types.add(RepositoryEntryRuntimeType.standalone);
+			types.add(RepositoryEntryRuntimeType.embedded);
+		}
+		return types;
+	}
+
+	public boolean canEditRuntimeType(RepositoryEntry entry) {
+		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			if (curriculumModule.isEnabled()) {
+				return true;
+			}
+			return false;
+		}
+		return true;
 	}
 
 	@Override

@@ -492,6 +492,14 @@ public interface RepositoryService {
 	boolean canSwitchTo(RepositoryEntry entry, RepositoryEntryRuntimeType runtimeType);
 
 	/**
+	 * Returns the set of runtime types that the 'entry' is allowed to switch to.
+	 *
+	 * @param entry The repositoryEntry to perform the check for.
+	 * @return A set of runtime types that the 'entry' can be set to.
+	 */
+	Set<RepositoryEntryRuntimeType> allowedRuntimeTypes(RepositoryEntry entry);
+
+	/**
 	 * Returns the set of runtime types that are possible for the provided 'entries'.
 	 *
 	 * The type 'curricular' will only be returned if the CurriculumModule is enabled.
@@ -504,6 +512,24 @@ public interface RepositoryService {
 	 * @return A set of runtimeType objects that are possible for the 'entries'.
 	 */
 	Set<RepositoryEntryRuntimeType> getPossibleRuntimeTypes(Collection<RepositoryEntry> entries);
+
+	/**
+	 * Returns the set of runtime types that are possible for the provided 'entry'.
+	 *
+	 * The type 'curricular' will only be returned if the CurriculumModule is enabled.
+	 *
+	 * @param entry Repository entries to get the set of runtime types for.
+	 * @return A set o runtimeType objects that are possible for the 'entry'.
+	 */
+	Set<RepositoryEntryRuntimeType> getPossibleRuntimeTypes(RepositoryEntry entry);
+
+	/**
+	 * Returns true if the runtime type of 'entry' can be edited.
+	 *
+	 * @param entry The repository entry to perform the check on.
+	 * @return True if the runtime type of 'entry' can be edited.
+	 */
+	boolean canEditRuntimeType(RepositoryEntry entry);
 
 	/**
 	 * Returns the default runtime type for a 'resource'. If no knows default value can be determined, this
