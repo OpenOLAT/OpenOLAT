@@ -153,10 +153,10 @@ public class CurriculumUserManagementController extends FormBasicController {
 	}
 	
 	private void loadModel(boolean reset) {
-		SearchMemberParameters params = new SearchMemberParameters();
+		SearchMemberParameters params = new SearchMemberParameters(curriculum);
 		params.setSearchString(tableEl.getQuickSearchString());
 		params.setUserProperties(userPropertyHandlers);
-		List<CurriculumMember> members = curriculumService.getMembers(curriculum, params);
+		List<CurriculumMember> members = curriculumService.getCurriculumMembers(params);
 		List<CurriculumMemberRow> rows = new ArrayList<>(members.size());
 		for(CurriculumMember member:members) {
 			rows.add(new CurriculumMemberRow(member, userPropertyHandlers, getLocale()));

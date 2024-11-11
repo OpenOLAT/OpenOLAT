@@ -246,8 +246,10 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		userManagerTab = tabPane.addTab(ureq, translate("tab.user.management"), uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS), null);
-			userManagementCtrl = new CurriculumElementUserManagementController(uureq, subControl, curriculumElement, secCallback);
+			userManagementCtrl = new CurriculumElementUserManagementController(uureq, subControl, toolbarPanel, curriculumElement, secCallback);
 			listenTo(userManagementCtrl);
+			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
+			userManagementCtrl.activate(uureq, all, null);
 			return userManagementCtrl.getInitialComponent();
 		});
 		

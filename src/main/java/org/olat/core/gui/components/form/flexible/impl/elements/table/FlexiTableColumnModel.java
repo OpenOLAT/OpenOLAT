@@ -41,6 +41,8 @@ public interface FlexiTableColumnModel {
 	 * @return
 	 */
 	public FlexiColumnModel getColumnModel(int column);
+	
+	public FlexiColumnModel getColumnModelByIndex(int column);
 
 	/**
 	 * 

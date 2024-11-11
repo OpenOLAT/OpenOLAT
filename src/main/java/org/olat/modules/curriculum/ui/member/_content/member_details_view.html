@@ -1,0 +1,9 @@
+$r.render("profil")
+
+#if($r.available("edit.member"))
+<div class="o_button_group o_button_group_right">
+	$r.render("edit.member")
+</div>
+#end
+
+$r.render("roles")

@@ -19,9 +19,7 @@
  */
 package org.olat.commons.info.ui;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
@@ -62,15 +60,13 @@ public class SendMailCurriculumOption implements SendMailOption {
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		SearchMemberParameters params = new SearchMemberParameters();
+		SearchMemberParameters params = new SearchMemberParameters(curriculumElement);
 		params.setRoles(roles);
 
-		List<CurriculumMember> curriculaMembers = Objects.requireNonNull(CoreSpringFactory.getImpl(CurriculumService.class)).getMembers(curriculumElement, params);
-
+		List<CurriculumMember> curriculaMembers = CoreSpringFactory.getImpl(CurriculumService.class).getCurriculumElementsMembers(params);
 		if (curriculaMembers == null || curriculaMembers.isEmpty()) {
-			return Collections.emptyList();
+			return List.of();
 		}
-
 		return curriculaMembers.stream().map(CurriculumMember::getIdentity).toList();
 	}
 }

@@ -19,7 +19,11 @@
  */
 package org.olat.modules.curriculum.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  * 
@@ -102,6 +106,27 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 	public void setMasterCoach(boolean masterCoach) {
 		this.masterCoach = masterCoach;
 	}
+	
+	@Override
+	public List<CurriculumRoles> getRoles() {
+		List<CurriculumRoles> roles = new ArrayList<>(3);
+		if(isParticipant()) {
+			roles.add(CurriculumRoles.participant);
+		}
+		if(isCoach()) {
+			roles.add(CurriculumRoles.coach);
+		}
+		if(isRepositoryEntryOwner()) {
+			roles.add(CurriculumRoles.owner);
+		}
+		if(isMasterCoach()) {
+			roles.add(CurriculumRoles.mastercoach);
+		}
+		if(isCurriculumElementOwner()) {
+			roles.add(CurriculumRoles.curriculumelementowner);
+		}
+		return roles;
+	}
 
 	@Override
 	public int hashCode() {
@@ -114,8 +139,7 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumElementMembershipImpl) {
-			CurriculumElementMembershipImpl el = (CurriculumElementMembershipImpl)obj;
+		if(obj instanceof CurriculumElementMembershipImpl el) {
 			return identityKey != null && identityKey.equals(el.identityKey)
 					&& curriculumElementKey != null && curriculumElementKey.equals(el.curriculumElementKey);
 		}

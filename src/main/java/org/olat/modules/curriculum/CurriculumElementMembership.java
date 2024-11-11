@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum;
 
+import java.util.List;
+
 /**
  * 
  * Initial date: 8 juin 2018<br>
@@ -45,5 +47,7 @@ public interface CurriculumElementMembership {
 	 * @return true if the identity has at least one role on the curriculum element
 	 */
 	public boolean hasMembership();
+	
+	public List<CurriculumRoles> getRoles();
 
 }

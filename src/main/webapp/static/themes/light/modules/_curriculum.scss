@@ -696,3 +696,37 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	    color: #fff;
 	}
 }
+
+.o_labeled_light {
+	&.o_gmembership_status_booking,
+	&.o_gmembership_status_transfer,
+	&.o_gmembership_status_reservation, {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-curriculum-status-preparation-color;
+	    color: $o-curriculum-status-preparation-color;
+	}
+	
+	&.o_gmembership_status_active,
+	&.o_gmembership_status_parentbooking  {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-curriculum-status-active-color;
+	    color: $o-curriculum-status-active-color;
+	}
+	
+	&.o_gmembership_status_declined,
+	&.o_gmembership_status_cancelwithdee,
+	&.o_gmembership_status_cancelled {
+	    background-color: $o-curriculum-status-cancelled-color;
+		color: #fff;
+	}
+	
+	&.o_gmembership_status_resourcedeleted,
+	&.o_gmembership_status_finished,
+	&.o_gmembership_status_removed {
+		background-color: $o-curriculum-status-deleted-color;
+	    color: #fff;
+	}
+}
+

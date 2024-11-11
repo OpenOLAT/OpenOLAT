@@ -59,6 +59,16 @@ public class FlexiTableColumnModelImpl implements FlexiTableColumnModel {
 	}
 	
 	@Override
+	public FlexiColumnModel getColumnModelByIndex(int columnIndex) {
+		for (FlexiColumnModel columnModel : columnModelList) {
+			if(columnModel.getColumnIndex() == columnIndex) {
+				return columnModel;
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public void addFlexiColumnModel(FlexiColumnModel... columnModels) {
 		if (columnModels == null || columnModels.length == 0) {
 			return;

@@ -420,12 +420,13 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 		}
 		// send mails to curriculum members
 		if (infoMessageToCurriculumElements != null && !infoMessageToCurriculumElements.isEmpty()) {
-			SearchMemberParameters params = new SearchMemberParameters();
+			List<CurriculumElement> elements = infoMessageToCurriculumElements.stream()
+					.map(InfoMessageToCurriculumElement::getCurriculumElement)
+					.toList();
+			SearchMemberParameters params = new SearchMemberParameters(elements);
 			params.setRoles(List.of(CurriculumRoles.owner, CurriculumRoles.coach, CurriculumRoles.participant));
-			for (InfoMessageToCurriculumElement infoMessageToCurriculumElement : infoMessageToCurriculumElements) {
-				sendTo.addAll(curriculumService.getMembers(infoMessageToCurriculumElement.getCurriculumElement(), params)
-						.stream().map(CurriculumMember::getIdentity).toList());
-			}
+			sendTo.addAll(curriculumService.getCurriculumElementsMembers(params)
+					.stream().map(CurriculumMember::getIdentity).toList());
 		}
 
 		// set infoMessage status to published

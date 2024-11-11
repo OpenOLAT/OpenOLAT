@@ -30,9 +30,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumUserManagementTableSortDelegate extends SortableFlexiTableModelDelegate<CurriculumMemberRow> {
+public class MemberManagementTableSortDelegate extends SortableFlexiTableModelDelegate<MemberRow> {
 
-	public CurriculumUserManagementTableSortDelegate(SortKey orderBy, CurriculumUserManagementTableModel model, Locale locale) {
+	public MemberManagementTableSortDelegate(SortKey orderBy, MemberManagementTableModel model, Locale locale) {
 		super(orderBy, model, locale);
 	}
 }

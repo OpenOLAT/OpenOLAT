@@ -237,8 +237,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public List<CurriculumMember> getMembers(CurriculumRef curriculum, SearchMemberParameters params) {
-		return memberQueries.getMembers(curriculum, params);
+	public List<CurriculumMember> getCurriculumMembers(SearchMemberParameters params) {
+		return memberQueries.getCurriculumMembers(params);
 	}
 
 	@Override
@@ -736,13 +736,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<CurriculumMember> getMembers(CurriculumElement element, SearchMemberParameters params) {
-		return memberQueries.getMembers(element, params);
+	public List<CurriculumMember> getCurriculumElementsMembers(SearchMemberParameters params) {
+		return memberQueries.getCurriculumElementsMembers(params);
 	}
 	
 	@Override
-	public List<CurriculumMemberStats> getMembersWithStats(CurriculumElement element, SearchMemberParameters params) {
-		List<CurriculumMember> members = memberQueries.getMembers(element, params);
+	public List<CurriculumMemberStats> getMembersWithStats(SearchMemberParameters params) {
+		List<CurriculumMember> members = memberQueries.getCurriculumElementsMembers(params);
 		
 		Map<Identity, CurriculumMemberStats> rowMap = new HashMap<>();
 		Map<Long, CurriculumMemberStats> rowLongMap = new HashMap<>();
@@ -756,9 +756,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		
 		if(!rowLongMap.isEmpty()) {
-			List<CurriculumElement> descendants = curriculumElementDao.getDescendants(element);
-			descendants.add(element);
-			coachingDao.getStudentsCompletionStatement(descendants, rowLongMap);
+			List<CurriculumElement> elements = params.getCurriculumElements();
+			coachingDao.getStudentsCompletionStatement(elements, rowLongMap);
 		}
 		
 		return new ArrayList<>(rowMap.values());

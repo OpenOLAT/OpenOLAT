@@ -33,8 +33,6 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.curriculum.CurriculumElementRef;
-import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
@@ -55,7 +53,11 @@ public class CurriculumMemberQueries {
 	@Autowired
 	private DB dbInstance;
 	
-	public List<CurriculumMember> getMembers(CurriculumRef curriculum, SearchMemberParameters params) {
+	public List<CurriculumMember> getCurriculumMembers(SearchMemberParameters params) {
+		if(params.getCurriculum() == null) {
+			return new ArrayList<>();
+		}
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ident, membership.role, membership.inheritanceModeString, membership.creationDate from curriculum cur")
 		  .append(" inner join cur.group baseGroup")
@@ -69,7 +71,7 @@ public class CurriculumMemberQueries {
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setParameter("curriculumKey", curriculum.getKey());
+				.setParameter("curriculumKey", params.getCurriculum().getKey());
 		createQueryParameters(query, params);
 		createUserPropertiesQueryParameters(query, params.getLogin(), params.getSearchString(), params.getUserPropertiesSearch());
 
@@ -89,21 +91,26 @@ public class CurriculumMemberQueries {
 		return members;
 	}
 	
-	public List<CurriculumMember> getMembers(CurriculumElementRef element, SearchMemberParameters params) {
+	public List<CurriculumMember> getCurriculumElementsMembers(SearchMemberParameters params) {
+		List<Long> curriculumElementsKeys = params.getCurriculumElementsKeys();
+		if(curriculumElementsKeys.isEmpty()) {
+			return new ArrayList<>();
+		}
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ident, membership.role, membership.inheritanceModeString, membership.creationDate from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" inner join membership.identity ident")
 		  .append(" inner join fetch ident.user user")
-		  .append(" where el.key=:elementKey");
+		  .append(" where el.key in (:elementsKeys)");
 		createQueryPart(sb, params);
 		createUserPropertiesQueryPart(sb, params.getLogin(), params.getSearchString(),
 				params.getUserProperties(), params.getUserPropertiesSearch());
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
-				.setParameter("elementKey", element.getKey());
+				.setParameter("elementsKeys", curriculumElementsKeys);
 		createQueryParameters(query, params);
 		createUserPropertiesQueryParameters(query, params.getLogin(), params.getSearchString(), params.getUserPropertiesSearch());
 					

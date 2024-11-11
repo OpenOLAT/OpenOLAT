@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -36,6 +37,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  */
 public class CurriculumUserManagementTableModel extends DefaultFlexiTableDataModel<CurriculumMemberRow>
 implements SortableFlexiTableDataModel<CurriculumMemberRow> {
+	
+	private static final CurriculumMemberCols[] COLS = CurriculumMemberCols.values();
 	
 	private final Locale locale;
 	
@@ -47,7 +50,7 @@ implements SortableFlexiTableDataModel<CurriculumMemberRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			CurriculumUserManagementTableSortDelegate sort = new CurriculumUserManagementTableSortDelegate(orderBy, this, locale);
+			SortableFlexiTableModelDelegate<CurriculumMemberRow> sort = new SortableFlexiTableModelDelegate<>(orderBy, this, locale);
 			super.setObjects(sort.sort());
 		}
 	}
@@ -67,11 +70,11 @@ implements SortableFlexiTableDataModel<CurriculumMemberRow> {
 
 	@Override
 	public Object getValueAt(CurriculumMemberRow row, int col) {
-		if(col >= 0 && col < CurriculumMemberCols.values().length) {
-			switch(CurriculumMemberCols.values()[col]) {
-				case role: return row.getRole();
-				default : return "ERROR";
-			}
+		if(col >= 0 && col < COLS.length) {
+			return switch(COLS[col]) {
+				case role -> row.getRole();
+				default -> "ERROR";
+			};
 		}
 		
 		int propPos = col - CurriculumUserManagementController.USER_PROPS_OFFSET;

@@ -110,7 +110,7 @@ public interface CurriculumService {
 	 * @param curriculum The curriculum
 	 * @return A list of memberships
 	 */
-	public List<CurriculumMember> getMembers(CurriculumRef curriculum, SearchMemberParameters params);
+	public List<CurriculumMember> getCurriculumMembers(SearchMemberParameters params);
 	
 	/**
 	 * Get the list of members of the specified curriculum with the specified
@@ -403,9 +403,9 @@ public interface CurriculumService {
 	 * @param element The curriculum element
 	 * @return The list of memberships
 	 */
-	public List<CurriculumMember> getMembers(CurriculumElement element, SearchMemberParameters params);
+	public List<CurriculumMember> getCurriculumElementsMembers(SearchMemberParameters params);
 	
-	public List<CurriculumMemberStats> getMembersWithStats(CurriculumElement element, SearchMemberParameters params);
+	public List<CurriculumMemberStats> getMembersWithStats(SearchMemberParameters params);
 	
 	/**
 	 * The list of members of the specified curriculum element with the specified role.

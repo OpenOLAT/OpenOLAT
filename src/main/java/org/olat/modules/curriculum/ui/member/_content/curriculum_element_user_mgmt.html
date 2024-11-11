@@ -1,6 +1,13 @@
-#if($r.available("add.member"))
-<div class="o_button_group o_button_group_right">
-	$r.render("add.member")
+$r.render("search.scopes")
+<div class="o_flex_first_grow o_block">
+	<div class="btn-group">
+		$r.render("search.all.levels")
+		$r.render("search.this.level")
+	</div>	
+	#if($r.available("add.member"))
+	<div class="">
+		$r.render("add.member")
+	</div>
+	#end
 </div>
-#end
 $r.render("table")

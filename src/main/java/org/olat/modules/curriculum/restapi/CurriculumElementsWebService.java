@@ -626,8 +626,8 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		SearchMemberParameters params = new SearchMemberParameters();
-		List<CurriculumMember> members = curriculumService.getMembers(curriculumElement, params);
+		SearchMemberParameters params = new SearchMemberParameters(curriculumElement);
+		List<CurriculumMember> members = curriculumService.getCurriculumElementsMembers(params);
 		List<CurriculumElementMemberVO> voList = new ArrayList<>(members.size());
 		for(CurriculumMember member:members) {
 			voList.add(CurriculumElementMemberVO.valueOf(member));

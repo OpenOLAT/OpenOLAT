@@ -56,6 +56,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 	public CurriculumComposerTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+		setObjects(new ArrayList<>());
 	}
 	
 	@Override

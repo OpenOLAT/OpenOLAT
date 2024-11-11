@@ -22,6 +22,8 @@ package org.olat.modules.curriculum.model;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -38,6 +40,24 @@ public class SearchMemberParameters {
 	private List<CurriculumRoles> roles;
 	private List<UserPropertyHandler> userProperties;
 	private Map<String, String> userPropertiesSearch;
+	
+
+	private final Curriculum curriculum;
+	private final List<CurriculumElement> curriculumElements;
+	
+	public SearchMemberParameters(Curriculum curriculum) {
+		this.curriculum = curriculum;
+		this.curriculumElements = null;
+	}
+	
+	public SearchMemberParameters(CurriculumElement curriculumElement) {
+		this(List.of(curriculumElement));
+	}
+	
+	public SearchMemberParameters(List<CurriculumElement> curriculumElements) {
+		this.curriculumElements = List.copyOf(curriculumElements);
+		this.curriculum = null;
+	}
 	
 	public String getLogin() {
 		return login;
@@ -62,6 +82,10 @@ public class SearchMemberParameters {
 	public void setUserProperties(List<UserPropertyHandler> userProperties) {
 		this.userProperties = userProperties;
 	}
+	
+	public Curriculum getCurriculum() {
+		return curriculum;
+	}
 
 	public List<CurriculumRoles> getRoles() {
 		return roles;
@@ -69,6 +93,17 @@ public class SearchMemberParameters {
 
 	public void setRoles(List<CurriculumRoles> roles) {
 		this.roles = roles;
+	}
+	
+	public List<Long> getCurriculumElementsKeys() {
+		if(curriculumElements == null) return List.of();
+		return curriculumElements.stream()
+				.map(CurriculumElement::getKey)
+				.toList();
+	}
+
+	public List<CurriculumElement> getCurriculumElements() {
+		return curriculumElements;
 	}
 
 	public Map<String, String> getUserPropertiesSearch() {
@@ -78,5 +113,4 @@ public class SearchMemberParameters {
 	public void setUserPropertiesSearch(Map<String, String> userPropertiesSearch) {
 		this.userPropertiesSearch = userPropertiesSearch;
 	}
-	
 }

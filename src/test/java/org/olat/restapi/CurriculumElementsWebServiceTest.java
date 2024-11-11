@@ -1126,8 +1126,8 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 
-		SearchMemberParameters params = new SearchMemberParameters();
-		List<CurriculumMember> members = curriculumService.getMembers(element, params);
+		SearchMemberParameters params = new SearchMemberParameters(element);
+		List<CurriculumMember> members = curriculumService.getCurriculumElementsMembers(params);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		Assert.assertEquals(member, members.get(0).getIdentity());
@@ -1350,8 +1350,8 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 
-		SearchMemberParameters params = new SearchMemberParameters();
-		List<CurriculumMember> members = curriculumService.getMembers(element, params);
+		SearchMemberParameters params = new SearchMemberParameters(element);
+		List<CurriculumMember> members = curriculumService.getCurriculumElementsMembers(params);
 		Assert.assertNotNull(members);
 		Assert.assertTrue(members.isEmpty());
 	}

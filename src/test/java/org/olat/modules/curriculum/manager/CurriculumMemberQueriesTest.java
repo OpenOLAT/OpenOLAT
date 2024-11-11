@@ -66,8 +66,8 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// get memberships
-		SearchMemberParameters params = new SearchMemberParameters();
-		List<CurriculumMember> members = memberQueries.getMembers(curriculum, params);
+		SearchMemberParameters params = new SearchMemberParameters(curriculum);
+		List<CurriculumMember> members = memberQueries.getCurriculumMembers(params);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		Assert.assertEquals(CurriculumRoles.curriculumowner.name(), members.get(0).getRole());
@@ -85,8 +85,8 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculumelementowner, actor);
 		dbInstance.commitAndCloseSession();
 		
-		SearchMemberParameters params = new SearchMemberParameters();
-		List<CurriculumMember> members = memberQueries.getMembers(element, params);
+		SearchMemberParameters params = new SearchMemberParameters(element);
+		List<CurriculumMember> members = memberQueries.getCurriculumElementsMembers(params);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		CurriculumMember member = members.get(0);
@@ -105,9 +105,9 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach, actor);
 		dbInstance.commitAndCloseSession();
 		
-		SearchMemberParameters params = new SearchMemberParameters();
+		SearchMemberParameters params = new SearchMemberParameters(element);
 		params.setLogin("cur-supervisor-5");
-		List<CurriculumMember> members = memberQueries.getMembers(element, params);
+		List<CurriculumMember> members = memberQueries.getCurriculumElementsMembers(params);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		CurriculumMember member = members.get(0);
@@ -115,9 +115,9 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		Assert.assertEquals(CurriculumRoles.mastercoach.name(), member.getRole());
 		
 		// negative test
-		SearchMemberParameters negativeParams = new SearchMemberParameters();
+		SearchMemberParameters negativeParams = new SearchMemberParameters(element);
 		negativeParams.setLogin("cur-five");
-		List<CurriculumMember> notFoundMembers = memberQueries.getMembers(element, negativeParams);
+		List<CurriculumMember> notFoundMembers = memberQueries.getCurriculumElementsMembers(negativeParams);
 		Assert.assertNotNull(notFoundMembers);
 		Assert.assertTrue(notFoundMembers.isEmpty());
 	}
@@ -138,27 +138,27 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// 1 role
-		SearchMemberParameters ownerParams = new SearchMemberParameters();
+		SearchMemberParameters ownerParams = new SearchMemberParameters(element);
 		ownerParams.setRoles(List.of(CurriculumRoles.owner));
-		List<CurriculumMember> owners = memberQueries.getMembers(element, ownerParams);
+		List<CurriculumMember> owners = memberQueries.getCurriculumElementsMembers(ownerParams);
 		assertThat(owners)
 			.hasSize(1)
 			.extracting(CurriculumMember::getIdentity)
 			.containsExactly(owner);
 		
 		// 2 roles
-		SearchMemberParameters twoParams = new SearchMemberParameters();
+		SearchMemberParameters twoParams = new SearchMemberParameters(element);
 		twoParams.setRoles(List.of(CurriculumRoles.mastercoach, CurriculumRoles.participant));
-		List<CurriculumMember> towRolesMembers = memberQueries.getMembers(element, twoParams);
+		List<CurriculumMember> towRolesMembers = memberQueries.getCurriculumElementsMembers(twoParams);
 		assertThat(towRolesMembers)
 			.hasSize(2)
 			.extracting(CurriculumMember::getIdentity)
 			.containsExactlyInAnyOrder(masterCoach, participant);
 		
 		// negative
-		SearchMemberParameters noParams = new SearchMemberParameters();
+		SearchMemberParameters noParams = new SearchMemberParameters(element);
 		noParams.setRoles(List.of(CurriculumRoles.curriculumelementowner));
-		List<CurriculumMember> noMembers = memberQueries.getMembers(element, noParams);
+		List<CurriculumMember> noMembers = memberQueries.getCurriculumElementsMembers(noParams);
 		Assert.assertTrue(noMembers.isEmpty());
 	}
 }

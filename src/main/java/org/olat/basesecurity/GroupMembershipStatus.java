@@ -28,7 +28,7 @@ package org.olat.basesecurity;
 public enum GroupMembershipStatus {
 	
 	booking,
-	parent_booking,
+	parentBooking,
 	transfer,
 	reservation,
 	active,
