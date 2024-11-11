@@ -504,4 +504,13 @@ public interface RepositoryService {
 	 * @return A set of runtimeType objects that are possible for the 'entries'.
 	 */
 	Set<RepositoryEntryRuntimeType> getPossibleRuntimeTypes(Collection<RepositoryEntry> entries);
+
+	/**
+	 * Returns the default runtime type for a 'resource'. If no knows default value can be determined, this
+	 * method returns null.
+	 *
+	 * @param resource An Olat resource.
+	 * @return The default value for the runtime type. Depends on the 'resource' and on the system configuration.
+	 */
+	RepositoryEntryRuntimeType getDefaultRuntimeType(OLATResource resource);
 }

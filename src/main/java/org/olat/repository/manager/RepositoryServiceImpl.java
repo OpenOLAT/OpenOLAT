@@ -1180,4 +1180,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		}
 		return types;
 	}
+
+	@Override
+	public RepositoryEntryRuntimeType getDefaultRuntimeType(OLATResource resource) {
+		if ("CourseModule".equals(resource.getResourceableTypeName())) {
+			if (curriculumModule.isEnabled()) {
+				return curriculumModule.getDefaultCourseRuntimeType();
+			}
+			return RepositoryEntryRuntimeType.standalone;
+		}
+		return null;
+	}
 }

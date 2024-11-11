@@ -21,6 +21,7 @@ package org.olat.repository;
 
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -40,5 +41,16 @@ public enum RepositoryEntryRuntimeType {
 			case curricular: return LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_CURRICULAR;
 			default: return null;
 		}
+	}
+
+	public static RepositoryEntryRuntimeType secureValueOf(String value, RepositoryEntryRuntimeType defaultValue) {
+		if (StringHelper.containsNonWhitespace(value)) {
+			for (RepositoryEntryRuntimeType type : RepositoryEntryRuntimeType.values()) {
+				if (type.name().equalsIgnoreCase(value)) {
+					return type;
+				}
+			}
+		}
+		return defaultValue;
 	}
 }

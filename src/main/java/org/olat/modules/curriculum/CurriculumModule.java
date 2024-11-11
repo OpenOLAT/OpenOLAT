@@ -34,6 +34,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.modules.curriculum.site.CurriculumManagementContextEntryControllerCreator;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,7 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String CURRICULUM_IN_MY_COURSES_ENABLED = "curriculum.in.my.courses.enabled";
 	private static final String USER_OVERVIEW_RIGHTS = "curriculum.user.overview.rights";
 	private static final String LINKED_TAXONOMIES = "curriculum.linked.taxonomies";
+	private static final String DEFAULT_COURSE_RUNTIME_TYPE = "curriculum.default.course.runtime.type";
 	
 	@Value("${curriculum.enabled:true}")
 	private boolean enabled;
@@ -63,6 +65,8 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private String userOverviewRights;
 	@Value("${curriculum.linked.taxonomies}")
 	private String linkedTaxonomies;
+	@Value("${curriculum.default.course.runtime.type}")
+	private String defaultCourseRuntimeType;
 	
 	private static final Logger log = Tracing.createLoggerFor(CurriculumModule.class);
 	
@@ -107,6 +111,13 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 		getLinkedTaxonomies();
 		
 		userOverviewRights = getStringPropertyValue(USER_OVERVIEW_RIGHTS, userOverviewRights);
+
+		String defaultCourseRuntimeTypeObj = getStringPropertyValue(DEFAULT_COURSE_RUNTIME_TYPE, true);
+		if (StringHelper.containsNonWhitespace(defaultCourseRuntimeTypeObj)) {
+			defaultCourseRuntimeType = defaultCourseRuntimeTypeObj;
+		} else {
+			defaultCourseRuntimeType = RepositoryEntryRuntimeType.curricular.name();
+		}
 	}
 	
 	@Override
@@ -236,5 +247,14 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 		}
 		
 		return false;
+	}
+
+	public RepositoryEntryRuntimeType getDefaultCourseRuntimeType() {
+		return RepositoryEntryRuntimeType.secureValueOf(defaultCourseRuntimeType, RepositoryEntryRuntimeType.curricular);
+	}
+
+	public void setDefaultCourseRuntimeType(RepositoryEntryRuntimeType value) {
+		defaultCourseRuntimeType = value.name();
+		setStringProperty(DEFAULT_COURSE_RUNTIME_TYPE, defaultCourseRuntimeType, true);
 	}
 }
