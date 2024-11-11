@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -37,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -53,15 +55,16 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 	private MultipleSelectionElement curriculumMyCoursesEl;
 	private MultipleSelectionElement curriculumUserOverviewEl;
 	private MultipleSelectionElement linkedTaxonomiesEl;
-	
+	private SingleSelection defaultCourseRuntimeEl;
+
 	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
-	
+
 	@Autowired
 	private List<RightProvider> relationRights;
-	
+
 	public CurriculumAdminConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
@@ -119,7 +122,20 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 			curriculumModule.getLinkedTaxonomies().stream().forEach(taxonomy -> linkedTaxonomiesEl.select(taxonomy.getKey().toString(), true));
 		}
 		linkedTaxonomiesEl.addActionListener(FormEvent.ONCHANGE);
-		
+
+		SelectionValues runtimeTypeKV = new SelectionValues();
+		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(),
+				translate("curriculum.runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".title"),
+				translate("curriculum.runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"), "o_icon o_icon_people",
+				null, true));
+		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.curricular.name(),
+				translate("curriculum.runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".title"),
+				translate("curriculum.runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".desc"), "o_icon o_icon_curriculum",
+				null, true));
+		defaultCourseRuntimeEl = uifactory.addCardSingleSelectHorizontal("curriculum.default.course.runtime.type",
+				"curriculum.default.course.runtime.type", formLayout, runtimeTypeKV);
+		defaultCourseRuntimeEl.select(curriculumModule.getDefaultCourseRuntimeType().name(), true);
+		defaultCourseRuntimeEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	@Override
@@ -140,6 +156,9 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 			curriculumModule.setUserOverviewRightList(selectedKeys);
 		} else if (linkedTaxonomiesEl == source) {
 			curriculumModule.setLinkedTaxonomies(linkedTaxonomiesEl.getSelectedKeys());
+		} else if (defaultCourseRuntimeEl == source) {
+			RepositoryEntryRuntimeType runtimeType = RepositoryEntryRuntimeType.valueOf(defaultCourseRuntimeEl.getSelectedKey());
+			curriculumModule.setDefaultCourseRuntimeType(runtimeType);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -148,5 +167,6 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		boolean enabled = enableEl.isAtLeastSelected(1);
 		curriculumMyCoursesEl.setVisible(enabled);
 		linkedTaxonomiesEl.setVisible(enabled);
+		defaultCourseRuntimeEl.setVisible(enabled);
 	}
 }
