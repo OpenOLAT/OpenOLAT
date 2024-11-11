@@ -97,7 +97,7 @@ public class PaypalSubmitController extends FormBasicController implements FormC
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(acService.reserveAccessToResource(getIdentity(), link)) {
+		if(acService.reserveAccessToResource(getIdentity(), link.getOffer(), link.getMethod())) {
 			PayResponse response = paypalManager.request(getIdentity(), link, mapperUri, ureq.getHttpReq().getSession().getId());
 			if(response == null) {
 				setFormWarning("paypal.before.redirect.error");

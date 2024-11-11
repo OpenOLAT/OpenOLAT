@@ -72,6 +72,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private MultiSelectionFilterElement organisationsEl;
 	private MultipleSelectionElement catalogEl;
 	private MultipleSelectionElement confirmationEmailEl;
+	private MultipleSelectionElement confirmationByManagerEl;
 
 	protected final OfferAccess link;
 	private final boolean offerOrganisationsSupported;
@@ -151,10 +152,15 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			catalogEl.setDomWrapperElement(DomWrapperElement.div);
 		}
 		
-		String[] onValues = new String[] { translate("confirmation.email.selfregistered") };
-		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", formLayout, onKeys, onValues);
+		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", formLayout, onKeys,
+				new String[] { translate("confirmation.email.selfregistered") });
 		confirmationEmailEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationEmail());
-		confirmationEmailEl.setVisible(true);
+		
+		if (isConfirmationByManagerSupported()) {
+			confirmationByManagerEl = uifactory.addCheckboxesHorizontal("confirmation.by.manager", formLayout, onKeys,
+					new String[] { translate("confirmation.by.manager.required") });
+			confirmationByManagerEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationByManagerRequired());
+		}
 		
 		initCustomFormElements(formLayout);
 		
@@ -189,6 +195,10 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}
 	
+	protected boolean isConfirmationByManagerSupported() {
+		return false;
+	}
+
 	protected abstract void initCustomFormElements(FormItemContainer formLayout);
 	
 	protected abstract void updateCustomChanges();
@@ -261,6 +271,9 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		offer.setCatalogPublish(catalogEl.isKeySelected(CATALOG_OO));
 		offer.setCatalogWebPublish(catalogEl.isKeySelected(CATALOG_WEB));
 		offer.setConfirmationEmail(confirmationEmailEl.isAtLeastSelected(1));
+		if (confirmationByManagerEl != null) {
+			offer.setConfirmationByManagerRequired(confirmationByManagerEl.isAtLeastSelected(1));
+		}
 		link.setValidFrom(datesEl.getDate());
 		link.setValidTo(datesEl.getSecondDate());
 		updateCustomChanges();

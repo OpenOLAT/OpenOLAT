@@ -102,6 +102,7 @@ create table o_ac_billing_address (
   fk_identity number(20),
   primary key (id)
 );
+alter table o_ac_offer add column confirm_by_manager_required default 0 not null;
 alter table o_ac_offer add column cancelling_fee_amount number(20,2);
 alter table o_ac_offer add column cancelling_fee_currency_code varchar(3 char);
 alter table o_ac_offer add column cancelling_fee_deadline_days number(20);

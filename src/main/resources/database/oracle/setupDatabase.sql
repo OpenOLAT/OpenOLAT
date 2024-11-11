@@ -1032,6 +1032,7 @@ create table o_ac_offer (
   confirmation_email number default 0,
   open_access number default 0 not null,
   guest_access number default 0 not null,
+  confirm_by_manager_required default 0 not null,
   catalog_publish number default 0 not null,
   catalog_web_publish number default 0 not null,
   price_amount number(20,2),

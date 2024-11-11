@@ -290,7 +290,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//id1 start payment process
-		boolean reserved = acService.reserveAccessToResource(id1, offerAccess);
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod());
 		Assert.assertTrue(reserved);
 		dbInstance.commitAndCloseSession();
 
@@ -346,7 +346,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//id1 try to reserve a place before the payment process
-		boolean reserved = acService.reserveAccessToResource(id1, offerAccess);
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod());
 		Assert.assertFalse(reserved);
 
 		if(!enabled) {
@@ -380,7 +380,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id try to reserve a place before the payment process, no problem, no limit
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod());
 		Assert.assertTrue(reserved);
 	}
 

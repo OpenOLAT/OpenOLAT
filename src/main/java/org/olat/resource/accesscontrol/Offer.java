@@ -98,6 +98,10 @@ public interface Offer extends OfferRef {
 	public boolean isGuestAccess();
 
 	public void setGuestAccess(boolean guestAccess);
+	
+	public boolean isConfirmationByManagerRequired();
+	
+	public void setConfirmationByManagerRequired(boolean confirmationByManagerRequired);
 
 	public boolean isCatalogPublish();
 

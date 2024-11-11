@@ -44,7 +44,7 @@ public class PaypalCheckoutAccessController extends AbstractAccessController {
 	}
 
 	@Override
-	protected String getMethodDescription() {
+	protected String getMethodDescription(OfferAccess link) {
 		return getTranslator().translate("access.paypal.desc");
 	}
 

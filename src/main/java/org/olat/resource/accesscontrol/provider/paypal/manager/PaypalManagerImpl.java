@@ -459,7 +459,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 					AccessTransaction transaction = transactionManager.createTransaction(order, part, method);
 					transaction = transactionManager.save(transaction);
 					for(OrderLine line:part.getOrderLines()) {
-						if(acService.allowAccesToResource(identity, line.getOffer())) {
+						if(acService.allowAccesToResource(identity, line.getOffer(), method)) {
 							log.info(Tracing.M_AUDIT, "Paypal payed access granted for: " + buildLogMessage(line, method) + " to " + identity);
 							transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 						} else {

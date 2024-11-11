@@ -341,7 +341,7 @@ public class MemberViewQueries {
 	private void getPending(Map<Identity,MemberView> views, RepositoryEntry entry, SearchMembersParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident, reservation.resource from resourcereservation as reservation")
+		sb.append("select ident, reservation.resource, reservation from resourcereservation as reservation")
 		  .append(" inner join reservation.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
 		  .append(" where (reservation.resource.key in (select v.olatResource.key from repositoryentry as v where v.key=:repoEntryKey)")
@@ -361,10 +361,12 @@ public class MemberViewQueries {
 		for(Object[] rawObject:rawObjects) {
 			Identity identity = (Identity)rawObject[0];
 			OLATResource resource = (OLATResource)rawObject[1];
+			ResourceReservation reservation = (ResourceReservation)rawObject[2];
 			
 			MemberView m = views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale));
 			m.getMemberShip().setPending(true);
 			if(resource != null ) {
+				m.getMemberShip().setResourceReservation(reservation);
 				if(resource.equals(entry.getOlatResource())) {
 					m.setRepositoryEntry(entry);
 				} else {

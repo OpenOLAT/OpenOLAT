@@ -168,7 +168,7 @@ public interface ACService {
 
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument);
 
-	public boolean allowAccesToResource(Identity identity, Offer offer);
+	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method);
 
 	public boolean denyAccesToResource(Identity identity, Offer offer);
 	
@@ -201,9 +201,10 @@ public interface ACService {
 	 * Reserve a resource
 	 * @param identity
 	 * @param offer
+	 * @param method
 	 * @return
 	 */
-	public boolean reserveAccessToResource(Identity identity, OfferAccess offer);
+	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method);
 
 	/**
 	 * A user must sometimes explicitly accept a reservation.

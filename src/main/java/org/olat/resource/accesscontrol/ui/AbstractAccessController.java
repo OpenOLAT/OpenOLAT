@@ -82,7 +82,7 @@ public abstract class AbstractAccessController extends BasicController {
 			description = StringHelper.xssScan(description);
 			mainVC.contextPut("description", description);
 		}
-		mainVC.contextPut("methodDescription", getMethodDescription());
+		mainVC.contextPut("methodDescription", getMethodDescription(link));
 		
 		detailsCtrl = createDetailsController(ureq, getWindowControl(), link);
 		listenTo(detailsCtrl);
@@ -91,7 +91,7 @@ public abstract class AbstractAccessController extends BasicController {
 	
 	protected abstract String getTitle();
 	
-	protected abstract String getMethodDescription();
+	protected abstract String getMethodDescription(OfferAccess link);
 	
 	protected abstract Controller createDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link);
 

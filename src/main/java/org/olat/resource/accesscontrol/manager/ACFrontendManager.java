@@ -479,7 +479,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 
 		if(handler.checkArgument(link, argument)) {
-			if(allowAccesToResource(identity, link.getOffer())) {
+			if(allowAccesToResource(identity, link.getOffer(), link.getMethod())) {
 				Order order = orderManager.saveOneClick(identity, link);
 				AccessTransaction transaction = transactionManager.createTransaction(order, order.getParts().get(0), link.getMethod());
 				transactionManager.save(transaction);
@@ -532,8 +532,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public boolean reserveAccessToResource(final Identity identity, final OfferAccess offer) {
-		final OLATResource resource = offer.getOffer().getResource();
+	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method) {
+		OLATResource resource = offer.getResource();
 		String resourceType = resource.getResourceableTypeName();
 		if("BusinessGroup".equals(resourceType)) {
 			boolean reserved = false;
@@ -550,13 +550,20 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				int currentCount = businessGroupService.countMembers(reloadedGroup, GroupRoles.participant.name());
 				int reservations = reservationDao.countReservations(resource, BusinessGroupService.GROUP_PARTICIPANT);
 				if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
-					reservationDao.createReservation(identity, offer.getMethod().getType(), null, Boolean.TRUE, resource);
+					reservationDao.createReservation(identity, method.getType(), null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
 					reserved = true;
 				}
 			}
 			return reserved;
 		}
-		return true;
+		RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
+		if (entry != null) {
+			if(!repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
+				reservationDao.createReservation(identity, "repo_participant", null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
+			}
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -584,7 +591,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public boolean allowAccesToResource(final Identity identity, final Offer offer) {
+	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method) {
 		//check if offer is ok: key is stupid but further check as date, validity...
 		if(offer.getKey() == null) {
 			return false;
@@ -594,6 +601,10 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		OLATResource resource = offer.getResource();
 		if(resource == null || resource.getKey() == null || resource.getResourceableId() == null || resource.getResourceableTypeName() == null) {
 			return false;
+		}
+		
+		if (offer.isConfirmationByManagerRequired()) {
+			return reserveAccessToResource(identity, offer, method);
 		}
 
 		String resourceType = resource.getResourceableTypeName();

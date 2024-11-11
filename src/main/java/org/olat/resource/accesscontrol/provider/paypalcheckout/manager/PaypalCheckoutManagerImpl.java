@@ -152,7 +152,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 		Offer offer = offerAccess.getOffer();
 		Price amount = offer.getPrice();
 
-		if(acService.reserveAccessToResource(delivery, offerAccess)) {
+		if(acService.reserveAccessToResource(delivery, offerAccess.getOffer(), offerAccess.getMethod())) {
 			Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT);
 			PaypalCheckoutTransaction trx = transactionDao.createTransaction(amount, order, order.getParts().get(0), offerAccess.getMethod());
 			trx = checkoutProvider.createOrder(order, trx);
@@ -378,7 +378,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 	
 	private void allowAccessToResource(Identity identity, OrderPart part, AccessTransaction transaction, PaypalCheckoutAccessMethod method) {
 		for(OrderLine line:part.getOrderLines()) {
-			if(acService.allowAccesToResource(identity, line.getOffer())) {
+			if(acService.allowAccesToResource(identity, line.getOffer(), method)) {
 				log.info(Tracing.M_AUDIT, "Paypal Checkout payed access granted for: {} to {}", buildLogMessage(line, method), identity);
 				transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 			} else {

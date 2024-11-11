@@ -104,6 +104,8 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	private boolean openAccess;
 	@Column(name="guest_access", nullable=false, insertable=true, updatable=true)
 	private boolean guestAccess;
+	@Column(name="confirm_by_manager_required", nullable=false, insertable=true, updatable=true)
+	private boolean confirmationByManagerRequired;
 	@Column(name="catalog_publish", nullable=false, insertable=true, updatable=true)
 	private boolean catalogPublish;
 	@Column(name="catalog_web_publish", nullable=false, insertable=true, updatable=true)
@@ -274,6 +276,16 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	@Override
 	public void setGuestAccess(boolean guestAccess) {
 		this.guestAccess = guestAccess;
+	}
+
+	@Override
+	public boolean isConfirmationByManagerRequired() {
+		return confirmationByManagerRequired;
+	}
+
+	@Override
+	public void setConfirmationByManagerRequired(boolean confirmationByManagerRequired) {
+		this.confirmationByManagerRequired = confirmationByManagerRequired;
 	}
 
 	@Override

@@ -52,6 +52,11 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogInfo, edit);
 		initForm(ureq);
 	}
+	
+	@Override
+	protected boolean isConfirmationByManagerSupported() {
+		return true;
+	}
 
 	@Override
 	protected void initCustomFormElements(FormItemContainer formLayout) {

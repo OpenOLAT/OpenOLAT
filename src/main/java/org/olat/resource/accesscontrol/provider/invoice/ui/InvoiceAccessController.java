@@ -44,8 +44,10 @@ public class InvoiceAccessController extends AbstractAccessController {
 	}
 
 	@Override
-	protected String getMethodDescription() {
-		return getTranslator().translate("access.invoice.desc");
+	protected String getMethodDescription(OfferAccess link) {
+		return link.getOffer().isConfirmationByManagerRequired()
+				? getTranslator().translate("access.invoice.desc.confirmation")
+				: getTranslator().translate("access.invoice.desc");
 	}
 
 	@Override

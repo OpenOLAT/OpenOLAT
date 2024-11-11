@@ -981,6 +981,7 @@ create table o_ac_offer (
   confirmation_email bool default false,
   open_access bool default false not null,
   guest_access bool default false not null,
+  confirm_by_manager_required bool default false not null,
   catalog_publish bool default false not null,
   catalog_web_publish bool default false not null,
   token varchar(255),
