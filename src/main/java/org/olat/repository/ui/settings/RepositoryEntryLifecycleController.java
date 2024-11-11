@@ -43,6 +43,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -72,7 +73,8 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	
 	private final boolean readOnly;
 	private RepositoryEntry repositoryEntry;
-	
+	private final boolean curriculumManaged;
+
 	private boolean usedInWizard;
 	private boolean dateMoved;
 
@@ -92,6 +94,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		super(ureq, wControl);
 		setBasePackage(RepositoryService.class);
 		this.repositoryEntry = entry;
+		this.curriculumManaged = RepositoryEntryRuntimeType.curricular.equals(repositoryEntry.getRuntimeType());
 		this.readOnly = readOnly;
 		initForm(ureq);
 	}
@@ -108,6 +111,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_DEFAULT_2_10, null, rootForm);
 		setBasePackage(RepositoryService.class);
 		this.repositoryEntry = entry;
+		this.curriculumManaged = RepositoryEntryRuntimeType.curricular.equals(repositoryEntry.getRuntimeType());
 		this.usedInWizard = true;
 		readOnly = false;
 		initForm(ureq);
@@ -132,12 +136,12 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		initLifecycle(formLayout);
 		
 		location = uifactory.addTextElement("cif.location", "cif.location", 255, repositoryEntry.getLocation(), formLayout);
-		location.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location) && !readOnly);
+		location.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location) && !readOnly && !curriculumManaged);
 		location.setElementCssClass("o_sel_repo_location");
 		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 
-		if (!usedInWizard && !readOnly && !managed) {
+		if (!usedInWizard && !readOnly && !managed && !curriculumManaged) {
 			FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 			formLayout.add("buttonContainer", buttonContainer);
 			buttonContainer.setElementCssClass("o_sel_repo_save_details");
@@ -170,7 +174,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 			dateTypesEl.select("public", true);
 		}
 		dateTypesEl.addActionListener(FormEvent.ONCHANGE);
-		dateTypesEl.setEnabled(!readOnly);
+		dateTypesEl.setEnabled(!readOnly && !curriculumManaged);
 
 		List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
 		List<RepositoryEntryLifecycle> filteredCycles = new ArrayList<>();
@@ -202,7 +206,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 				publicValues[count++] = sb.toString();
 		}
 		publicDatesEl = uifactory.addDropdownSingleselect("cif.public.dates", formLayout, publicKeys, publicValues, null);
-		publicDatesEl.setEnabled(!readOnly);
+		publicDatesEl.setEnabled(!readOnly && !curriculumManaged);
 
 		String privateDatePage = velocity_root + "/cycle_dates.html";
 		privateDatesCont = FormLayoutContainer.createCustomFormLayout("private.date", getTranslator(), privateDatePage);
@@ -212,10 +216,10 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		
 		startDateEl = uifactory.addDateChooser("date.start", "cif.date.from", null, privateDatesCont);
 		startDateEl.setElementCssClass("o_sel_repo_lifecycle_validfrom");
-		startDateEl.setEnabled(!readOnly);
+		startDateEl.setEnabled(!readOnly && !curriculumManaged);
 		endDateEl = uifactory.addDateChooser("date.end", "cif.date.to", null, privateDatesCont);
 		endDateEl.setElementCssClass("o_sel_repo_lifecycle_validto");
-		endDateEl.setEnabled(!readOnly);
+		endDateEl.setEnabled(!readOnly && !curriculumManaged);
 		
 		if(repositoryEntry.getLifecycle() != null) {
 			RepositoryEntryLifecycle lifecycle = repositoryEntry.getLifecycle();
