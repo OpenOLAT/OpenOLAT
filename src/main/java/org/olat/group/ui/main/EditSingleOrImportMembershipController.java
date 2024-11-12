@@ -225,7 +225,9 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
 		
 		member = null;
-		if(membersContext.getRepoEntry() != null && membersContext.getRepoEntry().getRuntimeType() == RepositoryEntryRuntimeType.embedded) {
+		if(membersContext.getRepoEntry() != null &&
+				(membersContext.getRepoEntry().getRuntimeType() == RepositoryEntryRuntimeType.embedded ||
+						membersContext.getRepoEntry().getRuntimeType() == RepositoryEntryRuntimeType.curricular)) {
 			allowedRoles = List.of(GroupRoles.owner.name());
 		} else {
 			allowedRoles = null;

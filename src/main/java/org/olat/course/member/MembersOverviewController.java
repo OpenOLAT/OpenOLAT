@@ -72,11 +72,13 @@ import org.olat.group.ui.main.DedupMembersConfirmationController;
 import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
@@ -125,7 +127,9 @@ public class MembersOverviewController extends BasicController implements Activa
 	private CurriculumService curriculumService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	
+	@Autowired
+	private CurriculumModule curriculumModule;
+
 	public MembersOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, MemberListSecurityCallback secCallback,
 			boolean canInvite) {
@@ -159,7 +163,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		addMemberDropdown.setElementCssClass("o_sel_add_more");
 		addMemberDropdown.setEmbbeded(true);
 		addMemberDropdown.setButton(true);
-		addMemberDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
+		addMemberDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly() && !isCourseManagedByCurriculum());
 		mainVC.put("addmore", addMemberDropdown);
 		
 		if(invitationModule.isCourseInvitationEnabled() && canInvite) {
@@ -174,7 +178,7 @@ public class MembersOverviewController extends BasicController implements Activa
 
 		moreDropdown = DropdownUIFactory.createMoreDropdown("more", getTranslator());
 		moreDropdown.setButton(true);
-		moreDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
+		moreDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly() && !isCourseManagedByCurriculum());
 		mainVC.put("more", moreDropdown);
 		
 		dedupLink = LinkFactory.createLink("dedup.members", mainVC, this);
@@ -184,7 +188,14 @@ public class MembersOverviewController extends BasicController implements Activa
 		
 		putInitialPanel(mainVC);
 	}
-	
+
+	private boolean isCourseManagedByCurriculum() {
+		if (!curriculumModule.isEnabled()) {
+			return false;
+		}
+		return RepositoryEntryRuntimeType.curricular.equals(repoEntry.getRuntimeType());
+	}
+
 	protected boolean isAllowedToOverrideManaged(UserRequest ureq) {
 		if(repoEntry != null) {
 			Roles roles = ureq.getUserSession().getRoles();
