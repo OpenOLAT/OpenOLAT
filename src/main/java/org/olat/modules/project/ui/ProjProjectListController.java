@@ -299,6 +299,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		}
 		if (isToolsEnabled()) {
 			StickyActionColumnModel toolsCol = new StickyActionColumnModel(ProjectCols.tools);
+			toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
 			toolsCol.setAlwaysVisible(true);
 			toolsCol.setSortable(false);
 			toolsCol.setExportable(false);
@@ -725,6 +726,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		
 		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

@@ -358,6 +358,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 					&& (row.getGroupStatus() == BusinessGroupStatusEnum.active || row.getGroupStatus() == BusinessGroupStatusEnum.inactive) ;
 			
 			FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
+			markLink.setTitle(row.isMarked()? translate("bookmark.remove"): translate("bookmark.add"));
 			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 
 			BGTableItem item = new BGTableItem(row, markLink, allowLeave, allowDelete);

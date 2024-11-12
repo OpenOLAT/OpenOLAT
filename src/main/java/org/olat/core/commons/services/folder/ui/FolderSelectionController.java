@@ -151,6 +151,8 @@ public class FolderSelectionController extends FormBasicController implements Fi
 	private void createTable(UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel iconCol = new DefaultFlexiColumnModel(FolderCols.icon, new FolderIconRenderer());
+		iconCol.setIconHeader("o_icon o_icon-fw o_icon-lg"); // no icon
+		iconCol.setHeaderLabel(translate("table.thumbnail"));
 		iconCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(iconCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.title));

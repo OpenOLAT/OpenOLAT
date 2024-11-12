@@ -194,6 +194,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.deletedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.deletedBy));
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(NoteCols.tools);
+		toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		toolsCol.setAlwaysVisible(true);
 		toolsCol.setSortable(false);
 		toolsCol.setExportable(false);
@@ -458,6 +459,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	private void forgeToolsLink(ProjNoteRow row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

@@ -207,7 +207,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		
 		String label = getLabel(renderer, cellValue, row, source, ubu, translator);
-		if (!StringHelper.containsNonWhitespace(label)) {
+		if (!StringHelper.containsNonWhitespace(label) && !StringHelper.containsNonWhitespace(iconLeftCSS) && !StringHelper.containsNonWhitespace(iconRightCSS)) {
 			return;
 		}
 		
@@ -250,15 +250,15 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 				target.append("<i class=\"o_icon ").append(iconLeftCSS).append("\">&nbsp;</i>");
 			}
 			
-			target.append(label);
-			
-			getLabel(renderer, cellValue, row, source, ubu, translator);
+			if (StringHelper.containsNonWhitespace(label)) {
+				target.append(label);
+			}
 			
 			if(StringHelper.containsNonWhitespace(iconRightCSS)) {
 				target.append(" <i class=\"o_icon ").append(iconRightCSS).append("\">&nbsp;</i>");
 			}
 			target.append("</a>");
-		} else {
+		} else if (StringHelper.containsNonWhitespace(label)) {
 			target.append(label);
 		}
 	}

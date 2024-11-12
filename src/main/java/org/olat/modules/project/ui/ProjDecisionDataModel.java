@@ -99,7 +99,7 @@ public class ProjDecisionDataModel extends DefaultFlexiTableDataModel<ProjDecisi
 		lastModifiedBy("last.modified.by"),
 		deletedBy("deleted.by"),
 		deletedDate("deleted.date"),
-		tools("tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

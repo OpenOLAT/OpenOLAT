@@ -590,8 +590,9 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.lectureEnabled.name(), FlexiColumnModel.ALIGNMENT_LEFT, new LectureInfosRenderer(getTranslator())));
 		}
 		if (licenseModule.isEnabled(licenseHandler)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), null, Cols.license.ordinal(), "license", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
-					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));
+			columnsModel.addFlexiColumnModel(
+					new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), null, Cols.license.ordinal(),
+							"license", false, null, FlexiColumnModel.ALIGNMENT_LEFT, new LicenseRenderer(getLocale())));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.deletedBy.i18nKey(), Cols.deletedBy.ordinal(),
@@ -627,23 +628,32 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected final void initActionsColumns(FlexiTableColumnModel columnsModel) {
 		if(configuration.isInfos()) {
 			DefaultFlexiColumnModel infosColumn = new DefaultFlexiColumnModel(Cols.infos.i18nKey(), Cols.infos.ordinal(), "infos",
-					new StaticFlexiCellRenderer("", "infos", "o_icon o_icon-lg o_icon_resource", null));
-			infosColumn.setIconHeader("o_icon o_icon-lg o_icon_info_resource");
+					new StaticFlexiCellRenderer("", "infos", null, "o_icon-lg o_icon_resource", translate("infos")));
+			infosColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_info_resource");
+			infosColumn.setHeaderLabel(translate("infos"));
 			infosColumn.setExportable(false);
 			infosColumn.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(infosColumn);
 		}
 		if(configuration.isTools()) {
 			DefaultFlexiColumnModel detailsColumn = new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), "details",
-					new StaticFlexiCellRenderer("", "details", "o_icon o_icon-lg o_icon_details", null, translate("details")));
+					new StaticFlexiCellRenderer("", "details",  null, "o_icon-lg o_icon_details", translate("details")));
+			detailsColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_details");
+			detailsColumn.setHeaderLabel(translate("details"));
+			detailsColumn.setAlwaysVisible(true);
 			detailsColumn.setExportable(false);
 			columnsModel.addFlexiColumnModel(detailsColumn);
 			if(hasAuthorRight) {
 				DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel(Cols.editionSupported.i18nKey(), Cols.editionSupported.ordinal(), "edit",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", null, translate("edit")), null));
+					new BooleanCellRenderer(new StaticFlexiCellRenderer("", "edit", null, "o_icon-lg o_icon_edit", translate("edit")), null));
+				editColumn.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_edit");
+				editColumn.setHeaderLabel(translate("edit"));
+				editColumn.setAlwaysVisible(true);
 				editColumn.setExportable(false);
 				columnsModel.addFlexiColumnModel(editColumn);
 				StickyActionColumnModel toolsColumn = new StickyActionColumnModel(Cols.tools.i18nKey(), Cols.tools.ordinal());
+				toolsColumn.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
+				toolsColumn.setAlwaysVisible(true);
 				toolsColumn.setExportable(false);
 				columnsModel.addFlexiColumnModel(toolsColumn);
 			}

@@ -234,6 +234,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.deletedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.deletedBy));
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(FileCols.tools);
+		toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		toolsCol.setAlwaysVisible(true);
 		toolsCol.setSortable(false);
 		toolsCol.setExportable(false);
@@ -598,6 +599,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	private void forgeToolsLink(ProjFileRow row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}
