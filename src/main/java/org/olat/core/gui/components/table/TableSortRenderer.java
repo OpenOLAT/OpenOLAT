@@ -44,7 +44,9 @@ class TableSortRenderer extends DefaultComponentRenderer {
 		String formName = "tb_ms_" + table.hashCode();
 		
 		sb.append("<div id='o_c").append(id).append("' class='btn-group'>")
-		  .append("<button id='table-button-sorters-").append(id).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<button id='table-button-sorters-").append(id).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown' ")
+		  .append("aria-label=\"").append("table.sort").append("\"")
+		  .append(">")
 		  .append("<i class='o_icon o_icon-lg o_icon_sort_menu'> </i>")
 		  .append("<b class='caret'></b>")
 		  .append("</button>")

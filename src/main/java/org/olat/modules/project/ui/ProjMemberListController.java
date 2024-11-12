@@ -227,6 +227,8 @@ public class ProjMemberListController extends FormBasicController implements Act
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.roles));
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(MemberCols.tools);
+		toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		toolsCol.setAlwaysVisible(true);
 		toolsCol.setSortable(false);
 		toolsCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(toolsCol);
@@ -277,6 +279,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 	private void forgeToolsLink(ProjMemberRow row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

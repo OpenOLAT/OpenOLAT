@@ -304,7 +304,7 @@ public class TableController extends BasicController {
 	private AutoCompleterController createTableSearchController(final UserRequest ureq, final WindowControl wControl) {
 		ListProvider genericProvider = new TableListProvider(table);
 		removeAsListenerAndDispose(tableSearchController);
-		tableSearchController = new AutoCompleterController(ureq, wControl, genericProvider, null, false, 60, 3, translate("table.filter.label"));
+		tableSearchController = new AutoCompleterController(ureq, wControl, genericProvider, null, false, 60, 3);
 		tableSearchController.setEmptyAsReset(true);
 		listenTo(tableSearchController);
 		return tableSearchController;

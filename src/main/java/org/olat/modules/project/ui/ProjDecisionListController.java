@@ -197,6 +197,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 		if (isVisible(DecisionCols.deletedDate)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.deletedDate));
 			StickyActionColumnModel toolsCol = new StickyActionColumnModel(DecisionCols.tools);
+			toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
 			toolsCol.setAlwaysVisible(true);
 			toolsCol.setSortable(false);
 			toolsCol.setExportable(false);
@@ -458,6 +459,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	private void forgeToolsLink(ProjDecisionRow row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

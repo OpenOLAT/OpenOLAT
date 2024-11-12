@@ -344,6 +344,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		if (isVisible(ToDoTaskCols.tools)) {
 			StickyActionColumnModel toolsCol = new StickyActionColumnModel(ToDoTaskCols.tools);
+			toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
 			toolsCol.setAlwaysVisible(true);
 			toolsCol.setSortable(false);
 			toolsCol.setExportable(false);
@@ -1032,6 +1033,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (row.canEdit() || row.canCopy() || row.canDelete() || row.canRestore()) {
 			FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+			toolsLink.setTitle(translate("action.more"));
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}

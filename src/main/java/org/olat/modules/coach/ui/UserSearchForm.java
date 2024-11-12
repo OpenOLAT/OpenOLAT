@@ -54,7 +54,6 @@ public class UserSearchForm extends FormBasicController {
 	
 	private static final String PROPS_IDENTIFIER = UserSearchForm.class.getName();
 	private static final String[] activeKeys = new String[] { "on" };
-	private static final String[] activeValues = new String[] { "" };
 	
 	private final boolean adminProps;
 	private FormLink searchButton;
@@ -107,7 +106,7 @@ public class UserSearchForm extends FormBasicController {
 			}
 		}
 		
-		statusEl = uifactory.addCheckboxesHorizontal("only.active", formLayout, activeKeys, activeValues);
+		statusEl = uifactory.addCheckboxesHorizontal("status", formLayout, activeKeys, new String[] {translate("only.active")});
 		statusEl.select(activeKeys[0], true);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

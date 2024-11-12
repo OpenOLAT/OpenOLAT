@@ -31,6 +31,7 @@
 			<div class="o_library_visual">
 				<a href="$item.getAbsolutePathUUID()" target="_blank">
 					<div class="#if($item.isThumbnailAvailable()) o_thumbnail_available #else o_thumbnail_unavailable $item.getCssClass() #{end}" style="$thumbnailHelper.getThumbnailTitle($item)">&nbsp;</div>
+					<span class="sr-only">$r.translate("open")</span>
 				</a>
 			</div>
 		#end

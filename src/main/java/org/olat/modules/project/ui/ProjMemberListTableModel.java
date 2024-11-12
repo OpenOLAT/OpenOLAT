@@ -85,7 +85,7 @@ public class ProjMemberListTableModel extends DefaultFlexiTableDataModel<ProjMem
 		id("id"),
 		lastVisitDate("member.last.visit.date"),
 		roles("roles"),
-		tools("tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

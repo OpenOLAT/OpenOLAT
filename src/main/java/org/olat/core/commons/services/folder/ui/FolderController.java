@@ -641,6 +641,8 @@ public class FolderController extends FormBasicController implements Activateabl
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel iconCol = new DefaultFlexiColumnModel(FolderCols.icon, new FolderIconRenderer());
+		iconCol.setIconHeader("o_icon o_icon-fw o_icon-lg"); // no icon
+		iconCol.setHeaderLabel(translate("table.thumbnail"));
 		iconCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(iconCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.title));
@@ -650,6 +652,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			addCols(columnsModel);
 		}
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(FolderCols.tools);
+		toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		toolsCol.setHeaderLabel(translate("action.more"));
 		toolsCol.setAlwaysVisible(true);
 		toolsCol.setSortable(false);
 		toolsCol.setExportable(false);
@@ -686,6 +690,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private void addCols(FlexiTableColumnModel columnsModel) {
 		FlexiCellRenderer downloadCellRenderer = new StaticFlexiCellRenderer(null, CMD_DOWNLOAD, null, "o_icon o_icon_fw o_icon_download", translate("download"));
 		DefaultFlexiColumnModel downloadCol = new DefaultFlexiColumnModel(FolderCols.download, downloadCellRenderer);
+		downloadCol.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_download");
+		downloadCol.setHeaderLabel(translate("download"));
 		downloadCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(downloadCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.createdBy));

@@ -59,14 +59,17 @@ public class DayChooserController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		previousDayButton = uifactory.addFormLink("previous.day", "previous", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		previousDayButton.setTitle("aria.previous.day");
 		previousDayButton.setDomReplacementWrapperRequired(false);
 		previousDayButton.setIconLeftCSS("o_icon o_icon_previous_page");
 		
 		nextDayButton = uifactory.addFormLink("next.day", "next", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		nextDayButton.setTitle("aria.next.day");
 		nextDayButton.setDomReplacementWrapperRequired(false);
 		nextDayButton.setIconLeftCSS("o_icon o_icon_next_page");
 		
 		dateEl = uifactory.addDateChooser("day", null, new Date(), formLayout);
+		dateEl.setAriaLabel("aria.displayed.date");
 		dateEl.setDomReplacementWrapperRequired(false);
 		dateEl.addActionListener(FormEvent.ONCHANGE);
 	}

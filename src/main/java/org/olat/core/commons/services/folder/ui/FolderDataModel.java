@@ -86,9 +86,9 @@ public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> imple
 	}
 	
 	public enum FolderCols implements FlexiSortableColumnDef {
-		icon("table.icon"),
+		icon("table.thumbnail"),
 		title("table.title"),
-		download("table.download"),
+		download("download"),
 		createdBy("created.by"),
 		lastModifiedDate("modified.date"),
 		lastModifiedBy("modified.by"),
@@ -100,7 +100,7 @@ public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> imple
 		path("table.path"),
 		versions("table.versions"),
 		license("table.license"),
-		tools("tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

@@ -101,7 +101,7 @@ public class ProjCalendarDataModel extends DefaultFlexiTableDataModel<ProjCalend
 		lastModifiedBy("last.modified.by"),
 		deletedBy("deleted.by"),
 		deletedDate("deleted.date"),
-		tools("tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

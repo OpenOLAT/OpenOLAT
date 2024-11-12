@@ -222,6 +222,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		sortOrderButton.setTranslator(translator);
 		sortOrderButton.setIconLeftCSS("o_icon o_icon_sort_menu o_icon-lg");
 		sortOrderButton.setIconRightCSS("o_icon o_icon_caret o_icon-sm");
+		sortOrderButton.setTitle(translator.translate("aria.sort"));
 		components.put("rSortOrder", sortOrderButton);
 
 		customButton = new FormLinkImpl(dispatchId.concat("_customButton"), "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
@@ -748,6 +749,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		searchFieldEl = new AutoCompleterImpl(dispatchId + "_searchField", "search", translator.getLocale());
 		searchFieldEl.setDomReplacementWrapperRequired(false);
 		searchFieldEl.showLabel(false);
+		searchFieldEl.setAriaLabel(translator.translate("enter.search.term"));
 		searchFieldEl.getComponent().addListener(this);
 		((AutoCompleterImpl)searchFieldEl).setListProvider(autoCompleteProvider, usess);
 		components.put("rSearch", searchFieldEl);

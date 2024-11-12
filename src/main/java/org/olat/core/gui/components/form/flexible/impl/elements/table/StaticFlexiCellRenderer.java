@@ -206,6 +206,11 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		
+		String label = getLabel(renderer, cellValue, row, source, ubu, translator);
+		if (!StringHelper.containsNonWhitespace(label) && !StringHelper.containsNonWhitespace(iconLeftCSS) && !StringHelper.containsNonWhitespace(iconRightCSS)) {
+			return;
+		}
+		
 		String cellAction = getAction();
 		if(StringHelper.containsNonWhitespace(cellAction)) {
 			FlexiTableElementImpl ftE = source.getFormItem();
@@ -245,14 +250,16 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 				target.append("<i class=\"o_icon ").append(iconLeftCSS).append("\">&nbsp;</i>");
 			}
 			
-			getLabel(renderer, target, cellValue, row, source, ubu, translator);
+			if (StringHelper.containsNonWhitespace(label)) {
+				target.append(label);
+			}
 			
 			if(StringHelper.containsNonWhitespace(iconRightCSS)) {
 				target.append(" <i class=\"o_icon ").append(iconRightCSS).append("\">&nbsp;</i>");
 			}
 			target.append("</a>");
-		} else {
-			getLabel(renderer, target, cellValue, row, source, ubu, translator);
+		} else if (StringHelper.containsNonWhitespace(label)) {
+			target.append(label);
 		}
 	}
 	
@@ -265,16 +272,14 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 		return null;
 	}
 	
-	protected void getLabel(Renderer renderer, StringOutput target, Object cellValue, int row,
-			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+	protected String getLabel(Renderer renderer, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
 		if(labelDelegate == null) {
-			String labelVal = getLabel();
-			if(labelVal != null) {
-				target.append(labelVal);
-			}
-		} else {
-			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+			return getLabel();
 		}
+		StringOutput delegatedLabel = new StringOutput();
+		labelDelegate.render(renderer, delegatedLabel, cellValue, row, source, ubu, translator);
+		return delegatedLabel.toString();
 	}
 	
 	private void renderOpenTab(StringOutput target, FlexiTableElementImpl ftE, NameValuePair actionPair, URLBuilder ubu) {

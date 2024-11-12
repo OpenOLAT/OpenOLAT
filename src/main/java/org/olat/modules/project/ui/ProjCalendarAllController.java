@@ -250,6 +250,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CalendarCols.deletedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CalendarCols.deletedBy));
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CalendarCols.tools);
+		toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		toolsCol.setAlwaysVisible(true);
 		toolsCol.setSortable(false);
 		toolsCol.setExportable(false);
@@ -652,6 +653,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private void forgeToolsLink(ProjCalendarRow row) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

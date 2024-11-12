@@ -112,7 +112,7 @@ public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProject
 		createFromTemplate("project.create.from.template"),
 		deletedBy("deleted.by"),
 		deletedDate("deleted.date"),
-		tools("tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

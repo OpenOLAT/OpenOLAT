@@ -80,7 +80,7 @@ public class AutoCompleterController extends BasicController {
 	 * @param provider
 	 *            The provider that can be called to return the search-results
 	 *            for a given search query
-	 * @param noResults
+	 * @param noresults
 	 *            The translated value to display when no results are found,
 	 *            e.g. "no matches found" or "-no users found-". When a NULL
 	 *            value is provided, the controller will use a generic message.
@@ -92,19 +92,13 @@ public class AutoCompleterController extends BasicController {
 	 * @param minChars
 	 *            The minimum number of characters the user has to enter to
 	 *            perform a search
-	 * @param label
 	 */
 	public AutoCompleterController(UserRequest ureq, WindowControl wControl, ListProvider provider, String noresults,
-			final boolean showDisplayKey, int inputWidth, int minChars, String label) {
+			final boolean showDisplayKey, int inputWidth, int minChars) {
 		super(ureq, wControl);
 		this.gprovider = provider;
 		this.noResults = (noresults == null ? translate("autocomplete.noresults") : noresults);
 		this.myContent = createVelocityContainer("autocomplete");
-		
-		// Configure displaying parameters
-		if (label != null) {
-			myContent.contextPut("autocompleter_label", label);
-		}
 		
 		myContent.put("typeahead", new CustomJSComponent("typeahead", new String[] {
 				"js/jquery/typeahead/typeahead.bundle.min.js"

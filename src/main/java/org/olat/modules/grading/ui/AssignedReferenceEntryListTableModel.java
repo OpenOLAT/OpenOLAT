@@ -100,7 +100,7 @@ implements SortableFlexiTableDataModel<AssignedReferenceEntryRow> {
 		recordedTime("table.header.recorded.time"),
 		recordedMetadataTime("table.header.recorded.meta.time"),
 		absence("table.header.absence.leave"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

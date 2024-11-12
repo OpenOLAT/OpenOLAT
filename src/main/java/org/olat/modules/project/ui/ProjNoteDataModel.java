@@ -98,7 +98,7 @@ public class ProjNoteDataModel extends DefaultFlexiTableDataModel<ProjNoteRow> i
 		lastModifiedBy("last.modified.by"),
 		deletedBy("deleted.by"),
 		deletedDate("deleted.date"),
-		tools("tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

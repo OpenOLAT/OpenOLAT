@@ -138,7 +138,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		
 		sb.append("<div class=\"o_date_bloc\">");
 		if (!jsdcc.isTimeOnlyEnabled()) {
-			renderDateChooser(sb, jsdcc, receiverId, receiverId, jsdcc.getValue(), "o_first_date", maxlength, translator);
+			renderDateChooser(sb, jsdcc, receiverId, receiverId, null, jsdcc.getValue(), "o_first_date", maxlength, translator);
 		}
 		//input fields for hour and minute
 		if (jsdcc.isDateChooserTimeEnabled() || jsdcc.isTimeOnlyEnabled()) {
@@ -152,7 +152,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				} else {
 					separator = " - ";
 				}
-				renderSeparator(sb, separator);
+				renderSeparator(sb, receiverId + "_sep", separator);
 				renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
 						receiverId.concat("_snd"), jsdcc, "o_second_ms".concat(timeOnlyCss));
 			}
@@ -160,12 +160,14 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		sb.append("</div>");
 		
 		if(jsdcc.isSecondDate() && !jsdcc.isSameDay()) {
+			String separatorId = null;
 			if(jsdcc.getSeparator() != null) {
-				renderSeparator(sb, translator.translate(jsdcc.getSeparator()));
+				separatorId = receiverId + "_sep";
+				renderSeparator(sb, separatorId, translator.translate(jsdcc.getSeparator()));
 			}
 			sb.append("<div class=\"o_date_bloc\">");
 			if(!jsdcc.isTimeOnlyEnabled() || jsdcc.isTimeOnlyEnabled()) {
-				renderDateChooser(sb, jsdcc, receiverId.concat("_snd"), receiverId, jsdcc.getSecondValue(), "o_second_date", maxlength, translator);
+				renderDateChooser(sb, jsdcc, receiverId.concat("_snd"), receiverId, separatorId, jsdcc.getSecondValue(), "o_second_date", maxlength, translator);
 			}
 			if (jsdcc.isDateChooserTimeEnabled()) {
 				renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
@@ -175,12 +177,16 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		}
 	}
 	
-	private void renderSeparator(StringOutput sb, String sep) {
-		sb.append("<div class='form-group o_date_separator'>").append(sep).append("</div>");
+	private void renderSeparator(StringOutput sb, String sepId, String sep) {
+		sb.append("<div");
+		if (StringHelper.containsNonWhitespace(sepId)) {
+			sb.append(" id=\"").append(sepId).append("\"");
+		}
+		sb.append(" class='form-group o_date_separator'>").append(sep).append("</div>");
 	}
 	
 	private void renderDateChooser(StringOutput sb, JSDateChooserComponent jsdcc, String receiverId, String onChangeId,
-			String value, String cssClass, int maxlength, Translator translator) {
+			String labeledById, String value, String cssClass, int maxlength, Translator translator) {
 		TextElementComponent teC = jsdcc.getTextElementComponent();
 		String format = jsdcc.getDateChooserDateFormat();
 		TextElementImpl te = teC.getFormItem();
@@ -192,7 +198,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		Translator dateTranslator = Util.createPackageTranslator(JSDateChooserRenderer.class, translator.getLocale());
 
 		sb.append("<div class='form-group ").append(cssClass).append("'><div class='input-group o_date_picker'>");
-		renderTextElement(sb, receiverId, onChangeId, value, jsdcc, teC, maxlength);
+		renderTextElement(sb, receiverId, onChangeId, labeledById, value, jsdcc, teC, maxlength);
 		//date chooser button
 		sb.append("<span class='input-group-addon' id='trigger_").append(jsdcc.getFormDispatchId()).append("' onclick=\"document.getElementById('").append(receiverId).append("').datepicker.show();\">")
 		  .append("<i class='o_icon o_icon_calendar' title=\"").appendHtmlEscaped(sourceTranslator.translate("calendar.choose")).append("\">\u00A0</i></span>")
@@ -364,13 +370,13 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				} else {
 					separator = " - ";
 				}
-				renderSeparator(sb, separator);
+				renderSeparator(sb, null, separator);
 				renderTimeDisabled(sb, jsdcc.getSecondDate(), receiverId.concat("_snd"), "o_second_ms");
 			}
 		}
 		if(jsdcc.isSecondDate() && !jsdcc.isSameDay()) {
 			if(jsdcc.getSeparator() != null) {
-				renderSeparator(sb, translator.translate(jsdcc.getSeparator()));
+				renderSeparator(sb, null, translator.translate(jsdcc.getSeparator()));
 			}
 			renderDateChooserDisabled(sb, jsdcc, jsdcc.getSecondValue(), "o_second_date", maxlength);
 			if (jsdcc.isDateChooserTimeEnabled()) {
@@ -401,7 +407,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		return dc;
 	}
 	
-	private void renderTextElement(StringOutput sb, String receiverId, String onChangeId, String value, JSDateChooserComponent jsdcc, TextElementComponent teC, int maxlength) {
+	private void renderTextElement(StringOutput sb, String receiverId, String onChangeId, String labeledById,
+			String value, JSDateChooserComponent jsdcc, TextElementComponent teC, int maxlength) {
 		TextElementImpl te = teC.getFormItem();
 		
 		//display size cannot be bigger the maxlenght given by dateformat
@@ -414,8 +421,13 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("\" maxlength=\"").append(maxlength)
 		  .append("\" value=\"").append(StringHelper.escapeHtml(value))
 		  .append("\" data-oo-validation-group=\"").append(receiverId).append("\" ")
-		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), onChangeId, te.getAction()))
-		  .append(" autocomplete=\"off\">");
+		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), onChangeId, te.getAction()));
+		if (StringHelper.containsNonWhitespace(labeledById)) {
+			sb.append(" aria-labelledby=\"").append(labeledById).append("\"");
+		} else if (StringHelper.containsNonWhitespace(te.getAriaLabel())) {
+			sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
+		}
+		 sb.append(" autocomplete=\"off\">");
 		//add set dirty form only if enabled
 		FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), receiverId);
 		if(jsdcc.getFormItem().getRootForm().isInlineValidationOn() || jsdcc.getFormItem().isInlineValidationOn()) {

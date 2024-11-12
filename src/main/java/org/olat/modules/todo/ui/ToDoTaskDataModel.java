@@ -154,7 +154,7 @@ public class ToDoTaskDataModel extends DefaultFlexiTreeTableDataModel<ToDoTaskRo
 		tags("tags"),
 		deletedBy("deleted.by"),
 		deletedDate("deleted.date"),
-		tools("tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

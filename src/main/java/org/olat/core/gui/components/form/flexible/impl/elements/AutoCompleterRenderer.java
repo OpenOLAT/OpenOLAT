@@ -87,6 +87,11 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 			if (autoCompleter.hasFocus()) {
 				sb.append(" autofocus");
 			}
+			if (autoCompleter instanceof AbstractTextElement textElement) {
+				if (StringHelper.containsNonWhitespace(textElement.getAriaLabel())) {
+					sb.append(" aria-label=\"").append(textElement.getAriaLabel()).append("\"");
+				}
+			}
 			sb.append(">");
 			sb.append("<script>\n")
 			  .append("\"use strict\";")

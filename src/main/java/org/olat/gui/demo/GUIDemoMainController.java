@@ -113,7 +113,7 @@ public class GUIDemoMainController extends GenericMainController {
 				}
 			};
 				
-			AutoCompleterController c = new AutoCompleterController(ureq, getWindowControl(), provider, null, true, 60, 3, null);
+			AutoCompleterController c = new AutoCompleterController(ureq, getWindowControl(), provider, null, true, 60, 3);
 			c.setPlaceholderMessage("Start typing to search...");
 			
 			// for demo only, normally use in parent controller

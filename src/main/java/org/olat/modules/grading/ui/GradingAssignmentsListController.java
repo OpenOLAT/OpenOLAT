@@ -325,7 +325,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		if(secCallback.canManage()) {
 			StickyActionColumnModel toolsCol = new StickyActionColumnModel(GAssignmentsCol.tools);
 			toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolsCol.setHeaderLabel(translate("table.header.tools"));
+			toolsCol.setHeaderLabel(translate("action.more"));
 			toolsCol.setAlwaysVisible(true);
 			toolsCol.setExportable(false);
 			columnsModel.addFlexiColumnModel(toolsCol);
@@ -413,6 +413,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		String linkName = "tools-" + counter++;
 		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		toolsLink.setAriaLabel(translate("action.more"));
 		toolsLink.setUserObject(row);
 		flc.add(linkName, toolsLink);
 		row.setToolsLink(toolsLink);
