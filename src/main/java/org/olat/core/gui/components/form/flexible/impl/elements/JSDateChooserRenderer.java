@@ -81,7 +81,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		sb.append("<div class='o_date'>");
 		renderLabel(sb, jsdcc, layout, translator, args);
 		if (source.isEnabled()) {
-			renderDateChooser(sb, jsdcc, receiverId, receiverId, jsdcc.getValue(), "o_first_date", maxlength, translator);
+			renderDateChooser(sb, jsdcc, receiverId, receiverId, null, jsdcc.getValue(), "o_first_date", maxlength, translator);
 		} else{
 			renderTextElementReadonly(sb, jsdcc, maxlength, translator);
 		}
@@ -99,7 +99,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		} else {
 			separator = " - ";
 		}
-		renderSeparator(sb, separator);
+		renderSeparator(sb, receiverId + "_sep", separator);
 		renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
 				receiverId.concat("_snd"), jsdcc, "o_second_ms".concat(timeOnlyCss));
 		
