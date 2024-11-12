@@ -179,6 +179,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDefaultConfiguration;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.invitation.InvitationConfigurationPermission;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.lecture.LectureModule;
@@ -202,6 +203,7 @@ import org.olat.note.NoteController;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -340,7 +342,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private ZoomModule zoomModule;
 	@Autowired
 	private QualityModule qualityModule;
-
+	@Autowired
+	private CurriculumModule curriculumModule;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
@@ -795,7 +798,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				tools.addComponent(coachFolderLink);
 			}
 			
-			if(lectureModule.isEnabled() && (courseAuthorRight || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) && isLectureEnabled()) {
+			if(lectureModule.isEnabled() && (courseAuthorRight || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) 
+					&& isLectureEnabled() && !isCourseManagedByCurriculum()) {
 				lecturesAdminLink = LinkFactory.createToolLink("lectures.admin.cmd", translate("command.options.lectures.admin"), this, "o_icon_lecture");
 				lecturesAdminLink.setUrl(BusinessControlFactory.getInstance()
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[LecturesAdmin:0][LectureBlocks:0]"));
@@ -848,7 +852,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		}
 	}
-	
+
+	private boolean isCourseManagedByCurriculum() {
+		if (!curriculumModule.isEnabled()) {
+			return false;
+		}
+		return RepositoryEntryRuntimeType.curricular.equals(getRepositoryEntry().getRuntimeType());
+	}
+
 	private boolean isLectureEnabled() {
 		return lectureService.isRepositoryEntryLectureEnabled(getRepositoryEntry());
 	}
