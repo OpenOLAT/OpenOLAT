@@ -56,6 +56,7 @@ import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryEntryFilter;
@@ -254,7 +255,13 @@ public class BusinessGroupEditResourceController extends BasicController {
 
 		@Override
 		public boolean accept(RepositoryEntry re) {
-			return !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
+			if (RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups)) {
+				return false;
+			}
+			if (RepositoryEntryRuntimeType.curricular.equals(re.getRuntimeType())) {
+				return false;
+			}
+			return true;
 		}
 	}
 }
