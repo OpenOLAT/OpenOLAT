@@ -416,7 +416,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				return courseNodeConfigs.size();
 			}
 		};
-		quickAddCtr = new AutoCompleterController(ureq, getWindowControl(), listProvider, translate("quickadd.notfound"), false, 10, 2, null);
+		quickAddCtr = new AutoCompleterController(ureq, getWindowControl(), listProvider, translate("quickadd.notfound"), false, 10, 2);
 		quickAddCtr.setPlaceholderMessage(translate("quickadd.placeholder"));
 		quickAddCtr.setEmptyAsReset(true);
 		listenTo(quickAddCtr);

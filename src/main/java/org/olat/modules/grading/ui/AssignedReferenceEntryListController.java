@@ -113,7 +113,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(GEntryCol.tools);
 		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsCol.setHeaderLabel(translate("table.header.tools"));
+		toolsCol.setHeaderLabel(translate("action.more"));
 		toolsCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsCol);
 		

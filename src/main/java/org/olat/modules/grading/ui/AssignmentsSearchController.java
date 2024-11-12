@@ -193,9 +193,11 @@ public class AssignmentsSearchController extends FormBasicController {
 		scoresLayout.setLabel("search.scores", null);
 
 		scoreFromEl = uifactory.addTextElement("search.score.from", null, 8, null, scoresLayout);
+		scoreFromEl.setAriaLabel(translate("search.scores.from"));
 		scoreFromEl.setDomReplacementWrapperRequired(false);
 		scoreFromEl.setDisplaySize(8);
 		scoreToEl = uifactory.addTextElement("search.score.to", null, 8, null, scoresLayout);
+		scoreToEl.setAriaLabel(translate("search.scores.to"));
 		scoreToEl.setDomReplacementWrapperRequired(false);
 		scoreToEl.setDisplaySize(8);
 

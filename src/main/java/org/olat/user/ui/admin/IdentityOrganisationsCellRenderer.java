@@ -98,13 +98,15 @@ public class IdentityOrganisationsCellRenderer implements FlexiCellRenderer, Act
 		}
 
 		@Override
-		protected void getLabel(Renderer renderer, StringOutput target, Object cellValue, int row,
-				FlexiTableComponent source, URLBuilder ubu, Translator translator) {	
+		protected String getLabel(Renderer renderer, Object cellValue, int row, FlexiTableComponent source,
+				URLBuilder ubu, Translator translator) {	
 			@SuppressWarnings("unchecked")
 			List<Organisation> organisations = (List<Organisation>)cellValue;
+			StringBuilder sb = new StringBuilder();
 			if(organisations.size() > 1) {
-				target.append("+").append(organisations.size() - 1);
+				sb.append("+").append(organisations.size() - 1);
 			}
+			return sb.toString();
 		}
 	}
 }

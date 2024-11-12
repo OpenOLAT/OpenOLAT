@@ -101,7 +101,7 @@ public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow>
 		absence("table.header.absence.leave"),
 		recordedTime("table.header.recorded.time"),
 		recordedMetadataTime("table.header.recorded.meta.time"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

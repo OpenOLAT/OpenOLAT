@@ -176,7 +176,7 @@ public class GradersListController extends FormBasicController {
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(GradersCol.tools);
 		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsCol.setHeaderLabel(translate("table.header.tools"));
+		toolsCol.setHeaderLabel(translate("action.more"));
 		toolsCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsCol);
 		
@@ -207,6 +207,7 @@ public class GradersListController extends FormBasicController {
 		String linkName = "tools-" + counter++;
 		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		flc.add(linkName, toolsLink);
 		row.setToolsLink(toolsLink);

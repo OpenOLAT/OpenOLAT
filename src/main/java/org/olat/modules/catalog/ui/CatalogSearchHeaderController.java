@@ -92,6 +92,7 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		
 		searchEl = uifactory.addTextElement("search", 100, null, searchCont);
 		searchEl.setPlaceholderText(translate("search.placeholder"));
+		searchEl.setAriaLabel("enter.search.term");
 		searchEl.setDomReplacementWrapperRequired(false);
 		searchEl.setFocus(true);
 		
