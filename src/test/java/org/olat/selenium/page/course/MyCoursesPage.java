@@ -22,6 +22,7 @@ package org.olat.selenium.page.course;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.core.util.Formatter;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -95,6 +96,7 @@ public class MyCoursesPage {
 	 */
 	public MyCoursesPage select(String title) {
 		try {
+			title = Formatter.truncateOnly(title, 55);
 			By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
 			OOGraphene.waitElement(titleBy, browser);
 			browser.findElement(titleBy).click();
