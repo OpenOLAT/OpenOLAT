@@ -52,11 +52,13 @@ import org.olat.course.member.events.NewInvitationEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.MemberListSecurityCallback;
 import org.olat.group.ui.main.MemberListSecurityCallbackFactory;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.ui.InvitationListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
@@ -115,6 +117,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 	private InvitationModule invitationModule;
 	@Autowired
 	private InvitationService invitationService;
+	@Autowired
+	private CurriculumModule curriculumModule;
 
 	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry re, UserCourseEnvironment coachCourseEnv, boolean entryAdmin, boolean principal,
@@ -180,7 +184,7 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			root.addChild(node);
 		}
 
-		if(acModule.isEnabled() && (entryAdmin || principal ||  memberManagementRight)) {
+		if(!isCourseManagedByCurriculum() && acModule.isEnabled() && (entryAdmin || principal ||  memberManagementRight)) {
 			//check if the course is managed and/or has offers
 			if(!RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.bookings)
 					|| (repoEntry.isPublicVisible() && acService.isResourceAccessControled(repoEntry.getOlatResource(), null))) {
@@ -213,6 +217,13 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			root.addChild(node);
 		}
 		return gtm;
+	}
+
+	private boolean isCourseManagedByCurriculum() {
+		if (!curriculumModule.isEnabled()) {
+			return false;
+		}
+		return RepositoryEntryRuntimeType.curricular.equals(repoEntry.getRuntimeType());
 	}
 
 	@Override
