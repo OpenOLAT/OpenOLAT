@@ -112,12 +112,7 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 		
 		userOverviewRights = getStringPropertyValue(USER_OVERVIEW_RIGHTS, userOverviewRights);
 
-		String defaultCourseRuntimeTypeObj = getStringPropertyValue(DEFAULT_COURSE_RUNTIME_TYPE, true);
-		if (StringHelper.containsNonWhitespace(defaultCourseRuntimeTypeObj)) {
-			defaultCourseRuntimeType = defaultCourseRuntimeTypeObj;
-		} else {
-			defaultCourseRuntimeType = RepositoryEntryRuntimeType.curricular.name();
-		}
+		defaultCourseRuntimeType = getStringPropertyValue(DEFAULT_COURSE_RUNTIME_TYPE, defaultCourseRuntimeType);
 	}
 	
 	@Override
