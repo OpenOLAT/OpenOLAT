@@ -66,9 +66,12 @@ import org.olat.group.ui.main.BusinessGroupViewFilter;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.group.ui.main.UnmanagedGroupFilter;
 import org.olat.ims.lti13.LTI13Service;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * List the business groups of all types linked to a course.
@@ -90,7 +93,10 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	private DialogBoxController confirmRemoveResource;
 	private DialogBoxController confirmRemoveMultiResource;
 	private SelectBusinessGroupController selectController;
-	
+
+	@Autowired
+	private CurriculumModule curriculumModule;
+
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			boolean groupManagementRight, boolean readOnly) {
 		super(ureq, wControl, "group_list", readOnly, "course", true, re);
@@ -132,8 +138,18 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		createGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addGroup = uifactory.addFormLink("group.add", formLayout, Link.BUTTON);
 		addGroup.setElementCssClass("o_sel_course_select_group");
-		addGroup.setVisible(!managed && !readOnly);
+		addGroup.setVisible(!isCourseManagedByCurriculum() && !managed && !readOnly);
 		addGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add_search");
+	}
+
+	private boolean isCourseManagedByCurriculum() {
+		if (!curriculumModule.isEnabled()) {
+			return false;
+		}
+		if (getUserObject() instanceof RepositoryEntry entry) {
+			return RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType());
+		}
+		return false;
 	}
 
 	@Override
