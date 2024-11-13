@@ -228,6 +228,7 @@ class NewUserForm extends FormBasicController {
 			// special case to handle email field
 			if(userPropertyHandler.getName().equals(UserConstants.EMAIL)) {
 				emailTextElement = (TextElement) formItem;
+				emailTextElement.addActionListener(FormEvent.ONCHANGE);
 				if (!userModule.isEmailMandatory()) {
 					formItem.setMandatory(false);
 				}
@@ -254,6 +255,7 @@ class NewUserForm extends FormBasicController {
 		organisationsElement = uifactory.addDropdownSingleselect("new.form.organisations", formLayout,
 				organisationKeys.toArray(new String[organisationKeys.size()]), organisationValues.toArray(new String[organisationValues.size()]), null);
 		organisationsElement.setVisible(organisationKeys.size() > 1);
+		organisationsElement.addActionListener(FormEvent.ONCHANGE);
 		boolean selected = false;
 		for(String organisationKey:organisationKeys) {
 			if(preselectedOrganisation.getKey().toString().equals(organisationKey)) {
@@ -298,13 +300,29 @@ class NewUserForm extends FormBasicController {
 		}
 		
 		uifactory.addFormSubmitButton("save", "submit.save", formLayout);
-	}	
+	}
+	
+	private void updateEmailDomainUI() {
+		if (organisationModule.isEmailDomainEnabled() && organisationsElement.isOneSelected()) {
+			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> Long.valueOf(organisationsElement.getSelectedKey()));
+			boolean emailDomainAllowed = organisationService.isEmailDomainAllowed(emailDomains, emailTextElement.getValue());
+			if (!emailDomainAllowed) {
+				organisationsElement.setWarningKey("error.email.domain.not.allowed");
+			} else {
+				organisationsElement.clearWarning();
+			}
+		}
+	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (showPasswordFields && source == authCheckbox) {
 			psw1TextElement.setVisible(authCheckbox.isSelected(0));
 			psw2TextElement.setVisible(authCheckbox.isSelected(0));
+		} else if (source == organisationsElement) {
+			updateEmailDomainUI();
+		} else if (source == emailTextElement) {
+			updateEmailDomainUI();
 		}
 	}
 	
@@ -377,17 +395,6 @@ class NewUserForm extends FormBasicController {
 		if(organisationsElement.isVisible() && !organisationsElement.isOneSelected()) {
 			organisationsElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		}
-		
-		// Organisation e-mail domain
-		if (emailTextElement.isVisible() && ! emailTextElement.hasError()
-				&& organisationsElement.isVisible() && !organisationsElement.hasError() && organisationsElement.isOneSelected()
-				&& organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
-			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> Long.valueOf(organisationsElement.getSelectedKey()));
-			boolean emailDomainAllowed = organisationService.isEmailDomainAllowed(emailDomains, emailTextElement.getValue());
-			if (!emailDomainAllowed) {
-				emailTextElement.setWarningKey("error.email.domain.not.allowed");
-			}
 		}
 		
 		// expiration

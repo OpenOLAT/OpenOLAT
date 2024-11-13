@@ -91,7 +91,7 @@ public class ConfirmToRegisteredUserController extends FormBasicController {
 			if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
 				Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
 				List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(defaultOrganisation);
-				if (organisationService.isEmailDomainAllowed(emailDomains, identityToModify.getUser().getEmail())) {
+				if (!organisationService.isEmailDomainAllowed(emailDomains, identityToModify.getUser().getEmail())) {
 					String emailDomainWarning = translate("error.email.domain.not.available",
 							StringHelper.escapeHtml(identityToModify.getUser().getEmail()),
 							StringHelper.escapeHtml(defaultOrganisation.getDisplayName()));
