@@ -90,7 +90,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		String cancellingFeeDeadlineDays = null;
 		String cancellingFeeAmount = null;
 		
-		if (offer != null) {
+		if (offer != null && offer.getKey() != null) {
 			if (offer.getPrice() != null) {
 				if (offer.getPrice().getAmount() != null) {
 					priceAmount = PriceFormat.format(offer.getPrice().getAmount());
@@ -112,6 +112,12 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 			
 		} else {
 			currencyCode = invoiceModule.getCurrencyDefault();
+			if (StringHelper.containsNonWhitespace(currencyCode)) {
+				BigDecimal defaultCancellingFee = invoiceModule.getCancellingFeeDefaults().get(currencyCode);
+				if (defaultCancellingFee != null) {
+					cancellingFeeAmount = PriceFormat.format(defaultCancellingFee);
+				}
+			}
 			if (invoiceModule.getCancellingFeeDeadlineDaysDefault() != null) {
 				cancellingFeeDeadlineDays = invoiceModule.getCancellingFeeDeadlineDaysDefault().toString();
 			}

@@ -23,6 +23,7 @@ import static org.olat.core.util.ArrayHelper.emptyStrings;
 
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -81,6 +82,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(BillingAddressController.class, getLocale(), getTranslator()));
 		this.link = link;
+		
 		initForm(ureq);
 	}
 
@@ -107,7 +109,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		billingAddressEl = uifactory.addDropdownSingleselect("billing.address", formLayout, emptyStrings(), emptyStrings());
 		billingAddressEl.setMandatory(true);
 		billingAddressEl.enableNoneSelection(translate("billing.address.select"));
-		loadBillingAddresses();
+		loadBillingAddresses(ureq);
 		
 		FormLayoutContainer billingAddressButtonsCont = FormLayoutContainer.createButtonLayout("billingAddressButtons", getTranslator());
 		billingAddressButtonsCont.setRootForm(mainForm);
@@ -122,7 +124,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		uifactory.addFormSubmitButton("access.button.fee", formLayout);
 	}
 
-	private void loadBillingAddresses() {
+	private void loadBillingAddresses(UserRequest ureq) {
 		SelectionValues billingAddressSV = new SelectionValues();
 		
 		BillingAddressSearchParams searchParams = new BillingAddressSearchParams();
@@ -133,11 +135,12 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 						address.getKey().toString(),
 						address.getIdentifier())));
 		
-		List<OrganisationRef> offerOrganisations = acService.getOfferOrganisations(getIdentity());
-		if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
+		
+		List<OrganisationRef> userOrganisations = ureq.getUserSession().getRoles().getOrganisationsWithRole(OrganisationRoles.user);
+		if (userOrganisations != null && !userOrganisations.isEmpty()) {
 			searchParams = new BillingAddressSearchParams();
 			searchParams.setEnabled(Boolean.TRUE);
-			searchParams.setIdentityKeys(List.of(getIdentity()));
+			searchParams.setOrganisations(userOrganisations);
 			acService.getBillingAddresses(searchParams).forEach(
 					address -> billingAddressSV.add(SelectionValues.entry(
 							address.getKey().toString(),
@@ -152,7 +155,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (editCtrl == source) {
 			if (event == Event.CHANGED_EVENT) {
-				loadBillingAddresses();
+				loadBillingAddresses(ureq);
 				String key = editCtrl.getBillingAddress().getKey().toString();
 				if (billingAddressEl.containsKey(key)) {
 					billingAddressEl.select(key, true);
@@ -195,7 +198,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 			searchParams.setBillingAddressKeys(List.of(Long.valueOf(billingAddressEl.getSelectedKey())));
 			List<BillingAddress> billingAddresses = acService.getBillingAddresses(searchParams);
 			if (billingAddresses.isEmpty()) {
-				loadBillingAddresses();
+				loadBillingAddresses(ureq);
 				billingAddressEl.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			} else {
