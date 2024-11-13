@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -40,13 +41,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OrganisationAdminConfigrationController extends FormBasicController {
 	
 	private FormToggle enableEl;
+	private FormLayoutContainer emailDomainCont;
 	private FormToggle emailDomainEnableEl;
 	
 	@Autowired
 	private OrganisationModule organisationModule;
 	
 	public OrganisationAdminConfigrationController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		
 		initForm(ureq);
 		updateUI();
@@ -54,20 +56,32 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("admin.description");
-		setFormContextHelp("manual_admin/administration/Modules_Organisations/");
+		FormLayoutContainer organisationCont = FormLayoutContainer.createDefaultFormLayout("organisations", getTranslator());
+		organisationCont.setFormTitle(translate("organisation.configuration"));
+		organisationCont.setFormInfo(translate("organisation.configuration.help"));
+		organisationCont.setFormInfoHelp("manual_admin/administration/Modules_Organisations/");
+		organisationCont.setRootForm(mainForm);
+		formLayout.add(organisationCont);
 		
-		enableEl = uifactory.addToggleButton("organisation.admin.enabled", "organisation.admin.enabled", translate("on"), translate("off"), formLayout);
+		enableEl = uifactory.addToggleButton("organisation.admin.enabled", "organisation.admin.enabled", translate("on"), translate("off"), organisationCont);
 		enableEl.toggle(organisationModule.isEnabled());
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		
-		emailDomainEnableEl = uifactory.addToggleButton("email.domain", "organisation.admin.email.domain.enabled", translate("on"), translate("off"), formLayout);
+		emailDomainCont = FormLayoutContainer.createDefaultFormLayout("emailDomain", getTranslator());
+		emailDomainCont.setFormTitle(translate("organisation.email.domains"));
+		emailDomainCont.setFormInfo(translate("organisation.email.domains.help"));
+		emailDomainCont.setFormInfoHelp("manual_admin/administration/Modules_Organisations/#e-mail_domain_mapping");
+		emailDomainCont.setElementCssClass("o_block_top");
+		emailDomainCont.setRootForm(mainForm);
+		formLayout.add(emailDomainCont);
+		
+		emailDomainEnableEl = uifactory.addToggleButton("email.domain", "organisation.admin.email.domain.enabled", translate("on"), translate("off"), emailDomainCont);
 		emailDomainEnableEl.toggle(organisationModule.isEmailDomainEnabled());
 		emailDomainEnableEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	private void updateUI() {
-		emailDomainEnableEl.setVisible(enableEl.isOn());
+		emailDomainCont.setVisible(enableEl.isOn());
 	}
 
 	@Override

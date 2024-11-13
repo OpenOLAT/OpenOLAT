@@ -104,7 +104,7 @@ public class OrganisationEmailDomainAdminController extends FormBasicController 
 		buttonsTopCont.setRootForm(mainForm);
 		formLayout.add(buttonsTopCont);
 		
-		createLink = uifactory.addFormLink("create", buttonsTopCont, Link.BUTTON);
+		createLink = uifactory.addFormLink("organisation.email.domain.create", buttonsTopCont, Link.BUTTON);
 		createLink.setIconLeftCSS("o_icon o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

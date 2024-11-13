@@ -110,6 +110,7 @@ public class RegistrationAdminController extends FormBasicController {
 	private final String[] propertyValues;
 	private final String[] pendingPropertyKeys;
 	private final String[] pendingPropertyValues;
+	private final boolean orgEmailDomainEnabled;
 	
 	@Autowired
 	private RegistrationModule registrationModule;
@@ -163,6 +164,8 @@ public class RegistrationAdminController extends FormBasicController {
 			pendingPropertyValues[1 + count++] = userPropTranslator.translate(propertyHandler.i18nFormElementLabelKey());
 		}
 		
+		orgEmailDomainEnabled = organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled();
+		
 		initForm(ureq);
 	}
 
@@ -175,6 +178,10 @@ public class RegistrationAdminController extends FormBasicController {
 		settingsContainer.setRootForm(mainForm);
 		settingsContainer.setFormTitle(translate("admin.registration.title"));
 		formLayout.add(settingsContainer);
+		
+		if (orgEmailDomainEnabled) {
+			settingsContainer.setFormWarning(translate("admin.registration.organisation.email.domain.settings"));
+		}
 		
 		registrationElement = uifactory.addCheckboxesHorizontal("enable.self.registration", "admin.enableRegistration", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
 		registrationElement.addActionListener(FormEvent.ONCHANGE);
@@ -191,6 +198,7 @@ public class RegistrationAdminController extends FormBasicController {
 		emailValidationEl = uifactory.addCheckboxesHorizontal("email.validation", "admin.enable.email.validation", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
 		emailValidationEl.addActionListener(FormEvent.ONCHANGE);
 		emailValidationEl.select("on", registrationModule.isEmailValidationEnabled());
+		emailValidationEl.setEnabled(!orgEmailDomainEnabled);
 		
 		initOrganisationsEl(settingsContainer);
 		
@@ -262,7 +270,6 @@ public class RegistrationAdminController extends FormBasicController {
 		domainsContainer.setFormInfo(translate("admin.registration.domains.desc"));
 		formLayout.add(domainsContainer);
 		
-		boolean orgEmailDomainEnabled = organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled();
 		if (orgEmailDomainEnabled) {
 			domainsContainer.setFormWarning(translate("admin.registration.organisation.email.domain"));
 		}
@@ -453,7 +460,7 @@ public class RegistrationAdminController extends FormBasicController {
 		boolean  enableMain = registrationElement.isSelected(0);
 		registrationLinkElement.setEnabled(enableMain);
 		registrationLoginElement.setEnabled(enableMain);
-		organisationsEl.setEnabled(enableMain);
+		organisationsEl.setEnabled(enableMain && !orgEmailDomainEnabled);
 		
 		boolean example = enableMain && registrationLinkElement.isSelected(0);
 		exampleElement.setVisible(example);

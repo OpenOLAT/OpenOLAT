@@ -74,7 +74,7 @@ public class OrganisationAdminController extends BasicController implements Acti
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
-		configurationLink = LinkFactory.createLink("organisation.configuration", mainVC, this);
+		configurationLink = LinkFactory.createLink("configuration", mainVC, this);
 		segmentView.addSegment(configurationLink, true);
 		organisationListLink = LinkFactory.createLink("organisation.structure", mainVC, this);
 		organisationTypeListLink = LinkFactory.createLink("organisation.types", mainVC, this);
