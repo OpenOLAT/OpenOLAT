@@ -487,6 +487,9 @@ dialog.popover {
 		&:has(.o_badge_course_selector) {
 			margin-top: 0;
 		}
+		&:has(.o_badge_selector) {
+			margin-top: 0;
+		}
 	}
 }
 
@@ -542,6 +545,13 @@ dialog.popover {
 		max-width: 100%;
 		min-width: $input-height-base;
 	}
+}
+
+.o_badge_selector_selection {
+	overflow-y: auto;
+	min-height: 140px;
+	max-height: 240px;
+	padding-right: 4px;
 }
 
 .o_badge_selector_selected {
