@@ -114,7 +114,7 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 	public void enableGoToLoginLink() {
 		ExternalLink goToLoginLink = LinkFactory.createExternalLink("login", "login",
 				Settings.getServerContextPathURI() + "/" + Settings.getLoginPath());
-		goToLoginLink.setElementCssClass("btn btn-default o_button_ghost");
+		goToLoginLink.setElementCssClass("btn btn-default btn-primary");
 		goToLoginLink.setIconLeftCSS("o_icon o_icon-lg o_icon_login");
 		goToLoginLink.setName(translate("topnav.login"));
 		goToLoginLink.setTarget("_self");

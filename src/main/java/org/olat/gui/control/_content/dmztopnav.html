@@ -1,7 +1,7 @@
 <div class="o_navbar_tools">
 	<ul class="nav o_navbar-nav o_navbar-right">
 		#if($r.available("login"))
-		<li>$r.render("login")</li>
+		<li class="o_navbar_button">$r.render("login")</li>
 		#end
 		#if($impressumInfos.top)
 		<li id="o_navbar_impress">$r.render("topnav.impressum")</li>

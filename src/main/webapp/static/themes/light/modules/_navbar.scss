@@ -76,6 +76,16 @@ a.o_disabled.navbar-text {
 		width: 120px;
 	}
 	
+	.o_navbar_button {
+		padding-top: floor($grid-gutter-width * 0.25);
+		.btn {
+			@include button-size($padding-base-vertical, $padding-base-horizontal, $font-size-base, $line-height-base, $btn-border-radius-base);
+			&.btn-primary {
+				@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+			}
+		}
+	}
+	
 	#o_navbar_langchooser {
 		color: $o-navbar-tools-permanent-color;
 		padding: floor($grid-gutter-width * 0.25) floor($grid-gutter-width * 0.5);

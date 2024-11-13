@@ -29,11 +29,14 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
@@ -53,13 +56,11 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class LanguageChooserController extends FormBasicController {
 
-	private SingleSelection langs;
-
-	String curlang;
+	private DropdownItem langDropdown;
+	
 	public LanguageChooserController(WindowControl wControl, UserRequest ureq, String id) {
 		super(ureq, wControl, id, "langchooser");
-		// init variables
-		curlang = ureq.getLocale().toString();
+		
 		initForm(ureq);
 	}
 
@@ -70,53 +71,45 @@ public class LanguageChooserController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		Locale loc = I18nManager.getInstance().getLocaleOrDefault(getSelectedLanguage());
-		MultiUserEvent mue = new LanguageChangedEvent(loc, ureq);
-		ureq.getUserSession().setLocale(loc);
-		ureq.getUserSession().putEntry("negotiated-locale", loc);
-		I18nManager.updateLocaleInfoToThread(ureq.getUserSession());
-		OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
-		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(mue, wrappedLocale);
-		// Update in velocity for flag
-		flc.contextPut("languageCode", loc.toString());
-	}
-
-	/**
-	 * selected language
-	 * 
-	 * @return
-	 */
-	public String getSelectedLanguage() {
-		return langs.getSelectedKey();
+		if (source instanceof FormLink link && link.getUserObject() instanceof String langKey) {
+			String langValue = link.getI18nKey();
+			langDropdown.setTranslatedLabel(langValue);
+			
+			Locale loc = I18nManager.getInstance().getLocaleOrDefault(langKey);
+			MultiUserEvent mue = new LanguageChangedEvent(loc, ureq);
+			ureq.getUserSession().setLocale(loc);
+			ureq.getUserSession().putEntry("negotiated-locale", loc);
+			I18nManager.updateLocaleInfoToThread(ureq.getUserSession());
+			OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(mue, wrappedLocale);
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, final UserRequest ureq) {
-
-		// SingleSelectionImpl creates following $r.render("..") names in velocity
-		// languages_LABEL -> access label of singleselection
-		// languages_ERROR -> access error of singleselection
-		// languages_EXAMPLE -> access example of singleselection
-		// languages_SELBOX -> render whole selection as selectionbox
-		// radiobuttons are accessed by appending the key, for example by
-		// languages_yes languages_no
-		//
 		Map<String, String> languages = I18nManager.getInstance().getEnabledLanguagesTranslated();
 		String[] langKeys = StringHelper.getMapKeysAsStringArray(languages);
 		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
 		ArrayHelper.sort(langKeys, langValues, false, true, false);
-		// Build css classes for reference languages
-		langs = uifactory.addDropdownSingleselect(mainForm.getFormId() + "_select", "select.language", "select.language", formLayout, langKeys, langValues, null); 
-		langs.addActionListener(FormEvent.ONCHANGE);
-		langs.select(curlang, true);
-		// Add to velocity for flag
-		flc.contextPut("languageCode", curlang);
-	}
-
-	@Override
-	protected void doDispose() {
-		langs = null;
-        super.doDispose();
+		
+		langDropdown = uifactory.addDropdownMenu("select.language", null, null, formLayout, getTranslator());
+		langDropdown.setOrientation(DropdownOrientation.right);
+		langDropdown.addActionListener(FormEvent.ONCHANGE);
+		String currentLang = ureq.getLocale().toString();
+		for (int i = 0; i < langKeys.length; i++) {
+			String langKey = langKeys[i];
+			String langValue = langValues[i];
+			
+			FormLink link = uifactory.addFormLink("lang_" + langKey, formLayout, Link.LINK + Link.NONTRANSLATED);
+			link.setI18nKey(langValue);
+			link.setUserObject(langKey);
+			langDropdown.addElement(link);
+			
+			if (currentLang.equalsIgnoreCase(langKey)) {
+				langDropdown.setTranslatedLabel(translate("noTransOnlyParam", langValue));
+			}
+		}
 	}
 
 }
