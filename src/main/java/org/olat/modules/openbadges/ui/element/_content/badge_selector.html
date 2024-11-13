@@ -1,16 +1,17 @@
+<div class="o_badge_selector">
 <div class="clearfix">
 	<div id="$r.getId('bsearch')" class="input-group o_badge_selector_search">
 		<div class="input-group-btn">
-			$r.render("searchButton")
+			$r.render("quickSearchButton")
 		</div>
-		$r.render("searchField")
+		$r.render("quickSearch")
 		<div class="input-group-btn">
-			$r.render("searchResetButton")
+			$r.render("resetQuickSearch")
 		</div>
 	</div>
 </div>
 
-<div class="clearfix">
+<div class="clearfix o_badge_selector_selection">
 	<div class="o_badge_selector_selected">
 		<div class="o_badge_selector_selected_label">
 			#if($r.isNotNull($nbSelected) && $nbSelected > 0)
@@ -73,6 +74,8 @@
 	#end
 </div>
 
+</div>
+	
 <script>
 	"use strict";
 	jQuery(function() {

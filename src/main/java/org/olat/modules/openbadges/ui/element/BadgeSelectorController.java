@@ -57,16 +57,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BadgeSelectorController extends FormBasicController {
 	private static final String PARAMETER_KEY_BADGE_SELECTION = "bsel_";
 
+	private FormLink browserButton;
+	private FormLink applyButton;
+	private TextElement quickSearchEl;
+	private FormLink resetQuickSearchButton;
+
 	private final RepositoryEntry entry;
 	private final Set<Long> availableKeys;
 	private Set<Long> selectedKeys;
 	private final String mediaUrl;
 
-	private FormLink openBrowserButton;
-	private FormLink applyButton;
-	private FormLink searchButton;
-	private TextElement searchFieldEl;
-	private FormLink searchResetButton;
 	private List<Row> rows;
 
 	@Autowired
@@ -90,28 +90,33 @@ public class BadgeSelectorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		searchButton = uifactory.addFormLink("searchButton", "", null, formLayout,
-				Link.BUTTON | Link.NONTRANSLATED);
-		searchButton.setElementCssClass("o_indicate_search");
-		searchButton.setIconLeftCSS("o_icon o_icon_search");
-		searchButton.setEnabled(false);
-		searchButton.setDomReplacementWrapperRequired(false);
+		initSearchLine(formLayout);
 
-		searchFieldEl = uifactory.addTextElement("searchField", null, 32, "", formLayout);
-		searchFieldEl.setPlaceholderKey("enter.search.term", null);
-		searchFieldEl.setDomReplacementWrapperRequired(false);
-		searchFieldEl.addActionListener(FormEvent.ONKEYUP);
-		searchFieldEl.setFocus(true);
-
-		searchResetButton = uifactory.addFormLink("searchResetButton", "", null, formLayout,
-				Link.BUTTON | Link.NONTRANSLATED);
-		searchResetButton.setElementCssClass("o_reset_search");
-		searchResetButton.setIconLeftCSS("o_icon o_icon_remove_filters");
-		searchResetButton.setDomReplacementWrapperRequired(false);
-
-		openBrowserButton = uifactory.addFormLink("badge.selector.open.browser", formLayout, Link.BUTTON_SMALL);
+		browserButton = uifactory.addFormLink("badge.selector.open.browser", formLayout, Link.BUTTON_SMALL);
 		applyButton = uifactory.addFormLink("apply", formLayout, Link.BUTTON_SMALL);
 		applyButton.setPrimary(true);
+	}
+
+	private void initSearchLine(FormItemContainer formLayout) {
+		FormLink quickSearchButton = uifactory.addFormLink("quickSearchButton", "", null, formLayout,
+				Link.BUTTON | Link.NONTRANSLATED);
+		quickSearchButton.setElementCssClass("o_indicate_search");
+		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
+		quickSearchButton.setEnabled(false);
+		quickSearchButton.setDomReplacementWrapperRequired(false);
+
+		quickSearchEl = uifactory.addTextElement("quickSearch", null, 32, "", formLayout);
+		quickSearchEl.setPlaceholderKey("enter.search.term", null);
+		quickSearchEl.setElementCssClass("o_quick_search");
+		quickSearchEl.setDomReplacementWrapperRequired(false);
+		quickSearchEl.addActionListener(FormEvent.ONKEYUP);
+		quickSearchEl.setFocus(true);
+
+		resetQuickSearchButton = uifactory.addFormLink("resetQuickSearch", "", null, formLayout,
+				Link.BUTTON | Link.NONTRANSLATED);
+		resetQuickSearchButton.setElementCssClass("o_reset_search");
+		resetQuickSearchButton.setIconLeftCSS("o_icon o_icon_remove_filters");
+		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
 	}
 
 	private void loadModel() {
@@ -140,22 +145,22 @@ public class BadgeSelectorController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (openBrowserButton == source) {
+		if (browserButton == source) {
 			setSelectedKeys();
-			fireEvent(ureq, OPEN_BROWSER_EVENT);
+			fireEvent(ureq, BROWSE_EVENT);
 		} else if (applyButton == source) {
 			doApply(ureq);
-		} else if (searchFieldEl == source) {
-			doSearch();
-		} else if (searchResetButton == source) {
-			doResetSearch();
+		} else if (quickSearchEl == source) {
+			doQuickSearch(ureq);
+		} else if (resetQuickSearchButton == source) {
+			doResetQuickSearch();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
-		if (source == openBrowserButton) {
+		if (source == browserButton) {
 			super.propagateDirtinessToContainer(source, fe);
 		}
 	}
@@ -182,25 +187,25 @@ public class BadgeSelectorController extends FormBasicController {
 		fireEvent(ureq, new BadgesSelectedEvent(selectedKeys));
 	}
 
-	private void doSearch() {
+	private void doQuickSearch(UserRequest ureq) {
 		updateRows();
+
+		fireEvent(ureq, RESIZED_EVENT);
 	}
 
-	private void doResetSearch() {
-		searchFieldEl.setValue("");
+	private void doResetQuickSearch() {
+		quickSearchEl.setValue("");
 		updateRows();
 	}
 
 	private void updateRows() {
-		String searchFieldValue = searchFieldEl.getValue().toLowerCase();
+		String searchFieldValue = quickSearchEl.getValue().toLowerCase();
 		List<Row> unselectedRows = rows.stream()
 				.filter(row -> !selectedKeys.contains(row.key))
 				.filter(row -> row.title.toLowerCase().contains(searchFieldValue))
 				.toList();
 		flc.contextPut("unselectedRows", unselectedRows);
 	}
-
-	public static final Event OPEN_BROWSER_EVENT = new Event("open.browser");
 
 	private class BadgeClassMediaFileMapper implements Mapper {
 
@@ -213,6 +218,8 @@ public class BadgeSelectorController extends FormBasicController {
 			return new NotFoundMediaResource();
 		}
 	}
+
+	public static final Event BROWSE_EVENT = new Event("badge-selector-browse");
 
 	public static class BadgesSelectedEvent extends Event {
 
@@ -230,4 +237,6 @@ public class BadgeSelectorController extends FormBasicController {
 			return keys;
 		}
 	}
+
+	public static final Event RESIZED_EVENT = new Event("badge-selector-resized");
 }

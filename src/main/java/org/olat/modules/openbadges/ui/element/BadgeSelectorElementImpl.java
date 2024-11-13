@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
@@ -64,8 +65,8 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 	private final FormLink button;
 	private Translator badgesTranslator;
 
+	private BadgeSelectorController badgeSelectorCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
-	private BadgeSelectorController selectorController;
 	private CloseableModalController cmc;
 
 	private final RepositoryEntry entry;
@@ -152,25 +153,22 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
-		if (selectorController == source) {
-			if (event == Event.CANCELLED_EVENT) {
-				if (calloutCtrl != null) {
-					calloutCtrl.deactivate();
-				}
-				if (cmc != null) {
-					cmc.deactivate();
-				}
-				cleanUp();
-			} else if (event instanceof BadgeSelectorController.BadgesSelectedEvent badgesSelectedEvent) {
+		if (badgeSelectorCtrl == source) {
+			if (event instanceof BadgeSelectorController.BadgesSelectedEvent badgesSelectedEvent) {
 				selectedKeys = badgesSelectedEvent.getKeys();
-				if (calloutCtrl != null) {
-					calloutCtrl.deactivate();
-				}
-				if (cmc != null) {
-					cmc.deactivate();
-				}
+				calloutCtrl.deactivate();
 				cleanUp();
 				updateButtonUI();
+			} else if (event == BadgeSelectorController.RESIZED_EVENT) {
+				calloutCtrl.handleResized();
+			} else if (event == Event.CANCELLED_EVENT) {
+				if (calloutCtrl != null) {
+					calloutCtrl.deactivate();
+				}
+				if (cmc != null) {
+					cmc.deactivate();
+				}
+				cleanUp();
 			}
 		} else if (calloutCtrl == source) {
 			cleanUp();
@@ -180,8 +178,8 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 	}
 
 	private void cleanUp() {
+		badgeSelectorCtrl = cleanUp(badgeSelectorCtrl);
 		calloutCtrl = cleanUp(calloutCtrl);
-		selectorController = cleanUp(selectorController);
 		cmc = cleanUp(cmc);
 	}
 
@@ -207,23 +205,18 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 		}
 	}
 	public BadgeSelectorController getSelectorController() {
-		return selectorController;
+		return badgeSelectorCtrl;
 	}
 
 	private void doOpenSelector(UserRequest ureq) {
 		Set<Long> availableKeys = Arrays.stream(badgesKV.keys()).map(Long::parseLong).collect(Collectors.toSet());
-		selectorController = new BadgeSelectorController(ureq, wControl, entry, availableKeys, selectedKeys);
-		selectorController.addControllerListener(this);
+		badgeSelectorCtrl = new BadgeSelectorController(ureq, wControl, entry, availableKeys, selectedKeys);
+		badgeSelectorCtrl.addControllerListener(this);
 
-		cmc = new CloseableModalController(wControl, getTranslator().translate("close"),
-				selectorController.getInitialComponent());
-		cmc.activate();
-		cmc.addControllerListener(this);
-
-//		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, selectorController.getInitialComponent(),
-//				button.getFormDispatchId(), "", true, "",
-//				new CalloutSettings(false, CalloutSettings.CalloutOrientation.bottom, false, null));
-//		calloutCtrl.addControllerListener(this);
-//		calloutCtrl.activate();
+		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, badgeSelectorCtrl.getInitialComponent(),
+				button.getFormDispatchId(), "", true, "",
+				new CalloutSettings(false, CalloutSettings.CalloutOrientation.bottomOrTop, false, null));
+		calloutCtrl.addControllerListener(this);
+		calloutCtrl.activate();
 	}
 }
