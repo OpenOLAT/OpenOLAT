@@ -569,7 +569,7 @@ public class ImsQTI21Test extends Deployments {
 		CoursePageFragment participantCourse = CoursePageFragment.getCourse(browser);		
 		participantCourse
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
@@ -779,14 +779,14 @@ public class ImsQTI21Test extends Deployments {
 		course
 			.switchRole(Role.participant)
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
 		
 		//check that the title of the start page of test is correct
 		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
 		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+			.getQTI21Page(browser);
 		qtiPage
 			.assertOnStart()
 			.start()
@@ -887,7 +887,7 @@ public class ImsQTI21Test extends Deployments {
 		course
 			.switchRole(Role.participant)
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
 		
 		//check that the title of the start page of test is correct
 		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
@@ -1004,7 +1004,7 @@ public class ImsQTI21Test extends Deployments {
 		course
 			.switchRole(Role.participant)
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
 		
 		//check that the title of the start page of test is correct
 		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
@@ -1148,7 +1148,7 @@ public class ImsQTI21Test extends Deployments {
 		CoursePageFragment course = CoursePageFragment.getCourse(participantBrowser);		
 		course
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(participantBrowser);
 		qtiPage
@@ -1274,9 +1274,10 @@ public class ImsQTI21Test extends Deployments {
 		CoursePageFragment course = CoursePageFragment.getCourse(participantBrowser);		
 		course
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
+		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(participantBrowser);
+			.getQTI21Page(participantBrowser);
 		qtiPage
 			.assertOnStart()
 			.start()
@@ -1317,7 +1318,7 @@ public class ImsQTI21Test extends Deployments {
 		course
 			.tree()
 			.selectWithTitle(testNodeTitle);
-		qtiPage = QTI21Page
+		QTI21Page
 			.getQTI21Page(participantBrowser)
 			.assertOnCourseAssessmentTestScore(2);
 	}
@@ -1431,7 +1432,8 @@ public class ImsQTI21Test extends Deployments {
 		CoursePageFragment course = CoursePageFragment.getCourse(participantBrowser);		
 		course
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
+		
 		QTI21Page participantQtiPage = QTI21Page
 				.getQTI21Page(participantBrowser);
 		participantQtiPage
@@ -1606,7 +1608,8 @@ public class ImsQTI21Test extends Deployments {
 		CoursePageFragment course = CoursePageFragment.getCourse(participantBrowser);		
 		course
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
+		
 		QTI21Page participantQtiPage = QTI21Page
 				.getQTI21Page(participantBrowser);
 		participantQtiPage
@@ -1782,7 +1785,7 @@ public class ImsQTI21Test extends Deployments {
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 
 		QTI21Page qtiPage = QTI21Page
 			.getQTI21Page(browser);

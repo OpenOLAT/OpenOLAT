@@ -172,7 +172,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouCourse
 			.tree()
-			.selectWithTitle(scormNodeTitle);
+			.assertWithTitleSelected(scormNodeTitle);
 		
 		By scormH2By = By.cssSelector("div.o_course_run h2");
 		WebElement scormH2 = ryomouBrowser.findElement(scormH2By);
@@ -277,10 +277,8 @@ public class AssessmentTest extends Deployments {
 			.clickToolbarBack();
 		courseRuntime
 			.tree()
-			.selectWithTitle(testNodeTitle);
-		//check that the title of the start page of test is correct
-		courseRuntime
-			.assertOnTitle(testNodeTitle);
+			//check that the title of the start page of test is correct
+			.assertWithTitleSelected(testNodeTitle);
 		
 		//add Ryomou and Kanu as a course member
 		MembersPage members = courseRuntime.members();
@@ -552,7 +550,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment reiTestCourse = new CoursePageFragment(browser);
 		reiTestCourse
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
 		//pass the test
 		QTI21Page.getQTI21Page(browser)
 			.passE4()
@@ -1284,7 +1282,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(participantBrowser);
 		ryomouTestCourse
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(participantBrowser);
 		ryomouTask
@@ -1308,7 +1306,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment kanuTestCourse = new CoursePageFragment(participantBrowser);
 		kanuTestCourse
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		
 		URL submit1Url = JunitTestHelper.class.getResource("file_resources/submit_1.txt");
 		File submit1File = new File(submit1Url.toURI());
@@ -1325,7 +1323,7 @@ public class AssessmentTest extends Deployments {
 		//back to author
 		coursePage
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		GroupTaskToCoachPage groupToCoach = new GroupTaskToCoachPage(browser);
 		groupToCoach
 			.selectGroupsToCoach()
@@ -1460,7 +1458,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
 		ryomouTask
@@ -1481,7 +1479,7 @@ public class AssessmentTest extends Deployments {
 		//back to author
 		coursePage
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
 		URL correctionUrl = JunitTestHelper.class.getResource("file_resources/correction_1.txt");
@@ -1628,7 +1626,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
 		ryomouTask
@@ -1820,7 +1818,7 @@ public class AssessmentTest extends Deployments {
 		//back to author
 		coursePage
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
 		participantToCoach
@@ -1941,7 +1939,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment ryomouCourse = new CoursePageFragment(browser);
 		ryomouCourse
 			.tree()
-			.selectWithTitle(assessmentNodeTitle);
+			.assertWithTitleSelected(assessmentNodeTitle);
 		
 		//Ryomou -> passed
 		By passedBy = By.cssSelector("div.o_state.o_passed");
@@ -1964,7 +1962,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment kanuCourse = new CoursePageFragment(browser);
 		kanuCourse
 			.tree()
-			.selectWithTitle(assessmentNodeTitle);
+			.assertWithTitleSelected(assessmentNodeTitle);
 		
 		//Kanu -> failed
 		By failedBy = By.cssSelector("div.o_state.o_failed");
@@ -2108,7 +2106,7 @@ public class AssessmentTest extends Deployments {
 		//back to author
 		coursePage
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
 		participantToCoach
@@ -2221,7 +2219,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment participantTestCourse = new CoursePageFragment(participantBrowser);
 		participantTestCourse
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		
 		GroupTaskPage participantTask = new GroupTaskPage(participantBrowser);
 		participantTask
@@ -2240,7 +2238,7 @@ public class AssessmentTest extends Deployments {
 		//back to author
 		coursePage
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
 		URL correctionUrl = JunitTestHelper.class.getResource("file_resources/correction_1.txt");
@@ -2602,7 +2600,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(browser);
 		ryomouTestCourse
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(browser);
 		//participant checks she passed the task

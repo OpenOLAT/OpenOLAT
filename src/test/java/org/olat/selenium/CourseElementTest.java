@@ -171,7 +171,7 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.tree()
-			.selectWithTitle(cpNodeTitle);
+			.assertWithTitleSelected(cpNodeTitle);
 		
 		//check that the default title of CP (Lorem Ipsum) is visible in the iframe
 		By iframe = By.cssSelector("div.o_iframedisplay>iframe");
@@ -320,7 +320,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
+			.tree()
 			.selectWithTitle(wikiNodeTitle)
 			.selectWithTitle("Index");
 		
@@ -377,11 +377,11 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
-			.selectWithTitle(wikiNodeTitle)
+			.tree()
+			.assertWithTitleSelected(wikiNodeTitle)
 			// the course node select automatically the index page of the wiki
-			.assertWithTitleSelected("Index")
-			.selectWithTitle("Index");
+			.selectWithTitle("Index")
+			.assertWithTitleSelected("Index");
 		
 		//check that the title of the index article/page is visible
 		WebElement indexArticleTitle = browser.findElement(By.className("o_wikimod_heading"));
@@ -429,7 +429,7 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.tree()
-			.selectWithTitle(testNodeTitle);
+			.assertWithTitleSelected(testNodeTitle);
 		
 		//check that the title of the start page of test is correct
 		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
@@ -518,7 +518,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment userCourse = new CoursePageFragment(browser);
 		userCourse
 			.clickTree()
-			.selectWithTitle(practiceNodeTitle);
+			.assertWithTitleSelected(practiceNodeTitle);
 		
 		PracticePage practicePage = new PracticePage(browser);
 		practicePage
@@ -588,7 +588,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		course
 			.tree()
-			.selectWithTitle(podcastNodeTitle);
+			.assertWithTitleSelected(podcastNodeTitle);
 		
 		//check that the title of the podcast is correct
 		By podcastElementBy = By.cssSelector("div.o_podcast_info>h2>i.o_FileResource-PODCAST_icon");
@@ -647,7 +647,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		course
 			.tree()
-			.selectWithTitle(blogNodeTitle);
+			.assertWithTitleSelected(blogNodeTitle);
 		
 		//check that the title of the podcast is correct
 		WebElement podcastH2 = browser.findElement(By.cssSelector("div.o_blog_info>h2>i.o_FileResource-BLOG_icon"));
@@ -709,7 +709,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		course
 			.tree()
-			.selectWithTitle(blogNodeTitle);
+			.assertWithTitleSelected(blogNodeTitle);
 		
 		String postTitle = "BlogPost-RW-1-" + UUID.randomUUID();
 		String postSummary = "Some explanations as teaser";
@@ -736,7 +736,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment participantCourse = new CoursePageFragment(participantDrone);
 		participantCourse
 			.tree()
-			.selectWithTitle(blogNodeTitle);
+			.assertWithTitleSelected(blogNodeTitle);
 		FeedPage participantFeed = FeedPage.getFeedPage(participantDrone);
 		participantFeed.assertOnBlogPost(postTitle);
 		
@@ -814,7 +814,7 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.tree()
-			.selectWithTitle(infoNodeTitle);
+			.assertWithTitleSelected(infoNodeTitle);
 		//set a message
 		infoMsgConfig
 			.createMessage()
@@ -937,7 +937,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		course
 			.tree()
-			.selectWithTitle(dialogNodeTitle);
+			.assertWithTitleSelected(dialogNodeTitle);
 		
 		// upload a second file
 		URL imageRunUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
@@ -965,7 +965,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment participantCourse = CoursePageFragment.getCourse(participantBrowser);
 		participantCourse
 			.tree()
-			.selectWithTitle(dialogNodeTitle);
+			.assertWithTitleSelected(dialogNodeTitle);
 		DialogPage participantDialog = new DialogPage(participantBrowser);
 		participantDialog
 			.assertOnFile(imageRunFile.getName())
@@ -1071,7 +1071,7 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.tree()
-			.selectWithTitle(memberListTitle);
+			.assertWithTitleSelected(memberListTitle);
 		
 		//check the default configuration with authors, coaches and participants
 		MemberListPage memberList = new MemberListPage(browser);
@@ -1097,7 +1097,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		course
 			.tree()
-			.selectWithTitle(memberListTitle);
+			.assertWithTitleSelected(memberListTitle);
 		
 		memberList
 			.assertOnMembers()
@@ -1123,7 +1123,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		course
 			.tree()
-			.selectWithTitle(memberListTitle);
+			.assertWithTitleSelected(memberListTitle);
 		
 		memberList
 			.assertOnMembers()
@@ -1344,6 +1344,7 @@ public class CourseElementTest extends Deployments {
 		course
 			.tree()
 			.selectWithTitle(participantFolderTitle);
+		
 		// open the return box of the participant and upload a file
 		URL coachImageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
 		File coachImageFile = new File(coachImageUrl.toURI());
@@ -1374,7 +1375,8 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment participantCourse = CoursePageFragment.getCourse(participantBrowser);
 		participantCourse
 			.tree()
-			.selectWithTitle(participantFolderTitle);
+			.assertWithTitleSelected(participantFolderTitle);
+		
 		ParticipantFolderPage participantFolder = new ParticipantFolderPage(participantBrowser);
 		participantFolder
 			.openReturnBox()
@@ -1742,7 +1744,7 @@ public class CourseElementTest extends Deployments {
 		//go to the forum
 		new CoursePageFragment(guestBrowser)
 			.tree()
-			.selectWithTitle(foTitle.substring(0, 20));
+			.assertWithTitleSelected(foTitle.substring(0, 20));
 		
 		String guestAlias = "Guest-" + UUID.randomUUID();
 		ForumPage guestForum = ForumPage
@@ -1867,7 +1869,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment participantCourse = new CoursePageFragment(browser);
 		participantCourse
 			.tree()
-			.selectWithTitle(ltiTitle);
+			.assertWithTitleSelected(ltiTitle);
 		LTIPage lti = new LTIPage(browser);
 		lti
 			.start()
@@ -1965,7 +1967,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 
 		ContactPage contactPage = new ContactPage(browser);
 		// check peek view
@@ -2024,7 +2026,7 @@ public class CourseElementTest extends Deployments {
 		
 		courseRuntime
 			.clickTree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
 		SinglePage singlePage = new SinglePage(browser);
 		singlePage
@@ -2085,7 +2087,7 @@ public class CourseElementTest extends Deployments {
 		
 		courseRuntime
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
 		SinglePage singlePage = new SinglePage(browser);
 		singlePage
@@ -2148,7 +2150,7 @@ public class CourseElementTest extends Deployments {
 		
 		courseRuntime
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
 		SinglePage singlePage = new SinglePage(browser);
 		singlePage
@@ -2362,7 +2364,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		course
 			.clickTree()
-			.selectWithTitle(surveyNodeTitle);
+			.assertWithTitleSelected(surveyNodeTitle);
 		
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
@@ -2379,7 +2381,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment userCourse = new CoursePageFragment(browser);
 		userCourse
 			.clickTree()
-			.selectWithTitle(surveyNodeTitle);
+			.assertWithTitleSelected(surveyNodeTitle);
 		
 		SurveyPage userSurvey = SurveyPage.loadPage(browser)
 			.assertOnSurvey();
@@ -2435,7 +2437,7 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
 		String meetingName = "Quick meeting";
 		BigBlueButtonPage bigBlueButton = new BigBlueButtonPage(browser);
@@ -2511,7 +2513,7 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
 		String meetingName = "Quick meeting";
 		BigBlueButtonPage bigBlueButton = new BigBlueButtonPage(browser);
@@ -2587,7 +2589,7 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
 		String meetingName = "Recurring meeting";
 		BigBlueButtonPage bigBlueButton = new BigBlueButtonPage(browser);
@@ -2649,7 +2651,7 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.clickTree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
 		String meetingName = "Teams meeting";
 		TeamsPage teams = new TeamsPage(browser);
@@ -2712,9 +2714,8 @@ public class CourseElementTest extends Deployments {
 		
 		course
 			.clickTree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
-
 		String meetingName = "Teams meeting";
 		TeamsPage teams = new TeamsPage(browser);
 		teams
@@ -2735,7 +2736,6 @@ public class CourseElementTest extends Deployments {
 		teams
 			.assertOnJoinDisabled();
 	}
-	
 	
 
 	/**
@@ -3014,7 +3014,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
 		participantCourse
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
 		AppointmentPage participantAppointment = new AppointmentPage(participantBrowser);
 		participantAppointment
@@ -3131,7 +3131,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
 		participantCourse
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 		
 		AppointmentPage participantAppointment = new AppointmentPage(participantBrowser);
 		participantAppointment
@@ -3253,7 +3253,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment course = new CoursePageFragment(participantBrowser);
 		course
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 
 		CheckListPage checkPage = new CheckListPage(participantBrowser);
 		checkPage
@@ -3371,7 +3371,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
 			.tree()
-			.selectWithTitle(nodeTitle);
+			.assertWithTitleSelected(nodeTitle);
 
 		CheckListPage checkPage = new CheckListPage(browser);
 		checkPage
@@ -3470,7 +3470,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
 		participantCourse
 			.tree()
-			.selectWithTitle(projectTitle.substring(0, 20));
+			.assertWithTitleSelected(projectTitle.substring(0, 20));
 		
 		URL submitUrl = JunitTestHelper.class.getResource("file_resources/submit_2.txt");
 		File submitFile = new File(submitUrl.toURI());
