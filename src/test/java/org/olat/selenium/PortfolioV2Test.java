@@ -207,7 +207,8 @@ public class PortfolioV2Test extends Deployments {
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(browser);
 		ryomouTestCourse
 			.tree()
-			.selectWithTitle(portfolioNodeTitle);
+			.assertWithTitleSelected(portfolioNodeTitle);
+		
 		PortfolioElementPage portfolioCourseEl = new PortfolioElementPage(browser);
 		BinderPage binder = portfolioCourseEl
 				.pickPortfolio()
@@ -733,7 +734,7 @@ public class PortfolioV2Test extends Deployments {
 		CoursePageFragment reiTestCourse = new CoursePageFragment(reiBrowser);
 		reiTestCourse
 			.tree()
-			.selectWithTitle(portfolioNodeTitle);
+			.assertWithTitleSelected(portfolioNodeTitle);
 		PortfolioElementPage portfolioCourseEl = new PortfolioElementPage(reiBrowser);
 		BinderPage reiBinder = portfolioCourseEl
 				.pickPortfolio()

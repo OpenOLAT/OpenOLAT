@@ -78,6 +78,8 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * A wrapper for evaluations in portfolio.
+ * 
  * 
  * Initial date: 14 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -86,9 +88,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MultiEvaluationFormController extends BasicController {
 	
 	private int count = 0;
-	private final Identity owner;
 	private final boolean readOnly;
 	private final boolean doneFirst;
+	private final Identity portfolioOwner;
 	private final EvaluationFormSurvey survey;
 	
 	private Link ownerLink;
@@ -108,37 +110,49 @@ public class MultiEvaluationFormController extends BasicController {
 	@Autowired
 	private PortfolioService portfolioService;
 	
+	/**
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param portfolioOwner
+	 * @param otherEvaluators
+	 * @param survey
+	 * @param doneFirst
+	 * @param readOnly Force read-only
+	 * @param onePrintPage If the output is on one page, read only mandatory
+	 * @param anonym
+	 */
 	public MultiEvaluationFormController(UserRequest ureq, WindowControl wControl,
-			Identity owner, List<Identity> otherEvaluators, EvaluationFormSurvey survey,
-			boolean doneFirst, boolean readOnly, boolean onePage, boolean anonym) {
+			Identity portfolioOwner, List<Identity> otherEvaluators, EvaluationFormSurvey survey,
+			boolean doneFirst, boolean readOnly, boolean onePrintPage, boolean anonym) {
 		super(ureq, wControl);
-		this.owner = owner;
+		this.portfolioOwner = portfolioOwner;
 		this.survey = survey;
 		this.readOnly = readOnly;
 		this.doneFirst = doneFirst;
 		
-		if(onePage) {
-			initOnePageView(ureq, otherEvaluators, anonym);
+		if(onePrintPage) {
+			initOnePageViewForPrint(ureq, otherEvaluators, anonym);
 		} else {
 			initSegmentView(ureq, otherEvaluators, anonym);
 		}
 		putInitialPanel(mainVC);
 	}
 	
-	private void initOnePageView(UserRequest ureq, List<Identity> otherEvaluators, boolean anonym) {
+	private void initOnePageViewForPrint(UserRequest ureq, List<Identity> otherEvaluators, boolean anonym) {
 		mainVC = createVelocityContainer("multi_evaluation_one_page");
 		List<EvaluatorPanel> panels = new ArrayList<>();
 		mainVC.contextPut("panels", panels);
 
 		boolean viewOthers = isViewOthers();
 		
-		if(owner != null) {
-			String ownerFullname = userManager.getUserDisplayName(owner);
-			Evaluator evaluator = new Evaluator(owner, ownerFullname);
+		if(portfolioOwner != null) {
+			String ownerFullname = userManager.getUserDisplayName(portfolioOwner);
+			Evaluator evaluator = new Evaluator(portfolioOwner, ownerFullname);
 			evaluators.add(evaluator);
-			boolean me = owner.equals(getIdentity());
+			boolean me = portfolioOwner.equals(getIdentity());
 			if(me || viewOthers) {
-				Controller ctrl = createEvalutationForm(ureq, owner);
+				Controller ctrl = createReadOnlyEvalutationForm(ureq, portfolioOwner);
 				String componentName = "panel_" + (++count);
 				panels.add(new EvaluatorPanel(evaluator, componentName, ctrl.getInitialComponent()));
 				mainVC.put(componentName, ctrl.getInitialComponent());
@@ -152,14 +166,14 @@ public class MultiEvaluationFormController extends BasicController {
 				
 				String evaluatorFullname;
 				if(!me && anonym) {
-					evaluatorFullname = translate("anonym.evaluator", new String[] { Integer.toString(countEva++) });
+					evaluatorFullname = translate("anonym.evaluator", Integer.toString(countEva++));
 				} else {
 					evaluatorFullname = userManager.getUserDisplayName(evaluator);
 				}
 				Evaluator eval = new Evaluator(evaluator, evaluatorFullname);
 				evaluators.add(eval);
 				if(me || viewOthers) {
-					Controller ctrl = createEvalutationForm(ureq, evaluator);
+					Controller ctrl = createReadOnlyEvalutationForm(ureq, evaluator);
 					String componentName = "panel_" + (++count);
 					panels.add(new EvaluatorPanel(eval, componentName, ctrl.getInitialComponent()));
 					mainVC.put(componentName, ctrl.getInitialComponent());
@@ -167,7 +181,7 @@ public class MultiEvaluationFormController extends BasicController {
 			}
 		}
 		
-		if(viewOthers && (owner != null && otherEvaluators != null && otherEvaluators.size() > 0) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
+		if(viewOthers && (portfolioOwner != null && otherEvaluators != null && otherEvaluators.size() > 0) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
 			Controller ctrl = createReportController(ureq);
 			Evaluator eval = new Evaluator(null, translate("compare.evaluations"));
 			String componentName = "panel_" + (++count);
@@ -176,11 +190,15 @@ public class MultiEvaluationFormController extends BasicController {
 		}
 	}
 	
-	private Controller createEvalutationForm(UserRequest ureq, Identity evaluator) {
-		boolean ro = readOnly || !evaluator.equals(getIdentity());
-		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || !owner.equals(evaluator));
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param evaluator The evaluator
+	 * @return A read only controller
+	 */
+	private Controller createReadOnlyEvalutationForm(UserRequest ureq, Identity evaluator) {
 		EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, evaluator);
-		Controller evalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, ro, doneButton, false, null);
+		Controller evalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false, false, null);
 		listenTo(evalutionFormCtrl);
 		return evalutionFormCtrl;
 	}
@@ -191,28 +209,28 @@ public class MultiEvaluationFormController extends BasicController {
 		
 		boolean viewOthers = isViewOthers();
 		
-		if(owner != null) {
-			String ownerFullname = userManager.getUserDisplayName(owner);
-			evaluators.add(new Evaluator(owner, ownerFullname));
+		if(portfolioOwner != null) {
+			String ownerFullname = userManager.getUserDisplayName(portfolioOwner);
+			evaluators.add(new Evaluator(portfolioOwner, ownerFullname));
 			
 			String id = "eva-" + (count++);
 			ownerLink = LinkFactory.createCustomLink(id, id, ownerFullname, Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
-			ownerLink.setUserObject(owner);
-			boolean me = owner.equals(ureq.getIdentity());
+			ownerLink.setUserObject(portfolioOwner);
+			boolean me = portfolioOwner.equals(getIdentity());
 			segmentView.addSegment(ownerLink, me);
 			if(me) {
-				doOpenEvalutationForm(ureq, owner);
+				doOpenEvalutationForm(ureq, portfolioOwner);
 			}
 		}
 		
-		if(otherEvaluators != null && otherEvaluators.size() > 0) {
+		if(otherEvaluators != null && !otherEvaluators.isEmpty()) {
 			int countEva = 1;
 			for(Identity evaluator:otherEvaluators) {
-				boolean me = evaluator.equals(ureq.getIdentity());
+				boolean me = evaluator.equals(getIdentity());
 				
 				String evaluatorFullname;
 				if(!me && anonym) {
-					evaluatorFullname = translate("anonym.evaluator", new String[] { Integer.toString(countEva++) });
+					evaluatorFullname = translate("anonym.evaluator", Integer.toString(countEva++));
 				} else {
 					evaluatorFullname = userManager.getUserDisplayName(evaluator);
 				}
@@ -229,9 +247,9 @@ public class MultiEvaluationFormController extends BasicController {
 			}
 		}
 		
-		if((owner != null && otherEvaluators != null && otherEvaluators.size() > 0) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
+		if((portfolioOwner != null && otherEvaluators != null && !otherEvaluators.isEmpty()) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
 			compareLink = LinkFactory.createLink("compare.evaluations", mainVC, this);
-			compareLink.setUserObject(owner);
+			compareLink.setUserObject(portfolioOwner);
 			segmentView.addSegment(compareLink, false);
 		}
 		
@@ -273,7 +291,7 @@ public class MultiEvaluationFormController extends BasicController {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == ownerLink) {
-					doOpenEvalutationForm(ureq, owner);
+					doOpenEvalutationForm(ureq, portfolioOwner);
 				} else if(clickedLink == compareLink) {
 					doOpenOverview(ureq);
 				} else if (clickedLink instanceof Link link) {
@@ -287,8 +305,9 @@ public class MultiEvaluationFormController extends BasicController {
 	}
 
 	private void doOpenEvalutationForm(UserRequest ureq, Identity evaluator) {
-		boolean ro = readOnly || !evaluator.equals(getIdentity());
-		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || owner.equals(evaluator));
+		boolean doneButton = !readOnly && evaluator.equals(getIdentity());
+		boolean ro = !doneButton;
+		
 		EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, evaluator);
 		currentEvalutionFormCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), session, ro, doneButton, !doneButton, null);
 		listenTo(currentEvalutionFormCtrl);
