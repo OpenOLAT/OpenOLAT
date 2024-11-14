@@ -20,9 +20,11 @@
 package org.olat.course.nodes.gta.ui.peerreview;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -32,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow.NumOf;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 
@@ -65,11 +68,13 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 			String searchString = StringHelper.containsNonWhitespace(quickSearch) ? quickSearch.toLowerCase() : null;
 			TaskReviewAssignmentStatus assignmentStatus = getFilterAssignmentStatus(filters);
 			List<CoachedParticipantStatus> stepStatus = getFilterStepStatus(filters);
-			if(StringHelper.containsNonWhitespace(quickSearch) || assignmentStatus != null || stepStatus != null) {
+			boolean bookmark = isFilterBookmark(filters);
+			if(StringHelper.containsNonWhitespace(quickSearch) || assignmentStatus != null || stepStatus != null || bookmark) {
 				filteredRows = filteredRows.stream()
 							.filter(row -> acceptSearch(row, searchString)
 									&& acceptAssignmentStatus(row, assignmentStatus)
-									&& acceptStepStatus(row, stepStatus))
+									&& acceptStepStatus(row, stepStatus)
+									&& acceptBookmarked(row, bookmark))
 							.toList();
 				filteredRows = preserveParents(filteredRows);
 			}
@@ -144,6 +149,11 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 		return null;
 	}
 	
+	private boolean isFilterBookmark(List<FlexiTableFilter> filters) {
+		FlexiTableFilter markedFilter = FlexiTableFilter.getFilter(filters, AbstractCoachPeerReviewListController.FILTER_MARKED);
+		return markedFilter != null &&  AbstractCoachPeerReviewListController.FILTER_MARKED.equals(markedFilter.getValue());
+	}
+	
 	private boolean isUnsufficientNumber(String filterId, List<FlexiTableFilter> filters) {
 		FlexiTableFilter unsufficientFilter = FlexiTableFilter.getFilter(filters, filterId);
 		return unsufficientFilter != null && filterId.equals(unsufficientFilter.getValue());
@@ -155,6 +165,12 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 			return fullName != null && fullName.toLowerCase().contains(searchString);
 		}
 		return true;
+	}
+	
+	private boolean acceptBookmarked(CoachPeerReviewRow row, boolean filterBookmark) {
+		if(!filterBookmark) return true;
+		return row.getMarkLink() != null
+				&& Mark.MARK_CSS_LARGE.equals(row.getMarkLink().getComponent().getIconLeftCSS());
 	}
 	
 	private boolean acceptAssignmentStatus(CoachPeerReviewRow row, TaskReviewAssignmentStatus assignmentStatus) {
@@ -180,6 +196,7 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 	@Override
 	public Object getValueAt(CoachPeerReviewRow row, int col) {
 		return switch(COLS[col]) {
+			case mark -> row.getMarkLink();
 			case identityFullName -> row;
 			case numOfReviewers -> row.getNumOfReviewers();
 			case numOfReviews -> row.getNumOfReviews();
@@ -190,10 +207,16 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 			case sessionStatus -> row;
 			case taskStepStatus -> row.getStepStatus();
 			case submissionStatus -> row.getSubmissionStatus();
+			case peerReviewOverrideDueDate -> overrideDueDate(row.getPeerReviewDueDate());
+			case additionalInfosStatus -> row;
 			case editReview -> Boolean.valueOf(row.canEdit());
 			case tools -> row.getToolsLink();
 			default -> "ERROR";
 		};
+	}
+	
+	private Date overrideDueDate(DueDate dueDate) {
+		return dueDate == null ? null : dueDate.getOverridenDueDate();
 	}
 
 	@Override
@@ -203,6 +226,7 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 	}
 
 	public enum CoachReviewCols implements FlexiSortableColumnDef {
+		mark("table.header.mark"),
 		identityFullName("table.header.reviewed.identity"),
 		numOfReviewers("table.header.num.of.reviewers"),
 		numOfReviews("table.header.num.of.reviews"),
@@ -213,6 +237,8 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 		sessionStatus("table.header.review.status"),
 		taskStepStatus("table.header.step.status"),
 		submissionStatus("table.header.submission.status"),
+		peerReviewOverrideDueDate("table.header.peerreview.overriden.duedate"),
+		additionalInfosStatus("table.header.additional.infos"),
 		editReview("table.header.review.view"),
 		tools("table.header.tools"),
 		;

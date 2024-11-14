@@ -263,11 +263,8 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 		
 		status(identityRow);
 		lateStatus(identityRow);
-
-		if(canBackToSubmission(identityRow) || identityRow.isCanCollectSubmission()
-				|| GTAHelper.hasDateConfigured(gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE))) {
-			identityRow.setToolsLink(forgeToolsLink(identityRow));
-		}
+		identityRow.setToolsLink(forgeToolsLink(identityRow));
+	
 		return identityRow;
 	}
 	
@@ -617,8 +614,7 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 			selectLink = LinkFactory.createLink("select.assess", "select.assess", getTranslator(), mainVC, this, Link.LINK);
 			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			
-			DueDateConfig dueDateConfig = gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
-			if(GTAHelper.hasDateConfigured(dueDateConfig)) {
+			if(isDueDateEnabled()) {
 				dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
 				dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
 			}
@@ -632,6 +628,14 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 			}
 			
 			putInitialPanel(mainVC);
+		}
+		
+		private boolean isDueDateEnabled() {
+			Task task = row.getTask();
+			DueDateConfig config = gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
+			return gtaManager.isDueDateEnabled(gtaNode)
+					&& ((config != null && GTAHelper.hasDateConfigured(config))
+							|| (task != null && task.getSubmissionDueDate() != null));
 		}
 
 		@Override

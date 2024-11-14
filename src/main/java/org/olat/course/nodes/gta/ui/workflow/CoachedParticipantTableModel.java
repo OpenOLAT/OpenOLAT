@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -78,12 +79,14 @@ implements SortableFlexiTableDataModel<CoachedParticipantRow>, FilterableFlexiTa
 			boolean reviewed = isFilterReviewed(filters);
 			boolean revisionsReviewed = isFilterRevisionsReviewed(filters);
 			boolean toRelease = isFilterToRelease(filters);
+			boolean bookmark = isFilterBookmark(filters);
 			List<Passed> passed = getFilterPassed(filters);
 			List<CoachedParticipantStatus> assignmentStatus = getFilterByStatus(filters);
 			List<CoachedParticipantRow> filteredRows = backupRows.stream()
 						.filter(row -> acceptSearch(row, searchString)
 								&& acceptBySyntheticStatis(row, assignmentStatus)
 								&& isAssignedToMe(row, assignedToMe)
+								&& isBookmarked(row, bookmark)
 								&& isInRevisions(row, needRevisions, reviewed)
 								&& isInRevisionsReviewed(row, revisionsReviewed)
 								&& isToRelease(row, toRelease)
@@ -121,6 +124,17 @@ implements SortableFlexiTableDataModel<CoachedParticipantRow>, FilterableFlexiTa
 
 		CoachedParticipantStatus rowStatus = row.getStatus();
 		return rowStatus != null && status.contains(rowStatus);
+	}
+	
+	private boolean isFilterBookmark(List<FlexiTableFilter> filters) {
+		FlexiTableFilter markedFilter = FlexiTableFilter.getFilter(filters, AbstractCoachWorkflowListController.FILTER_MARKED);
+		return markedFilter != null &&  AbstractCoachWorkflowListController.FILTER_MARKED.equals(markedFilter.getValue());
+	}
+	
+	private boolean isBookmarked(CoachedParticipantRow row, boolean filterBookmark) {
+		if(!filterBookmark) return true;
+		return row.getMarkLink() != null
+				&& Mark.MARK_CSS_LARGE.equals(row.getMarkLink().getComponent().getIconLeftCSS());
 	}
 	
 	private boolean isFilterAssignedToMe(List<FlexiTableFilter> filters) {

@@ -28,6 +28,7 @@ import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -37,6 +38,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.ui.GTACoachController;
+import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 
 /**
@@ -84,6 +86,14 @@ public class GTACoachPeerReviewController extends BasicController {
 		doOpenAwardedPeerReview(ureq);
 		
 		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof SelectIdentityEvent sie) {
+			fireEvent(ureq, sie);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.boxplot.BoxPlot;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -35,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -45,11 +48,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAPeerReviewManager;
+import org.olat.course.nodes.gta.IdentityMark;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
@@ -60,6 +65,7 @@ import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.SessionStatistics;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.component.TaskStepStatusCellRenderer;
+import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow.NumOf;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -89,7 +95,8 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	public static final String STEP_OPEN_TAB_ID = "StepOpen";
 	public static final String STEP_NOT_AVAILABLE_TAB_ID = "StepNotAvailable";
 	public static final String STEP_DONE_TAB_ID = "StepDone";
-	
+
+	public static final String FILTER_MARKED = "marked";
 	public static final String FILTER_ASSIGNMENT_SESSION_STATUS = "assignment-session-status";
 	public static final String FILTER_ASSIGNMENT_STEP_STATUS = "assignment-step-status";
 	public static final String FILTER_UNSUFFICIENT_REVIEWERS = "assignment-unsufficient-reviewers";
@@ -101,6 +108,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	protected final TaskStepStatusCellRenderer statusRenderer;
 	
 	protected int counter = 0;
+	private final String markCmd;
 	private final String toolsCmd;
 	protected final int numOfReviews;
 	protected final GTACourseNode gtaNode;
@@ -116,16 +124,19 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
+	protected BaseSecurity securityManager;
+	@Autowired
 	protected GTAPeerReviewManager peerReviewManager;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	
-	public AbstractCoachPeerReviewListController(UserRequest ureq, WindowControl wControl, String toolsCmd,
+	public AbstractCoachPeerReviewListController(UserRequest ureq, WindowControl wControl, String toolsCmd, String markCmd,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl, "coach_peer_review_list", Util.createPackageTranslator(GTACoachController.class, ureq.getLocale()));
 		courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		this.courseEnv = courseEnv;
 		this.gtaNode = gtaNode;
+		this.markCmd = markCmd;
 		this.toolsCmd = toolsCmd;
 		
 		String numOfReviewsVal = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
@@ -135,13 +146,14 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		statusRenderer = new TaskStepStatusCellRenderer(courseEntry, gtaNode, gtaManager, getTranslator());
 	}
 	
-	public AbstractCoachPeerReviewListController(UserRequest ureq, WindowControl wControl, String toolsCmd,
+	public AbstractCoachPeerReviewListController(UserRequest ureq, WindowControl wControl, String toolsCmd, String markCmd,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "coach_peer_review_list", rootForm);
 		setTranslator(Util.createPackageTranslator(GTACoachController.class, getLocale(), getTranslator()));
 		courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		this.courseEnv = courseEnv;
 		this.gtaNode = gtaNode;
+		this.markCmd = markCmd;
 		this.toolsCmd = toolsCmd;
 		
 		String numOfReviewsVal = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_PEER_REVIEW_NUM_OF_REVIEWS,
@@ -163,6 +175,12 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	
 	protected void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
+		
+		// Bookmark
+		SelectionValues markedKeyValue = new SelectionValues();
+		markedKeyValue.add(SelectionValues.entry(FILTER_MARKED, translate("filter.marked")));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.marked"),
+				FILTER_MARKED, markedKeyValue, true));
 
 		SelectionValues assignmentStatusPK = new SelectionValues();
 		assignmentStatusPK.add(SelectionValues.entry(TaskReviewAssignmentStatus.open.name(), translate("filter.assignment.status.open")));
@@ -299,8 +317,16 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		flc.add(linkName, toolsLink);
-		
 		row.setToolsLink(toolsLink);
+	}
+
+	protected void decorateWithMark(CoachPeerReviewRow row, IdentityMark mark) {
+		Long identityKey = row.getIdentity().getKey();
+		FormLink markLink = uifactory.addFormLink("mark_" + identityKey, markCmd, "", null, null, Link.NONTRANSLATED);
+		markLink.setIconLeftCSS(mark != null ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		markLink.setUserObject(identityKey);
+		markLink.setTitle(translate("bookmark"));
+		row.setMarkLink(markLink);
 	}
 	
 	protected void decorateWithStepStatus(CoachPeerReviewRow row, Task identityTask) {
@@ -386,6 +412,11 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 				||event instanceof FlexiTableFilterTabEvent) {
 			tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 			tableEl.reset(true, true, true);
+		} else if(source instanceof FormLink link) {
+			String cmd = link.getCmd();
+			if(markCmd.equals(cmd) && link.getUserObject() instanceof Long) {
+				doToogleMark(ureq, link);
+			}
 		}
 	}
 	
@@ -453,5 +484,24 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 				confirmReopenReviewCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	protected void doSelectAssessmentAndDetails(UserRequest ureq, CoachPeerReviewRow row) {
+		if(row.getIdentity() != null) {
+			fireEvent(ureq, new SelectIdentityEvent(row.getIdentity().getKey()));
+		}
+	}
+	
+	protected void doToogleMark(UserRequest ureq, FormLink link) {
+		Long assessableIdentityKey = (Long)link.getUserObject();
+		boolean marked = doToogleMark(ureq, assessableIdentityKey);
+		link.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		link.getComponent().setDirty(true);
+	}
+	
+	private boolean doToogleMark(UserRequest ureq, Long particiantKey) {
+		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		Identity participant = securityManager.loadIdentityByKey(particiantKey);
+		return gtaManager.toggleMark(entry, gtaNode, ureq.getIdentity(), participant);
 	}
 }

@@ -458,9 +458,11 @@ public class GTACoachRevisionListController extends AbstractCoachWorkflowListCon
 			selectLink = LinkFactory.createLink("select.assess", "select.assess", getTranslator(), mainVC, this, Link.LINK);
 			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			
-			dueDatesLink = LinkFactory.createLink("duedates", "duedates",
-					getTranslator(), mainVC, this, Link.LINK);
-			dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
+			if(isDueDateEnabled()) {
+				dueDatesLink = LinkFactory.createLink("duedates", "duedates",
+						getTranslator(), mainVC, this, Link.LINK);
+				dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
+			}
 			
 			TaskProcess status = row.getTaskStatus();
 			if(status == TaskProcess.revision) {
@@ -477,6 +479,10 @@ public class GTACoachRevisionListController extends AbstractCoachWorkflowListCon
 			}
 			
 			putInitialPanel(mainVC);
+		}
+		
+		private boolean isDueDateEnabled() {
+			return gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
 		}
 
 		@Override

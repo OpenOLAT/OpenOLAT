@@ -64,6 +64,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.IdentityMark;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
@@ -92,6 +93,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerReviewListController {
 	
 	private static final String CMD_TOOLS = "tools-R";
+	private static final String CMD_MARK = "tools-R";
 	private static final List<TaskReviewAssignmentStatus> STATUS_FOR_STATS = List.of(TaskReviewAssignmentStatus.done);
 	
 	private FormLink assignReviewers;
@@ -117,7 +119,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	public GTACoachPeerReviewReceivedListController(UserRequest ureq, WindowControl wControl,
 			BreadcrumbPanel stackPanel, TaskList taskList, Identity assessedIdentity, Task assignedTask,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode) {
-		super(ureq, wControl, CMD_TOOLS, courseEnv, gtaNode);
+		super(ureq, wControl, CMD_TOOLS, CMD_MARK, courseEnv, gtaNode);
 		this.assignedTask = assignedTask;
 		this.stackPanel = stackPanel;
 		this.taskList = taskList;
@@ -131,7 +133,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	public GTACoachPeerReviewReceivedListController(UserRequest ureq, WindowControl wControl,
 			BreadcrumbPanel stackPanel, TaskList taskList, List<Identity> assessedIdentities,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode, Form rootForm) {
-		super(ureq, wControl, CMD_TOOLS, courseEnv, gtaNode, rootForm);
+		super(ureq, wControl, CMD_TOOLS, CMD_MARK, courseEnv, gtaNode, rootForm);
 		assignedTask = null;
 		this.stackPanel = stackPanel;
 		this.taskList = taskList;
@@ -148,6 +150,11 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		assignReviewers.setIconLeftCSS("o_icon o_icon_shuffle");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		
+		DefaultFlexiColumnModel markCol = new DefaultFlexiColumnModel(CoachReviewCols.mark);
+		markCol.setExportable(false);
+		markCol.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
+		columnsModel.addFlexiColumnModel(markCol);
 		
 		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(new FullNameNodeRenderer());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.identityFullName, nodeRenderer));
@@ -210,6 +217,10 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		boolean enableAssignReviewers = false;
 		List<CoachPeerReviewRow> rows = new ArrayList<>();
 		
+		List<IdentityMark> marks = gtaManager.getMarks(courseEntry, gtaNode, getIdentity());
+		Map<Long,IdentityMark> identityToMarks = marks.stream()
+				.collect(Collectors.toMap(m -> m.getParticipant().getKey(), m -> m, (u, v) -> u));
+		
 		if(singleAssessedIdentity != null) {
 			List<TaskReviewAssignment> assignments;
 			SessionParticipationListStatistics statistics;
@@ -221,11 +232,12 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 				assignments = List.of();
 				statistics = SessionParticipationListStatistics.noStatistics();
 			}
-			loadModelRow(singleAssessedIdentity, assignedTask, assignments, statistics, rows);
+			IdentityMark mark = identityToMarks.get(singleAssessedIdentity.getKey());
+			loadModelRow(singleAssessedIdentity, assignedTask, assignments, statistics, mark, rows);
 			DueDate dueDate = gtaManager.getPeerReviewDueDate(assignedTask, singleAssessedIdentity, null, gtaNode, courseEntry, true);
 			enableAssignReviewers = (dueDate == null || dueDate.getDueDate() == null || new Date().before(dueDate.getDueDate()));
 		} else {
-			loadModelList(rows);
+			loadModelList(rows, identityToMarks);
 		}
 		
 		tableModel.setObjects(rows);
@@ -233,7 +245,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		assignReviewers.setVisible(enableAssignReviewers);
 	}
 	
-	protected void loadModelList(List<CoachPeerReviewRow> rows) {
+	protected void loadModelList(List<CoachPeerReviewRow> rows, Map<Long,IdentityMark> identityToMarks) {
 		List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
 		Map<Identity,Task> identityToTask = tasks.stream()
 				.collect(Collectors.toMap(Task::getIdentity, task -> task, (u, v) -> u));	
@@ -259,12 +271,13 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 			if(statistics == null) {
 				statistics = SessionParticipationListStatistics.noStatistics();
 			}
-			loadModelRow(assessedIdentity, task, taskAssignments, statistics, rows);
+			IdentityMark mark = identityToMarks.get(assessedIdentity.getKey());
+			loadModelRow(assessedIdentity, task, taskAssignments, statistics, mark, rows);
 		}
 	}
 	
 	private void loadModelRow(Identity assessedIdentity, Task task, List<TaskReviewAssignment> assignments,
-			SessionParticipationListStatistics statistics, List<CoachPeerReviewRow> rows) {
+			SessionParticipationListStatistics statistics, IdentityMark assessedIdentityMark, List<CoachPeerReviewRow> rows) {
 		String assessedIdentityFullname = userManager.getUserDisplayName(assessedIdentity);
 		CoachPeerReviewRow assessedIdentityRow = new CoachPeerReviewRow(task, assessedIdentity, assessedIdentityFullname);
 		
@@ -287,12 +300,13 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		}
 		
 		// Fill statistics
-		forgeAssessedIdentityRow(assessedIdentityRow, statistics.aggregatedStatistics());
+		forgeAssessedIdentityRow(assessedIdentityRow, statistics.aggregatedStatistics(), assessedIdentityMark);
 	}
 	
-	private void forgeAssessedIdentityRow(CoachPeerReviewRow assessedIdentityRow, SessionStatistics aggregatedStatistics) {
+	private void forgeAssessedIdentityRow(CoachPeerReviewRow assessedIdentityRow, SessionStatistics aggregatedStatistics, IdentityMark identityMark) {
 		decorateWithAggregatedStatistics(assessedIdentityRow, aggregatedStatistics);
 		decorateWithTools(assessedIdentityRow);
+		decorateWithMark(assessedIdentityRow, identityMark);
 		decorateWithStepStatus(assessedIdentityRow, assessedIdentityRow.getTask());
 		
 		CoachedParticipantStatus submissionStatus = statusRenderer
@@ -436,7 +450,8 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 	}
 	
 	private class ToolsController extends BasicController {
-		
+
+		private Link selectLink;
 		private Link showReviewLink;
 		private Link showReviewsLink;
 		private Link addNewReviewLink;
@@ -451,7 +466,10 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 			this.row = row;
 			
 			mainVC = createVelocityContainer("tools");
-
+			
+			selectLink = LinkFactory.createLink("select.assess", "select.assess", getTranslator(), mainVC, this, Link.LINK);
+			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+			
 			if(row.getParent() == null) {
 				if(row.getTask() != null) {
 					assignReviewerLink = LinkFactory.createLink("assign.reviewers", "assign.reviewers", getTranslator(), mainVC, this, Link.LINK);
@@ -476,21 +494,19 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
 			if(assignReviewerLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doAssignReviewers(ureq, row);
 			} else if(showReviewsLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doCompareEvaluationFormSessions(ureq, row);
 			} else if(showReviewLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doViewEvaluationFormSession(ureq, row);
 			} else if(invalidateReviewLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doInvalidateReview(ureq, row);
 			} else if(addNewReviewLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doCreateOwnReview(ureq, row);
+			} else if(selectLink == source) {
+				doSelectAssessmentAndDetails(ureq, row);
 			}
 		}
 	}

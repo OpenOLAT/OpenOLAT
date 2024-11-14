@@ -1,4 +1,9 @@
 <ul class="o_dropdown list-unstyled">
+	<li>$r.render("select.assess")</li>
+	#if($r.available("duedates"))
+		<li>$r.render("duedates")</li>
+		<li class="divider"></li>
+	#end
 	#if($r.available("assign.reviewers"))
 		<li>$r.render("assign.reviewers")</li>
 		<li class="divider"></li>

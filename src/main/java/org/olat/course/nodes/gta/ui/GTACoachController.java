@@ -299,7 +299,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			
 			List<VFSMetadata> metadatas = submitContainer.getItems().stream()
 					.filter(VFSLeaf.class::isInstance)
-					.map(item -> ((VFSLeaf)item).getMetaInfo())
+					.map(item -> item.getMetaInfo())
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 			AccessSearchParams params = new AccessSearchParams();

@@ -198,6 +198,10 @@ public class CoachedParticipantRow extends UserPropertiesRow {
 	public FormLink getMarkLink() {
 		return markLink;
 	}
+	
+	public void setMarkLink(FormLink markLink) {
+		this.markLink = markLink;
+	}
 
 	public Boolean getUserVisibility() {
 		return assessmentEntry == null ? null : assessmentEntry.getUserVisibility();
