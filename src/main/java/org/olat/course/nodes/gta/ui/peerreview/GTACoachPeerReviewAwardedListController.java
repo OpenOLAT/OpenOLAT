@@ -170,6 +170,11 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 					statusRenderer));
 		}
 		
+		DueDateConfig config = gtaNode.getDueDateConfig(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE);
+		if(gtaManager.isDueDateEnabled(gtaNode) && GTAHelper.hasDateConfigured(config)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.peerReviewOverrideDueDate));
+		}
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.review.view", translate("review.view"), "view"));
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CoachReviewCols.tools);
@@ -290,6 +295,10 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		decorateWithAggregatedStatistics(surveyExecutorIdentityRow, aggregatedStatistics);
 		decorateWithTools(surveyExecutorIdentityRow);
 		decorateWithStepStatus(surveyExecutorIdentityRow, reviewerOwnTask);
+		
+		DueDate peerReviewDueDate = gtaManager.getPeerReviewDueDate(surveyExecutorIdentityRow.getTask(), surveyExecutorIdentityRow.getIdentity(),
+				null, gtaNode, courseEntry, true);
+		surveyExecutorIdentityRow.setPeerReviewDueDate(peerReviewDueDate);
 		
 		CoachedParticipantStatus submissionStatus = statusRenderer
 				.calculateSubmissionStatus(surveyExecutorIdentityRow.getIdentity(), reviewerOwnTask);

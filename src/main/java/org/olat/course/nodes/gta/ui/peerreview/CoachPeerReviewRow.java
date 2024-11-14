@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -59,6 +60,7 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	
 	private CoachedParticipantStatus stepStatus;
 	private CoachedParticipantStatus submissionStatus;
+	private DueDate peerReviewDueDate;
 	
 	private Identity assignee;
 	
@@ -206,6 +208,14 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 
 	public void setAssessmentPlot(BoxPlot assessmentPlot) {
 		this.assessmentPlot = assessmentPlot;
+	}
+	
+	public DueDate getPeerReviewDueDate() {
+		return peerReviewDueDate;
+	}
+
+	public void setPeerReviewDueDate(DueDate dueDate) {
+		this.peerReviewDueDate = dueDate;
 	}
 
 	public FormLink getToolsLink() {

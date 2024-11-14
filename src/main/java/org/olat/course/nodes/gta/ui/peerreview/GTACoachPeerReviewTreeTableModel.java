@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui.peerreview;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -33,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow.NumOf;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 
@@ -205,10 +207,15 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 			case sessionStatus -> row;
 			case taskStepStatus -> row.getStepStatus();
 			case submissionStatus -> row.getSubmissionStatus();
+			case peerReviewOverrideDueDate -> overrideDueDate(row.getPeerReviewDueDate());
 			case editReview -> Boolean.valueOf(row.canEdit());
 			case tools -> row.getToolsLink();
 			default -> "ERROR";
 		};
+	}
+	
+	private Date overrideDueDate(DueDate dueDate) {
+		return dueDate == null ? null : dueDate.getOverridenDueDate();
 	}
 
 	@Override
@@ -229,6 +236,7 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 		sessionStatus("table.header.review.status"),
 		taskStepStatus("table.header.step.status"),
 		submissionStatus("table.header.submission.status"),
+		peerReviewOverrideDueDate("table.header.peerreview.overriden.duedate"),
 		editReview("table.header.review.view"),
 		tools("table.header.tools"),
 		;

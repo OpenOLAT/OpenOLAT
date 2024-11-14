@@ -121,6 +121,7 @@ public class EditDueDatesController extends FormBasicController {
 		Date peerReviewSetDueDate = task.getPeerReviewDueDate();
 		peerReviewDueDateEl = uifactory.addDateChooser("peerreview.duedate", peerReviewSetDueDate, formLayout);
 		peerReviewDueDateEl.setDateChooserTimeEnabled(true);
+		setDueDateExplanation(peerReviewDueDateEl, peerReviewDueDate, null);
 		boolean peerReviewDeadline = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)
 				&& (peerReviewSetDueDate != null || peerReviewDueDate != null
 				|| StringHelper.containsNonWhitespace(config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_LENGTH, "")));
