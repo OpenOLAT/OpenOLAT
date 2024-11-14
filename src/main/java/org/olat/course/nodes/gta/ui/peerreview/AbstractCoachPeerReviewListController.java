@@ -124,7 +124,7 @@ public abstract class AbstractCoachPeerReviewListController extends FormBasicCon
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
-	private BaseSecurity securityManager;
+	protected BaseSecurity securityManager;
 	@Autowired
 	protected GTAPeerReviewManager peerReviewManager;
 	@Autowired

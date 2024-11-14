@@ -55,6 +55,7 @@ import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.GTACoachController;
+import org.olat.course.nodes.gta.ui.GTAHelper;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantTableModel.CoachCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -254,10 +255,19 @@ public class GTACoachSolutionListController extends AbstractCoachWorkflowListCon
 			selectLink = LinkFactory.createLink("select.assess", "select.assess", getTranslator(), mainVC, this, Link.LINK);
 			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			
-			dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
-			dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
-
+			if(isDueDateEnabled()) {
+				dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
+				dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
+			}
 			putInitialPanel(mainVC);
+		}
+		
+		private boolean isDueDateEnabled() {
+			Task task = row.getTask();
+			DueDateConfig config = gtaNode.getDueDateConfig(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+			return gtaManager.isDueDateEnabled(gtaNode)
+					&& ((config != null && GTAHelper.hasDateConfigured(config))
+							|| (task != null && task.getSolutionDueDate() != null));
 		}
 
 		@Override

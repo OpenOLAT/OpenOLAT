@@ -494,23 +494,18 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
 			if(assignReviewerLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doAssignReviewers(ureq, row);
 			} else if(showReviewsLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doCompareEvaluationFormSessions(ureq, row);
 			} else if(showReviewLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doViewEvaluationFormSession(ureq, row);
 			} else if(invalidateReviewLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doInvalidateReview(ureq, row);
 			} else if(addNewReviewLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doCreateOwnReview(ureq, row);
 			} else if(selectLink == source) {
-				fireEvent(ureq, Event.DONE_EVENT);
 				doSelectAssessmentAndDetails(ureq, row);
 			}
 		}

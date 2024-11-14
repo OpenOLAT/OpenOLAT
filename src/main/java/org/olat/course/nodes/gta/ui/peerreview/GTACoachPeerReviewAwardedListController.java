@@ -60,6 +60,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.IdentityMark;
@@ -72,7 +73,9 @@ import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.SessionParticipationListStatistics;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.SessionStatistics;
+import org.olat.course.nodes.gta.ui.EditDueDatesController;
 import org.olat.course.nodes.gta.ui.GTACoachController;
+import org.olat.course.nodes.gta.ui.GTAHelper;
 import org.olat.course.nodes.gta.ui.component.NumOfCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskReviewAssignmentStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.peerreview.GTACoachPeerReviewTreeTableModel.CoachReviewCols;
@@ -103,6 +106,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	private final List<Identity> reviewers;
 	
 	private ToolsController toolsCtrl;
+	private EditDueDatesController editDueDatesCtrl;
 	private DialogBoxController confirmReopenPeerReviewCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private GTAPeerReviewsAssignmentController assignmentsCtrl;
@@ -305,7 +309,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(assignmentsCtrl == source) {
+		if(assignmentsCtrl == source || editDueDatesCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
@@ -328,9 +332,11 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 	@Override
 	protected void cleanUp() {
 		super.cleanUp();
+		removeAsListenerAndDispose(editDueDatesCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(assignmentsCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
+		editDueDatesCtrl = null;
 		toolsCalloutCtrl = null;
 		assignmentsCtrl = null;
 		toolsCtrl = null;
@@ -413,9 +419,32 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		cmc.activate();
 	}
 	
+	private void doEditDueDate(UserRequest ureq, CoachPeerReviewRow row) {
+		if(guardModalController(editDueDatesCtrl)) return;
+		
+		Task task;
+		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentity().getKey());
+		if(row.getTask() == null) {
+			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+			task = gtaManager.createAndPersistTask(null, taskList, firstStep, null, assessedIdentity, gtaNode);
+		} else {
+			task = gtaManager.getTask(row.getTask());
+		}
+
+		editDueDatesCtrl = new EditDueDatesController(ureq, getWindowControl(), task, assessedIdentity, null, gtaNode, courseEntry, courseEnv);
+		listenTo(editDueDatesCtrl);
+		
+		String fullname = userManager.getUserDisplayName(assessedIdentity);
+		String title = translate("duedates.user", fullname);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editDueDatesCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private class ToolsController extends BasicController {
 
 		private Link selectLink;
+		private Link dueDatesLink;
 		private Link showReviewLink;
 		private Link showReviewsLink;
 		private Link assignReviewLink;
@@ -435,6 +464,11 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 	
 			if(row.getParent() == null) {
+				if(isDueDateEnabled()) {
+					dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
+					dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
+				}
+				
 				showReviewsLink = LinkFactory.createLink("show.reviews", "show.reviews", getTranslator(), mainVC, this, Link.LINK);
 				showReviewsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eye");
 
@@ -466,6 +500,14 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 			
 			putInitialPanel(mainVC);
 		}
+		
+		private boolean isDueDateEnabled() {
+			Task task = row.getTask();
+			DueDateConfig config = gtaNode.getDueDateConfig(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE);
+			return gtaManager.isDueDateEnabled(gtaNode)
+					&& ((config != null && GTAHelper.hasDateConfigured(config))
+							|| (task != null && task.getPeerReviewDueDate() != null));
+		}
 
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
@@ -490,6 +532,8 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 			} else if(selectLink == source) {
 				fireEvent(ureq, Event.DONE_EVENT);
 				doSelectAssessmentAndDetails(ureq, row);
+			} else if(dueDatesLink == source) {
+				doEditDueDate(ureq, row);
 			}
 		}
 	}
