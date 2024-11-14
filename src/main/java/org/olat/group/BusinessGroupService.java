@@ -44,6 +44,7 @@ import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
@@ -354,6 +355,8 @@ public interface BusinessGroupService {
 	public boolean hasResources(BusinessGroup group);
 	
 	public boolean hasResources(List<BusinessGroup> groups);
+
+	public boolean hasRepositoryEntryOfRuntimeType(BusinessGroupRef businessGroupRef, RepositoryEntryRuntimeType runtimeType);
 	
 	public void addResourceTo(BusinessGroup group, RepositoryEntry re);
 	

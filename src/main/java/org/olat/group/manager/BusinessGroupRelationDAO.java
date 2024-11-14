@@ -50,6 +50,7 @@ import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -589,6 +590,21 @@ public class BusinessGroupRelationDAO {
 				.getResultList();
 	}
 	
+	public boolean hasRepositoryEntryOfRuntimeType(BusinessGroupRef group, RepositoryEntryRuntimeType runtimeType) {
+		StringBuilder sb = new StringBuilder();
+		sb
+				.append("select distinct v.key from repositoryentry as v")
+				.append(" inner join v.groups as relGroup")
+				.append(" inner join businessgroup as bgi on (bgi.baseGroup.key=relGroup.group.key)")
+				.append(" where bgi.key=:groupKey")
+				.append(" and v.runtimeType=:runtimeType");
+		return !dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("groupKey", group.getKey())
+				.setParameter("runtimeType", runtimeType)
+				.getResultList().isEmpty();
+	}
+
 	public List<RepositoryEntry> findRepositoryEntries(Collection<? extends BusinessGroupRef> groups, int firstResult, int maxResults) {
 		if(groups == null || groups.isEmpty()) {
 			return Collections.emptyList();

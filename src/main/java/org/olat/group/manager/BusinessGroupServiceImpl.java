@@ -99,6 +99,7 @@ import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -1518,6 +1519,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Override
 	public boolean hasResources(List<BusinessGroup> groups) {
 		return businessGroupRelationDAO.hasResources(groups);
+	}
+
+	@Override
+	public boolean hasRepositoryEntryOfRuntimeType(BusinessGroupRef businessGroupRef, RepositoryEntryRuntimeType runtimeType) {
+		return businessGroupRelationDAO.hasRepositoryEntryOfRuntimeType(businessGroupRef, runtimeType);
 	}
 
 	@Override

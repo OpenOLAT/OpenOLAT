@@ -66,6 +66,7 @@ import org.olat.ims.lti13.DeploymentConfigurationPermission;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.modules.invitation.InvitationConfigurationPermission;
 import org.olat.modules.invitation.InvitationModule;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -247,9 +248,10 @@ public class BusinessGroupEditController extends BasicController implements Gene
 			}, false);
 		
 		//resources (optional)
+		boolean hasCourseManagedByCurriculum = businessGroupService.hasRepositoryEntryOfRuntimeType(currBusinessGroup, RepositoryEntryRuntimeType.curricular);
 		boolean resourceEnabled = roles.isAdministrator() || roles.isGroupManager() || roles.isAuthor()
 				|| businessGroupService.hasResources(currBusinessGroup);
-		if(resourceEnabled && BusinessGroup.BUSINESS_TYPE.equals(type) && !isInvitee) {
+		if(resourceEnabled && BusinessGroup.BUSINESS_TYPE.equals(type) && !isInvitee && !hasCourseManagedByCurriculum) {
 			tabbedPane.addTab(ureq, translate("group.edit.tab.resources"), "o_sel_group_edit_resources", uureq -> {
 				if(resourceController == null) {
 					resourceController = new BusinessGroupEditResourceController(uureq, getWindowControl(), currBusinessGroup);
@@ -264,7 +266,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 			resourceController = null;
 		}
 
-		if(tabAccessCtrl != null && !isInvitee) {
+		if(tabAccessCtrl != null && !isInvitee && !hasCourseManagedByCurriculum) {
 			tabbedPane.addTab(ureq, translate("group.edit.tab.share"), "o_sel_group_edit_access",
 					uureq -> tabAccessCtrl.getInitialComponent(), false);
 		}

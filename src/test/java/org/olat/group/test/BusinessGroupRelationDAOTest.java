@@ -43,6 +43,7 @@ import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -727,6 +728,42 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, repositoryEntryKeys.size());
 		Assert.assertTrue(repositoryEntryKeys.contains(re1.getKey()));
 		Assert.assertTrue(repositoryEntryKeys.contains(re2.getKey()));
+	}
+	
+	@Test
+	public void hasRepositoryEntryOfRuntimeType() {
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "biz-group-1", "biz-group-1-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "biz-group-2", "biz-group-2-desc", BusinessGroup.BUSINESS_TYPE,
+				0, 10, true, false, false, false, false);
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		re1.setRuntimeType(RepositoryEntryRuntimeType.curricular);
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		re2.setRuntimeType(RepositoryEntryRuntimeType.standalone);
+		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
+		re3.setRuntimeType(RepositoryEntryRuntimeType.embedded);
+		dbInstance.commitAndCloseSession();
+
+		businessGroupRelationDao.addRelationToResource(group1, re1);
+		businessGroupRelationDao.addRelationToResource(group1, re2);
+		businessGroupRelationDao.addRelationToResource(group2, re3);
+		dbInstance.commitAndCloseSession();
+
+		boolean group1HasEmbedded = businessGroupRelationDao.hasRepositoryEntryOfRuntimeType(group1, RepositoryEntryRuntimeType.embedded);
+		boolean group1HasStandalone = businessGroupRelationDao.hasRepositoryEntryOfRuntimeType(group1, RepositoryEntryRuntimeType.standalone);
+		boolean group1HasCurricular = businessGroupRelationDao.hasRepositoryEntryOfRuntimeType(group1, RepositoryEntryRuntimeType.curricular);
+
+		boolean group2HasEmbedded = businessGroupRelationDao.hasRepositoryEntryOfRuntimeType(group2, RepositoryEntryRuntimeType.embedded);
+		boolean group2HasStandalone = businessGroupRelationDao.hasRepositoryEntryOfRuntimeType(group2, RepositoryEntryRuntimeType.standalone);
+		boolean group2HasCurricular = businessGroupRelationDao.hasRepositoryEntryOfRuntimeType(group2, RepositoryEntryRuntimeType.curricular);
+
+		Assert.assertFalse(group1HasEmbedded);
+		Assert.assertTrue(group1HasStandalone);
+		Assert.assertTrue(group1HasCurricular);
+
+		Assert.assertTrue(group2HasEmbedded);
+		Assert.assertFalse(group2HasStandalone);
+		Assert.assertFalse(group2HasCurricular);
 	}
 	
 	@Test
