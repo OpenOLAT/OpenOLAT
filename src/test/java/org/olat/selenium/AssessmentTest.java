@@ -1818,7 +1818,7 @@ public class AssessmentTest extends Deployments {
 		//back to author
 		coursePage
 			.tree()
-			.assertWithTitleSelected(gtaNodeTitle);
+			.selectWithTitle(gtaNodeTitle);
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
 		participantToCoach
