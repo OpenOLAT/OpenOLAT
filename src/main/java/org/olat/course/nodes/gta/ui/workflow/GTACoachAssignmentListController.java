@@ -174,7 +174,6 @@ public class GTACoachAssignmentListController extends AbstractCoachWorkflowListC
 		tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
 		
 		super.loadModel();
-		
 	}
 
 	@Override

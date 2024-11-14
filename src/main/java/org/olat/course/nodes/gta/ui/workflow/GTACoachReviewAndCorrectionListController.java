@@ -35,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapper
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -83,7 +82,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACoachReviewAndCorrectionListController extends AbstractCoachWorkflowListController implements FlexiTableComponentDelegate {
+public class GTACoachReviewAndCorrectionListController extends AbstractCoachWorkflowListController {
 
 	private final VelocityContainer detailsVC;
 
