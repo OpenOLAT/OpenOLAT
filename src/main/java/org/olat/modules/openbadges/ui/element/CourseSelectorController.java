@@ -62,7 +62,6 @@ public class CourseSelectorController extends FormBasicController {
 	private FormLink resetQuickSearchButton;
 
 	private MultipleSelectionElement selectionEl;
-	private StaticTextElement resultsNoneEl;
 	private MultipleSelectionElement resultsEl;
 	private StaticTextElement resultsMoreEl;
 
@@ -102,12 +101,8 @@ public class CourseSelectorController extends FormBasicController {
 				"course.selector.selection", translate("course.selector.selection.none"), formLayout);
 		selectionNoneEl.setVisible(selectionEl.getKeys().isEmpty());
 
-		resultsNoneEl = uifactory.addStaticTextElement("course.selector.results.none",
-				"course.selector.results", translate("course.selector.results.none"), formLayout);
-		resultsNoneEl.setVisible(false);
-
-		resultsEl = uifactory.addCheckboxesVertical("course.selector.results", formLayout, emptyStrings(),
-				emptyStrings(), 1);
+		resultsEl = uifactory.addCheckboxesVertical("course.selector.results", null, formLayout, 
+				emptyStrings(), emptyStrings(), 1);
 		resultsEl.setHorizontallyAlignedCheckboxes(true);
 		resultsEl.setEscapeHtml(false);
 		resultsEl.setVisible(false);
@@ -227,14 +222,12 @@ public class CourseSelectorController extends FormBasicController {
 	}
 
 	private void doQuickSearch(UserRequest ureq) {
-		resultsNoneEl.setVisible(false);
 		resultsMoreEl.setVisible(false);
 
 		String searchText = quickSearchEl.getValue().toLowerCase();
 		quickSearchEl.getComponent().setDirty(false);
 
 		if (StringHelper.containsNonWhitespace(searchText)) {
-			resultsEl.setLabel("course.selector.results", new String[] { searchText });
 			Set<RepositoryEntry> courses = searchCourses(searchText);
 			if (!courses.isEmpty()) {
 				SelectionValues resultsKV = createCoursesKV(courses);
@@ -257,7 +250,6 @@ public class CourseSelectorController extends FormBasicController {
 			resultsEl.setVisible(false);
 		}
 
-		resultsNoneEl.getComponent().setDirty(true);
 		resultsEl.getComponent().setDirty(true);
 		resultsMoreEl.getComponent().setDirty(true);
 
@@ -272,6 +264,10 @@ public class CourseSelectorController extends FormBasicController {
 	}
 
 	private boolean searchCourse(RepositoryEntry course, String searchText) {
+		if (currentSelectionKeys.contains(course.getKey())) {
+			return false;
+		}
+
 		if (course.getDisplayname().toLowerCase().contains(searchText)) {
 			return true;
 		}
@@ -289,7 +285,6 @@ public class CourseSelectorController extends FormBasicController {
 
 	private void doResetQuickSearch() {
 		quickSearchEl.setValue("");
-		resultsNoneEl.setVisible(false);
 		resultsEl.setVisible(false);
 		resultsMoreEl.setVisible(false);
 	}

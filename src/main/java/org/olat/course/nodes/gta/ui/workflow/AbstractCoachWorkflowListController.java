@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -43,9 +44,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ToggleDetailsCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -60,6 +63,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -72,6 +76,7 @@ import org.olat.course.nodes.gta.ui.EditDueDatesController;
 import org.olat.course.nodes.gta.ui.EditMultipleDueDatesController;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupGradingController;
 import org.olat.course.nodes.gta.ui.component.TaskStepStatusCellRenderer;
+import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantTableModel.CoachCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -86,7 +91,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListController {
+abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListController implements FlexiTableComponentDelegate {
 
 	public static final String ALL_TAB_ID = "All";
 	public static final String OPEN_TAB_ID = "Open";
@@ -133,7 +138,7 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 	AbstractCoachWorkflowListController(UserRequest ureq, WindowControl wControl, String pageName,
 			UserCourseEnvironment coachCourseEnv, List<Identity> identities, GTACourseNode gtaNode) {
 		super(ureq, wControl, pageName, coachCourseEnv,  identities, gtaNode);
-		
+
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		statusRenderer = new TaskStepStatusCellRenderer(courseEntry, gtaNode, gtaManager, getTranslator());
 	}
@@ -173,12 +178,17 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 			
 			String propName = userPropertyHandler.getName();
 			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
-
-			FlexiColumnModel col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
+			FlexiColumnModel col;
+			if(UserConstants.NICKNAME.equals(propName) || UserConstants.FIRSTNAME.equals(propName) || UserConstants.LASTNAME.equals(propName)) {
+				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(),
+						colIndex, true, propName, FlexiColumnModel.ALIGNMENT_LEFT, new ToggleDetailsCellRenderer(this));
+			} else {
+				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
+			}
 			columnsModel.addFlexiColumnModel(col);
 		}
 	}
-	
+
 	protected abstract void initColumnsModel(FlexiTableColumnModel columnsModel);
 	
 	protected void initAdministrationColumnsModel(FlexiTableColumnModel columnsModel) {
@@ -255,6 +265,16 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 			bulkExtendButton.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
 			tableEl.addBatchButton(bulkExtendButton);
 		}
+	}
+	
+	@Override
+	public boolean isDetailsRow(int row, Object rowObject) {
+		return false;
+	}
+	
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		return List.of();
 	}
 
 	@Override
@@ -466,6 +486,11 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 			cmc.activate();
 			listenTo(cmc);
 		}
+	}
+	
+	protected void doSelectAssessmentAndDetails(UserRequest ureq, CoachedParticipantRow row) {
+		Long identityKey = row.getAssessedIdentity() == null ? row.getIdentityKey() : row.getAssessedIdentity().getKey();
+		fireEvent(ureq, new SelectIdentityEvent(identityKey));
 	}
 	
 	protected List<Identity> getSelectedIdentities(Predicate<CoachedParticipantRow> filter) {

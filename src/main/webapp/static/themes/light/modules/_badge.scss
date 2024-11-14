@@ -514,7 +514,7 @@ dialog.popover {
 	}
 }
 
-.o_badge_course_selector_selections {
+.o_badge_course_selector_selections, .o_badge_selector_selection {
 	overflow-y: auto;
 	min-height: 140px;
 	max-height: 240px;
@@ -547,13 +547,6 @@ dialog.popover {
 	}
 }
 
-.o_badge_selector_selection {
-	overflow-y: auto;
-	min-height: 140px;
-	max-height: 240px;
-	padding-right: 4px;
-}
-
 .o_badge_selector_selected {
 	margin-top: 10px;
 
@@ -574,7 +567,7 @@ dialog.popover {
 }
 
 .o_badge_selector_unselected {
-	margin-top: 30px;
+	margin-top: 18px;
 }
 
 .o_badge_selector_rows {

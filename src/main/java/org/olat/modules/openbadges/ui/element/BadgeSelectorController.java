@@ -20,6 +20,8 @@
 package org.olat.modules.openbadges.ui.element;
 
 import java.io.Serial;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -39,6 +42,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -57,17 +61,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BadgeSelectorController extends FormBasicController {
 	private static final String PARAMETER_KEY_BADGE_SELECTION = "bsel_";
 
+	private static final int MAX_RESULTS = 20;
+
 	private FormLink browserButton;
 	private FormLink applyButton;
 	private TextElement quickSearchEl;
 	private FormLink resetQuickSearchButton;
 
-	private final RepositoryEntry entry;
-	private final Set<Long> availableKeys;
-	private Set<Long> selectedKeys;
-	private final String mediaUrl;
+	private StaticTextElement resultsMoreEl;
 
-	private List<Row> rows;
+	private Set<Long> selectedKeys;
+	private final List<Row> rows;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
@@ -78,21 +82,40 @@ public class BadgeSelectorController extends FormBasicController {
 								   Set<Long> availableKeys, Set<Long> selectedKeys) {
 		super(ureq, wControl, "badge_selector",
 				Util.createPackageTranslator(OpenBadgesUIFactory.class, ureq.getLocale()));
-		this.entry = entry;
-		this.availableKeys = availableKeys;
 		this.selectedKeys = selectedKeys;
 
-		mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
+		rows = openBadgesManager.getBadgeClassesWithSizes(entry).stream()
+				.filter(bce -> availableKeys.contains(bce.badgeClass().getKey()))
+				.map(this::row).toList();
+
+		String mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
+		flc.contextPut("mediaUrl", mediaUrl);
+
+		List<Row> selectedRows = rows.stream().filter(row -> selectedKeys.contains(row.key)).toList();
+		flc.contextPut("selectedRows", selectedRows);
 
 		initForm(ureq);
-		loadModel();
+		doResetQuickSearch(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initSearchLine(formLayout);
 
-		browserButton = uifactory.addFormLink("badge.selector.open.browser", formLayout, Link.BUTTON_SMALL);
+		StaticTextElement selectionNoneEl = uifactory.addStaticTextElement("badge.selector.selection.none",
+				"badge.selector.selection", translate("badge.selector.selection.none"), formLayout);
+		selectionNoneEl.setVisible(selectedKeys.isEmpty());
+
+		StaticTextElement selectionNumEl = uifactory.addStaticTextElement("badge.selector.selection.num",
+				"badge.selector.selection.num", "", formLayout);
+		selectionNumEl.setLabel("badge.selector.selection.num", new String[] { String.valueOf(selectedKeys.size()) });
+		selectionNumEl.setVisible(!selectedKeys.isEmpty());
+		
+		resultsMoreEl = uifactory.addStaticTextElement("badge.selector.results.more", null,
+				translate("badge.selector.results.more", String.valueOf(MAX_RESULTS)), formLayout);
+		resultsMoreEl.setVisible(false);
+
+		browserButton = uifactory.addFormLink("badge.selector.browser", formLayout, Link.BUTTON_SMALL);
 		applyButton = uifactory.addFormLink("apply", formLayout, Link.BUTTON_SMALL);
 		applyButton.setPrimary(true);
 	}
@@ -119,19 +142,6 @@ public class BadgeSelectorController extends FormBasicController {
 		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
 	}
 
-	private void loadModel() {
-		rows = openBadgesManager.getBadgeClassesWithSizes(entry).stream()
-				.filter(bce -> availableKeys.contains(bce.badgeClass().getKey()))
-				.map(this::row).toList();
-		List<Row> selectedRows = rows.stream().filter(row -> selectedKeys.contains(row.key)).toList();
-		List<Row> unselectedRows = rows.stream().filter(row -> !selectedKeys.contains(row.key)).toList();
-
-		flc.contextPut("selectedRows", selectedRows);
-		flc.contextPut("unselectedRows", unselectedRows);
-		flc.contextPut("mediaUrl", mediaUrl);
-		flc.contextPut("nbSelected", selectedRows.size());
-	}
-
 	private Row row(OpenBadgesManager.BadgeClassWithSize badgeClassWithSize) {
 		BadgeClass badgeClass = badgeClassWithSize.badgeClass();
 		Size size = badgeClassWithSize.fitIn(40, 40);
@@ -153,7 +163,7 @@ public class BadgeSelectorController extends FormBasicController {
 		} else if (quickSearchEl == source) {
 			doQuickSearch(ureq);
 		} else if (resetQuickSearchButton == source) {
-			doResetQuickSearch();
+			doResetQuickSearch(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -188,23 +198,41 @@ public class BadgeSelectorController extends FormBasicController {
 	}
 
 	private void doQuickSearch(UserRequest ureq) {
-		updateRows();
+		updateUI();
 
 		fireEvent(ureq, RESIZED_EVENT);
 	}
 
-	private void doResetQuickSearch() {
+	private void doResetQuickSearch(UserRequest ureq) {
 		quickSearchEl.setValue("");
-		updateRows();
+		updateUI();
+
+		fireEvent(ureq, RESIZED_EVENT);
 	}
 
-	private void updateRows() {
+	private void updateUI() {
+		resultsMoreEl.setVisible(false);
+		
 		String searchFieldValue = quickSearchEl.getValue().toLowerCase();
-		List<Row> unselectedRows = rows.stream()
-				.filter(row -> !selectedKeys.contains(row.key))
-				.filter(row -> row.title.toLowerCase().contains(searchFieldValue))
-				.toList();
-		flc.contextPut("unselectedRows", unselectedRows);
+		quickSearchEl.getComponent().setDirty(false);
+
+		if (StringHelper.containsNonWhitespace(searchFieldValue)) {
+			List<Row> unselectedRows = rows.stream()
+					.filter(row -> !selectedKeys.contains(row.key))
+					.filter(row -> row.title.toLowerCase().contains(searchFieldValue))
+					.toList();
+
+			if (unselectedRows.size() > MAX_RESULTS) {
+				unselectedRows = new ArrayList<>(unselectedRows.subList(0, MAX_RESULTS));
+				resultsMoreEl.setVisible(true);
+			}
+
+			flc.contextPut("unselectedRows", unselectedRows);
+		} else {
+			flc.contextPut("unselectedRows", Collections.emptyList());
+		}
+
+		resultsMoreEl.getComponent().setDirty(true);
 	}
 
 	private class BadgeClassMediaFileMapper implements Mapper {

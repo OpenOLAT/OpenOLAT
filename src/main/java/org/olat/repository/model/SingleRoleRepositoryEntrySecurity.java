@@ -73,16 +73,18 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 	private Role getDefaultRole() {
 		if (wrappedSecurity.isOwner()) {
 			return Role.owner;
-		} else if (wrappedSecurity.isAdministrator()) {
-			return Role.administrator;
-		} else if (wrappedSecurity.isLearnResourceManager()) {
-			return Role.learningResourceManager;
 		} else if (wrappedSecurity.isCoach()) {
 			return Role.coach;
+		} else if (wrappedSecurity.isParticipant()) {
+			return Role.participant;
 		} else if (wrappedSecurity.isPrincipal()) {
 			return Role.principal;
+		} else if (wrappedSecurity.isLearnResourceManager()) {
+			return Role.learningResourceManager;
 		} else if (wrappedSecurity.isMasterCoach()) {
 			return Role.masterCoach;
+		} else if (wrappedSecurity.isAdministrator()) {
+			return Role.administrator;
 		}
 		return Role.participant;
 	}

@@ -32,6 +32,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -239,7 +240,10 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 				target.append(" href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\"");
 			}
 			
-			if(StringHelper.containsNonWhitespace(linkTitle)) {
+			// Same a11y proof HTML syntax like the LinkRenderer.
+			boolean isIconLink = !StringHelper.containsNonWhitespace(label);
+			
+			if(StringHelper.containsNonWhitespace(linkTitle) && !isIconLink && !linkTitle.equals(label)) {
 				target.append(" title=\"").appendHtmlEscaped(linkTitle).append("\"");
 			}
 			if(StringHelper.containsNonWhitespace(linkCSS)) {
@@ -247,17 +251,31 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 			}
 			target.append(" draggable=\"false\">");
 			if(StringHelper.containsNonWhitespace(iconLeftCSS)) {
-				target.append("<i class=\"o_icon ").append(iconLeftCSS).append("\">&nbsp;</i>");
+				target.append("<i class=\"o_icon ").append(iconLeftCSS).append("\" aria-hidden=\"true\"");
+				if(StringHelper.containsNonWhitespace(linkTitle) && isIconLink) {
+					target.append(" title=\"").appendHtmlAttributeEscaped(linkTitle).append("\"");
+				}
+				target.append(">&nbsp;</i> ");
 			}
 			
 			if (StringHelper.containsNonWhitespace(label)) {
 				target.append(label);
+			} else if(isIconLink && StringHelper.containsNonWhitespace(linkTitle)) {
+				target.append("<span class='sr-only'>").appendHtmlEscaped(linkTitle).append("</span>");
 			}
 			
 			if(StringHelper.containsNonWhitespace(iconRightCSS)) {
-				target.append(" <i class=\"o_icon ").append(iconRightCSS).append("\">&nbsp;</i>");
+				target.append(" <i class=\"o_icon ").append(iconRightCSS).append("\" aria-hidden=\"true\"");
+				if(StringHelper.containsNonWhitespace(linkTitle) && isIconLink) {
+					target.append(" title=\"").appendHtmlAttributeEscaped(linkTitle).append("\"");
+				}
+				target.append(">&nbsp;</i>");
 			}
 			target.append("</a>");
+			if (Settings.isDebuging() && isIconLink && !StringHelper.containsNonWhitespace(linkTitle)) {
+				log.warn("A11y issue: icon-only actions must always have a title. Please fix your code for table::{} and icon::{}",
+						source.getComponentName(), StringHelper.containsNonWhitespace(iconLeftCSS)? iconLeftCSS: iconRightCSS);
+			}
 		} else if (StringHelper.containsNonWhitespace(label)) {
 			target.append(label);
 		}

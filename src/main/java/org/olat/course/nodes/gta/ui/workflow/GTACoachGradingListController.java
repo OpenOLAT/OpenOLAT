@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -93,7 +92,7 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACoachGradingListController extends AbstractCoachWorkflowListController implements FlexiTableComponentDelegate {
+public class GTACoachGradingListController extends AbstractCoachWorkflowListController {
 
 	private final VelocityContainer detailsVC;
 	
@@ -556,6 +555,7 @@ public class GTACoachGradingListController extends AbstractCoachWorkflowListCont
 	
 	private class GradingToolsController extends BasicController {
 		
+		private Link selectLink;
 		private Link setDoneLink;
 		private Link reopenLink;
 		private Link visibleLink;
@@ -569,6 +569,8 @@ public class GTACoachGradingListController extends AbstractCoachWorkflowListCont
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tools");
+			selectLink = LinkFactory.createLink("select.assess", "select.assess", getTranslator(), mainVC, this, Link.LINK);
+			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			
 			if(row.getAssessmentStatus() == AssessmentEntryStatus.done) {
 				reopenLink = LinkFactory.createLink("tool.reopen", "tool.reopen", getTranslator(), mainVC, this, Link.LINK);
@@ -610,6 +612,8 @@ public class GTACoachGradingListController extends AbstractCoachWorkflowListCont
 				doReopen(row);
 			} else if(setDoneLink == source) {
 				doSetDone(row);
+			} else if(selectLink == source) {
+				doSelectAssessmentAndDetails(ureq, row);
 			}
 		}
 	}

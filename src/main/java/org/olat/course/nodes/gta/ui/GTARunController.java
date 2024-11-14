@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -50,6 +51,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.model.Membership;
+import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.nodes.gta.ui.workflow.GTACoachWorkflowController;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -273,6 +275,12 @@ public class GTARunController extends BasicController implements Activateable2 {
 		} else if(coachCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				coachAssignmentWarning();
+			}
+		} else if(workflowCtrl == source) {
+			if(event instanceof SelectIdentityEvent sie) {
+				List<ContextEntry> entries = BusinessControlFactory.getInstance()
+						.createCEListFromString(OresHelper.createOLATResourceableInstance(Identity.class, sie.getIdentityKey()));
+				doOpenCoach(ureq, false).activate(ureq, entries, null);
 			}
 		}
 		super.event(ureq, source, event);
