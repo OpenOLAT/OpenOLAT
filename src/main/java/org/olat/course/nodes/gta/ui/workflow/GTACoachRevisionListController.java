@@ -63,7 +63,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
@@ -73,7 +72,6 @@ import org.olat.course.nodes.gta.TaskRevision;
 import org.olat.course.nodes.gta.ui.ConfirmRevisionsController;
 import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.GTACoachRevisionAndCorrectionsController;
-import org.olat.course.nodes.gta.ui.GTAHelper;
 import org.olat.course.nodes.gta.ui.SubmitDocumentsController;
 import org.olat.course.nodes.gta.ui.component.TaskReviewAndCorrectionFeedbackCellRenderer;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
@@ -484,11 +482,7 @@ public class GTACoachRevisionListController extends AbstractCoachWorkflowListCon
 		}
 		
 		private boolean isDueDateEnabled() {
-			Task task = row.getTask();
-			DueDateConfig config = gtaNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
-			return gtaManager.isDueDateEnabled(gtaNode)
-					&& ((config != null && GTAHelper.hasDateConfigured(config))
-							|| (task != null && task.getAssignmentDueDate() != null));
+			return gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
 		}
 
 		@Override

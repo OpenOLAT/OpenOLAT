@@ -121,9 +121,15 @@ public class EditDueDatesController extends FormBasicController {
 		Date peerReviewSetDueDate = task.getPeerReviewDueDate();
 		peerReviewDueDateEl = uifactory.addDateChooser("peerreview.duedate", peerReviewSetDueDate, formLayout);
 		peerReviewDueDateEl.setDateChooserTimeEnabled(true);
-		peerReviewDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)
+		boolean peerReviewDeadline = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW)
 				&& (peerReviewSetDueDate != null || peerReviewDueDate != null
-					|| StringHelper.containsNonWhitespace(config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_LENGTH, ""))));
+				|| StringHelper.containsNonWhitespace(config.getStringValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE_LENGTH, "")));
+		peerReviewDueDateEl.setVisible(peerReviewDeadline);
+		if(peerReviewDeadline && task.getTaskStatus().ordinal() > TaskProcess.peerreview.ordinal()) {
+			StaticTextElement warningReopenPeerReviewEl = uifactory.addStaticTextElement("reopen.peer", translate("warning.reopen.peerreview"), formLayout);
+			warningReopenPeerReviewEl.setElementCssClass("o_gta_reopen_warning");
+			warningReopenPeerReviewEl.setLabel(null, null);
+		}
 		
 		Date solutionDueDate = task.getSolutionDueDate();
 		solutionDueDateEl = uifactory.addDateChooser("solution.duedate", solutionDueDate, formLayout);
@@ -162,7 +168,14 @@ public class EditDueDatesController extends FormBasicController {
 		dueDates.setSolutionDueDate(solutionDueDateEl.getDate());
 		dueDates = gtaManager.updateTaskDueDate(dueDates);
 		
-		if(task.getTaskStatus().ordinal() > TaskProcess.submit.ordinal()
+		if(task.getTaskStatus().ordinal() > TaskProcess.peerreview.ordinal()
+				&& peerReviewDueDateEl.isVisible()
+				&& dueDates.getPeerReviewDueDate() != null
+				&& dueDates.getPeerReviewDueDate().after(ureq.getRequestTimestamp())) {
+			task = gtaManager.updateTask(task, TaskProcess.peerreview, gtaNode, false, getIdentity(), Role.coach);
+			gtaManager.log("Back to peer-review", "revert status of task back to peer-review", task, getIdentity(),
+					assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
+		} else if(task.getTaskStatus().ordinal() > TaskProcess.submit.ordinal()
 				&& dueDates.getSubmissionDueDate() != null
 				&& dueDates.getSubmissionDueDate().after(ureq.getRequestTimestamp())) {
 			

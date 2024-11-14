@@ -137,7 +137,18 @@ public class EditMultipleDueDatesController extends FormBasicController {
 
 		peerReviewDueDateEl = uifactory.addDateChooser("peerreview.duedate", null, formLayout);
 		peerReviewDueDateEl.setDateChooserTimeEnabled(true);
+		boolean peerReviewDeadline = config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW);
 		initDate(peerReviewTakeOverEl, peerReviewDueDateEl, Task::getPeerReviewDueDate, config.getBooleanSafe(GTACourseNode.GTASK_PEER_REVIEW));
+		if(peerReviewDeadline) {
+			for(Task task:tasks) {
+				if(task.getTaskStatus().ordinal() > TaskProcess.peerreview.ordinal()) {
+					StaticTextElement warningReopenPeerReviewEl = uifactory.addStaticTextElement("reopen.peerreview", translate("warning.reopen.peerreview"), formLayout);
+					warningReopenPeerReviewEl.setElementCssClass("o_gta_reopen_warning");
+					warningReopenPeerReviewEl.setLabel(null, null);
+					break;
+				}
+			}
+		}
 		
 		solutionTakeOverEl = uifactory.addCheckboxesVertical("solution.take.over", "solution.duedate", formLayout, takeOverSV.keys(), takeOverSV.values(), 1);
 		solutionTakeOverEl.addActionListener(FormEvent.ONCHANGE);
@@ -243,7 +254,13 @@ public class EditMultipleDueDatesController extends FormBasicController {
 			}
 			dueDates = gtaManager.updateTaskDueDate(dueDates);
 			
-			if(task.getTaskStatus().ordinal() > TaskProcess.submit.ordinal()
+			if(task.getTaskStatus().ordinal() > TaskProcess.peerreview.ordinal()
+					&& dueDates.getPeerReviewDueDate() != null
+					&& dueDates.getPeerReviewDueDate().after(ureq.getRequestTimestamp())) {
+				task = gtaManager.updateTask(task, TaskProcess.peerreview, gtaNode, false, getIdentity(), Role.coach);
+				gtaManager.log("Back to peer-review", "revert status of task back to peer-review", task, getIdentity(),
+						task.getIdentity(), task.getBusinessGroup(), courseEnv, gtaNode, Role.coach);
+			} else if(task.getTaskStatus().ordinal() > TaskProcess.submit.ordinal()
 					&& dueDates.getSubmissionDueDate() != null
 					&& dueDates.getSubmissionDueDate().after(ureq.getRequestTimestamp())) {
 				TaskProcess submit = gtaManager.previousStep(TaskProcess.review, gtaNode);//only submit allowed
