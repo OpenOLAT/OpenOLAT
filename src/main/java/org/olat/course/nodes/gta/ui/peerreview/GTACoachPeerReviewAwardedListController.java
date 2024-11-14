@@ -173,6 +173,8 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		DueDateConfig config = gtaNode.getDueDateConfig(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE);
 		if(gtaManager.isDueDateEnabled(gtaNode) && GTAHelper.hasDateConfigured(config)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.peerReviewOverrideDueDate));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.additionalInfosStatus,
+					new PeerReviewStepAdditionalInfosCellRenderer(getTranslator())));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.review.view", translate("review.view"), "view"));

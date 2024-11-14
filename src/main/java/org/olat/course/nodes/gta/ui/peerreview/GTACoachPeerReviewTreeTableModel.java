@@ -208,6 +208,7 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 			case taskStepStatus -> row.getStepStatus();
 			case submissionStatus -> row.getSubmissionStatus();
 			case peerReviewOverrideDueDate -> overrideDueDate(row.getPeerReviewDueDate());
+			case additionalInfosStatus -> row;
 			case editReview -> Boolean.valueOf(row.canEdit());
 			case tools -> row.getToolsLink();
 			default -> "ERROR";
@@ -237,6 +238,7 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 		taskStepStatus("table.header.step.status"),
 		submissionStatus("table.header.submission.status"),
 		peerReviewOverrideDueDate("table.header.peerreview.overriden.duedate"),
+		additionalInfosStatus("table.header.additional.infos"),
 		editReview("table.header.review.view"),
 		tools("table.header.tools"),
 		;
