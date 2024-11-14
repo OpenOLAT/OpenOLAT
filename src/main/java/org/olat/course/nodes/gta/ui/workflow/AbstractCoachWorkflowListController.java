@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -68,6 +69,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.IdentityMark;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
@@ -110,10 +112,12 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 	public static final String REVISION_AVAILABLE_TAB_ID = "RevisionsAvailable";
 	
 	public static final String TOOLS_CMD = "tools-task-list";
+	public static final String MARK_CMD = "mark";
 	
 	protected FlexiFiltersTab allTab;
 	protected FlexiFiltersTab asssignedToMeTab;
 
+	protected static final String FILTER_MARKED = "marked";
 	protected static final String FILTER_PASSED = "passed";
 	protected static final String FILTER_STATUS = "workflow-status";
 	protected static final String FILTER_ASSIGNED_TO_ME = "assigned-to-me";
@@ -150,6 +154,7 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 		initConfigurationInfos(panel);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		initMarkColumnModel(columnsModel);
 		initUserColumnsModel(columnsModel);
 		initColumnsModel(columnsModel);
 		initAdministrationColumnsModel(columnsModel);
@@ -169,6 +174,13 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 	}
 	
 	protected abstract void initConfigurationInfos(InfoPanelItem panel);
+	
+	protected void initMarkColumnModel(FlexiTableColumnModel columnsModel) {
+		DefaultFlexiColumnModel markCol = new DefaultFlexiColumnModel(CoachCols.mark);
+		markCol.setExportable(false);
+		markCol.setIconHeader("o_icon o_icon_bookmark_header o_icon-lg");
+		columnsModel.addFlexiColumnModel(markCol);
+	}
 
 	protected void initUserColumnsModel(FlexiTableColumnModel columnsModel) {
 		int i=0;
@@ -204,7 +216,13 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 	protected abstract void initFilters(List<FlexiTableExtendedFilter> filters);
 	
 	protected final void initFilters() {
-		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(4);
+		
+		// Bookmark
+		SelectionValues markedKeyValue = new SelectionValues();
+		markedKeyValue.add(SelectionValues.entry(FILTER_MARKED, translate("filter.marked")));
+		filters.add(new FlexiTableOneClickSelectionFilter(translate("filter.marked"),
+				FILTER_MARKED, markedKeyValue, true));
 		
 		initFilters(filters);
 
@@ -329,6 +347,8 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 			String cmd = link.getCmd();
 			if(TOOLS_CMD.equals(cmd) && link.getUserObject() instanceof CoachedParticipantRow row) {
 				doOpenTools(ureq, row, link);
+			} else if(MARK_CMD.equals(cmd) && link.getUserObject() instanceof Long) {
+				doToogleMark(ureq, link);
 			}
 		}
 	}
@@ -369,6 +389,10 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 				.filter(def -> Objects.nonNull(def.getFilename()))
 				.collect(Collectors.toMap(TaskDefinition::getFilename, Function.identity(), (u, v) -> u));
 		
+		List<IdentityMark> marks = gtaManager.getMarks(entry, gtaNode, getIdentity());
+		Map<Long,IdentityMark> identityToMarks = marks.stream()
+				.collect(Collectors.toMap(m -> m.getParticipant().getKey(), m -> m, (u, v) -> u));
+
 		List<CoachedParticipantRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry assessmentEntry = identityToAssessments.get(assessedIdentity.getKey());
@@ -382,11 +406,21 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 			CoachedParticipantRow identityRow = new CoachedParticipantRow(assessedIdentity, task, taskDefinition,
 					assessmentEntry, userPropertyHandlers, getLocale());
 			forgeRow(identityRow, entry);
+			forgeMarkLinks(identityRow, identityToMarks.get(assessedIdentity.getKey()));
 			rows.add(identityRow);
 		}
-		
+
 		tableModel.setObjects(rows);
 		tableEl.reset();
+	}
+	
+	protected FormLink forgeMarkLinks(CoachedParticipantRow identityRow, IdentityMark mark) {
+		FormLink markLink = uifactory.addFormLink("mark_" + identityRow.getIdentityKey(), MARK_CMD, "", null, null, Link.NONTRANSLATED);
+		markLink.setIconLeftCSS(mark != null ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		markLink.setUserObject(identityRow.getIdentityKey());
+		markLink.setTitle(translate("bookmark"));
+		identityRow.setMarkLink(markLink);
+		return markLink;
 	}
 	
 	protected FormLink forgeToolsLink(CoachedParticipantRow identityRow) {
@@ -486,6 +520,19 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 			cmc.activate();
 			listenTo(cmc);
 		}
+	}
+	
+	protected void doToogleMark(UserRequest ureq, FormLink link) {
+		Long assessableIdentityKey = (Long)link.getUserObject();
+		boolean marked = doToogleMark(ureq, assessableIdentityKey);
+		link.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		link.getComponent().setDirty(true);
+	}
+	
+	private boolean doToogleMark(UserRequest ureq, Long particiantKey) {
+		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		Identity participant = securityManager.loadIdentityByKey(particiantKey);
+		return gtaManager.toggleMark(entry, gtaNode, ureq.getIdentity(), participant);
 	}
 	
 	protected void doSelectAssessmentAndDetails(UserRequest ureq, CoachedParticipantRow row) {

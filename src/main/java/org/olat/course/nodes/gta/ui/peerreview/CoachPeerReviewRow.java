@@ -63,6 +63,7 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	private Identity assignee;
 	
 	private boolean canEdit;
+	private FormLink markLink;
 	private FormLink toolsLink;
 	private BoxPlot assessmentPlot;
 	
@@ -213,6 +214,14 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+	
+	public FormLink getMarkLink() {
+		return markLink;
+	}
+
+	public void setMarkLink(FormLink markLink) {
+		this.markLink = markLink;
 	}
 	
 	public record NumOf(int number, int reference) {

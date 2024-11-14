@@ -40,6 +40,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.nodes.gta.ui.peerreview.GTACoachPeerReviewAwardedListController;
 import org.olat.course.nodes.gta.ui.peerreview.GTACoachPeerReviewReceivedListController;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -154,7 +155,9 @@ public class GTACoachPeerReviewListController extends AbstractWorkflowListContro
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(confirmAutomaticAssignmentCtrl == source) {
+		if(event instanceof SelectIdentityEvent sie) {
+			fireEvent(ureq, sie);
+		} else if(confirmAutomaticAssignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				peerReviewAwardedListCtrl.loadModel();
 				peerReviewReceivedListCtrl.loadModel();
