@@ -11,15 +11,12 @@
 	</div>
 </div>
 
-<div class="clearfix o_badge_selector_selection">
+<div class="clearfix o_filter_search_list_values o_badge_selector_selection">
+	$r.render("badge.selector.selection.none", "label")
+	$r.render("badge.selector.selection.none")
+	$r.render("badge.selector.selection.num", "label")
+
 	<div class="o_badge_selector_selected">
-		<div class="o_badge_selector_selected_label">
-			#if($r.isNotNull($nbSelected) && $nbSelected > 0)
-			$r.translate("badge.selector.selected") <span class="badge">$nbSelected</span>
-			#else
-			$r.translate("badge.selector.selected.none")
-			#end
-		</div>
 		<div class="o_badge_selector_rows">
 			#foreach($selectedRow in $selectedRows)
 			<div class="o_badge_selector_row">
@@ -37,6 +34,7 @@
 			#end
 		</div>
 	</div>
+
 	<div class="o_badge_selector_unselected">
 		<div class="o_badge_selector_rows">
 			#foreach($unselectedRow in $unselectedRows)
@@ -55,19 +53,13 @@
 			#end
 		</div>
 	</div>
-</div>
 
-<div class="clearfix">
-	<div class="o_badge_selector_table">
-		#if($r.available("table") && $r.visible("table"))
-		$r.render("table")
-		#end
-	</div>
+	<small>$r.render("badge.selector.results.more")</small>
 </div>
 
 <div class="o_button_group o_button_group_right o_button_group_bottom">
-	#if($r.available("badge.selector.open.browser") && $r.visible("badge.selector.open.browser"))
-	$r.render("badge.selector.open.browser")
+	#if($r.available("badge.selector.browser") && $r.visible("badge.selector.browser"))
+	$r.render("badge.selector.browser")
 	#end
 	#if($r.available("apply") && $r.visible("apply"))
 	$r.render("apply")
