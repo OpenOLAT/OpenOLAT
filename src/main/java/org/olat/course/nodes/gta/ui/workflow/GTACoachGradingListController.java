@@ -555,6 +555,7 @@ public class GTACoachGradingListController extends AbstractCoachWorkflowListCont
 	
 	private class GradingToolsController extends BasicController {
 		
+		private Link selectLink;
 		private Link setDoneLink;
 		private Link reopenLink;
 		private Link visibleLink;
@@ -568,6 +569,8 @@ public class GTACoachGradingListController extends AbstractCoachWorkflowListCont
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tools");
+			selectLink = LinkFactory.createLink("select.assess", "select.assess", getTranslator(), mainVC, this, Link.LINK);
+			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			
 			if(row.getAssessmentStatus() == AssessmentEntryStatus.done) {
 				reopenLink = LinkFactory.createLink("tool.reopen", "tool.reopen", getTranslator(), mainVC, this, Link.LINK);
@@ -609,6 +612,8 @@ public class GTACoachGradingListController extends AbstractCoachWorkflowListCont
 				doReopen(row);
 			} else if(setDoneLink == source) {
 				doSetDone(row);
+			} else if(selectLink == source) {
+				doSelectAssessmentAndDetails(ureq, row);
 			}
 		}
 	}

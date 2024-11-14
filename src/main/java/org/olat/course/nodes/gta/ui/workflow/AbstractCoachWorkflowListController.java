@@ -76,6 +76,7 @@ import org.olat.course.nodes.gta.ui.EditDueDatesController;
 import org.olat.course.nodes.gta.ui.EditMultipleDueDatesController;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupGradingController;
 import org.olat.course.nodes.gta.ui.component.TaskStepStatusCellRenderer;
+import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantTableModel.CoachCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -485,6 +486,11 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 			cmc.activate();
 			listenTo(cmc);
 		}
+	}
+	
+	protected void doSelectAssessmentAndDetails(UserRequest ureq, CoachedParticipantRow row) {
+		Long identityKey = row.getAssessedIdentity() == null ? row.getIdentityKey() : row.getAssessedIdentity().getKey();
+		fireEvent(ureq, new SelectIdentityEvent(identityKey));
 	}
 	
 	protected List<Identity> getSelectedIdentities(Predicate<CoachedParticipantRow> filter) {

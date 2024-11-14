@@ -384,6 +384,7 @@ public class GTACoachReviewAndCorrectionListController extends AbstractCoachWork
 	
 	private class ReviewAndCorrectionToolsController extends BasicController {
 
+		private Link selectLink;
 		private Link needRevisionLink;
 		private Link acceptSubmissionLink;
 		
@@ -394,6 +395,8 @@ public class GTACoachReviewAndCorrectionListController extends AbstractCoachWork
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tools");
+			selectLink = LinkFactory.createLink("select.assess", "select.assess", getTranslator(), mainVC, this, Link.LINK);
+			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			
 			needRevisionLink = LinkFactory.createLink("coach.need.revision.button", "coach.need.revision.button", getTranslator(), mainVC, this, Link.LINK);
 			needRevisionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
@@ -411,6 +414,8 @@ public class GTACoachReviewAndCorrectionListController extends AbstractCoachWork
 				doConfirmRevisions(ureq, row);
 			} else if(acceptSubmissionLink == source) {
 				doConfirmReviewDocument(ureq, row);
+			} else if(selectLink == source) {
+				doSelectAssessmentAndDetails(ureq, row);
 			}
 		}
 	}

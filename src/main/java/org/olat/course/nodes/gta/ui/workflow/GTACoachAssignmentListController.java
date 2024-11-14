@@ -264,6 +264,7 @@ public class GTACoachAssignmentListController extends AbstractCoachWorkflowListC
 
 	private class AssignmentToolsController extends BasicController {
 
+		private Link selectLink;
 		private Link dueDatesLink;
 		
 		private CoachedParticipantRow row;
@@ -273,6 +274,9 @@ public class GTACoachAssignmentListController extends AbstractCoachWorkflowListC
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tools");
+			
+			selectLink = LinkFactory.createLink("select.assess", "select.assess", getTranslator(), mainVC, this, Link.LINK);
+			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			
 			dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
 			dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
@@ -285,6 +289,8 @@ public class GTACoachAssignmentListController extends AbstractCoachWorkflowListC
 			fireEvent(ureq, Event.DONE_EVENT);
 			if(dueDatesLink == source) {
 				doEditDueDate(ureq, row);
+			} else if(selectLink == source) {
+				doSelectAssessmentAndDetails(ureq, row);
 			}
 		}
 	}

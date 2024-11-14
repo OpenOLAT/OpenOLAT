@@ -601,6 +601,7 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 	
 	private class SubmissionToolsController extends BasicController {
 
+		private Link selectLink;
 		private Link dueDatesLink;
 		private Link backToSubmissionLink;
 		private Link collectSubmissionsLink;
@@ -612,6 +613,10 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tools");
+			
+			selectLink = LinkFactory.createLink("select.assess", "select.assess", getTranslator(), mainVC, this, Link.LINK);
+			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+			
 			DueDateConfig dueDateConfig = gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
 			if(GTAHelper.hasDateConfigured(dueDateConfig)) {
 				dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
@@ -638,6 +643,8 @@ public class GTACoachSubmissionListController extends AbstractCoachWorkflowListC
 				doConfirmCollectTask(ureq, row);
 			} else if(backToSubmissionLink == source) {
 				doConfirmBackToSubmission(ureq, row);
+			} else if(selectLink == source) {
+				doSelectAssessmentAndDetails(ureq, row);
 			}
 		}
 	}

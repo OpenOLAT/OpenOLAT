@@ -31,6 +31,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -47,6 +48,7 @@ import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.ui.GTACoachController;
+import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -265,6 +267,15 @@ public class GTACoachWorkflowController extends BasicController implements Activ
 	private void setElementCssLink(Link link, Link selectedLink, String elementCssClass) {
 		String css = link == selectedLink ? "btn-primary btn-arrow-right " : "btn-arrow-right ";
 		link.setElementCssClass(css + elementCssClass);
+	}
+	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof SelectIdentityEvent sie) {
+			fireEvent(ureq, sie);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

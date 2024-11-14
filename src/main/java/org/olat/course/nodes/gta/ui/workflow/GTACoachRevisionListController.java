@@ -441,6 +441,7 @@ public class GTACoachRevisionListController extends AbstractCoachWorkflowListCon
 	
 	private class RevisionToolsController extends BasicController {
 
+		private Link selectLink;
 		private Link collectLink;
 		private Link dueDatesLink;
 		private Link closeRevisionsLink;
@@ -453,6 +454,9 @@ public class GTACoachRevisionListController extends AbstractCoachWorkflowListCon
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("tools");
+			
+			selectLink = LinkFactory.createLink("select.assess", "select.assess", getTranslator(), mainVC, this, Link.LINK);
+			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			
 			dueDatesLink = LinkFactory.createLink("duedates", "duedates",
 					getTranslator(), mainVC, this, Link.LINK);
@@ -486,6 +490,8 @@ public class GTACoachRevisionListController extends AbstractCoachWorkflowListCon
 				doConfirmCloseRevisionProcess(ureq, row);
 			} else if(collectLink == source) {
 				doConfirmCollect(ureq, row);
+			} else if(selectLink == source) {
+				doSelectAssessmentAndDetails(ureq, row);
 			}
 		}
 	}
