@@ -550,7 +550,7 @@ public class CourseTest extends Deployments {
 		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
 		MenuTreePageFragment ryomouCourseTree = ryomouCourse
 			.tree()
-			.selectWithTitle(firstNodeTitle);
+			.assertWithTitleSelected(firstNodeTitle);
 		
 		//The author make a change on node 2
 		String changedNodeTitlev2 = "Changed 2 title";
@@ -571,7 +571,7 @@ public class CourseTest extends Deployments {
 		
 		//The author changed the second node
 		String changedNodeTitlev3 = "Changed 3 title";
-		course = course.edit()
+		course.edit()
 			.selectNode(changedNodeTitlev2)
 			.nodeTitle(changedNodeTitlev3)
 			.autoPublish();
@@ -584,9 +584,7 @@ public class CourseTest extends Deployments {
 			.assertOnRestart()
 			.clickRestart();
 		ryomouCourseTree
-			.selectWithTitle(changedNodeTitlev3);
-		ryomouCourse
-			.assertOnTitle(changedNodeTitlev3);
+			.assertWithTitleSelected(changedNodeTitlev3);
 	}
 	
 	
@@ -787,7 +785,7 @@ public class CourseTest extends Deployments {
 			.clickToolbarBack();
 		course
 			.tree()
-			.selectWithTitle(calendarNodeTitle);
+			.assertWithTitleSelected(calendarNodeTitle);
 		// create a recurring event
 		CalendarPage calendar = new CalendarPage(browser);
 		calendar
@@ -898,7 +896,7 @@ public class CourseTest extends Deployments {
 		//open the course and see the CP
 		course
 			.tree()
-			.selectWithTitle(calendarNodeTitle);
+			.assertWithTitleSelected(calendarNodeTitle);
 		
 		// create a recurring event
 		CalendarPage calendar = new CalendarPage(browser);
@@ -985,7 +983,7 @@ public class CourseTest extends Deployments {
 		//open the course and see the CP
 		course
 			.tree()
-			.selectWithTitle(calendarNodeTitle);
+			.assertWithTitleSelected(calendarNodeTitle);
 		
 		// create a recurring event
 		CalendarPage calendar = new CalendarPage(browser);
@@ -1392,9 +1390,7 @@ public class CourseTest extends Deployments {
 			.assertOnPassword()
 			.enterPassword("super secret");
 		courseTree
-			.selectWithTitle(infoTitle.substring(0, 20));
-		course
-			.assertOnTitle(infoTitle);
+			.assertWithTitleSelected(infoTitle.substring(0, 20));
 		
 		//First user go to the course
 		LoginPage kanuLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -1413,14 +1409,12 @@ public class CourseTest extends Deployments {
 		CoursePageFragment kanuCourse = new CoursePageFragment(browser);
 		MenuTreePageFragment kanuTree = kanuCourse
 			.tree()
-			.selectWithTitle(structureTitle.substring(0, 20));
+			.assertWithTitleSelected(structureTitle.substring(0, 20));
 		kanuCourse
 			.assertOnPassword()
 			.enterPassword("super secret");
 		kanuTree
-			.selectWithTitle(infoTitle.substring(0, 20));
-		kanuCourse
-			.assertOnTitle(infoTitle);
+			.assertWithTitleSelected(infoTitle.substring(0, 20));
 		
 		//Second user use the rest url
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, new URL(courseInfoUrl));
@@ -1435,9 +1429,7 @@ public class CourseTest extends Deployments {
 		ryomouCourse
 			.tree()
 			.selectWithTitle(structureTitle.substring(0, 20))
-			.selectWithTitle(infoTitle.substring(0, 20));
-		ryomouCourse
-			.assertOnTitle(infoTitle);
+			.assertWithTitleSelected(infoTitle.substring(0, 20));
 	}
 	
 	
@@ -2258,7 +2250,7 @@ public class CourseTest extends Deployments {
 		//go to the group task
 		CoursePageFragment userCourse = new CoursePageFragment(browser);
 		userCourse
-			.clickTree()
+			.tree()
 			.selectWithTitle("Survey");
 		
 		EvaluationFormPage userSurvey = EvaluationFormPage.loadPage(browser)

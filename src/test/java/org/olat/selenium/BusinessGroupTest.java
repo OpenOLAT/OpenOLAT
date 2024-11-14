@@ -765,7 +765,7 @@ public class BusinessGroupTest extends Deployments {
 			CoursePageFragment participantCourse = new CoursePageFragment(driver);
 			participantCourse
 				.tree()
-				.selectWithTitle(enNodeTitle);
+				.assertWithTitleSelected(enNodeTitle);
 		
 			EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
 			enrollmentPage
@@ -879,7 +879,7 @@ public class BusinessGroupTest extends Deployments {
 		CoursePageFragment participantCourse = new CoursePageFragment(browser);
 		participantCourse
 			.tree()
-			.selectWithTitle(enNodeTitle);
+			.assertWithTitleSelected(enNodeTitle);
 		
 		EnrollmentPage enrollmentPage = new EnrollmentPage(browser);
 		enrollmentPage
@@ -993,7 +993,7 @@ public class BusinessGroupTest extends Deployments {
 			CoursePageFragment participantCourse = new CoursePageFragment(driver);
 			participantCourse
 				.tree()
-				.selectWithTitle(enNodeTitle);
+				.assertWithTitleSelected(enNodeTitle);
 		
 			EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
 			enrollmentPage
@@ -1126,7 +1126,7 @@ public class BusinessGroupTest extends Deployments {
 			CoursePageFragment participantCourse = new CoursePageFragment(driver);
 			participantCourse
 				.tree()
-				.selectWithTitle(enNodeTitle);
+				.assertWithTitleSelected(enNodeTitle);
 		
 			EnrollmentPage enrollmentPage = new EnrollmentPage(driver);
 			enrollmentPage

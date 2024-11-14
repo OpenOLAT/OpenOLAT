@@ -165,7 +165,7 @@ public class CourseLearnPathTest extends Deployments {
 		CoursePageFragment participantCourse = new CoursePageFragment(browser);
 		MenuTreePageFragment menuTree = participantCourse
 			.tree()
-			.selectWithTitle(firstNodeTitle);
+			.assertWithTitleSelected(firstNodeTitle);
 		participantCourse
 			.assertOnLearnPathNodeReady(firstNodeTitle)
 			.confirmNode()
@@ -290,7 +290,7 @@ public class CourseLearnPathTest extends Deployments {
 		CoursePageFragment participantCourse = new CoursePageFragment(browser);
 		participantCourse
 			.tree()
-			.selectWithTitle(gtaNodeTitle);
+			.assertWithTitleSelected(gtaNodeTitle);
 		
 		GroupTaskPage participantTask = new GroupTaskPage(browser);
 		participantTask
