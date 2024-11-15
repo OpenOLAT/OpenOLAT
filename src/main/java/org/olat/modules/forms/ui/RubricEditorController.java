@@ -555,42 +555,25 @@ public class RubricEditorController extends FormBasicController implements PageE
 		return allOk;
 	}
 
-	private boolean isInvalidDouble(String val, double min, double max) {
-		boolean inside = true;
-		if (StringHelper.containsNonWhitespace(val)) {
-			try {
-				double value = Double.parseDouble(val);
-				if(min > value) {
-					inside =  false;
-				} else if(max < value) {
-					inside =  false;
-				}
-			} catch (NumberFormatException e) {
-				inside =  false;
-			}
-		}
-		return !inside;
-	}
-	
 	private boolean isValidInteger(String val, int min, int max) {
-		return !isInvalidDouble(val, min, max);
+		return !isInvalidInteger(val, min, max);
 	}
 	
 	private boolean isInvalidInteger(String val, int min, int max) {
-		boolean inside = true;
+		boolean valid = true;
 		if (StringHelper.containsNonWhitespace(val)) {
 			try {
-				double value = Integer.parseInt(val);
+				int value = Integer.parseInt(val);
 				if(min > value) {
-					inside =  false;
+					valid = false;
 				} else if(max < value) {
-					inside =  false;
+					valid = false;
 				}
 			} catch (NumberFormatException e) {
-				inside =  false;
+				valid = false;
 			}
 		}
-		return !inside;
+		return !valid;
 	}
 	
 	@Override
