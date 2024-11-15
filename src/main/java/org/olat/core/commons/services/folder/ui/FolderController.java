@@ -1949,6 +1949,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				currentContainerPath, config.getCustomLinkTreeModel(), vfsLeaf);
 				
 		DocEditorConfigs configs = DocEditorConfigs.builder()
+				.withVersionControlled(true)
 				.withFireSavedEvent(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
