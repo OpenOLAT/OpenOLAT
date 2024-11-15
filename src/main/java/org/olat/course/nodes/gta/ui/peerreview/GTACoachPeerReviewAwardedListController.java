@@ -65,6 +65,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.IdentityMark;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskLateStatus;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
@@ -78,6 +79,7 @@ import org.olat.course.nodes.gta.ui.GTACoachController;
 import org.olat.course.nodes.gta.ui.GTAHelper;
 import org.olat.course.nodes.gta.ui.component.NumOfCellRenderer;
 import org.olat.course.nodes.gta.ui.component.TaskReviewAssignmentStatusCellRenderer;
+import org.olat.course.nodes.gta.ui.component.TaskStepAdditionalInfosCellRenderer;
 import org.olat.course.nodes.gta.ui.peerreview.GTACoachPeerReviewTreeTableModel.CoachReviewCols;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -174,7 +176,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		if(gtaManager.isDueDateEnabled(gtaNode) && GTAHelper.hasDateConfigured(config)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.peerReviewOverrideDueDate));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.additionalInfosStatus,
-					new PeerReviewStepAdditionalInfosCellRenderer(getTranslator())));
+					new TaskStepAdditionalInfosCellRenderer(getTranslator())));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.review.view", translate("review.view"), "view"));
@@ -298,9 +300,16 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		decorateWithTools(surveyExecutorIdentityRow);
 		decorateWithStepStatus(surveyExecutorIdentityRow, reviewerOwnTask);
 		
-		DueDate peerReviewDueDate = gtaManager.getPeerReviewDueDate(surveyExecutorIdentityRow.getTask(), surveyExecutorIdentityRow.getIdentity(),
+		Task task = surveyExecutorIdentityRow.getTask();
+		DueDate peerReviewDueDate = gtaManager.getPeerReviewDueDate(task, surveyExecutorIdentityRow.getIdentity(),
 				null, gtaNode, courseEntry, true);
-		surveyExecutorIdentityRow.setPeerReviewDueDate(peerReviewDueDate);
+		if(peerReviewDueDate != null) {
+			Date completedDate = task == null ? null : task.getPeerReviewDueDate();
+			TaskLateStatus lateStatus = gtaManager.evaluateSubmissionLateStatus(completedDate, peerReviewDueDate.getReferenceDueDate(),
+					null, peerReviewDueDate.getOverridenDueDate());
+			surveyExecutorIdentityRow.setLateStatus(lateStatus);
+			surveyExecutorIdentityRow.setPeerReviewDueDate(peerReviewDueDate);
+		}
 		
 		CoachedParticipantStatus submissionStatus = statusRenderer
 				.calculateSubmissionStatus(surveyExecutorIdentityRow.getIdentity(), reviewerOwnTask);

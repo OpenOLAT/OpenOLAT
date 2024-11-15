@@ -50,6 +50,10 @@ public interface Task extends TaskRef {
 
 	public Date getCollectionRevisionsDate();
 	
+	public Date getPeerReviewCompletedDate();
+	
+	public Role getPeerReviewCompletedDoerRole();
+	
 	public Date getAcceptationDate();
 	
 	public Date getSolutionDate();

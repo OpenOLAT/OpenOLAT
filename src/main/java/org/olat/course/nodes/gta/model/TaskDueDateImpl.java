@@ -119,6 +119,13 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	private Date allowResetDate;
 	
 	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_peerreview_completed_date", nullable=true, insertable=true, updatable=true)
+	private Date peerReviewCompletedDate;
+	@Enumerated(EnumType.STRING)
+	@Column(name="g_peerreview_completed_drole", nullable=true, insertable=true, updatable=true)
+	private Role peerReviewCompletedDoerRole;
+	
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_acceptation_date", nullable=true, insertable=true, updatable=false)
 	private Date acceptationDate;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -333,6 +340,24 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 
 	public void setAllowResetIdentity(Identity allowResetIdentity) {
 		this.allowResetIdentity = allowResetIdentity;
+	}
+	
+	@Override
+	public Date getPeerReviewCompletedDate() {
+		return peerReviewCompletedDate;
+	}
+
+	public void setPeerReviewCompletedDate(Date peerReviewCompletedDate) {
+		this.peerReviewCompletedDate = peerReviewCompletedDate;
+	}
+
+	@Override
+	public Role getPeerReviewCompletedDoerRole() {
+		return peerReviewCompletedDoerRole;
+	}
+
+	public void setPeerReviewCompletedDoerRole(Role peerReviewCompletedDoerRole) {
+		this.peerReviewCompletedDoerRole = peerReviewCompletedDoerRole;
 	}
 
 	@Override

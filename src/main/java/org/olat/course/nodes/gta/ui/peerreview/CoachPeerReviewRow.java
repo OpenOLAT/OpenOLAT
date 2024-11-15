@@ -26,10 +26,12 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskLateStatus;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantStatus;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 
@@ -61,6 +63,7 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	private CoachedParticipantStatus stepStatus;
 	private CoachedParticipantStatus submissionStatus;
 	private DueDate peerReviewDueDate;
+	private TaskLateStatus lateStatus;
 	
 	private Identity assignee;
 	
@@ -210,6 +213,18 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 		this.assessmentPlot = assessmentPlot;
 	}
 	
+	public TaskLateStatus getLateStatus() {
+		return lateStatus;
+	}
+
+	public void setLateStatus(TaskLateStatus lateStatus) {
+		this.lateStatus = lateStatus;
+	}
+	
+	public Role getPeerReviewCompletedDoerRole() {
+		return task == null ? null : task.getPeerReviewCompletedDoerRole();
+	}
+
 	public DueDate getPeerReviewDueDate() {
 		return peerReviewDueDate;
 	}

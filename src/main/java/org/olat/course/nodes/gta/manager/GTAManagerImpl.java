@@ -1991,6 +1991,9 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	
 	@Override
 	public Task submitReviews(Task task, GTACourseNode cNode, Identity doerIdentity, Role by) {
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setPeerReviewCompletedDate(new Date());
+		taskImpl.setPeerReviewCompletedDoerRole(by);
 		return updateTask(task, TaskProcess.solution, cNode, false, doerIdentity, by);
 	}
 
