@@ -181,7 +181,7 @@ public class MultiEvaluationFormController extends BasicController {
 			}
 		}
 		
-		if(viewOthers && (portfolioOwner != null && otherEvaluators != null && otherEvaluators.size() > 0) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
+		if(viewOthers && (portfolioOwner != null && otherEvaluators != null && !otherEvaluators.isEmpty()) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
 			Controller ctrl = createReportController(ureq);
 			Evaluator eval = new Evaluator(null, translate("compare.evaluations"));
 			String componentName = "panel_" + (++count);
@@ -261,7 +261,7 @@ public class MultiEvaluationFormController extends BasicController {
 		boolean viewOthers;
 		if(doneFirst) {
 			EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, getIdentity());
-			viewOthers = participation == null ? false : participation.getStatus() == EvaluationFormParticipationStatus.done;
+			viewOthers = participation != null && participation.getStatus() == EvaluationFormParticipationStatus.done;
 		} else {
 			viewOthers = true;
 		}
