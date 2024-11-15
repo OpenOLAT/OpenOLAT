@@ -158,7 +158,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 				if(assignment.isReviewerSeeAutoEvaluation()) {
 					Identity owner = getOwner(accessRights);
 					List<Identity> coachesAndReviewers = getCoachesAndReviewers(accessRights);
-					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, false, readOnly, onePage, anonym);
+					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, true, readOnly, onePage, anonym);
 				} else {
 					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
 					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, false, null);
