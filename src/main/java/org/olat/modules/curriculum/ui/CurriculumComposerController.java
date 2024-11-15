@@ -510,9 +510,13 @@ public class CurriculumComposerController extends FormBasicController implements
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
 		toolsLink.setTitle(translate("action.more"));
 		
-		FormLink structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
-		structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_curriculum_structure");
-		structureLink.setTitle(translate("action.structure"));
+		FormLink structureLink = null;
+		CurriculumElementType type = element.curriculumElement().getType();
+		if(type == null || !type.isSingleElement()) {
+			structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
+			structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_curriculum_structure");
+			structureLink.setTitle(translate("action.structure"));
+		}
 		
 		FormLink resourcesLink = null;
 		long refs = element.numOfResources() + element.numOfLectureBlocks();
@@ -524,7 +528,9 @@ public class CurriculumComposerController extends FormBasicController implements
 				element.numOfCurriculumElementOwners(), element.numOfMasterChoaches(),
 				toolsLink, resourcesLink, structureLink);
 		toolsLink.setUserObject(row);
-		structureLink.setUserObject(row);
+		if(structureLink != null) {
+			structureLink.setUserObject(row);
+		}
 		if(resourcesLink != null) {
 			resourcesLink.setUserObject(row);
 		}
