@@ -67,6 +67,7 @@ import org.olat.core.id.Persistable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -750,13 +751,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private boolean timeLimitBarrier(UserRequest ureq) {
-		Long assessmentTestMaxTimeLimits = getAssessmentTestMaxTimeLimit();
+		Date nowReference = ureq.getRequestTimestamp();
+		Long assessmentTestMaxTimeLimits = getAssessmentTestMaxTimeLimit(nowReference);
 		if(assessmentTestMaxTimeLimits != null) {
 			long maximumAssessmentTestDuration = assessmentTestMaxTimeLimits.longValue() * 1000l;//convert in milliseconds
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			if(!testSessionState.isEnded() && !testSessionState.isExited()) {
 				long durationMillis = testSessionState.getDurationAccumulated();
-				durationMillis += getRequestTimeStampDifferenceToNow();
+				durationMillis += getRequestTimeStampDifferenceToNow(nowReference);
 				if(durationMillis > maximumAssessmentTestDuration) {
 					testSessionController.setCurrentRequestTimestamp(ureq.getRequestTimestamp());
 					processExitTestAfterTimeLimit(ureq);
@@ -779,15 +781,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * 
 	 * @return The maximum time limit in seconds.
 	 */
-	private Long getAssessmentTestMaxTimeLimit() {
+	private Long getAssessmentTestMaxTimeLimit(Date reference) {
 		int extra = extraTime == null ? 0 : extraTime.intValue();
 		int extraCompensation = compensationExtraTime == null ? 0 : compensationExtraTime.intValue();
 		int totalExtra = extra + extraCompensation;
 		
-		Long leadingTimeInMilliSeconds = getLeadingTimeEndTestOption();
+		Long leadingTimeInMilliSeconds = getLeadingTimeEndTestOption(reference);
 		long leadingDuration = Long.MAX_VALUE;
 		if(leadingTimeInMilliSeconds != null) {
-			double leadingDurationInSeconds = (leadingTimeInMilliSeconds + getAssessmentTestDuration()) / 1000.0d;
+			double leadingDurationInSeconds = (leadingTimeInMilliSeconds + getAssessmentTestDuration(reference)) / 1000.0d;
 			leadingDuration = Math.round(leadingDurationInSeconds);
 		}
 		if(overrideOptions != null && overrideOptions.getAssessmentTestMaxTimeLimit() != null) {
@@ -809,10 +811,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	/**
 	 * @return The number of milliseconds up to the defined end of the test (or a very long time if nothing is configured)
 	 */
-	private Long getLeadingTimeEndTestOption() {
+	private Long getLeadingTimeEndTestOption(Date reference) {
 		if(overrideOptions != null && overrideOptions.getEndTestDate() != null) {
 			Date endTestDate = overrideOptions.getEndTestDate();
-			long diff = endTestDate.getTime() - new Date().getTime();
+			long diff = endTestDate.getTime() - reference.getTime();
 			return Long.valueOf(diff);
 		}
 		return null;// default is a year
@@ -821,11 +823,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	/**
 	 * @return the difference in milliseconds
 	 */
-	private long getRequestTimeStampDifferenceToNow() {
+	private long getRequestTimeStampDifferenceToNow(Date reference) {
 		long diff = 0l;
 		if(testSessionController.getCurrentRequestTimestamp() != null) {
 			//take time between 2 reloads if the user reload the page
-			diff = (new Date().getTime() - testSessionController.getCurrentRequestTimestamp().getTime());
+			diff = (reference.getTime() - testSessionController.getCurrentRequestTimestamp().getTime());
 			if(diff < 0) {
 				diff = 0;
 			}
@@ -836,7 +838,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	/**
 	 * @return The test duration in milliseconds
 	 */
-	private long getAssessmentTestDuration() {
+	private long getAssessmentTestDuration(Date reference) {
 		if(testSessionController == null || candidateSession == null
 				|| testSessionController.getTestSessionState() == null) {
 			return -1;
@@ -851,9 +853,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			startTime = candidateSession.getCreationDate();
 		}
 
-		Date timestamp = new Date();
 		startTime = startTime == null ? controllerCreationDate : startTime;
-        final long durationDelta = timestamp.getTime() - startTime.getTime();
+        final long durationDelta = reference.getTime() - startTime.getTime();
         return testSessionState.getDurationAccumulated() + durationDelta;
 	}
 
@@ -2818,22 +2819,24 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 		
 		public boolean isAssessmentTestTimeLimit() {
-			Long timeLimits = getAssessmentTestMaxTimeLimit();
+			Long timeLimits = getAssessmentTestMaxTimeLimit(new Date());
 			return timeLimits != null;
 		}
 		
-		public String getAssessmentTestEndTime() {
-			Long timeLimits = getAssessmentTestMaxTimeLimit();
+		public String getAssessmentTestEndTime(Date nowReference) {
+			Long timeLimits = getAssessmentTestMaxTimeLimit(nowReference);
 			if(timeLimits != null) {
-				long testDuration = getAssessmentTestDuration();
+				long testDuration = getAssessmentTestDuration(nowReference);
 				if(testDuration < 0l) {
 					testDuration = 0l;
 				}
 				
 				Calendar calendar = Calendar.getInstance(); // gets a calendar using the default time zone and locale.
+				calendar.setTime(nowReference);
 				calendar.add(Calendar.MILLISECOND, -(int)testDuration);
 				calendar.add(Calendar.SECOND, timeLimits.intValue());
-				return Formatter.getInstance(getLocale()).formatTimeShort(calendar.getTime());
+				Date minutesRoundedDate = DateUtils.roundToMinute(calendar);
+				return Formatter.getInstance(getLocale()).formatTimeShort(minutesRoundedDate);
 			}
 			return "";
 		}
@@ -2841,17 +2844,17 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		/**
 		 * @return The test duration in milliseconds
 		 */
-		public long getAssessmentTestDuration() {
-			return AssessmentTestDisplayController.this.getAssessmentTestDuration();
+		public long getAssessmentTestDuration(Date reference) {
+			return AssessmentTestDisplayController.this.getAssessmentTestDuration(reference);
 		}
 		
 		/**
 		 * 
 		 * @return A duration in milliseconds
 		 */
-		public long getAssessmentTestMaximumTimeLimits() {
+		public long getAssessmentTestMaximumTimeLimits(Date reference) {
 			long maxDuration = -1l;
-			Long timeLimits = getAssessmentTestMaxTimeLimit();
+			Long timeLimits = getAssessmentTestMaxTimeLimit(reference);
 			if(timeLimits != null) {
 				maxDuration = timeLimits.longValue() * 1000;
 			}

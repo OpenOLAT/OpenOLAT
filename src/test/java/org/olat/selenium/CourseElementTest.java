@@ -576,7 +576,7 @@ public class CourseElementTest extends Deployments {
 		
 		CoursePageFragment userCourse = new CoursePageFragment(browser);
 		userCourse
-			.clickTree()
+			.tree()
 			.assertWithTitleSelected(practiceNodeTitle);
 		
 		PracticePage practicePage = new PracticePage(browser);
@@ -2240,7 +2240,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		courseRuntime
-			.clickTree()
+			.tree()
 			.assertWithTitleSelected(nodeTitle);
 		
 		SinglePage singlePage = new SinglePage(browser);
@@ -2578,8 +2578,8 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
-			.clickTree()
-			.assertWithTitleSelected(surveyNodeTitle);
+			.tree()
+			.selectWithTitle(surveyNodeTitle);
 		
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
@@ -2596,7 +2596,7 @@ public class CourseElementTest extends Deployments {
 		CoursePageFragment userCourse = new CoursePageFragment(browser);
 		userCourse
 			.tree()
-			.selectWithTitle(surveyNodeTitle);
+			.assertWithTitleSelected(surveyNodeTitle);
 		
 		EvaluationFormPage userSurvey = EvaluationFormPage.loadPage(browser)
 			.assertOnExecution();
@@ -2994,7 +2994,7 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
+			.tree()
 			.assertWithTitleSelected(nodeTitle);
 		
 		String meetingName = "Teams meeting";
@@ -3053,7 +3053,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		course
-			.clickTree()
+			.tree()
 			.assertWithTitleSelected(nodeTitle);
 		
 		String meetingName = "Teams meeting";
@@ -3636,8 +3636,8 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
-			.assertWithTitle(nodeTitle);
+			.tree()
+			.selectWithTitle(nodeTitle);
 		
 		String topicTitle = "Multi topic";
 		
@@ -3761,8 +3761,8 @@ public class CourseElementTest extends Deployments {
 			.clickToolbarBack();
 		
 		course
-			.clickTree()
-			.assertWithTitle(nodeTitle);
+			.tree()
+			.selectWithTitle(nodeTitle);
 		
 		String topicTitle = "Find topic";
 		int today = AppointmentPage.getDay(new Date());
@@ -3795,17 +3795,17 @@ public class CourseElementTest extends Deployments {
 		
 		// author confirm the participant's appointment
 		course
-			.clickTree()
-			.assertWithTitle(nodeTitle);
+			.tree()
+			.assertWithTitleSelected(nodeTitle);
 		
 		appointment
-			.selectTopicAsCoach(topicTitle)
 			.confirmAppointmentFindingByDay(today, participant)
 			.assertOnConfirmedAppointmentByDay(today);
 		
 		// participant check the confirmation
 		participantCourse
-			.clickTree();
+			.tree()
+			.selectWithTitle(nodeTitle);
 		
 		participantAppointment
 			.selectTopicAsParticipant(topicTitle)
