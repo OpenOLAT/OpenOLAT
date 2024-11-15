@@ -192,8 +192,7 @@ public class LecturesTest extends Deployments {
 		//participant check it roll call
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		participantLoginPage
-			.loginAs(participant1)
-			.resume();
+			.loginAs(participant1);
 		UserToolsPage participantUserTools = new UserToolsPage(participantBrowser);
 		participantUserTools
 			.openUserToolsMenu()
@@ -343,8 +342,7 @@ public class LecturesTest extends Deployments {
 		//participant check it roll call
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		participantLoginPage
-			.loginAs(participant1)
-			.resume();
+			.loginAs(participant1);
 		UserToolsPage participantUserTools = new UserToolsPage(participantBrowser);
 		participantUserTools
 			.openUserToolsMenu()
@@ -603,8 +601,7 @@ public class LecturesTest extends Deployments {
 		//participant check it roll call
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
-			.loginAs(participant1)
-			.resume();
+			.loginAs(participant1);
 		UserToolsPage participantUserTools = new UserToolsPage(browser);
 		participantUserTools
 			.openUserToolsMenu()

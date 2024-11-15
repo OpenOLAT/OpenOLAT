@@ -264,8 +264,7 @@ public class LoginTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void registration()
-	throws IOException, URISyntaxException {
+	public void registration() {
 		String email = UUID.randomUUID() + "@openolat.com";
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);

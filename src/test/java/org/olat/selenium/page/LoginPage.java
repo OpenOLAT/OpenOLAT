@@ -349,16 +349,8 @@ public class LoginPage {
 		return postSuccessfulLogin(landingPointBy);
 	}
 	
-	/**
-	 * Resume the session, and assert that the resume panel has popped
-	 */
-	public LoginPage resumeWithAssert() {
-		WebElement resume = browser.findElement(resumeButton);
-		Assert.assertNotNull(resume);
-		Assert.assertTrue(resume.isDisplayed());
-		
-		resume.click();
-		OOGraphene.waitBusy(browser);
+	public LoginPage assertOnResume() {
+		OOGraphene.waitElement(resumeButton, browser);
 		return this;
 	}
 	

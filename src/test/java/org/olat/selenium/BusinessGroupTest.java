@@ -81,8 +81,7 @@ public class BusinessGroupTest extends Deployments {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to groups
 		String groupName = "Delete-1-" + UUID.randomUUID();
@@ -399,8 +398,7 @@ public class BusinessGroupTest extends Deployments {
 		//a standard user create a group
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		
 		//go to groups
 		String groupName = "Group-1-" + UUID.randomUUID();
@@ -480,8 +478,7 @@ public class BusinessGroupTest extends Deployments {
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to groups
 		String groupName = "Group-Chat-1-" + UUID.randomUUID();
@@ -514,8 +511,7 @@ public class BusinessGroupTest extends Deployments {
 		//Kanu open the group
 		LoginPage kanuLoginPage = LoginPage.load(kanuBrowser, deploymentUrl);
 		kanuLoginPage
-			.loginAs(kanu.getLogin(), kanu.getPassword())
-			.resume();
+			.loginAs(kanu.getLogin(), kanu.getPassword());
 		
 		NavigationPage kanuNavBar = NavigationPage.load(kanuBrowser);
 		GroupPage kanuGroup = kanuNavBar
@@ -525,8 +521,7 @@ public class BusinessGroupTest extends Deployments {
 		//Ryomou open the group
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		
 		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		IMPage ryomouIM = ryomouNavBar
@@ -583,8 +578,7 @@ public class BusinessGroupTest extends Deployments {
 		UserVO coach = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(coach.getLogin(), coach.getPassword())
-			.resume();
+			.loginAs(coach.getLogin(), coach.getPassword());
 		
 		//go to groups
 		String groupName = "iCal-1-" + UUID.randomUUID();
@@ -635,8 +629,7 @@ public class BusinessGroupTest extends Deployments {
 		UserVO coach = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(coach.getLogin(), coach.getPassword())
-			.resume();
+			.loginAs(coach.getLogin(), coach.getPassword());
 		
 		//go to groups
 		String groupName = "iCal-2-" + UUID.randomUUID();
@@ -759,8 +752,7 @@ public class BusinessGroupTest extends Deployments {
 		for(Enrollment enrollment:participantDrivers) {
 			WebDriver driver = enrollment.getDriver();
 			LoginPage.load(driver, deploymentUrl)
-				.loginAs(enrollment.getUser())
-				.resume();
+				.loginAs(enrollment.getUser());
 			
 			NavigationPage participantNavBar = NavigationPage.load(driver);
 			participantNavBar
@@ -872,8 +864,7 @@ public class BusinessGroupTest extends Deployments {
 				
 		//Ryomou open the course	
 		LoginPage.load(browser, deploymentUrl)
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		NavigationPage participantNavBar = NavigationPage.load(browser);
 		participantNavBar
@@ -989,8 +980,7 @@ public class BusinessGroupTest extends Deployments {
 		for(Enrollment enrollment:participantDrivers) {
 			WebDriver driver = enrollment.getDriver();
 			LoginPage.load(driver, deploymentUrl)
-				.loginAs(enrollment.getUser())
-				.resume();
+				.loginAs(enrollment.getUser());
 			
 			NavigationPage participantNavBar = NavigationPage.load(driver);
 			participantNavBar
@@ -1123,8 +1113,7 @@ public class BusinessGroupTest extends Deployments {
 		for(Enrollment enrollment:participantDrivers) {
 			WebDriver driver = enrollment.getDriver();
 			LoginPage.load(driver, deploymentUrl)
-				.loginAs(enrollment.getUser())
-				.resume();
+				.loginAs(enrollment.getUser());
 			
 			NavigationPage participantNavBar = NavigationPage.load(driver);
 			participantNavBar

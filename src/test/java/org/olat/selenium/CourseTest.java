@@ -363,8 +363,7 @@ public class CourseTest extends Deployments {
 		//Student login
 		LoginPage studentLoginPage = LoginPage.load(browser, deploymentUrl);
 		studentLoginPage
-			.loginAs(student)
-			.resume();
+			.loginAs(student);
 		
 		NavigationPage studentNavBar = NavigationPage.load(browser);
 		studentNavBar
@@ -405,8 +404,7 @@ public class CourseTest extends Deployments {
 		UserVO coAuthor = new UserRestClient(deploymentUrl).createAuthor("Rei");
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to authoring
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -442,8 +440,7 @@ public class CourseTest extends Deployments {
 		//the second author come in
 		LoginPage coAuthroLoginPage = LoginPage.load(coAuthorBrowser, deploymentUrl);
 		coAuthroLoginPage
-			.loginAs(coAuthor.getLogin(), coAuthor.getPassword())
-			.resume();
+			.loginAs(coAuthor.getLogin(), coAuthor.getPassword());
 	
 		//go to authoring
 		NavigationPage coAuthorNavBar = NavigationPage.load(coAuthorBrowser);
@@ -541,8 +538,7 @@ public class CourseTest extends Deployments {
 		// The user opens the course
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
@@ -698,8 +694,7 @@ public class CourseTest extends Deployments {
 		//created above
 		LoginPage login = LoginPage.load(browser, deploymentUrl);
 		login
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		String courseTitle = "Catalog-Course-" + UUID.randomUUID();
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
@@ -723,8 +718,7 @@ public class CourseTest extends Deployments {
 		//the course
 		LoginPage userLogin = LoginPage.load(browser, deploymentUrl);
 		userLogin
-			.loginAs(user.getLogin(), user.getPassword())
-			.resume();
+			.loginAs(user.getLogin(), user.getPassword());
 
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
@@ -1080,8 +1074,7 @@ public class CourseTest extends Deployments {
 		//a user search the course
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
@@ -1168,8 +1161,7 @@ public class CourseTest extends Deployments {
 		//a user search the course
 		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
 		userLoginPage
-			.loginAs(user.getLogin(), user.getPassword())
-			.resume();
+			.loginAs(user.getLogin(), user.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(userBrowser);
 		userNavBar
 			.openMyCourses()
@@ -1399,8 +1391,7 @@ public class CourseTest extends Deployments {
 		//First user go to the course
 		LoginPage kanuLoginPage = LoginPage.load(browser, deploymentUrl);
 		kanuLoginPage
-			.loginAs(kanu.getLogin(), kanu.getPassword())
-			.resume();
+			.loginAs(kanu.getLogin(), kanu.getPassword());
 
 		NavigationPage kanuNavBar = NavigationPage.load(browser);
 		kanuNavBar
@@ -1424,8 +1415,7 @@ public class CourseTest extends Deployments {
 		//Second user use the rest url
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, new URL(courseInfoUrl));
 		ryomouLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		
 		CoursePageFragment ryomouCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouCourse
@@ -1603,8 +1593,7 @@ public class CourseTest extends Deployments {
 		
 		//participant search the course
 		LoginPage.load(reiBrowser, deploymentUrl)
-			.loginAs(rei)
-			.resume();
+			.loginAs(rei);
 		NavigationPage reiNavBar = NavigationPage.load(reiBrowser);
 		reiNavBar
 			.openMyCourses()
@@ -1692,8 +1681,7 @@ public class CourseTest extends Deployments {
 		//author create a course
 		String courseTitle = "Membership " + UUID.randomUUID();
 		LoginPage.load(authorBrowser, deploymentUrl)
-			.loginAs(author)
-			.resume();
+			.loginAs(author);
 		NavigationPage authorNavBar = NavigationPage.load(authorBrowser);
 		authorNavBar
 			.openAuthoringEnvironment()
@@ -1847,8 +1835,7 @@ public class CourseTest extends Deployments {
 		//a user search the content package
 		LoginPage ryomouLoginPage = LoginPage.load(browser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage ryomouNavBar = NavigationPage.load(browser);
 		ryomouNavBar
 			.openMyCourses()
@@ -1916,8 +1903,7 @@ public class CourseTest extends Deployments {
 		//Participant log in
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(user.getLogin(), user.getPassword())
-			.resume();
+			.loginAs(user.getLogin(), user.getPassword());
 		
 		// My course -> In preparation
 		NavigationPage userNavBar = NavigationPage.load(browser);
