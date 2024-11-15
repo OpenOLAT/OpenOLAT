@@ -146,6 +146,8 @@ public interface AssessmentService {
 	
 	public boolean hasAssessmentEntryWithoutCoachAssignment(RepositoryEntryRef entry, String subIdent);
 	
+	public List<Identity> getParticipantsWithAssessmentData(RepositoryEntryRef entry);
+	
 	public List<AssessmentEntry> getAssessmentEntryCoachAssignment(RepositoryEntryRef entry, String subIdent, boolean withCoachAssigned);
 	
 	public List<AssessmentEntry> getAssessmentEntriesForCoachAssignment(RepositoryEntryRef entry, IdentityRef coach);

@@ -201,6 +201,11 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 			boolean withCoachAssigned) {
 		return assessmentEntryDao.loadAssessmentEntriesCoachAssigned(entry, subIdent, withCoachAssigned);
 	}
+	
+	@Override
+	public List<Identity> getParticipantsWithAssessmentData(RepositoryEntryRef entry) {
+		return assessmentEntryDao.getParticipantsWithAssessmentData(entry);
+	}
 
 	@Override
 	public List<AssessmentEntry> getAssessmentEntriesForCoachAssignment(RepositoryEntryRef entry, IdentityRef coach) {
