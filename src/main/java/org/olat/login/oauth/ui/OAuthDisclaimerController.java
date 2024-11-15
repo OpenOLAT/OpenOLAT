@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.login.oauth.ui;
@@ -44,8 +44,8 @@ import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.OAuthUserCreator;
 import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
-import org.olat.registration.DisclaimerController;
-import org.olat.registration.RegistrationForm2;
+import org.olat.registration.DisclaimerFormController;
+import org.olat.registration.RegistrationPersonalDataController;
 import org.olat.registration.RegistrationManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * create the user in background.
  * 
  * Initial date: 20 avr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class OAuthDisclaimerController extends FormBasicController implements Activateable2 {
@@ -67,7 +67,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	private final OAuthRegistration registration;
 
 	private CloseableModalController cmc;
-	private DisclaimerController disclaimerController;
+	private DisclaimerFormController disclaimerFormCtrl;
 
 	@Autowired
 	private BaseSecurity securityManager;
@@ -79,7 +79,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	public OAuthDisclaimerController(UserRequest ureq, WindowControl wControl,
 			OAuthUser user, OAuthRegistration registration, OAuthSPI provider) {
 		super(ureq, wControl, "disclaimer");
-		setTranslator(Util.createPackageTranslator(RegistrationForm2.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RegistrationPersonalDataController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 
 		this.user = user;
@@ -92,10 +92,10 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(provider == null) return;
 		
-		disclaimerController = new DisclaimerController(ureq, getWindowControl(), null, false);
-		listenTo(disclaimerController);
+		disclaimerFormCtrl = new DisclaimerFormController(ureq, getWindowControl(), null, false);
+		listenTo(disclaimerFormCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerController.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerFormCtrl.getInitialComponent(),
 				true, translate("disclaimer.title"));
 		cmc.activate();
 		listenTo(cmc);
@@ -110,7 +110,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(disclaimerController == source) {
+		if(disclaimerFormCtrl == source) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
 				// User accepted disclaimer, do login now
@@ -127,9 +127,9 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(disclaimerController);
+		removeAsListenerAndDispose(disclaimerFormCtrl);
 		removeAsListenerAndDispose(cmc);
-		disclaimerController = null;
+		disclaimerFormCtrl = null;
 		cmc = null;
 	}
 

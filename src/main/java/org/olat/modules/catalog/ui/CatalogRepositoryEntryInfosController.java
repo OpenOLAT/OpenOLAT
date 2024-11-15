@@ -27,26 +27,24 @@ import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.user.ui.admin.authentication.UserAuthenticationEditController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 5 Jun 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetailsController implements Activateable2 {
@@ -54,7 +52,7 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	private final BreadcrumbedStackedPanel stackPanel;
 	
 	private CatalogRepositoryEntryAccessController accessCtrl;
-	private CloseableModalController cmc;
+	private LightboxController lightboxCtrl;
 	private WebCatalogAuthController authCtrl;
 	
 	@Autowired
@@ -82,9 +80,9 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 				fireEvent(ureq, event);
 			}
 		} else if (authCtrl == source) {
-			cmc.deactivate();
+			lightboxCtrl.deactivate();
 			cleanUp();
-		} else if (cmc == source) {
+		} else if (lightboxCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -92,9 +90,9 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(authCtrl);
-		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(lightboxCtrl);
 		authCtrl = null;
-		cmc = null;
+		lightboxCtrl = null;
 	}
 	
 	@Override
@@ -145,12 +143,10 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 		if (guardModalController(authCtrl)) return;
 		authCtrl = new WebCatalogAuthController(ureq, getWindowControl(), getEntry());
 		listenTo(authCtrl);
-		
-		String title = Util.createPackageTranslator(UserAuthenticationEditController.class, getLocale()).translate("change.providers");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), authCtrl.getInitialComponent(), true, title, true);
-		cmc.setCustomWindowCSS("o_modal_large_login");
-		listenTo(cmc);
-		cmc.activate();
+
+		lightboxCtrl = new LightboxController(ureq, getWindowControl(), authCtrl);
+		listenTo(lightboxCtrl);
+		lightboxCtrl.activate();
 	}
 
 }

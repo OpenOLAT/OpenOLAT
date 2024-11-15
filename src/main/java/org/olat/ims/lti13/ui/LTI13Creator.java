@@ -23,7 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.registration.DisclaimerController;
+import org.olat.registration.DisclaimerFormController;
 
 /**
  * 
@@ -35,7 +35,7 @@ public class LTI13Creator implements ControllerCreator {
 
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl wControl) {
-		DisclaimerController disclaimerCtrl = new DisclaimerController(ureq, wControl);
+		DisclaimerFormController disclaimerCtrl = new DisclaimerFormController(ureq, wControl);
 		return disclaimerCtrl;
 	}
 	

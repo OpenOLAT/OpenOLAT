@@ -21,13 +21,12 @@ package org.olat.modules.catalog.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.emptystate.EmptyState;
-import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.login.CatalogLoginAuthProvidersController;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.login.PublicLoginAuthProvidersController;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -41,13 +40,13 @@ public class WebCatalogAuthController extends BasicController {
 	public WebCatalogAuthController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
 
-		CatalogLoginAuthProvidersController loginAuthProvidersCtrl = new CatalogLoginAuthProvidersController(ureq, wControl, entry);
+		String redirectPath = null;
+		if (entry != null) {
+			String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+			redirectPath = BusinessControlFactory.getInstance().getAsRestPart(BusinessControlFactory.getInstance().createFromString(businessPath).getEntries(), true);
+		}
 
-		EmptyState emptyState = EmptyStateFactory.create("auth", null, this);
-		emptyState.setMessageTranslated(translate("noTransOnlyParam", "under progress"));
-		emptyState.setIconCss("o_icon_login");
-		emptyState.setIndicatorIconCss("_o_not_valid");
-
+		PublicLoginAuthProvidersController loginAuthProvidersCtrl = new PublicLoginAuthProvidersController(ureq, wControl, redirectPath, null);
 		listenTo(loginAuthProvidersCtrl);
 		putInitialPanel(loginAuthProvidersCtrl.getInitialComponent());
 	}
@@ -59,7 +58,7 @@ public class WebCatalogAuthController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source instanceof CatalogLoginAuthProvidersController && event == Event.CANCELLED_EVENT) {
+		if (source instanceof PublicLoginAuthProvidersController && event == Event.CANCELLED_EVENT) {
 			fireEvent(ureq, event);
 		}
 	}

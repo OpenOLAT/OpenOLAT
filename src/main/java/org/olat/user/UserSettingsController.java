@@ -42,7 +42,7 @@ import org.olat.core.util.prefs.gui.ui.GuiPreferencesUserController;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.ui.IMPreferenceController;
-import org.olat.registration.DisclaimerController;
+import org.olat.registration.DisclaimerFormController;
 import org.olat.registration.RegistrationModule;
 import org.olat.user.ui.data.UserDataController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +67,7 @@ public class UserSettingsController extends BasicController implements Activatea
 	private final VelocityContainer mainVC;
 
 	private IMPreferenceController imCtrl;
-	private DisclaimerController disclaimerCtrl;
+	private DisclaimerFormController disclaimerCtrl;
 	private WebDAVPasswordController webdavCtrl;
 	private ChangePrefsController preferencesCtrl;
 	private UserDataController userDataCtrl;
@@ -207,7 +207,7 @@ public class UserSettingsController extends BasicController implements Activatea
 		if(disclaimerCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Disclaimer", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			disclaimerCtrl = new DisclaimerController(ureq, bwControl);
+			disclaimerCtrl = new DisclaimerFormController(ureq, bwControl);
 			listenTo(disclaimerCtrl);
 		}
 		mainVC.put("segmentCmp", disclaimerCtrl.getInitialComponent());

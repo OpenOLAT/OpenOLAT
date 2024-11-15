@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.gui.components;
@@ -32,7 +32,7 @@ import org.olat.core.util.StringHelper;
  * 
  * Empty implementation of the ComponentRenderer
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public abstract class DefaultComponentRenderer implements ComponentRenderer {
@@ -175,6 +175,8 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		}
 		if(item.hasError() || item.hasWarning()) {
 			renderError(sb, item.getFormItem(),  item.hasError(), item.hasWarning());
+		} else if (item.isSuccess()) {
+			renderSuccess(sb, item.getFormItem(), item.isSuccess());
 		}
 
 		renderCloseFormComponent(sb, wrapperTagName);
@@ -296,6 +298,14 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			sb.append(text);
 		}
 	}
+
+	private void renderSuccess(StringOutput sb, FormItem item, boolean isSuccess) {
+		if (isSuccess) {
+			sb.append("<div id='").append(item.getFormDispatchId()).append("_success' class='o_success_with_icon'>")
+					.append(item.getSuccessText())
+					.append("</div>");
+		}
+	}
 	
 	private void renderError(StringOutput sb, Component component) {
 		if(component instanceof FormBaseComponent fComponent) {
@@ -305,12 +315,14 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 	}
 	
 	protected void appendErrorAriaDescribedby(StringOutput sb, FormItem item) {
-		if(item.hasError() || item.hasWarning()) {
+		if(item.hasError() || item.hasWarning() || item.isSuccess()) {
 			String suffix;
 			if(item.hasError()) {
 				suffix = "_error";
 			} else if(item.hasWarning()) {
 				suffix = "_warning";
+			} else if (item.isSuccess()) {
+				suffix = "_success";
 			} else {
 				suffix = "";
 			}
@@ -420,6 +432,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		private final FormItem formItem;
 		private final boolean hasError;
 		private final boolean hasWarning;
+		private final boolean isSuccess;
 		private final boolean hasLabel;
 		private final boolean hasExample;
 		private final boolean hasFeedback;
@@ -435,6 +448,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			if(formItem != null) {
 				hasError = formItem.hasError();
 				hasWarning = formItem.hasWarning();
+				isSuccess = formItem.isSuccess();
 				hasLabel = formItem.hasLabel();
 				hasExample = formItem.hasExample();
 				hasFeedback = formItem.hasFeedback();
@@ -442,6 +456,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			} else {
 				hasError = false;
 				hasWarning = false;
+				isSuccess = false;
 				hasLabel = false;
 				hasExample = false;
 				hasFeedback = false;
@@ -467,6 +482,10 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 
 		public boolean hasWarning() {
 			return hasWarning;
+		}
+
+		public boolean isSuccess() {
+			return isSuccess;
 		}
 
 		public boolean hasLabel() {

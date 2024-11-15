@@ -28,9 +28,9 @@ import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.login.DmzBFWCParts;
+import org.olat.login.LoginAuthprovidersController;
 
 /**
  * Initial Date:  29.01.2008 <br>
@@ -42,8 +42,9 @@ public class DMZRegistrationContentControllerCreator implements ControllerCreato
 	public Controller createController(UserRequest lureq, WindowControl lwControl) {
 		DmzBFWCParts dmzSitesAndNav = new DmzBFWCParts();
 		dmzSitesAndNav.showTopNav(false);
-		AutoCreator contentControllerCreator = new AutoCreator();
-		contentControllerCreator.setClassName(RegistrationController.class.getName());
+		ControllerCreator contentControllerCreator = (
+				uureq, wwControl)
+				-> new LoginAuthprovidersController(uureq, wwControl, null, true);
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
 		return new BaseFullWebappController(lureq, dmzSitesAndNav);
 	}

@@ -235,5 +235,17 @@ public interface TextElement extends FormItem{
 	public void disablePlaceholderUpdate();
 
 	public void setDomReplacementWrapperRequired(boolean required);
+
+	/**
+	 * check if textElement is an OTP. If so, then the rendering process behaves differently
+	 * @return true if textElement is set to be an OTP field, else false
+	 */
+	public boolean isOneTimePassword();
+
+	/**
+	 * sets the textElement to be an OTP Element
+	 * @param otp true/false
+	 */
+	public void setOneTimePassword(boolean otp);
 	
 }

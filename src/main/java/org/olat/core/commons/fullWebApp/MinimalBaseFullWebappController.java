@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.commons.fullWebApp;
@@ -38,14 +38,14 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.registration.DisclaimerController;
+import org.olat.registration.DisclaimerFormController;
 import org.olat.registration.RegistrationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 2 mars 2021<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class MinimalBaseFullWebappController extends BaseFullWebappController implements PopupBrowserWindowController {
@@ -56,7 +56,7 @@ public class MinimalBaseFullWebappController extends BaseFullWebappController im
 	private boolean needAcceptDisclaimer;
 	
 	private CloseableModalController cmc;
-	private DisclaimerController disclaimerCtrl;
+	private DisclaimerFormController disclaimerCtrl;
 	
 	@Autowired
 	private RegistrationManager registrationManager;
@@ -145,7 +145,7 @@ public class MinimalBaseFullWebappController extends BaseFullWebappController im
 		removeControllerListener(disclaimerCtrl);
 		removeAsListenerAndDispose(cmc);
 		
-		disclaimerCtrl = new DisclaimerController(ureq, getWindowControl(), ureq.getIdentity(), false);
+		disclaimerCtrl = new DisclaimerFormController(ureq, getWindowControl(), ureq.getIdentity(), false);
 		listenTo(disclaimerCtrl);
 
 		String title = disclaimerCtrl.getAndRemoveTitle();

@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.registration;
@@ -27,10 +27,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -47,18 +46,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * <P>
  * Initial Date:  17 nov. 2009 <br>
- * @author srosse, stephane.rosse@frentix.com, www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class LanguageChooserController extends FormBasicController {
 
-	private String curlang;
-	private FormSubmit nextButton;
+	private final String curLang;
 	private SingleSelection langs;
 	
 	private boolean fireStandardEvent = true;
 	
 	@Autowired
 	private I18nManager i18nManager;
+
+	public LanguageChooserController(UserRequest ureq, WindowControl wControl, boolean fireStandardEvent, Form mainForm) {
+		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
+		this.fireStandardEvent = fireStandardEvent;
+		curLang = ureq.getLocale().toString();
+		initForm(ureq);
+	}
 	
 	/**
 	 * @param ureq
@@ -69,7 +74,7 @@ public class LanguageChooserController extends FormBasicController {
 	public LanguageChooserController(UserRequest ureq, WindowControl wControl, boolean fireStandardEvent) {
 		super(ureq, wControl);
 		this.fireStandardEvent = fireStandardEvent;
-		curlang = ureq.getLocale().toString();
+		curLang = ureq.getLocale().toString();
 		initForm(ureq);
 	}
 
@@ -91,7 +96,6 @@ public class LanguageChooserController extends FormBasicController {
 			setLocale(loc, true);
 			ureq.getUserSession().setLocale(loc);
 			ureq.getUserSession().putEntry(LocaleNegotiator.NEGOTIATED_LOCALE, loc);
-			nextButton.setTranslator(getTranslator());
 			
 			if(fireStandardEvent) {
 				fireEvent(ureq, mue);
@@ -112,6 +116,7 @@ public class LanguageChooserController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, final UserRequest ureq) {
+		setFormTitle("select.language");
 		Map<String, String> languages = i18nManager.getEnabledLanguagesTranslated();
 		String[] langKeys = StringHelper.getMapKeysAsStringArray(languages);
 		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
@@ -119,12 +124,7 @@ public class LanguageChooserController extends FormBasicController {
 
 		langs = uifactory.addDropdownSingleselect("select.language", formLayout, langKeys, langValues, null); 
 		langs.addActionListener(FormEvent.ONCHANGE);
-		langs.select(curlang, true);
-
-		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-		nextButton = uifactory.addFormSubmitButton("submit.weiter", buttonLayout);
+		langs.select(curLang, true);
 	}
 
 	@Override

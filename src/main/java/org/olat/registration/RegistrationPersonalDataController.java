@@ -1,12 +1,12 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
 * You may obtain a copy of the License at
 * <p>
-* http://www.apache.org/licenses/LICENSE-2.0
+* https://www.apache.org/licenses/LICENSE-2.0
 * <p>
 * Unless required by applicable law or agreed to in writing,<br>
 * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -72,10 +73,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author Sabina Jeger
  */
-public class RegistrationForm2 extends FormBasicController {
-	public static final String USERPROPERTIES_FORM_IDENTIFIER = RegistrationForm2.class.getCanonicalName();
+public class RegistrationPersonalDataController extends FormBasicController {
+
+	public static final String USERPROPERTIES_FORM_IDENTIFIER = RegistrationPersonalDataController.class.getCanonicalName();
 	
-	private String languageKey;
+	private final String languageKey;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final Map<String,FormItem> propFormItems = new HashMap<>();
 	
@@ -110,9 +112,12 @@ public class RegistrationForm2 extends FormBasicController {
 	@Autowired
 	private RegistrationManager registrationManager;
 
-	public RegistrationForm2(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername,
-			String firstName, String lastName, String email, boolean userInUse, boolean usernameReadonly) {
-		super(ureq, wControl, "registration_form_2", Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
+	public RegistrationPersonalDataController(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername,
+											  String firstName, String lastName, String email, boolean userInUse, boolean usernameReadonly, Form mainForm) {
+		super(ureq, wControl, "registration_personal_data", Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
+		this.mainForm = mainForm;
+		flc.setRootForm(mainForm);
+		this.mainForm.addSubFormListener(this);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		wControl.getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
@@ -198,17 +203,21 @@ public class RegistrationForm2 extends FormBasicController {
 		return propFormItems.get(k);
 	}
 
+	public Map<String, FormItem> getPropFormItems() {
+		return propFormItems;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer userCont = FormLayoutContainer.createDefaultFormLayout("user", getTranslator());
+		userCont.setFormTitle(translate("registration.form.personal.data.title"));
+		formLayout.add(userCont);
+		initUserDataForm(userCont);
+
 		FormLayoutContainer accessCont = FormLayoutContainer.createDefaultFormLayout("access", getTranslator());
 		accessCont.setFormTitle(translate("registration.form.login.data.title"));
 		formLayout.add(accessCont);
 		initLoginDataForm(accessCont, ureq);
-		
-		FormLayoutContainer userCont = FormLayoutContainer.createDefaultFormLayout("user", getTranslator());
-		userCont.setFormTitle(translate("registration.form.personal.data.title"));
-		formLayout.add(userCont);
-		initUserDataForm(userCont, ureq);
 	}
 	
 	private void initLoginDataForm(FormLayoutContainer formLayout, UserRequest ureq) {
@@ -259,7 +268,7 @@ public class RegistrationForm2 extends FormBasicController {
 		}
 	}
 
-	private void initUserDataForm(FormLayoutContainer formLayout, UserRequest ureq) {
+	private void initUserDataForm(FormLayoutContainer formLayout) {
 		// Add all available user fields to this form
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
@@ -288,12 +297,6 @@ public class RegistrationForm2 extends FormBasicController {
 		} else if(languageKeys.length > 0) {
 			lang.select(languageKeys[0], true);
 		}
-	
-		// Button layout
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
-		formLayout.add(buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("submit.speichernUndweiter", buttonLayout);	
 	}
 
 	@Override
@@ -304,7 +307,7 @@ public class RegistrationForm2 extends FormBasicController {
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
 			if (fi.isEnabled() ) {
-				if(fi instanceof TextElement textEl && !RegistrationController.validateElement(textEl)) {
+				if(fi instanceof TextElement textEl && !validateElement(textEl)) {
 					allOk &= false;
 				} else if(!userPropertyHandler.isValid(null, fi, null)) {
 					if (userPropertyHandler instanceof EmailProperty) {
@@ -376,7 +379,7 @@ public class RegistrationForm2 extends FormBasicController {
 					String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
 					usernameEl.setErrorKey("error.username.invalid", descriptions);
 					allOk &= false;
-				} else if(!RegistrationController.validateElement(usernameEl)) {
+				} else if(!validateElement(usernameEl)) {
 					allOk &= false;
 				}
 			}
@@ -436,6 +439,18 @@ public class RegistrationForm2 extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		newPasskeyCtrl = null;
 		cmc = null;
+	}
+
+	protected static boolean validateElement(TextElement el) {
+		boolean allOk = true;
+
+		String value = el.getValue();
+		if(value.contains("<") || value.contains(">") || value.contains("#")) {
+			el.setErrorKey("error.invalid.character");
+			allOk &= false;
+		}
+
+		return allOk;
 	}
 
 	@Override

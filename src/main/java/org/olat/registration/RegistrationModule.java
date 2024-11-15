@@ -77,8 +77,8 @@ public class RegistrationModule extends AbstractSpringModule {
 	private boolean selfRegistrationLoginEnabled;
 	@Value("${registration.email.validation}")
 	private boolean emailValidationEnabled;
-	@Value("${registration.valid.hours.gui}")
-	private Integer validUntilHoursGui;
+	@Value("${registration.valid.minutes.gui}")
+	private Integer validUntilMinutesGui;
 	@Value("${registration.valid.hours.rest}")
 	private Integer validUntilHoursRest;
 	@Value("${registration.organisation.key:default}")
@@ -229,7 +229,7 @@ public class RegistrationModule extends AbstractSpringModule {
 		
 		if(emailHandler != null) {
 			UserPropertyUsageContext context = usrPropCfgMng.getUserPropertiesConfigObject()
-					.getUsageContexts().get(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER);
+					.getUsageContexts().get(RegistrationPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER);
 			context.addPropertyHandler(0, emailHandler);
 			context.setAsUserViewReadOnly(emailHandler, isEmailValidationEnabled());
 			context.setAsAdminstrativeUserOnly(emailHandler, false);
@@ -237,13 +237,13 @@ public class RegistrationModule extends AbstractSpringModule {
 		}
 	}
 
-	public Integer getValidUntilHoursGui() {
-		return validUntilHoursGui;
+	public Integer getValidUntilMinutesGui() {
+		return validUntilMinutesGui;
 	}
 
-	public void setValidUntilHoursGui(Integer validUntilHoursGui) {
-		this.validUntilHoursGui = validUntilHoursGui;
-		setIntProperty("registration.valid.hours.gui", validUntilHoursGui, true);
+	public void setValidUntilMinutesGui(Integer validUntilMinutesGui) {
+		this.validUntilMinutesGui = validUntilMinutesGui;
+		setIntProperty("registration.valid.minutes.gui", validUntilMinutesGui, true);
 	}
 
 	public Integer getValidUntilHoursRest() {
@@ -567,9 +567,9 @@ public class RegistrationModule extends AbstractSpringModule {
 			selfRegistrationOrganisationKey = organisationObj;
 		}
 		
-		int validUntilHoursGuiInt = getIntPropertyValue("registration.valid.hours.gui");
-		if (validUntilHoursGuiInt > 0) {
-			validUntilHoursGui = validUntilHoursGuiInt;
+		int validUntilMinutesGuiInt = getIntPropertyValue("registration.valid.minutes.gui");
+		if (validUntilMinutesGuiInt > 0) {
+			validUntilMinutesGui = validUntilMinutesGuiInt;
 		}
 		
 		int validUntilHoursRestInt = getIntPropertyValue("registration.valid.hours.rest");

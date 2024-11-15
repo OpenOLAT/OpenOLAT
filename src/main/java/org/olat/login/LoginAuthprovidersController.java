@@ -35,6 +35,7 @@ import org.olat.admin.sysinfo.InfoMessageManager;
 import org.olat.admin.sysinfo.SysInfoMessage;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.Invitation;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -52,6 +53,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -70,9 +75,13 @@ import org.olat.login.auth.AuthenticationProvider;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.WebCatalogDispatcher;
 import org.olat.registration.PwChangeController;
-import org.olat.registration.RegistrationController;
+import org.olat.registration.LoginHandler;
+import org.olat.registration.RegisterFinishCallback;
+import org.olat.registration.RegistrationAdditionalPersonalDataController;
 import org.olat.registration.RegistrationModule;
+import org.olat.registration.RegistrationLangStep00;
 import org.olat.shibboleth.ShibbolethDispatcher;
+import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,23 +92,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  02.09.2007 <br>
  * @author patrickb
  */
-public class LoginAuthprovidersController extends MainLayoutBasicController implements Activateable2 {
+public class LoginAuthprovidersController extends MainLayoutBasicController implements Activateable2, LoginHandler {
 
 	private static final String ACTION_LOGIN = "login";
 	public  static final String ATTR_LOGIN_PROVIDER = "lp";
-	
+
+	private final Invitation invitation;
+	private final StackedPanel dmzPanel;
+	private final List<Controller> authenticationCtrlList = new ArrayList<>();
+
 	private Link registerLink;
-	private ExternalLink catalogLink;
-	private ExternalLink faqLink;
-	private StackedPanel dmzPanel;
 	private VelocityContainer content;
 	private Component changePasswordLink;
-	private final List<Controller> authenticationCtrlList = new ArrayList<>();
-	
+
 	private CloseableModalController cmc;
 	private PwChangeController pwChangeCtrl;
-	private RegistrationController registrationCtrl;
-	
+	private StepsMainRunController registrationWizardCtrl;
+
 	@Autowired
 	private HelpModule helpModule;
 	@Autowired
@@ -109,18 +118,25 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private CatalogV2Module catalogV2Module;
+	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
 	private InfoMessageManager infoMessageMgr;
 	@Autowired
 	private RegistrationModule registrationModule;
-	@Autowired
-	private CatalogV2Module catalogV2Module;
-	
+
 	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, null, false);
+	}
+	
+	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl, Invitation invitation, boolean hasModuleUri) {
 		// Use fallback translator from full webapp package to translate accessibility stuff
 		super(ureq, wControl, Util.createPackageTranslator(BaseFullWebappController.class, ureq.getLocale()));
-		
+		this.invitation = invitation;
+
 		UserSession usess = ureq.getUserSession();
 		if(usess.getEntry("error.change.email") != null) {
 			wControl.setError(usess.getEntry("error.change.email").toString());
@@ -143,8 +159,13 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			registerLink.setElementCssClass("o_login_register");
 			registerLink.setTitle("menu.register.alt");
 		}
-		
+
 		dmzPanel = putInitialPanel(panel);
+
+		// if the call is from an invitation, directly open Registration
+		if (invitation != null || hasModuleUri) {
+			openRegistration(ureq);
+		}
 	}
 
 	@Override
@@ -164,8 +185,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			AuthenticationProvider olatProvider = loginModule.getAuthenticationProvider(BaseSecurityModule.getDefaultAuthProviderIdentifier());
 			if (olatProvider.isEnabled() && registrationModule.isSelfRegistrationEnabled()
 					&& registrationModule.isSelfRegistrationLinkEnabled()) {
-				List<ContextEntry> subEntries = entries.subList(1, entries.size());
-				openRegistration(ureq).activate(ureq, subEntries, entry.getTransientState());
+				openRegistration(ureq);
 			}
 		} else if("changepw".equals(type)) {
 			String email = null;
@@ -245,7 +265,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			}
 		}
 		
-		// add additional login intro message for custom content
+		// add additional logiin intro message for custom content
 		String customMsg = translate("login.custommsg");
 		if(!StringUtils.isBlank(customMsg)) {
 			contentBorn.contextPut("logincustommsg",customMsg);
@@ -272,7 +292,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		contentBorn.contextPut("startLogin", Boolean.FALSE);
 		
 		if (catalogV2Module.isEnabled() && catalogV2Module.isWebPublishEnabled() && catalogV2Module.isWebPublishLoginSite()) {
-			catalogLink = LinkFactory.createExternalLink("login.catalog", "log.catalog", WebCatalogDispatcher.getBaseUrl().toString());
+			ExternalLink catalogLink = LinkFactory.createExternalLink("login.catalog", "log.catalog", WebCatalogDispatcher.getBaseUrl().toString());
 			catalogLink.setElementCssClass("o_login_catalog_button btn btn-default");
 			catalogLink.setName(translate("login.catalog"));
 			catalogLink.setIconLeftCSS("o_icon o_icon_catalog");
@@ -286,7 +306,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				loginUrl = helpModule.getManualProvider().getURL(getLocale(), loginUrl);
 			}
 			
-			faqLink = LinkFactory.createExternalLink("faq", translate("login.faq"), loginUrl);
+			ExternalLink faqLink = LinkFactory.createExternalLink("faq", translate("login.faq"), loginUrl);
 			faqLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
 			faqLink.setName(translate("login.faq"));
 			faqLink.setElementCssClass("o_login_faq");
@@ -346,7 +366,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(pwChangeCtrl == source || registrationCtrl == source) {
+		if(pwChangeCtrl == source || registrationWizardCtrl == source) {
 			if (event == Event.CANCELLED_EVENT) {
 				if (loginModule.getAuthenticationProvider(ShibbolethDispatcher.PROVIDER_SHIB) != null) {
 					// Redirect to context path to prevent Javascript error when using Shibboleth provider
@@ -358,7 +378,9 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 					dmzPanel.setContent(content);
 				}
 			}
-			cmc.deactivate();
+			if (pwChangeCtrl == source) {
+				cmc.deactivate();
+			}
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
@@ -372,10 +394,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(registrationCtrl);
 		removeAsListenerAndDispose(pwChangeCtrl);
 		removeAsListenerAndDispose(cmc);
-		registrationCtrl = null;
 		pwChangeCtrl = null;
 		cmc = null;
 	}
@@ -414,7 +434,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		}
 	}
 
-	private void doAuthentication(UserRequest ureq, AuthenticationEvent authEvent) {
+	protected void doAuthentication(UserRequest ureq, AuthenticationEvent authEvent) {
 		Identity identity = authEvent.getIdentity();
 		String provider = authEvent.getProvider() == null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : authEvent.getProvider();
 		int loginStatus = AuthHelper.doLogin(identity, provider, ureq);
@@ -483,34 +503,58 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		dmzPanel.pushContent(aboutVC);
 	}
 
-	private RegistrationController openRegistration(UserRequest ureq) {
-		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(registrationCtrl);
-		
-		registrationCtrl = new RegistrationController(ureq, getWindowControl(), false);
-		listenTo(registrationCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), registrationCtrl.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
-		return registrationCtrl;
+	private void openRegistration(UserRequest ureq) {
+		boolean isAdditionalRegistrationFormEnabled = !userManager
+				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
+		Step startReg = new RegistrationLangStep00(ureq, invitation, registrationModule.isDisclaimerEnabled(),
+				registrationModule.isEmailValidationEnabled(), isAdditionalRegistrationFormEnabled);
+		registrationWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startReg, new RegisterFinishCallback(invitation, this),
+				new CancelCallback(), translate("menu.register"), "o_sel_registration_start_wizard");
+		listenTo(registrationWizardCtrl);
+		dmzPanel.pushContent(registrationWizardCtrl.getInitialComponent());
 	}
-	
+
 	private void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
 		if (userModule.isAnyPasswordChangeAllowed()) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(pwChangeCtrl);
-			
+
 			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
 			listenTo(pwChangeCtrl);
-			
+
 			String title = pwChangeCtrl.getWizardTitle();
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), pwChangeCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		} else {
 			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
+		}
+	}
+
+	@Override
+	public void showError(String errorKey) {
+		super.showError(errorKey);
+	}
+
+	@Override
+	public void doLogin(UserRequest ureq, Identity persistedIdentity) {
+		int loginStatus = AuthHelper.doLogin(persistedIdentity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+		if (loginStatus == AuthHelper.LOGIN_OK) {
+			//youppi
+		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
+			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+			getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
+		} else {
+			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
+		}
+	}
+
+	private static class CancelCallback implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			return Step.NOSTEP;
 		}
 	}
 }

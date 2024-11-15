@@ -58,7 +58,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.dispatcher.LocaleNegotiator;
-import org.olat.registration.DisclaimerController;
+import org.olat.registration.DisclaimerFormController;
 import org.olat.registration.LanguageChooserController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.UserNameCreationInterceptor;
@@ -93,7 +93,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	private ShibbolethRegistrationForm regForm;
 	private ShibbolethMigrationForm migrationForm;
 	private ShibbolethRegistrationUserPropertiesFrom regWithUserPropForm;
-	private DisclaimerController dclController;
+	private DisclaimerFormController dclController;
 	private LanguageChooserController languageChooserController;
 
 	private Translator translator;
@@ -190,7 +190,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 			setRegistrationForm(ureq, wControl, null);
 		}
 
-		dclController = new DisclaimerController(ureq, getWindowControl(), null, false);
+		dclController = new DisclaimerFormController(ureq, getWindowControl(), null, false);
 		dclController.addControllerListener(this);
 		mainContainer.put("dclComp", dclController.getInitialComponent());
 

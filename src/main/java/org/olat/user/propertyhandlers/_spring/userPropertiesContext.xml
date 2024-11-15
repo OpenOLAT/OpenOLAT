@@ -914,14 +914,14 @@
 					</bean>
 				</entry>
 
-				<!--  RegistrationForm2 is used in the self registration process -->
-				<entry key="org.olat.registration.RegistrationForm2">
+				<!--  RegistrationPersonalDataController is used in the self registration process -->
+				<entry key="org.olat.registration.RegistrationPersonalDataController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Registration form for self-registrated users" />
 						<property name="propertyHandlers">
 							<list>
 								<!--
-									don't add email as form elemente here, email is already
+									don't add email as form element here, email is already
 									collected in the previous step of the registration workflow
 								-->
 								<ref bean="userPropertyFirstName" />
@@ -937,8 +937,8 @@
 					</bean>
 				</entry>
 				
-				<!--  RegistrationForm2 is used in the self registration process -->
-				<entry key="org.olat.registration.RegistrationAdditionalForm">
+				<!--  RegistrationAdditionalPersonalDataController is used in the self registration process -->
+				<entry key="org.olat.registration.RegistrationAdditionalPersonalDataController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Additional registration form for self-registrated users (if empty, the step doesn't appear)" />
 						<property name="propertyHandlers">

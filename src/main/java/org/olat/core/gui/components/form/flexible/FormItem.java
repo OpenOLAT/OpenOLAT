@@ -307,6 +307,20 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	public void setWarningKey(String errorKey, String... params);
 
 	/**
+	 *
+	 * @return translated success text
+	 */
+	public String getSuccessText();
+
+	/**
+	 * Sets the i18n key for this form item's success message
+	 *
+	 * @param successKey
+	 * @param params
+	 */
+	public void setSuccessKey(String successKey, String... params);
+
+	/**
 	 * 
 	 * <p>
 	 * This method is used by a form infrastructure provider.
@@ -418,6 +432,12 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @return
 	 */
 	public boolean hasWarning();
+
+	/**
+	 *
+	 * @return true is formItem is successful
+	 */
+	public boolean isSuccess();
 	
 	/**
 	 * 
@@ -467,6 +487,11 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * Remove the warning
 	 */
 	public void clearWarning();
+
+	/**
+	 * clear success messages from formItem
+	 */
+	public void clearSuccess();
 	
 	/**
 	 * 

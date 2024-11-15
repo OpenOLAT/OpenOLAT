@@ -1,12 +1,12 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
 * You may obtain a copy of the License at
 * <p>
-* http://www.apache.org/licenses/LICENSE-2.0
+* https://www.apache.org/licenses/LICENSE-2.0
 * <p>
 * Unless required by applicable law or agreed to in writing,<br>
 * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
@@ -44,7 +44,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.login.auth.AuthenticationController;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.webauthn.ui.WebAuthnAuthenticationForm;
-import org.olat.registration.DisclaimerController;
+import org.olat.registration.DisclaimerFormController;
 import org.olat.registration.RegistrationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,7 +62,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	private Controller loginForm;
 	private Controller subController;
 	private CloseableModalController cmc;
-	private DisclaimerController disclaimerCtr;
+	private DisclaimerFormController disclaimerCtrl;
 
 	private Identity authenticatedIdentity;
 	private String authenticationProvider;
@@ -113,7 +113,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			} else if(event == Event.BACK_EVENT || event instanceof LoginEvent) {
 				fireEvent(ureq, event);
 			}
-		} else if (source == disclaimerCtr) {
+		} else if (source == disclaimerCtrl) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
 				// disclaimer accepted 
@@ -147,12 +147,12 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		if (registrationManager.needsToConfirmDisclaimer(authenticatedIdentity)) {
 			// accept disclaimer first
 			
-			removeAsListenerAndDispose(disclaimerCtr);
-			disclaimerCtr = new DisclaimerController(ureq, getWindowControl(), authenticatedIdentity, false);
-			listenTo(disclaimerCtr);
+			removeAsListenerAndDispose(disclaimerCtrl);
+			disclaimerCtrl = new DisclaimerFormController(ureq, getWindowControl(), authenticatedIdentity, false);
+			listenTo(disclaimerCtrl);
 			
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerCtr.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerCtrl.getInitialComponent());
 			listenTo(cmc);
 			
 			cmc.activate();	

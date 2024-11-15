@@ -1,12 +1,12 @@
 /**
 
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -15,7 +15,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.registration;
@@ -68,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Admin panel to configure the registration settings: should link appear on the login page...
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class RegistrationAdminController extends FormBasicController {
 
@@ -204,7 +204,7 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		initAutoEnrolment(settingsContainer);
 		
-		validUntilGuiEl = uifactory.addTextElement("admin.registration.valid.until.gui", 20, registrationModule.getValidUntilHoursGui().toString(), settingsContainer);
+		validUntilGuiEl = uifactory.addTextElement("admin.registration.valid.until.gui", 20, registrationModule.getValidUntilMinutesGui().toString(), settingsContainer);
 		validUntilGuiEl.setMandatory(true);
 		validUntilRestEl = uifactory.addTextElement("admin.registration.valid.until.rest", 20, registrationModule.getValidUntilHoursRest().toString(), settingsContainer);
 		validUntilRestEl.setMandatory(true);
@@ -636,7 +636,7 @@ public class RegistrationAdminController extends FormBasicController {
 		}
 		
 		Integer validUntilHoursGui = Integer.parseInt(validUntilGuiEl.getValue());
-		registrationModule.setValidUntilHoursGui(validUntilHoursGui);
+		registrationModule.setValidUntilMinutesGui(validUntilHoursGui);
 		Integer validUntilHoursRest = Integer.parseInt(validUntilRestEl.getValue());
 		registrationModule.setValidUntilHoursRest(validUntilHoursRest);
 		if(StringHelper.isLong(expirationDateDaysEl.getValue())) {

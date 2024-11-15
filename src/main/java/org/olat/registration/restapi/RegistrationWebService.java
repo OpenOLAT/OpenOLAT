@@ -1,12 +1,12 @@
 /**
  * OLAT - Online Learning and Training<br>
- * http://www.olat.org
+ * https://www.olat.org
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at
  * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -15,7 +15,7 @@
  * limitations under the License.
  * <p>
  * Copyright (c) frentix GmbH<br>
- * http://www.frentix.com<br>
+ * https://www.frentix.com<br>
  * <p>
  */
 package org.olat.registration.restapi;
@@ -49,7 +49,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.registration.RegistrationController;
+import org.olat.registration.RegistrationAdminController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
 import org.olat.registration.TemporaryKey;
@@ -70,7 +70,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
  * <P>
  * Initial Date:  14 juil. 2011 <br>
  *
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 @Component
 @Path("registration")
@@ -168,7 +168,7 @@ public class RegistrationWebService {
 	}
 	
 	private Translator getTranslator(Locale locale) {
-		return Util.createPackageTranslator(RegistrationController.class, locale);
+		return Util.createPackageTranslator(RegistrationAdminController.class, locale);
 	}
 
 }

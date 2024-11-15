@@ -55,6 +55,9 @@ public abstract class FormItemImpl implements InlineElement {
 	private String warningKey;
 	private String[] warningParams;
 	protected boolean hasWarning = false;
+	private String successKey;
+	private String[] successParams;
+	protected boolean isSuccess = false;
 	
 	private String helpKey;
 	private String[] helpParams;
@@ -367,6 +370,25 @@ public abstract class FormItemImpl implements InlineElement {
 		setComponentDirty();
 	}
 
+	@Override
+	public String getSuccessText() {
+		return translate(successKey, successParams);
+	}
+
+	@Override
+	public void setSuccessKey(String successKey, String... params) {
+		this.isSuccess = true;
+		this.successKey = successKey;
+
+		// legacy check to prevent NPE when passing null to params instead of nothing
+		if (params != null && params.length == 1 && params[0] == null) {
+			successParams = null;
+		} else {
+			successParams = params;
+		}
+		setComponentDirty();
+	}
+
 	/**
 	 * convenience
 	 * 
@@ -444,6 +466,11 @@ public abstract class FormItemImpl implements InlineElement {
 	public boolean hasWarning() {
 		return hasWarning;
 	}
+
+	@Override
+	public boolean isSuccess() {
+		return isSuccess;
+	}
 	
 	@Override
 	public boolean hasFeedback() {
@@ -470,6 +497,13 @@ public abstract class FormItemImpl implements InlineElement {
 		}
 	}
 
+	public void showSuccess(boolean show) {
+		if (isSuccess != show) {
+			this.isSuccess = show;
+			setComponentDirty();
+		}
+	}
+
 	@Override
 	public void clearError() {
 		showError(false);
@@ -480,6 +514,12 @@ public abstract class FormItemImpl implements InlineElement {
 	public void clearWarning() {
 		showWarning(false);
 		hasWarning = false;
+	}
+
+	@Override
+	public void clearSuccess() {
+		showSuccess(false);
+		isSuccess = false;
 	}
 
 	protected void setComponentDirty() {

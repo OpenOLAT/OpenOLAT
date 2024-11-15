@@ -98,6 +98,22 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			if(te.getRootForm().isInlineValidationOn() || te.isInlineValidationOn()) {
 				FormJSHelper.appendValidationListeners(sb, te.getRootForm(), id);
 			}
+
+			// for an one time password, some javascript is needed to change the look/feel
+			// and to trigger an event after the 8th digit is entered
+			if (te.isOneTimePassword()) {
+				sb.append("<script>\n")
+						.append("\"use strict\";\n")
+						.append("var otpInput = document.querySelector('[autocomplete=one-time-code]');\n")
+						.append("otpInput.addEventListener('input', () => {\n")
+						.append("    otpInput.style.setProperty('--_otp-digit', otpInput.selectionStart);\n")
+						.append("// Check if 8 digits are entered\n")
+						.append("	if (otpInput.value.length === 8 && /^\\d{8}$/.test(otpInput.value)) {\n")
+						.append(FormJSHelper.getJSFnCallFor(te.getRootForm(), id, te.getAction()))
+						.append("   }\n")
+						.append("});\n")
+						.append("</script>\n");
+			}
 			
 			if (te.isPlaceholderUpdate()) {
 				sb.append("<script>\n")

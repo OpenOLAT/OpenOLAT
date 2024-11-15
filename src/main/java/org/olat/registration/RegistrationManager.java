@@ -1,12 +1,12 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
 * You may obtain a copy of the License at
 * <p>
-* http://www.apache.org/licenses/LICENSE-2.0
+* https://www.apache.org/licenses/LICENSE-2.0
 * <p>
 * Unless required by applicable law or agreed to in writing,<br>
 * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
@@ -29,8 +29,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -68,6 +68,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.crypto.PasswordGenerator;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.filter.impl.HtmlFilter;
 import org.olat.core.util.i18n.I18nModule;
@@ -347,18 +348,28 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 * 
 	 * @return 
 	 */
-	public TemporaryKey loadOrCreateTemporaryKeyByEmail(String email, String ip, String action, Integer validForHours) {
+	public TemporaryKey loadOrCreateTemporaryKeyByEmail(String email, String ip, String action, Integer validForMinutes) {
 		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadTemporaryKeyByEmailAddress", TemporaryKey.class)
 				.setParameter("email", email)
 				.getResultList();
 		TemporaryKey tk;
 		if ((tks == null) || (tks.size() != 1)) { // no user found, create a new one
-			tk = createAndPersistTemporaryKey(email, ip, action, validForHours);
+			tk = createAndPersistTemporaryKey(email, ip, action, validForMinutes);
 		} else {
 			tk = tks.get(0);
 		}
 		return tk;
+	}
+
+	/**
+	 * update temporaryRegistrationKey, e.g. after resending
+	 *
+	 * @param email for which e-mail it should be updated, not applicable for changing mail and resending token
+	 * @return updated TemporaryKey object, if email couldn't be found 'null' is being returned
+	 */
+	public TemporaryKey updateTemporaryRegistrationKey(String email) {
+		return updateTkRegistrationKey(email);
 	}
 	
 	/**
@@ -373,35 +384,46 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 * @param action
 	 * @return
 	 */
-	public TemporaryKey createAndDeleteOldTemporaryKey(Long identityKey, String email, String ip, String action, Integer validForHours) {
+	public TemporaryKey createAndDeleteOldTemporaryKey(Long identityKey, String email, String ip, String action, Integer validForMinutes) {
 		deleteTemporaryKeys(identityKey, action);
-		return createAndPersistTemporaryKey(identityKey, email, ip, action, validForHours);
+		return createAndPersistTemporaryKey(identityKey, email, ip, action, validForMinutes);
 	}
 
-	private TemporaryKey createAndPersistTemporaryKey(String emailaddress, String ipaddress, String action, Integer validForHours) {
-		return createAndPersistTemporaryKey(null, emailaddress, ipaddress, action, validForHours);
+	private TemporaryKey createAndPersistTemporaryKey(String emailaddress, String ipaddress, String action, Integer validForMinutes) {
+		return createAndPersistTemporaryKey(null, emailaddress, ipaddress, action, validForMinutes);
 	}
 
-	private TemporaryKey createAndPersistTemporaryKey(Long identityKey, String email, String ip, String action, Integer validForHours) {
+	private TemporaryKey createAndPersistTemporaryKey(Long identityKey, String email, String ip, String action, Integer validForMinutes) {
 		TemporaryKeyImpl tk = new TemporaryKeyImpl();
 		tk.setCreationDate(new Date());
 		tk.setIdentityKey(identityKey);
 		tk.setEmailAddress(email);
 		tk.setIpAddress(ip);
-		tk.setRegistrationKey(createRegistrationKey(email, ip));
-		Integer validHours = validForHours != null? validForHours: VALID_UNTIL_30_DAYS;
-		Date validUntil = addHours(tk.getCreationDate(), validHours);
+		tk.setRegistrationKey(createRegistrationToken());
+		Integer validMinutes = validForMinutes != null ? validForMinutes : VALID_UNTIL_30_DAYS;
+		Date validUntil = addMinutes(tk.getCreationDate(), validMinutes);
 		tk.setValidUntil(validUntil);
 		tk.setRegAction(action);
 		dbInstance.getCurrentEntityManager().persist(tk);
 		return tk;
 	}
+
+	private TemporaryKey updateTkRegistrationKey(String email) {
+		TemporaryKey tk = loadTemporaryKeyByEmail(email);
+		if (tk != null) {
+			Integer validForMinutes = registrationModule.getValidUntilMinutesGui();
+			tk.setRegistrationKey(createRegistrationToken());
+			Integer validMinutes = validForMinutes != null ? validForMinutes : VALID_UNTIL_30_DAYS;
+			Date validUntil = addMinutes(tk.getCreationDate(), validMinutes);
+			tk.setValidUntil(validUntil);
+			dbInstance.getCurrentEntityManager().merge(tk);
+			return tk;
+		}
+		return null;
+	}
 	
-	private Date addHours(Date date, Integer seconds) {
-		Calendar c = Calendar.getInstance();
-		c.setTime(date);
-		c.add(Calendar.HOUR, seconds);
-		return c.getTime();
+	private Date addMinutes(Date date, Integer minutes) {
+		return DateUtils.addMinutes(date, minutes);
 	}
 	
 	public void deleteTemporaryKey(TemporaryKey key) {
@@ -605,9 +627,8 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		return xmlXStream.toXML(map);
 	}
 
-	private String createRegistrationKey(String email, String ip) {
-		String random = UUID.randomUUID().toString();
-		return Encoder.md5hash(email + ip + random);
+	private String createRegistrationToken() {
+		return PasswordGenerator.generateNumericalCode(8);
 	}
 
 	@Override

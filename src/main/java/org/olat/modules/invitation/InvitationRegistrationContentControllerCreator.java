@@ -27,7 +27,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.login.DmzBFWCParts;
-import org.olat.registration.RegistrationController;
+import org.olat.login.LoginAuthprovidersController;
 
 /**
  * 
@@ -43,7 +43,7 @@ public class InvitationRegistrationContentControllerCreator implements Controlle
 		dmzSitesAndNav.showTopNav(false);
 		ControllerCreator contentControllerCreator = (uureq, wwControl) -> {
 			Invitation invitation = (Invitation)uureq.getUserSession().getEntry(AuthHelper.ATTRIBUTE_INVITATION);
-			return new RegistrationController(uureq, wwControl, invitation);
+			return new LoginAuthprovidersController(uureq, wwControl, invitation, false);
 		};
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
 		return new BaseFullWebappController(lureq, dmzSitesAndNav);

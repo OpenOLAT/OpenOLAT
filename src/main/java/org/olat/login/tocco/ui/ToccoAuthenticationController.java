@@ -46,7 +46,7 @@ import org.olat.login.auth.AuthenticationForm;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.tocco.ToccoAuthManager;
 import org.olat.login.tocco.ToccoLoginModule;
-import org.olat.registration.DisclaimerController;
+import org.olat.registration.DisclaimerFormController;
 import org.olat.registration.RegistrationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,7 +61,7 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 	private Identity authenticatedIdentity;
 
 	private CloseableModalController cmc;
-	private DisclaimerController disclaimerCtr;
+	private DisclaimerFormController disclaimerCtr;
 	private final AuthenticationForm loginForm;
 
 	@Autowired
@@ -171,7 +171,7 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 		removeAsListenerAndDispose(disclaimerCtr);
 		removeAsListenerAndDispose(cmc);
 		
-		disclaimerCtr = new DisclaimerController(ureq, getWindowControl(), authenticatedIdentity, false);
+		disclaimerCtr = new DisclaimerFormController(ureq, getWindowControl(), authenticatedIdentity, false);
 		listenTo(disclaimerCtr);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerCtr.getInitialComponent());

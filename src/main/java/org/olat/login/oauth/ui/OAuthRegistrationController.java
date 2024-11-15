@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.login.oauth.ui;
@@ -50,8 +50,8 @@ import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
-import org.olat.registration.DisclaimerController;
-import org.olat.registration.RegistrationForm2;
+import org.olat.registration.DisclaimerFormController;
+import org.olat.registration.RegistrationPersonalDataController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
 import org.olat.user.ChangePasswordForm;
@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 04.11.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class OAuthRegistrationController extends FormBasicController {
@@ -77,7 +77,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	private SingleSelection langEl;
 	private Map<String,FormItem> propFormItems = new HashMap<>();
 	private CloseableModalController cmc;
-	private DisclaimerController disclaimerController;
+	private DisclaimerFormController disclaimerFormCtrl;
 	
 	private Identity authenticatedIdentity;
 	
@@ -96,7 +96,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	
 	public OAuthRegistrationController(UserRequest ureq, WindowControl wControl, OAuthRegistration registration) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(RegistrationForm2.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RegistrationPersonalDataController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale(), getTranslator()));
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
@@ -148,7 +148,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(disclaimerController == source) {
+		if(disclaimerFormCtrl == source) {
 			cmc.deactivate();
 			
 			if (event == Event.DONE_EVENT) {
@@ -167,9 +167,9 @@ public class OAuthRegistrationController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(disclaimerController);
+		removeAsListenerAndDispose(disclaimerFormCtrl);
 		removeAsListenerAndDispose(cmc);
-		disclaimerController = null;
+		disclaimerFormCtrl = null;
 		cmc = null;
 	}
 	
@@ -200,7 +200,7 @@ public class OAuthRegistrationController extends FormBasicController {
 			ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
 			if (!validationResult.isValid()) {
 				String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
-				usernameEl.setErrorKey("error.username.invalid", new String[] { descriptions });
+				usernameEl.setErrorKey("error.username.invalid", descriptions);
 				allOk &= false;
 			}
 		}
@@ -242,11 +242,11 @@ public class OAuthRegistrationController extends FormBasicController {
 	}
 	
 	private void doOpenDisclaimer(Identity authIdentity, UserRequest ureq) {
-		removeAsListenerAndDispose(disclaimerController);
-		disclaimerController = new DisclaimerController(ureq, getWindowControl(), authIdentity, false);
-		listenTo(disclaimerController);
+		removeAsListenerAndDispose(disclaimerFormCtrl);
+		disclaimerFormCtrl = new DisclaimerFormController(ureq, getWindowControl(), authIdentity, false);
+		listenTo(disclaimerFormCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerController.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerFormCtrl.getInitialComponent(),
 				true, translate("disclaimer.title"));
 		cmc.activate();
 		listenTo(cmc);

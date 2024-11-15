@@ -53,6 +53,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -104,7 +105,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	private final CatalogRepositoryEntrySearchParams searchParams;
 	
 	private CatalogRepositoryEntryInfosController infosCtrl;
-	private CloseableModalController cmc;
+	private LightboxController lightboxCtrl;
 	private WebCatalogAuthController authCtrl;
 	
 	private final boolean withSearch;
@@ -413,9 +414,9 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 				doBooked(ureq, repositoryEntryKey);
 			}
 		} else if (authCtrl == source) {
-			cmc.deactivate();
+			lightboxCtrl.deactivate();
 			cleanUp();
-		} else if (cmc == source) {
+		} else if (lightboxCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -423,9 +424,9 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(authCtrl);
-		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(lightboxCtrl);
 		authCtrl = null;
-		cmc = null;
+		lightboxCtrl = null;
 	}
 
 	@Override
@@ -569,10 +570,9 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		authCtrl = new WebCatalogAuthController(ureq, getWindowControl(), entry);
 		listenTo(authCtrl);
 		
-		String title = Util.createPackageTranslator(UserAuthenticationEditController.class, getLocale()).translate("change.providers");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), authCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
+		lightboxCtrl = new LightboxController(ureq, getWindowControl(), authCtrl);
+		listenTo(lightboxCtrl);
+		lightboxCtrl.activate();
 	}
 
 	private void doBooked(UserRequest ureq, Long repositoryEntryKey) {

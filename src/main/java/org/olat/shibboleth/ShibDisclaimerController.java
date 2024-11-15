@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.shibboleth;
@@ -37,8 +37,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
-import org.olat.registration.DisclaimerController;
-import org.olat.registration.RegistrationForm2;
+import org.olat.registration.DisclaimerFormController;
+import org.olat.registration.RegistrationPersonalDataController;
 import org.olat.registration.RegistrationManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 22 août 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ShibDisclaimerController extends FormBasicController implements Activateable2 {
@@ -54,7 +54,7 @@ public class ShibDisclaimerController extends FormBasicController implements Act
 	public static final String USERPROPERTIES_FORM_IDENTIFIER = ShibDisclaimerController.class.getCanonicalName();
 	
 	private CloseableModalController cmc;
-	private DisclaimerController disclaimerController;
+	private DisclaimerFormController disclaimerFormController;
 
 	@Autowired
 	private BaseSecurity securityManager;
@@ -63,17 +63,17 @@ public class ShibDisclaimerController extends FormBasicController implements Act
 	
 	public ShibDisclaimerController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(RegistrationForm2.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RegistrationPersonalDataController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		disclaimerController = new DisclaimerController(ureq, getWindowControl(), null, false);
-		listenTo(disclaimerController);
+		disclaimerFormController = new DisclaimerFormController(ureq, getWindowControl(), null, false);
+		listenTo(disclaimerFormController);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerController.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerFormController.getInitialComponent(),
 				true, translate("disclaimer.title"));
 		cmc.activate();
 		listenTo(cmc);
@@ -86,7 +86,7 @@ public class ShibDisclaimerController extends FormBasicController implements Act
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(disclaimerController == source) {
+		if(disclaimerFormController == source) {
 			cmc.deactivate();
 			
 			if (event == Event.DONE_EVENT) {
@@ -106,9 +106,9 @@ public class ShibDisclaimerController extends FormBasicController implements Act
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(disclaimerController);
+		removeAsListenerAndDispose(disclaimerFormController);
 		removeAsListenerAndDispose(cmc);
-		disclaimerController = null;
+		disclaimerFormController = null;
 		cmc = null;
 	}
 

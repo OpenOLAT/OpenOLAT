@@ -1,27 +1,27 @@
 /**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.
-*/
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+ * University of Zurich, Switzerland.
+ * <hr>
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * This file has been modified by the OpenOLAT community. Changes are licensed
+ * under the Apache 2.0 license as the original file.
+ */
 
 package org.olat.registration;
 
@@ -45,7 +45,6 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -87,7 +86,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Description:<br>
  * Controls the registration workflow.
- * 
+ *
+ * TODO: to be deleted (OO-8004)
+ *
  * <P>
  * @author Sabina Jeger
  */
@@ -106,21 +107,20 @@ public class RegistrationController extends BasicController implements Activatea
 	private VelocityContainer myContent;
 	private final boolean isCancelNonDispatch;
 
-	private WizardInfoController wizInfoController;
-	private DisclaimerController disclaimerController;
-	private EmailSendingForm emailSendForm;
-	private RegistrationForm2 registrationForm;
-	private RegistrationAdditionalForm registrationAdditionalForm;
+	private WizardInfoController wizInfoCtrl;
+	private DisclaimerFormController disclaimerFormCtrl;
+	private MailValidationController emailSendForm;
+	private RegistrationPersonalDataController registrationPersonalDataCtrl;
+	private RegistrationAdditionalPersonalDataController registrationAdditionalPersonalDataCtrl;
 	private LanguageChooserController langChooserController;
-	
+
 	private TemporaryKey tempKey;
 	private Invitation invitation;
-	private String uniqueRegistrationKey;
 	private final Steps steps = new Steps();
 	private final boolean emailValidationStep;
 	private final boolean disclaimerForm;
 	private final boolean additionalRegistrationForm;
-	
+
 	@Autowired
 	private I18nModule i18nModule;
 	@Autowired
@@ -149,17 +149,17 @@ public class RegistrationController extends BasicController implements Activatea
 	/**
 	 * Controller implementing registration workflow. Constructor used
 	 * by creator in spring configuration.
-	 * 
+	 *
 	 * @param ureq The user request
 	 * @param wControl The window control
 	 */
 	public RegistrationController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, false);
 	}
-	
+
 	/**
 	 * Controller implementing registration workflow.
-	 * 
+	 *
 	 * @param ureq The user request
 	 * @param wControl The window control
 	 * @param isCancelNonDispatch true, cancel send an event instead of a HTTP redirect
@@ -175,18 +175,18 @@ public class RegistrationController extends BasicController implements Activatea
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, msg.getInitialComponent(), null);
 			listenTo(layoutCtr);
 			putInitialPanel(layoutCtr.getInitialComponent());
-			
+
 			disclaimerForm = false;
 			emailValidationStep = false;
 			additionalRegistrationForm = false;
 			return;
 		}
-		
+
 		disclaimerForm = registrationModule.isDisclaimerEnabled();
 		emailValidationStep = registrationModule.isEmailValidationEnabled();
 		additionalRegistrationForm = !userManager
-				.getUserPropertyHandlersFor(RegistrationAdditionalForm.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
-		
+				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
+
 		// Init steps
 		steps.add(STEP_LANG);
 		if(disclaimerForm) {
@@ -200,7 +200,7 @@ public class RegistrationController extends BasicController implements Activatea
 			steps.add(STEP_ADDITIONAL_REGISTRATION_FORM);
 		}
 		steps.add(STEP_FINAL);
-		
+
 		// override language when not the same as in ureq and add fallback to
 		// property handler translator for user properties
 		String lang = ureq.getParameter("language");
@@ -212,22 +212,22 @@ public class RegistrationController extends BasicController implements Activatea
 			Locale loc = i18nManager.getLocaleOrDefault(lang);
 			ureq.getUserSession().setLocale(loc);
 			setLocale(loc, true);
-			setTranslator(userManager.getPropertyHandlerTranslator(Util.createPackageTranslator(this.getClass(), loc)));			
+			setTranslator(userManager.getPropertyHandlerTranslator(Util.createPackageTranslator(this.getClass(), loc)));
 		}	else {
 			// set fallback only
-			setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));			
+			setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		}
-		
+
 		//construct content
 		initWizardController(ureq);
-		
-		uniqueRegistrationKey = ureq.getHttpReq().getParameter("key");
+
+		String uniqueRegistrationKey = ureq.getHttpReq().getParameter("key");
 		if (uniqueRegistrationKey == null || uniqueRegistrationKey.equals("")) {
 			// no temporary key is given, we assume step 1. If this is the case, we
 			// render in a modal dialog, no need to add the 3cols layout controller
 			// wrapper
 			displayLanguageChooserStep(ureq);
-			putInitialPanel(myContent);
+			//putInitialPanel(myContent);
 		} else {
 			// we check if given key is a valid temporary key
 			tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(uniqueRegistrationKey);
@@ -243,21 +243,21 @@ public class RegistrationController extends BasicController implements Activatea
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
 			listenTo(layoutCtr);
 			putInitialPanel(layoutCtr.getInitialComponent());
-		}		
+		}
 	}
-	
+
 	public RegistrationController(UserRequest ureq, WindowControl wControl, Invitation invitation) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.invitation = invitation;
 		this.isCancelNonDispatch = false;
-		
+
 		disclaimerForm = registrationModule.isDisclaimerEnabled();
 		emailValidationStep = false;
 		additionalRegistrationForm = !userManager
-				.getUserPropertyHandlersFor(RegistrationAdditionalForm.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
-		
-		
+				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
+
+
 		// Init steps
 		steps.add(STEP_LANG);
 		if(disclaimerForm) {
@@ -268,25 +268,25 @@ public class RegistrationController extends BasicController implements Activatea
 			steps.add(STEP_ADDITIONAL_REGISTRATION_FORM);
 		}
 		steps.add(STEP_FINAL);
-		
+
 		initWizardController(ureq);
 		displayLanguageChooserStep(ureq);
 		putInitialPanel(myContent);
 	}
-	
+
 	private void initWizardController(UserRequest ureq) {
 		myContent = createVelocityContainer("reg");
-		wizInfoController = new WizardInfoController(ureq, steps.getNumberOfSteps());
-		listenTo(wizInfoController);
-		myContent.put("regwizard", wizInfoController.getInitialComponent());
+		wizInfoCtrl = new WizardInfoController(ureq, steps.getNumberOfSteps());
+		listenTo(wizInfoCtrl);
+		myContent.put("regwizard", wizInfoCtrl.getInitialComponent());
 		regarea = new Panel("regarea");
 		myContent.put("regarea", regarea);
 	}
-	
+
 	public String getWizardTitle() {
 		return translate("step1.reg.title");
 	}
-	
+
 	private VelocityContainer setErrorPage(String errorKey, WindowControl wControl) {
 		String error = getTranslator().translate(errorKey);
 		wControl.setError(error);
@@ -294,7 +294,7 @@ public class RegistrationController extends BasicController implements Activatea
 		errorContainer.contextPut("errorMsg", error);
 		return errorContainer;
 	}
-	
+
 	private void createLanguageForm(UserRequest ureq, WindowControl wControl) {
 		removeAsListenerAndDispose(langChooserController);
 		langChooserController = new LanguageChooserController(ureq, wControl, true);
@@ -329,7 +329,7 @@ public class RegistrationController extends BasicController implements Activatea
 				setLocale(lcev.getNewLocale(), true);
 				myContent.contextPut("text", translate("select.language.description"));
 			}
-		} else if (source == disclaimerController) {
+		} else if (source == disclaimerFormCtrl) {
 			if (event == Event.DONE_EVENT) {
 				if (emailValidationStep) {
 					displayEmailForm(ureq);
@@ -341,7 +341,7 @@ public class RegistrationController extends BasicController implements Activatea
 			if (event == Event.DONE_EVENT) { // form
 				processEmail(ureq);
 			}
-		}  else if (source == registrationForm) {
+		}  else if (source == registrationPersonalDataCtrl) {
 			// Userdata entered
 			if (event == Event.DONE_EVENT) {
 				if(additionalRegistrationForm) {
@@ -355,7 +355,7 @@ public class RegistrationController extends BasicController implements Activatea
 					}
 				}
 			}
-		} else if(source == registrationAdditionalForm) {
+		} else if(source == registrationAdditionalPersonalDataCtrl) {
 			if (event == Event.DONE_EVENT) {
 				Identity persitedIdentity = finishRegistration();
 				if(persitedIdentity == null) {
@@ -366,7 +366,7 @@ public class RegistrationController extends BasicController implements Activatea
 			}
 		}
 	}
-	
+
 	private void cancel(UserRequest ureq) {
 		if (isCancelNonDispatch) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -374,11 +374,11 @@ public class RegistrationController extends BasicController implements Activatea
 			ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
 		}
 	}
-	
+
 	/**
 	 * Display the language chooser or jump to the email form if
 	 * not needed.
-	 * 
+	 *
 	 * @param ureq The user request
 	 */
 	private void displayLanguageChooserStep(UserRequest ureq) {
@@ -388,45 +388,45 @@ public class RegistrationController extends BasicController implements Activatea
 			createLanguageForm(ureq, getWindowControl());
 		}
 	}
-	
+
 	/**
 	 * Display the disclaimer if enabled, else jump to the
 	 * email form.
-	 * 
+	 *
 	 * @param ureq The user request
 	 */
 	private void displayDisclaimer(UserRequest ureq) {
 		if(disclaimerForm) {
-			wizInfoController.setCurStep(steps.getStep(STEP_DISCLAIMER));
+			wizInfoCtrl.setCurStep(steps.getStep(STEP_DISCLAIMER));
 			myContent.contextPut("text", translate("step4.reg.text"));
-			
-			removeAsListenerAndDispose(disclaimerController);
-			disclaimerController = new DisclaimerController(ureq, getWindowControl(), null, false);
-			listenTo(disclaimerController);
-			
-			regarea.setContent(disclaimerController.getInitialComponent());
+
+			removeAsListenerAndDispose(disclaimerFormCtrl);
+			disclaimerFormCtrl = new DisclaimerFormController(ureq, getWindowControl(), null, false);
+			listenTo(disclaimerFormCtrl);
+
+			regarea.setContent(disclaimerFormCtrl.getInitialComponent());
 		} else if(emailValidationStep) {
 			displayEmailForm(ureq);
 		} else {
 			displayRegistrationForm(ureq);
 		}
 	}
-	
+
 	private void displayEmailForm(UserRequest ureq) {
-		wizInfoController.setCurStep(steps.getStep(STEP_EMAIL));
+		wizInfoCtrl.setCurStep(steps.getStep(STEP_EMAIL));
 
 		removeAsListenerAndDispose(emailSendForm);
-		emailSendForm = new EmailSendingForm(ureq, getWindowControl());
+		emailSendForm = new MailValidationController(ureq, getWindowControl(), null);
 		listenTo(emailSendForm);
-		
+
 		myContent.contextPut("text", translate("step1.reg.text"));
 		regarea.setContent(emailSendForm.getInitialComponent());
 	}
-	
+
 	private void processEmail(UserRequest ureq) {
 		// validation
 		// was ok
-		wizInfoController.setCurStep(steps.getStep(STEP_EMAIL));
+		wizInfoCtrl.setCurStep(steps.getStep(STEP_EMAIL));
 		// Email requested for tempkey
 		//save the fields somewhere
 		String email = emailSendForm.getEmailAddress();
@@ -446,24 +446,24 @@ public class RegistrationController extends BasicController implements Activatea
 			}
 			if (tk == null) {
 				tk = registrationManager.loadOrCreateTemporaryKeyByEmail(email, ip,
-						RegistrationManager.REGISTRATION, registrationModule.getValidUntilHoursGui());
+						RegistrationManager.REGISTRATION, registrationModule.getValidUntilMinutesGui());
 			}
 			myContent.contextPut("regKey", tk.getRegistrationKey());
-			
+
 			String link = serverpath + DispatcherModule.getPathDefault() + "registration/index.html?key=" + tk.getRegistrationKey() + "&language=" + i18nModule.getLocaleKey(ureq.getLocale());
 			String[] bodyAttrs = new String[]{
-				serverpath,										//0
-				tk.getRegistrationKey(),						//1
-				i18nModule.getLocaleKey(ureq.getLocale()),		//2
-				"<a href=\"" + link + "\">" + link + "</a>"		//3
+					serverpath,										//0
+					tk.getRegistrationKey(),						//1
+					i18nModule.getLocaleKey(ureq.getLocale()),		//2
+					"<a href=\"" + link + "\">" + link + "</a>"		//3
 			};
-			
+
 			String body = translate("reg.body", bodyAttrs);
 			boolean htmlBody = StringHelper.isHtml(body);
 			if(!htmlBody) {
 				body += SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
 			}
-			
+
 			if(sendMessage(email, translate("reg.subject"), body)) {
 				showInfo("email.sent");
 			} else {
@@ -480,10 +480,10 @@ public class RegistrationController extends BasicController implements Activatea
 			}
 		}
 	}
-	
+
 	private boolean sendMessage(String email, String subject, String body) {
 		boolean isMailSent = false;
-		
+
 		try {
 			MailBundle bundle = new MailBundle();
 			bundle.setTo(email);
@@ -496,12 +496,12 @@ public class RegistrationController extends BasicController implements Activatea
 		} catch (Exception e) {
 			// nothing to do, emailSent flag is false, errors will be reported to user
 		}
-		
+
 		return isMailSent;
 	}
-	
+
 	private void displayRegistrationForm(UserRequest ureq) {
-		wizInfoController.setCurStep(steps.getStep(STEP_REGISTRATION_FORM));
+		wizInfoCtrl.setCurStep(steps.getStep(STEP_REGISTRATION_FORM));
 		Map<String,String> userAttrs = new HashMap<>();
 
 		myContent.contextPut("text", translate("step3.reg.text"));
@@ -509,7 +509,7 @@ public class RegistrationController extends BasicController implements Activatea
 			myContent.contextPut("email", tempKey.getEmailAddress());
 			userAttrs.put("email", tempKey.getEmailAddress());
 		}
-		
+
 		if(invitation != null) {
 			String email = invitation.getMail();
 			createRegForm2(ureq, email, invitation.getFirstName(), invitation.getLastName(), email, false, true);
@@ -538,48 +538,48 @@ public class RegistrationController extends BasicController implements Activatea
 			createRegForm2(ureq, null, null, null, userAttrs.get("email"), false, false);
 		}
 	}
-	
+
 	private void createRegForm2(UserRequest ureq, String proposedUsername, String firstName, String lastName, String email, boolean userInUse, boolean usernameReadonly) {
-		registrationForm = new RegistrationForm2(ureq, getWindowControl(), i18nModule.getLocaleKey(getLocale()),
-				proposedUsername, firstName, lastName, email, userInUse, usernameReadonly);
-		listenTo(registrationForm);
-		regarea.setContent(registrationForm.getInitialComponent());
+		registrationPersonalDataCtrl = new RegistrationPersonalDataController(ureq, getWindowControl(), i18nModule.getLocaleKey(getLocale()),
+				proposedUsername, firstName, lastName, email, userInUse, usernameReadonly, null);
+		listenTo(registrationPersonalDataCtrl);
+		regarea.setContent(registrationPersonalDataCtrl.getInitialComponent());
 	}
-	
+
 	private void displayRegistrationAdditionalForm(UserRequest ureq) {
-		wizInfoController.setCurStep(steps.getStep(STEP_ADDITIONAL_REGISTRATION_FORM));
+		wizInfoCtrl.setCurStep(steps.getStep(STEP_ADDITIONAL_REGISTRATION_FORM));
 		myContent.contextPut("text", translate("step.add.reg.text"));
 		String emailAddress = tempKey != null? tempKey.getEmailAddress(): null;
 		myContent.contextPut("email", emailAddress);
 
 		Map<String,String> userAttrs = new HashMap<>();
 		userAttrs.put("email", emailAddress);
-		
-		registrationAdditionalForm = new RegistrationAdditionalForm(ureq, getWindowControl());
-		listenTo(registrationAdditionalForm);
-		regarea.setContent(registrationAdditionalForm.getInitialComponent());
+
+		registrationAdditionalPersonalDataCtrl = new RegistrationAdditionalPersonalDataController(ureq, getWindowControl(), null);
+		listenTo(registrationAdditionalPersonalDataCtrl);
+		regarea.setContent(registrationAdditionalPersonalDataCtrl.getInitialComponent());
 	}
 
 	/**
 	 * OO-92
-	 * 
+	 *
 	 * displays the final step of the registration process. (step5)<br />
 	 * see also _content/finish.html
-	 * 
+	 *
 	 * @param User
 	 *            The newly created User from which to display information
-	 * 
+	 *
 	 */
 	private void displayFinalStep(Identity persitedIdentity){
-		wizInfoController.setCurStep(steps.getStep(STEP_FINAL));
-		
+		wizInfoCtrl.setCurStep(steps.getStep(STEP_FINAL));
+
 		// hide the text we don't need anymore 
 		myContent.contextPut("text", "");
-		
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
+
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false);
 		List<UserPropertyHandler> aggregatedUserPropertyHandlers = new ArrayList<>(userPropertyHandlers);
-		if(registrationAdditionalForm != null) {
-			List<UserPropertyHandler> addUserPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationAdditionalForm.USERPROPERTIES_FORM_IDENTIFIER, false);
+		if(registrationAdditionalPersonalDataCtrl != null) {
+			List<UserPropertyHandler> addUserPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false);
 			aggregatedUserPropertyHandlers.addAll(addUserPropertyHandlers);
 		}
 
@@ -587,29 +587,29 @@ public class RegistrationController extends BasicController implements Activatea
 		finishVC.contextPut("userPropertyHandlers", aggregatedUserPropertyHandlers);
 		finishVC.contextPut("user", persitedIdentity.getUser());
 		finishVC.contextPut("locale", getLocale());
-		finishVC.contextPut("username", registrationForm.getLogin());
-		
+		finishVC.contextPut("username", registrationPersonalDataCtrl.getLogin());
+
 		boolean pending = persitedIdentity.getStatus().equals(Identity.STATUS_PENDING);
 		if(pending) {
-			finishVC.contextPut("text", translate("step5.reg.pending", registrationForm.getLogin()));
+			finishVC.contextPut("text", translate("step5.reg.pending", registrationPersonalDataCtrl.getLogin()));
 		} else {
-			finishVC.contextPut("text", translate("step5.reg.text", registrationForm.getLogin()));
+			finishVC.contextPut("text", translate("step5.reg.text", registrationPersonalDataCtrl.getLogin()));
 		}
 		finishVC.contextPut("pending", Boolean.valueOf(pending));
 		loginButton = LinkFactory.createButton("form.login", finishVC, this);
 		loginButton.setCustomEnabledLinkCSS("btn btn-primary");
 		loginButton.setUserObject(persitedIdentity);
 		finishVC.put("loginhref", loginButton);
-		
+
 		regarea.setContent(finishVC);
 	}
-	
+
 	private Identity finishRegistration() {
 		Identity identity = null;
 		if(invitation != null && invitation.getIdentity() != null) {
 			identity = invitation.getIdentity();
 		}
-		
+
 		// Make sure we have an identity
 		if(identity == null) {
 			identity = createNewUser();
@@ -618,9 +618,9 @@ public class RegistrationController extends BasicController implements Activatea
 				return null;
 			}
 		} else {
-			String pwd = registrationForm.getPassword();
-			String username = registrationForm.getLogin();
-			List<Authentication> passkeys = registrationForm.getPasskeys();
+			String pwd = registrationPersonalDataCtrl.getPassword();
+			String username = registrationPersonalDataCtrl.getLogin();
+			List<Authentication> passkeys = registrationPersonalDataCtrl.getPasskeys();
 
 			if(StringHelper.containsNonWhitespace(pwd)) {
 				Authentication auth = securityManager.findAuthentication(identity,
@@ -636,7 +636,7 @@ public class RegistrationController extends BasicController implements Activatea
 				securityManager.persistAuthentications(identity, passkeys);
 			}
 		}
-		
+
 		// Update data
 		identity = updateUserData(identity);
 		if(invitation != null) {
@@ -644,36 +644,36 @@ public class RegistrationController extends BasicController implements Activatea
 		}
 		return identity;
 	}
-	
+
 	/**
 	 * OO-92
 	 * this will finally create the user, set all it's userproperties
-	 * 
+	 *
 	 * @return User the newly created, persisted User Object
 	 */
 	private Identity createNewUser() {
 		// create user with mandatory fields from registration-form
-		User volatileUser = userManager.createUser(registrationForm.getFirstName(), registrationForm.getLastName(), registrationForm.getEmail());
+		User volatileUser = userManager.createUser(registrationPersonalDataCtrl.getFirstName(), registrationPersonalDataCtrl.getLastName(), registrationPersonalDataCtrl.getEmail());
 
 		// create an identity with the given username / pwd and the user object
-		String login = registrationForm.getLogin();
-		String pwd = registrationForm.getPassword();
-		List<Authentication> passkeys = registrationForm.getPasskeys();
+		String login = registrationPersonalDataCtrl.getLogin();
+		String pwd = registrationPersonalDataCtrl.getPassword();
+		List<Authentication> passkeys = registrationPersonalDataCtrl.getPasskeys();
 		Identity identity = registrationManager.createNewUserAndIdentityFromTemporaryKey(login, pwd, volatileUser, tempKey);
 		if(identity != null && passkeys != null && !passkeys.isEmpty()) {
 			securityManager.persistAuthentications(identity, passkeys);
 		}
 		return identity;
 	}
-	
+
 	private Identity updateUserData(Identity identity) {
 		User user = identity.getUser();
-		
+
 		// Set user configured language
 		Preferences preferences = user.getPreferences();
-		preferences.setLanguage(registrationForm.getLangKey());
+		preferences.setLanguage(registrationPersonalDataCtrl.getLangKey());
 		user.setPreferences(preferences);
-		
+
 		// Enroll user to auto enrolled courses
 		if(invitation == null) {
 			SelfRegistrationAdvanceOrderInput input = new SelfRegistrationAdvanceOrderInput();
@@ -682,7 +682,7 @@ public class RegistrationController extends BasicController implements Activatea
 			autoAccessManager.createAdvanceOrders(input);
 			autoAccessManager.grantAccessToCourse(identity);
 		}
-			
+
 		// Add eventually static value
 		if(invitation == null && registrationModule.isStaticPropertyMappingEnabled()) {
 			String propertyName = registrationModule.getStaticPropertyMappingName();
@@ -699,21 +699,21 @@ public class RegistrationController extends BasicController implements Activatea
 		}
 
 		// Add value of registration form
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false);
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			FormItem fi = registrationForm.getPropFormItem(userPropertyHandler.getName());
+			FormItem fi = registrationPersonalDataCtrl.getPropFormItem(userPropertyHandler.getName());
 			userPropertyHandler.updateUserFromFormItem(user, fi);
 		}
-		
+
 		// Add value of additional registration form
-		if(registrationAdditionalForm != null) {
-			List<UserPropertyHandler> addUserPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationAdditionalForm.USERPROPERTIES_FORM_IDENTIFIER, false);
+		if(registrationAdditionalPersonalDataCtrl != null) {
+			List<UserPropertyHandler> addUserPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false);
 			for (UserPropertyHandler userPropertyHandler : addUserPropertyHandlers) {
-				FormItem fi = registrationAdditionalForm.getPropFormItem(userPropertyHandler.getName());
+				FormItem fi = registrationAdditionalPersonalDataCtrl.getPropFormItem(userPropertyHandler.getName());
 				userPropertyHandler.updateUserFromFormItem(user, fi);
 			}
 		}
-			
+
 		// Persist changes in database
 		userManager.updateUserFromIdentity(identity);
 		// Send notification mail to system admin.
@@ -724,14 +724,14 @@ public class RegistrationController extends BasicController implements Activatea
 
 		// tell system that this user did accept the disclaimer
 		registrationManager.setHasConfirmedDislaimer(identity);
-		
+
 		if(invitation != null && invitation.getIdentity() == null) {
 			invitation = invitationService.update(invitation, identity);
 		}
-		
+
 		return identity;
 	}
-	
+
 	private void doLogin(UserRequest ureq, Identity persistedIdentity) {
 		int loginStatus = AuthHelper.doLogin(persistedIdentity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
@@ -744,27 +744,15 @@ public class RegistrationController extends BasicController implements Activatea
 			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 		}
 	}
-	
-	protected static boolean validateElement(TextElement el) {
-		boolean allOk = true;
-		
-		String value = el.getValue();
-		if(value.contains("<") || value.contains(">") || value.contains("#")) {
-			el.setErrorKey("error.invalid.character");
-			allOk &= false;
-		}
 
-		return allOk;
-	}
-	
 	private static class Steps {
-		
+
 		private List<String> steps = new ArrayList<>();
-		
+
 		private void add(String name) {
 			steps.add(name);
 		}
-		
+
 		private int getStep(String name) {
 			for (int i = 0; i < steps.size(); i++) {
 				String stepName = steps.get(i);
@@ -774,7 +762,7 @@ public class RegistrationController extends BasicController implements Activatea
 			}
 			return -1;
 		}
-		
+
 		private int getNumberOfSteps() {
 			return steps.size();
 		}

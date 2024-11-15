@@ -53,7 +53,7 @@ import org.olat.login.auth.AuthenticationController;
 import org.olat.login.auth.AuthenticationForm;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
-import org.olat.registration.DisclaimerController;
+import org.olat.registration.DisclaimerFormController;
 import org.olat.registration.RegistrationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,7 +66,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	private VelocityContainer loginComp;
 	private Controller subController;
 	private AuthenticationForm loginForm; 
-	private DisclaimerController disclaimerCtr;
+	private DisclaimerFormController disclaimerCtr;
 	private Identity authenticatedIdentity;
 	private String provider = null;
 
@@ -193,7 +193,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				// accept disclaimer first
 				
 				removeAsListenerAndDispose(disclaimerCtr);
-				disclaimerCtr = new DisclaimerController(ureq, getWindowControl(), authenticatedIdentity, false);
+				disclaimerCtr = new DisclaimerFormController(ureq, getWindowControl(), authenticatedIdentity, false);
 				listenTo(disclaimerCtr);
 				
 				removeAsListenerAndDispose(cmc);

@@ -34,7 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.registration.RegistrationForm2;
+import org.olat.registration.RegistrationPersonalDataController;
 import org.olat.shibboleth.manager.ShibbolethAttributes;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -60,7 +60,7 @@ public class ShibbolethRegistrationUserPropertiesFrom extends FormBasicControlle
 
 	public ShibbolethRegistrationUserPropertiesFrom(UserRequest ureq, WindowControl wControl, ShibbolethAttributes shibbolethAttributes) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(RegistrationForm2.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RegistrationPersonalDataController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
 
