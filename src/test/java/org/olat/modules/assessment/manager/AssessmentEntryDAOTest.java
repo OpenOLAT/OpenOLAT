@@ -36,6 +36,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -73,6 +74,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,6 +104,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	private CurriculumService curriculumService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	@Test
 	public void createAssessmentEntry() {
@@ -751,6 +755,33 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertTrue(assessedIdentities.contains(assessedIdentity2));
 		Assert.assertTrue(assessedIdentities.contains(assessedIdentity3));
 		Assert.assertFalse(assessedIdentities.contains(assessedIdentity4));
+	}
+	
+	@Test
+	public void getParticipantsWithAssessmentData() {
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-9");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-10");
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-11");
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-12");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.coach.name());
+		
+		String subIdent = UUID.randomUUID().toString();
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, null, null, entry);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, refEntry);
+		dbInstance.commitAndCloseSession();
+
+		// id 1,2 are participants with entries, 3 is coach and 4 is not a member
+		List<Identity> assessedIdentities = assessmentEntryDao.getParticipantsWithAssessmentData(entry);
+		Assertions.assertThat(assessedIdentities)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(assessedIdentity1, assessedIdentity2);
 	}
 	
 	@Test

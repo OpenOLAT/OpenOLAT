@@ -25,7 +25,9 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskLateStatus;
+import org.olat.course.nodes.gta.ui.peerreview.CoachPeerReviewRow;
 import org.olat.course.nodes.gta.ui.workflow.CoachedParticipantRow;
 import org.olat.modules.assessment.Role;
 
@@ -47,16 +49,23 @@ public class TaskStepAdditionalInfosCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof CoachedParticipantRow participantRow) {
-			if(participantRow.getLateStatus() == TaskLateStatus.late) {
-				render(target, "label.late", "o_process_status_late");
-			} else if(participantRow.getLateStatus() == TaskLateStatus.extended) {
-				render(target, "msg.extended", "o_process_status_extended");
-			}
-			
-			if(participantRow.getTask() != null && participantRow.getTask().getSubmissionDoerRole() == Role.auto
-					&& participantRow.getLateStatus() != TaskLateStatus.extended) {
-				render(target, "msg.collection.date.auto.short", "o_process_status_auto_collect");
-			}
+			render(target, participantRow.getTask(), participantRow.getLateStatus(),
+					participantRow.getSubmissionDoerRole());
+		} else if(cellValue instanceof CoachPeerReviewRow participantRow && participantRow.getParent() == null) {
+			render(target, participantRow.getTask(), participantRow.getLateStatus(),
+					participantRow.getPeerReviewCompletedDoerRole());
+		}
+	}
+	
+	private void render(StringOutput target, Task task, TaskLateStatus lateStatus, Role doer) {
+		if(lateStatus == TaskLateStatus.late) {
+			render(target, "label.late", "o_process_status_late");
+		} else if(lateStatus == TaskLateStatus.extended) {
+			render(target, "msg.extended", "o_process_status_extended");
+		}
+		
+		if(task != null && doer == Role.auto && lateStatus != TaskLateStatus.extended) {
+			render(target, "msg.collection.date.auto.short", "o_process_status_auto_collect");
 		}
 	}
 	

@@ -121,6 +121,13 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	private Date collectionRevisionsDate;
 	@Column(name="g_collection_revisions_ndocs", nullable=true, insertable=true, updatable=true)
 	private Integer collectionRevisionsNumOfDocs;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_peerreview_completed_date", nullable=true, insertable=true, updatable=true)
+	private Date peerReviewCompletedDate;
+	@Enumerated(EnumType.STRING)
+	@Column(name="g_peerreview_completed_drole", nullable=true, insertable=true, updatable=true)
+	private Role peerReviewCompletedDoerRole;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_allow_reset_date", nullable=true, insertable=true, updatable=true)
@@ -333,6 +340,24 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 
 	public void setCollectionRevisionsNumOfDocs(Integer collectionRevisionsNumOfDocs) {
 		this.collectionRevisionsNumOfDocs = collectionRevisionsNumOfDocs;
+	}
+
+	@Override
+	public Date getPeerReviewCompletedDate() {
+		return peerReviewCompletedDate;
+	}
+
+	public void setPeerReviewCompletedDate(Date peerReviewCompletedDate) {
+		this.peerReviewCompletedDate = peerReviewCompletedDate;
+	}
+
+	@Override
+	public Role getPeerReviewCompletedDoerRole() {
+		return peerReviewCompletedDoerRole;
+	}
+
+	public void setPeerReviewCompletedDoerRole(Role peerReviewCompletedDoerRole) {
+		this.peerReviewCompletedDoerRole = peerReviewCompletedDoerRole;
 	}
 
 	@Override

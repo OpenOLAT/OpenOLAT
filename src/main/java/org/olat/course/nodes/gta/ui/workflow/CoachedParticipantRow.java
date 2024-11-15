@@ -38,6 +38,7 @@ import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.model.TaskImpl;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -169,6 +170,10 @@ public class CoachedParticipantRow extends UserPropertiesRow {
 
 	public void setLateStatus(TaskLateStatus lateStatus) {
 		this.lateStatus = lateStatus;
+	}
+	
+	public Role getSubmissionDoerRole() {
+		return task == null ? null : task.getSubmissionDoerRole();
 	}
 
 	public Date getCollectionDate() {

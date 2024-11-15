@@ -3371,6 +3371,8 @@ create table o_gta_task (
    g_submission_due_date date,
    g_revisions_due_date date,
    g_peerreview_due_date date,
+   g_peerreview_completed_date date,
+   g_peerreview_completed_drole varchar(16),
    g_solution_due_date date,
    fk_tasklist number(20) not null,
    fk_identity number(20),

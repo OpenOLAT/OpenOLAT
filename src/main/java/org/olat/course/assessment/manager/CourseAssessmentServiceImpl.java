@@ -751,6 +751,12 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public void assignCoach(AssessmentEntry assessmentEntry, Identity coach, CourseEnvironment courseEnv, CourseNode courseNode) {
 		if(coach == null) {
+			Identity assessedIdentity = assessmentEntry.getIdentity();
+			// This course node is only visible to participants, assign coach only to participants (eventually make something in CourseNode)
+			if(courseNode instanceof GTACourseNode && !courseEnv.getCourseGroupManager().isIdentityCourseParticipant(assessedIdentity)) {
+				return;
+			}
+			
 			List<Identity> identities = repositoryEntryRelationDao.getRelatedMembers(assessmentEntry.getRepositoryEntry(), assessmentEntry.getIdentity(), GroupRoles.participant, GroupRoles.coach);
 			if(courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_OWNERS, false)) {
 				List<Identity> owners = repositoryEntryRelationDao.getMembers(assessmentEntry.getRepositoryEntry(), RepositoryEntryRelationType.all, GroupRoles.owner.name());

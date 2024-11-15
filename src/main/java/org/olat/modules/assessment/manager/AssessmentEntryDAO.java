@@ -485,6 +485,23 @@ public class AssessmentEntryDAO {
 				.setParameter("repositoryEntryKey", entry.getKey())
 				.getResultList();
 	}
+	
+	public List<Identity> getParticipantsWithAssessmentData(RepositoryEntryRef entry) {
+		String query = """
+			select distinct ident from assessmententry data
+			inner join data.identity ident
+			inner join fetch ident.user identuser
+			where data.repositoryEntry.key=:repositoryEntryKey and ident.key in (
+			 select membership.identity.key from repoentrytogroup as rel, bgroupmember membership
+			 where rel.entry.key=:repositoryEntryKey and rel.group.key=membership.group.key and membership.role=:role
+			)""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, Identity.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("role", GroupRoles.participant.name())
+				.getResultList();
+	}
 
 	/**
 	 * Load all the assessment entries for a specific user and a specific assessed repository entry

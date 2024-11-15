@@ -130,6 +130,43 @@ public class DateUtils {
 		return calendar.getTime();
 	}
 	
+	public static Date truncateMilliSeconds(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.set(Calendar.MILLISECOND, 0);
+		return calendar.getTime();
+	}
+	
+	/**
+	 * Round something like 10:49:45.200 to 10:50:00.000
+	 * 
+	 * @param The date
+	 * @return The rounded date
+	 */
+	public static Date roundToMinute(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return roundToMinute(calendar);
+	}
+	
+	/**
+	 * Round something like 10:49:45.200 to 10:50:00.000
+	 * 
+	 * @param calendar
+	 * @return The rounded date
+	 */
+	public static Date roundToMinute(Calendar calendar) {
+		int seconds = calendar.get(Calendar.SECOND);
+		if(seconds > 30) {
+			calendar.add(Calendar.MINUTE, 1);
+			calendar.set(Calendar.SECOND, 0);
+			calendar.set(Calendar.MILLISECOND, 0);
+		}
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		return calendar.getTime();
+	}
+	
 	public static Date getStartOfDay(Date date) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);

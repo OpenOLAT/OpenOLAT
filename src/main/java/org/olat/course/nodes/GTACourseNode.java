@@ -1541,7 +1541,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 		boolean auto = assign && courseAssessmentService
 				.getAssessmentConfig(courseEntry, this).getCoachAssignmentMode() == CoachAssignmentMode.automatic;
 		if(auto) {
-			List<Identity> identities = course.getCourseEnvironment().getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(null);
+			List<Identity> identities = assessmentService.getParticipantsWithAssessmentData(courseEntry);
 			List<AssessmentEntry> entries = assessmentService.getAssessmentEntryCoachAssignment(courseEntry, getIdent(), true);
 			List<Identity> alreadyCoachedIdentities = entries.stream()
 					.filter(entry -> entry.getCoach() != null)
