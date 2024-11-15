@@ -41,6 +41,9 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 	private final long numOfParticipants;
 	private final long numOfCoaches;
 	private final long numOfOwners;
+	private final long numOfCurriculumElementOwners;
+	private final long numOfMasterCoaches;
+	
 	private final Curriculum curriculum;
 	private final CurriculumElement element;
 	private final CurriculumElementType elementType;
@@ -51,6 +54,7 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 	
 	public CurriculumElementSearchRow(CurriculumElement element, long numOfResources,
 			long numOfParticipants, long numOfCoaches, long numOfOwners,
+			long numOfCurriculumElementOwners, long numOfMasterCoaches,
 			FormLink resourcesLink, FormLink structureLink, FormLink toolsLink) {
 		this.element = element;
 		curriculum = element.getCurriculum();
@@ -59,6 +63,8 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 		this.numOfParticipants = numOfParticipants;
 		this.numOfCoaches = numOfCoaches;
 		this.numOfOwners = numOfOwners;
+		this.numOfCurriculumElementOwners = numOfCurriculumElementOwners;
+		this.numOfMasterCoaches = numOfMasterCoaches;
 		this.toolsLink = toolsLink;
 		this.structureLink = structureLink;
 		this.resourcesLink = resourcesLink;
@@ -133,8 +139,16 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 		return numOfOwners;
 	}
 	
+	public long getNumOfCurriculumElementOwners() {
+		return numOfCurriculumElementOwners;
+	}
+
+	public long getNumOfMasterCoaches() {
+		return numOfMasterCoaches;
+	}
+
 	public long getNumOfMembers() {
-		return numOfOwners + numOfCoaches + numOfParticipants;
+		return numOfOwners + numOfCoaches + numOfParticipants + numOfCurriculumElementOwners + numOfMasterCoaches;
 	}
 	
 	public FormLink getToolsLink() {

@@ -28,6 +28,7 @@ import org.olat.modules.curriculum.CurriculumElement;
  *
  */
 public record CurriculumElementSearchInfos(CurriculumElement curriculumElement, long numOfResources,
-		long numOfParticipants, long numOfCoaches, long numOfOwners) {
+		long numOfParticipants, long numOfCoaches, long numOfOwners,
+		long numOfCurriculumElementOwners, long numOfMasterCoaches) {
 	//
 }

@@ -66,6 +66,7 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 	private FlexiTableElement tableEl;
 	private CurriculumComposerTableModel tableModel;
 	
+	private final boolean withRoot;
 	private final CurriculumElement rootElement;
 	private final CurriculumElement activeElement;
 	
@@ -73,8 +74,9 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 	private CurriculumService curriculumService;
 	
 	public CurriculumStructureCalloutController(UserRequest ureq, WindowControl wControl,
-			CurriculumElement rootElement, CurriculumElement activeElement) {
+			CurriculumElement rootElement, CurriculumElement activeElement, boolean withRoot) {
 		super(ureq, wControl, "structure");
+		this.withRoot = withRoot;
 		this.rootElement = rootElement;
 		this.activeElement = activeElement;
 		initForm(ureq);
@@ -107,7 +109,7 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 			if(cellValue instanceof String str) {
 				CurriculumElementRow elementRow = tableModel.getObject(row);
 				if(activeElement != null && activeElement.equals(elementRow.getCurriculumElement())) {
-					target.append("<i class='o_icon o_icon-fw o_icon_arrow_right' title=\"").append(translate("element.active"))
+					target.append("<i class='o_icon o_icon-fw o_icon_selected_dot' title=\"").append(translate("element.active"))
 						  .append("\"> </i> <strong>").append(str).append("</strong>");
 				} else {
 					target.append(str);
@@ -118,7 +120,7 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 	
 	private void loadModel() {
 		List<CurriculumElement> elements = curriculumService.getCurriculumElementsDescendants(rootElement);
-		if(activeElement != null && !elements.contains(rootElement)) {
+		if(withRoot && rootElement != null && !elements.contains(rootElement)) {
 			elements.add(rootElement);
 		}
 		

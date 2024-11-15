@@ -30,7 +30,8 @@ import org.olat.modules.curriculum.CurriculumElementRef;
  *
  */
 public record CurriculumElementInfos(CurriculumElement curriculumElement, Curriculum curriculum,
-		long numOfResources, long numOfLectureBlocks, long numOfParticipants, long numOfCoaches, long numOfOwners)
+		long numOfResources, long numOfLectureBlocks, long numOfParticipants, long numOfCoaches, long numOfOwners,
+		long numOfCurriculumElementOwners, long numOfMasterChoaches)
 implements CurriculumElementRef {
 	
 	@Override

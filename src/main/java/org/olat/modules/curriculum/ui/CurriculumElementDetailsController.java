@@ -62,6 +62,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.event.CurriculumElementEvent;
+import org.olat.modules.curriculum.ui.event.SelectCurriculumElementRowEvent;
 import org.olat.modules.curriculum.ui.member.CurriculumElementUserManagementController;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
@@ -320,9 +321,13 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(curriculumStructureCalloutCtrl);
 		removeAsListenerAndDispose(deleteCurriculumElementCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(cmc);
+		curriculumStructureCalloutCtrl = null;
 		deleteCurriculumElementCtrl = null;
+		toolsCalloutCtrl = null;
 		cmc = null;
 	}
 
@@ -332,7 +337,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			doConfirmDeleteCurriculumElement(ureq);
 		} else if(structureButton == source) {
 			doOpenStructure( ureq, structureButton);
-		}
+		} 
 	}
 	
 	@Override
@@ -350,17 +355,27 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		} else if(curriculumStructureCalloutCtrl == source) {
+			toolsCalloutCtrl.deactivate();
+			if(event instanceof SelectCurriculumElementRowEvent scere) {
+				fireEvent(ureq, new CurriculumElementEvent(scere.getCurriculumElement(), List.of()));
+			}
+			cleanUp();
+		} else if(cmc == source || toolsCalloutCtrl == source) {
 			cleanUp();
 		}
 	}
 	
 	private void doOpenStructure(UserRequest ureq, Link link) {
-		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(curriculumElement);
-		CurriculumElement rootElement = parentLine.get(0);
-		
+		CurriculumElement rootElement;
+		if(curriculumElement.getParent() == null) {
+			rootElement = curriculumElement;
+		} else {
+			List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(curriculumElement);
+			rootElement = parentLine.get(0);
+		}
 		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(),
-				rootElement, null);
+				rootElement, curriculumElement, true);
 		listenTo(curriculumStructureCalloutCtrl);
 		
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);

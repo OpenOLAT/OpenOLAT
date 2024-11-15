@@ -49,6 +49,8 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	private final long numOfParticipants;
 	private final long numOfCoaches;
 	private final long numOfOwners;
+	private final long numOfCurriculumElementOwners;
+	private final long numOfMasterCoaches;
 	
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
@@ -73,6 +75,8 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		numOfParticipants = 0l;
 		numOfCoaches = 0l;
 		numOfOwners = 0l;
+		numOfCurriculumElementOwners = 0l;
+		numOfMasterCoaches = 0l;
 		toolsLink = null;
 		resourcesLink = null;
 		structureLink = null;
@@ -80,6 +84,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	public CurriculumElementRow(CurriculumElement element, long numOfResources,
 			long numOfParticipants, long numOfCoaches, long numOfOwners,
+			long numOfCurriculumElementOwners, long numOfMasterCoaches,
 			FormLink toolsLink, FormLink resourcesLink, FormLink structureLink) {
 		this.element = element;
 		curriculum = element.getCurriculum();
@@ -88,6 +93,8 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		this.numOfParticipants = numOfParticipants;
 		this.numOfCoaches = numOfCoaches;
 		this.numOfOwners = numOfOwners;
+		this.numOfCurriculumElementOwners = numOfCurriculumElementOwners;
+		this.numOfMasterCoaches = numOfMasterCoaches;
 		this.resourcesLink = resourcesLink;
 		this.structureLink = structureLink;
 		elementType = element.getType();
@@ -246,10 +253,19 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		return numOfOwners;
 	}
 	
-	public long getNumOfMembers() {
-		return numOfOwners + numOfCoaches + numOfParticipants;
+	public long getNumOfCurriculumElementOwners() {
+		return numOfCurriculumElementOwners;
 	}
 
+	public long getNumOfMasterCoaches() {
+		return numOfMasterCoaches;
+	}
+	
+	public long getNumOfMembers() {
+		return numOfOwners + numOfCoaches + numOfParticipants
+				+ numOfMasterCoaches + numOfCurriculumElementOwners;
+	}
+	
 	@Override
 	public String getCrump() {
 		return element.getDisplayName();

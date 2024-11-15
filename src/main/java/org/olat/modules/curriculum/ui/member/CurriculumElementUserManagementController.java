@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,6 +158,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	private final CurriculumSecurityCallback secCallback;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final Map<CurriculumRoles,FlexiFiltersTab> rolesToTab = new EnumMap<>(CurriculumRoles.class);
 	
 	private List<CurriculumElement> descendants;
 	
@@ -314,26 +316,31 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE,
 						List.of(CurriculumRoles.participant.name()))));
 		tabs.add(participantsTab);
+		rolesToTab.put(CurriculumRoles.participant, participantsTab);
 		
 		FlexiFiltersTab coachesTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CurriculumRoles.coach.name(), translate("search.role.coach"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE,
 						List.of(CurriculumRoles.coach.name()))));
 		tabs.add(coachesTab);
+		rolesToTab.put(CurriculumRoles.coach, coachesTab);
 		
 		FlexiFiltersTab masterCoachesTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CurriculumRoles.mastercoach.name(), translate("search.role.mastercoach"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE,
 						List.of(CurriculumRoles.mastercoach.name()))));
 		tabs.add(masterCoachesTab);
+		rolesToTab.put(CurriculumRoles.mastercoach, masterCoachesTab);
 		
 		FlexiFiltersTab ownersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CurriculumRoles.owner.name(), translate("search.role.course.owner"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE,
 						List.of(CurriculumRoles.owner.name()))));
 		tabs.add(ownersTab);
+		rolesToTab.put(CurriculumRoles.owner, ownersTab);
 		
 		FlexiFiltersTab curriculumElementOwnersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CurriculumRoles.curriculumelementowner.name(), translate("search.role.owner"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLE,
 						List.of(CurriculumRoles.curriculumelementowner.name()))));
 		tabs.add(curriculumElementOwnersTab);
+		rolesToTab.put(CurriculumRoles.curriculumelementowner, curriculumElementOwnersTab);
 
 		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tab("search", translate("search"), TabSelectionBehavior.clear);
 		searchTab.setLargeSearch(true);
@@ -461,6 +468,13 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(ACTIVE_SCOPE.equals(type)) {
 			searchScopes.setSelectedKey(ACTIVE_SCOPE);
+			loadModel(true);
+		}  else if(CurriculumRoles.isValueOf(type)) {
+			FlexiFiltersTab tab = rolesToTab.get(CurriculumRoles.valueOf(type));
+			if(tab == null) {
+				tab = allTab;
+			}
+			tableEl.setSelectedFilterTab(ureq, tab);
 			loadModel(true);
 		} else if(tableEl.getSelectedFilterTab() == null) {
 			tableEl.setSelectedFilterTab(ureq, allTab);

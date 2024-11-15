@@ -88,6 +88,7 @@ import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -296,11 +297,15 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
 				ElementCols.numOfMembers, "members"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isDefaultNumOfParticipants(),
-				ElementCols.numOfParticipants, "participants"));
+				ElementCols.numOfParticipants, CurriculumRoles.participant.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfCoaches, "coachs"));
+				ElementCols.numOfCoaches, CurriculumRoles.coach.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfOwners, "owners"));
+				ElementCols.numOfMasterCoaches, CurriculumRoles.mastercoach.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+				ElementCols.numOfOwners, CurriculumRoles.owner.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+				ElementCols.numOfCurriculumElementOwners, CurriculumRoles.curriculumelementowner.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status,
 				new CurriculumStatusCellRenderer(getTranslator())));
 		
@@ -348,7 +353,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(40);
 		tableEl.setSearchEnabled(true);
-		String tablePrefsId = (curriculum == null ? "cur-implementations" : "curriculum-composer");
+		String tablePrefsId = (curriculum == null ? "cur-implementations-v2" : "curriculum-composer-v2");
 		tableEl.setAndLoadPersistedPreferences(ureq, tablePrefsId);
 		
 		if(secCallback.canNewCurriculumElement()) {
@@ -516,6 +521,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		CurriculumElementRow row = new CurriculumElementRow(element.curriculumElement(), refs,
 				element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
+				element.numOfCurriculumElementOwners(), element.numOfMasterChoaches(),
 				toolsLink, resourcesLink, structureLink);
 		toolsLink.setUserObject(row);
 		structureLink.setUserObject(row);
@@ -566,6 +572,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("CurriculumElement".equalsIgnoreCase(type) || CONTEXT_ELEMENT.equalsIgnoreCase(type)) {
+			if(tableEl.getSelectedFilterTab() == null) {
+				tableEl.setSelectedFilterTab(ureq, statusTabMap.get(ALL_TAB_ID.toLowerCase()));
+				loadModel();
+			}
 			activateElement(ureq, entries);
 		} else if("Search".equalsIgnoreCase(type)) {
 			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
@@ -704,15 +714,9 @@ public class CurriculumComposerController extends FormBasicController implements
 				} else if("members".equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculumElementUserManagement(ureq, row, null);
-				} else if("participants".equals(cmd)) {
+				} else if(CurriculumRoles.isValueOf(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
-					doOpenCurriculumElementUserManagement(ureq, row, "Participants");
-				} else if("coachs".equals(cmd)) {
-					CurriculumElementRow row = tableModel.getObject(se.getIndex());
-					doOpenCurriculumElementUserManagement(ureq, row, "Coachs");
-				} else if("owners".equals(cmd)) {
-					CurriculumElementRow row = tableModel.getObject(se.getIndex());
-					doOpenCurriculumElementUserManagement(ureq, row, "Owners");
+					doOpenCurriculumElementUserManagement(ureq, row, CurriculumRoles.valueOf(cmd).name());
 				} else if(CMD_SELECT_CURRICULUM.equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculum(ureq, row);
@@ -922,7 +926,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void doOpenStructure(UserRequest ureq, CurriculumElementRow row, FormLink link) {
 		CurriculumElement curriculumElement = row.getCurriculumElement();
 		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(),
-				curriculumElement, null);
+				curriculumElement, null, false);
 		listenTo(curriculumStructureCalloutCtrl);
 		
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);

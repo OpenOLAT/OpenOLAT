@@ -460,6 +460,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_search_lookup { @include o-add-icon('magnifying-glass-plus');}
 .o_icon_select { @include o-add-icon('check');}
 .o_icon_selected { @include o-add-icon('check');}
+.o_icon_selected_dot { @include o-add-icon('circle-dot', false); color:$brand-danger;}
 .o_icon_send { @include o-add-icon('envelope');}
 .o_icon_settings { @include o-add-icon('gears');}
 .o_icon_share { @include o-add-icon('share');}

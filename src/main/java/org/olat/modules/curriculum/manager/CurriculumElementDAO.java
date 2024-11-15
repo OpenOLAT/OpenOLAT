@@ -402,7 +402,13 @@ public class CurriculumElementDAO {
 		  .append(" ) as numOfCoaches,")
 		  .append(" (select count(distinct owners.identity.key) from bgroupmember as owners")
 		  .append("  where owners.group.key=baseGroup.key and owners.role='").append(GroupRoles.owner.name()).append("'")
-		  .append(" ) as numOfOwners")
+		  .append(" ) as numOfOwners,")
+		  .append(" (select count(distinct curriculElementOwners.identity.key) from bgroupmember as curriculElementOwners")
+		  .append("  where curriculElementOwners.group.key=baseGroup.key and curriculElementOwners.role='").append(CurriculumRoles.curriculumelementowner.name()).append("'")
+		  .append(" ) as numOfCurriculumElementOwners,")
+		  .append(" (select count(distinct masterCoaches.identity.key) from bgroupmember as masterCoaches")
+		  .append("  where masterCoaches.group.key=baseGroup.key and masterCoaches.role='").append(CurriculumRoles.mastercoach.name()).append("'")
+		  .append(" ) as numOfMasterCoaches")
 		  .append(" from curriculumelement el")
 		  .append(" inner join fetch el.curriculum curriculum")
 		  .append(" inner join fetch el.group baseGroup")
@@ -472,9 +478,13 @@ public class CurriculumElementDAO {
 			long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawObject, 3);
 			long numOfCoaches = PersistenceHelper.extractPrimitiveLong(rawObject, 4);
 			long numOfOwners = PersistenceHelper.extractPrimitiveLong(rawObject, 5);
+			long numOfCurriculumElementOwners = PersistenceHelper.extractPrimitiveLong(rawObject, 7);
+			long numOfMasterCoaches = PersistenceHelper.extractPrimitiveLong(rawObject, 7);
+			
 			infos.add(new CurriculumElementInfos(element, element.getCurriculum(),
 					numOfResources, numOfLectures,
-					numOfParticipants, numOfCoaches, numOfOwners));
+					numOfParticipants, numOfCoaches, numOfOwners,
+					numOfCurriculumElementOwners, numOfMasterCoaches));
 		}
 		return infos;
 	}
@@ -570,14 +580,20 @@ public class CurriculumElementDAO {
 		  .append("  where reToGroup.group.key=bGroup.key")
 		  .append(" ) as numOfElements,")
 		  .append(" (select count(distinct participants.identity.key) from bgroupmember as participants")
-		  .append("  where participants.group.key=bGroup.key and participants.role='").append(GroupRoles.participant.name()).append("'")
+		  .append("  where participants.group.key=bGroup.key and participants.role='").append(CurriculumRoles.participant.name()).append("'")
 		  .append(" ) as numOfParticipants,")
 		  .append(" (select count(distinct coaches.identity.key) from bgroupmember as coaches")
-		  .append("  where coaches.group.key=bGroup.key and coaches.role='").append(GroupRoles.coach.name()).append("'")
+		  .append("  where coaches.group.key=bGroup.key and coaches.role='").append(CurriculumRoles.coach.name()).append("'")
 		  .append(" ) as numOfCoaches,")
 		  .append(" (select count(distinct owners.identity.key) from bgroupmember as owners")
-		  .append("  where owners.group.key=bGroup.key and owners.role='").append(GroupRoles.owner.name()).append("'")
-		  .append(" ) as numOfOwners")
+		  .append("  where owners.group.key=bGroup.key and owners.role='").append(CurriculumRoles.owner.name()).append("'")
+		  .append(" ) as numOfOwners,")
+		  .append(" (select count(distinct curriculumElementOwners.identity.key) from bgroupmember as curriculumElementOwners")
+		  .append("  where curriculumElementOwners.group.key=bGroup.key and curriculumElementOwners.role='").append(CurriculumRoles.curriculumelementowner.name()).append("'")
+		  .append(" ) as numOfCurriculumElementOwners,")
+		  .append(" (select count(distinct masterCoaches.identity.key) from bgroupmember as masterCoaches")
+		  .append("  where masterCoaches.group.key=bGroup.key and masterCoaches.role='").append(CurriculumRoles.mastercoach.name()).append("'")
+		  .append(" ) as numOfMasterCoaches")
 		  .append(" from curriculumelement curEl")
 		  .append(" inner join fetch curEl.curriculum cur")
 		  .append(" inner join fetch cur.group baseGroup")
@@ -791,8 +807,13 @@ public class CurriculumElementDAO {
 				long numOfResources = PersistenceHelper.extractPrimitiveLong(rawObject, 1);
 				long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawObject, 2);
 				long numOfCoaches = PersistenceHelper.extractPrimitiveLong(rawObject, 3);
-				long numOfOwners= PersistenceHelper.extractPrimitiveLong(rawObject, 4);
-				infos.add(new CurriculumElementSearchInfos(element, numOfResources, numOfParticipants, numOfCoaches, numOfOwners));
+				long numOfOwners = PersistenceHelper.extractPrimitiveLong(rawObject, 4);
+				long numOfCurriculumElementOwners = PersistenceHelper.extractPrimitiveLong(rawObject, 5);
+				long numOfMasterCoaches = PersistenceHelper.extractPrimitiveLong(rawObject, 6);
+				
+				infos.add(new CurriculumElementSearchInfos(element, numOfResources,
+						numOfParticipants, numOfCoaches, numOfOwners,
+						numOfCurriculumElementOwners, numOfMasterCoaches));
 				deduplicates.add(element);
 			}
 		}

@@ -72,6 +72,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
@@ -156,11 +157,15 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
 				SearchCols.numOfMembers, "members"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				SearchCols.numOfParticipants, "participants"));
+				SearchCols.numOfParticipants, CurriculumRoles.participant.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				SearchCols.numOfCoaches, "coachs"));
+				SearchCols.numOfCoaches, CurriculumRoles.coach.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				SearchCols.numOfOwners, "owners"));
+				SearchCols.numOfMasterCoaches, CurriculumRoles.mastercoach.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+				SearchCols.numOfOwners, CurriculumRoles.owner.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
+				SearchCols.numOfCurriculumElementOwners, CurriculumRoles.curriculumelementowner.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.status,
 				new CurriculumStatusCellRenderer(getTranslator())));
 		
@@ -308,15 +313,9 @@ public class CurriculumSearchManagerController extends FormBasicController {
 				} else if("members".equals(cmd)) {
 					CurriculumElementSearchRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculumElementUserManagement(ureq, row, null);
-				} else if("participants".equals(cmd)) {
+				} else if(CurriculumRoles.isValueOf(cmd)) {
 					CurriculumElementSearchRow row = tableModel.getObject(se.getIndex());
-					doOpenCurriculumElementUserManagement(ureq, row, "Participants");
-				} else if("coachs".equals(cmd)) {
-					CurriculumElementSearchRow row = tableModel.getObject(se.getIndex());
-					doOpenCurriculumElementUserManagement(ureq, row, "Coachs");
-				} else if("owners".equals(cmd)) {
-					CurriculumElementSearchRow row = tableModel.getObject(se.getIndex());
-					doOpenCurriculumElementUserManagement(ureq, row, "Owners");
+					doOpenCurriculumElementUserManagement(ureq, row, CurriculumRoles.valueOf(cmd).name());
 				}
 			} else if(event instanceof FlexiTableSearchEvent se) {
 				doSearch(se.getSearch(), se.getFilters());
@@ -417,6 +416,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		
 		CurriculumElementSearchRow row = new CurriculumElementSearchRow(element.curriculumElement(),
 				element.numOfResources(), element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
+				element.numOfCurriculumElementOwners(), element.numOfMasterCoaches(),
 				resourcesLink, structureLink, toolsLink);
 		toolsLink.setUserObject(row);
 		structureLink.setUserObject(row);
@@ -459,10 +459,15 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	
 	private void doOpenStructure(UserRequest ureq, CurriculumElementSearchRow row, FormLink link) {
 		CurriculumElement curriculumElement = row.getCurriculumElement();
-		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(curriculumElement);
-		CurriculumElement rootElement = parentLine.get(0);
-		
-		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(), rootElement, curriculumElement);
+		CurriculumElement rootElement;
+		if(curriculumElement.getParent() == null) {
+			rootElement = curriculumElement;
+		} else {
+			List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(curriculumElement);
+			rootElement = parentLine.get(0);
+		}
+		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(),
+				rootElement, curriculumElement, true);
 		listenTo(curriculumStructureCalloutCtrl);
 		
 		CalloutSettings settings = new CalloutSettings(true, CalloutOrientation.bottom, true,  null);

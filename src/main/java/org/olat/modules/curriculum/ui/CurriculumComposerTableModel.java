@@ -224,6 +224,8 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			case numOfParticipants -> element.getNumOfParticipants();
 			case numOfCoaches -> element.getNumOfCoaches();
 			case numOfOwners -> element.getNumOfOwners();
+			case numOfCurriculumElementOwners -> element.getNumOfCurriculumElementOwners();
+			case numOfMasterCoaches -> element.getNumOfMasterCoaches();
 			case calendars -> element.getCalendarsLink();
 			case lectures -> element.getLecturesLink();
 			case qualityPreview -> element.getQualityPreviewLink();
@@ -253,6 +255,8 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 		numOfParticipants("table.header.num.of.participants"),
 		numOfCoaches("table.header.num.of.coaches"),
 		numOfOwners("table.header.num.of.owners"),
+		numOfCurriculumElementOwners("table.header.num.of.curriculumelementowners"),
+		numOfMasterCoaches("table.header.num.of.mastercoaches"),
 		calendars("table.header.calendars"),
 		lectures("table.header.lectures"),
 		structure("table.header.structure"),

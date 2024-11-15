@@ -73,6 +73,8 @@ implements SortableFlexiTableDataModel<CurriculumElementSearchRow> {
 			case numOfParticipants -> row.getNumOfParticipants();
 			case numOfCoaches -> row.getNumOfCoaches();
 			case numOfOwners -> row.getNumOfOwners();
+			case numOfCurriculumElementOwners -> row.getNumOfCurriculumElementOwners();
+			case numOfMasterCoaches -> row.getNumOfMasterCoaches();
 			case structure -> row.getStructureLink();
 			case tools -> row.getToolsLink();
 			default -> "ERROR";
@@ -93,6 +95,8 @@ implements SortableFlexiTableDataModel<CurriculumElementSearchRow> {
 		numOfParticipants("table.header.num.of.participants"),
 		numOfCoaches("table.header.num.of.coaches"),
 		numOfOwners("table.header.num.of.owners"),
+		numOfCurriculumElementOwners("table.header.num.of.curriculumelementowners"),
+		numOfMasterCoaches("table.header.num.of.mastercoaches"),
 		structure("table.header.structure"),
 		status("table.header.status"),
 		tools("table.header.tools");

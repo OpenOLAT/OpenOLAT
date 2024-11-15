@@ -202,7 +202,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.displayName, "select"));
+		DefaultFlexiColumnModel nameCol = new DefaultFlexiColumnModel(CurriculumCols.displayName, "select");
+		nameCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(nameCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.externalId));
 		if(organisationModule.isEnabled()) {
