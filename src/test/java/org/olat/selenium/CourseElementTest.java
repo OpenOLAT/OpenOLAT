@@ -514,8 +514,7 @@ public class CourseElementTest extends Deployments {
 		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		//deploy the test
 		URL testUrl = ArquillianDeployments.class.getResource("file_resources/qti21/test_15_questions.zip");
@@ -1009,8 +1008,7 @@ public class CourseElementTest extends Deployments {
 		// The participant come in
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		participantLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 			
 		// The participant find the course
 		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
@@ -1647,8 +1645,7 @@ public class CourseElementTest extends Deployments {
 		//First user go to the course
 		LoginPage kanuLoginPage = LoginPage.load(kanuBrowser, deploymentUrl);
 		kanuLoginPage
-			.loginAs(kanu.getLogin(), kanu.getPassword())
-			.resume();
+			.loginAs(kanu.getLogin(), kanu.getPassword());
 
 		NavigationPage kanuNavBar = NavigationPage.load(kanuBrowser);
 		kanuNavBar
@@ -1670,8 +1667,7 @@ public class CourseElementTest extends Deployments {
 		//First user go to the course
 		LoginPage reiLoginPage = LoginPage.load(reiBrowser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei)
-			.resume();
+			.loginAs(rei);
 
 		NavigationPage reiNavBar = NavigationPage.load(reiBrowser);
 		reiNavBar
@@ -1912,8 +1908,7 @@ public class CourseElementTest extends Deployments {
 		//Participant login
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 
 		NavigationPage participantNavBar = NavigationPage.load(browser);
 		participantNavBar
@@ -2287,8 +2282,7 @@ public class CourseElementTest extends Deployments {
 		//Coach login
 		LoginPage coachLoginPage = LoginPage.load(browser, deploymentUrl);
 		coachLoginPage
-			.loginAs(coach.getLogin(), coach.getPassword())
-			.resume();
+			.loginAs(coach.getLogin(), coach.getPassword());
 		
 		NavigationPage coachNavBar = NavigationPage.load(browser);
 		coachNavBar
@@ -2424,8 +2418,7 @@ public class CourseElementTest extends Deployments {
 		
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(user.getLogin(), user.getPassword())
-			.resume();
+			.loginAs(user.getLogin(), user.getPassword());
 		
 		//open the course
 		NavigationPage userNavBar = NavigationPage.load(browser);
@@ -2560,7 +2553,8 @@ public class CourseElementTest extends Deployments {
 		authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage
 			.loginAs(author.getLogin(), author.getPassword())
-			.resumeWithAssert();
+			.assertOnResume()
+			.resume();
 		
 		NavigationPage.load(browser)
 			.openAuthoringEnvironment()
@@ -3061,7 +3055,8 @@ public class CourseElementTest extends Deployments {
 		participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
 			.loginAs(participant1.getLogin(), participant1.getPassword())
-			.resumeWithAssert();
+			.assertOnResume()
+			.resume();
 		
 		new TBrokerPage(browser)
 			.assertEnrolledByTopic(topicTitle, 1);

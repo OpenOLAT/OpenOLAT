@@ -159,8 +159,7 @@ public class AssessmentTest extends Deployments {
 		//Ryomou open the course
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		
 		//open the course
 		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
@@ -288,8 +287,7 @@ public class AssessmentTest extends Deployments {
 		//Kanu log in 
 		LoginPage kanuLoginPage = LoginPage.load(kanuBrowser, deploymentUrl);
 		kanuLoginPage
-			.loginAs(kanu.getLogin(), kanu.getPassword())
-			.resume();
+			.loginAs(kanu.getLogin(), kanu.getPassword());
 		
 		// prepare and start an assessment
 		Calendar cal = Calendar.getInstance();
@@ -437,8 +435,7 @@ public class AssessmentTest extends Deployments {
 		//Participant log in
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 				
 		//open the efficiency statements
 		UserToolsPage reiUserTools = new UserToolsPage(browser);
@@ -537,8 +534,7 @@ public class AssessmentTest extends Deployments {
 		//Participant log in
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		
 		//open the course
 		NavigationPage reiNavBar = NavigationPage.load(browser);
@@ -633,8 +629,7 @@ public class AssessmentTest extends Deployments {
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		
 		participantLoginPage
-			.loginAs(participant1.getLogin(), participant1.getPassword())
-			.resume();
+			.loginAs(participant1.getLogin(), participant1.getPassword());
 		
 		//open the course
 		NavigationPage participantNavBar = NavigationPage.load(browser);
@@ -675,8 +670,7 @@ public class AssessmentTest extends Deployments {
 		LoginPage participant2LoginPage = LoginPage.load(browser, deploymentUrl);
 		
 		participant2LoginPage
-			.loginAs(participant2.getLogin(), participant2.getPassword())
-			.resume();
+			.loginAs(participant2.getLogin(), participant2.getPassword());
 		
 		//open the course
 		NavigationPage participant2NavBar = NavigationPage.load(browser);
@@ -799,8 +793,7 @@ public class AssessmentTest extends Deployments {
 		// Participant login
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 		
 		NavigationPage participantNavBar = NavigationPage.load(browser);
 		participantNavBar
@@ -915,8 +908,7 @@ public class AssessmentTest extends Deployments {
 		// Participant login
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 		
 		NavigationPage participantNavBar = NavigationPage.load(browser);
 		participantNavBar
@@ -1026,8 +1018,7 @@ public class AssessmentTest extends Deployments {
 		//Ryomou login
 		LoginPage ryomouLoginPage = LoginPage.load(browser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		
 		//see its beautiful efficiency statement
 		UserToolsPage ryomouUserTools = new UserToolsPage(browser);
@@ -1131,8 +1122,7 @@ public class AssessmentTest extends Deployments {
 		// Student login
 		LoginPage studentLoginPage = LoginPage.load(browser, deploymentUrl);
 		studentLoginPage
-			.loginAs(student.getLogin(), student.getPassword())
-			.resume();
+			.loginAs(student.getLogin(), student.getPassword());
 		
 		NavigationPage studentNavBar = NavigationPage.load(browser);
 		studentNavBar
@@ -1269,8 +1259,7 @@ public class AssessmentTest extends Deployments {
 		//Participant log in
 		LoginPage ryomouLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		//open the course
 		NavigationPage ryomouNavBar = NavigationPage.load(participantBrowser);
@@ -1293,8 +1282,7 @@ public class AssessmentTest extends Deployments {
 		//Participant 2 log in
 		LoginPage kanuLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		kanuLoginPage
-			.loginAs(kanu)
-			.resume();
+			.loginAs(kanu);
 		
 		//open the course
 		NavigationPage kanuNavBar = NavigationPage.load(participantBrowser);
@@ -1445,8 +1433,7 @@ public class AssessmentTest extends Deployments {
 		//Participant log in
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		//open the course
 		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
@@ -1613,8 +1600,7 @@ public class AssessmentTest extends Deployments {
 		//Participant log in
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		//open the course
 		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
@@ -1784,8 +1770,7 @@ public class AssessmentTest extends Deployments {
 		//Participant log in
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		//open the course
 		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
@@ -1928,8 +1913,7 @@ public class AssessmentTest extends Deployments {
 		//Ryomou login
 		LoginPage ryomouLoginPage = LoginPage.load(browser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		NavigationPage ryomouNavBar = NavigationPage.load(browser);
 		ryomouNavBar
@@ -1951,8 +1935,7 @@ public class AssessmentTest extends Deployments {
 		//Second login
 		LoginPage kanuLoginPage = LoginPage.load(browser, deploymentUrl);
 		kanuLoginPage
-			.loginAs(kanu)
-			.resume();
+			.loginAs(kanu);
 		
 		NavigationPage kanuNavBar = NavigationPage.load(browser);
 		kanuNavBar
@@ -2077,8 +2060,7 @@ public class AssessmentTest extends Deployments {
 		//Participant log in
 		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		//open the course
 		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
@@ -2207,8 +2189,7 @@ public class AssessmentTest extends Deployments {
 		//Participant log in
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		participantLoginPage
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		//open the course
 		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
@@ -2461,8 +2442,7 @@ public class AssessmentTest extends Deployments {
 		//Participant log in
 		LoginPage ryomouLoginPage = LoginPage.load(browser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		//open the course
 		NavigationPage ryomouNavBar = NavigationPage.load(browser);
@@ -2588,8 +2568,7 @@ public class AssessmentTest extends Deployments {
 		//Participant log in
 		LoginPage ryomouLoginPage = LoginPage.load(browser, deploymentUrl);
 		ryomouLoginPage
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		//open the course
 		NavigationPage ryomouNavBar = NavigationPage.load(browser);

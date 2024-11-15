@@ -95,8 +95,7 @@ public class PortfolioV2Test extends Deployments {
 		
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioV2HomePage portfolio = userTools
@@ -138,8 +137,7 @@ public class PortfolioV2Test extends Deployments {
 
 		LoginPage
 			.load(browser, deploymentUrl)
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		String binderTitle = "PF-Binder-" + UUID.randomUUID();
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -194,8 +192,7 @@ public class PortfolioV2Test extends Deployments {
 		//Participant log in
 		LoginPage
 			.load(browser, deploymentUrl)
-			.loginAs(ryomou)
-			.resume();
+			.loginAs(ryomou);
 		
 		//open the course
 		NavigationPage ryomouNavBar = NavigationPage.load(browser);
@@ -300,8 +297,7 @@ public class PortfolioV2Test extends Deployments {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to authoring
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -499,8 +495,7 @@ public class PortfolioV2Test extends Deployments {
 		//Ryomou login
 		LoginPage
 			.load(browser, deploymentUrl)
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		
 		//see its beautiful efficiency statement
 		String mediaTitle = "My efficiency";
@@ -547,8 +542,7 @@ public class PortfolioV2Test extends Deployments {
 
 		LoginPage
 			.load(browser, deploymentUrl)
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioV2HomePage portfolio = userTools
@@ -647,8 +641,7 @@ public class PortfolioV2Test extends Deployments {
 
 		LoginPage
 			.load(browser, deploymentUrl)
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		String binderTitle = "Binder to assess " + UUID.randomUUID();
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -721,8 +714,7 @@ public class PortfolioV2Test extends Deployments {
 		//Participant log in
 		LoginPage
 			.load(reiBrowser, deploymentUrl)
-			.loginAs(rei)
-			.resume();
+			.loginAs(rei);
 		
 		//open the course
 		NavigationPage reiNavBar = NavigationPage.load(reiBrowser);
@@ -895,8 +887,7 @@ public class PortfolioV2Test extends Deployments {
 
 		LoginPage
 			.load(browser, deploymentUrl)
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioV2HomePage portfolio = userTools
@@ -981,8 +972,7 @@ public class PortfolioV2Test extends Deployments {
 
 		LoginPage
 			.load(browser, deploymentUrl)
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioV2HomePage portfolio = userTools

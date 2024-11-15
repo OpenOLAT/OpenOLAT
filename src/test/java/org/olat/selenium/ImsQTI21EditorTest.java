@@ -349,8 +349,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -573,8 +572,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -612,8 +610,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage ericLoginPage = LoginPage.load(browser, deploymentUrl);
 		ericLoginPage
-			.loginAs(eric.getLogin(), eric.getPassword())
-			.resume();
+			.loginAs(eric.getLogin(), eric.getPassword());
 		NavigationPage ericNavBar = NavigationPage.load(browser);
 		ericNavBar
 			.openMyCourses()
@@ -852,8 +849,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -891,8 +887,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage melLoginPage = LoginPage.load(browser, deploymentUrl);
 		melLoginPage
-			.loginAs(melissa.getLogin(), melissa.getPassword())
-			.resume();
+			.loginAs(melissa.getLogin(), melissa.getPassword());
 		NavigationPage melNavBar = NavigationPage.load(browser);
 		melNavBar
 			.openMyCourses()
@@ -1035,8 +1030,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -1072,8 +1066,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -1216,8 +1209,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -1249,12 +1241,10 @@ public class ImsQTI21EditorTest extends Deployments {
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(5);// 3 points from the first question, 2 from the second
 		
-
 		//a second user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -1390,8 +1380,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -1430,8 +1419,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -1568,8 +1556,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -1608,8 +1595,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -1738,8 +1724,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -1780,8 +1765,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -1889,8 +1873,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -2002,8 +1985,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -2154,8 +2136,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -2193,8 +2174,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//A second user makes the test, all correct answers at first attempt
 		LoginPage lisaLoginPage = LoginPage.load(browser, deploymentUrl);
 		lisaLoginPage
-			.loginAs(lisa.getLogin(), lisa.getPassword())
-			.resume();
+			.loginAs(lisa.getLogin(), lisa.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -2345,8 +2325,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -2385,8 +2364,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage melLoginPage = LoginPage.load(browser, deploymentUrl);
 		melLoginPage
-			.loginAs(melissa.getLogin(), melissa.getPassword())
-			.resume();
+			.loginAs(melissa.getLogin(), melissa.getPassword());
 		NavigationPage melNavBar = NavigationPage.load(browser);
 		melNavBar
 			.openMyCourses()
@@ -2539,8 +2517,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -2579,8 +2556,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage melLoginPage = LoginPage.load(browser, deploymentUrl);
 		melLoginPage
-			.loginAs(melissa.getLogin(), melissa.getPassword())
-			.resume();
+			.loginAs(melissa.getLogin(), melissa.getPassword());
 		NavigationPage melNavBar = NavigationPage.load(browser);
 		melNavBar
 			.openMyCourses()
@@ -2739,8 +2715,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage asukaLoginPage = LoginPage.load(browser, deploymentUrl);
 		asukaLoginPage
-			.loginAs(asuka.getLogin(), asuka.getPassword())
-			.resume();
+			.loginAs(asuka.getLogin(), asuka.getPassword());
 		NavigationPage asukaNavBar = NavigationPage.load(browser);
 		asukaNavBar
 			.openMyCourses()
@@ -2779,8 +2754,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage charaLoginPage = LoginPage.load(browser, deploymentUrl);
 		charaLoginPage
-			.loginAs(chara.getLogin(), chara.getPassword())
-			.resume();
+			.loginAs(chara.getLogin(), chara.getPassword());
 		NavigationPage charaNavBar = NavigationPage.load(browser);
 		charaNavBar
 			.openMyCourses()
@@ -2930,8 +2904,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage asukaLoginPage = LoginPage.load(browser, deploymentUrl);
 		asukaLoginPage
-			.loginAs(asuka.getLogin(), asuka.getPassword())
-			.resume();
+			.loginAs(asuka.getLogin(), asuka.getPassword());
 		NavigationPage asukaNavBar = NavigationPage.load(browser);
 		asukaNavBar
 			.openMyCourses()
@@ -2970,8 +2943,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage charaLoginPage = LoginPage.load(browser, deploymentUrl);
 		charaLoginPage
-			.loginAs(chara.getLogin(), chara.getPassword())
-			.resume();
+			.loginAs(chara.getLogin(), chara.getPassword());
 		NavigationPage charaNavBar = NavigationPage.load(browser);
 		charaNavBar
 			.openMyCourses()
@@ -3119,8 +3091,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -3159,8 +3130,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a second user search the content package
 		LoginPage asukaLoginPage = LoginPage.load(browser, deploymentUrl);
 		asukaLoginPage
-			.loginAs(asuka.getLogin(), asuka.getPassword())
-			.resume();
+			.loginAs(asuka.getLogin(), asuka.getPassword());
 		NavigationPage asukaNavBar = NavigationPage.load(browser);
 		asukaNavBar
 			.openMyCourses()
@@ -3259,8 +3229,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -3364,8 +3333,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -3471,8 +3439,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
@@ -3586,8 +3553,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -3744,8 +3710,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -3777,8 +3742,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a  second user search the content package
 		LoginPage asukaLoginPage = LoginPage.load(browser, deploymentUrl);
 		asukaLoginPage
-			.loginAs(asuka.getLogin(), asuka.getPassword())
-			.resume();
+			.loginAs(asuka.getLogin(), asuka.getPassword());
 		NavigationPage asukaNavBar = NavigationPage.load(browser);
 		asukaNavBar
 			.openMyCourses()
@@ -3809,8 +3773,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//a third user search the content package
 		LoginPage reiLoginPage = LoginPage.load(browser, deploymentUrl);
 		reiLoginPage
-			.loginAs(rei.getLogin(), rei.getPassword())
-			.resume();
+			.loginAs(rei.getLogin(), rei.getPassword());
 		NavigationPage reiNavBar = NavigationPage.load(browser);
 		reiNavBar
 			.openMyCourses()
