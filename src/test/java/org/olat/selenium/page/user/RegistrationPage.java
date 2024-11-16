@@ -19,13 +19,10 @@
  */
 package org.olat.selenium.page.user;
 
-import java.util.List;
-
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 import com.dumbster.smtp.SmtpMessage;
@@ -52,7 +49,8 @@ public class RegistrationPage {
 		By signInBy = By.id("o_co_olat_login_register");
 		OOGraphene.waitElement(signInBy, browser);
 		browser.findElement(signInBy).click();
-		OOGraphene.waitModalDialog(browser);
+		By modalBy = By.cssSelector("#o_main_center dialog div.modal-body");
+		OOGraphene.waitElement(modalBy, browser);
 		return this;
 	}
 	
@@ -61,10 +59,7 @@ public class RegistrationPage {
 		OOGraphene.waitElement(languageBy, browser);	
 		new Select(browser.findElement(languageBy)).selectByValue("en");
 		OOGraphene.waitBusy(browser);
-		By nextBy = By.cssSelector(".modal-content .modal-body .form-group button.btn.btn-primary");
-		browser.findElement(nextBy).click();
-		OOGraphene.waitBusy(browser);
-		
+		OOGraphene.nextStep(browser);
 		// wait disclaimer
 		By disclaimerBy = By.cssSelector("fieldset.o_disclaimer");
 		OOGraphene.waitElement(disclaimerBy, browser);
@@ -72,28 +67,50 @@ public class RegistrationPage {
 	}
 	
 	public RegistrationPage acknowledgeDisclaimer() {
-		List<WebElement> disclaimer = browser.findElements(LoginPage.disclaimerXPath);
-		disclaimer.get(0).click();
-		browser.findElement(LoginPage.disclaimerButtonXPath).click();
-		OOGraphene.waitBusy(browser);
-		
+		browser.findElement(LoginPage.disclaimerXPath).click();
+		OOGraphene.nextStep(browser);	
 		By mailBy = By.className("o_sel_registration_email");
 		OOGraphene.waitElement(mailBy, browser);
 		return this;
 	}
 	
-	public RegistrationPage register(String email) {
+	public RegistrationPage validate(String email) {
 		By emailBy = By.cssSelector(".o_sel_registration_email input[type='text']");
 		OOGraphene.waitElement(emailBy, browser);
 		browser.findElement(emailBy).sendKeys(email);
+		By validateBy = By.cssSelector(".o_sel_registration_email_form a.btn.btn-primary");
+		browser.findElement(validateBy).click();
 		
-		By sendBy = By.cssSelector("fieldset.o_sel_registration_email_form button.btn.btn-primary");
-		browser.findElement(sendBy).click();
-		OOGraphene.waitBusy(browser);
-		
-		By confirmationBy = By.xpath("//p[text()[contains(.,'" + email + "')]]");
-		OOGraphene.waitElement(confirmationBy, browser);
+		By otpBy = By.cssSelector(".o_sel_registration_email_form .o_sel_registration_otp");
+		OOGraphene.waitElement(otpBy, browser);
 		return this;
+	}
+
+	public RegistrationPage validateOtp(String otp) {
+		By otpBy = By.cssSelector(".o_sel_registration_email_form .o_sel_registration_otp input[type='text']");
+		OOGraphene.waitElement(otpBy, browser);
+		browser.findElement(otpBy).sendKeys(otp);
+		
+		By validateOtpBy = By.cssSelector(".o_sel_registration_email_form .o_sel_registration_otp");
+		OOGraphene.waitElement(validateOtpBy, browser);
+		OOGraphene.nextStep(browser);
+		
+		By firstNameBy = By.cssSelector(".o_sel_registration_2_form");
+		OOGraphene.waitElement(firstNameBy, browser);
+		return this;
+	}
+	
+	public String extractOtp(SmtpMessage message) {
+		String link = extractRegistrationLink(message);
+		int index = link.indexOf("key=");
+		if(index >= 0) {
+			link = link.substring(index + 4);
+		}
+		int nextIndex = link.indexOf("&");
+		if(nextIndex >= 0) {
+			link = link.substring(0, nextIndex);
+		}
+		return link;
 	}
 	
 	public String extractRegistrationLink(SmtpMessage message) {
@@ -127,19 +144,11 @@ public class RegistrationPage {
 			browser.findElement(cred1By).sendKeys(password);
 			By cred2By = By.cssSelector(".o_sel_registration_cred2 input[type='password']");
 			browser.findElement(cred2By).sendKeys(password);
-			
-			By finalizeBy = By.cssSelector(".o_sel_registration_2_form button.btn.btn-primary");
-			browser.findElement(finalizeBy).click();
 			OOGraphene.waitBusy(browser);
-			
-			By previewBy = By.id("o_preview_details");
-			OOGraphene.waitElement(previewBy, browser);
-			By toLoginBy = By.cssSelector("#o_main_center_content_inner a.btn.btn-primary");
-			browser.findElement(toLoginBy).click();
+			OOGraphene.finishStep(browser, false);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Finalize registration", browser);
 			throw e;
 		}
 	}
-
 }

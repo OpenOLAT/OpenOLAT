@@ -49,7 +49,7 @@ import org.openqa.selenium.virtualauthenticator.VirtualAuthenticatorOptions.Tran
 public class LoginPage {
 	
 	private static final String footerUserDivXPath = "//div[@id='o_footer_user']/span[@id='o_username']";
-	private static final String acknowledgeCheckboxXPath = "//dialog//fieldset[contains(@class,'o_disclaimer')]//input[@name='acknowledge_checkbox']";
+	private static final String acknowledgeCheckboxXPath = "//dialog//fieldset[contains(@class,'o_sel_disclaimer')]//input[@name='acknowledge_checkbox']";
 	
 	public static final By loginFormBy = By.cssSelector("div.o_login_form");
 	private static final By authOrDisclaimerXPath = By.xpath(footerUserDivXPath + "|" + acknowledgeCheckboxXPath);
@@ -84,12 +84,8 @@ public class LoginPage {
 	}
 	
 	public void assertLoggedInByLastName(String lastName) {
-		OOGraphene.waitElement(usernameFooterBy, browser);
-		WebElement username = browser.findElement(usernameFooterBy);
-		Assert.assertNotNull(username);
-		Assert.assertTrue(username.isDisplayed());
-		String name = username.getText();
-		Assert.assertTrue(name.contains(lastName));
+		By lastNameBy = By.xpath("//span[@id='o_username']/i[text()[contains(.,'" + lastName + "')]]");
+		OOGraphene.waitElement(lastNameBy, browser);
 	}
 	
 	public LoginPage assertOnMaintenanceMessage(String text) {
@@ -176,27 +172,18 @@ public class LoginPage {
 	private LoginPage postSuccessfulLogin(By landingPointBy) {
 		try {
 			OOGraphene.waitElement(authOrDisclaimerXPath, browser);
-		} catch (Exception e1) {
-			OOGraphene.takeScreenshot("Login button", browser);
-			throw e1;
-		}
-		
-		//wipe out disclaimer
-		List<WebElement> disclaimer = browser.findElements(disclaimerXPath);
-		if(disclaimer.size() > 0) {
-			//click the disclaimer
-			OOGraphene.waitModalDialog(browser);
-			browser.findElement(disclaimerXPath).click();
-			browser.findElement(disclaimerButtonXPath).click();
-			try {
-				OOGraphene.waitElementDisappears(disclaimerXPath, 10, browser);
-			} catch (Exception e) {
-				OOGraphene.takeScreenshot("Login disclaimer", browser);
+			
+			// Wipe out disclaimer
+			List<WebElement> disclaimer = browser.findElements(disclaimerXPath);
+			if(disclaimer.size() > 0) {
+				//click the disclaimer
+				OOGraphene.waitModalDialog(browser);
+				browser.findElement(disclaimerXPath).click();
+				browser.findElement(disclaimerButtonXPath).click();
+				OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_disclaimer");
 			}
-		}
 		
-		//wait until the content appears
-		try {
+			// Wait until the content appears
 			OOGraphene.waitElement(landingPointBy, 30, browser);
 		} catch(Exception e) {
 			OOGraphene.takeScreenshot("Login", browser);

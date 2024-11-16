@@ -274,8 +274,7 @@ public class LoginTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void registration()
-	throws IOException, URISyntaxException {
+	public void registration() {
 		String email = UUID.randomUUID() + "@openolat.com";
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -285,19 +284,20 @@ public class LoginTest extends Deployments {
 			.signIn()
 			.nextToDisclaimer()
 			.acknowledgeDisclaimer()
-			.register(email);
+			.validate(email);
 		
 		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
 		Assert.assertEquals(1, messages.size());
 
 		String registrationLink = registration.extractRegistrationLink(messages.get(0));
+		String otp = registration.extractOtp(messages.get(0));
 		Assert.assertNotNull(registrationLink);
-		log.info("Registration link: {}", registrationLink);
+		log.info("Registration link: {}, TOP: {}", registrationLink, otp);
 		
 		String login = "md_" + CodeHelper.getForeverUniqueID();
 		String password = "VerySecret#01";
 		registration
-			.loadRegistrationLink(registrationLink)
+			.validateOtp(otp)
 			.finalizeRegistration("Arisu", "Iwakura", login, password);
 
 		loginPage

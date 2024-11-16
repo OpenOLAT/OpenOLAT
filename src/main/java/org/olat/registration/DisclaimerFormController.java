@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -81,15 +82,19 @@ public class DisclaimerFormController extends FormBasicController {
 	private static final String SR_ERROR_DISCLAIMER_CHECKBOX = "sr.error.disclaimer.checkbox";
 	private static final String SR_ERROR_DISCLAIMER_CHECKBOXES = "sr.error.disclaimer.checkboxes";
 
+	public  static final String DCL_ACCEPT = "dcl.accept";
 	public  static final String DCL_CHECKBOX_KEY = "dclchkbox";
 	public  static final String DCL_CHECKBOX_KEY2 = "dclchkbox2";
 	public  static final String DCL_CHECKBOX_KEY3 = "dclchkbox3";
+	private static final String NLS_DISCLAIMER_OK = "disclaimer.ok";
+	private static final String NLS_DISCLAIMER_NOK = "disclaimer.nok";
 	private static final String NLS_DISCLAIMER_ACKNOWLEDGED = "disclaimer.acknowledged";
 	private static final String ACKNOWLEDGE_CHECKBOX_NAME = "acknowledge_checkbox";
 	private static final String ADDITIONAL_CHECKBOX_NAME = "additional_checkbox";
 	private static final String ADDITIONAL_CHECKBOX_2_NAME = "additional_checkbox_2";
 
 	private final boolean readOnly;
+	private final boolean withButtons;
 
 	protected MultipleSelectionElement acceptCheckbox;
 	protected MultipleSelectionElement additionalCheckbox;
@@ -131,6 +136,7 @@ public class DisclaimerFormController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		this.identity = ureq.getIdentity();
 		this.readOnly = false;
+		this.withButtons = false;
 
 		initForm(ureq);
 	}
@@ -146,12 +152,15 @@ public class DisclaimerFormController extends FormBasicController {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.identity = identity;
 		this.readOnly = readOnly;
+		this.withButtons = !readOnly;
 
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_disclaimer");
+		
 		FormLayoutContainer disclaimerCont = FormLayoutContainer.createCustomFormLayout("disclaimer", getTranslator(), velocity_root + "/disclaimer.html");
 		disclaimerCont.setRootForm(mainForm);
 		formLayout.add(disclaimerCont);
@@ -215,6 +224,13 @@ public class DisclaimerFormController extends FormBasicController {
 
 		if (readOnly) {
 			formLayout.setEnabled(false);
+		} else if(withButtons) {
+			// Create submit and cancel buttons
+			final FormLayoutContainer buttonLayout = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+			buttonLayout.setElementCssClass("o_sel_disclaimer_buttons");
+			uifactory.addFormSubmitButton(DCL_ACCEPT, NLS_DISCLAIMER_OK, buttonLayout);
+			FormCancel cancelButton = uifactory.addFormCancelButton(NLS_DISCLAIMER_NOK, buttonLayout, ureq, getWindowControl());	
+			cancelButton.setI18nKey(NLS_DISCLAIMER_NOK);
 		}
 	}
 

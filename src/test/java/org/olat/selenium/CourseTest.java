@@ -2025,6 +2025,7 @@ public class CourseTest extends Deployments {
 			.cleanBlueBox()
 			.clickToolbarBack();
 		
+		String username = "john." + UUID.randomUUID().toString().replace("-", "");
 		String email = "john." + UUID.randomUUID().toString().replace("-", "") + "@openolat.org";
 		
 		CoursePageFragment courseRuntime = new CoursePageFragment(browser);
@@ -2056,7 +2057,7 @@ public class CourseTest extends Deployments {
 			.nextToDisclaimer()
 			.acknowledgeDisclaimer()
 			.nextToPassword()
-			.finalizeRegistration("2#ChangeSometimes");
+			.finalizeRegistration(username, "2#ChangeSometimes");
 		
 		CoursePageFragment invitationCourse = new CoursePageFragment(browser);
 		invitationCourse

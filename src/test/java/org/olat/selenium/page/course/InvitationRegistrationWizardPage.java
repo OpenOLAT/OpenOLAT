@@ -19,7 +19,6 @@
  */
 package org.olat.selenium.page.course;
 
-import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -75,10 +74,7 @@ public class InvitationRegistrationWizardPage {
 	}
 	
 	public InvitationRegistrationWizardPage nextToDisclaimer() {
-		By nextBy = By.cssSelector(".o_form .form-group button.btn.btn-primary");
-		browser.findElement(nextBy).click();
-		OOGraphene.waitBusy(browser);
-			
+		OOGraphene.nextStep(browser);	
 		// wait disclaimer
 		By disclaimerBy = By.cssSelector("fieldset.o_disclaimer");
 		OOGraphene.waitElement(disclaimerBy, browser);
@@ -93,28 +89,23 @@ public class InvitationRegistrationWizardPage {
 	}
 	
 	public InvitationRegistrationWizardPage nextToPassword() {
-		browser.findElement(LoginPage.disclaimerButtonXPath).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.nextStep(browser);
 		
 		By cred1By = By.className("o_sel_registration_cred1");
 		OOGraphene.waitElement(cred1By, browser);
 		return this;
 	}
 	
-	public void finalizeRegistration(String password) {		
+	public void finalizeRegistration(String username, String password) {
+		By usernameBy = By.cssSelector(".o_sel_registration_login input[type='text']");
+		browser.findElement(usernameBy).clear();
+		browser.findElement(usernameBy).sendKeys(username);
+		
 		By cred1By = By.cssSelector(".o_sel_registration_cred1 input[type='password']");
 		browser.findElement(cred1By).sendKeys(password);
 		By cred2By = By.cssSelector(".o_sel_registration_cred2 input[type='password']");
 		browser.findElement(cred2By).sendKeys(password);
 		
-		By finalizeBy = By.cssSelector(".o_sel_registration_2_form button.btn.btn-primary");
-		browser.findElement(finalizeBy).click();
-		OOGraphene.waitBusy(browser);
-		
-		By previewBy = By.id("o_preview_details");
-		OOGraphene.waitElement(previewBy, browser);
-		By toLoginBy = By.cssSelector("#o_main_container a.btn.btn-primary");
-		browser.findElement(toLoginBy).click();
+		OOGraphene.finishStep(browser);
 	}
-
 }

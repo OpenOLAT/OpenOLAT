@@ -10,7 +10,9 @@
 	#if ($r.available("disclaimer.additionallinktext"))
 		<p>$r.render("disclaimer.additionallinktext")</p>
 	#end
-
+	#if($r.available("buttons"))
+		$r.render("buttons")
+	#end
 	#if($r.available("radform")) 
 		$r.render("radform")
 	#end

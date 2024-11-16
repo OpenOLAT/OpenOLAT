@@ -105,6 +105,7 @@ public class MailValidationController extends FormBasicController {
 		FormLayoutContainer mailCont = FormLayoutContainer.createDefaultFormLayout("mail_cont", getTranslator());
 		formLayout.add(mailCont);
 		mailEl = uifactory.addTextElement("mail", "email.address", 255, "", mailCont);
+		mailEl.setElementCssClass("o_sel_registration_email");
 		mailEl.setMandatory(true);
 
 		validateMailLink = uifactory.addFormLink("submit.validate", mailCont, Link.BUTTON);

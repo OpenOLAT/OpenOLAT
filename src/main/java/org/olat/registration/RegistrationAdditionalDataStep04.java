@@ -19,7 +19,6 @@
  */
 package org.olat.registration;
 
-import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;

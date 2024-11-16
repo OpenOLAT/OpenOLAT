@@ -327,6 +327,13 @@ class NewUserForm extends FormBasicController {
 	}
 	
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(emailTextElement != fiSrc && organisationsElement != fiSrc) { // E-mail checks itself
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (confirmRemoveCtrl == source) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {

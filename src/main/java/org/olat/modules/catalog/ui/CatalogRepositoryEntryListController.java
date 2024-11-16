@@ -51,7 +51,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.id.OLATResourceable;
@@ -87,7 +86,6 @@ import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.user.ui.admin.authentication.UserAuthenticationEditController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
