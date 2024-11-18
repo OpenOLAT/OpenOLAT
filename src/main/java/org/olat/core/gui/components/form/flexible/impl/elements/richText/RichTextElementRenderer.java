@@ -86,8 +86,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 						sb.append("<a href='javascript:;' class='btn btn-default btn-xs")
 						  .append(" active", currentTextMode == mode).append("' ")
 						  .onClickKeyEnter(FormJSHelper.getXHRFnCallFor(form, teC.getFormDispatchId(), 1, false, false, true,
-								new NameValuePair("cmd", mode.name()))).append(">")
+								new NameValuePair("cmd", mode.name()))).append(" role='button'>")
 						  .append(source.getTranslator().translate(mode.name()))
+						  .append(" <span class='sr-only'>" + source.getTranslator().translate("a11y.active") + "</span>",currentTextMode == mode)
 						  .append("</a>");
 					}
 					sb.append("</div></div>");
@@ -153,7 +154,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		if (te.hasFocus()) {
 			sb.append(" autofocus");
 		}
-
+		sb.append(" aria-required='true'", te.isMandatory());
 		sb.append(">");
 		//add set dirty form only if enabled
 		FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());	
@@ -189,6 +190,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		if (te.hasFocus()) {
 			sb.append(" autofocus");
 		}
+		sb.append(" aria-required='true'", te.isMandatory());
 		sb.append(">");
 		sb.append(value)
 		  .append("</textarea>");
@@ -270,8 +272,21 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("      if (dialogContainer) {\n")
 		  .append("        const auxElements = document.querySelectorAll('body > .tox-tinymce-aux');\n")
 		  .append("        if (auxElements.length) dialogContainer.append(auxElements[auxElements.length - 1]);\n")
-		  .append("      }\n")
-		  .append("    },\n");
+		  .append("      }\n");
+		// Add label on editor body. The real element label is not read by a11y tools
+		// since it points to the invisible text area. Also add a text for mandatory elements. 
+		String labelTxt = "";
+		if (StringHelper.containsNonWhitespace(te.getLabelText())) {
+			labelTxt = StringHelper.escapeForHtmlAttribute(te.getLabelText());
+		}
+		if (te.isMandatory()) {
+			labelTxt = labelTxt + " " + translator.translate("a11y.mandatory");				
+		}
+		labelTxt = labelTxt + ". " + translator.translate("richText.help");
+		sb.append("		 jQuery('#").append(domID).append("_ifr').attr('aria-label', '").append(labelTxt).append("');\n");
+		sb.append("		 jQuery(editor.getBody()).attr('aria-label', '").append(labelTxt).append("')\n");
+		//
+		sb.append("    },\n");
 		
 		sb.append("    setup: function(ed){\n")
 		  .append("      ed.on('init', function(e) {\n")
