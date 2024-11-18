@@ -69,6 +69,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -186,7 +187,6 @@ public class RepositoryEntriesWebService {
 			// list of courses open for everybody
 			Roles roles = getRoles(httpRequest);
 			Identity identity = getIdentity(httpRequest);
-			RepositoryManager rm = RepositoryManager.getInstance();
 			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles);
 			params.setOfferOrganisations(acService.getOfferOrganisations(identity));
 			params.setOfferValidAt(new Date());
@@ -206,14 +206,14 @@ public class RepositoryEntriesWebService {
 			}
 			
 			if(MediaTypeVariants.isPaged(httpRequest, request)) {
-				int totalCount = rm.countGenericANDQueryWithRolesRestriction(params);
-				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
+				int totalCount = repositoryManager.countGenericANDQueryWithRolesRestriction(params);
+				List<RepositoryEntry> res = repositoryManager.genericANDQueryWithRolesRestriction(params, start, limit, true);
 				RepositoryEntryVOes voes = new RepositoryEntryVOes();
 				voes.setRepositoryEntries(toArrayOfVOes(res));
 				voes.setTotalCount(totalCount);
 				return Response.ok(voes).build();
 			} else {
-				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(params, 0, -1, false);
+				List<RepositoryEntry> res = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 				RepositoryEntryVO[] voes = toArrayOfVOes(res);
 				return Response.ok(voes).build();
 			}
@@ -427,12 +427,25 @@ public class RepositoryEntriesWebService {
 	}
 	
 	@Path("{repoEntryKey}")
-	public RepositoryEntryWebService getRepositoryEntryResource(@PathParam("repoEntryKey")String repoEntryKey)
+	public RepositoryEntryWebService getRepositoryEntryResource(@PathParam("repoEntryKey")String repoEntryKey,
+			@Context HttpServletRequest httpRequest)
 	throws WebApplicationException {
 		RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
-	    if(re == null) {
-	      throw new WebApplicationException(Status.NOT_FOUND);
-	    }
+		if(re == null) {
+	    	throw new WebApplicationException(Status.NOT_FOUND);
+		} else {
+			Roles roles = getRoles(httpRequest);
+			Identity identity = getIdentity(httpRequest);
+			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, roles, re);
+			if(re.getEntryStatus() == RepositoryEntryStatusEnum.trash || re.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
+				if(!reSecurity.isEntryAdmin() && !roles.isLearnResourceManager() && !roles.isAdministrator()) {
+					throw new WebApplicationException(Status.NO_CONTENT);
+				}
+			}
+			if(!reSecurity.canLaunch()) {
+		    	throw new WebApplicationException(Status.FORBIDDEN);
+			} 
+		}
 		
 		RepositoryEntryWebService entrySW = new RepositoryEntryWebService(re);
 		CoreSpringFactory.autowireObject(entrySW);

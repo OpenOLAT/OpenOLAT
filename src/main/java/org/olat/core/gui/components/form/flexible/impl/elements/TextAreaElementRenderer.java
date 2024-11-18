@@ -128,6 +128,9 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			if (te.hasFocus()) {
 				sb.append(" autofocus");
 			}
+			if (te.isMandatory()) {
+				sb.append(" aria-required=\"true\"");				
+			}
 			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
 			  .append(" >")
 			  .append(value)

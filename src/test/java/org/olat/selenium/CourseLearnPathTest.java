@@ -152,8 +152,7 @@ public class CourseLearnPathTest extends Deployments {
 		//Participant log in
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
-			.loginAs(participant)
-			.resume();
+			.loginAs(participant);
 		
 		//open the course
 		NavigationPage participantNavBar = NavigationPage.load(browser);
@@ -277,8 +276,7 @@ public class CourseLearnPathTest extends Deployments {
 		//Participant log in
 		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
-			.loginAs(participant)
-			.resume();
+			.loginAs(participant);
 		
 		//open the course
 		NavigationPage participantNavBar = NavigationPage.load(browser);
@@ -396,8 +394,7 @@ public class CourseLearnPathTest extends Deployments {
 		//Student login
 		LoginPage studentLoginPage = LoginPage.load(browser, deploymentUrl);
 		studentLoginPage
-			.loginAs(student)
-			.resume();
+			.loginAs(student);
 		
 		NavigationPage studentNavBar = NavigationPage.load(browser);
 		studentNavBar

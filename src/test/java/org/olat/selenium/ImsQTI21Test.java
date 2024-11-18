@@ -556,8 +556,7 @@ public class ImsQTI21Test extends Deployments {
 		//a user search the course and make the test
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -641,8 +640,7 @@ public class ImsQTI21Test extends Deployments {
 		//a user search the test
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		userLoginPage
-			.loginAs(ryomou.getLogin(), ryomou.getPassword())
-			.resume();
+			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(browser);
 		userNavBar
 			.openMyCourses()
@@ -1135,8 +1133,7 @@ public class ImsQTI21Test extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
@@ -1261,8 +1258,7 @@ public class ImsQTI21Test extends Deployments {
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
@@ -1419,8 +1415,7 @@ public class ImsQTI21Test extends Deployments {
 		//a user search the course and make the test
 		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
@@ -1453,8 +1448,7 @@ public class ImsQTI21Test extends Deployments {
 		// grader assignment
 		LoginPage graderLoginPage = LoginPage.load(graderBrowser, deploymentUrl);
 		graderLoginPage
-			.loginAs(grader.getLogin(), grader.getPassword())
-			.resume();
+			.loginAs(grader.getLogin(), grader.getPassword());
 		
 		NavigationPage graderNavBar = NavigationPage.load(graderBrowser);
 		graderNavBar
@@ -1595,8 +1589,7 @@ public class ImsQTI21Test extends Deployments {
 		//a user search the course and make the test
 		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
-			.loginAs(participant.getLogin(), participant.getPassword())
-			.resume();
+			.loginAs(participant.getLogin(), participant.getPassword());
 		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
@@ -1642,8 +1635,7 @@ public class ImsQTI21Test extends Deployments {
 		// grader assignment
 		LoginPage graderLoginPage = LoginPage.load(graderBrowser, deploymentUrl);
 		graderLoginPage
-			.loginAs(grader.getLogin(), grader.getPassword())
-			.resume();
+			.loginAs(grader.getLogin(), grader.getPassword());
 		
 		NavigationPage graderNavBar = NavigationPage.load(graderBrowser);
 		graderNavBar

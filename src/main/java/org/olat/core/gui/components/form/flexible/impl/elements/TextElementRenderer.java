@@ -76,7 +76,9 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			if (te.hasFocus()) {
 				sb.append(" autofocus");
 			}
-			
+			if (te.isMandatory()) {
+				sb.append(" aria-required=\"true\"");				
+			}
 			if (te.getAutocomplete() != null) {
 				sb.append(" autocomplete=\"").append(te.getAutocomplete()).append("\"");
 			}

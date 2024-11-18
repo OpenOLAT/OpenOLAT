@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -39,6 +40,10 @@ public class GradeChangeRow extends UserPropertiesRow {
 	private BigDecimal score;
 	private String grade;
 	private String newGrade;
+	private Boolean passed;
+	private Boolean newPassed;
+	private Boolean userVisibility;
+	private AssessmentEntryStatus status;
 	
 	public GradeChangeRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
@@ -66,6 +71,38 @@ public class GradeChangeRow extends UserPropertiesRow {
 
 	public void setNewGrade(String newGrade) {
 		this.newGrade = newGrade;
+	}
+
+	public Boolean getPassed() {
+		return passed;
+	}
+
+	public void setPassed(Boolean passed) {
+		this.passed = passed;
+	}
+
+	public Boolean getNewPassed() {
+		return newPassed;
+	}
+
+	public void setNewPassed(Boolean newPassed) {
+		this.newPassed = newPassed;
+	}
+
+	public Boolean getUserVisibility() {
+		return userVisibility;
+	}
+
+	public void setUserVisibility(Boolean userVisibility) {
+		this.userVisibility = userVisibility;
+	}
+
+	public AssessmentEntryStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(AssessmentEntryStatus status) {
+		this.status = status;
 	}
 
 }

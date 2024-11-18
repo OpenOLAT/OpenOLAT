@@ -89,12 +89,16 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 				.append(" o_radio_buttons btn-group-vertical", ssF.isRenderAsButtonGroup())
 				.append("\"")
 				.append("data-toggle=\"buttons\"", ssF.isRenderAsButtonGroup())
+				.append(" role='radiogroup'")
+				.append(" aria-required='true'", ssF.isMandatory())
 				.append(">");
 		}
 		if (source.getFormItem().isRenderAsCard()) {
 			sb.append("<div class=\"o_radio_cards ")
 				.append(css, css != null)
 				.append("\"")
+				.append(" role='radiogroup'")
+				.append(" aria-required='true'", ssF.isMandatory())
 				.append(">");
 		}
 		
