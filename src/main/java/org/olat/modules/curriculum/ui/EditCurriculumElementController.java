@@ -176,6 +176,11 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 		
 		boolean canEdit = element == null || secCallback.canEditCurriculumElement(element);
+
+		String displayName = element == null ? "" : element.getDisplayName();
+		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.displayName", 255, displayName, formLayout);
+		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && canEdit);
+		displayNameEl.setMandatory(true);
 		
 		String identifier = element == null ? "" : element.getIdentifier();
 		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 64, identifier, formLayout);
@@ -184,11 +189,6 @@ public class EditCurriculumElementController extends FormBasicController {
 		if(identifierEl.isEnabled() && !StringHelper.containsNonWhitespace(identifier)) {
 			identifierEl.setFocus(true);
 		}
-
-		String displayName = element == null ? "" : element.getDisplayName();
-		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.displayName", 255, displayName, formLayout);
-		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && canEdit);
-		displayNameEl.setMandatory(true);
 		
 		// Status
 		SelectionValues statusPK = new SelectionValues();

@@ -107,16 +107,16 @@ public class EditCurriculumController extends FormBasicController {
 			String externalId = curriculum.getExternalId();
 			uifactory.addStaticTextElement("curriculum.external.id", externalId, formLayout);
 		}
-		
-		String identifier = curriculum == null ? "" : curriculum.getIdentifier();
-		identifierEl = uifactory.addTextElement("curriculum.identifier", "curriculum.identifier", 255, identifier, formLayout);
-		identifierEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.identifier) && secCallback.canEditCurriculum());
-		identifierEl.setMandatory(true);
 
 		String displayName = curriculum == null ? "" : curriculum.getDisplayName();
 		displayNameEl = uifactory.addTextElement("curriculum.displayName", "curriculum.displayName", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.displayName) && secCallback.canEditCurriculum());
 		displayNameEl.setMandatory(true);
+		
+		String identifier = curriculum == null ? "" : curriculum.getIdentifier();
+		identifierEl = uifactory.addTextElement("curriculum.identifier", "curriculum.identifier", 255, identifier, formLayout);
+		identifierEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.identifier) && secCallback.canEditCurriculum());
+		identifierEl.setMandatory(true);
 		
 		initFormOrganisations(formLayout, ureq.getUserSession());
 		

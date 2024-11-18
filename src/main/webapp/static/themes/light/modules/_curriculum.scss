@@ -396,6 +396,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	display: grid;
 	align-items: start;
 	justify-content: right;
+	grid-template-columns: 1fr;
 	
 	color: $o-curriculum-avatar-color;
 	background-color: $o-curriculum-avatar-bg-color;
