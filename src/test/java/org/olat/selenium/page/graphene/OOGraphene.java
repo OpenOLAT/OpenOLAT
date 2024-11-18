@@ -906,7 +906,7 @@ public class OOGraphene {
 				.withTimeout(timeout).pollingEvery(polling)
 				.until(ExpectedConditions.visibilityOfElementLocated(closeBlueBoxButtonBy));
 		} catch (Exception e) {
-			//e.printStackTrace();
+			log.warn("Wait blue box, but it doesn't appear", e);
 		}
 		closeBlueMessageWindow(browser);
 	}
