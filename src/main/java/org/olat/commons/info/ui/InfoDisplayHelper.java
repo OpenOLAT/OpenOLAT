@@ -34,7 +34,7 @@ import org.olat.core.util.StringHelper;
  * 
  * <P>
  * Initial Date:  28 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class InfoDisplayHelper {
 	
@@ -48,17 +48,15 @@ public class InfoDisplayHelper {
 
 	public String getAuthor(InfoMessage info) {
 		User user = info.getAuthor().getUser();
-		String formattedName = user.getProperty(UserConstants.FIRSTNAME, null)
+		return user.getProperty(UserConstants.FIRSTNAME, null)
 			+ " " + user.getProperty(UserConstants.LASTNAME, null);
-		return formattedName;
 	}
 	
 	
 	public String getInfos(InfoMessage info) {
 		String formattedName = getAuthor(info);
 		String creationDate = formatter.formatDateAndTime(info.getCreationDate());
-		String msgAddInfos = translator.translate("display.info", new String[]{formattedName, creationDate});
-		return msgAddInfos;
+		return translator.translate("display.info", formattedName, creationDate);
 	}
 	
 	public boolean isModified(InfoMessage info) {
@@ -72,8 +70,7 @@ public class InfoDisplayHelper {
 		String formattedName = user.getProperty(UserConstants.FIRSTNAME, null)
 			+ " " + user.getProperty(UserConstants.LASTNAME, null);
 		String creationDate = formatter.formatDateAndTime(info.getModificationDate());
-		String msgAddInfos = translator.translate("display.modifier", new String[]{formattedName, creationDate});
-		return msgAddInfos;
+		return translator.translate("display.modifier", formattedName, creationDate);
 	}
 	
 	public String getMessage(InfoMessage info) {
