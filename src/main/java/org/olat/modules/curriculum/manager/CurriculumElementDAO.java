@@ -585,9 +585,15 @@ public class CurriculumElementDAO {
 	public List<CurriculumElementSearchInfos> searchElements(CurriculumElementSearchParams params) {
 		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select curEl,")
+		  .append(" (select count(childEl.key) from curriculumelement childEl")
+		  .append("  where childEl.parent.key=curEl.key")
+		  .append(" ) as numOfChildren,")
 		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
 		  .append("  where reToGroup.group.key=bGroup.key")
 		  .append(" ) as numOfElements,")
+		  .append(" (select count(distinct lblock.key) from lectureblock lblock")
+		  .append("  where lblock.curriculumElement.key=curEl.key")
+		  .append(" ) as numOfLectures,")
 		  .append(" (select count(distinct participants.identity.key) from bgroupmember as participants")
 		  .append("  where participants.group.key=bGroup.key and participants.role='").append(CurriculumRoles.participant.name()).append("'")
 		  .append(" ) as numOfParticipants,")
@@ -813,14 +819,17 @@ public class CurriculumElementDAO {
 		for(Object[] rawObject:rawObjects) {
 			CurriculumElement element = (CurriculumElement)rawObject[0];
 			if(!deduplicates.contains(element)) {
-				long numOfResources = PersistenceHelper.extractPrimitiveLong(rawObject, 1);
-				long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawObject, 2);
-				long numOfCoaches = PersistenceHelper.extractPrimitiveLong(rawObject, 3);
-				long numOfOwners = PersistenceHelper.extractPrimitiveLong(rawObject, 4);
-				long numOfCurriculumElementOwners = PersistenceHelper.extractPrimitiveLong(rawObject, 5);
-				long numOfMasterCoaches = PersistenceHelper.extractPrimitiveLong(rawObject, 6);
+				long numOfChildren = PersistenceHelper.extractPrimitiveLong(rawObject, 1);
+				long numOfResources = PersistenceHelper.extractPrimitiveLong(rawObject, 2);
+				long numOfLectureBlocks = PersistenceHelper.extractPrimitiveLong(rawObject, 3);
+				long numOfParticipants = PersistenceHelper.extractPrimitiveLong(rawObject, 4);
+				long numOfCoaches = PersistenceHelper.extractPrimitiveLong(rawObject, 5);
+				long numOfOwners = PersistenceHelper.extractPrimitiveLong(rawObject, 6);
+				long numOfCurriculumElementOwners = PersistenceHelper.extractPrimitiveLong(rawObject, 7);
+				long numOfMasterCoaches = PersistenceHelper.extractPrimitiveLong(rawObject, 8);
 				
-				infos.add(new CurriculumElementSearchInfos(element, numOfResources,
+				infos.add(new CurriculumElementSearchInfos(element,
+						numOfChildren, numOfResources, numOfLectureBlocks,
 						numOfParticipants, numOfCoaches, numOfOwners,
 						numOfCurriculumElementOwners, numOfMasterCoaches));
 				deduplicates.add(element);

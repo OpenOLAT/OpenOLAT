@@ -27,7 +27,8 @@ import org.olat.modules.curriculum.CurriculumElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record CurriculumElementSearchInfos(CurriculumElement curriculumElement, long numOfResources,
+public record CurriculumElementSearchInfos(CurriculumElement curriculumElement,
+		long numOfChildren, long numOfResources, long numOfLectureBlocks,
 		long numOfParticipants, long numOfCoaches, long numOfOwners,
 		long numOfCurriculumElementOwners, long numOfMasterCoaches) {
 	//

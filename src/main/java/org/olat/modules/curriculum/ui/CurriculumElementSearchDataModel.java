@@ -22,10 +22,13 @@ package org.olat.modules.curriculum.ui;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.id.context.BusinessControlFactory;
 
 /**
  * 
@@ -34,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class CurriculumElementSearchDataModel extends DefaultFlexiTableDataModel<CurriculumElementSearchRow>
-implements SortableFlexiTableDataModel<CurriculumElementSearchRow> {
+implements SortableFlexiTableDataModel<CurriculumElementSearchRow>, FlexiBusinessPathModel {
 	
 	private static final SearchCols[] COLS = SearchCols.values();
 	
@@ -48,6 +51,21 @@ implements SortableFlexiTableDataModel<CurriculumElementSearchRow> {
 			List<CurriculumElementSearchRow> views = new CurriculumElementSearchTableModelSortDelegate(orderBy, this, null).sort();
 			super.setObjects(views);
 		}
+	}
+
+	@Override
+	public String getUrl(Component source, Object object, String action) {
+		if(object instanceof CurriculumElementSearchRow row && action != null) {
+			if(CurriculumSearchManagerController.CMD_CURRICULUM.equals(action)) {
+				String bPath = CurriculumHelper.getCurriculumBusinessPath(row.getCurriculumKey());
+				return BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(bPath);
+			}
+			if(CurriculumSearchManagerController.CMD_SELECT.equals(action)) {
+				String bPath = "[CurriculumAdmin:0][Curriculum:" + row.getCurriculumKey() + "][Implementations:0][CurriculumElement:" + row.getKey() + "][Overview:0]";	
+				return BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(bPath);
+			}
+		}
+		return null;
 	}
 
 	@Override

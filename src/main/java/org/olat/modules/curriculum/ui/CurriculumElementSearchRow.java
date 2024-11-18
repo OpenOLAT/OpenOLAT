@@ -37,6 +37,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
  */
 public class CurriculumElementSearchRow implements CurriculumElementRef {
 	
+	private final long numOfChildren;
 	private final long numOfResources;
 	private final long numOfParticipants;
 	private final long numOfCoaches;
@@ -49,16 +50,17 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 	private final CurriculumElementType elementType;
 	
 	private final FormLink toolsLink;
-	private final FormLink resourcesLink;
-	private final FormLink structureLink;
+	private FormLink resourcesLink;
+	private FormLink structureLink;
 	
-	public CurriculumElementSearchRow(CurriculumElement element, long numOfResources,
+	public CurriculumElementSearchRow(CurriculumElement element, long numOfResources, long numOfChildren,
 			long numOfParticipants, long numOfCoaches, long numOfOwners,
 			long numOfCurriculumElementOwners, long numOfMasterCoaches,
-			FormLink resourcesLink, FormLink structureLink, FormLink toolsLink) {
+			FormLink toolsLink) {
 		this.element = element;
 		curriculum = element.getCurriculum();
 		elementType = element.getType();
+		this.numOfChildren = numOfChildren;
 		this.numOfResources = numOfResources;
 		this.numOfParticipants = numOfParticipants;
 		this.numOfCoaches = numOfCoaches;
@@ -66,8 +68,6 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 		this.numOfCurriculumElementOwners = numOfCurriculumElementOwners;
 		this.numOfMasterCoaches = numOfMasterCoaches;
 		this.toolsLink = toolsLink;
-		this.structureLink = structureLink;
-		this.resourcesLink = resourcesLink;
 	}
 	
 	@Override
@@ -123,6 +123,10 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 		return status == null ? CurriculumElementStatus.active : status;
 	}
 	
+	public long getNumOfChildren() {
+		return numOfChildren;
+	}
+	
 	public long getNumOfRessources() {
 		return numOfResources;
 	}
@@ -159,8 +163,16 @@ public class CurriculumElementSearchRow implements CurriculumElementRef {
 		return resourcesLink;
 	}
 	
+	public void setResourcesLink(FormLink resourcesLink) {
+		this.resourcesLink = resourcesLink;
+	}
+	
 	public FormLink getStructureLink() {
 		return structureLink;
+	}
+
+	public void setStructureLink(FormLink structureLink) {
+		this.structureLink = structureLink;
 	}
 
 	@Override

@@ -97,6 +97,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumSearchManagerController extends FormBasicController {
 
+	protected static final String CMD_CURRICULUM = "curriculum";
+	protected static final String CMD_SELECT = "select";
+	
 	private static final String ALL_TAB_ID = "All";
 
 	private static final String FILTER_TYPE = "Type";
@@ -144,11 +147,16 @@ public class CurriculumSearchManagerController extends FormBasicController {
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SearchCols.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.displayName, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.structure));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.displayName, CMD_SELECT));
+		
+		DefaultFlexiColumnModel structureCol = new DefaultFlexiColumnModel(SearchCols.structure);
+		structureCol.setIconHeader("o_icon o_icon-lg o_icon_curriculum_structure");
+		structureCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(structureCol);
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SearchCols.externalId));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.curriculum));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.curriculum, CMD_CURRICULUM));
 		DateWithDayFlexiCellRenderer dateRenderer = new DateWithDayFlexiCellRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.beginDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SearchCols.endDate, dateRenderer));
@@ -170,6 +178,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 				new CurriculumStatusCellRenderer(getTranslator())));
 		
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SearchCols.tools);
+		toolsCol.setIconHeader("o_icon o_icon-lg o_icon_actions");
 		toolsCol.setExportable(false);
 		toolsCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsCol);
@@ -307,9 +316,12 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
-				if("select".equals(cmd)) {
+				if(CMD_SELECT.equals(cmd)) {
 					CurriculumElementSearchRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculumElementDetails(ureq, row.getCurriculumElement(), null);
+				} else if(CMD_CURRICULUM.equals(cmd)) {
+					CurriculumElementSearchRow row = tableModel.getObject(se.getIndex());
+					doOpenCurriculum(ureq, row);
 				} else if("members".equals(cmd)) {
 					CurriculumElementSearchRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculumElementUserManagement(ureq, row, null);
@@ -401,29 +413,35 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		String id = element.curriculumElement().getKey().toString();
 		
 		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsLink.setTitle(translate("actions.more"));
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		toolsLink.setTitle(translate("action.more"));
 		
-		FormLink structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
-		structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_curriculum_structure");
-		structureLink.setTitle(translate("action.structure"));
-		
-		FormLink resourcesLink = null;
-		if(element.numOfResources() > 0) {
-			resourcesLink = uifactory.addFormLink("resources_".concat(id), "resources", String.valueOf(element.numOfResources()),
-					null, null, Link.NONTRANSLATED);
-		}
-		
+		final long children = element.numOfChildren();
+		final long refs = element.numOfResources() + element.numOfLectureBlocks();
 		CurriculumElementSearchRow row = new CurriculumElementSearchRow(element.curriculumElement(),
-				element.numOfResources(), element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
+				children, refs, element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
 				element.numOfCurriculumElementOwners(), element.numOfMasterCoaches(),
-				resourcesLink, structureLink, toolsLink);
+				toolsLink);
 		toolsLink.setUserObject(row);
-		structureLink.setUserObject(row);
-		if(resourcesLink != null) {
+		
+		if(refs > 0) {
+			FormLink resourcesLink = uifactory.addFormLink("resources_".concat(id), "resources", String.valueOf(refs), null, null, Link.NONTRANSLATED);
 			resourcesLink.setUserObject(row);
+			row.setResourcesLink(resourcesLink);
+		}
+		if(children> 0) {
+			FormLink structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
+			structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_curriculum_structure");
+			structureLink.setTitle(translate("action.structure"));
+			structureLink.setUserObject(row);
+			row.setStructureLink(structureLink);
 		}
 		return row;
+	}
+	
+	private void doOpenCurriculum(UserRequest ureq, CurriculumElementSearchRow row) {
+		String path = "[CurriculumAdmin:0][Curriculums:0][Curriculum:" + row.getCurriculumKey() + "]";
+		NewControllerFactory.getInstance().launch(path, ureq, getWindowControl());
 	}
 	
 	private void doOpenCurriculumElementUserManagement(UserRequest ureq, CurriculumElementSearchRow row, String memberType) {
