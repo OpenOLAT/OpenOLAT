@@ -42,7 +42,7 @@ public class GradeApplyListController extends AbstractGradeListController {
 	}
 
 	@Override
-	protected boolean isShowCurrentGrade() {
+	protected boolean isShowCurrentValues() {
 		return false;
 	}
 

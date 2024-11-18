@@ -45,10 +45,14 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
+import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.grade.Breakpoint;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
@@ -94,6 +98,7 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 		super(ureq, wControl, form, runContext, LAYOUT_BAREBONE, null);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		
 		this.courseEntry = (RepositoryEntry)getFromRunContext(GradeScaleAdjustCallback.KEY_COURSE_ENTRY);
 		this.courseNode = (CourseNode)getFromRunContext(GradeScaleAdjustCallback.KEY_COURSE_NODE);
@@ -108,7 +113,7 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 		loadModel();
 	}
 	
-	protected abstract boolean isShowCurrentGrade();
+	protected abstract boolean isShowCurrentValues();
 	protected abstract boolean isMultiSelect();
 	protected abstract boolean filter(AssessmentEntry assessmentEntry);
 
@@ -131,7 +136,7 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.score, new ScoreCellRenderer()));
 		
 		String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeScale.getGradeSystem());
-		if (isShowCurrentGrade()) {
+		if (isShowCurrentValues()) {
 			DefaultFlexiColumnModel gradeColumn = new DefaultFlexiColumnModel(GradeChangeCols.grade, new TextFlexiCellRenderer(EscapeMode.none));
 			gradeColumn.setHeaderLabel(gradeSystemLabel);
 			columnsModel.addFlexiColumnModel(gradeColumn);
@@ -140,6 +145,22 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 		String newGradeSystemLabel = translate("table.header.grade.new.label", gradeSystemLabel);
 		newGradeModel.setHeaderLabel(newGradeSystemLabel);
 		columnsModel.addFlexiColumnModel(newGradeModel);
+		
+		if (gradeScale.getGradeSystem().hasPassed()) {
+			if (isShowCurrentValues()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.passed, new PassedCellRenderer(getLocale())));
+			}
+			DefaultFlexiColumnModel newPassedColumn = new DefaultFlexiColumnModel(GradeChangeCols.newPassed);
+			String newPassedLabel = translate("table.header.grade.new.label", translate(GradeChangeCols.passed.i18nHeaderKey()));
+			newPassedColumn.setHeaderLabel(newPassedLabel);
+			newPassedColumn.setCellRenderer(new PassedCellRenderer(getLocale()));
+			columnsModel.addFlexiColumnModel(newPassedColumn);
+		}
+		
+		DefaultFlexiColumnModel userVisibilityColumn = new DefaultFlexiColumnModel(GradeChangeCols.userVisibility, new UserVisibilityCellRenderer(false));
+		userVisibilityColumn.setIconHeader("o_icon o_icon-fw o_icon_results_hidden");
+		columnsModel.addFlexiColumnModel(userVisibilityColumn);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.status, new AssessmentStatusCellRenderer(getLocale())));
 		
 		dataModel = new GradeChangeTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -171,6 +192,12 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 				
 				GradeScoreRange range = gradeService.getGradeScoreRange(gradeScoreRanges, Float.valueOf(assessmentEntry.getScore().floatValue()));
 				row.setNewGrade(range.getGrade());
+				
+				row.setPassed(assessmentEntry.getPassed());
+				row.setNewPassed(range.getPassed());
+				
+				row.setUserVisibility(assessmentEntry.getUserVisibility());
+				row.setStatus(assessmentEntry.getAssessmentStatus());
 				
 				rows.add(row);
 			}

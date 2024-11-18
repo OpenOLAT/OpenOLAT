@@ -71,6 +71,10 @@ public class GradeChangeTableModel extends DefaultFlexiTableDataModel<GradeChang
 				case score: return row.getScore();
 				case grade: return row.getGrade();
 				case newGrade: return row.getNewGrade();
+				case passed: return row.getPassed();
+				case newPassed: return row.getNewPassed();
+				case userVisibility: return row.getUserVisibility();
+				case status: return row.getStatus();
 				default: return "ERROR";
 			}
 		}
@@ -81,7 +85,11 @@ public class GradeChangeTableModel extends DefaultFlexiTableDataModel<GradeChang
 	public enum GradeChangeCols implements FlexiSortableColumnDef {
 		score("table.header.score"),
 		grade("table.header.grade"),
-		newGrade("table.header.grade.new");
+		newGrade("table.header.grade.new"),
+		passed("table.header.passed"),
+		newPassed("table.header.passed.new"),
+		userVisibility("table.header.user.visibillity"),
+		status("table.header.status");
 		
 		private final String i18nKey;
 
