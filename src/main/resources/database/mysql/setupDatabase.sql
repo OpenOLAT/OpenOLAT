@@ -3946,6 +3946,7 @@ create table o_cur_curriculum_element (
   lastmodified datetime not null,
   pos bigint,
   pos_cur bigint,
+  pos_impl varchar(64),
   c_identifier varchar(64),
   c_displayname varchar(255) not null,
   c_description mediumtext,

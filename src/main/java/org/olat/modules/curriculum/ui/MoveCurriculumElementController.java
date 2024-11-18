@@ -328,7 +328,6 @@ public class MoveCurriculumElementController extends FormBasicController {
 				elementToMove.setType(type);
 			}
 			curriculumService.moveCurriculumElement(elementToMove, position.newParent(), position.siblingBefore(), curriculum);
-			dbInstance.commit();
 		}
 		dbInstance.commitAndCloseSession();
 	}

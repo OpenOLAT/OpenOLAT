@@ -14,6 +14,7 @@ alter table o_cur_element_type add c_single_element number default 0 not null;
 alter table o_cur_element_type add c_max_repo_entries number(20) default -1 not null;
 alter table o_cur_element_type add c_allow_as_root number default 1 not null;
 
+alter table o_cur_curriculum_element add pos_impl varchar(64);
 alter table o_cur_curriculum_element add fk_resource number(20);
 
 alter table o_cur_curriculum_element add constraint cur_el_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);

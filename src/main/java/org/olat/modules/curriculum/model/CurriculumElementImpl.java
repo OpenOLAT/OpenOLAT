@@ -91,6 +91,9 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Column(name="pos_cur", insertable=false, updatable=false)
 	private Integer posCurriculum;
 	
+	@Column(name="pos_impl", insertable=false, updatable=false)
+	private String numberImpl;
+	
 	@Column(name="c_identifier", nullable=true, insertable=true, updatable=true)
 	private String identifier;
 	@Column(name="c_displayname", nullable=true, insertable=true, updatable=true)
@@ -401,6 +404,15 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 
 	public void setPosCurriculum(Integer posCurriculum) {
 		this.posCurriculum = posCurriculum;
+	}
+	
+	@Override
+	public String getNumberImpl() {
+		return numberImpl;
+	}
+
+	public void setNumberImpl(String number) {
+		this.numberImpl = number;
 	}
 
 	@Override

@@ -209,6 +209,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 	public Object getValueAt(CurriculumElementRow element, int col) {
 		return switch(COLS[col]) {
 			case key -> element.getKey();
+			case numbering -> element.getNumber();
 			case displayName -> element.getDisplayName();
 			case externalRef -> element.getIdentifier();
 			case externalId -> element.getExternalId();

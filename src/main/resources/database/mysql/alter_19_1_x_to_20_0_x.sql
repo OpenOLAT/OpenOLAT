@@ -13,6 +13,7 @@ alter table o_cur_element_type add column c_single_element bool default false no
 alter table o_cur_element_type add column c_max_repo_entries bigint default -1 not null;
 alter table o_cur_element_type add column c_allow_as_root bool default true not null;
 
+alter table o_cur_curriculum_element add column pos_impl varchar(64);
 alter table o_cur_curriculum_element add column fk_resource bigint;
 
 alter table o_cur_curriculum_element add constraint cur_el_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);

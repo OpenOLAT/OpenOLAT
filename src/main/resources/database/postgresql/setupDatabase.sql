@@ -3967,6 +3967,7 @@ create table o_cur_curriculum_element (
   lastmodified timestamp not null,
   pos int8,
   pos_cur int8,
+  pos_impl varchar(64),
   c_identifier varchar(64),
   c_displayname varchar(255) not null,
   c_description text,

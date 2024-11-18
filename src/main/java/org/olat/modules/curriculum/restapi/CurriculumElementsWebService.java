@@ -313,6 +313,12 @@ public class CurriculumElementsWebService {
 			curriculum = curriculumService.getCurriculum(curriculum);
 			savedElement = curriculumService.moveCurriculumElement(savedElement, curriculum);
 		}
+		
+		if(savedElement.getParent() != null) {
+			dbInstance.commit();
+			CurriculumElement rootElement = curriculumService.getImplementationOf(savedElement);
+			curriculumService.numberRootCurriculumElement(rootElement);
+		}
 		return savedElement;
 	}
 	

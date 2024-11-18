@@ -268,7 +268,9 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void initFormTable(FormItemContainer formLayout, UserRequest ureq) {	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.key));
-		
+		if(rootElement != null) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.numbering));
+		}
 		DefaultFlexiColumnModel nameCol;
 		if(config.isFlat()) {
 			nameCol = new DefaultFlexiColumnModel(ElementCols.displayName, "select");
@@ -353,7 +355,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(40);
 		tableEl.setSearchEnabled(true);
-		String tablePrefsId = (curriculum == null ? "cur-implementations-v2" : "curriculum-composer-v2");
+		String tablePrefsId = getTablePrefsId();
 		tableEl.setAndLoadPersistedPreferences(ureq, tablePrefsId);
 		
 		if(secCallback.canNewCurriculumElement()) {
@@ -361,6 +363,16 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.addBatchButton(bulkDeleteButton);
 			tableEl.setMultiSelect(true);
 		}
+	}
+	
+	private String getTablePrefsId() {
+		if(rootElement != null) {
+			return "curriculum-composer-v3";
+		}
+		if(curriculum != null) {
+			return "cur-implementations-v3";
+		}
+		return "cur-otherlist-v3";
 	}
 	
 	private void initFilters() {
@@ -475,7 +487,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(true, true, true);
 	}
-	
+
+
 	private void filterModel() {
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 		tableEl.reset(false, true, true);// only reload

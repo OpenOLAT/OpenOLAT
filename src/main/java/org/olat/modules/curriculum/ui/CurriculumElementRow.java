@@ -237,6 +237,10 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		return element.getPosCurriculum();
 	}
 	
+	public String getNumber() {
+		return element.getNumberImpl();
+	}
+
 	public long getNumOfResources() {
 		return numOfResources;
 	}

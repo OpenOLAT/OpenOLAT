@@ -29,7 +29,6 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -58,6 +57,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
@@ -105,7 +105,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private ConfirmCurriculumElementDeleteController deleteCurriculumElementCtrl;
 	
 	private Curriculum curriculum;
-	private final boolean hasChildren;
+	private final boolean canChildren;
 	private CurriculumElement curriculumElement;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
@@ -124,7 +124,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		this.toolbarPanel = toolbarPanel;
 		this.curriculumElement = curriculumElement;
 		this.lecturesSecCallback = lecturesSecCallback;
-		hasChildren = curriculumService.hasCurriculumElementChildren(curriculumElement);
+		canChildren = canChildren(curriculumElement);
 		
 		mainVC = createVelocityContainer("curriculum_element_details");
 		tabPane = new TabbedPane("tabs", getLocale());
@@ -134,6 +134,14 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		mainVC.put("tabs", tabPane);
 		putInitialPanel(mainVC);
+	}
+	
+	private boolean canChildren(CurriculumElement curriculumElement) {
+		CurriculumElementType type = curriculumElement.getType();
+		if(type != null && type.isSingleElement()) {
+			return curriculumService.hasCurriculumElementChildren(curriculumElement);
+		}
+		return true;
 	}
 	
 	public CurriculumElement getCurriculumElement() {
@@ -191,10 +199,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		mainVC.contextPut("dates", dates.toString());
 	}
 	
-	private Integer getLevel() {
-		int count = curriculumElement.getMaterializedPathKeys() == null ? 0 :
-			StringUtils.countMatches(curriculumElement.getMaterializedPathKeys(), '/') - 2;
-		return Integer.valueOf(count);
+	private String getLevel() {
+		return curriculumElement.getParent() == null ? null : curriculumElement.getNumberImpl();
 	}
 
 	private void initTabPane(UserRequest ureq) {
@@ -203,7 +209,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		});
 		
 		// Implementations
-		if(hasChildren) {
+		if(canChildren) {
 			structuresTab = tabPane.addTab(ureq, translate("curriculum.structure"), uureq -> {
 				CurriculumComposerConfig config = new CurriculumComposerConfig();
 				config.setTitle(translate("curriculum.structure"), 3, "o_icon_curriculum_structure");

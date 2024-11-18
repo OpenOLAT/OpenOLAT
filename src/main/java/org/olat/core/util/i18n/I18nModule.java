@@ -652,7 +652,10 @@ public class I18nModule extends AbstractSpringModule {
 	//
 	// Getters and Setters
 	//	
-
+	public Locale defaultLocale() {
+		return defaultLocale;
+	}
+	
 	/**
 	 * @return The default locale configured for this web app
 	 */

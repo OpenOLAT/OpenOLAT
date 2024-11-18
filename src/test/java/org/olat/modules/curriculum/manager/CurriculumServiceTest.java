@@ -319,4 +319,67 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertNotNull(deletedCurriculum);
 		Assert.assertEquals(CurriculumStatus.deleted.name(), deletedCurriculum.getStatus());
 	}
+	
+	@Test
+	public void numberRootCurriculumElement() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-4", "Curriculum 4", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-to-num-1", "Element to number",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-num 1.1", "Element to number",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Element-to-num 1.2", "Element to number",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element21 = curriculumService.createCurriculumElement("Element-to-num 1.2.1", "Element to number",
+				CurriculumElementStatus.active, null, null, element2, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		dbInstance.commit();
+
+		// Number this implementation tree
+		curriculumService.numberRootCurriculumElement(element);
+		dbInstance.commitAndCloseSession();
+		
+		element = curriculumService.getCurriculumElement(element);
+		Assert.assertNull(element.getNumberImpl());
+		
+		element1 = curriculumService.getCurriculumElement(element1);
+		Assert.assertEquals("1", element1.getNumberImpl());
+		element2 = curriculumService.getCurriculumElement(element2);
+		Assert.assertEquals("2", element2.getNumberImpl());
+		element21 = curriculumService.getCurriculumElement(element21);
+		Assert.assertEquals("2.1", element21.getNumberImpl());
+	}
+	
+	@Test
+	public void getImplementationOfRoot() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-5", "Curriculum 5", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-to-num-1", "Element to implement",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElement rootElement = curriculumService.getImplementationOf(element);
+		Assert.assertEquals(element, rootElement);
+	}
+	
+	@Test
+	public void getImplementationOfElement() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-6", "Curriculum 6", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-to-num-6", "Element to implement",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-num 6.1", "Element to number",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element11 = curriculumService.createCurriculumElement("Element-to-num 6.1.1", "Element to number",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElement rootElement = curriculumService.getImplementationOf(element11);
+		Assert.assertEquals(element, rootElement);
+	}
 }

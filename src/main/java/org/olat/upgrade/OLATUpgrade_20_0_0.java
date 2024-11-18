@@ -45,6 +45,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 
 	private static final String UPDATE_CURRICULUM_ELEMENT = "UPDATE CURRICULUM ELEMENT";
 	private static final String UPDATE_CURRICULUM_ELEMENT_RESOURCE = "UPDATE CURRICULUM ELEMENT RESOURCE";
+	private static final String UPDATE_CURRICULUM_ELEMENT_NUMBERING = "UPDATE CURRICULUM ELEMENT NUMBERING";
 	
 	private static final int BATCH_SIZE = 1000;
 	
@@ -77,6 +78,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		allOk &= updateCurriculumElement(upgradeManager, uhd);
 		allOk &= updateCurriculumElementResource(upgradeManager, uhd);
+		allOk &= updateCurriculumElementNumbering(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -195,6 +197,38 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 				.createQuery(query, CurriculumElement.class)
 				.setFirstResult(offset)
 				.setMaxResults(maxResults)
+				.getResultList();
+	}
+	
+	private boolean updateCurriculumElementNumbering(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(UPDATE_CURRICULUM_ELEMENT_NUMBERING)) {
+			try {
+				List<CurriculumElement> elements = getCurriculumRootElements();
+				log.info("Start numbering {} curriculum elements implementations.", elements.size());
+				
+				for(CurriculumElement element:elements) {
+					curriculumService.numberRootCurriculumElement(element);
+				}
+				
+				log.info("End numbering {} curriculum elements implementations.", elements.size());
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(UPDATE_CURRICULUM_ELEMENT_NUMBERING, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private List<CurriculumElement> getCurriculumRootElements() {
+		String query = """
+				select el from curriculumelement el
+				where el.parent is null
+				order by el.key""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, CurriculumElement.class)
 				.getResultList();
 	}
 }

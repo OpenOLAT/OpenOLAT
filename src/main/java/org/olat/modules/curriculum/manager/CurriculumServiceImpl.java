@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -63,6 +64,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.manager.CoachingDAO;
@@ -106,6 +108,7 @@ import org.olat.modules.curriculum.model.CurriculumMemberStats;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.manager.LectureBlockDAO;
@@ -160,6 +163,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private I18nModule i18nModule;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
@@ -609,6 +614,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(!membershipsToPropagate.isEmpty()) {
 			propagateMembership(treeToMove, membershipsToPropagate);
 		}
+		
+		// Flush all changes on the database
+		dbInstance.commit();
+		
+		// Recalculate the numbering under this implementation / root element
+		CurriculumElement rootElement = getImplementationOf(element);
+		numberRootCurriculumElement(rootElement);
+		dbInstance.commit();
+		
 		return element;
 	}
 	
@@ -1277,6 +1291,59 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			curriculumDao.update(curriculum);
 		}
 		return true;
+	}
+	
+	public CurriculumElement getImplementationOf(CurriculumElement curriculumElement) {
+		if(curriculumElement.getParent() == null) {
+			return curriculumElement;
+		}
+		List<CurriculumElement> parentLine = getCurriculumElementParentLine(curriculumElement);
+		if(!parentLine.isEmpty()) {
+			return parentLine.get(0);
+		}
+		return curriculumElement;
+	}
+	
+	@Override
+	public void numberRootCurriculumElement(CurriculumElement rootElement) {
+		if(rootElement.getParent() != null) {
+			log.warn("Try to number a curriculum element which is not an implementation: {}", rootElement);
+		}
+		
+		Locale locale = i18nModule.defaultLocale();
+		
+		List<NumberingCurriculumElement> elements = curriculumElementDao.getDescendants(rootElement).stream()
+				.map(NumberingCurriculumElement::new)
+				.collect(Collectors.toList());
+		// Build parent line
+		Map<Long,NumberingCurriculumElement> keyToElements = elements.stream()
+				.collect(Collectors.toMap(NumberingCurriculumElement::getKey, el -> el, (u, v) -> u));
+		for(NumberingCurriculumElement element:elements) {
+			if(element.getParentKey() != null) {
+				element.setParent(keyToElements.get(element.getParentKey()));
+			}
+		}
+	
+		// Sort the tree
+		Collections.sort(elements, new CurriculumElementTreeRowComparator(locale));
+		number(null, List.of(), 0, elements);
+		dbInstance.commit();
+	}
+	
+	private void number(NumberingCurriculumElement parent, List<Long> numbering, int start, List<NumberingCurriculumElement> elements) {
+		int count = 1;
+		for(int i=start; i<elements.size(); i++) {
+			NumberingCurriculumElement element = elements.get(i);
+			if(Objects.equals(parent, element.getParent())) {
+				List<Long> values = new ArrayList<>(numbering);
+				values.add(Long.valueOf(count++));
+				String number = new Numbering(values).toString();
+				if(!number.equals(element.getCurriculumElement().getNumberImpl())) {
+					curriculumElementDao.updateNumber(element, number);
+				}
+				number(element, values, i+1, elements);
+			}
+		}
 	}
 	
 	private void sendDeferredEvents(List<CurriculumElementMembershipEvent> events) {

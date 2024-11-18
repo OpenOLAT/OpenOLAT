@@ -398,6 +398,12 @@ public interface CurriculumService {
 	public CurriculumElement moveCurriculumElement(CurriculumElement rootElement, Curriculum curriculum);
 	
 	/**
+	 * @param curriculumElement An element
+	 * @return The implementation / root curriculum element of the specified element
+	 */
+	public CurriculumElement getImplementationOf(CurriculumElement curriculumElement);
+	
+	/**
 	 * The list of members of the specified curriculum element.
 	 * 
 	 * @param element The curriculum element
@@ -579,5 +585,12 @@ public interface CurriculumService {
 	
 
 	public List<CurriculumElementWebDAVInfos> getCurriculumElementInfosForWebDAV(IdentityRef identity);
+
+	/**
+	 * Numbering of the implementation sub-tree.
+	 * 
+	 * @param rootElement Need to be an implementation / root curriculum element.
+	 */
+	public void numberRootCurriculumElement(CurriculumElement rootElement);
 
 }

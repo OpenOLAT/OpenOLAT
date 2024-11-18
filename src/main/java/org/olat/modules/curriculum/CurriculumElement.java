@@ -100,6 +100,8 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	
 	public CurriculumElement getParent();
 	
+	public String getNumberImpl();
+	
 	public CurriculumElementType getType();
 	
 	public void setType(CurriculumElementType type);

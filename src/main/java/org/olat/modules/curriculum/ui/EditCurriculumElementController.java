@@ -521,7 +521,9 @@ public class EditCurriculumElementController extends FormBasicController {
 		CurriculumCalendars calendars = CurriculumCalendars.valueOf(calendarsEnabledEl.getSelectedKey());
 		CurriculumLearningProgress learningProgress = CurriculumLearningProgress.valueOf(learningProgressEnabledEl.getSelectedKey());
 		CurriculumElementStatus status = CurriculumElementStatus.valueOf(statusEl.getSelectedKey());
-		if(element == null) {
+		
+		boolean create = element == null;
+		if(create) {
 			//create a new one
 			element = curriculumService.createCurriculumElement(identifierEl.getValue(), displayNameEl.getValue(),
 					status, beginEl.getDate(), endEl.getDate(), parentElement, elementType, calendars, lectures, learningProgress, curriculum);
@@ -562,6 +564,12 @@ public class EditCurriculumElementController extends FormBasicController {
 			List<TaxonomyLevel> removedLevels = taxonomyLevels.stream().filter(level -> removedTaxonomies.contains(level.getKey())).collect(Collectors.toList());
 			
 			curriculumService.updateTaxonomyLevels(element, addedLevels, removedLevels);			
+		}
+		
+		if(create && element.getParent() != null) {
+			dbInstance.commit();
+			CurriculumElement rootElement = curriculumService.getImplementationOf(element);
+			curriculumService.numberRootCurriculumElement(rootElement);
 		}
 		
 		dbInstance.commitAndCloseSession(); // need to relaod properly the tree

@@ -205,6 +205,15 @@ public class CurriculumElementDAO {
 		return dbInstance.getCurrentEntityManager().merge(element);
 	}
 	
+	public int updateNumber(CurriculumElementRef element, String number) {
+		String updateQuery = "update curriculumelement curEl set curEl.numberImpl=:number where curEl.key=:curriculumElementKey";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(updateQuery)
+			.setParameter("number", number)
+			.setParameter("curriculumElementKey", element.getKey())
+			.executeUpdate();
+	}
+	
 	public CurriculumElement move(CurriculumElement rootElementToMove, Curriculum newCurriculum) {
 		CurriculumElementImpl rootElement = (CurriculumElementImpl)rootElementToMove;
 		List<CurriculumElement> descendants = getDescendants(rootElement);// load the descendants with the old curriculum
