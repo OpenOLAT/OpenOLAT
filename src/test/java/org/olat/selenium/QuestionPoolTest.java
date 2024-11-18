@@ -71,8 +71,7 @@ public class QuestionPoolTest extends Deployments {
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		String questionTitle = "SC-" + UUID.randomUUID();
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -132,8 +131,7 @@ public class QuestionPoolTest extends Deployments {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor("Leila");
 		
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		String questionTitle = "SC-" + UUID.randomUUID();
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -151,8 +149,7 @@ public class QuestionPoolTest extends Deployments {
 		
 		// reviewer make its job
 		loginPage
-			.loginAs(reviewer.getLogin(), reviewer.getPassword())
-			.resume();
+			.loginAs(reviewer.getLogin(), reviewer.getPassword());
 		navBar.assertOnNavigationPage()
 			.openQuestionPool()
 			.selectTaxonomyLevel("At least one")
@@ -216,8 +213,7 @@ public class QuestionPoolTest extends Deployments {
 
 		loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		String questionTitle = "MetaMC-" + UUID.randomUUID();
 		NavigationPage navBar = NavigationPage.load(browser);
@@ -266,8 +262,7 @@ public class QuestionPoolTest extends Deployments {
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		String questionTitle = "MetaMC-" + UUID.randomUUID();
 		NavigationPage navBar = NavigationPage.load(browser);

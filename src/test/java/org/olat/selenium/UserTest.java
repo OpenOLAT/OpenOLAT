@@ -213,7 +213,9 @@ public class UserTest extends Deployments {
 			.assertOnLoginPage()
 			.loginAs(user.getLogin(), user.getPassword());
 		//resume
-		loginPage.resumeWithAssert();
+		loginPage
+			.assertOnResume()	
+			.resume();
 
 		//check the title of the course if any
 		WebElement courseTitle = browser.findElement(By.tagName("h2"));
@@ -237,8 +239,7 @@ public class UserTest extends Deployments {
 		
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl)
-			.loginAs(user.getLogin(), user.getPassword())
-			.resume();
+			.loginAs(user.getLogin(), user.getPassword());
 		
 		//set the preferences to resume automatically
 		UserToolsPage userTools = new UserToolsPage(browser);
@@ -531,8 +532,7 @@ public class UserTest extends Deployments {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(user.getLogin(), user.getPassword())
-			.resume();
+			.loginAs(user.getLogin(), user.getPassword());
 		
 		//set the languages preferences to german
 		UserToolsPage userTools = new UserToolsPage(browser);
@@ -548,6 +548,7 @@ public class UserTest extends Deployments {
 		
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword())
+			.assertOnResume()
 			.resume();
 		
 		WebElement usernameDE = browser.findElement(LoginPage.usernameFooterBy);
@@ -568,6 +569,7 @@ public class UserTest extends Deployments {
 				
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword())
+			.assertOnResume()
 			.resume();
 		
 		WebElement usernameEN = browser.findElement(LoginPage.usernameFooterBy);
@@ -592,8 +594,7 @@ public class UserTest extends Deployments {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(user.getLogin(), user.getPassword())
-			.resume();
+			.loginAs(user.getLogin(), user.getPassword());
 
 		UserToolsPage userTools = new UserToolsPage(browser);
 		userTools
@@ -608,6 +609,7 @@ public class UserTest extends Deployments {
 		
 		loginPage
 			.loginAs(user.getLogin(), newPassword)
+			.assertOnResume()
 			.resume()
 			.assertLoggedIn(user);
 	}
@@ -628,8 +630,7 @@ public class UserTest extends Deployments {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(user.getLogin(), user.getPassword())
-			.resume();
+			.loginAs(user.getLogin(), user.getPassword());
 		
 		String newEmail = user.getLogin() + "@openolat.frentix.com";
 
@@ -650,11 +651,12 @@ public class UserTest extends Deployments {
 		
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword())
+			.assertOnResume()
 			.resume();
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		userTools = new UserToolsPage(browser);
-		profil = userTools
+		userTools
 			.openUserToolsMenu()
 			.openMyProfil()
 			.assertOnEmail(newEmail);
@@ -676,8 +678,7 @@ public class UserTest extends Deployments {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(user.getLogin(), user.getPassword())
-			.resume();
+			.loginAs(user.getLogin(), user.getPassword());
 
 		UserToolsPage userTools = new UserToolsPage(browser);
 		UserPreferencesPageFragment prefs = userTools
@@ -854,7 +855,6 @@ public class UserTest extends Deployments {
 		//tools
 		userLoginPage
 			.loginAs(username, password)
-			.resume()
 			.assertLoggedIn(userVo);
 	}
 	
@@ -901,7 +901,6 @@ public class UserTest extends Deployments {
 		//tools
 		userLoginPage
 			.loginAs(username, password)
-			.resume()
 			.assertLoggedIn(userVo);
 		//log out
 		new UserToolsPage(userBrowser).logout();
@@ -979,8 +978,7 @@ public class UserTest extends Deployments {
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		//tools
 		userLoginPage
-			.loginAs(username1, "Rosario01Book1")
-			.resume()
+			.loginAs(username1, "rosario01")
 			.assertLoggedIn(user1);
 	}
 	
@@ -1041,7 +1039,6 @@ public class UserTest extends Deployments {
 		//tools
 		userLoginPage
 			.loginAs(user1.getLogin(), password2)
-			.resume()
 			.assertLoggedInByLastName("Aono");
 		
 		//new user log in
@@ -1049,7 +1046,6 @@ public class UserTest extends Deployments {
 		//tools
 		newLoginPage
 			.loginAs(newUser.getLogin(), password1)
-			.resume()
 			.assertLoggedInByLastName("Akashiya");
 	}
 	
