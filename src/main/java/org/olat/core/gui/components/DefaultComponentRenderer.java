@@ -342,7 +342,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		sb.append(">");
 		if (component.getFormItem().isMandatory()) {
 			String hover = translator.translate("form.mandatory.hover");
-			sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("'></i> ");
+			sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("' aria-hidden='true'></i> ");
 		}
 		
 		String text = component.getFormItem().getLabelText();

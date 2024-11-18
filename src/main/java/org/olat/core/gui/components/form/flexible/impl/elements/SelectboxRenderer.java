@@ -77,6 +77,9 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 		if (ssec.isFocus()) {
 			sb.append(" autofocus");
 		}
+		if (ssec.getFormItem().isMandatory()) {
+			sb.append(" aria-required=\"true\"");				
+		}
 		
 		//add ONCHANGE Action to select
 		if(ssec.getAction() == FormEvent.ONCHANGE){

@@ -227,6 +227,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			if(fileElem.isMultiFileUpload()) {
 				sb.append("multiple ");
 			}
+			sb.append(" aria-required='true'", fileElem.isMandatory());
 			// Add on* event handlers
 
 			StringBuilder eventHandlers = FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction());

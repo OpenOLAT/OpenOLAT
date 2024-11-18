@@ -117,7 +117,7 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 			sb.append(">");
 			if (stc.isComponentIsMandatory()) {
 				String hover = stc.getTranslator().translate("form.mandatory.hover");
-				sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("'></i> ");
+				sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("' aria-hidden='true'></i> ");
 			}
 			if (StringHelper.containsNonWhitespace(stc.text)) {
 				sb.append(stc.text);

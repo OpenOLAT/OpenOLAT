@@ -87,7 +87,11 @@ public class TextElementInlineRenderer extends DefaultComponentRenderer {
 				// }
 				sb.append("\" value=\"");
 				sb.append(htmlVal);
-				sb.append("\" >");
+				sb.append("\"");
+				if (itei.isMandatory()) {
+					sb.append(" aria-required=\"true\"");				
+				}
+				sb.append(" >");
 				
 				// Javascript
 				sb.append(FormJSHelper.getJSStart());

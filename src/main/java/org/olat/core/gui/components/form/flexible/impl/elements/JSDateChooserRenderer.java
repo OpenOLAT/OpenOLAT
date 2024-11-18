@@ -332,6 +332,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append(" maxlength='4' value='").append(time > 9 ? "" + time : "0" + time).append("'")
 		  .append(" data-oo-validation-group='").append(receiverId).append("' ")
 		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), receiverId, action, false, null, id))
+		  .append(" aria-required='true'", teC.getFormItem().isMandatory())
 		  .append(" autocomplete=\"off\">");
 		return dc;
 	}
@@ -364,6 +365,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		} else if (StringHelper.containsNonWhitespace(te.getAriaLabel())) {
 			sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
 		}
+		 sb.append(" aria-required='true'", teC.getFormItem().isMandatory());
 		 sb.append(" autocomplete=\"off\">");
 		//add set dirty form only if enabled
 		FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), receiverId);
