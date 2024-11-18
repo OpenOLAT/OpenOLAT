@@ -107,7 +107,7 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 				}				
 
 				Translator translator = Util.createPackageTranslator(this.getClass(), locale);
-				String title = translator.translate(notificationtitle, new String[]{ displayName });
+				String title = translator.translate(notificationtitle, displayName);
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(title, CSS_CLASS_ICON), null);
 				
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
