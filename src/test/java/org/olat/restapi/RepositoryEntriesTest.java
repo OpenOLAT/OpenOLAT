@@ -52,13 +52,16 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
+import org.olat.fileresource.types.ImageFileResource;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
@@ -76,6 +79,7 @@ import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.restapi.support.vo.RepositoryEntryVOes;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -106,7 +110,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 
 	@Test
-	public void testGetEntries() throws IOException, URISyntaxException {
+	public void getEntries() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
@@ -121,7 +125,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testGetEntriesWithPaging() throws IOException, URISyntaxException {
+	public void getEntriesWithPaging() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
@@ -141,7 +145,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testGetEntriesByTaxonomyLevel() throws IOException, URISyntaxException {
+	public void getEntriesByTaxonomyLevel() throws IOException, URISyntaxException {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry(false);
 		dbInstance.commit();
 		
@@ -168,11 +172,11 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testGetEntry() throws IOException, URISyntaxException {
-		RepositoryEntry re = createRepository("Test GET repo entry");
+	public void getEntry() throws IOException, URISyntaxException {
+		RepositoryEntry re = createRepository(null, "Test GET repo entry");
 
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		Assert.assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries/" + re.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -185,8 +189,44 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testGetEntry_managed() throws IOException, URISyntaxException {
-		RepositoryEntry re = createRepository("Test GET repo entry");
+	public void getEntryAuthor() throws IOException, URISyntaxException {
+		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("rest-author-1");
+		RepositoryEntry re = createRepository(author.getIdentity(), "Test GET repo entry");
+
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login(author));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries/" + re.getKey()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		RepositoryEntryVO entryVo = conn.parse(response, RepositoryEntryVO.class);
+		assertNotNull(entryVo);
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void getEntryAuthors() throws IOException, URISyntaxException {
+		IdentityWithLogin author1 = JunitTestHelper.createAndPersistRndAuthor("rest-author-2");
+		IdentityWithLogin author2 = JunitTestHelper.createAndPersistRndAuthor("rest-author-3");
+		RepositoryEntry re = createRepository(author1.getIdentity(), "Test GET repo entry");
+
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login(author2));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries/" + re.getKey()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+		EntityUtils.consumeQuietly(response.getEntity());
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void getEntry_managed() throws IOException, URISyntaxException {
+		RepositoryEntry re = createRepository(null, "Test GET repo entry");
 		re.setManagedFlagsString("all");
 		re = dbInstance.getCurrentEntityManager().merge(re);
 		dbInstance.commitAndCloseSession();
@@ -198,7 +238,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 				.queryParam("managed", "true").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		List<RepositoryEntryVO> entryVoes = parseRepoArray(response.getEntity());
 		Assert.assertNotNull(entryVoes);
 		Assert.assertFalse(entryVoes.isEmpty());
@@ -212,7 +252,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testUpdateRepositoryEntry() throws IOException, URISyntaxException {
+	public void updateRepositoryEntry() throws IOException, URISyntaxException {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 		
@@ -252,7 +292,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testUpdateRepositoryEntry_lifecycle() throws IOException, URISyntaxException {
+	public void updateRepositoryEntry_lifecycle() throws IOException, URISyntaxException {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 		
@@ -308,7 +348,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testImportCp() throws IOException, URISyntaxException {
+	public void importCp() throws IOException, URISyntaxException {
 		URL cpUrl = RepositoryEntriesTest.class.getResource("cp-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
@@ -342,7 +382,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testImportTest() throws IOException, URISyntaxException {
+	public void importTest() throws IOException, URISyntaxException {
 		URL cpUrl = RepositoryEntriesTest.class.getResource("qti21-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
@@ -377,7 +417,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testImportWikiWithMetadata() throws IOException, URISyntaxException {
+	public void importWikiWithMetadata() throws IOException, URISyntaxException {
 		URL cpUrl = RepositoryEntriesTest.class.getResource("wiki-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
@@ -422,7 +462,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void testImportBlog() throws IOException, URISyntaxException {
+	public void importBlog() throws IOException, URISyntaxException {
 		URL cpUrl = RepositoryEntriesTest.class.getResource("blog-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
@@ -467,19 +507,17 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		}
 	}
 	
-
-	
-	private RepositoryEntry createRepository(String displayName) {
+	private RepositoryEntry createRepository(Identity author, String displayName) {
 		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 		
-		OLATResource r =  rm.createOLATResourceInstance("DummyType");
+		OLATResource r =  rm.createOLATResourceInstance(ImageFileResource.TYPE_NAME);
 		dbInstance.saveObject(r);
 		dbInstance.intermediateCommit();
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		RepositoryEntry d = repositoryService.create(null, displayName, "-", displayName, "Repo entry",
-				r, RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, defOrganisation);
+		RepositoryEntry d = repositoryService.create(author, displayName, "-", displayName, "Repo entry",
+				r, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, defOrganisation);
 		dbInstance.commit();
 		return d;
 	}

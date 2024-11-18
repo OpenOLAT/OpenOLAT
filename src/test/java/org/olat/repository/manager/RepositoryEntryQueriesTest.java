@@ -516,10 +516,9 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		OLATResource r =  resourceManager.createOLATResourceInstance(TEST_RES_NAME);
 		resourceManager.saveOLATResource(r);
 		// now make a repository entry for this course
-		RepositoryEntry re = repositoryService.create(owner, null, "Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i,
+		return repositoryService.create(owner, null, "Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i,
 				"Description of learning by OLAT " + i, r, RepositoryEntryStatusEnum.preparation,
 				RepositoryEntryRuntimeType.embedded, organisation);
-		return re;
 	}
 
 	
