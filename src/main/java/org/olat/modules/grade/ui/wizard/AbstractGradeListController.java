@@ -110,7 +110,6 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GradeChangeTableModel.USAGE_IDENTIFIER, isAdministrativeUser);
 		
 		initForm(ureq);
-		loadModel();
 	}
 	
 	protected abstract boolean isShowCurrentValues();
@@ -169,7 +168,7 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 		tableEl.setSelectAllEnable(isMultiSelect());
 	}
 
-	private void loadModel() {
+	protected void loadModel() {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		BigDecimal minScore = assessmentConfig.isGradeMinMaxFromScale()
 				? gradeScale.getMinScore()

@@ -39,6 +39,7 @@ public class GradeApplyListController extends AbstractGradeListController {
 
 	public GradeApplyListController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext runContext) {
 		super(ureq, wControl, form, runContext);
+		loadModel();
 	}
 
 	@Override

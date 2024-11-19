@@ -152,6 +152,7 @@ import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
+import org.olat.modules.grade.Breakpoint;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
@@ -160,6 +161,7 @@ import org.olat.modules.grade.GradeSystem;
 import org.olat.modules.grade.GradeSystemType;
 import org.olat.modules.grade.ui.GradeScaleEditController;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.modules.grade.ui.wizard.GradeApplyConfirmationController;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustCallback;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustStep;
 import org.olat.modules.grading.GradingAssignment;
@@ -249,6 +251,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private ContactFormController contactCtrl;
 	private StepsMainRunController gradeScaleEditCtrl;
 	private GradeScaleEditController gradeScaleViewCtrl;
+	private GradeApplyConfirmationController gradeApplyConfirmationCtrl;
 	private AwardBadgesController awardBadgesCtrl;
 	
 	@Autowired
@@ -1299,6 +1302,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 				cmc.deactivate();
 			}
 			cleanUp();
+		} else if (source == gradeApplyConfirmationCtrl) {
+			if(event == Event.DONE_EVENT) {
+				doApplyGrade(ureq, gradeApplyConfirmationCtrl.getIdentities());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(bulkToolsList != null && bulkToolsList.contains(source)) {
 			if(event == Event.CHANGED_EVENT) {
 				reload(ureq);
@@ -1330,6 +1339,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void cleanUp() {
 		removeAsListenerAndDispose(gradeScaleViewCtrl);
 		removeAsListenerAndDispose(gradeScaleEditCtrl);
+		removeAsListenerAndDispose(gradeApplyConfirmationCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(contactCtrl);
@@ -1337,6 +1347,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		removeAsListenerAndDispose(cmc);
 		gradeScaleViewCtrl = null;
 		gradeScaleEditCtrl = null;
+		gradeApplyConfirmationCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		contactCtrl = null;
@@ -1363,7 +1374,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		} else if(bulkDoneButton == source) {
 			doSetDone(ureq);
 		} else if(bulkApplyGradeButton == source) {
-			doApplyGrade(ureq);
+			doConfirmApplyGrade(ureq);
 		} else if(bulkVisibleButton == source) {
 			doSetUserVisibility(ureq, true);
 		} else if(bulkHiddenButton == source) {
@@ -1652,27 +1663,43 @@ public class IdentityListCourseNodeController extends FormBasicController
 				getIdentity(), false, Role.coach);
 	}
 	
-	private void doApplyGrade(UserRequest ureq) {
+	private void doConfirmApplyGrade(UserRequest ureq) {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
-		List<AssessedIdentityElementRow> rows = new ArrayList<>(selections.size());
+		List<Long> identityKeys = new ArrayList<>(selections.size());
 		for(Integer i:selections) {
 			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
-			if(row != null && !StringHelper.containsNonWhitespace(row.getGrade())) {
-				rows.add(row);
+			if(row != null && row.getScore() != null && !StringHelper.containsNonWhitespace(row.getGrade())) {
+				identityKeys.add(row.getIdentityKey());
 			}
 		}
+		
+		if (identityKeys.isEmpty()) {
+			showWarning("warning.bulk.apply.grade");
+			return;
+		}
+		
+		GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+		List<Breakpoint> breakpoints = gradeService.getBreakpoints(gradeScale);
+		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
+		gradeApplyConfirmationCtrl = new GradeApplyConfirmationController(ureq, getWindowControl(), courseEntry,
+				courseNode, gradeScale, breakpoints, identities);
+		listenTo(gradeApplyConfirmationCtrl);
 
-		if(assessmentConfig.isAssessable()) {
-			ICourse course = CourseFactory.loadCourse(courseEntry);
-			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
-			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
-			for(AssessedIdentityElementRow row:rows) {
-				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-				doApplyGrade(assessedIdentity, courseNode, course, gradeScoreRanges);
-				dbInstance.commitAndCloseSession();
-			}
-			reload(ureq);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				gradeApplyConfirmationCtrl.getInitialComponent(), true, bulkApplyGradeButton.getI18nKey());
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doApplyGrade(UserRequest ureq, List<Identity> identities) {
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+		NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+		for(Identity assessedIdentity : identities) {
+			doApplyGrade(assessedIdentity, courseNode, course, gradeScoreRanges);
+			dbInstance.commitAndCloseSession();
 		}
+		reload(ureq);
 	}
 	
 	protected void doApplyGrade(Identity assessedIdentity, CourseNode cNode, ICourse course, NavigableSet<GradeScoreRange> gradeScoreRanges) {
