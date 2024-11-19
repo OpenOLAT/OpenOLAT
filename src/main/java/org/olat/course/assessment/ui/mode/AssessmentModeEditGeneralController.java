@@ -157,6 +157,7 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		leadTimeEl.setDisplaySize(3);
 		leadTimeEl.setEnabled((status == Status.none || status == Status.leadtime)
 				&& !AssessmentModeManagedFlag.isManaged(assessmentMode, AssessmentModeManagedFlag.leadTime));
+		leadTimeEl.setInlineValidationOn(true);
 		
 		endEl = uifactory.addDateChooser("mode.end", assessmentMode.getEnd(), formLayout);
 		endEl.setElementCssClass("o_sel_assessment_mode_end");
@@ -218,6 +219,24 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		cmc = null;
+	}
+
+	@Override
+	protected boolean validateFormItem(UserRequest ureq, FormItem item) {
+		boolean ok = super.validateFormItem(ureq, item);
+
+		if (item == leadTimeEl) {
+			leadTimeEl.clearWarning();
+			try {
+				if (leadTimeEl.getIntValue() >= 30) {
+					leadTimeEl.setWarningKey("form.lead.time.long", String.valueOf(leadTimeEl.getIntValue()));
+				}
+			} catch (NumberFormatException e) {
+				leadTimeEl.setErrorKey("integer.element.int.error");
+			}
+		}
+
+		return ok;
 	}
 
 	@Override
