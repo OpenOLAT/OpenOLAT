@@ -30,11 +30,13 @@ class ScopeImpl implements Scope {
 	private final String key;
 	private final String displayName;
 	private final String hint;
+	private final String iconLeftCss;
 
-	public ScopeImpl(String key, String displayName, String hint) {
+	public ScopeImpl(String key, String displayName, String hint, String iconLeftCss) {
 		this.key = key;
 		this.displayName = displayName;
 		this.hint = hint;
+		this.iconLeftCss = iconLeftCss;
 	}
 
 	@Override
@@ -51,5 +53,9 @@ class ScopeImpl implements Scope {
 	public String getHint() {
 		return hint;
 	}
-	
+
+	@Override
+	public String getIconLeftCSS() {
+		return iconLeftCss;
+	}
 }

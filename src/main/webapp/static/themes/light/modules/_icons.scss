@@ -204,6 +204,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_header { @include o-add-icon('header');}
 .o_icon_heart { @include o-add-icon('heart');}
 .o_icon_help { @include o-add-icon('question-circle'); cursor: help;}
+.o_icon_history { @include o-add-icon('clock-rotate-left'); }
 .o_icon_home { @include o-add-icon('home');}
 .o_icon_html5 { @include o-add-brand-icon('html5');}
 .o_icon_image { @include o-add-icon('image');}
@@ -313,6 +314,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_node_before { @include o-add-icon('long-arrow-up');}
 .o_icon_node_under { @include o-add-icon('mail-reply');}
 .o_icon_node_up_down { @include o-add-icon('arrows-v');}
+.o_icon_non_members { @include o-add-icon('person-circle-minus');}
 .o_icon_notes { @include o-add-icon('sticky-note', false);}
 .o_icon_not_correct { @include o-add-icon('times'); color: $brand-danger }
 .o_icon_not_correct_plus { @include o-add-icon('plus'); color: $brand-danger }

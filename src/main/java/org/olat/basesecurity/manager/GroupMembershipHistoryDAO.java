@@ -47,7 +47,8 @@ public class GroupMembershipHistoryDAO {
 	
 	public GroupMembershipHistory createMembershipHistory(Group group, Identity identity,
 			String role, GroupMembershipStatus status,
-			OLATResource origin, OLATResource destination, Identity creator) {
+			OLATResource origin, OLATResource destination,
+			Identity creator, String adminNote) {
 		GroupMembershipHistoryImpl history = new GroupMembershipHistoryImpl();
 		history.setCreationDate(new Date());
 		history.setRole(role);
@@ -59,6 +60,7 @@ public class GroupMembershipHistoryDAO {
 		history.setTransferDestination(destination);
 		
 		history.setCreator(creator);
+		history.setAdminNote(adminNote);
 		
 		dbInstance.getCurrentEntityManager().persist(history);
 		return history;

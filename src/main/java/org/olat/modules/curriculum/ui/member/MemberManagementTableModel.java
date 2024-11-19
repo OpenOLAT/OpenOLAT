@@ -80,7 +80,8 @@ implements SortableFlexiTableDataModel<MemberRow> {
 	public Object getValueAt(MemberRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			return switch(COLS[col]) {
-				case role -> row.getRole();
+				case role -> row;
+				case registration -> row.getRegistration();
 				case asParticipant -> row.getNumOfRole(CurriculumRoles.participant);
 				case asCoach -> row.getNumOfRole(CurriculumRoles.coach);
 				case asOwner -> row.getNumOfRole(CurriculumRoles.owner);
@@ -127,6 +128,7 @@ implements SortableFlexiTableDataModel<MemberRow> {
 	public enum MemberCols implements FlexiSortableColumnDef {
 		online("table.header.online"),
 		role("table.header.role"),
+		registration("table.header.registration"),
 		asParticipant("table.header.num.as.participant"),
 		asCoach("table.header.num.as.coach"),
 		asOwner("table.header.num.as.owner"),

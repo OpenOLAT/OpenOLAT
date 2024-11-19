@@ -1493,7 +1493,8 @@ public class RepositoryManager {
 			if (!repositoryEntryRelationDao.hasRole(identity, re, GroupRoles.owner.name())) {
 				repositoryEntryRelationDao.addRole(identity, re, GroupRoles.owner.name());
 				groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-						GroupRoles.owner.name(), GroupMembershipStatus.active, null, null, ureqIdentity);
+						GroupRoles.owner.name(), GroupMembershipStatus.active, null, null,
+						ureqIdentity, null);
 				
 				reallyAddedId.add(identity);
 				ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
@@ -1553,7 +1554,8 @@ public class RepositoryManager {
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.owner.name());
 		if(rows > 0) {
 			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-					GroupRoles.owner.name(), GroupMembershipStatus.removed, null, null, ureqIdentity);
+					GroupRoles.owner.name(), GroupMembershipStatus.removed, null, null,
+					ureqIdentity, null);
 			
 			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
 	
@@ -1631,7 +1633,8 @@ public class RepositoryManager {
 			Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
 			reservationDao.createReservation(identityToAdd, "repo_tutors", expiration, Boolean.TRUE, re.getOlatResource());
 			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identityToAdd,
-					GroupRoles.coach.name(), GroupMembershipStatus.reservation, null, null, actor);
+					GroupRoles.coach.name(), GroupMembershipStatus.reservation, null, null,
+					actor, null);
 			return true;
 		}
 		return false;
@@ -1648,7 +1651,8 @@ public class RepositoryManager {
 		Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
 		repositoryEntryRelationDao.addRole(identity, defaultGroup, GroupRoles.coach.name());
 		groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-				GroupRoles.coach.name(), GroupMembershipStatus.active, null, null, ureqIdentity);
+				GroupRoles.coach.name(), GroupMembershipStatus.active, null, null,
+				ureqIdentity, null);
 
 		reallyAddedId.add(identity);
 		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
@@ -1685,7 +1689,8 @@ public class RepositoryManager {
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.coach.name());
 		if(rows > 0) {
 			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-					GroupRoles.coach.name(), GroupMembershipStatus.removed, null, null, ureqIdentity);
+					GroupRoles.coach.name(), GroupMembershipStatus.removed, null, null,
+					ureqIdentity, null);
 			
 			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
 			
@@ -1751,7 +1756,9 @@ public class RepositoryManager {
 			Date expiration = DateUtils.addMonth(new Date(), 6);
 			Group group = repositoryEntryRelationDao.getDefaultGroup(re);
 			reservationDao.createReservation(identity, "repo_participant", expiration, Boolean.TRUE, re.getOlatResource());
-			groupMembershipHistoryDao.createMembershipHistory(group, identity, GroupRoles.participant.name(), GroupMembershipStatus.reservation, null, null, ureqIdentity);
+			groupMembershipHistoryDao.createMembershipHistory(group, identity,
+					GroupRoles.participant.name(), GroupMembershipStatus.reservation, null, null,
+					ureqIdentity, null);
 			
 			dbInstance.commit();
 			RepositoryEntryMembershipModifiedEvent event = RepositoryEntryMembershipModifiedEvent.roleParticipantAddPending(identity, re);
@@ -1770,7 +1777,9 @@ public class RepositoryManager {
 	private void addInternalParticipant(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
 		Group group = repositoryEntryRelationDao.getDefaultGroup(re);
 		repositoryEntryRelationDao.addRole(identity, group, GroupRoles.participant.name());
-		groupMembershipHistoryDao.createMembershipHistory(group, identity, GroupRoles.participant.name(), GroupMembershipStatus.active, null, null, ureqIdentity);
+		groupMembershipHistoryDao.createMembershipHistory(group, identity,
+				GroupRoles.participant.name(), GroupMembershipStatus.active, null, null,
+				ureqIdentity, null);
 		
 		RepositoryEntryMembershipModifiedEvent deferredEvent = RepositoryEntryMembershipModifiedEvent.roleParticipantAdded(identity, re);
 		dbInstance.commit();
@@ -1810,7 +1819,8 @@ public class RepositoryManager {
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.participant.name());
 		if(rows > 0) {
 			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-					GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null, ureqIdentity);
+					GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null,
+					ureqIdentity, null);
 			
 			if(sendMail) {
 				RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeParticipant, mailing);

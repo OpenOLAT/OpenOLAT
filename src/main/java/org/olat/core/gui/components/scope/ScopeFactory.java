@@ -60,7 +60,11 @@ public class ScopeFactory {
 	}
 	
 	public static Scope createScope(String identifier, String displayName, String hint) {
-		return new ScopeImpl(identifier, displayName, hint);
+		return new ScopeImpl(identifier, displayName, hint, null);
+	}
+	
+	public static Scope createScope(String identifier, String displayName, String hint, String iconLeftCSS) {
+		return new ScopeImpl(identifier, displayName, hint, iconLeftCSS);
 	}
 	
 	public static DateScopeSelection createDateScopeSelection(WindowControl wControl, String name, VelocityContainer vc,

@@ -19,14 +19,12 @@
  */
 package org.olat.modules.curriculum.ui.member;
 
-import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
-import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
 
 /**
  * 
@@ -34,25 +32,20 @@ import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MemberRolesDetailsRow implements ComparableCurriculumElementRow {
+public class MemberRolesDetailsRow extends AbstractCurriculumElementRow {
 	
 	private final List<CurriculumRoles> roles;
-	private final CurriculumElement curriculumElement;
 	private final EnumMap<CurriculumRoles,GroupMembershipStatus> rolesStatus = new EnumMap<>(CurriculumRoles.class);
 	
 	private MemberRolesDetailsRow parent;
 	
 	public MemberRolesDetailsRow(CurriculumElement curriculumElement, List<CurriculumRoles> roles) {
-		this.curriculumElement = curriculumElement;
+		super(curriculumElement);
 		this.roles = roles;
 	}
 
 	public List<CurriculumRoles> getRoles() {
 		return roles;
-	}
-
-	public CurriculumElement getCurriculumElement() {
-		return curriculumElement;
 	}
 	
 	public void addStatus(CurriculumRoles role, GroupMembershipStatus status) {
@@ -70,47 +63,6 @@ public class MemberRolesDetailsRow implements ComparableCurriculumElementRow {
 
 	public void setParent(MemberRolesDetailsRow parent) {
 		this.parent = parent;
-	}
-
-	@Override
-	public Long getKey() {
-		return curriculumElement.getKey();
-	}
-
-	@Override
-	public String getCrump() {
-		return curriculumElement.getDisplayName();
-	}
-
-	@Override
-	public Integer getPos() {
-		return curriculumElement.getPos();
-	}
-
-	@Override
-	public Integer getPosCurriculum() {
-		return curriculumElement.getPosCurriculum();
-	}
-
-	@Override
-	public String getDisplayName() {
-		return curriculumElement.getDisplayName();
-	}
-
-	@Override
-	public String getIdentifier() {
-		return curriculumElement.getIdentifier();
-	}
-
-	@Override
-	public Date getBeginDate() {
-		return curriculumElement.getBeginDate();
-	}
-
-	@Override
-	public Long getParentKey() {
-		return curriculumElement.getParent() == null
-				? null : curriculumElement.getParent().getKey();
 	}
 
 	@Override

@@ -202,7 +202,7 @@ public class ScopeSelection extends AbstractComponent implements ComponentCollec
 	}
 	
 	ScopeItem createScopeItem(Scope scope) {
-		String toggleText = createToggleText(scope.getDisplayName(), scope.getHint());
+		String toggleText = createToggleText(scope.getDisplayName(), scope.getHint(), scope.getIconLeftCSS());
 		
 		FormToggleComponent toggle = new FormToggleComponent("o_scope_" + CodeHelper.getRAMUniqueID(), toggleText, toggleText);
 		toggle.setPresentation(FormToggle.Presentation.BUTTON);
@@ -213,10 +213,14 @@ public class ScopeSelection extends AbstractComponent implements ComponentCollec
 		return new ScopeItem(scope, toggle);
 	}
 
-	String createToggleText(String displayName, String hint) {
+	String createToggleText(String displayName, String hint, String iconLeftCSS) {
 		StringBuilder toggleTextSb = new StringBuilder();
 		toggleTextSb.append("<div class=\"o_scope\">");
-		toggleTextSb.append("<div class=\"o_scope_title\">").append(displayName).append("</div>");
+		toggleTextSb.append("<div class=\"o_scope_title\">");
+		if(StringHelper.containsNonWhitespace(iconLeftCSS)) {
+			toggleTextSb.append("<i class=\"").append(iconLeftCSS).append("\"> </i> ");
+		}
+		toggleTextSb.append(displayName).append("</div>");
 		toggleTextSb.append("<div class=\"o_scope_hint\">").append(blankIfNull(hint)).append("</div>");
 		toggleTextSb.append("</div>");
 		return toggleTextSb.toString();

@@ -22,7 +22,6 @@ package org.olat.modules.curriculum.ui.member;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,20 +32,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
-import org.olat.core.util.mail.MailPackage;
-import org.olat.group.ui.main.EditSingleMembershipController;
-import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
-import org.olat.user.UserAvatarMapper;
+import org.olat.modules.curriculum.ui.event.EditMemberEvent;
 import org.olat.user.UserInfoProfile;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoService;
@@ -63,37 +55,24 @@ public class MemberDetailsController extends FormBasicController {
 	private FormLink editMemberShipButton;
 	
 	private final Identity member;
-	private final Curriculum curriculum;
-	private final CurriculumElement curriculumElement;
 	private final UserInfoProfileConfig profileConfig;
 	
-	private CloseableModalController cmc;
-	private EditSingleMembershipController editSingleMemberCtrl;
 	private final MemberRolesDetailsController rolesDetailsCtrl;
 	
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private UserInfoService userInfoService;
-	@Autowired
-	private CurriculumService curriculumService;
 	
 	public MemberDetailsController(UserRequest ureq, WindowControl wControl,
-			Curriculum curriculum,  CurriculumElement curriculumElement, List<CurriculumElement> elements, MemberRow row,
-			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, Form rootForm) {
+			Curriculum curriculum, List<CurriculumElement> elements, MemberRow row,
+			UserInfoProfileConfig profileConfig, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "member_details_view", rootForm);
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale()));
-		this.curriculum = curriculum;
-		this.curriculumElement = curriculumElement;
-		
+
+		this.profileConfig = profileConfig;
 		member = securityManager.loadIdentityByKey(row.getIdentityKey());
-		profileConfig = userInfoService.createProfileConfig();
-		profileConfig.setChatEnabled(true);
-		profileConfig.setAvatarMapper(avatarMapper);
-		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
-		
+
 		rolesDetailsCtrl = new MemberRolesDetailsController(ureq, getWindowControl(), rootForm,
 				curriculum,  elements, member);
 		listenTo(rolesDetailsCtrl);
@@ -106,7 +85,8 @@ public class MemberDetailsController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			// Profile
 			UserInfoProfile memberConfig = userInfoService.createProfile(member);
-			MemberUserDetailsController profile = new MemberUserDetailsController(ureq, getWindowControl(), member, profileConfig, memberConfig);
+			MemberUserDetailsController profile = new MemberUserDetailsController(ureq, getWindowControl(), mainForm,
+					member, profileConfig, memberConfig);
 			listenTo(profile);
 			layoutCont.put("profil", profile.getInitialComponent());
 		}
@@ -118,28 +98,6 @@ public class MemberDetailsController extends FormBasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(editSingleMemberCtrl == source) {
-			if(event instanceof MemberPermissionChangeEvent e) {
-				doChangePermission(ureq, e, false);
-				rolesDetailsCtrl.loadModel();
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(cmc == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(editSingleMemberCtrl);
-		removeAsListenerAndDispose(cmc);
-		editSingleMemberCtrl = null;
-		cmc = null;
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
@@ -147,26 +105,8 @@ public class MemberDetailsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(editMemberShipButton == source) {
-			doEditMembership(ureq);
+			fireEvent(ureq, new EditMemberEvent(member));
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	private void doEditMembership(UserRequest ureq) {
-		if(guardModalController(editSingleMemberCtrl)) return;
-		
-		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), member, curriculum, curriculumElement, false, false);
-		listenTo(editSingleMemberCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
-				true, translate("edit.member"));
-		cmc.activate();
-		listenTo(cmc);
-	}
-	
-	private void doChangePermission(UserRequest ureq, MemberPermissionChangeEvent e, boolean sendMail) {
-		MailPackage mailing = new MailPackage(sendMail);
-		Roles roles = ureq.getUserSession().getRoles();	
-		curriculumService.updateCurriculumElementMemberships(getIdentity(), roles, e.getCurriculumChanges(), mailing);
-		dbInstance.commitAndCloseSession();
 	}
 }

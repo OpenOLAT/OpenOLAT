@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -40,7 +41,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class MemberRow extends UserPropertiesRow {
 	
-	private final String role;
+	private Date registration;
 	private final GroupMembershipInheritance inheritanceMode;
 
 	private String onlineStatus;
@@ -52,12 +53,8 @@ public class MemberRow extends UserPropertiesRow {
 	
 	public MemberRow(CurriculumMember member, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(member.getIdentity(), userPropertyHandlers, locale);
-		role = member.getRole();
 		inheritanceMode = member.getInheritanceMode();
-	}
-	
-	public String getRole() {
-		return role;
+		registration = member.getCreationDate();
 	}
 	
 	public GroupMembershipInheritance getInheritanceMode() {
@@ -70,6 +67,10 @@ public class MemberRow extends UserPropertiesRow {
 
 	public void setOnlineStatus(String onlineStatus) {
 		this.onlineStatus = onlineStatus;
+	}
+	
+	public Date getRegistration() {
+		return registration;
 	}
 	
 	public List<CurriculumRoles> getRoles() {

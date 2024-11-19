@@ -46,9 +46,7 @@ public class RolesFlexiCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		Object rowObject = source.getFormItem().getTableDataModel().getObject(row);
-
-		if(rowObject instanceof MemberRow memberRow) {
+		if(cellValue instanceof MemberRow memberRow) {
 			List<CurriculumRoles> roles = memberRow.getRoles();
 			for(int i=0; i<roles.size(); i++) {
 				if(i > 0) {

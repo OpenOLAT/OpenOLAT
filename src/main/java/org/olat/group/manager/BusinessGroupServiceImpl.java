@@ -901,7 +901,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_PARTICIPANT,
 							expiration, Boolean.TRUE, resource);
 			groupMembershipHistoryDao.createMembershipHistory(group, identityToAdd,
-					GroupRoles.participant.name(), GroupMembershipStatus.reservation, null, null, actor);
+					GroupRoles.participant.name(), GroupMembershipStatus.reservation, null, null,
+					actor, null);
 
 			BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent
 					.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADD_PENDING_EVENT, businesGroup, identityToAdd);
@@ -925,7 +926,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		Group group = businessGroupRelationDAO.getGroup(businessGroup);
 		businessGroupRelationDAO.addRole(identityToAdd, businessGroup, GroupRoles.participant.name());
 		groupMembershipHistoryDao.createMembershipHistory(group, identityToAdd,
-				GroupRoles.participant.name(), GroupMembershipStatus.active, null, null, ureqIdentity);
+				GroupRoles.participant.name(), GroupMembershipStatus.active, null, null,
+				ureqIdentity, null);
 
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, businessGroup, identityToAdd);
@@ -1003,7 +1005,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		boolean removed = businessGroupRelationDAO.removeRole(identity, businessGroup, GroupRoles.participant.name());
 		if(removed) {
 			groupMembershipHistoryDao.createMembershipHistory(group, identity,
-					GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null, ureqIdentity);
+					GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null,
+					ureqIdentity, null);
 			
 			// notify currently active users of this business group
 			BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, businessGroup, identity);
@@ -1479,7 +1482,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		Group group = businessGroupRelationDAO.getGroup(businessGroup);
 		businessGroupRelationDAO.removeRole(identityToRemove, businessGroup, GroupRoles.coach.name());
 		groupMembershipHistoryDao.createMembershipHistory(group, identityToRemove,
-				GroupRoles.coach.name(), GroupMembershipStatus.removed, null, null, ureqIdentity);
+				GroupRoles.coach.name(), GroupMembershipStatus.removed, null, null,
+				ureqIdentity, null);
 		
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.Deferred event;

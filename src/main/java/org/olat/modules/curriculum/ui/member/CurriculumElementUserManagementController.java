@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -101,9 +102,12 @@ import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.RoleListController;
+import org.olat.modules.curriculum.ui.event.EditMemberEvent;
 import org.olat.modules.curriculum.ui.event.RoleEvent;
 import org.olat.modules.curriculum.ui.member.MemberManagementTableModel.MemberCols;
 import org.olat.user.UserAvatarMapper;
+import org.olat.user.UserInfoProfileConfig;
+import org.olat.user.UserInfoService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,6 +151,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	private ToolsController toolsCtrl;
 	private RoleListController roleListCtrl;
 	private ContactFormController contactCtrl;
+	private EditMemberController editSingleMemberCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	private int counter = 0;
@@ -176,6 +181,8 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	private CurriculumService curriculumService;
 	@Autowired
 	private UserSessionManager sessionManager;
+	@Autowired
+	private UserInfoService userInfoService;
 	
 	public CurriculumElementUserManagementController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
@@ -210,10 +217,10 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	private void initButtonsForm(FormItemContainer formLayout) {
 		// Scope active, pending...
 		List<Scope> scopes = new ArrayList<>(4);
-		scopes.add(ScopeFactory.createScope(ACTIVE_SCOPE, translate("search.active"), null));
-		scopes.add(ScopeFactory.createScope(PENDING_SCOPE, translate("search.pending"), null));
-		scopes.add(ScopeFactory.createScope(NON_MEMBERS_SCOPE, translate("search.non.members"), null));
-		scopes.add(ScopeFactory.createScope(HISTORY_SCOPE, translate("search.members.history"), null));
+		scopes.add(ScopeFactory.createScope(ACTIVE_SCOPE, translate("search.active"), null, "o_icon o_icon_circle_check"));
+		scopes.add(ScopeFactory.createScope(PENDING_SCOPE, translate("search.pending"), null, "o_icon o_icon_timelimit_half"));
+		scopes.add(ScopeFactory.createScope(NON_MEMBERS_SCOPE, translate("search.non.members"), null, "o_icon o_icon_non_members"));
+		scopes.add(ScopeFactory.createScope(HISTORY_SCOPE, translate("search.members.history"), null, "o_icon o_icon_history"));
 		searchScopes = uifactory.addScopeSelection("search.scopes", null, formLayout, scopes);
 		
 		allLevelsButton = uifactory.addFormLink("search.all.levels", formLayout, Link.BUTTON);
@@ -252,7 +259,8 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 					colIndex, action, true, "userProp-" + colIndex));
 			colIndex++;
 		}
-		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.registration,
+				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role,
 				new RolesFlexiCellRenderer(getTranslator())));
 		NumOfCellRenderer numOfRenderer = new NumOfCellRenderer(descendants.size() + 1);	
@@ -260,9 +268,9 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 				numOfRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberCols.asCoach,
 				numOfRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberCols.asOwner,
-				numOfRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberCols.asMasterCoach,
+				numOfRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberCols.asOwner,
 				numOfRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberCols.asElementOwner,
 				numOfRenderer));
@@ -365,6 +373,10 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		return components;
 	}
 	
+	private void reloadMember(Identity member) {
+		//TODO curriculum
+	}
+	
 	private void loadModel(boolean reset) {
 		SearchMemberParameters params = getSearchParameters();
 		List<CurriculumMember> members = curriculumService.getCurriculumElementsMembers(params);
@@ -384,7 +396,6 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 			forgeOnlineStatus(row, loadStatus);
 			keyToMemberMap.put(row.getIdentityKey(), row);
 		}
-		
 		
 		if(!loadStatus.isEmpty()) {
 			List<Long> statusToLoadList = new ArrayList<>(loadStatus);
@@ -510,6 +521,19 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 			if(event instanceof RoleEvent re) {
 				doSearchMember(ureq, re.getRole());
 			}
+		} else if(editSingleMemberCtrl == source) {
+			if(event == Event.BACK_EVENT) {
+				toolbarPanel.popController(editSingleMemberCtrl);
+				reloadMember(editSingleMemberCtrl.getMember());
+				cleanUp();
+			}
+		} else if(toolsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				calloutCtrl.deactivate();
+				cleanUp();
+			}
+		} else if(event instanceof EditMemberEvent ede) {
+			doEditMember(ureq, ede.getMember());
 		} else if(cmc == source || calloutCtrl == source) {
 			cleanUp();
 		}
@@ -517,10 +541,12 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(editSingleMemberCtrl);
 		removeAsListenerAndDispose(confirmRemoveCtrl);
 		removeAsListenerAndDispose(userSearchCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(cmc);
+		editSingleMemberCtrl = null;
 		confirmRemoveCtrl = null;
 		userSearchCtrl = null;
 		calloutCtrl = null;
@@ -588,7 +614,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	 * @param ureq The user request
 	 * @param member The member
 	 */
-	protected void doIm(UserRequest ureq, MemberRow member) {
+	private void doIm(UserRequest ureq, MemberRow member) {
 		Buddy buddy = imService.getBuddyById(member.getIdentityKey());
 		OpenInstantMessageEvent e = new OpenInstantMessageEvent(buddy);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
@@ -603,7 +629,18 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 				rows.add(row);
 			}
 		}
-		
+		doConfirmRemoveAllMemberships(ureq, rows);
+	}
+	
+	private void doConfirmRemoveAllMemberships(UserRequest ureq, MemberRow member) {
+		List<MemberRow> rows = new ArrayList<>();
+		if(member.getInheritanceMode() == GroupMembershipInheritance.root || member.getInheritanceMode() == GroupMembershipInheritance.none) {
+			rows.add(member);
+		}
+		doConfirmRemoveAllMemberships(ureq, rows);
+	}	
+
+	private void doConfirmRemoveAllMemberships(UserRequest ureq, List<MemberRow> rows) {
 		if(rows.isEmpty()) {
 			showWarning("warning.atleastone.member");
 		} else {
@@ -615,8 +652,8 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	
 	private void doRemove(List<MemberRow> membersToRemove) {
 		for(MemberRow memberToRemove:membersToRemove) {
-			if(CurriculumRoles.isValueOf(memberToRemove.getRole())) {
-				CurriculumRoles role = CurriculumRoles.valueOf(memberToRemove.getRole());
+			List<CurriculumRoles> roles = memberToRemove.getRoles();
+			for(CurriculumRoles role:roles) {
 				Identity member = securityManager.loadIdentityByKey(memberToRemove.getIdentityKey());
 				curriculumService.removeMember(curriculumElement, member, role, getIdentity());
 			}
@@ -670,8 +707,9 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		List<CurriculumElement> elements = new ArrayList<>(descendants);
 		elements.add(curriculumElement);
 		
+		UserInfoProfileConfig profileConfig = createProfilConfig();
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(),
-				curriculum, curriculumElement, elements, row, avatarMapper, avatarMapperBaseURL, mainForm);
+				curriculum, elements, row, profileConfig, mainForm);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());
@@ -716,38 +754,71 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		toolbarPanel.pushController(fullname, contactCtrl);
 	}
 	
+	private void doEditMember(UserRequest ureq, MemberRow member) {
+		Identity identity = securityManager.loadIdentityByKey(member.getIdentityKey());
+		doEditMember(ureq, identity);
+	}
+	
+	private void doEditMember(UserRequest ureq, Identity member) {
+		String fullname = userManager.getUserDisplayName(member);
+		UserInfoProfileConfig profileConfig = createProfilConfig();
+		List<CurriculumElement> elements = new ArrayList<>(descendants);
+		elements.add(curriculumElement);
+		
+		editSingleMemberCtrl = new EditMemberController(ureq, getWindowControl(),
+				curriculum, elements, member, profileConfig);
+		listenTo(editSingleMemberCtrl);
+		toolbarPanel.pushController(fullname, editSingleMemberCtrl);
+	}
+	
+	private UserInfoProfileConfig createProfilConfig() {
+		UserInfoProfileConfig profileConfig = userInfoService.createProfileConfig();
+		profileConfig.setChatEnabled(true);
+		profileConfig.setAvatarMapper(avatarMapper);
+		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
+		return profileConfig;
+	}
+	
 	private class ToolsController extends BasicController {
 		
+		private final Link contactLink;
+		private final Link editMemberLink;
+		private final Link removeMembershipsLink;
 		private final VelocityContainer mainVC;
 		
 		private MemberRow member;
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, MemberRow member) {
-			super(ureq, wControl);
+			super(ureq, wControl, Util
+					.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 			this.member = member;
 
 			mainVC = createVelocityContainer("tools");
 
-			addLink("contact", "contact", "o_icon o_icon-fw o_icon_mail");
+			contactLink = addLink("contact", "contact", "o_icon o_icon-fw o_icon_mail");
+			editMemberLink = addLink("edit.member", "edit.member", "o_icon o_icon-fw o_icon_edit");
+			removeMembershipsLink = addLink("remove.memberships", "remove.memberships", "o_icon o_icon-fw o_icon_remove");
 			
 			putInitialPanel(mainVC);
 		}
-		private void addLink(String name, String cmd, String iconCSS) {
+		private Link addLink(String name, String cmd, String iconCSS) {
 			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
 			if(iconCSS != null) {
 				link.setIconLeftCSS(iconCSS);
 			}
 			mainVC.put(name, link);
+			return link;
 		}
 		
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if(source instanceof Link link) {
-				String cmd = link.getCommand();
-				if("contact".equals(cmd)) {
-					doOpenContact(ureq, member);
-				}
+			if(contactLink == source) {
+				doOpenContact(ureq, member);
+			} else if(editMemberLink == source) {
+				doEditMember(ureq, member);
+			} else if(removeMembershipsLink == source) {
+				doConfirmRemoveAllMemberships(ureq, member);
 			}
 		}
 	}

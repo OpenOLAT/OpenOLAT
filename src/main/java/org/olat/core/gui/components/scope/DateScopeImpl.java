@@ -32,7 +32,7 @@ class DateScopeImpl extends ScopeImpl implements DateScope {
 	private final DateRange dateRange;
 
 	DateScopeImpl(String key, String displayName, String hint, DateRange dateRange) {
-		super(key, displayName, hint);
+		super(key, displayName, hint, null);
 		this.dateRange = dateRange;
 	}
 

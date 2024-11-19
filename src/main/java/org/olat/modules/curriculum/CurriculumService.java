@@ -438,7 +438,10 @@ public interface CurriculumService {
 	 * @param member The identity to make a member of
 	 * @param role The role of the member
 	 */
+	//TODO curriculum (only one method)
 	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor);
+	
+	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor, String adminNote);
 	
 	/**
 	 * Remove a member of the curriculum element and discard all its roles.

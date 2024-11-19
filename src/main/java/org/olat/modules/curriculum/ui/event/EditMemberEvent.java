@@ -5,7 +5,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -17,22 +17,31 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.scope;
+package org.olat.modules.curriculum.ui.event;
+
+import org.olat.core.gui.control.Event;
+import org.olat.core.id.Identity;
 
 /**
  * 
- * Initial date: 24 Nov 2023<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 12 nov. 2024<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Scope {
+public class EditMemberEvent extends Event {
 	
-	public String getKey();
-	
-	public String getDisplayName();
-	
-	public String getHint();
-	
-	public String getIconLeftCSS();
+	private static final long serialVersionUID = -6457068525505465451L;
 
+	public static final String EDIT_MEMBER_EVENT = "edit-member";
+	
+	private Identity member;
+	
+	public EditMemberEvent(Identity member) {
+		super(EDIT_MEMBER_EVENT);
+		this.member = member;
+	}
+	
+	public Identity getMember() {
+		return member;
+	}
 }

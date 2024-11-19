@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -54,9 +55,9 @@ public class MemberUserDetailsController extends UserInfoController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 
-	public MemberUserDetailsController(UserRequest ureq, WindowControl wControl,
+	public MemberUserDetailsController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			Identity member, UserInfoProfileConfig profileConfig, UserInfoProfile profile) {
-		super(ureq, wControl, profileConfig, profile);
+		super(ureq, wControl, mainForm, profileConfig, profile);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.member = member;
 		initForm(ureq);
@@ -83,5 +84,4 @@ public class MemberUserDetailsController extends UserInfoController {
 			}
 		}
 	}
-
 }
