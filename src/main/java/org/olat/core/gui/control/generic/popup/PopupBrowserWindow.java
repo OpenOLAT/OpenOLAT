@@ -52,4 +52,6 @@ public interface PopupBrowserWindow {
 	 */
 	public void setForPrint(boolean forPrint);
 	
+	public void addBodyCssClass(String cssClass);
+	
 }

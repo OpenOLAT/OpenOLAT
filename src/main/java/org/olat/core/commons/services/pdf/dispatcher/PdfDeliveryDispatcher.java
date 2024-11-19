@@ -30,6 +30,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.commons.services.pdf.model.PdfDelivery;
 import org.olat.core.dispatcher.Dispatcher;
@@ -110,6 +111,7 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 	
 	private synchronized void renderController(PdfDelivery delivery, HttpServletRequest request, HttpServletResponse response) {
 		try {
+			PdfOutputOptions options = delivery.getOptions();
 			ControllerCreator creator = delivery.getControllerCreator();
 			UserRequest ureq = new UserRequestImpl("pdfd", request, response);
 			UserSession usess = ureq.getUserSession();
@@ -125,6 +127,9 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 				PopupBrowserWindow pbw = delivery.getWindowControl().getWindowBackOffice()
 						.getWindowManager().createNewPopupBrowserWindowFor(ureq, creator);
 				pbw.setForPrint(true);
+				if(options != null && options.getMargin() != null && options.getMargin().bodyCssClass() != null) {
+					pbw.addBodyCssClass(options.getMargin().bodyCssClass());
+				}
 				window = pbw.getPopupWindowControl().getWindowBackOffice().getWindow();
 				delivery.setWindow(window);
 				delivery.setBrowserWindow(pbw);
