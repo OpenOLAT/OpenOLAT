@@ -8,7 +8,9 @@
 <div class="o_lecture_metadata_horizontal">
 	$r.render("lecture.date","vertical")
 	$r.render("lecture.time","vertical")
-	$r.render("lecture.units","vertical")
+	#if($r.available("lecture.units"))
+		$r.render("lecture.units","vertical")
+	#end
 	#if($r.available("lecture.location"))
 		$r.render("lecture.location","vertical")
 	#end

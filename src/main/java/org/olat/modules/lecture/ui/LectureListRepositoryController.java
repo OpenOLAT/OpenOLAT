@@ -58,7 +58,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActi
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -130,12 +129,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private static final String PENDING_TAB_ID = "Pending";
 	private static final String WITHOUT_TEACHERS_TAB_ID = "WithoutTeachers";
 	
-	private static final String FILTER_ONE_LEVEL_ONLY = "OneLevelOnly";
 	private static final String FILTER_ROLL_CALL_STATUS = "Status";
 	private static final String FILTER_TEACHERS = "Teachers";
 	
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
 
+	private FormLink allLevelsButton;
+	private FormLink thisLevelButton;
 	private FormLink addLectureButton;
 	private FormLink deleteLecturesButton;
 	private FormLink importLecturesButton;
@@ -152,7 +152,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 
 	private FlexiTableMultiSelectionFilter teachersFilter;
 	private FlexiTableMultiSelectionFilter rollCallStatusFilter;
-	private FlexiTableOneClickSelectionFilter oneLevelOnlyFilter;
 	private final SelectionValues teachersValues = new SelectionValues();
 	
 	private ToolsController toolsCtrl;
@@ -178,6 +177,21 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, LecturesSecurityCallback secCallback) {
+		super(ureq, wControl, "admin_repository_lectures");
+		entry = null;
+		curriculum = null;
+		curriculumElement = null;
+		this.secCallback = secCallback;
+		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
+		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
+		detailsVC = createVelocityContainer("lecture_details");
+		
+		initForm(ureq);
+		loadModel();
+		updateTeachersFilters();
+	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
@@ -224,6 +238,19 @@ public class LectureListRepositoryController extends FormBasicController impleme
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		initButtonsForm(formLayout);
+		initTableForm(formLayout, ureq);
+	}
+	
+	private  void initButtonsForm(FormItemContainer formLayout) {
+		if(curriculumElement != null) {
+			allLevelsButton = uifactory.addFormLink("search.all.levels", formLayout, Link.BUTTON);
+			allLevelsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_circle_check");
+			allLevelsButton.setPrimary(true);
+			thisLevelButton = uifactory.addFormLink("search.this.level", formLayout, Link.BUTTON);
+			thisLevelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_exact_location");
+		}
+	
 		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
 			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
 			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
@@ -244,7 +271,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				addTaskDropdown.addElement(importLecturesButton);
 			}
 		}
-		
+	}
+
+	private  void initTableForm(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.externalId));
@@ -279,7 +308,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.status,
 				new LectureBlockStatusCellRenderer(getTranslator())));
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
-				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
+				new StaticFlexiCellRenderer("", "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
 		editColumn.setExportable(false);
 		editColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(editColumn);
@@ -313,14 +342,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
-		
-		if(curriculumElement != null) {
-			SelectionValues assessableValues = new SelectionValues();
-			assessableValues.add(SelectionValues.entry(FILTER_ONE_LEVEL_ONLY, translate("filter.one.level.only")));
-			oneLevelOnlyFilter = new FlexiTableOneClickSelectionFilter(translate("filter.one.level.only"),
-					FILTER_ONE_LEVEL_ONLY, assessableValues, true);
-			filters.add(oneLevelOnlyFilter);
-		}
 
 		SelectionValues rollCallStatusValues = new SelectionValues();
 		rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.open.name(), translate("search.form.status.open")));
@@ -460,7 +481,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		
 		if(curriculumElement != null) {
-			boolean oneLevelOnly =  isFilterSelected(FILTER_ONE_LEVEL_ONLY);
+			boolean oneLevelOnly = thisLevelButton.getComponent().isPrimary();
 			searchParams.setCurriculumElementPath(oneLevelOnly ? null : curriculumElement.getMaterializedPathKeys());
 			searchParams.setCurriculumElement(oneLevelOnly ? curriculumElement : null);
 			searchParams.setLectureConfiguredRepositoryEntry(false);
@@ -558,6 +579,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			doConfirmBulkDelete(ureq);
 		} else if(importLecturesButton == source) {
 			doImportLecturesBlock(ureq);
+		} else if(allLevelsButton == source) {
+			doToggleLevels(false);
+		} else if(thisLevelButton == source) {
+			doToggleLevels(true);
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
@@ -659,6 +684,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doToggleLevels(boolean thisLevel) {
+		allLevelsButton.setPrimary(!thisLevel);
+		thisLevelButton.setPrimary(thisLevel);
+		loadModel();
 	}
 
 	private void doEditLectureBlock(UserRequest ureq, LectureBlockRow row) {

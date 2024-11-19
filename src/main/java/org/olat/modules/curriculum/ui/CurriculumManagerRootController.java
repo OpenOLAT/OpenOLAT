@@ -206,7 +206,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		toolbarPanel.popUpToRootController(ureq);
 		removeAsListenerAndDispose(eventsCtrl);
 		
-		eventsCtrl = new CurriculumManagerEventsController(ureq, getWindowControl());
+		eventsCtrl = new CurriculumManagerEventsController(ureq, getWindowControl(), lecturesSecCallback);
 		listenTo(eventsCtrl);
 		toolbarPanel.pushController(translate("curriculum.lectures"), eventsCtrl);
 		return eventsCtrl;
