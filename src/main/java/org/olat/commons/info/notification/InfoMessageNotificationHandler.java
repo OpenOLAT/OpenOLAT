@@ -121,7 +121,7 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 					String tooltip = info.getMessage();
 					String infoBusinessPath = info.getBusinessPath() + "[InfoMessage:" + info.getKey() + "]";
 					String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(infoBusinessPath);
-					Date dateInfo = info.getModificationDate() == null ? info.getPublishDate() : info.getModificationDate();
+					Date dateInfo = info.getPublishDate();
 					SubscriptionListItem subListItem = new SubscriptionListItem(desc, tooltip, urlToSend, infoBusinessPath, dateInfo, CSS_CLASS_ICON);
 					si.addSubscriptionListItem(subListItem);
 				}
