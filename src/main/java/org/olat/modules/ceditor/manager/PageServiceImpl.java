@@ -41,6 +41,7 @@ import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfOutputOptions.Margin;
 import org.olat.core.commons.services.pdf.PdfOutputOptions.MediaType;
 import org.olat.core.commons.services.pdf.PdfOutputOptions.PageRange;
 import org.olat.core.commons.services.pdf.PdfService;
@@ -747,7 +748,7 @@ public class PageServiceImpl implements PageService, RepositoryEntryDataDeletabl
 				return new PageRunController(uureq, wwControl, null,
 						BinderSecurityCallbackFactory.getReadOnlyCallback(), page, pageSettings, false);
 			};
-			PdfOutputOptions outputOptions = PdfOutputOptions.valueOf(MediaType.screen, Double.valueOf(0.0d), new PageRange(1, 1));
+			PdfOutputOptions outputOptions = PdfOutputOptions.valueOf(MediaType.screen, Margin.NONE, new PageRange(1, 1));
 			pdfService.convert(identity, creator, wControl, outputOptions, out);
 			out.flush();
 		} catch(IOException e) {

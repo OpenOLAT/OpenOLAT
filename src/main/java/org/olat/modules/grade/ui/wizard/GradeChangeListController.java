@@ -39,6 +39,7 @@ public class GradeChangeListController extends AbstractGradeListController {
 	public GradeChangeListController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext runContext, boolean autoGrade) {
 		super(ureq, wControl, form, runContext);
 		this.autoGrade = autoGrade;
+		loadModel();
 	}
 
 	@Override

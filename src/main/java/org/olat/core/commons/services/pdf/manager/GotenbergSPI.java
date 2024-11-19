@@ -122,17 +122,13 @@ public class GotenbergSPI extends AbstractPdfSPI {
 				if(options.getEmulatedMediaType() != null) {
 					entityBuilder = entityBuilder.addTextBody("emulatedMediaType", options.getEmulatedMediaType().name());
 				}
-				if(options.getMarginTop() != null) {
-					entityBuilder = entityBuilder.addTextBody("marginTop", options.getMarginTop().toString());
-				}
-				if(options.getMarginBottom() != null) {
-					entityBuilder = entityBuilder.addTextBody("marginBottom", options.getMarginBottom().toString());
-				}
-				if(options.getMarginLeft() != null) {
-					entityBuilder = entityBuilder.addTextBody("marginLeft", options.getMarginLeft().toString());
-				}
-				if(options.getMarginRight() != null) {
-					entityBuilder = entityBuilder.addTextBody("marginRight", options.getMarginRight().toString());
+				if(options.getMargin() != null) {
+					String margin = Double.toString(options.getMargin().margin());
+					entityBuilder = entityBuilder
+								.addTextBody("marginTop", margin)
+								.addTextBody("marginBottom", margin)
+								.addTextBody("marginLeft", margin)
+								.addTextBody("marginRight", margin);
 				}
 				if(options.getPageRange() != null) {
 					int pageStart = options.getPageRange().start();

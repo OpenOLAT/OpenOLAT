@@ -319,3 +319,7 @@ body.o_print_a4_144 {
 	}
 }
 
+.o_pdf_output_one_cm #o_main_wrapper {
+	width: calc(100vw);
+}
+

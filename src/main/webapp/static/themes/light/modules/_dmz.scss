@@ -160,6 +160,10 @@ body.o_dmz {
 			ul {
 				margin-bottom: 0;
 			}
+			
+			a {
+				color: $o-login-help-link-color;
+			}
 		}
 	}
 	
@@ -409,7 +413,7 @@ body.o_dmz {
 			
 			.o_login_intro, .o_login_box, .o_login_help {
 				padding: $o-login-xs-padding;
-			}
+			}			
 			
 			.o_login_logo {
 				padding: $o-login-xs-padding $o-login-xs-padding 0 $o-login-xs-padding;
@@ -423,6 +427,10 @@ body.o_dmz {
 			
 			.o_login_provider {
 				padding: 0 $o-login-xs-padding;
+			}
+			
+			.o_login_help a {
+			
 			}
 		}
 		

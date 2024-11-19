@@ -27,16 +27,18 @@ package org.olat.core.commons.services.pdf;
  */
 public class PdfOutputOptions {
 	
-	private Double marginLeft;
-	private Double marginRight;
-	private Double marginTop;
-	private Double marginBottom;
+	private Margin margin;
 	private MediaType emulatedMediaType;
 	
 	private PageRange pageRange;
 	
+	/**
+	 * The default options set the media type to print, margin to 1cm and outputs all pages.
+	 * 
+	 * @return The options object
+	 */
 	public static PdfOutputOptions defaultOptions() {
-		return new PdfOutputOptions();
+		return valueOf(MediaType.print, Margin.ONE_CM, null);
 	}
 	
 	/**
@@ -46,47 +48,20 @@ public class PdfOutputOptions {
 	 * @param margin Set the top, bottom, left and right margin (support: Gotenberg)
 	 * @return The options object
 	 */
-	public static PdfOutputOptions valueOf(MediaType emulatedMediaType, Double margin, PageRange range) {
+	public static PdfOutputOptions valueOf(MediaType emulatedMediaType, Margin margin, PageRange range) {
 		PdfOutputOptions options = new PdfOutputOptions();
 		options.setEmulatedMediaType(emulatedMediaType);
-		options.setMarginLeft(margin);
-		options.setMarginRight(margin);
-		options.setMarginTop(margin);
-		options.setMarginBottom(margin);
+		options.setMargin(margin);
 		options.setPageRange(range);
 		return options;
 	}
 
-	public Double getMarginLeft() {
-		return marginLeft;
+	public Margin getMargin() {
+		return margin;
 	}
 
-	public void setMarginLeft(Double marginLeft) {
-		this.marginLeft = marginLeft;
-	}
-
-	public Double getMarginRight() {
-		return marginRight;
-	}
-
-	public void setMarginRight(Double marginRight) {
-		this.marginRight = marginRight;
-	}
-
-	public Double getMarginTop() {
-		return marginTop;
-	}
-
-	public void setMarginTop(Double marginTop) {
-		this.marginTop = marginTop;
-	}
-
-	public Double getMarginBottom() {
-		return marginBottom;
-	}
-
-	public void setMarginBottom(Double marginBottom) {
-		this.marginBottom = marginBottom;
+	public void setMargin(Margin margin) {
+		this.margin = margin;
 	}
 
 	public MediaType getEmulatedMediaType() {
@@ -108,6 +83,27 @@ public class PdfOutputOptions {
 	public enum MediaType {
 		screen,
 		print
+	}
+	
+	public enum Margin {
+		NONE(0.0d, "o_pdf_output_none"),
+		ONE_CM(0.393701d, "o_pdf_output_one_cm");
+		
+		private final double margin;
+		private final String bodyCssClass;
+		
+		private Margin(double margin, String bodyCssClass) {
+			this.margin = margin;
+			this.bodyCssClass = bodyCssClass;
+		}
+
+		public double margin() {
+			return margin;
+		}
+
+		public String bodyCssClass() {
+			return bodyCssClass;
+		}
 	}
 	
 	public record PageRange(int start, int end) {

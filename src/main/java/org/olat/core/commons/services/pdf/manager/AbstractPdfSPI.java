@@ -70,7 +70,7 @@ public abstract class AbstractPdfSPI extends AbstractSpringModule implements Pdf
 	@Override
 	public void convert(File path, String rootFilename, PdfOutputOptions options, OutputStream out) {
 		String key = UUID.randomUUID().toString();
-		PdfDelivery delivery = new PdfDelivery(key);
+		PdfDelivery delivery = new PdfDelivery(key, options);
 		delivery.setDirectory(path.getAbsolutePath());
 		cache.put(key, delivery);
 		render(key, rootFilename, options, out);
@@ -80,7 +80,7 @@ public abstract class AbstractPdfSPI extends AbstractSpringModule implements Pdf
 	@Override
 	public void convert(Identity identity, ControllerCreator creator, WindowControl wControl, PdfOutputOptions options, OutputStream out) {
 		String key = UUID.randomUUID().toString();
-		PdfDelivery delivery = new PdfDelivery(key);
+		PdfDelivery delivery = new PdfDelivery(key, options);
 		delivery.setIdentity(identity);
 		delivery.setControllerCreator(creator);
 		delivery.setWindowControl(wControl);

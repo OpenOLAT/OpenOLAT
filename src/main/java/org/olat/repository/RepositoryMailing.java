@@ -29,7 +29,6 @@ import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -286,15 +285,12 @@ public class RepositoryMailing {
 			String redescription = (StringHelper.containsNonWhitespace(re.getDescription()) ? FilterFactory.getHtmlTagAndDescapingFilter().filter(re.getDescription()) : ""); 
 			context.put(COURSE_DESCRIPTION, redescription);
 			context.put("coursedescription", redescription);
-			
-			String reUrl;
+
 			if(StringHelper.containsNonWhitespace(url)) {
-				reUrl = url;
-			} else {
-				reUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + re.getKey();
+				String reUrl = url;
+				context.put(COURSE_URL, reUrl);
+				context.put("courseurl", reUrl);
 			}
-			context.put(COURSE_URL, reUrl);
-			context.put("courseurl", reUrl);
 
 			String courseRef = re.getExternalRef() == null ? "" : re.getExternalRef();
 			context.put(COURSE_REF, courseRef);

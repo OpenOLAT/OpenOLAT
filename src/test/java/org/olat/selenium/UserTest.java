@@ -978,7 +978,7 @@ public class UserTest extends Deployments {
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
 		//tools
 		userLoginPage
-			.loginAs(username1, "rosario01")
+			.loginAs(username1, "Rosario01Book1")
 			.assertLoggedIn(user1);
 	}
 	

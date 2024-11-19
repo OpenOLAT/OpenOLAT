@@ -25,10 +25,12 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.home.HomeMainController;
 import org.olat.login.SupportsAfterLoginInterceptor;
@@ -95,7 +97,9 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 			String value = user.getProperty("emailDisabled", null);
 			if (value != null && value.equals("true")) {
 				Translator translator = Util.createPackageTranslator(HomeMainController.class, ureq.getLocale());
-				getWindowControl().setWarning(translator.translate("email.disabled"));
+				String urlToProfile = Settings.getServerContextPathURI() + "/auth/HomeSite/" + ureq.getIdentity().getKey() + "/profil/0/Profile/0";
+				String mailSupport = WebappHelper.getMailConfig("mailSupport");
+				getWindowControl().setWarning(translator.translate("email.disabled", urlToProfile, mailSupport));
 			}
 		}
 		return false;

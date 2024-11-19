@@ -21,6 +21,7 @@ package org.olat.course.nodes.cns.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -70,12 +72,16 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CNSCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.cns.ui.CNSParticipantDataModel.CNSParticipantCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ParticipantType;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -133,6 +139,8 @@ public class CNSParticipantListController extends FormBasicController implements
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
+	private AssessmentService assessmentService;
+	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -141,6 +149,7 @@ public class CNSParticipantListController extends FormBasicController implements
 		super(ureq, wControl, "participant_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
 		this.coachCourseEnv = coachCourseEnv;
 		assessmentCallback = courseAssessmentService.createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
 		courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -179,6 +188,16 @@ public class CNSParticipantListController extends FormBasicController implements
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
 		
+		if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType())) {
+			SelectionValues obligationValues = new SelectionValues();
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.optional.name(), translate("filter.optional")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.excluded.name(), translate("filter.excluded")));
+			FlexiTableMultiSelectionFilter obligationFilter = new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
+					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
+			filters.add(obligationFilter);
+		}
+		
 		// members
 		if (assessmentCallback.canAssessNonMembers() || assessmentCallback.canAssessFakeParticipants()) {
 			SelectionValues membersValues = new SelectionValues();
@@ -192,7 +211,6 @@ public class CNSParticipantListController extends FormBasicController implements
 			if (membersValues.size() > 1) {
 				FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
 						AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
-				filter.setValues(List.of(ParticipantType.member.name()));
 				filters.add(filter);
 			}
 		}
@@ -244,10 +262,18 @@ public class CNSParticipantListController extends FormBasicController implements
 	private void initFilterTabs(UserRequest ureq) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
 		
-		tabAll = FlexiFiltersTabFactory.tab(
+		tabAll = FlexiFiltersTabFactory.tabWithFilters(
 				TAB_ID_ALL,
 				translate("all"),
-				TabSelectionBehavior.reloadData);
+				TabSelectionBehavior.reloadData,
+				List.of(
+						FlexiTableFilterValue.valueOf(
+								AssessedIdentityListState.FILTER_OBLIGATION,
+								List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())),
+						FlexiTableFilterValue.valueOf(
+								AssessedIdentityListState.FILTER_MEMBERS,
+								List.of(ParticipantType.member.name()))
+					));
 		tabs.add(tabAll);
 		
 		if (requiredSelections > 1) {
@@ -315,10 +341,11 @@ public class CNSParticipantListController extends FormBasicController implements
 	}
 	
 	private void loadModel(UserRequest ureq) {
-		SearchAssessedIdentityParams params = getSearchParameters();
+		SearchAssessedIdentityParams params = getSearchParameters(false);
 		List<Identity> identities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 		
-		Map<Long, List<AssessmentEntry>> identityKeyToEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, null).stream()
+		SearchAssessedIdentityParams childNodeParams = getSearchParameters(true);
+		Map<Long, List<AssessmentEntry>> identityKeyToEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), childNodeParams, null).stream()
 			.filter(entry -> entry.getIdentity() != null)
 			.collect(Collectors.groupingBy(entry -> entry.getIdentity().getKey()));
 		
@@ -357,25 +384,17 @@ public class CNSParticipantListController extends FormBasicController implements
 		}
 	}
 
-	private SearchAssessedIdentityParams getSearchParameters() {
+	private SearchAssessedIdentityParams getSearchParameters(boolean childNodes) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
-		params.setSubIdents(childNodeIdents);
-		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		params.setUserPropertyHandlers(userPropertyHandlers);
-
-		List<FlexiTableFilter> filters = tableEl.getFilters();
-		
-		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_STATUS);
-		if (statusFilter != null) {
-			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
-			if (filterValues != null && !filterValues.isEmpty()) {
-				List<AssessmentEntryStatus> passed = filterValues.stream()
-						.filter(AssessmentEntryStatus::isValueOf)
-						.map(AssessmentEntryStatus::valueOf)
-						.collect(Collectors.toList());
-				params.setAssessmentStatus(passed);
-			}
+		if (childNodes) {
+			params.setSubIdents(childNodeIdents);
+			params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
+		} else {
+			params.setSubIdents(List.of(courseNode.getIdent()));
 		}
+		
+		List<FlexiTableFilter> filters = tableEl.getFilters();
 		
 		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
 		if(membersFilter != null) {
@@ -416,15 +435,78 @@ public class CNSParticipantListController extends FormBasicController implements
 	}
 	
 	private void applyFilters(List<CNSParticipantRow> rows) {
-		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabAll) {
+		if (tableEl.getSelectedFilterTab() != null) {
+			if (tableEl.getSelectedFilterTab() == tabPartially) {
+				rows.removeIf(row -> row.getNumSelections() == 0 || row.getNumSelections() >= requiredSelections);
+			} else if (tableEl.getSelectedFilterTab() == tabCompletely) {
+				rows.removeIf(row -> row.getNumSelections() < requiredSelections);
+			}
+		}
+		
+		List<AssessmentEntryStatus> statusFilter = getStatusFilter();
+		List<AssessmentObligation> obligationFilter = getObligationFilter();
+		if (statusFilter.isEmpty() && obligationFilter.isEmpty()) {
 			return;
 		}
 		
-		if (tableEl.getSelectedFilterTab() == tabPartially) {
-			rows.removeIf(row -> row.getNumSelections() == 0 || row.getNumSelections() >= requiredSelections);
-		} else if (tableEl.getSelectedFilterTab() == tabCompletely) {
-			rows.removeIf(row -> row.getNumSelections() < requiredSelections);
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, courseNode.getIdent());
+		
+		if (!statusFilter.isEmpty()) {
+			assessmentEntries.removeIf(ae -> !statusFilter.contains(ae.getAssessmentStatus()));
 		}
+		if (!obligationFilter.isEmpty()) {
+			assessmentEntries.removeIf(ae -> isExcludedByObligation(obligationFilter, extractObligation(ae)));
+		}
+		
+		Set<Long> filteredIdentityKeys = assessmentEntries.stream().map(ae -> ae.getIdentity().getKey()).collect(Collectors.toSet());
+		rows.removeIf(row -> !filteredIdentityKeys.contains(row.getIdentityKey()));
+	}
+	
+	private List<AssessmentEntryStatus> getStatusFilter() {
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), AssessedIdentityListState.FILTER_STATUS);
+		if (statusFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				return filterValues.stream()
+						.filter(AssessmentEntryStatus::isValueOf)
+						.map(AssessmentEntryStatus::valueOf)
+						.collect(Collectors.toList());
+			}
+		}
+		return List.of();
+	}
+	
+	private List<AssessmentObligation> getObligationFilter() {
+		FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), AssessedIdentityListState.FILTER_OBLIGATION);
+		if (obligationFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				List<AssessmentObligation> assessmentObligations = filterValues.stream()
+						.map(AssessmentObligation::valueOf)
+						.collect(Collectors.toList());
+				return assessmentObligations;
+			}
+		}
+		return List.of();
+	}
+	
+	private AssessmentObligation extractObligation(AssessmentEntry assessmentEntry) {
+		return assessmentEntry != null && assessmentEntry.getObligation() != null
+				? assessmentEntry.getObligation().getCurrent()
+				: null;
+	}
+	
+	private boolean isExcludedByObligation(Collection<AssessmentObligation> filterObligations, AssessmentObligation obligation) {
+		if (filterObligations == null || filterObligations.isEmpty()) {
+			return false;
+		}
+		if (obligation != null && !filterObligations.contains(obligation)) {
+			return true;
+		}
+		if (obligation == null && !filterObligations.contains(AssessmentObligation.mandatory)) {
+			return true;
+		}
+		return false;
 	}
 	
 	private void applySearch(List<CNSParticipantRow> rows) {

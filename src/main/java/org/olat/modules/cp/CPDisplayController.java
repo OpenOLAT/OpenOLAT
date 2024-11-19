@@ -31,6 +31,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfOutputOptions;
+import org.olat.core.commons.services.pdf.PdfOutputOptions.Margin;
 import org.olat.core.commons.services.pdf.PdfOutputOptions.MediaType;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
@@ -399,7 +400,7 @@ public class CPDisplayController extends BasicController implements Activateable
 			return new CPPrintController(lureq, lwcontrol, ctm, rootContainer);
 		};
 		MediaResource resource = pdfService.convert("toPdf", getIdentity(), pdfControllerCreator,
-				getWindowControl(), PdfOutputOptions.valueOf(MediaType.print, Double.valueOf(0.393701d), null));
+				getWindowControl(), PdfOutputOptions.valueOf(MediaType.screen, Margin.ONE_CM, null));
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 
