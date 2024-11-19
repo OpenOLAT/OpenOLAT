@@ -417,6 +417,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		toolsLink.setTitle(translate("action.more"));
 		
 		final long children = element.numOfChildren();
+		final boolean showStructure = showStructure(element.curriculumElement(), children);
 		final long refs = element.numOfResources() + element.numOfLectureBlocks();
 		CurriculumElementSearchRow row = new CurriculumElementSearchRow(element.curriculumElement(),
 				children, refs, element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
@@ -429,7 +430,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			resourcesLink.setUserObject(row);
 			row.setResourcesLink(resourcesLink);
 		}
-		if(children> 0) {
+		if(showStructure) {
 			FormLink structureLink = uifactory.addFormLink("structure_".concat(id), "structure", "", null, null, Link.NONTRANSLATED);
 			structureLink.setIconLeftCSS("o_icon o_icon-lg o_icon_curriculum_structure");
 			structureLink.setTitle(translate("action.structure"));
@@ -437,6 +438,11 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			row.setStructureLink(structureLink);
 		}
 		return row;
+	}
+	
+	private boolean showStructure(CurriculumElement curriculumElement, long children) {
+		CurriculumElementType type = curriculumElement.getType();
+		return type != null && (!type.isSingleElement() || children > 0 || curriculumElement.getParent() != null);
 	}
 	
 	private void doOpenCurriculum(UserRequest ureq, CurriculumElementSearchRow row) {
