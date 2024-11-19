@@ -92,6 +92,7 @@ public class WebCatalogTemporarilyDisabledDispatcher implements Dispatcher {
 		I18nManager.updateLocaleInfoToThread(usess);
 		
 		DmzBFWCParts bfwcParts = new DmzBFWCParts();
+		bfwcParts.setShowGoToLoginLink(true);
 		AutoCreator controllerCreator = new AutoCreator();
 		controllerCreator.setClassName(WebCatalogTemporarilyDisabledController.class.getName());
 		bfwcParts.setContentControllerCreator(controllerCreator);
