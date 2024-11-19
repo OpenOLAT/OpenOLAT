@@ -61,7 +61,7 @@
 		font-size: $font-size-small;
 	}
 	.o_modified {
-		color: $state-warning-text;
+		color: $o-forum-message-header-modified-color;
 		font-size: $font-size-small;
 		font-style: italic;
 	}
@@ -82,9 +82,12 @@
 
 	.o_forum_message_header {
 	  padding: 10px 15px;
-	  border-bottom: 1px solid $panel-default-border; 
-	  background-color: $panel-default-heading-bg;
-	  @include border-top-radius(($panel-border-radius - 1));
+	  border-bottom: 1px solid $o-forum-message-header-border; 
+	  background-color: $o-forum-message-header-bg;
+	  @include border-top-radius(($panel-border-radius - 1));	  
+	  a {
+	  	color:  $o-forum-message-header-author-color;
+	  }
 	}
 	.o_forum_message_title {
 		margin-top: 0;
@@ -93,16 +96,20 @@
 		padding: 10px 15px;
 	}
 	.o_forum_message_attachments {
-	  	border-top: 1px solid $panel-default-border; 
+	  	border-top: 1px solid $o-forum-message-footer-border; 
 		padding: 10px 15px;
 		font-size: $o-forum-attachment-font-size;
-		background-color: #f7f7f9;
+		background-color: $o-forum-message-footer-bg;
+
 	}
 	.o_attachment {
 		position: relative;
 		max-width: 250px;
 		vertical-align: top;
 		margin: $padding-base-vertical $padding-base-horizontal $padding-large-vertical 0;
+		a {
+		  	color:  $o-forum-message-footer-attachment-color;
+		}
 		img {
 			margin-top: $padding-base-vertical;		
 		}
@@ -146,6 +153,14 @@
 		}
 	}	
 
+}
+
+.o_sel_forum {
+	/* fix wrong notification placement */
+	.o_noti {
+		margin-top: -$padding-base-vertical;
+	}	
+	
 }
 
 

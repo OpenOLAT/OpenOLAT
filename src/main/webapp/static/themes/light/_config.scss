@@ -42,7 +42,7 @@ $btn-default-border				: #d4d4d4 !default;
 $dropdown-bg					: #fcfcfc !default; 
 $panel-bg						: #fcfcfc !default;
 $pagination-bg					: #fcfcfc !default;
-$pagination-active-color 		: #fcfcfc !default;
+$pagination-active-color 		: #fff !default;
 $list-group-bg					: #fcfcfc !default;
 
 $input-bg						: #fff !default; 
@@ -430,7 +430,6 @@ $o-button-mega-icon-width				: 40px !default;
 
 /* Login page */
 $o-login-header-color			: $brand-primary !default;
-
 $o-login-bg-color				: rgba(255,255,255,0.95) !default;
 $o-login-border-color			: #e7e7e7 !default;
 $o-login-border					: 1px solid $o-login-border-color !default;
@@ -439,6 +438,7 @@ $o-login-box-shadow				: 0px 1px 10px -1px rgba(0,0,0,.3) !default;
 $o-login-padding				: 50px !default;
 $o-login-xs-padding				: 10px !default;
 $o-login-help-bg-color			: #e7e7e7 !default;
+$o-login-help-link-color		: o-a11y-color($link-color, $o-login-help-bg-color) !default;
 $o-login-form-width				: 480px !default;
 $o-login-form-align				: right !default; 								/* left, center or right */
 $o-login-form-bg-gradient-steps	: rgba(255,255,255,0.1) 0.2%, rgba(255,255,255,0.6) 60%, rgba(255,255,255,0.8) 100% !default;
@@ -967,6 +967,15 @@ $o-im-newmessage-color			: $brand-danger !default;
 $o-im-newmessage-hover-color	: lighten($brand-warning, 10%) !default;
 
 /* Forum module */
+$o-forum-message-header-bg				: $panel-default-heading-bg !default;
+$o-forum-message-header-border			: $panel-default-border !default;
+$o-forum-message-header-author-color	:  o-a11y-color($link-color, $o-forum-message-header-bg) !default;
+$o-forum-message-header-modified-color	:  o-a11y-color($state-warning-text, $o-forum-message-header-bg) !default;
+
+$o-forum-message-footer-bg				: $o-forum-message-header-bg !default;
+$o-forum-message-footer-border			: $o-forum-message-header-border;
+$o-forum-message-footer-attachment-color: $o-forum-message-header-author-color !default;
+
 $o-forum-quote-author-color 	: $text-muted !default;
 $o-forum-quote-padding			: $padding-large-vertical;
 $o-forum-quote-color 			: $gray !default;
