@@ -84,19 +84,19 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String identifier = curriculumElementType == null ? "" : curriculumElementType.getIdentifier();
-		identifierEl = uifactory.addTextElement("type.identifier", "type.identifier", 255, identifier, formLayout);
-		identifierEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.identifier));
-		identifierEl.setMandatory(true);
-		if(!StringHelper.containsNonWhitespace(identifier)) {
-			identifierEl.setFocus(true);
-		}
-		
 		String displayName = curriculumElementType == null ? "" : curriculumElementType.getDisplayName();
 		displayNameEl = uifactory.addTextElement("type.displayname", "type.displayname", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.displayName));
 		displayNameEl.setMandatory(true);
+		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {
+			displayNameEl.setFocus(true);
+		}
 		
+		String identifier = curriculumElementType == null ? "" : curriculumElementType.getIdentifier();
+		identifierEl = uifactory.addTextElement("type.identifier", "type.identifier", 255, identifier, formLayout);
+		identifierEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.identifier));
+		identifierEl.setMandatory(true);
+
 		String cssClass = curriculumElementType == null ? "" : curriculumElementType.getCssClass();
 		cssClassEl = uifactory.addTextElement("type.cssClass", "type.cssClass", 255, cssClass, formLayout);
 		cssClassEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.cssClass));

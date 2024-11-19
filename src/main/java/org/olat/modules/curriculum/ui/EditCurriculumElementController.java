@@ -181,14 +181,14 @@ public class EditCurriculumElementController extends FormBasicController {
 		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.displayName", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && canEdit);
 		displayNameEl.setMandatory(true);
+		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {
+			displayNameEl.setFocus(true);
+		}
 		
 		String identifier = element == null ? "" : element.getIdentifier();
 		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 64, identifier, formLayout);
 		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier) && canEdit);
 		identifierEl.setMandatory(true);
-		if(identifierEl.isEnabled() && !StringHelper.containsNonWhitespace(identifier)) {
-			identifierEl.setFocus(true);
-		}
 		
 		// Status
 		SelectionValues statusPK = new SelectionValues();
