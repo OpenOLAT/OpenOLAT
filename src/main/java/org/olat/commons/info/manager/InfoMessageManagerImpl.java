@@ -209,8 +209,8 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 		if(StringHelper.containsNonWhitespace(businessPath)) {
 			appendAnd(sb, "msg.businessPath=:businessPath");
 		}
-		if(after != null) {
-			appendAnd(sb, "msg.publishDate>=:after");
+		if(after != null) {g
+			appendAnd(sb, "(msg.publishDate >= :after OR (msg.modificationDate IS NOT NULL AND msg.modificationDate >= :after))");
 		}
 		if(before != null) {
 			appendAnd(sb, "msg.publishDate<=:before");

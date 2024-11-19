@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -57,7 +57,7 @@ import org.springframework.stereotype.Service;
  * 
  * <P>
  * Initial Date:  27 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 @Service("org.olat.commons.info.notification.InfoMessageNotificationHandler")
 public class InfoMessageNotificationHandler implements NotificationsHandler {
@@ -116,14 +116,25 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 					if (!info.isPublished()) {
 						continue;
 					}
-					Identity ident = info.getAuthor();
-					String desc = translator.translate("notifications.entry", info.getTitle(), NotificationHelper.getFormatedName(ident));
+
 					String tooltip = info.getMessage();
 					String infoBusinessPath = info.getBusinessPath() + "[InfoMessage:" + info.getKey() + "]";
 					String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(infoBusinessPath);
-					Date dateInfo = info.getPublishDate();
-					SubscriptionListItem subListItem = new SubscriptionListItem(desc, tooltip, urlToSend, infoBusinessPath, dateInfo, CSS_CLASS_ICON);
-					si.addSubscriptionListItem(subListItem);
+					if (info.getPublishDate().after(compareDate)) {
+						Identity ident = info.getAuthor();
+						String desc = translator.translate("notifications.entry", info.getTitle(), NotificationHelper.getFormatedName(ident));
+						Date dateInfo = info.getPublishDate();
+						SubscriptionListItem subListItem = new SubscriptionListItem(desc, tooltip, urlToSend, infoBusinessPath, dateInfo, CSS_CLASS_ICON);
+						si.addSubscriptionListItem(subListItem);
+					}
+
+					if (info.getModifier() != null) {
+						Identity modifierIdent = info.getModifier();
+						String modifiedDesc = translator.translate("notifications.entry.edited", info.getTitle(), NotificationHelper.getFormatedName(modifierIdent));
+						Date modifiedDateInfo = info.getModificationDate();
+						SubscriptionListItem modifiedSubListItem = new SubscriptionListItem(modifiedDesc + "wer", tooltip, urlToSend, infoBusinessPath, modifiedDateInfo, CSS_CLASS_ICON);
+						si.addSubscriptionListItem(modifiedSubListItem);
+					}
 				}
 			} catch (Exception e) {
 				log.error("Unexpected exception", e);
