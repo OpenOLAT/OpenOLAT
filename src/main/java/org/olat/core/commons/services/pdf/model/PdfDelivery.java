@@ -21,6 +21,7 @@ package org.olat.core.commons.services.pdf.model;
 
 import java.io.Serializable;
 
+import org.olat.core.commons.services.pdf.PdfOutputOptions;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -37,6 +38,8 @@ public class PdfDelivery implements Serializable {
 
 	private static final long serialVersionUID = -8032606199374880702L;
 	private final String key;
+	private final PdfOutputOptions options;
+	
 	private String directory;
 	private Identity identity;
 	
@@ -45,12 +48,17 @@ public class PdfDelivery implements Serializable {
 	private PopupBrowserWindow browserWindow;
 	private ControllerCreator controllerCreator;
 	
-	public PdfDelivery(String key) {
+	public PdfDelivery(String key, PdfOutputOptions options) {
 		this.key = key;
+		this.options = options;
 	}
 
 	public String getKey() {
 		return key;
+	}
+	
+	public PdfOutputOptions getOptions() {
+		return options;
 	}
 
 	public String getDirectory() {
