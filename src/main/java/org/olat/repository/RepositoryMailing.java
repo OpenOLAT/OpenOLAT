@@ -286,15 +286,12 @@ public class RepositoryMailing {
 			String redescription = (StringHelper.containsNonWhitespace(re.getDescription()) ? FilterFactory.getHtmlTagAndDescapingFilter().filter(re.getDescription()) : ""); 
 			context.put(COURSE_DESCRIPTION, redescription);
 			context.put("coursedescription", redescription);
-			
-			String reUrl;
+
 			if(StringHelper.containsNonWhitespace(url)) {
-				reUrl = url;
-			} else {
-				reUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + re.getKey();
+				String reUrl = url;
+				context.put(COURSE_URL, reUrl);
+				context.put("courseurl", reUrl);
 			}
-			context.put(COURSE_URL, reUrl);
-			context.put("courseurl", reUrl);
 
 			String courseRef = re.getExternalRef() == null ? "" : re.getExternalRef();
 			context.put(COURSE_REF, courseRef);
