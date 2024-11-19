@@ -210,7 +210,7 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 			appendAnd(sb, "msg.businessPath=:businessPath");
 		}
 		if(after != null) {
-			appendAnd(sb, "msg.publishDate>=:after");
+			appendAnd(sb, "(msg.publishDate >= :after OR (msg.modificationDate IS NOT NULL AND msg.modificationDate >= :after))");
 		}
 		if(before != null) {
 			appendAnd(sb, "msg.publishDate<=:before");
