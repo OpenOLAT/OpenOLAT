@@ -628,6 +628,7 @@ public class LecturesTest extends Deployments {
 			.assertOnParticipantLectureBlockAuthorised(author, lectureTitle, title);
 	}
 	
+
 	/**
 	 * An author create a course to use the absence management
 	 * and import some lectures blocks.
@@ -641,14 +642,23 @@ public class LecturesTest extends Deployments {
 	public void importLectures()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-
-		// configure the lectures module
-		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
-		loginPage
-			.loginAs(author.getLogin(), author.getPassword())
-			.resume();
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		
-		//go to authoring
+		// configure the lectures module
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(administrator)
+			.resume();
+		NavigationPage.load(browser)
+			.openAdministration()
+			.openLecturesSettings()
+			.setOverrideStandardConfiguration(true)
+			.save();
+
+		// Author login
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword());
+
+		// Go to authoring
 		NavigationPage navBar = NavigationPage.load(browser);
 		AuthoringEnvPage authoringEnv = navBar
 			.assertOnNavigationPage()

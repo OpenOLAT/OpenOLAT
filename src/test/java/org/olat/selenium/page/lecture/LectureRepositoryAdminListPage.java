@@ -57,7 +57,7 @@ public class LectureRepositoryAdminListPage {
 	}
 	
 	public ImportLecturesBlocksWizard importLecturesBlocks() {
-		By moreBy = By.xpath("//div[contains(@class,'o_button_group_right')]/div[@class='btn-group'][a[contains(@class,'o_sel_repo_add_lecture')]]/div/button[contains(@class,'o_sel_add_more')]");
+		By moreBy = By.xpath("//div[contains(@class,'o_sel_repo_lectures_list')]/div[contains(@class,'o_flex_first_grow')]/div[@class='btn-group'][a[contains(@class,'o_sel_repo_add_lecture')]]/div/button[contains(@class,'o_sel_add_more')]");
 		OOGraphene.waitElement(moreBy, browser);
 		browser.findElement(moreBy).click();
 		
