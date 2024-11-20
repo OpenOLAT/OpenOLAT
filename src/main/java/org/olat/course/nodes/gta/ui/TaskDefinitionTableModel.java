@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.util.Formatter;
 import org.olat.course.nodes.gta.model.TaskDefinition;
@@ -50,21 +51,22 @@ public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDef
 		};
 	}
 
-	public enum TDCols {
+	public enum TDCols implements FlexiColumnDef {
 		title("task.title"),
 		desc("table.header.desc"),
 		file("task.file"),
 		author("table.header.author"),
-		edit("table.header.metadata"),
-		toolsLink("table.header.action");
+		edit("edit"),
+		toolsLink("action.more");
 		
 		private final String i18nKey;
 	
 		private TDCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
-		
-		public String i18nKey() {
+
+		@Override
+		public String i18nHeaderKey() {
 			return i18nKey;
 		}
 	}

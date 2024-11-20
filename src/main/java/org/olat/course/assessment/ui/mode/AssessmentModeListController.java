@@ -179,9 +179,17 @@ public class AssessmentModeListController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(configSebCol);
 
 		if(secCallback.canEditAssessmentMode()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.actions", Cols.toolsLink.ordinal(), "copy",
-					new ToolsCellRenderer("table.header.actions", "copy")));
+			DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel(Cols.edit);
+			editCol.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon-fw o_icon_edit", translate("edit")));
+			editCol.setIconHeader("o_icon o_icon-lg o_icon-fw o_icon_edit");
+			editCol.setAlwaysVisible(true);
+			editCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(editCol);
+			
+			DefaultFlexiColumnModel actionsCol = new DefaultFlexiColumnModel("action.more", Cols.toolsLink.ordinal(), "copy",
+					new ToolsCellRenderer(translate("action.more"), "copy"));
+			actionsCol.setIconHeader("o_icon o_icon-lg o_icon-fws o_icon_actions");
+			columnsModel.addFlexiColumnModel(actionsCol);
 		}
 
 		model = new AssessmentModeListModel(columnsModel, getTranslator(), assessmentModeCoordinationService);

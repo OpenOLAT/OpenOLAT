@@ -21,7 +21,6 @@ package org.olat.user.ui.organisation;
 
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.OrganisationTypeRef;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 
 /**
  * 
@@ -32,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 public class OrganisationTypeRow implements OrganisationTypeRef {
 	
 	private final OrganisationType type;
-	private FormLink toolsLink;
 	
 	public OrganisationTypeRow(OrganisationType type) {
 		this.type = type;
@@ -57,14 +55,6 @@ public class OrganisationTypeRow implements OrganisationTypeRef {
 	
 	public OrganisationType getType() {
 		return type;
-	}
-
-	public FormLink getToolsLink() {
-		return toolsLink;
-	}
-	
-	public void setToolsLink(FormLink toolsLink) {
-		this.toolsLink = toolsLink;
 	}
 
 }

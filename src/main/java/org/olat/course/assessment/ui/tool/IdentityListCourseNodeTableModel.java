@@ -180,7 +180,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		lastCoachModified("table.header.lastCoachModificationDate"),
 		numOfAssessmentDocs("table.header.num.assessmentDocs"),
 		currentCompletion("table.header.completion"),
-		tools("table.header.tools"),
+		tools("action.more"),
 		details("table.header.details"),
 		cut("table.header.cut"),
 		externalGrader("table.header.external.grader"),

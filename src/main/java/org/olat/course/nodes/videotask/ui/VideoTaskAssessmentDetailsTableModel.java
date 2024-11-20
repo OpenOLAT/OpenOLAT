@@ -249,7 +249,7 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 		scorePercent("table.header.score.percent"),
 		scorePoints("table.header.score.points"),
 		play("table.header.play"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

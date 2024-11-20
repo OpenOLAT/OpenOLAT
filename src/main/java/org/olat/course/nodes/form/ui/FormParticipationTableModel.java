@@ -82,7 +82,7 @@ public class FormParticipationTableModel extends DefaultFlexiTableDataModel<Form
 	public enum ParticipationCols implements FlexiSortableColumnDef {
 		status("table.header.status"),
 		submissionDate("table.header.submission.date"),
-		tools("table.header.actions");
+		tools("action.more");
 		
 		private final String i18nKey;
 

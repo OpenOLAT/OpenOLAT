@@ -106,6 +106,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.DropFileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.UploadFileElementEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -117,7 +118,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -651,13 +651,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		} else {
 			addCols(columnsModel);
 		}
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(FolderCols.tools);
-		toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
-		toolsCol.setHeaderLabel(translate("action.more"));
-		toolsCol.setAlwaysVisible(true);
-		toolsCol.setSortable(false);
-		toolsCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(FolderCols.tools));
 		
 		dataModel = new FolderDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), flc);
@@ -1234,9 +1228,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void forgeToolsLink(FolderRow row) {
-		FormLink toolsLink = uifactory.addFormLink("tools_" + counter++, "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

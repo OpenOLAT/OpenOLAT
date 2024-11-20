@@ -68,6 +68,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -80,7 +81,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
@@ -651,11 +651,8 @@ public class AuthorListController extends FormBasicController implements Activat
 				editColumn.setAlwaysVisible(true);
 				editColumn.setExportable(false);
 				columnsModel.addFlexiColumnModel(editColumn);
-				StickyActionColumnModel toolsColumn = new StickyActionColumnModel(Cols.tools.i18nKey(), Cols.tools.ordinal());
-				toolsColumn.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
-				toolsColumn.setAlwaysVisible(true);
-				toolsColumn.setExportable(false);
-				columnsModel.addFlexiColumnModel(toolsColumn);
+				
+				columnsModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 			}
 		}
 	}
@@ -1280,7 +1277,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				boolean marked = doMark(ureq, row);
 				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
-				link.setAriaLabel(translate(marked ? "details.bookmark.remove" : "details.bookmark"));				
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
 			} else if ("tools".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow row) {
@@ -2069,16 +2065,12 @@ public class AuthorListController extends FormBasicController implements Activat
 		FormLink markLink = uifactory.addFormLink("mark_".concat(count), "mark", "", null, null, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
-		markLink.setAriaLabel(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
 		//tools
 		if(configuration.isTools()) {
-			FormLink toolsLink = uifactory.addFormLink("tools_".concat(count), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
-			toolsLink.setTitle(translate("table.action"));
-			toolsLink.setAriaLabel(translate("table.action"));
 			row.setToolsLink(toolsLink);
 		}
 		if(configuration.isInfos()) {
@@ -2086,7 +2078,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			infosLink.setIconLeftCSS("o_icon o_icon_info_resource o_icon-fws o_icon-lg");
 			infosLink.setUserObject(row);
 			infosLink.setTitle(translate("details.info.title"));
-			infosLink.setAriaLabel(translate("details.info.title"));
 			row.setInfosLink(infosLink);
 		}
 		//references
@@ -2095,7 +2086,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			FormLink referencesLink = uifactory.addFormLink("refs_".concat(count), "references", numOfReferences, null, null, Link.NONTRANSLATED);
 			referencesLink.setUserObject(row);
 			referencesLink.setTitle(translate("details.referenceinfo"));
-			referencesLink.setAriaLabel(translate("details.referenceinfo"));
 			row.setReferencesLink(referencesLink);
 		}
 	}

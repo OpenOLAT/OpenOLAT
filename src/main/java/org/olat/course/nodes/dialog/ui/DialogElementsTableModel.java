@@ -89,7 +89,7 @@ public class DialogElementsTableModel extends DefaultFlexiTableDataModel<DialogE
 		lastActivityDate("table.header.last.activity.date"),
 		newMessages("table.header.newmessages"),
 		messages("table.header.messages"),
-		toolsLink("table.header.action");
+		toolsLink("action.more");
 
 		private final String i18nKey;
 		

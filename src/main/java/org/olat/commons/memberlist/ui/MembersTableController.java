@@ -245,6 +245,7 @@ public class MembersTableController extends FormBasicController {
 	protected void forgeChatLink(MemberRow row) {
 		FormLink chatLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "im", "", null, null, Link.NONTRANSLATED);
 		chatLink.setIconLeftCSS("o_icon o_icon_status_unavailable");
+		chatLink.setTitle("open.chat");
 		chatLink.setUserObject(row);
 		row.setChatLink(chatLink);
 	}

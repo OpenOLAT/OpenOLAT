@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -127,7 +128,6 @@ public class FormParticipationListController extends FormBasicController impleme
 	private final RepositoryEntry courseEntry;
 	private final EvaluationFormSurvey survey;
 	private final Collection<Identity> fakeParticipants;
-	private int counter = 0;
 
 	@Autowired
 	private FormManager formManager;
@@ -203,11 +203,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.status, new ParticipationStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.submissionDate));
 		if (secCallback.canReset() || secCallback.canReopen()) {
-			DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ParticipationCols.tools);
-			toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolsColumn.setExportable(false);
-			toolsColumn.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(toolsColumn);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(ParticipationCols.tools));
 		}
 		
 		dataModel = new FormParticipationTableModel(columnsModel, getLocale()); 
@@ -289,9 +285,7 @@ public class FormParticipationListController extends FormBasicController impleme
 					row.setSubmissionDate(formParticipation.getSubmissionDate());
 				}
 				
-				String linkName = "tools-" + counter++;
-				FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
-				toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+				FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 				toolsLink.setUserObject(formParticipation);
 				row.setToolsLink(toolsLink);
 			}
@@ -376,7 +370,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if(cmd != null && cmd.startsWith("tools-")) {
+			if(cmd != null && cmd.equals("tools")) {
 				FormParticipation formParticipation = (FormParticipation)link.getUserObject();
 				doOpenTools(ureq, formParticipation, link);
 			}

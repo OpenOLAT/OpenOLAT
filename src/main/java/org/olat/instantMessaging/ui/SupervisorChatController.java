@@ -36,10 +36,10 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -190,10 +190,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SupervisedChatCols.lastActivity,
 				new LastActivityCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SupervisedChatCols.join));
-		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SupervisedChatCols.tools.i18nHeaderKey(), SupervisedChatCols.tools.ordinal());
-		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(SupervisedChatCols.tools));
 		
 		tableModel = new SupervisorChatDataModel(columnsModel, getIdentity(), getTranslator());
 		
@@ -308,7 +305,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		if(toolLink == null) {
 			toolLink = uifactory.addFormLink(toolId, "tools", "", tableEl, Link.LINK | Link.NONTRANSLATED);
 			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolLink.setTitle(translate("table.header.actions"));
+			toolLink.setTitle(translate("action.more"));
 		}
 		toolLink.setUserObject(row);
 		row.setToolLink(toolLink);

@@ -367,7 +367,7 @@ implements SortableFlexiTableDataModel<CoachedParticipantRow>, FilterableFlexiTa
 		assessmentStatus("table.header.assessmentStatus"),
 		assessmentDone("table.header.assessment.done"),
 		coachAssignment("table.header.coach.assignment"),
-		tools("table.header.tools")
+		tools("action.more")
 		;
 		
 		private final String i18nKey;

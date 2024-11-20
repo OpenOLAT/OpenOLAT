@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -216,10 +217,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		cancelCol.setIconHeader("o_icon o_icon_cancel o_icon-fw o_icon-lg");
 		columnsModel.addFlexiColumnModel(cancelCol);
 		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(OverviewCols.tools);
-		toolsCol.setExportable(false);
-		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fw o_icon-lg");
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(OverviewCols.tools));
 	
 		tableModel = new AssessmentInspectionOverviewListModel(columnsModel, getIdentity(), sessionManager, getLocale());
 		
@@ -381,10 +379,9 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		row.setCancelButton(cancelLink);
 		cancelLink.setUserObject(row);
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		row.setToolsButton(toolsLink);
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
+		row.setToolsButton(toolsLink);
 		
 		return row;
 	}

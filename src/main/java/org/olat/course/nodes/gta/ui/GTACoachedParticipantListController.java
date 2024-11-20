@@ -60,6 +60,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -67,7 +68,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -340,11 +340,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.numOfSubmissionDocs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.assessmentStatus, new AssessmentStatusCellRenderer(getLocale())));
-		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CGCols.tools);
-		toolsCol.setExportable(false);
-		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fw o_icon-lg");
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(CGCols.tools));
 		
 		tableModel = new CoachParticipantsTableModel(getLocale(), columnsModel);
 
@@ -682,9 +678,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			coachKey = assessment.getCoach().getKey();
 		}
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++count), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		
 		CoachedIdentityRow row = new CoachedIdentityRow(assessableIdentity, task, taskDefinition,
 				submissionDueDate, lateSubmissionDueDate, syntheticSubmissionDate, hasSubmittedDocument,

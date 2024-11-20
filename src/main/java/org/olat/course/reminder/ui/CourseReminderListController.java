@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -146,10 +147,7 @@ public class CourseReminderListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.send));
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(ReminderCols.tools);
-		toolsCol.setAlwaysVisible(true);
-		toolsCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(ReminderCols.tools));
 		
 		tableModel = new CourseReminderTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -171,10 +169,8 @@ public class CourseReminderListController extends FormBasicController
 		List<ReminderRow> rows = new ArrayList<>(reminders.size());
 		for(ReminderInfos reminder:reminders) {
 			if (isVisible(reminder)) {
-				FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
-				toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+				FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 				toolsLink.setElementCssClass("o_sel_course_reminder_tools");
-				toolsLink.setTitle(translate("tools"));
 				
 				FormLink emailLink = uifactory.addFormLink("email_" + counter.incrementAndGet(), "email", "show.email", null, flc, Link.BUTTON);
 				FormLink sendLink = uifactory.addFormLink("send_" + counter.incrementAndGet(), "send", "send", null, flc, Link.BUTTON);

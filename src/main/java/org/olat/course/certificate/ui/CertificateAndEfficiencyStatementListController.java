@@ -42,16 +42,14 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.scope.FormScopeSelection;
@@ -69,10 +67,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
@@ -138,7 +132,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private static final String CMD_INDIVIDUAL_COURSES = "cmd.individual.courses";
 	private static final String CMD_ALL_EVIDENCE = "cmd.all.evidence";
 	private static final String CMD_CURRICULUM = "cmd.filter.curriculum.";
-	private static final String CMD_TOOLS = "cmd.tools";
 	
 	private int counter = 0;
 
@@ -344,15 +337,17 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		//artefact
 		if(assessedIdentity.equals(getIdentity()) && portfolioV2Module.isEnabled()) {
-			DefaultFlexiColumnModel portfolioColumn = new DefaultFlexiColumnModel( Cols.artefact, CMD_MEDIA,
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(CMD_MEDIA, new AsArtefactCellRenderer()), null));
+			DefaultFlexiColumnModel portfolioColumn = new DefaultFlexiColumnModel(Cols.artefact);
+			portfolioColumn.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, CMD_MEDIA, null,
+					"o_icon o_icon-lg o_icon-fw o_icon_eportfolio_add", translate("table.add.as.artefact")), null));
+			portfolioColumn.setIconHeader("o_icon o_icon-lg o_icon-fw o_icon_eportfolio_add");
+			portfolioColumn.setAlwaysVisible(true);
+			portfolioColumn.setExportable(false);
 			tableColumnModel.addFlexiColumnModel(portfolioColumn);
 		}
 		
 		if (canLaunchCourse || canModify) {
-			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(Cols.tools.i18nHeaderKey(), Cols.tools.ordinal());
-			toolsColumn.setExportable(false);
-			tableColumnModel.addFlexiColumnModel(toolsColumn);
+			tableColumnModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 		}
 		
 		tableModel = new CertificateAndEfficiencyStatementListModel(tableColumnModel, getLocale());
@@ -694,8 +689,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	private void forgeToolsLinks(CertificateAndEfficiencyStatementRow row) {
 		if (row.isStatement() && (canLaunchCourse || canModify)) {
-			FormLink toolsLink = uifactory.addFormLink(CMD_TOOLS + "_" + (++counter), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}
@@ -738,7 +732,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				activateFilterAndLoadModel(curriculum);
 			} 
 		} else if(source instanceof FormLink sourceLink) {
-			if (sourceLink.getCmd().startsWith(CMD_TOOLS)) {
+			if (sourceLink.getCmd().equals("tools")) {
 				CertificateAndEfficiencyStatementRow row = (CertificateAndEfficiencyStatementRow)source.getUserObject();
 				doOpenTools(ureq, row, source);
 			}
@@ -928,17 +922,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			if(statement != null) {
 				doShowStatement(ureq, statement);
 			}
-		}
-	}
-
-	public class AsArtefactCellRenderer implements FlexiCellRenderer {
-		
-		@Override
-		public void render(Renderer renderer, StringOutput sb, Object cellValue, int row,
-				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			sb.append("<i class='o_icon o_icon-lg o_icon_eportfolio_add'> </i> <span title=\"")
-				.append(translate("table.add.as.artefact"))
-				.append("\"> </span>");
 		}
 	}
 	

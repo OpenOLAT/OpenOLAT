@@ -145,7 +145,7 @@ implements SortableFlexiTableDataModel<AssessmentMessageRow> {
 		expirationDate("table.header.expiration.date"),
 		author("table.header.author"),
 		read("table.header.read"),
-		tools("table.header.actions");
+		tools("action.more");
 
 		private final String i18nKey;
 

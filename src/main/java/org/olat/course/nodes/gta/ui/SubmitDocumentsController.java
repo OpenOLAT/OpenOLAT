@@ -792,7 +792,7 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 		date("document.date"),
 		createdBy("table.header.created.by"),
 		download("table.header.download"),
-		toolsLink("table.header.action");
+		toolsLink("action.more");
 		
 		private final String i18nKey;
 	

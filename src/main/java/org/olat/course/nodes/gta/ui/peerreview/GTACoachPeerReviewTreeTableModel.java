@@ -240,7 +240,7 @@ implements SortableFlexiTableDataModel<CoachPeerReviewRow> {
 		peerReviewOverrideDueDate("table.header.peerreview.overriden.duedate"),
 		additionalInfosStatus("table.header.additional.infos"),
 		editReview("table.header.review.view"),
-		tools("table.header.tools"),
+		tools("action.more"),
 		;
 		
 		private final String i18nKey;

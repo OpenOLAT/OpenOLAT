@@ -30,7 +30,7 @@ public enum PFFolderTemplateCols implements FlexiSortableColumnDef {
     folderName("table.elementFolder"),
     numOfChildren("table.elementSubFolder"),
     createSubFolder("table.elementCreateSubFolder"),
-    toolsLink("table.header.actions");
+    toolsLink("action.more");
 
     private final String i18nKey;
     private final String iconHeader;

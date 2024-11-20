@@ -88,7 +88,7 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 		corrected("table.header.corrected"),
 		notCorrected("table.header.not.corrected"),
 		toReview("table.header.to.review"),
-		tools("table.header.action");
+		tools("action.more");
 		
 		private final String i18n;
 		

@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -100,7 +101,6 @@ public class DialogElementListController extends FormBasicController implements 
 	public static final String USAGE_IDENTIFIER = DialogElementsTableModel.class.getCanonicalName();
 
 	private static final String DIALOG_UPLOAD_FILE = "dialog.upload.file";
-	private static final String ACTION_TOOLS_LINK = "tools";
 	private static final String CMD_SELECT = "select";
 	private static final String FORUM = "forum";
 
@@ -175,7 +175,7 @@ public class DialogElementListController extends FormBasicController implements 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DialogCols.lastActivityDate));
 
 		if (!userCourseEnv.isCourseReadOnly() && secCallback != null && secCallback.mayDeleteMessageAsModerator()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DialogCols.toolsLink));
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(DialogCols.toolsLink));
 		}
 
 		tableModel = new DialogElementsTableModel(columnsModel);
@@ -329,7 +329,7 @@ public class DialogElementListController extends FormBasicController implements 
 		forgeSelectLink(row);
 
 		// set individual toolsLink for each row
-		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getDialogElementKey(), ACTION_TOOLS_LINK, translate("table.header.action"), null, null, Link.NONTRANSLATED);
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		row.setToolsLink(toolsLink);
 
 		return row;
@@ -415,7 +415,7 @@ public class DialogElementListController extends FormBasicController implements 
 				// upload file button top right
 				loadModel();
 				doUploadFile(ureq);
-			} else if (ACTION_TOOLS_LINK.equals(cmd)) {
+			} else if ("tools".equals(cmd)) {
 				doOpenTools(ureq, link);
 			} else if (CMD_SELECT.equals(cmd)) {
 				// card view selection by filename
@@ -549,7 +549,7 @@ public class DialogElementListController extends FormBasicController implements 
 			super(ureq, wControl);
 			element = dialogElementsManager.getDialogElementByKey(Long.valueOf(rowToDeleteKey));
 
-			mainVC = createVelocityContainer(ACTION_TOOLS_LINK);
+			mainVC = createVelocityContainer("tools");
 
 			List<String> links = new ArrayList<>(2);
 

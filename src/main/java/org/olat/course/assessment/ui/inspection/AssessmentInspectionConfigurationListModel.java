@@ -127,7 +127,8 @@ implements SortableFlexiTableDataModel<AssessmentInspectionConfigurationRow>, Fi
 		ips("table.header.ips"),
 		seb("table.header.seb"),
 		usages("table.header.usages"),
-		tools("table.header.tools");
+		edit("edit"),
+		tools("action.more");
 		
 		private final String i18nKey;
 		

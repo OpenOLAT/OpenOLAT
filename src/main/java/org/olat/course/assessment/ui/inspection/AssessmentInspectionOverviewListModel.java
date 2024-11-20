@@ -134,7 +134,7 @@ implements SortableFlexiTableDataModel<AssessmentInspectionRow> {
 		accessCode("table.header.access.code"),
 		configuration("table.header.configuration"),
 		cancel("table.header.cancel"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

@@ -85,7 +85,7 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 	public enum LearningPathCols implements FlexiColumnDef {
 		learningPathStatus("table.header.learning.path.status"),
 		node("table.header.node"),
-		progress("table.header.progress"),
+		progress("table.header.progress.icon"),
 		learningProgress("table.header.learning.progress"),
 		start("table.header.start"),
 		end("table.header.end"),
@@ -95,7 +95,7 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 		lastVisit("table.header.last.visit"),
 		status("table.header.status"),
 		fullyAssessedDate("table.header.fully.assessed.date"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

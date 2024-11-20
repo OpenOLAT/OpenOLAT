@@ -47,10 +47,10 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -153,8 +153,12 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.identifier));
 		if (!isAggregatedView) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.feed.i18nKey(), ConfigCols.feed.ordinal()));
-			columnsModel.addFlexiColumnModel(new StickyActionColumnModel(ConfigCols.tools));
+			DefaultFlexiColumnModel feedCol = new DefaultFlexiColumnModel(ConfigCols.feed);
+			feedCol.setIconHeader("o_icon o_icon-lg o_icon_rss");
+			feedCol.setSortable(false);
+			feedCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(feedCol);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(ConfigCols.tools));
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.aggregated));
 		}
@@ -213,11 +217,11 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 
 		FormLink feedLink = uifactory.addFormLink("fee_" + (++counter), "feed", "", null, null, Link.NONTRANSLATED);
 		feedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_rss");
+		feedLink.setTitle(translate("table.header.ical"));
 		feedLink.setUserObject(row);
 		row.setFeedLink(feedLink);
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions o_icon-fws");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

@@ -42,13 +42,13 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ToggleDetailsCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -111,7 +111,6 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 	public static final String ASSSIGNED_TO_ME_TAB_ID = "AssignedToMe";
 	public static final String REVISION_AVAILABLE_TAB_ID = "RevisionsAvailable";
 	
-	public static final String TOOLS_CMD = "tools-task-list";
 	public static final String MARK_CMD = "mark";
 	
 	protected FlexiFiltersTab allTab;
@@ -207,10 +206,7 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachCols.taskStepStatus,
 				statusRenderer));
 		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CoachCols.tools);
-		toolsCol.setExportable(false);
-		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fw o_icon-lg");
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(CoachCols.tools));
 	}
 	
 	protected abstract void initFilters(List<FlexiTableExtendedFilter> filters);
@@ -345,7 +341,7 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 			doEditMultipleDueDates(ureq, rows);
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if(TOOLS_CMD.equals(cmd) && link.getUserObject() instanceof CoachedParticipantRow row) {
+			if("tools".equals(cmd) && link.getUserObject() instanceof CoachedParticipantRow row) {
 				doOpenTools(ureq, row, link);
 			} else if(MARK_CMD.equals(cmd) && link.getUserObject() instanceof Long) {
 				doToogleMark(ureq, link);
@@ -424,9 +420,7 @@ abstract class AbstractCoachWorkflowListController extends AbstractWorkflowListC
 	}
 	
 	protected FormLink forgeToolsLink(CoachedParticipantRow identityRow) {
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++count), TOOLS_CMD, "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(identityRow);
 		return toolsLink;
 	}

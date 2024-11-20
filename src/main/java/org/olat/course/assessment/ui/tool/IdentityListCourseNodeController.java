@@ -53,12 +53,12 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
@@ -729,9 +729,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	protected void initCalloutColumns(FlexiTableColumnModel columnsModel) {
 		if(assessmentConfig.isAssessable()) {
-			StickyActionColumnModel toolsCol = new StickyActionColumnModel(IdentityCourseElementCols.tools);
-			toolsCol.setExportable(false);
-			columnsModel.addFlexiColumnModel(toolsCol);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(IdentityCourseElementCols.tools));
 		}
 	}
 	
@@ -865,9 +863,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 				currentCompletion.setEnded(status != null && AssessmentRunStatus.done.equals(status));
 				grader = assessmentEntriesKeysToGraders.get(entry.getKey());
 				String assignedCoach = entry.getCoach() == null ? null : userManager.getUserDisplayName(entry.getCoach());
-
-				FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-				toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+				
+				FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 				toolsLink.setVisible(hasCallout);
 			
 				AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, grader, assignedCoach,

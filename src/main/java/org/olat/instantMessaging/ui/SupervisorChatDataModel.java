@@ -237,7 +237,7 @@ implements SortableFlexiTableDataModel<RosterRow>, FlexiTableCssDelegate {
 		lastActivity("table.header.last.activity"),
 		status("table.header.status"),
 		join("table.header.action"),
-		tools("table.header.actions");
+		tools("action.more");
 
 		private final String i18nKey;
 

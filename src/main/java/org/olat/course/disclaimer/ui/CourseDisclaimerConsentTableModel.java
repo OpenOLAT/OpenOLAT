@@ -137,7 +137,7 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>, F
 	
 	public enum ConsentCols implements FlexiSortableColumnDef {
 		consent("consent"),
-		tools("tools");
+		tools("action.more");
 
 		private final String i18nKey;
 
