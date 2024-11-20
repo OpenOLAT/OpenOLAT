@@ -85,7 +85,6 @@ import org.olat.selenium.page.course.TUConfigurationPage;
 import org.olat.selenium.page.course.TUPage;
 import org.olat.selenium.page.course.TeamsPage;
 import org.olat.selenium.page.course.VideoConfigurationPage;
-import org.olat.selenium.page.course.VideoPage;
 import org.olat.selenium.page.course.ZoomConfigurationPage;
 import org.olat.selenium.page.course.ZoomPage;
 import org.olat.selenium.page.forum.ForumPage;
@@ -96,6 +95,8 @@ import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.ScormPage;
 import org.olat.selenium.page.repository.UserAccess;
+import org.olat.selenium.page.repository.VideoEditorPage;
+import org.olat.selenium.page.repository.VideoPage;
 import org.olat.selenium.page.survey.EvaluationFormPage;
 import org.olat.selenium.page.survey.FormPage;
 import org.olat.selenium.page.survey.SurveyEditorPage;
@@ -323,6 +324,87 @@ public class CourseElementTest extends Deployments {
 		new VideoPage(browser)
 			.assertOnYoutubeVideo(videoId);
 	}
+	
+
+	/**
+	 * An author upload a short video, add 2 segments in the video editor.
+	 * It creates a course with a video course element, starts the video
+	 * and wait until the first segment appears.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithVideoAndSegments()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword());
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		
+		//Upload a video of Big Buck Bunny (https://peach.blender.org)
+		URL videoUrl = JunitTestHelper.class.getResource("file_resources/big_buck_bunny.mp4");
+		File videoFile = new File(videoUrl.toURI());
+		
+		String videoTitle = "Big Buck " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(videoTitle, videoFile)
+			.clickToolbarRootCrumb();
+		
+		VideoPage videoPage = new VideoPage(browser);
+		VideoEditorPage videoEditorPage = videoPage
+			.assertOnVideo()
+			.edit()
+			.assertOnVideoEditor();
+		
+		videoEditorPage
+			.selectSegments()
+			.addSegment()
+			.editSegment("00:00:01", "00:00:15")
+			.save()
+			.addSegment()
+			.editSegment("00:00:20", "00:00:45")
+			.save();
+		// Back
+		videoEditorPage
+			.toolbarBack()
+			.assertOnVideo();
+		
+		String courseTitle = "Video segment - " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+
+		//Create a course element of type video
+		String videoNodeTitle = "Video segmented 1.0";
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("video")
+			.nodeTitle(videoNodeTitle);
+		new VideoConfigurationPage(browser)
+			.selectVideoConfiguration()
+			.selectVideoResource(videoTitle)
+			.selectSegmentsOption()
+			.save();
+
+		courseEditor
+			.autoPublish()
+			.assertOnLearnPathLastNode(videoNodeTitle);
+		
+		new VideoPage(browser)
+			.assertOnVideo()
+			.play()
+			.assetOnSegment()
+			.assetOnSegmentTooltip(15);
+	}
+	
 	
 	/**
 	 * Create a course, create a wiki, go the the course editor,

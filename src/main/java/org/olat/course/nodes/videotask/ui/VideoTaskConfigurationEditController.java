@@ -131,7 +131,8 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 		videoElements.setEnabled(VideoTaskEditController.CONFIG_KEY_SEGMENTS, false);
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, true));
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, false));
-
+		videoElements.setElementCssClass("o_sel_video_elements");
+		
 		SelectionValues categoriesValues = getCategoriesSelectionValues();
 		categoriesEl = uifactory.addCheckboxesVertical("video.config.categories", "video.config.categories", formLayout,
 				categoriesValues.keys(), categoriesValues.values(), 1);
