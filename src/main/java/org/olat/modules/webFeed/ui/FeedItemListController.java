@@ -369,7 +369,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 	}
 
 	private void loadTimelineTagsToggle(UserRequest ureq) {
-		toggleTimelineTags = uifactory.addToggleButton("toggle.timeline.tags", "toggle.timeline.tags", null, null, flc);
+		toggleTimelineTags = uifactory.addToggleButton("toggle.timeline.tags", "toggle.timeline.tags", translate("on"), translate("off"), flc);
 		toggleTimelineTags.addActionListener(FormEvent.ONCHANGE);
 		// Persist the toggle setting per user as guiPref
 		Boolean isToggleOn = (Boolean) ureq.getUserSession().getGuiPreferences().get(FeedItemListController.class, "timeline-tags-toggle");

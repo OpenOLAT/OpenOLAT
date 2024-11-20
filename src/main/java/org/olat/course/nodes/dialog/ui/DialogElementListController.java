@@ -330,6 +330,7 @@ public class DialogElementListController extends FormBasicController implements 
 
 		// set individual toolsLink for each row
 		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
+		toolsLink.setTitle(translate("action.more"));
 		row.setToolsLink(toolsLink);
 
 		return row;
