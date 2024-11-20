@@ -274,16 +274,7 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		Identity identity = authEvent.getIdentity();
 		String provider = authEvent.getProvider() == null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : authEvent.getProvider();
 
-		int loginStatus = AuthHelper.doLogin(identity, provider, ureq, redirectPath);
-		if (loginStatus == AuthHelper.LOGIN_OK) {
-			// it's ok
-		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
-		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
-			getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
-		} else {
-			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
-		}
+		doLogin(ureq, identity, provider);
 	}
 
 	private void doStart(Controller source) {
@@ -347,10 +338,10 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 	}
 
 	@Override
-	public void doLogin(UserRequest ureq, Identity persistedIdentity) {
-		int loginStatus = AuthHelper.doLogin(persistedIdentity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, redirectPath);
+	public void doLogin(UserRequest ureq, Identity persistedIdentity, String authProvider) {
+		int loginStatus = AuthHelper.doLogin(persistedIdentity, authProvider, ureq, redirectPath);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
-			//youppi
+			// it's ok
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {

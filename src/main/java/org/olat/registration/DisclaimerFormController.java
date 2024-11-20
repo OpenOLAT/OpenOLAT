@@ -124,12 +124,6 @@ public class DisclaimerFormController extends FormBasicController {
 	 */
 	public DisclaimerFormController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, ureq.getIdentity(), true);
-		if (userModule.isAllowRequestToDeleteAccount() && ureq.getIdentity() != null) {
-			requestAccountDeletionCtrl = new RequestAccountDeletionController(ureq, getWindowControl());
-			listenTo(requestAccountDeletionCtrl);
-
-			flc.put("radform", requestAccountDeletionCtrl.getInitialComponent());
-		}
 	}
 
 	public DisclaimerFormController(UserRequest ureq, WindowControl wControl, Form mainForm) {
@@ -164,6 +158,13 @@ public class DisclaimerFormController extends FormBasicController {
 		FormLayoutContainer disclaimerCont = FormLayoutContainer.createCustomFormLayout("disclaimer", getTranslator(), velocity_root + "/disclaimer.html");
 		disclaimerCont.setRootForm(mainForm);
 		formLayout.add(disclaimerCont);
+
+		if (readOnly && userModule.isAllowRequestToDeleteAccount() && ureq.getIdentity() != null) {
+			requestAccountDeletionCtrl = new RequestAccountDeletionController(ureq, getWindowControl());
+			listenTo(requestAccountDeletionCtrl);
+
+			disclaimerCont.put("radform", requestAccountDeletionCtrl.getInitialComponent());
+		}
 
 		FormLayoutContainer legendContainer = FormLayoutContainer.createBareBoneFormLayout("legend", getTranslator());
 		legendContainer.setElementCssClass("o_disclaimer");

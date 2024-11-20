@@ -34,8 +34,9 @@ public interface LoginHandler {
 	 *
 	 * @param ureq
 	 * @param persistedIdentity
+	 * @param authProvider
 	 */
-	void doLogin(UserRequest ureq, Identity persistedIdentity);
+	void doLogin(UserRequest ureq, Identity persistedIdentity, String authProvider);
 
 	/**
 	 * showError in Controller

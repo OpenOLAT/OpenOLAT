@@ -106,7 +106,7 @@ public class RegisterFinishCallback implements StepRunnerCallback {
 		}
 
 		if (loginCtrl instanceof LoginHandler loginHandler) {
-			loginHandler.doLogin(ureq, identity);
+			loginHandler.doLogin(ureq, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 		}
 		return StepsMainRunController.DONE_MODIFIED;
 	}

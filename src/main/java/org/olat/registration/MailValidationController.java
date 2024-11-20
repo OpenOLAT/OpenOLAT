@@ -281,10 +281,10 @@ public class MailValidationController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (mailEl.isEmpty("email.address.maynotbeempty")) {
-			allOk &= false;
+			allOk = false;
 		} else if (!MailHelper.isValidEmailAddress(getEmailAddress())) {
 			mailEl.setErrorKey("email.address.notregular");
-			allOk &= false;
+			allOk = false;
 		} else {
 			String val = getEmailAddress();
 			
@@ -295,12 +295,12 @@ public class MailValidationController extends FormBasicController {
 			allOk &= valid;
 		}
 
-		if (validationCont != null && validationCont.isVisible() && otpEl != null) {
+		if (validationCont != null && otpEl != null) {
 			if (otpEl.isEmpty("reg.otp.may.not.be.empty")) {
-				allOk &= false;
+				allOk = false;
 			} else if (!isOtpValid()) {
 				otpEl.setErrorKey("reg.otp.invalid");
-				allOk &= false;
+				allOk = false;
 			}
 		}
 
@@ -309,7 +309,7 @@ public class MailValidationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == validateMailLink && validateFormLogic(ureq)) {
+		if (source == validateMailLink && !mailEl.hasError()) {
 			initValidation();
 			processEmail(ureq);
 			toggleFormVisibility();
