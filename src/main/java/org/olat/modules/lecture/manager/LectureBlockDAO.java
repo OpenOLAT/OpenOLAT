@@ -737,9 +737,15 @@ public class LectureBlockDAO {
 		if(searchParams == null) return;
 
 		if(searchParams.getCurriculumElement() != null) {
-			sb.and().append(" curEl.key=:curriculumElementKey");
+			sb.and().append(" (curEl.key=:curriculumElementKey or entry.key in (select rel.entry.key from repoentrytogroup as rel")
+			  .append(" inner join curriculumelement entryEl on (entryEl.group.key=rel.group.key)")
+			  .append(" where entryEl.key=:curriculumElementKey")
+			  .append("))");
 		} else if(StringHelper.containsNonWhitespace(searchParams.getCurriculumElementPath())) {
-			sb.and().append(" curEl.materializedPathKeys like :curriculumElementPath");
+			sb.and().append(" (curEl.materializedPathKeys like :curriculumElementPath or entry.key in (select rel.entry.key from repoentrytogroup as rel")
+			  .append(" inner join curriculumelement entryEl on (entryEl.group.key=rel.group.key)")
+			  .append(" where entryEl.materializedPathKeys like :curriculumElementPath")
+			  .append("))");
 		} else if(searchParams.getRepositoryEntry() != null) {
 			sb.and().append(" entry.key=:repoEntryKey and config.lectureEnabled=true");
 		} else {
@@ -751,7 +757,16 @@ public class LectureBlockDAO {
 		}
 		
 		if(searchParams.getCurriculum() != null) {
-			sb.and().append(" curEl.curriculum.key=:curriculumKey");
+			sb.and().append(" (curEl.curriculum.key=:curriculumKey or entry.key in (select crel.entry.key from repoentrytogroup as crel")
+			  .append(" inner join curriculumelement centryEl on (centryEl.group.key=crel.group.key)")
+			  .append(" where centryEl.curriculum.key=:curriculumKey")
+			  .append("))");
+		}
+		
+		if(searchParams.isInSomeCurriculum()) {
+			sb.and().append(" (curEl.curriculum.key is not null or entry.key in (select screl.entry.key from repoentrytogroup as screl")
+			  .append(" inner join curriculumelement scentryEl on (scentryEl.group.key=screl.group.key)")
+			  .append("))");
 		}
 		
 		if(searchParams.isLectureConfiguredRepositoryEntry()) {

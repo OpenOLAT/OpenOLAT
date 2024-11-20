@@ -40,6 +40,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,7 +61,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private final LecturesSecurityCallback lecturesSecCallback;
 
 	private CurriculumDashboardController overviewCtrl;
-	private CurriculumManagerEventsController eventsCtrl;
+	private LectureListRepositoryController eventsCtrl;
 	private CurriculumSearchManagerController searchCtrl;
 	private CurriculumComposerController implementationsCtrl;
 	private CurriculumListManagerController curriculumListCtrl;
@@ -132,7 +133,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		} else if("Lectures".equalsIgnoreCase(type) || "Events".equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenLecturesBlocks(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
-		} 
+		}
 	}
 
 	@Override
@@ -143,7 +144,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 			}
 		} else if(lectureBlocksWidgetCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
-				doOpenLecturesBlocks(ureq).activate(ureq, ae.getEntries(), null);
+				activate(ureq, ae.getEntries(), null);
 			}
 		}
 	}
@@ -202,11 +203,11 @@ public class CurriculumManagerRootController extends BasicController implements 
 		return implementationsCtrl;
 	}
 	
-	private CurriculumManagerEventsController doOpenLecturesBlocks(UserRequest ureq) {
+	private LectureListRepositoryController doOpenLecturesBlocks(UserRequest ureq) {
 		toolbarPanel.popUpToRootController(ureq);
 		removeAsListenerAndDispose(eventsCtrl);
 		
-		eventsCtrl = new CurriculumManagerEventsController(ureq, getWindowControl(), lecturesSecCallback);
+		eventsCtrl = new LectureListRepositoryController(ureq, getWindowControl(), lecturesSecCallback);
 		listenTo(eventsCtrl);
 		toolbarPanel.pushController(translate("curriculum.lectures"), eventsCtrl);
 		return eventsCtrl;

@@ -57,6 +57,7 @@ public class LecturesBlockSearchParameters {
 	private List<LectureRollCallStatus> rollCallStatus;
 	private List<LectureBlockStatus> lectureBlockStatus;
 	private List<LectureBlockRef> lectureBlocks;
+	private boolean inSomeCurriculum;
 	
 	private boolean configuredEntry = true;
 	
@@ -231,6 +232,14 @@ public class LecturesBlockSearchParameters {
 
 	public void setCurriculumElementPath(String curriculumElementPath) {
 		this.curriculumElementPath = curriculumElementPath;
+	}
+
+	public boolean isInSomeCurriculum() {
+		return inSomeCurriculum;
+	}
+
+	public void setInSomeCurriculum(boolean inSomeCurriculum) {
+		this.inSomeCurriculum = inSomeCurriculum;
 	}
 
 	public List<LectureBlockRef> getLectureBlocks() {

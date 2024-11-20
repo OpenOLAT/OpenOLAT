@@ -51,6 +51,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumDashboardController;
 import org.olat.modules.curriculum.ui.CurriculumElementLectureBlocksTableModel.BlockCols;
 import org.olat.modules.curriculum.ui.CurriculumListManagerController;
@@ -94,6 +95,8 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	public LectureBlocksWidgetController(UserRequest ureq, WindowControl wControl,
 			LecturesSecurityCallback secCallback) {
@@ -247,8 +250,9 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		if(curriculum != null) {
 			searchParams.setCurriculum(curriculum);
 		} else if(curriculumElement != null) {
-			searchParams.setCurriculum(curriculumElement.getCurriculum());
 			searchParams.setCurriculumElementPath(curriculumElement.getMaterializedPathKeys());
+		} else {
+			searchParams.setInSomeCurriculum(true);
 		}
 		return searchParams;
 	}
@@ -320,7 +324,26 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	private void doOpen(UserRequest ureq, String filterTab, LectureBlockWidgetRow row) {
 		StringBuilder lecturesPath = new StringBuilder();
 		if(row.getLectureBlock().getCurriculumElement() != null) {
-			lecturesPath.append("[CurriculumElement:").append(row.getLectureBlock().getCurriculumElement().getKey()).append("]");
+			CurriculumElement el = curriculumService.getCurriculumElement(row.getLectureBlock().getCurriculumElement());
+			if(curriculum == null && curriculumElement == null) {
+				lecturesPath.append("[Curriculum:").append(el.getCurriculum().getKey()).append("]");
+			}
+			lecturesPath.append("[CurriculumElement:").append(el.getKey()).append("]");
+		} else if(row.getLectureBlock().getEntry() != null) {
+			List<CurriculumElement> elements = curriculumService.getCurriculumElements(row.getLectureBlock().getEntry());
+			if(!elements.isEmpty()) {
+				if(curriculum == null && curriculumElement == null) {
+					CurriculumElement el = elements.get(0);
+					lecturesPath.append("[Curriculum:").append(el.getCurriculum().getKey()).append("]")
+					            .append("[CurriculumElement:").append(el.getKey()).append("]");
+				} else if(curriculum != null && curriculumElement == null) {
+					CurriculumElement el = elements.stream().filter(element -> curriculum.equals(element.getCurriculum()))
+							.findFirst().orElse(null);
+					if(el != null) {
+						lecturesPath.append("[CurriculumElement:").append(el.getKey()).append("]");
+					}
+				}
+			}
 		}
 		lecturesPath.append("[Lectures:0]");
 		if(StringHelper.containsNonWhitespace(filterTab)) {

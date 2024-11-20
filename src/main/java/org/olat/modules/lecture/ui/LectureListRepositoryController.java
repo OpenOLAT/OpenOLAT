@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
@@ -260,10 +261,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 	
 		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
-			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
-			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
-			addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
-
+			if(entry != null || curriculum != null || curriculumElement != null) {
+				addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
+				addLectureButton.setIconLeftCSS("o_icon o_icon_add");
+				addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
+			}
+			
 			deleteLecturesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 			
 			if(entry != null || curriculumElement != null) {
@@ -278,6 +281,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				importLecturesButton.setElementCssClass("o_sel_repo_import_lectures");
 				addTaskDropdown.addElement(importLecturesButton);
 			}
+		}
+		
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			boolean headless = (entry == null && curriculum == null && curriculumElement == null);
+			String titleSize = headless ? "h2" : "h3";
+			layoutCont.contextPut("titleSize", titleSize);
 		}
 	}
 
@@ -453,8 +462,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		} else if(entry != null) {
 			displayname = entry.getDisplayname();
 			externalRef = entry.getExternalRef();
-		} else {
-			return;
 		}
 		
 		LecturesBlockSearchParameters searchParams = getSearchParams(ureq);
@@ -519,6 +526,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		} else if(entry != null) {
 			searchParams.setRepositoryEntry(entry);
 			searchParams.setLectureConfiguredRepositoryEntry(true);
+		} else {
+			searchParams.setInSomeCurriculum(true);
 		}
 		
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ROLL_CALL_STATUS);
