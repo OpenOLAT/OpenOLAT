@@ -251,6 +251,11 @@
 			max-width: 1100px;
 		}
 	}
+	
+	body.o_pdf_output_one_cm .o_page_content {
+		min-width: 900px;
+	}
+	
 	/* prevent oversize tables to break layout, limit size to visible space on Sheet */
 	.o_scrollable {
 			max-width: 1100px;
@@ -319,7 +324,13 @@ body.o_print_a4_144 {
 	}
 }
 
-.o_pdf_output_one_cm #o_main_wrapper {
-	width: calc(100vw);
+body.o_pdf_output_one_cm {
+	#o_main_wrapper {
+		width: calc(100vw);
+		
+		#o_main_container.container-fluid {
+			padding: 0;
+		}
+	}
 }
 
