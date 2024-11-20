@@ -535,6 +535,14 @@ $o-curriculum-entry-bg							: #CCFFCC;
 				vertical-align: middle;
 			}
 			
+			td:first-child {
+				width: 40%;
+			}
+			
+			td:last-child {
+				width: 150px;
+			}
+			
 			.o_curriculum_date > td:first-child,
 			.o_curriculum_today > td:first-child {
 				border-left: 3px solid #fff;

@@ -22,8 +22,10 @@ package org.olat.modules.lecture.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.Group;
@@ -83,6 +85,7 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -124,7 +127,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 
 	private static final String ALL_TAB_ID = "All";
 	private static final String PAST_TAB_ID = "Past";
-	private static final String CURRENT_TAB_ID = "Current";
+	private static final String RELEVANT_TAB_ID = "Current";
+	private static final String TODAY_TAB_ID = "Today";
+	private static final String UPCOMING_TAB_ID = "Upcoming";
 	private static final String CLOSED_TAB_ID = "Closed";
 	private static final String PENDING_TAB_ID = "Pending";
 	private static final String WITHOUT_TEACHERS_TAB_ID = "WithoutTeachers";
@@ -146,9 +151,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab pastTab;
 	private FlexiFiltersTab closedTab;
-	private FlexiFiltersTab currentTab;
+	private FlexiFiltersTab todayTab;
+	private FlexiFiltersTab upcomingTab;
+	private FlexiFiltersTab relevantTab;
 	private FlexiFiltersTab pendingTab;
 	private FlexiFiltersTab withoutTeachersTab;
+	private Map<String,FlexiFiltersTab> tabsMap = Map.of();
 
 	private FlexiTableMultiSelectionFilter teachersFilter;
 	private FlexiTableMultiSelectionFilter rollCallStatusFilter;
@@ -189,7 +197,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
-		loadModel();
+		loadModel(ureq);
 		updateTeachersFilters();
 	}
 	
@@ -204,7 +212,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
-		loadModel();
+		loadModel(ureq);
 		updateTeachersFilters();
 	}
 	
@@ -219,7 +227,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
-		loadModel();
+		loadModel(ureq);
 	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, Curriculum curriculum, LecturesSecurityCallback secCallback) {
@@ -233,7 +241,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
-		loadModel();
+		loadModel(ureq);
 	}
 
 	@Override
@@ -361,41 +369,61 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	private void initFiltersPresets() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		Map<String,FlexiFiltersTab> map = new HashMap<>();
 		
 		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
 				TabSelectionBehavior.nothing, List.of());
 		allTab.setElementCssClass("o_sel_elements_all");
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
+		map.put(ALL_TAB_ID.toLowerCase(), allTab);
 		
-		currentTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CURRENT_TAB_ID, translate("filter.current"),
+		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
 				TabSelectionBehavior.nothing, List.of());
-		currentTab.setFiltersExpanded(true);
-		tabs.add(currentTab);
+		relevantTab.setFiltersExpanded(true);
+		tabs.add(relevantTab);
+		map.put(RELEVANT_TAB_ID.toLowerCase(), relevantTab);
+		
+		todayTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TODAY_TAB_ID, translate("filter.today"),
+				TabSelectionBehavior.nothing, List.of());
+		todayTab.setFiltersExpanded(true);
+		tabs.add(todayTab);
+		map.put(TODAY_TAB_ID.toLowerCase(), todayTab);
+		
+		upcomingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(UPCOMING_TAB_ID, translate("filter.next.days"),
+				TabSelectionBehavior.nothing, List.of());
+		upcomingTab.setFiltersExpanded(true);
+		tabs.add(upcomingTab);
+		map.put(UPCOMING_TAB_ID.toLowerCase(), upcomingTab);
 		
 		pastTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PAST_TAB_ID, translate("filter.past"),
 				TabSelectionBehavior.nothing, List.of());
 		pastTab.setFiltersExpanded(true);
 		tabs.add(pastTab);
+		map.put(PAST_TAB_ID.toLowerCase(), pastTab);
 		
 		withoutTeachersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(WITHOUT_TEACHERS_TAB_ID, translate("filter.without.teachers"),
 				TabSelectionBehavior.nothing, List.of());
 		withoutTeachersTab.setFiltersExpanded(true);
 		tabs.add(withoutTeachersTab);
+		map.put(WITHOUT_TEACHERS_TAB_ID.toLowerCase(), withoutTeachersTab);
 		
 		pendingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PENDING_TAB_ID, translate("filter.pending"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLL_CALL_STATUS,
 						List.of(LectureRollCallStatus.open.name(), LectureRollCallStatus.reopen.name()))));
 		pendingTab.setFiltersExpanded(true);
 		tabs.add(pendingTab);
+		map.put(PENDING_TAB_ID.toLowerCase(), pendingTab);
 		
 		closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CLOSED_TAB_ID, translate("filter.closed"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLL_CALL_STATUS,
 						List.of(LectureRollCallStatus.closed.name(), LectureRollCallStatus.autoclosed.name()))));
 		closedTab.setFiltersExpanded(true);
 		tabs.add(closedTab);
+		map.put(CLOSED_TAB_ID.toLowerCase(), closedTab);
 		
 		tableEl.setFilterTabs(true, tabs);
+		tabsMap = Map.copyOf(map);
 	}
 	
 	@Override
@@ -413,7 +441,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		return components;
 	}
 
-	private void loadModel() {
+	private void loadModel(UserRequest ureq) {
 		String displayname = null;
 		String externalRef = null;
 		if(curriculumElement != null) {
@@ -429,7 +457,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			return;
 		}
 		
-		LecturesBlockSearchParameters searchParams = getSearchParams();
+		LecturesBlockSearchParameters searchParams = getSearchParams(ureq);
 		List<LectureBlockWithTeachers> blocks = lectureService.getLectureBlocksWithOptionalTeachers(searchParams);
 		
 		List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
@@ -477,7 +505,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 	}
 	
-	private LecturesBlockSearchParameters getSearchParams() {
+	private LecturesBlockSearchParameters getSearchParams(UserRequest ureq) {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		
 		if(curriculumElement != null) {
@@ -515,10 +543,16 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			}
 		}
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
-		if(selectedTab == currentTab) {
-			searchParams.setStartDate(new Date());
+		Date now = ureq.getRequestTimestamp();
+		if(selectedTab == relevantTab) {
+			searchParams.setStartDate(now);
+		} else if(selectedTab == todayTab) {
+			searchParams.setStartDate(DateUtils.getStartOfDay(now));
+			searchParams.setEndDate(DateUtils.getEndOfDay(now));
+		} else if(selectedTab == upcomingTab) {
+			searchParams.setStartDate(DateUtils.getEndOfDay(now));
 		} else if(selectedTab == pastTab || selectedTab == pendingTab) {
-			searchParams.setEndDate(new Date());
+			searchParams.setEndDate(now);
 		} else if(selectedTab == withoutTeachersTab) {
 			searchParams.setWithTeachers(Boolean.FALSE);
 		}
@@ -531,19 +565,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		return searchParams;
 	}
 	
-	private boolean isFilterSelected(String id) {
-		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), id);
-		if (filter != null) {
-			List<String> filterValues = ((FlexiTableExtendedFilter)filter).getValues();
-			return filterValues != null && filterValues.contains(id);
-		}
-		return false;
-	}
-	
 	private void reloadModel(UserRequest ureq, LectureBlock lectureBlock) {
 		LectureBlockRow row = tableModel.getObject(lectureBlock);
 		if(row == null) {
-			loadModel();
+			loadModel(ureq);
 		} else {
 			row.setLectureBlock(lectureBlock);
 			if(row.getDetailsController() != null) {
@@ -559,15 +584,28 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("Lecture".equals(type) || "LectureBlock".equals(type)) {
-			int index = tableModel.getIndexByKey(entries.get(0).getOLATResourceable().getResourceableId());
-			if(index >= 0) {
-				int page = index / tableEl.getPageSize();
-				tableEl.setPage(page);
-				doOpenLectureBlockDetails(ureq, tableModel.getObject(index));
-				tableEl.expandDetails(index);
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName().toLowerCase();
+		if("lecture".equals(type) || "lectureblock".equals(type)) {
+			activateLecture(ureq, entries.get(0).getOLATResourceable().getResourceableId());
+		} else if(tabsMap.containsKey(type)) {
+			tableEl.setSelectedFilterTab(ureq, tabsMap.get(type));
+			loadModel(ureq);
+			if(entries.size() > 1) {
+				String subType = entries.get(1).getOLATResourceable().getResourceableTypeName().toLowerCase();
+				if("lecture".equals(subType) || "lectureblock".equals(subType)) {
+					activateLecture(ureq, entries.get(1).getOLATResourceable().getResourceableId());
+				}
 			}
+		}
+	}
+	
+	private void activateLecture(UserRequest ureq, Long resourceId) {
+		int index = tableModel.getIndexByKey(resourceId);
+		if(index >= 0) {
+			int page = index / tableEl.getPageSize();
+			tableEl.setPage(page);
+			doOpenLectureBlockDetails(ureq, tableModel.getObject(index));
+			tableEl.expandDetails(index);
 		}
 	}
 
@@ -580,9 +618,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		} else if(importLecturesButton == source) {
 			doImportLecturesBlock(ureq);
 		} else if(allLevelsButton == source) {
-			doToggleLevels(false);
+			doToggleLevels(ureq, false);
 		} else if(thisLevelButton == source) {
-			doToggleLevels(true);
+			doToggleLevels(ureq, true);
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
@@ -600,7 +638,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				}
 			} else if(event instanceof FlexiTableSearchEvent
 					|| event instanceof FlexiTableFilterTabEvent) {
-				loadModel();
+				loadModel(ureq);
 			} else if(event instanceof DetailsToggleEvent toggleEvent) {
 				LectureBlockRow row = tableModel.getObject(toggleEvent.getRowIndex());
 				if(toggleEvent.isVisible()) {
@@ -631,7 +669,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-					loadModel();
+					loadModel(ureq);
 				}
 				cleanUp();
 			}
@@ -650,11 +688,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			getWindowControl().pop();
 			cleanUp();
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel();
+				loadModel(ureq);
 			}
 		} else if(deleteLectureBlocksCtrl == source) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel();
+				loadModel(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -686,10 +724,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		//
 	}
 	
-	private void doToggleLevels(boolean thisLevel) {
+	private void doToggleLevels(UserRequest ureq, boolean thisLevel) {
 		allLevelsButton.setPrimary(!thisLevel);
 		thisLevelButton.setPrimary(thisLevel);
-		loadModel();
+		loadModel(ureq);
 	}
 
 	private void doEditLectureBlock(UserRequest ureq, LectureBlockRow row) {
@@ -778,10 +816,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 	}
 	
-	private void doCopy(LectureBlockRow row) {
+	private void doCopy(UserRequest ureq, LectureBlockRow row) {
 		String newTitle = translate("lecture.block.copy",row.getLectureBlock().getTitle());
 		lectureService.copyLectureBlock(newTitle, row.getLectureBlock());
-		loadModel();
+		loadModel(ureq);
 		showInfo("lecture.block.copied");
 	}
 	
@@ -827,7 +865,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	
-	private void doReopen(LectureBlockRow row) {
+	private void doReopen(UserRequest ureq, LectureBlockRow row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		String before = lectureService.toAuditXml(lectureBlock);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.reopen);
@@ -843,7 +881,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_REOPENED, getClass(),
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 		
-		loadModel();
+		loadModel(ureq);
 	}
 	
 	private void doOpenLectureBlockDetails(UserRequest ureq, LectureBlockRow row) {
@@ -926,7 +964,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
 			if(copyLink == source) {
-				doCopy(row);
+				doCopy(ureq, row);
 			} else if(editLink == source) {
 				doEditLectureBlock(ureq, row);
 			} else if(deleteLink == source) {
@@ -934,7 +972,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			} else if(logLink == source) {
 				doExportLog(ureq, row);
 			} else if(reopenLink == source) {
-				doReopen(row);
+				doReopen(ureq, row);
 			}
 		}
 	}

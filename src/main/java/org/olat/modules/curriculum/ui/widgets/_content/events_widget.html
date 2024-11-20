@@ -21,11 +21,11 @@
 	</div>
 	#if($r.isFalse($minimized))
 	<fieldset class="o_curriculum_widget_table">
-		<legend>$r.translate("curriculum.lectures.today")</legend>
+		<legend>$r.render("curriculum.lectures.today")</legend>
 		$r.render("today")
 	</fieldset>
 	<fieldset class="o_curriculum_widget_table">
-		<legend>$r.translate("curriculum.lectures.next.days")</legend>
+		<legend>$r.render("curriculum.lectures.next.days")</legend>
 		$r.render("nextDays")
 	</fieldset>
 	#end

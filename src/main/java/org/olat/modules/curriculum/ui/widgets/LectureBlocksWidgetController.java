@@ -46,7 +46,9 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumDashboardController;
@@ -70,6 +72,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LectureBlocksWidgetController extends FormBasicController {
 
+	private FormLink todayLink;
+	private FormLink upcomingLink;
 	private FormLink lecturesLink;
 	private FormLink minimizeButton;
 	private FormLink addLecturesLink;
@@ -151,6 +155,9 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		eventsTodayEl = uifactory.addStaticTextElement("num.of.events.today", "", formLayout);
 		eventsNextDaysEl = uifactory.addStaticTextElement("num.of.events.next.days", "", formLayout);
 		
+		todayLink = uifactory.addFormLink("curriculum.lectures.today", formLayout);
+		upcomingLink = uifactory.addFormLink("curriculum.lectures.next.days", formLayout);
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title, "select",
 				new LectureBlockTitleCellRenderer()));
@@ -158,7 +165,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 				new LectureBlockLocationCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title,
 				new LectureBlockStartDateCellRenderer(getLocale())));
-		
+
 		todayTableModel = new LectureBlocksWidgetTableModel(columnsModel);
 		todayTableEl = initTable(formLayout, "today", todayTableModel);
 		todayTableEl.setEmptyTableMessageKey("empty.today.lectures");
@@ -270,6 +277,16 @@ public class LectureBlocksWidgetController extends FormBasicController {
 			List<ContextEntry> entries = BusinessControlFactory.getInstance()
 					.createCEListFromResourceType(CurriculumListManagerController.CONTEXT_LECTURES);
 			fireEvent(ureq, new ActivateEvent(entries));
+		} else if(todayLink == source) {
+			List<ContextEntry> entries = BusinessControlFactory.getInstance()
+					.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES),
+							OresHelper.createOLATResourceableType("Today"));
+			fireEvent(ureq, new ActivateEvent(entries));
+		} else if(upcomingLink == source) {
+			List<ContextEntry> entries = BusinessControlFactory.getInstance()
+					.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES),
+							OresHelper.createOLATResourceableType("Upcoming"));
+			fireEvent(ureq, new ActivateEvent(entries));
 		} else if(addLecturesLink == source) {
 			doAddLectureBlock(ureq);
 		} else if(minimizeButton == source) {
@@ -277,21 +294,15 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		} else if(todayTableEl == source ) {
 			if(event instanceof SelectionEvent se) {
 				LectureBlockWidgetRow row = todayTableModel.getObject(se.getIndex());
-				doOpen(ureq, row);
+				doOpen(ureq, "Today", row);
 			}
 		} else if(nextDaysTableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				LectureBlockWidgetRow row = nextDaysTableModel.getObject(se.getIndex());
-				doOpen(ureq, row);
+				doOpen(ureq, "Upcoming", row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	private void doOpen(UserRequest ureq, LectureBlockWidgetRow row) {
-		List<ContextEntry> entries = BusinessControlFactory.getInstance()
-				.createCEListFromString("[Lectures:0][Lecture:" + row.getLectureBlock().getKey() + "]");
-		fireEvent(ureq, new ActivateEvent(entries));
 	}
 
 	@Override
@@ -304,6 +315,22 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		updateMinimizeButton();
 		ureq.getUserSession().getGuiPreferences()
 			.putAndSave(LectureBlocksWidgetController.class, preferencesId, Boolean.valueOf(minimized.get()));
+	}
+	
+	private void doOpen(UserRequest ureq, String filterTab, LectureBlockWidgetRow row) {
+		StringBuilder lecturesPath = new StringBuilder();
+		if(row.getLectureBlock().getCurriculumElement() != null) {
+			lecturesPath.append("[CurriculumElement:").append(row.getLectureBlock().getCurriculumElement().getKey()).append("]");
+		}
+		lecturesPath.append("[Lectures:0]");
+		if(StringHelper.containsNonWhitespace(filterTab)) {
+			lecturesPath.append("[").append(filterTab).append(":0]");
+		}
+		lecturesPath.append("[Lecture:").append(row.getLectureBlock().getKey()).append("]");
+
+		List<ContextEntry> entries = BusinessControlFactory.getInstance()
+				.createCEListFromString(lecturesPath.toString());
+		fireEvent(ureq, new ActivateEvent(entries));
 	}
 	
 	private void doAddLectureBlock(UserRequest ureq) {

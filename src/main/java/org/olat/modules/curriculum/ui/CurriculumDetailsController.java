@@ -220,7 +220,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			}
 		} else if(CONTEXT_OVERVIEW.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, overviewTab);
-		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type)) {
+		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type) || "CurriculumElement".equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, implementationsTab);
 			if(implementationsCtrl != null) {
 				implementationsCtrl.activate(ureq, entries, state);
@@ -230,7 +230,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(overviewCtrl == source) {
+		if(overviewCtrl == source || lectureBlocksWidgetCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}

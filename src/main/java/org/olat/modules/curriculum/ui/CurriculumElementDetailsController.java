@@ -302,7 +302,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(CONTEXT_OVERVIEW.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, overviewTab);
 		} else if(CONTEXT_LECTURES.equalsIgnoreCase(type)) {
-			tabPane.setSelectedPane(ureq, lecturesTab);
+			activateLectures(ureq, entries);
 		} else if(CONTEXT_RESOURCES.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, resourcesTab);
 		} else if((CONTEXT_IMPLEMENTATIONS.equalsIgnoreCase(type) || CONTEXT_STRUCTURE.equalsIgnoreCase(type))
@@ -319,10 +319,23 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				userManagementCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type) || "CurriculumElement".equalsIgnoreCase(type)) {
-			tabPane.setSelectedPane(ureq, structuresTab);
-			if(structureCtrl != null) {
-				structureCtrl.activate(ureq, entries, state);
+			if(entries.size() > 1 && "Lectures".equalsIgnoreCase(entries.get(1).getOLATResourceable().getResourceableTypeName())) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				activateLectures(ureq, subEntries);
+			} else {
+				tabPane.setSelectedPane(ureq, structuresTab);
+				if(structureCtrl != null) {
+					structureCtrl.activate(ureq, entries, state);
+				}
 			}
+		}
+	}
+	
+	private void activateLectures(UserRequest ureq, List<ContextEntry> entries) {
+		tabPane.setSelectedPane(ureq, lecturesTab);
+		List<ContextEntry> subEntries = entries.subList(1, entries.size());
+		if(lectureBlocksCtrl != null) {
+			lectureBlocksCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
 	}
 	
