@@ -81,7 +81,7 @@ public class CourseReminderTableModel extends DefaultFlexiTableDataModel<Reminde
 		lastModified("table.header.lastModified"),
 		sendTime("table.header.sendTime"),
 		send("table.header.send"),
-		tools("table.header.actions");
+		tools("action.more");
 		
 		private final String i18nKey;
 		private final String icon;

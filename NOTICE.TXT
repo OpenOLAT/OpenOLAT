@@ -197,6 +197,7 @@ This product uses software based on the CDDL
 
 -----------------------------------------------------------------------
 This product uses software based on Creative Commons License
+* Big Buck Bunny video (Creative Commons Attribution 3.0) [https://peach.blender.org]
 
 -----------------------------------------------------------------------
 This product uses software based on SIL Open Font License (OFL)

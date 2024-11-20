@@ -215,7 +215,8 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		beginChooser("table.header.begin"),
 		endChooser("table.header.end"),
 		configSeb("table.header.config.seb"),
-		toolsLink("table.header.actions");
+		edit("edit"),
+		toolsLink("action.more");
 		
 		private final String i18nKey;
 		

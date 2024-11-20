@@ -62,7 +62,7 @@ public class CatalogFilterDataModel extends DefaultFlexiTableDataModel<CatalogFi
 		details("admin.filter.details"),
 		enabled("admin.filter.enabled"),
 		defaultVisibile("admin.filter.default.visible"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

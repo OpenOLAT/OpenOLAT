@@ -36,12 +36,12 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.updown.UpDown;
@@ -126,13 +126,13 @@ public class CatalogFilterListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogFilterCols.enabled));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogFilterCols.defaultVisibile, null));
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", -1, CMD_EDIT,
-				new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit", null)));
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1);
+		editColumn.setCellRenderer(new StaticFlexiCellRenderer("", CMD_EDIT, null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
+		editColumn.setHeaderLabel(translate("edit"));
+		columnsModel.addFlexiColumnModel(editColumn);
 		
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(CatalogFilterCols.tools);
-		toolsColumn.setAlwaysVisible(true);
-		toolsColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(CatalogFilterCols.tools));
 		
 		dataModel = new CatalogFilterDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -187,9 +187,7 @@ public class CatalogFilterListController extends FormBasicController {
 			} 
 			row.setUpDown(upDown);
 			
-			FormLink toolsLink = uifactory.addFormLink("tools_" + catalogFilter.getSortOrder(), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolsLink.setTitle(translate("action.more"));
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 			

@@ -22,7 +22,6 @@ package org.olat.course.disclaimer.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -35,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -42,7 +42,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -87,7 +86,6 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 	public static final String TABLE_ACTION_HOME = "tbl_home";
 	public static final String TABLE_ACTION_CONTACT = "tbl_contact";
 
-	private final AtomicInteger counter = new AtomicInteger();
 	private final boolean canRevokeConsents;
 
 	private ToolsController toolsCtrl;
@@ -163,12 +161,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, ConsentCols.consent));
-
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(ConsentCols.tools);
-		toolsCol.setExportable(false);
-		toolsCol.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsCol);
-
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(ConsentCols.tools));
 
 		tableModel = new CourseDisclaimerConsentTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "consents", tableModel, 25, false, getTranslator(),
@@ -224,8 +217,7 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 	}
 
 	protected void forgeLinks(CourseDisclaimerConsenstPropertiesRow row) {
-		FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

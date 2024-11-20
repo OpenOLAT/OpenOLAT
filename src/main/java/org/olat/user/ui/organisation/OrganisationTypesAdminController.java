@@ -83,8 +83,10 @@ public class OrganisationTypesAdminController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypeCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypeCols.displayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypeCols.externalId));
-		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
-				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1);
+		editColumn.setCellRenderer(new StaticFlexiCellRenderer("", "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
+		editColumn.setHeaderLabel(translate("edit"));
 		editColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(editColumn);
 		

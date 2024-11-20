@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -134,7 +135,7 @@ public class DialogElementListEditController extends FormBasicController {
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DialogCols.creationDate));
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DialogCols.toolsLink));
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(DialogCols.toolsLink));
 
 		tableModel = new DialogElementsTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
@@ -153,7 +154,7 @@ public class DialogElementListEditController extends FormBasicController {
 				DownloadLink downloadLink = uifactory.addDownloadLink("file_" + counter, row.getFilename(), null, item, flc);
 				row.setDownloadLink(downloadLink);
 			}
-			FormLink toolsLink = uifactory.addFormLink("tools_" + row.getDialogElementKey(), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			row.setToolsLink(toolsLink);
 			counter++;
 			rows.add(row);

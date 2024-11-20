@@ -75,6 +75,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 			editVideoLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Editor:0]"));
 			editVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			editVideoLink.setElementCssClass("o_sel_video_edit");
 			toolsDropdown.addComponent(editVideoLink);
 		}
 	}

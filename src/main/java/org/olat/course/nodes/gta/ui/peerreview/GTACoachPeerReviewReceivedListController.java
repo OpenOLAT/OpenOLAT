@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -43,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -182,10 +182,7 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		leaveCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(leaveCol);
 		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CoachReviewCols.tools);
-		toolsCol.setIconHeader("o_icon o_icon-fw o_icon-lg o_icon_actions");
-		toolsCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(CoachReviewCols.tools));
 		
 		tableModel = new GTACoachPeerReviewTreeTableModel(columnsModel);
 		

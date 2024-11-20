@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionDelegateCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -275,12 +276,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("invalidate"), "invalidate"), null));
 			columnsModel.addFlexiColumnModel(cancelCol);
 		}
-
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(TSCols.tools);
-		toolsCol.setAlwaysVisible(true);
-		toolsCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
-
+		
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TSCols.tools));
 
 		tableModel = new QTI21AssessmentTestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
@@ -369,7 +366,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 		QTI21AssessmentTestSessionDetails row = new QTI21AssessmentTestSessionDetails(testSession,
 				numOfItems, responded, sessionStatistics.numOfCorrectedItems(), sessionStatistics.automaticScore(), error);
-		FormLink tools = uifactory.addFormLink("tools_" + (++count), "tools", null, flc, Link.LINK);
+		FormLink tools = ActionsColumnModel.createLink(uifactory, getTranslator());
 		row.setToolsLink(tools);
 		tools.setUserObject(row);
 		return row;

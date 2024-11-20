@@ -109,7 +109,7 @@ public class ContextualSubscriptionListController extends FormBasicController im
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		subscribeToggle = uifactory.addToggleButton("command.subscribe", "command.subscribe", null, null, flc);
+		subscribeToggle = uifactory.addToggleButton("command.subscribe", "command.subscribe", translate("on"), translate("off"), flc);
 		subscribeToggle.addActionListener(FormEvent.ONCHANGE);
 		flc.put("toggle", subscribeToggle.getComponent());
 
@@ -119,6 +119,7 @@ public class ContextualSubscriptionListController extends FormBasicController im
 		flc.put("helpLink", helpPageLink);
 
 		FormLink toolsLink = uifactory.addFormLink("tools_Link", "tools", "", null, flc, Link.NONTRANSLATED);
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions o_icon-fws");
 		flc.put("toolsLink", toolsLink.getComponent());
 

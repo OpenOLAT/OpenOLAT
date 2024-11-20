@@ -47,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -223,20 +224,23 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
-		DefaultFlexiColumnModel descFlexiColumnModel = new DefaultFlexiColumnModel(TDCols.desc.i18nKey(), TDCols.desc.ordinal());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title));
+		DefaultFlexiColumnModel descFlexiColumnModel = new DefaultFlexiColumnModel(TDCols.desc);
 		descFlexiColumnModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(descFlexiColumnModel);
 		fileExistsRenderer = new WarningFlexiCellRenderer();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal(), fileExistsRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.author.i18nKey(), TDCols.author.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file, fileExistsRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.author));
 
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.edit.i18nKey(), TDCols.edit.ordinal(), "editEntry",
-					new StaticFlexiCellRenderer("", "editEntry", "o_icon o_icon-lg o_icon_edit", null, translate("edit"))));
-			DefaultFlexiColumnModel toolsFlexiColumnModel = new DefaultFlexiColumnModel(TDCols.toolsLink.i18nKey(), TDCols.toolsLink.ordinal());
-			toolsFlexiColumnModel.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(toolsFlexiColumnModel);
+			DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel(TDCols.edit);
+			editCol.setCellRenderer(new StaticFlexiCellRenderer(null, "editEntry", null, "o_icon o_icon-lg o_icon-fw o_icon_edit", translate("edit")));
+			editCol.setIconHeader("o_icon o_icon-lg o_icon-fw o_icon_edit");
+			editCol.setAlwaysVisible(true);
+			editCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(editCol);
+			
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(TDCols.toolsLink));
 		}
 
 		taskModel = new TaskDefinitionTableModel(columnsModel);
@@ -296,7 +300,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 						documentLink.setUserObject(item);
 					}
 				}
-				toolsLink = uifactory.addFormLink("tools_" + (++linkCounter), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);
+				toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			}
 			TaskDefinitionRow row = new TaskDefinitionRow(def, author, downloadLink, openLink, documentLink, toolsLink);
 			rows.add(row);

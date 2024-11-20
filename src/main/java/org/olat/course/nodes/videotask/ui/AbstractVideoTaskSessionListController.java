@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableClassicRenderer;
@@ -99,7 +100,6 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 	private final TooledStackedPanel stackPanel;
 	protected VideoTaskAssessmentDetailsTableModel tableModel;
 	
-	private int count = 0;
 	protected final boolean showSessionParticipant;
 	protected final int rounding;
 	protected final Float maxScore;
@@ -191,16 +191,13 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DetailsCols.duration, new DurationFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DetailsCols.scorePercent, new PercentCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DetailsCols.play.i18nHeaderKey(), DetailsCols.play.ordinal(), "play",
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer(null, "play", false, false, "", "o_icon o_icon_video_play", null), 
-						null)));
+		DefaultFlexiColumnModel playColumn = new DefaultFlexiColumnModel(DetailsCols.play);
+		playColumn.setIconHeader("o_icon o_icon-lg o_icon_video_play");
+		playColumn.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, "play", false, false, "",
+				"o_icon o_icon-lg o_icon_video_play", translate("play")), null));
+		columnsModel.addFlexiColumnModel(playColumn);
 		
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(DetailsCols.tools);
-		toolsCol.setAlwaysVisible(true);
-		toolsCol.setExportable(false);
-		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fw o_icon-lg");
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(DetailsCols.tools));
 		
 		tableModel = new VideoTaskAssessmentDetailsTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
@@ -324,9 +321,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		String fullName = userManager.getUserDisplayName(taskSession.getIdentity());
 		VideoTaskSessionRow row = new VideoTaskSessionRow(taskSession, taskSession.getIdentity(), fullName, scoring, categoryScoring);
 		
-		FormLink tools = uifactory.addFormLink("tools_" + (++count), "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		tools.setIconLeftCSS("o_icon o_icon_actions o_icon-fw o_icon-lg");
-		tools.setAriaLabel(translate("tools"));
+		FormLink tools = ActionsColumnModel.createLink(uifactory, getTranslator());
 		row.setToolsButton(tools);
 		tools.setUserObject(row);
 		tools.setVisible(!userCourseEnv.isCourseReadOnly());

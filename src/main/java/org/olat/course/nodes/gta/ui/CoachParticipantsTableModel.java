@@ -130,7 +130,7 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 		numOfSubmissionDocs("table.header.num.submissionDocs"),
 		assessmentStatus("table.header.assessmentStatus"),
 		coachAssignment("table.header.coach.assignment"),
-		tools("table.header.tools"),
+		tools("action.more"),
 		evaluationForm("table.header.evaluation.form");
 		
 		private final String i18nKey;

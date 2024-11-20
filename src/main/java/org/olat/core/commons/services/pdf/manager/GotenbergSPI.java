@@ -112,8 +112,9 @@ public class GotenbergSPI extends AbstractPdfSPI {
 			post.addHeader("Accept", "application/pdf");
 			post.addHeader("Accept-Language", "en");
 			
+			String url = Settings.getServerContextPathURI() + "/pdfd/" + key + "/" + rootFilename;
 			MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create()
-					.addTextBody("url", Settings.getServerContextPathURI() + "/pdfd/" + key + "/" + rootFilename)
+					.addTextBody("url", url)
 					.addTextBody("preferCssPageSize", "true")
 					.addTextBody("paperWidth", "8.27")
 					.addTextBody("paperHeight", "11.7");

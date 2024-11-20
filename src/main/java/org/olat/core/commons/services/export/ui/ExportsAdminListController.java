@@ -38,12 +38,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -133,11 +133,7 @@ public class ExportsAdminListController extends FormBasicController {
 				new VFSSizeCellRenderer(false)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.status,
 				new ExportStatusRenderer(getTranslator())));
-		
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ExportsCols.tools);
-		toolsColumn.setExportable(false);
-		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fw o_icon-lg");
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(ExportsCols.tools));
 		
 		tableModel = new ExportsListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "list", tableModel, 24, false, getTranslator(), formLayout);
@@ -193,8 +189,7 @@ public class ExportsAdminListController extends FormBasicController {
 		String type = getTranslatedType(export);
 		ExportRow row = new ExportRow(export, type, creatorFullName);
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fw o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		row.setToolsButton(toolsLink);
 		toolsLink.setUserObject(row);
 		

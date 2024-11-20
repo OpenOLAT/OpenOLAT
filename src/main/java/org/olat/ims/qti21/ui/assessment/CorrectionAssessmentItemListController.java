@@ -35,11 +35,11 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -119,7 +119,6 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CorrectionIdentityAssessmentItemNavigationController identityItemCtrl;
 
-	private int counter = 0;
 	private LockResult lockResult;
 	private final boolean anonymous;
 	private final CorrectionOverviewModel model;
@@ -162,9 +161,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.corrected, "corrected", new CorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.notCorrected, "notCorrected", new NotCorrectedFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ItemCols.toReview, "toReview", new ToReviewFlexiCellRenderer()));
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(ItemCols.tools);
-		toolsCol.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(ItemCols.tools));
 		
 		tableModel = new CorrectionAssessmentItemTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
@@ -204,8 +201,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 			ManifestMetadataBuilder metadata = model.getMetadata(itemRef);
 			
-			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			CorrectionAssessmentItemRow itemRow = new CorrectionAssessmentItemRow(itemRef, assessmentItem, metadata, toolsLink);
 			toolsLink.setUserObject(itemRow);
 			itemRows.add(itemRow);

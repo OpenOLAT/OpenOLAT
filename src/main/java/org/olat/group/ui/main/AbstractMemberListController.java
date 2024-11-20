@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -57,7 +58,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
@@ -478,10 +478,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.groups, groupRenderer));
 		}
 		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(Cols.tools);
-		toolsCol.setExportable(false);
-		toolsCol.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 		return defaultSortKey;
 	}
 
@@ -1110,13 +1107,13 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	}
 	
 	protected void forgeLinks(MemberRow row) {
-		FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 		
 		FormLink chatLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "im", "", null, null, Link.NONTRANSLATED);
 		chatLink.setIconLeftCSS("o_icon o_icon_status_unavailable");
+		chatLink.setTitle(translate("open.chat"));
 		chatLink.setUserObject(row);
 		row.setChatLink(chatLink);
 	}

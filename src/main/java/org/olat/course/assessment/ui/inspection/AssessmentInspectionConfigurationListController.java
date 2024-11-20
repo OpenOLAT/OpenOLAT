@@ -32,12 +32,13 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -118,17 +119,14 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 				new YesNoCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InspectionCols.usages));
 		
-		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit", "", "edit", "o_icon_edit o_icon-fw o_icon-lg");
-		editCol.setIconHeader("o_icon o_icon_edit o_icon-fw o_icon-lg");
-		editCol.setHeaderTooltip(translate("edit"));
+		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel(InspectionCols.edit);
+		editCol.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon-fw o_icon_edit", translate("edit")));
+		editCol.setIconHeader("o_icon o_icon-lg o_icon-fw o_icon_edit");
+		editCol.setAlwaysVisible(true);
 		editCol.setExportable(false);
-		editCol.setColumnCssClass("o_col_sticky_right o_col_action");
 		columnsModel.addFlexiColumnModel(editCol);
 		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(InspectionCols.tools);
-		toolsCol.setExportable(false);
-		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fw o_icon-lg");
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(InspectionCols.tools));
 
 		tableModel = new AssessmentInspectionConfigurationListModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -162,11 +160,11 @@ public class AssessmentInspectionConfigurationListController extends FormBasicCo
 		
 		FormLink infosButton = uifactory.addFormLink("infos_" + (++counter), "infos", "", tableEl, Link.LINK | Link.NONTRANSLATED);
 		infosButton.setIconLeftCSS("o_icon o_icon-fw o_icon_description");
+		infosButton.setTitle(translate("show.results.display"));
 		infosButton.setUserObject(row);
 		row.setInfosButton(infosButton);
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		row.setToolsButton(toolsLink);
 		toolsLink.setUserObject(row);
 		

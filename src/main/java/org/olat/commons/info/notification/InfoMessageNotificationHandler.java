@@ -132,7 +132,7 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 						Identity modifierIdent = info.getModifier();
 						String modifiedDesc = translator.translate("notifications.entry.edited", info.getTitle(), NotificationHelper.getFormatedName(modifierIdent));
 						Date modifiedDateInfo = info.getModificationDate();
-						SubscriptionListItem modifiedSubListItem = new SubscriptionListItem(modifiedDesc + "wer", tooltip, urlToSend, infoBusinessPath, modifiedDateInfo, CSS_CLASS_ICON);
+						SubscriptionListItem modifiedSubListItem = new SubscriptionListItem(modifiedDesc, tooltip, urlToSend, infoBusinessPath, modifiedDateInfo, CSS_CLASS_ICON);
 						si.addSubscriptionListItem(modifiedSubListItem);
 					}
 				}

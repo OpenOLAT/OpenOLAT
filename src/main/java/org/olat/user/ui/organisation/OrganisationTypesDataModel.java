@@ -61,7 +61,6 @@ implements SortableFlexiTableDataModel<OrganisationTypeRow> {
 			case identifier: return row.getIdentifier();
 			case displayName: return row.getDisplayName();
 			case externalId: return row.getExternalId();
-			case tools: return row.getToolsLink();
 			default: return null;
 		}
 	}
@@ -70,8 +69,7 @@ implements SortableFlexiTableDataModel<OrganisationTypeRow> {
 		key("table.header.key"),
 		identifier("table.type.header.type.identifier"),
 		displayName("table.type.header.type.displayName"),
-		externalId("table.type.header.type.externalId"),
-		tools("table.header.tools");
+		externalId("table.type.header.type.externalId");
 		
 		private final String i18nHeaderKey;
 		

@@ -64,7 +64,7 @@ public class CatalogLauncherDataModel extends DefaultFlexiTableDataModel<Catalog
 		details("admin.launcher.details"),
 		enabled("admin.launcher.catalog"),
 		webEnabled("admin.launcher.web.catalog"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

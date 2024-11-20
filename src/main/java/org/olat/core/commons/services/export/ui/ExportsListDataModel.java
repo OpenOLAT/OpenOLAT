@@ -87,7 +87,7 @@ implements SortableFlexiTableDataModel<ExportRow> {
 		creator("table.header.creator"),
 		archiveSize("table.header.size"),
 		status("table.header.status"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

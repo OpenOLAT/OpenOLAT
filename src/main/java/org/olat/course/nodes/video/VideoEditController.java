@@ -419,6 +419,7 @@ class VideoOptionsForm extends FormBasicController {
 		videoElements.select(VideoEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_QUESTIONS, true));
 		videoElements.select(VideoEditController.CONFIG_KEY_SEGMENTS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_SEGMENTS, false));
 		videoElements.select(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS, false));
+		videoElements.setElementCssClass("o_sel_video_elements");
 	}
 	
 	private void initOptionsForm(FormItemContainer formLayout) {

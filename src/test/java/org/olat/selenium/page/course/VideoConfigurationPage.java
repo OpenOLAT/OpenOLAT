@@ -22,6 +22,7 @@ package org.olat.selenium.page.course;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -79,7 +80,27 @@ public class VideoConfigurationPage {
 		// Close blue box
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
-		
+	}
+
+	public VideoConfigurationPage selectVideoResource(String resourceTitle) {
+		By chooseVideoButton = By.className("o_sel_video_choose_repofile");
+		CourseEditorPageFragment fragment = new CourseEditorPageFragment(browser);
+		fragment.chooseResource(chooseVideoButton, resourceTitle);
+		return this;
+	}
+	
+	public VideoConfigurationPage selectSegmentsOption() {
+		By segmentsBy = By.cssSelector(".o_sel_video_elements input[name='videoElements'][value='segments']");
+		WebElement segmentsEl = browser.findElement(segmentsBy);
+		OOGraphene.check(segmentsEl, Boolean.TRUE);
+		return this;
+	}
+	
+	public VideoConfigurationPage save() {
+		By saveBy = By.cssSelector(".o_sel_video_configuration_form button.btn.btn-primary");
+		OOGraphene.click(saveBy, browser);
+		OOGraphene.scrollTop(browser);
+		return this;
 	}
 
 }

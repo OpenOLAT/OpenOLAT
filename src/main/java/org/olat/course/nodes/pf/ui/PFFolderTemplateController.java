@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -61,7 +62,6 @@ import org.olat.modules.ModuleConfiguration;
 public class PFFolderTemplateController extends FormBasicController {
 
     private static final String TEMPLATE_CREATE_SUBFOLDER = "table.elementCreateSubFolder";
-    private static final String TEMPLATE_TOOLS_LINK = "tools";
     private final List<PFFolderTemplateRow> initBoxes = new ArrayList<>(3);
     private final Map<String, PFFolderTemplateRow> keyToRows = new HashMap<>();
     private final PFCourseNode pfNode;
@@ -94,7 +94,7 @@ public class PFFolderTemplateController extends FormBasicController {
         tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PFFolderTemplateCols.folderName, treeNodeRenderer));
         tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PFFolderTemplateCols.numOfChildren));
         tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PFFolderTemplateCols.createSubFolder));
-        tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PFFolderTemplateCols.toolsLink));
+        tableColumnModel.addFlexiColumnModel(new ActionsColumnModel(PFFolderTemplateCols.toolsLink));
 
         tableDataModel = new PFFolderTemplateTreeTableModel(tableColumnModel);
 
@@ -108,7 +108,7 @@ public class PFFolderTemplateController extends FormBasicController {
         if (source instanceof FormLink) {
             FormLink link = (FormLink) source;
             String cmd = link.getCmd();
-            if (TEMPLATE_TOOLS_LINK.equals(cmd)) {
+            if ("tools".equals(cmd)) {
                 doOpenTools(ureq, link);
             }
             if (TEMPLATE_CREATE_SUBFOLDER.equals(cmd)) {
@@ -161,8 +161,7 @@ public class PFFolderTemplateController extends FormBasicController {
 
     private PFFolderTemplateRow forgeRow(String folderName, String folderPath) {
         FormLink createSubFolderLink = uifactory.addFormLink("subFolderLink_" + folderPath, TEMPLATE_CREATE_SUBFOLDER, TEMPLATE_CREATE_SUBFOLDER, null, null, Link.LINK);
-        FormLink toolsLink = uifactory.addFormLink("tools_" + folderPath, TEMPLATE_TOOLS_LINK, "", null, null, Link.NONTRANSLATED);
-        toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+        FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
         PFFolderTemplateRow row = new PFFolderTemplateRow(folderName, toolsLink, createSubFolderLink, getTranslator());
         createSubFolderLink.setUserObject(row);
         toolsLink.setUserObject(row);
@@ -338,7 +337,7 @@ public class PFFolderTemplateController extends FormBasicController {
             super(ureq, wControl);
             this.folderToDelete = folderToDelete;
 
-            mainVC = createVelocityContainer(TEMPLATE_TOOLS_LINK);
+            mainVC = createVelocityContainer("tools");
 
             List<String> links = new ArrayList<>(2);
 

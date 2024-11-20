@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
@@ -156,10 +157,13 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 			columnsModel.addFlexiColumnModel(newPassedColumn);
 		}
 		
-		DefaultFlexiColumnModel userVisibilityColumn = new DefaultFlexiColumnModel(GradeChangeCols.userVisibility, new UserVisibilityCellRenderer(false));
-		userVisibilityColumn.setIconHeader("o_icon o_icon-fw o_icon_results_hidden");
-		columnsModel.addFlexiColumnModel(userVisibilityColumn);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.status, new AssessmentStatusCellRenderer(getLocale())));
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
+		if (Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode()) {
+			DefaultFlexiColumnModel userVisibilityColumn = new DefaultFlexiColumnModel(GradeChangeCols.userVisibility, new UserVisibilityCellRenderer(false));
+			userVisibilityColumn.setIconHeader("o_icon o_icon-fw o_icon_results_hidden");
+			columnsModel.addFlexiColumnModel(userVisibilityColumn);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeChangeCols.status, new AssessmentStatusCellRenderer(getLocale())));
+		}
 		
 		dataModel = new GradeChangeTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);

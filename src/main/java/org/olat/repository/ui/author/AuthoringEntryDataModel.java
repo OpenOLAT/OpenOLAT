@@ -26,6 +26,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -176,7 +177,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		return null;
 	}
 	
-	public enum Cols {
+	public enum Cols implements FlexiColumnDef {
 		key("table.header.key"),
 		ac("table.header.ac"),
 		type("table.header.typeimg"),
@@ -219,6 +220,11 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		}
 		
 		public String i18nKey() {
+			return i18nKey;
+		}
+		
+		@Override
+		public String i18nHeaderKey() {
 			return i18nKey;
 		}
 	}

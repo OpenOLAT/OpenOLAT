@@ -173,7 +173,7 @@ public class CertificateAndEfficiencyStatementListModel
 		recertification("table.header.certificate.validity", true), 
 		deleteEfficiencyStatement("table.action.delete", false),
 		artefact("table.header.artefact", false),
-		tools("table.header.actions", false);
+		tools("action.more", false);
 
 		private final String i18n;
 		private final boolean sortable;

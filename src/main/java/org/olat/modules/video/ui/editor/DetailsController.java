@@ -55,24 +55,24 @@ public class DetailsController extends BasicController {
 
 		chaptersController = new ChaptersController(ureq, wControl, repositoryEntry, durationInSeconds);
 		listenTo(chaptersController);
-		tabbedPane.addTab(translate("video.editor.panes.chapters"), chaptersController);
+		tabbedPane.addTab(translate("video.editor.panes.chapters"), "o_sel_video_chapters",  chaptersController);
 
 		annotationsController = new AnnotationsController(ureq, wControl, repositoryEntry, durationInSeconds,
 				videoElementId);
 		listenTo(annotationsController);
-		tabbedPane.addTab(translate("video.editor.panes.annotations"), annotationsController);
+		tabbedPane.addTab(translate("video.editor.panes.annotations"), "o_sel_video_annotations", annotationsController);
 
 		segmentsController = new SegmentsController(ureq, wControl, repositoryEntry, durationInSeconds, videoElementId, restrictedEdit);
 		listenTo(segmentsController);
-		tabbedPane.addTab(translate("video.editor.panes.segments"), segmentsController);
+		tabbedPane.addTab(translate("video.editor.panes.segments"), "o_sel_video_segments", segmentsController);
 
 		commentsController = new CommentsController(ureq, wControl, repositoryEntry, durationInSeconds, videoElementId);
 		listenTo(commentsController);
-		tabbedPane.addTab(translate("video.editor.panes.comments"), commentsController);
+		tabbedPane.addTab(translate("video.editor.panes.comments"), "o_sel_video_comments", commentsController);
 
 		questionsController = new QuestionsController(ureq, wControl, repositoryEntry, durationInSeconds, videoElementId);
 		listenTo(questionsController);
-		tabbedPane.addTab(translate("video.editor.panes.quiz"), questionsController);
+		tabbedPane.addTab(translate("video.editor.panes.quiz"), "o_sel_video_questions", questionsController);
 
 		mainVC.put("tabbedPane", tabbedPane);
 

@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -177,16 +178,19 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.title.i18nKey(), SolCols.title.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.file.i18nKey(), SolCols.file.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.author.i18nKey(), SolCols.author.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.file));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.author));
 		
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.edit.i18nKey(), SolCols.edit.ordinal(), "editEntry",
-					new StaticFlexiCellRenderer("", "editEntry", "o_icon o_icon-lg o_icon_edit", null, translate("edit"))));
-			DefaultFlexiColumnModel toolsFlexiColumnModel = new DefaultFlexiColumnModel(SolCols.toolsLink.i18nKey(), SolCols.toolsLink.ordinal());
-			toolsFlexiColumnModel.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(toolsFlexiColumnModel);
+			DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel(SolCols.edit);
+			editCol.setCellRenderer(new StaticFlexiCellRenderer(null, "editEntry", null, "o_icon o_icon-lg o_icon-fw o_icon_edit", translate("edit")));
+			editCol.setIconHeader("o_icon o_icon-lg o_icon-fw o_icon_edit");
+			editCol.setAlwaysVisible(true);
+			editCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(editCol);
+			
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(SolCols.toolsLink));
 		}
 
 		solutionModel = new SolutionTableModel(columnsModel);
@@ -246,7 +250,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 						documentLink.setUserObject(solution);
 					}
 				}
-				toolsLink = uifactory.addFormLink("tools_" + (++linkCounter), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);
+				toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			}
 
 			rows.add(new SolutionRow(solution, author, downloadLink, openLink, documentLink, toolsLink));

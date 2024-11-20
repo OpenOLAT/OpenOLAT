@@ -76,7 +76,7 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 		identifier("table.header.identifier"),
 		externalId("table.header.external.id"),
 		typeIdentifier("table.header.type.identifier"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

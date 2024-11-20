@@ -315,7 +315,6 @@ public class CourseEditorPageFragment {
 		
 		By undeleteButtonBy = By.xpath("//a[contains(@onclick,'undeletenode.button')]");
 		OOGraphene.waitElement(undeleteButtonBy, browser);
-		
 		return this;
 	}
 	

@@ -35,13 +35,14 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -83,7 +84,6 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	private OrganisationOverviewController organisationOverviewCtrl;
 	private ConfirmOrganisationDeleteController confirmDeleteCtrl;
 	
-	private int counter = 0;
 	private boolean modelDirty = false;
 	
 	@Autowired
@@ -114,15 +114,15 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.identifier, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrganisationCols.externalId, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.typeIdentifier));
-		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("zoom", translate("zoom"), "tt-focus");
+		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("zoom", -1);
+		selectColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "tt-focus", null, "o_icon o_icon-fw o_icon_enlarge", translate("show.suborganisation")));
+		selectColumn.setIconHeader("o_icon o_icon_enlarge");
+		selectColumn.setHeaderLabel(translate("show.suborganisation"));
 		selectColumn.setExportable(false);
 		selectColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(selectColumn);
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(OrganisationCols.tools);
-		toolsColumn.setExportable(false);
-		toolsColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsColumn);
-
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(OrganisationCols.tools));
+		
 		model = new OrganisationTreeDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
@@ -167,9 +167,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 	}
 	
 	private OrganisationRow forgeRow(Organisation organisation) {
-		//tools
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		OrganisationRow row = new OrganisationRow(organisation, toolsLink);
 		toolsLink.setUserObject(row);
 		return row;

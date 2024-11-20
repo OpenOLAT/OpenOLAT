@@ -76,8 +76,8 @@ public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDat
 		color("table.header.color"),
 		visible("table.header.visible"),
 		aggregated("table.header.visible"),
-		feed("table.header.url"),
-		tools("table.header.tools");
+		feed("table.header.ical"),
+		tools("action.more");
 		
 		private final String i18nKey;
 		

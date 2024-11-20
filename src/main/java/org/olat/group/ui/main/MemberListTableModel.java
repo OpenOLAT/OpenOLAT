@@ -138,7 +138,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		role("table.header.role"),
 		groups("table.header.groups"),
 		online("table.header.online"),
-		tools("tools"),
+		tools("action.more"),
 		curriculumDisplayName("table.header.curriculum"),
 		rootCurriculumElementIdentifier("table.header.curriculum.root.identifier"),
 		rootCurriculumElementDisplayName("table.header.curriculum.root.displayname"),

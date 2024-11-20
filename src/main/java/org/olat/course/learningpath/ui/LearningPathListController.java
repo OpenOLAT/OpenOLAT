@@ -33,11 +33,11 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -110,7 +110,6 @@ public class LearningPathListController extends FormBasicController implements T
 	private static final String KEY_EXCLUDED_SHOW = "excluded.show";
 	private static final String KEY_EXCLUDED_HIDE = "excluded.hide";
 	private static final String CMD_RESET_FULLY_ASSESSED = "resetFullyAssessed";
-	private static final String CMD_TOOLS = "tools";
 	private static final String CMD_END_DATE = "endDate";
 	private static final String CMD_OBLIGATION = "obligation";
 	
@@ -187,6 +186,7 @@ public class LearningPathListController extends FormBasicController implements T
 		// Progress icon
 		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer(courseEntry, getLocale(), true, false);
 		DefaultFlexiColumnModel progressModel = new DefaultFlexiColumnModel(LearningPathCols.progress, progressRenderer);
+		progressModel.setIconHeader("o_icon o_icon-lg o_lp_done");
 		progressModel.setExportable(false);
 		columnsModel.addFlexiColumnModel(progressModel);
 		
@@ -211,14 +211,8 @@ public class LearningPathListController extends FormBasicController implements T
 		columnsModel.addFlexiColumnModel(lastVisitColumnModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.end));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.fullyAssessedDate));
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(LearningPathCols.tools));
 		
-		StickyActionColumnModel toolsColumnModel = new StickyActionColumnModel(LearningPathCols.tools);
-		toolsColumnModel.setSortable(false);
-		toolsColumnModel.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsColumnModel.setExportable(false);
-		toolsColumnModel.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsColumnModel);
-
 		dataModel = new LearningPathDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_lp_list");
@@ -297,8 +291,7 @@ public class LearningPathListController extends FormBasicController implements T
 	
 	private void forgeTools(LearningPathRow row) {
 		if(canEdit) {
-			FormLink toolsLink = uifactory.addFormLink("o_tools_" + counter.getAndIncrement(), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fw o_icon-lg");
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}
@@ -428,7 +421,7 @@ public class LearningPathListController extends FormBasicController implements T
 				doEditEndDate(ureq, link);
 			} else if (CMD_OBLIGATION.equals(link.getCmd()) && link.getUserObject() instanceof CourseNode node) {
 				doEditObligation(ureq, node, link);
-			} else if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof LearningPathRow row) {
+			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof LearningPathRow row) {
 				doOpenTools(ureq, row, link);
 			}
 		}
