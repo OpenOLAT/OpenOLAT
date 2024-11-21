@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -34,6 +33,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
 /**
@@ -50,23 +52,23 @@ public class EditTaskController extends FormBasicController {
 
 	private final boolean replaceFile;
 	private final TaskDefinition task;
-	private final File taskContainer;
+	private final VFSContainer taskContainer;
 
 	private final String filenameToReplace;
 	private final List<TaskDefinition> currentDefinitions;
 
-	public EditTaskController(UserRequest ureq, WindowControl wControl, File taskContainer,
+	public EditTaskController(UserRequest ureq, WindowControl wControl, VFSContainer taskContainer,
 			List<TaskDefinition> currentDefinitions) {
 		this(ureq, wControl, new TaskDefinition(), taskContainer, currentDefinitions, false);
 	}
 
-	public EditTaskController(UserRequest ureq, WindowControl wControl, TaskDefinition task, File taskContainer,
+	public EditTaskController(UserRequest ureq, WindowControl wControl, TaskDefinition task, VFSContainer taskContainer,
 			List<TaskDefinition> currentDefinitions) {
 		this(ureq, wControl, task, taskContainer, currentDefinitions, true);
 	}
 
 	public EditTaskController(UserRequest ureq, WindowControl wControl,
-			TaskDefinition task, File taskContainer,
+			TaskDefinition task, VFSContainer taskContainer,
 			List<TaskDefinition> currentDefinitions, boolean replaceFile) {
 		super(ureq, wControl);
 		this.replaceFile = replaceFile;
@@ -93,9 +95,9 @@ public class EditTaskController extends FormBasicController {
 		fileEl.setMandatory(true);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		if(StringHelper.containsNonWhitespace(task.getFilename())) {
-			File currentFile = new File(taskContainer, task.getFilename());
-			if(currentFile.exists()) {
-				fileEl.setInitialFile(currentFile);
+			VFSItem currentFile = taskContainer.resolve(task.getFilename());
+			if(currentFile.exists() && currentFile instanceof LocalFileImpl vfsFile) {
+				fileEl.setInitialFile(vfsFile.getBasefile());
 			}
 		}
 		
@@ -133,8 +135,8 @@ public class EditTaskController extends FormBasicController {
 			allOk = false;
 		} else if(!replaceFile && fileEl.getUploadFile() != null) {
 			String filename = fileEl.getUploadFileName();
-			File target = new File(taskContainer, filename);
-			if(target.exists()) {
+			VFSItem target = taskContainer.resolve(filename);
+			if(target != null && target.exists()) {
 				fileEl.setErrorKey("error.file.exists", filename);
 				allOk &= false;
 			}
@@ -170,9 +172,9 @@ public class EditTaskController extends FormBasicController {
 				}
 
 				if(usage == 1) {
-					File currentFile = new File(taskContainer, task.getFilename());
-					if(currentFile.exists()) {
-						FileUtils.deleteFile(currentFile);
+					VFSItem currentFile = taskContainer.resolve(task.getFilename());
+					if(currentFile != null && currentFile.exists()) {
+						currentFile.delete();
 					}
 				}
 			}
