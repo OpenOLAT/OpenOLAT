@@ -599,16 +599,20 @@ public class InfoDisplayController extends FormBasicController {
 			msg.setSendMailTo(sendMailTo != null ? sendMailTo.toString() : null);
 
 			// group members
-			handleGroupOptions(msg, selectedGroupOptions, identities);
+			addIdentitiesFromGroupOptions(selectedGroupOptions, identities);
 
 			// curriculum members
-			handleCurriculumOptions(msg, selectedCurriculumOptions, identities);
+			addIdentitiesFromCurriculumOptions(selectedCurriculumOptions, identities);
 
 			if (msg.isPublished()) {
 				msg = infoMessageManager.sendInfoMessage(msg, sendMailFormatter, ureq.getLocale(), ureq.getIdentity(), identities);
 			} else {
 				msg = infoMessageManager.saveInfoMessageAndNotify(msg);
 			}
+
+			handleGroupOptions(msg, selectedGroupOptions);
+			handleCurriculumOptions(msg, selectedCurriculumOptions);
+
 			return msg;
 		}
 
@@ -625,13 +629,15 @@ public class InfoDisplayController extends FormBasicController {
 			}
 		}
 
-		private void handleGroupOptions(InfoMessage msg, Set<String> selectedGroupOptions, Set<Identity> identities) {
+		private void addIdentitiesFromGroupOptions(Set<String> selectedGroupOptions, Set<Identity> identities) {
 			for (SendMailOption option : groupsMailOptions) {
 				if (selectedGroupOptions != null && selectedGroupOptions.contains(option.getOptionKey())) {
 					identities.addAll(option.getSelectedIdentities());
 				}
 			}
+		}
 
+		private void handleGroupOptions(InfoMessage msg, Set<String> selectedGroupOptions) {
 			// create link entries between infoMessage and groups
 			Set<InfoMessageToGroup> infoMessageToGroups = msg.getGroups() != null ? msg.getGroups() : new HashSet<>();
 			// check if group already is saved for given message, if not then create an entry
@@ -646,27 +652,34 @@ public class InfoDisplayController extends FormBasicController {
 			// if group gets deselected, delete connection to infoMessage
 			if (!infoMessageToGroups.isEmpty()) {
 				for (InfoMessageToGroup infoGroup : infoMessageToGroups) {
-					if (!selectedGroupOptions.contains("send-mail-group-" + infoGroup.getBusinessGroup().getKey().toString())) {
+					if (!selectedGroupOptions
+							.contains("send-mail-group-" + infoGroup.getBusinessGroup().getKey().toString())) {
 						infoMessageManager.deleteInfoMessageToGroup(infoGroup);
 					}
 				}
 			}
 		}
 
-		private void handleCurriculumOptions(InfoMessage msg, Set<String> selectedCurriculumOptions, Set<Identity> identities) {
+		private void addIdentitiesFromCurriculumOptions(Set<String> selectedCurriculumOptions, Set<Identity> identities) {
 			for (SendMailOption option : curriculaMailOptions) {
 				if (selectedCurriculumOptions != null && selectedCurriculumOptions.contains(option.getOptionKey())) {
 					identities.addAll(option.getSelectedIdentities());
 				}
 			}
+		}
 
+		private void handleCurriculumOptions(InfoMessage msg, Set<String> selectedCurriculumOptions) {
 			// create link entries between infoMessage and curricula
-			Set<InfoMessageToCurriculumElement> infoMessageToCurriculumElements = msg.getCurriculumElements() != null ? msg.getCurriculumElements() : new HashSet<>();
+			Set<InfoMessageToCurriculumElement> infoMessageToCurriculumElements = msg.getCurriculumElements() != null
+					? msg.getCurriculumElements()
+					: new HashSet<>();
+
 			// check if curriculumElement already is saved for given message, if not then create an entry
 			for (SendMailOption option : curriculaMailOptions) {
 				if (selectedCurriculumOptions.contains(option.getOptionKey())
 						&& (option instanceof SendMailCurriculumOption curriculumOption)
-						&& (infoMessageToCurriculumElements.stream().noneMatch(g -> g.getCurriculumElement().equals(curriculumOption.getCurriculumElement())))) {
+						&& (infoMessageToCurriculumElements.stream()
+						.noneMatch(g -> g.getCurriculumElement().equals(curriculumOption.getCurriculumElement())))) {
 					infoMessageManager.createInfoMessageToCurriculumElement(msg, curriculumOption.getCurriculumElement());
 				}
 			}
@@ -674,7 +687,8 @@ public class InfoDisplayController extends FormBasicController {
 			// if curriculumElement gets deselected, delete connection to infoMessage
 			if (!infoMessageToCurriculumElements.isEmpty()) {
 				for (InfoMessageToCurriculumElement infoCurEl : infoMessageToCurriculumElements) {
-					if (!selectedCurriculumOptions.contains("send-mail-curriculum-" + infoCurEl.getCurriculumElement().getKey().toString())) {
+					if (!selectedCurriculumOptions
+							.contains("send-mail-curriculum-" + infoCurEl.getCurriculumElement().getKey().toString())) {
 						infoMessageManager.deleteInfoMessageToCurriculumElement(infoCurEl);
 					}
 				}
