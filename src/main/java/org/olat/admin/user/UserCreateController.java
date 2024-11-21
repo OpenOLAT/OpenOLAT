@@ -307,9 +307,9 @@ class NewUserForm extends FormBasicController {
 			List<OrganisationEmailDomain> emailDomains = organisationService.getEnabledEmailDomains(() -> Long.valueOf(organisationsElement.getSelectedKey()));
 			boolean emailDomainAllowed = organisationService.isEmailDomainAllowed(emailDomains, emailTextElement.getValue());
 			if (!emailDomainAllowed) {
-				organisationsElement.setWarningKey("error.email.domain.not.allowed");
+				emailTextElement.setWarningKey("error.email.domain.not.allowed");
 			} else {
-				organisationsElement.clearWarning();
+				emailTextElement.clearWarning();
 			}
 		}
 	}
