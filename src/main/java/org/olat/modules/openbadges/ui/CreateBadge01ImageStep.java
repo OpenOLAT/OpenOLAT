@@ -273,12 +273,6 @@ public class CreateBadge01ImageStep extends BasicStep {
 				return;
 			}
 
-			if (createContext.needsCustomization()) {
-				setNextStep(new CreateBadge02CustomizationStep(ureq, createContext));
-			} else {
-				setNextStep(new CreateBadge03CriteriaStep(ureq, createContext));
-			}
-			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
