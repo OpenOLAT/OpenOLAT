@@ -32,11 +32,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -53,7 +54,6 @@ import org.olat.modules.video.ui.ChapterEditController;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.repository.RepositoryEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,7 +65,6 @@ public class ChaptersController extends FormBasicController {
 	public static final Event RELOAD_CHAPTERS_EVENT = new Event("video.edit.reload.chapters");
 	private static final String EDIT_ACTION = "edit";
 	private static final String SELECT_ACTION = "select";
-	private static final String TOOLS_COMMAND = "tools";
 
 	private FormLink addChapterButton;
 	private FlexiTableElement chapterTable;
@@ -118,15 +117,7 @@ public class ChaptersController extends FormBasicController {
 	}
 
 	private void addToolLink(ChapterTableRow chapterTableRow) {
-		String toolId = "tool_" + chapterTableRow.hashCode();
-		FormLink toolLink = (FormLink) flc.getFormComponent(toolId);
-		if (toolLink == null) {
-			toolLink = uifactory.addFormLink(toolId, TOOLS_COMMAND, "", chapterTable,
-					Link.LINK | Link.NONTRANSLATED);
-			toolLink.setTranslator(getTranslator());
-			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolLink.setTitle(translate("table.header.chapter.tools"));
-		}
+		FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolLink.setUserObject(chapterTableRow);
 		chapterTableRow.setToolLink(toolLink);
 	}
@@ -140,18 +131,15 @@ public class ChaptersController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableModel.ChapterTableCols.start,
 				SELECT_ACTION));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableModel.ChapterTableCols.text));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableModel.ChapterTableCols.edit.i18nHeaderKey(),
-				translate(ChapterTableModel.ChapterTableCols.edit.i18nHeaderKey()), EDIT_ACTION));
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
-				ChapterTableModel.ChapterTableCols.tools.i18nHeaderKey(),
-				ChapterTableModel.ChapterTableCols.tools.ordinal()
-				);
-		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsColumn.setColumnCssClass("o_icon-fws o_col_sticky_right o_col_action");
-		columnModel.addFlexiColumnModel(toolsColumn);
+		
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
+		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, EDIT_ACTION, null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
+		columnModel.addFlexiColumnModel(editColumn);
+		
+		columnModel.addFlexiColumnModel(new ActionsColumnModel(ChapterTableModel.ChapterTableCols.tools));
 
 		tableModel = new ChapterTableModel(columnModel);
-
 		chapterTable = uifactory.addTableElement(getWindowControl(), "chapters", tableModel,
 				getTranslator(), formLayout);
 		chapterTable.setCustomizeColumns(false);
@@ -243,7 +231,7 @@ public class ChaptersController extends FormBasicController {
 					currentDate
 			);
 			doEdit(ureq, videoChapterTableRow, false);
-		} else if (source instanceof FormLink formLink && TOOLS_COMMAND.equals(formLink.getCmd()) &&
+		} else if (source instanceof FormLink formLink && "tools".equals(formLink.getCmd()) &&
 				formLink.getUserObject() instanceof ChapterTableRow chapterTableRow) {
 			doOpenTools(ureq, chapterTableRow);
 		}

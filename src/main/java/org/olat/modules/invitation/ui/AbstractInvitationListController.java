@@ -38,11 +38,11 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -148,10 +148,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InvitationCols.invitationLink));
 		
 		if(!readOnly) {
-			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(InvitationCols.tools);
-			toolsColumn.setExportable(false);
-			toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			columnsModel.addFlexiColumnModel(toolsColumn);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(InvitationCols.tools));
 		}
 		
 		tableModel = initTableModel(columnsModel);
@@ -232,8 +229,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		
 		FormLink toolsLink = null;
 		if(invitation.getStatus() == InvitationStatusEnum.inactive) {
-			toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		}
 		
 		InvitationRow row = new InvitationRow(invitation, entry, businessGroup, projProject, urlLink, toolsLink);

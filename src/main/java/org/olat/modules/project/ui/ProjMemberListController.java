@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -50,7 +51,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -225,13 +225,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.lastVisitDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.roles));
-		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(MemberCols.tools);
-		toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
-		toolsCol.setAlwaysVisible(true);
-		toolsCol.setSortable(false);
-		toolsCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(MemberCols.tools));
 	}
 	
 	protected void loadModel() {
@@ -277,9 +271,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 	}
 	
 	private void forgeToolsLink(ProjMemberRow row) {
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

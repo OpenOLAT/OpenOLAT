@@ -80,7 +80,7 @@ public class IssuedBadgesTableModel extends DefaultFlexiTableDataModel<IssuedBad
 		issuer("class.issuer"),
 		issuedOn("form.issued.on"),
 		recipient("form.recipient"),
-		tools("table.header.actions");
+		tools("action.more");
 
 		private final String i18nKey;
 

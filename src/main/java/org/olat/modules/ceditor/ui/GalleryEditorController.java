@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
@@ -44,7 +45,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -72,7 +72,6 @@ import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.manager.MediaToPagePartDAO;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
 import org.olat.repository.RepositoryEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -135,32 +134,30 @@ public class GalleryEditorController extends FormBasicController implements Page
 		addImageButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		DefaultFlexiColumnModel upColumn = new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.up.getI18nKey(),
-				GalleryModel.GalleryColumn.up.ordinal(), UP_ACTION, new BooleanCellRenderer(
-				new StaticFlexiCellRenderer(translate("gallery.up"), UP_ACTION), null
-		));
+		DefaultFlexiColumnModel upColumn = new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.up);
+		upColumn.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, UP_ACTION, null,
+				"o_icon o_icon o_icon-lg o_icon_move_up", translate("gallery.up.title")), null));
+		upColumn.setIconHeader("o_icon o_icon o_icon-lg o_icon_move_up");
 		upColumn.setColumnCssClass("o_up");
+		upColumn.setAlwaysVisible(true);
 		columnModel.addFlexiColumnModel(upColumn);
-		DefaultFlexiColumnModel downColumn = new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.down.getI18nKey(),
-				GalleryModel.GalleryColumn.down.ordinal(), DOWN_ACTION, new BooleanCellRenderer(
-				new StaticFlexiCellRenderer(translate("gallery.down"), DOWN_ACTION), null
-		));
+		
+		DefaultFlexiColumnModel downColumn = new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.down);
+		downColumn.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, DOWN_ACTION, null,
+				"o_icon o_icon o_icon-lg o_icon_move_down", translate("gallery.down.title")), null));
+		downColumn.setIconHeader("o_icon o_icon o_icon-lg o_icon_move_down");
 		downColumn.setColumnCssClass("o_down");
+		downColumn.setAlwaysVisible(true);
 		columnModel.addFlexiColumnModel(downColumn);
-		DefaultFlexiColumnModel titleColumn = new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.title.getI18nKey(),
-				GalleryModel.GalleryColumn.title.ordinal());
+		
+		DefaultFlexiColumnModel titleColumn = new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.title);
 		titleColumn.setColumnCssClass("o_gallery_image_title");
 		columnModel.addFlexiColumnModel(titleColumn);
 		columnModel.getColumnModel(columnModel.getColumnCount() - 1).setColumnCssClass("o_gallery_image_title");
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.description.getI18nKey(),
-				GalleryModel.GalleryColumn.description.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.version.getI18nKey(),
-				GalleryModel.GalleryColumn.version.ordinal()));
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(GalleryModel.GalleryColumn.tools.getI18nKey(),
-				GalleryModel.GalleryColumn.tools.ordinal());
-		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsColumn.setColumnCssClass("o_icon-fws o_col_sticky_right o_col_action");
-		columnModel.addFlexiColumnModel(toolsColumn);
+		
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.description));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GalleryModel.GalleryColumn.version));
+		columnModel.addFlexiColumnModel(new ActionsColumnModel(GalleryModel.GalleryColumn.tools));
 
 		tableModel = new GalleryModel(columnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "gallery.images", tableModel, getTranslator(), formLayout);
@@ -215,7 +212,7 @@ public class GalleryEditorController extends FormBasicController implements Page
 						Link.LINK | Link.NONTRANSLATED);
 				toolLink.setTranslator(getTranslator());
 				toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-				toolLink.setTitle(translate("gallery.tools"));
+				toolLink.setTitle(translate("action.more"));
 			}
 			toolLink.setUserObject(galleryRow);
 			galleryRow.setToolLink(toolLink);

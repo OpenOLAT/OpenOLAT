@@ -43,12 +43,12 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -250,12 +250,12 @@ public class GradeSystemEditController extends FormBasicController {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PerformanceClassCols.markPassed));
 			}
 			if (!hasScale && !predefined) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CMD_EDIT, -1, CMD_EDIT,
-						new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit", null)));
+				DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("performance.class.name.edit", -1);
+				editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, CMD_EDIT, null, "o_icon o_icon-lg o_icon_edit", translate("performance.class.name.edit")));
+				editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
+				columnsModel.addFlexiColumnModel(editColumn);
 				
-				StickyActionColumnModel toolsColumn = new StickyActionColumnModel(PerformanceClassCols.tools);
-				toolsColumn.setExportable(false);
-				columnsModel.addFlexiColumnModel(toolsColumn);
+				columnsModel.addFlexiColumnModel(new ActionsColumnModel(PerformanceClassCols.tools));
 			}
 			
 			dataModel = new PerformanceClassDataModel(columnsModel);
@@ -539,8 +539,7 @@ public class GradeSystemEditController extends FormBasicController {
 		markPassedEl.select(onKeys[0], passed);
 		row.setMarkPassedEl(markPassedEl);
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getPosition(), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 		

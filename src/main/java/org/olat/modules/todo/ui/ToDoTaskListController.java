@@ -55,6 +55,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -65,7 +66,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FormItemCollectonFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -343,12 +343,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ToDoTaskCols.deletedBy));
 		}
 		if (isVisible(ToDoTaskCols.tools)) {
-			StickyActionColumnModel toolsCol = new StickyActionColumnModel(ToDoTaskCols.tools);
-			toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
-			toolsCol.setAlwaysVisible(true);
-			toolsCol.setSortable(false);
-			toolsCol.setExportable(false);
-			columnsModel.addFlexiColumnModel(toolsCol);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(ToDoTaskCols.tools));
 		}
 		
 		dataModel = new ToDoTaskDataModel(columnsModel, this, getMaxRows(), getLocale());
@@ -1031,9 +1026,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	private void forgeToolsLink(ToDoTaskRow row) {
 		if (row.canEdit() || row.canCopy() || row.canDelete() || row.canRestore()) {
-			FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
-			toolsLink.setTitle(translate("action.more"));
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}

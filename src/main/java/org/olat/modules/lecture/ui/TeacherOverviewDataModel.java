@@ -95,8 +95,8 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 		location("table.header.location"),
 		teachers("table.header.teachers"),
 		status("table.header.status"),
-		details("table.header.details"),
-		tools("table.header.tools"),
+		details("details"),
+		tools("action.more"),
 		compulsory("table.header.compulsory.long"),
 		assessmentMode("table.header.assessment.mode");
 		

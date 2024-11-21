@@ -52,6 +52,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemList;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -60,7 +61,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -334,12 +334,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 		
 		if (secCallback.canEditTopics()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TopicCols.upDown));
-			
-			StickyActionColumnModel toolsCol = new StickyActionColumnModel(TopicCols.tools);
-			toolsCol.setAlwaysVisible(true);
-			toolsCol.setSortable(false);
-			toolsCol.setExportable(false);
-			columnsModel.addFlexiColumnModel(toolsCol);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(TopicCols.tools));
 		}
 		
 		dataModel = new TBTopicDataModel(columnsModel);
@@ -692,8 +687,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 			return;
 		}
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

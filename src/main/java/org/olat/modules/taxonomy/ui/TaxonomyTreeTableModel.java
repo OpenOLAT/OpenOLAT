@@ -129,7 +129,7 @@ implements FilterableFlexiTableModel  {
 		externalId("table.header.taxonomy.level.externalId"),
 		typeIdentifier("table.header.taxonomy.level.type.identifier"),
 		numOfChildren("table.header.taxonomy.level.num.children"),
-		tools("table.header.actions"),
+		tools("action.more"),
 		order("table.header.taxonomy.level.order"),
 		description("table.header.taxonomy.level.description"),
 		updateWarning("table.header.taxonomy.update.warning", "o_icon o_icon_fw o_icon_warn"),

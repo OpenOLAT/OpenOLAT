@@ -30,11 +30,11 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -74,7 +74,6 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private AssignedReferenceEntryListTableModel tableModel;
 	
-	private int counter = 0;
 	private final Identity grader;
 	
 	private ToolsController toolsCtrl;
@@ -110,12 +109,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 				new GraderAbsenceLeaveCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.recordedMetadataTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GEntryCol.recordedTime));
-		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(GEntryCol.tools);
-		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsCol.setHeaderLabel(translate("action.more"));
-		toolsCol.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(GEntryCol.tools));
 		
 		tableModel = new AssignedReferenceEntryListTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 24, false, getTranslator(), formLayout);
@@ -123,8 +117,6 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "grading-entries-list");
 	}
-
-
 	
 	private void loadModel(boolean reaload) {
 		List<ReferenceEntryWithStatistics> statistics = gradingService.getGradedEntriesWithStatistics(grader);
@@ -139,13 +131,8 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 	private AssignedReferenceEntryRow forgeRow(ReferenceEntryWithStatistics statistics) {
 		AssignedReferenceEntryRow row = new AssignedReferenceEntryRow(statistics);
 		
-		// tools
-		String linkName = "tools-" + counter++;
-		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsLink.setAriaLabel(translate("table.action"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
-		flc.add(linkName, toolsLink);
 		row.setToolsLink(toolsLink);
 		return row;
 	}

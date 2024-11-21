@@ -98,7 +98,7 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
 		open("table.header.recording.open"),
 		publish("table.header.publish"),
 		permanent("table.header.recording.permanent"),
-		tools("table.header.actions"),
+		tools("action.more"),
 		presentation("table.header.recording.type");
 		
 		private final String i18nHeaderKey;

@@ -115,7 +115,7 @@ implements SortableFlexiTableDataModel<UserDisadvantageCompensationRow>, Filtera
 		approvedBy("table.header.approved.by"),
 		approvalDate("table.header.approval.date"),
 		status("table.header.status"),
-		tools("table.header.tools");
+		tools("action.more");
 
 		private final String i18nKey;
 		

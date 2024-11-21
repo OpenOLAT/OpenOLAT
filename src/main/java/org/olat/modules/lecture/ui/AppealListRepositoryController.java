@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -168,8 +169,11 @@ public class AppealListRepositoryController extends FormBasicController {
 				new LectureBlockAppealStatusCellRenderer(getTranslator())));
 		
 		if(secCallback.canApproveAppeal()) {
-			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", translate("table.header.edit"), "edit");
+			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
+			editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+			editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
 			editColumn.setExportable(false);
+			editColumn.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(editColumn);
 		}
 		

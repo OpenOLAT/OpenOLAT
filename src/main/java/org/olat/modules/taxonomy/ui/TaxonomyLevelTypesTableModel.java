@@ -71,7 +71,7 @@ implements SortableFlexiTableDataModel<TaxonomyLevelTypeRow> {
 		displayName("table.header.type.displayName"),
 		allowedAsCompetence("table.header.type.competence.allowed"),
 		allowedAsSubject("table.header.type.subject.allowed"),
-		tools("table.header.actions");
+		tools("action.more");
 		
 		private final String i18nHeaderKey;
 		

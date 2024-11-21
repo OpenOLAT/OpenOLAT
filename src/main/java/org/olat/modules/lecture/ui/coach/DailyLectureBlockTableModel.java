@@ -152,8 +152,8 @@ implements SortableFlexiTableDataModel<DailyLectureBlockRow> {
 		numOfAbsences("table.header.num.absences"),
 		warnings("table.header.absences.warning"),
 		alerts("table.header.absences.alert"),
-		details("table.header.details"),
-		tools("table.header.tools");
+		details("details"),
+		tools("action.more");
 		
 		private final String i18nKey;
 		

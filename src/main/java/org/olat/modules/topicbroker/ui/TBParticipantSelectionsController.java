@@ -32,10 +32,10 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -46,7 +46,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.util.CodeHelper;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TBSelection;
@@ -141,11 +140,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		selectionColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SelectionCols.status, statusRenderer));
 		
 		if (canEditSelections) {
-			StickyActionColumnModel toolsCol = new StickyActionColumnModel(SelectionCols.selectionTools);
-			toolsCol.setAlwaysVisible(true);
-			toolsCol.setSortable(false);
-			toolsCol.setExportable(false);
-			selectionColumnsModel.addFlexiColumnModel(toolsCol);
+			selectionColumnsModel.addFlexiColumnModel(new ActionsColumnModel(SelectionCols.selectionTools));
 		}
 		
 		selectionDataModel = new TBSelectionDataModel(selectionColumnsModel);
@@ -191,8 +186,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 			return;
 		}
 		
-		FormLink selectionToolsLink = uifactory.addFormLink("tools_" + CodeHelper.getRAMUniqueID(), "selectionTools" + toolsSuffix, "", null, null, Link.NONTRANSLATED);
-		selectionToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		FormLink selectionToolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), "selectionTools" + toolsSuffix);
 		selectionToolsLink.setUserObject(row);
 		row.setSelectionToolsLink(selectionToolsLink);
 	}

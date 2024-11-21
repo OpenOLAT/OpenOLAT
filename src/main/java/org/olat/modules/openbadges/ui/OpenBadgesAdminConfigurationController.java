@@ -31,10 +31,10 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -59,7 +59,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class OpenBadgesAdminConfigurationController extends FormBasicController {
-	private static final String CMD_TOOLS = "tools";
 
 	private final SelectionValues enabledKV;
 	private MultipleSelectionElement enabledEl;
@@ -111,11 +110,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LinkedInOrganizationTableModel.Columns.organizationId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LinkedInOrganizationTableModel.Columns.organizationName));
 
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
-				LinkedInOrganizationTableModel.Columns.tools.i18nHeaderKey(),
-				LinkedInOrganizationTableModel.Columns.tools.ordinal()
-		);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(LinkedInOrganizationTableModel.Columns.tools));
 
 		tableModel = new LinkedInOrganizationTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "linkedInOrganizations", tableModel,
@@ -135,20 +130,12 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 		row.setBadgeOrganization(badgeOrganization);
 		row.setOrganizationId(badgeOrganization.getOrganizationKey());
 		row.setOrganizationName(badgeOrganization.getOrganizationValue());
-		addToolLink(row, badgeOrganization);
+		addToolLink(row);
 		return row;
 	}
 
-	private void addToolLink(LinkedInOrganizationRow row, BadgeOrganization badgeOrganization) {
-		String toolId = "tool_" + badgeOrganization.getKey();
-		FormLink toolLink = (FormLink) flc.getFormComponent(toolId);
-		if (toolLink == null) {
-			toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", tableEl,
-					Link.LINK | Link.NONTRANSLATED);
-			toolLink.setTranslator(getTranslator());
-			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolLink.setTitle(translate("table.header.actions"));
-		}
+	private void addToolLink(LinkedInOrganizationRow row) {
+		FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolLink.setUserObject(row);
 		row.setToolLink(toolLink);
 	}
@@ -161,7 +148,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 		} else if (addLinkedInOrganizationButton == source) {
 			doAdd(ureq);
 		} else if (source instanceof FormLink link) {
-			if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof LinkedInOrganizationRow row) {
+			if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof LinkedInOrganizationRow row) {
 				doOpenTools(ureq, link, row);
 			}
 		}
@@ -185,7 +172,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 			cleanUp();
 		} else if (confirmDeleteController == source) {
 			if (DialogBoxUIFactory.isOkEvent(event) && confirmDeleteController.getUserObject() instanceof LinkedInOrganizationRow row) {
-				doDelete(ureq, row);
+				doDelete(row);
 				loadModel();
 			}
 		}
@@ -265,7 +252,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 		confirmDeleteController.setUserObject(row);
 	}
 
-	private void doDelete(UserRequest ureq, LinkedInOrganizationRow row) {
+	private void doDelete(LinkedInOrganizationRow row) {
 		BadgeOrganization badgeOrganization = openBadgesManager.loadLinkedInOrganization(row.getBadgeOrganization().getKey());
 		openBadgesManager.deleteBadgeOrganization(badgeOrganization);
 	}

@@ -58,7 +58,7 @@ public class PerformanceClassDataModel extends DefaultFlexiTableDataModel<Perfor
 		position("performance.class.postion"),
 		name("performance.class.name"),
 		markPassed("performance.class.mark.passed"),
-		tools("table.header.actions");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

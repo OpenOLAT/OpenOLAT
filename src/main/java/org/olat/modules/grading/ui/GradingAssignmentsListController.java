@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -51,7 +52,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -165,7 +165,6 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	private FlexiTableElement tableEl;
 	private GradingAssignmentsTableModel tableModel;
 	
-	private int counter = 0;
 	private Identity grader;
 	private final boolean isManager;
 	private RepositoryEntry testEntry;
@@ -316,19 +315,14 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.passed, new PassedCellRenderer(getLocale())));
 
 		if(secCallback.canGrade()) {
-			StaticFlexiCellRenderer gradeRenderer = new StaticFlexiCellRenderer(translate("grade"), "grade", null, null);
-			DefaultFlexiColumnModel gradeCol = new DefaultFlexiColumnModel(GAssignmentsCol.grade, new BooleanCellRenderer(gradeRenderer, null));
+			DefaultFlexiColumnModel gradeCol = new DefaultFlexiColumnModel(GAssignmentsCol.grade);
+			gradeCol.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("grade"), "grade", null, null), null));
 			gradeCol.setAlwaysVisible(true);
 			gradeCol.setExportable(false);
 			columnsModel.addFlexiColumnModel(gradeCol);
 		}
 		if(secCallback.canManage()) {
-			StickyActionColumnModel toolsCol = new StickyActionColumnModel(GAssignmentsCol.tools);
-			toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolsCol.setHeaderLabel(translate("action.more"));
-			toolsCol.setAlwaysVisible(true);
-			toolsCol.setExportable(false);
-			columnsModel.addFlexiColumnModel(toolsCol);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(GAssignmentsCol.tools));
 		}
 		
 		tableModel = new GradingAssignmentsTableModel(columnsModel,
@@ -409,13 +403,8 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		boolean canGrade = secCallback.canGrade() && secCallback.canGrade(assignment.getAssignment());
 		GradingAssignmentRow row = new GradingAssignmentRow(assignment, canGrade, isManager);
 		
-		// tools
-		String linkName = "tools-" + counter++;
-		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsLink.setAriaLabel(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
-		flc.add(linkName, toolsLink);
 		row.setToolsLink(toolsLink);
 		return row;
 	}

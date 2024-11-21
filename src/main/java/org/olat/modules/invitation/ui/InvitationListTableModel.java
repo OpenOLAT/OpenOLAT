@@ -121,7 +121,7 @@ implements SortableFlexiTableDataModel<InvitationRow> {
 		businessGroupName("table.header.name"),
 		projectKey("table.header.id"),
 		projectTitle("table.header.name"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

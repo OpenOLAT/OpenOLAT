@@ -71,7 +71,7 @@ public class BadgeClassTableModel extends DefaultFlexiTableDataModel<BadgeClassR
 		status("form.status"),
 		type("form.type"),
 		awardedCount("form.awarded.to"),
-		tools("table.header.actions");
+		tools("action.more");
 
 		private final String i18nKey;
 

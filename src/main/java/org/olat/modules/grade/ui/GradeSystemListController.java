@@ -33,10 +33,10 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -105,9 +105,7 @@ public class GradeSystemListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.label));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.usageCount));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradeSystemCols.enabled));
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(GradeSystemCols.tools);
-		toolsColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(GradeSystemCols.tools));
 		
 		dataModel = new GradeSystemDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -129,8 +127,7 @@ public class GradeSystemListController extends FormBasicController {
 			int usageCount = gradeSystemKeyToCount.getOrDefault(gradeSystem.getKey(), Long.valueOf(0)).intValue();
 			row.setScaleCount(usageCount);
 			
-			FormLink toolsLink = uifactory.addFormLink("tools_" + gradeSystem.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 			

@@ -110,7 +110,7 @@ implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 	
 	public enum IdentitiesLecturesCols implements FlexiSortableColumnDef {
 		status("table.header.status"),
-		tools("table.header.tools"),
+		tools("action.more"),
 		immunoStatus("table.header.immuno.status"),
 		numOfAbsences("table.header.absences");
 		

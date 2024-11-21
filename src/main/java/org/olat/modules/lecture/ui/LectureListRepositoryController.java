@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateWithDayFlexiCellRenderer;
@@ -57,7 +58,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -112,7 +112,6 @@ import org.olat.modules.lecture.ui.blockimport.BlocksImport_1_InputStep;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlock;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
 import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
-import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.ReferenceRenderer;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
@@ -177,7 +176,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ConfirmDeleteLectureBlockController deleteLectureBlocksCtrl;
 
-	private int counter = 0;
 	private final RepositoryEntry entry;
 	private final Curriculum curriculum;
 	private final boolean lectureManagementManaged;
@@ -329,19 +327,15 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				new YesNoCellRenderer());
 		compulsoryColumn.setIconHeader("o_icon o_icon_compulsory o_icon-lg");
 		columnsModel.addFlexiColumnModel(compulsoryColumn);
-		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.status,
-				new LectureBlockStatusCellRenderer(getTranslator())));
-		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
-				new StaticFlexiCellRenderer("", "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
+		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
 		editColumn.setExportable(false);
 		editColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(editColumn);
-			
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(BlockCols.tools);
-		toolsColumn.setExportable(false);
-		toolsColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(BlockCols.tools));
 		
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
@@ -507,12 +501,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			row.setTeachersList(block.getTeachers());
 			rows.add(row);
 			
-			String linkName = "tools-" + counter++;
-			FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
-			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolsLink.setTitle(translate("action.more"));
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
-			flc.add(linkName, toolsLink);
 			row.setToolsLink(toolsLink);
 		}
 		tableModel.setObjects(rows);
@@ -699,9 +689,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			}
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if(cmd != null && cmd.startsWith("tools-")
-					&& link.getUserObject() instanceof LectureBlockRow lectureBlockRow) {
-				doOpenTools(ureq, lectureBlockRow, link);
+			if(cmd != null && cmd.equals("tools")) {
+				LectureBlockRow row = (LectureBlockRow)link.getUserObject();
+				doOpenTools(ureq, row, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

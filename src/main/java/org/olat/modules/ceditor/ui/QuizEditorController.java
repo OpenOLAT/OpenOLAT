@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -39,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -68,7 +68,6 @@ import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.modules.video.ui.editor.HeaderCommandsController;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -150,29 +149,30 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
-
+		commandsButton.setTitle("action.more");
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		DefaultFlexiColumnModel upColumn = new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.up.getI18nKey(),
-				QuestionModel.QuestionColumns.up.ordinal(), UP_ACTION, new BooleanCellRenderer(
-				new StaticFlexiCellRenderer(translate("quiz.up"), UP_ACTION), null
-		));
+		DefaultFlexiColumnModel upColumn = new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.up);
+		upColumn.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, UP_ACTION, null,
+				"o_icon o_icon o_icon-lg o_icon_move_up", translate("quit.up.title")), null));
+		upColumn.setIconHeader("o_icon o_icon o_icon-lg o_icon_move_up");
 		upColumn.setColumnCssClass("o_up");
+		upColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(upColumn);
-		DefaultFlexiColumnModel downColumn = new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.down.getI18nKey(),
-				QuestionModel.QuestionColumns.down.ordinal(), DOWN_ACTION, new BooleanCellRenderer(
-				new StaticFlexiCellRenderer(translate("quiz.down"), DOWN_ACTION), null
-		));
+		
+		DefaultFlexiColumnModel downColumn = new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.down);
+		downColumn.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, DOWN_ACTION, null,
+				"o_icon o_icon o_icon-lg o_icon_move_down", translate("quit.down.title")), null));
+		downColumn.setIconHeader("o_icon o_icon o_icon-lg o_icon_move_down");
 		downColumn.setColumnCssClass("o_down");
+		downColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(downColumn);
+		
 		FlexiCellRenderer titleRenderer = new StaticFlexiCellRenderer(EDIT_ACTION, new TextFlexiCellRenderer());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.title.getI18nKey(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.title.i18nHeaderKey(),
 				QuestionModel.QuestionColumns.title.ordinal(), EDIT_ACTION, titleRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.type.getI18nKey(), QuestionModel.QuestionColumns.type.ordinal()));
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(QuestionModel.QuestionColumns.tools.getI18nKey(),
-				QuestionModel.QuestionColumns.tools.ordinal());
-		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsColumn.setColumnCssClass("o_icon-fws o_col_sticky_right o_col_action");
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionModel.QuestionColumns.type));
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(QuestionModel.QuestionColumns.tools));
 
 		tableModel = new QuestionModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "quiz.questions", tableModel, getTranslator(), formLayout);
@@ -201,7 +201,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 						Link.LINK | Link.NONTRANSLATED);
 				toolLink.setTranslator(getTranslator());
 				toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-				toolLink.setTitle(translate("quiz.tools"));
+				toolLink.setTitle(translate("action.more"));
 			}
 			toolLink.setUserObject(questionRow);
 			questionRow.setToolLink(toolLink);
@@ -222,7 +222,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 			if (HeaderCommandsController.IMPORT_EVENT == event) {
 				doImport(ureq);
 			} else if (HeaderCommandsController.EXPORT_ALL_EVENT == event) {
-				doExportAll(ureq);
+				doExportAll();
 			}
 		} else if (ccwc == source) {
 			cleanUp();
@@ -377,7 +377,7 @@ public class QuizEditorController extends FormBasicController implements PageEle
 		storeSettings(ureq, quizSettings);
 	}
 
-	private void doExportAll(UserRequest ureq) {
+	private void doExportAll() {
 		QuizSettings quizSettings = quizPart.getSettings();
 		List<QuizQuestion> questions = quizSettings.getQuestions();
 		for (QuizQuestion question : questions) {

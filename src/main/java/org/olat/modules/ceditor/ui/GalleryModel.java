@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
@@ -49,13 +50,13 @@ public class GalleryModel extends DefaultFlexiTableDataModel<GalleryRow> {
 		};
 	}
 
-	public enum GalleryColumn {
-		up("gallery.up"),
-		down("gallery.down"),
+	public enum GalleryColumn implements FlexiColumnDef {
+		up("gallery.up.title"),
+		down("gallery.down.title"),
 		title("gallery.title"),
 		description("gallery.description"),
 		version("gallery.version"),
-		tools("gallery.tools");
+		tools("action.more");
 
 		private final String i18nKey;
 
@@ -63,7 +64,8 @@ public class GalleryModel extends DefaultFlexiTableDataModel<GalleryRow> {
 			this.i18nKey = i18nKey;
 		}
 
-		public String getI18nKey() {
+		@Override
+		public String i18nHeaderKey() {
 			return i18nKey;
 		}
 	}

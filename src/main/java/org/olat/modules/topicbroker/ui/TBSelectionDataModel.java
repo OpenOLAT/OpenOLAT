@@ -77,8 +77,8 @@ public class TBSelectionDataModel extends DefaultFlexiTableDataModel<TBSelection
 		maxParticipants("topic.participants.max"),
 		upDown("updown"),
 		select("topic.select"),
-		selectionTools("tools"),
-		topicTools("tools");
+		selectionTools("action.more"),
+		topicTools("action.more");
 		
 		private final String i18nKey;
 		

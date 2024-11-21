@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.json.JSONObject;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -33,13 +36,13 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -73,9 +76,6 @@ import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.user.UserManager;
-
-import jakarta.servlet.http.HttpServletRequest;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -85,7 +85,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BadgeDetailsController extends FormBasicController {
 
-	private static final String CMD_TOOLS = "tools";
 	private final static String CMD_SELECT = "select";
 
 	private final Long badgeClassKey;
@@ -154,11 +153,7 @@ public class BadgeDetailsController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new BadgeAssertionStatusRenderer()));
 
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
-				Cols.tools.i18nHeaderKey(),
-				Cols.tools.ordinal()
-		);
-		columnModel.addFlexiColumnModel(toolsColumn);
+		columnModel.addFlexiColumnModel(new ActionsColumnModel(Cols.tools));
 
 		tableModel = new TableModel(columnModel, userManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10, true,
@@ -240,14 +235,7 @@ public class BadgeDetailsController extends FormBasicController {
 	}
 
 	private Row mapBadgeAssertionToRow(BadgeAssertion badgeAssertion) {
-		String toolId = "tool_" + badgeAssertion.getUuid();
-		FormLink toolLink = (FormLink) flc.getComponent(toolId);
-		if (toolLink == null) {
-			toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", tableEl, Link.LINK | Link.NONTRANSLATED);
-			toolLink.setTranslator(getTranslator());
-			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolLink.setTitle(translate("table.header.actions"));
-		}
+		FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolLink.setUserObject(badgeAssertion);
 		return new Row(badgeAssertion, toolLink);
 	}
@@ -324,7 +312,7 @@ public class BadgeDetailsController extends FormBasicController {
 		} else if (source == courseEl) {
 			fireEvent(ureq, FormEvent.BACK_EVENT);
 		} else if (source instanceof FormLink link) {
-			if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof BadgeAssertion badgeAssertion) {
+			if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof BadgeAssertion badgeAssertion) {
 				doOpenTools(ureq, link, badgeAssertion);
 			}
 		}
@@ -450,7 +438,7 @@ public class BadgeDetailsController extends FormBasicController {
 		recipient("form.recipient"),
 		issuedOn("form.issued.on"),
 		status("form.status"),
-		tools("table.header.actions");
+		tools("action.more");
 
 		Cols(String i18n) {
 			this.i18nKey = i18n;

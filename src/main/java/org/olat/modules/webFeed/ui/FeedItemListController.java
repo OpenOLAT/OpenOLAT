@@ -593,7 +593,7 @@ public class FeedItemListController extends FormBasicController implements Flexi
 		String guid = feedItemRow.getItem().getGuid();
 		String toolsId = "o-tools-".concat(guid);
 		FormLink toolsLink = uifactory.addFormLink(toolsId, "tools", "", null, customItemFlc, Link.NONTRANSLATED);
-		toolsLink.setTitle(translate("feed.item.tool.actions"));
+		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		toolsLink.setGhost(true);
 		toolsLink.setUserObject(feedItemRow.getItem());

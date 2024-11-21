@@ -49,7 +49,6 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoModule;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -161,6 +160,7 @@ public class AnnotationController extends FormBasicController {
 		positionSizeEditLink = uifactory.addFormLink("editPositionSize", "", null, formLayout,
 				Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
 		positionSizeEditLink.setIconLeftCSS("o_icon o_icon_edit");
+		positionSizeEditLink.setTitle(translate("edit"));
 
 		uifactory.addFormSubmitButton("save", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());

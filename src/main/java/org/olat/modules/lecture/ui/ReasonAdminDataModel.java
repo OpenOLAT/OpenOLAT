@@ -75,7 +75,7 @@ implements SortableFlexiTableDataModel<ReasonRow> {
 		title("reason.title"),
 		description("reason.description"),
 		enabled("table.header.enabled"),
-		tools("table.header.actions");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

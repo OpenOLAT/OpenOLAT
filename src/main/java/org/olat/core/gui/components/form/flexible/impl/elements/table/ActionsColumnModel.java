@@ -44,7 +44,14 @@ public class ActionsColumnModel extends StickyActionColumnModel {
 	 * Convenience method to create a link for the actions column.
 	 */
 	public static final FormLink createLink(FormUIFactory uifactory, Translator translator) {
-		FormLink toolsLink = uifactory.addFormLink("tools_" + CodeHelper.getRAMUniqueID(), "tools", "", null, null, Link.NONTRANSLATED);
+		return createLink(uifactory, translator, "tools");
+	}
+	
+	/*
+	 * Convenience method to create a link for the actions column.
+	 */
+	public static final FormLink createLink(FormUIFactory uifactory, Translator translator, String cmd) {
+		FormLink toolsLink = uifactory.addFormLink("tools_" + CodeHelper.getRAMUniqueID(), cmd, "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
 		toolsLink.setTitle(translator.translate("action.more"));
 		return toolsLink;

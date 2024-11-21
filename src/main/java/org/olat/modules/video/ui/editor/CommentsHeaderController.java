@@ -51,7 +51,6 @@ import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.model.VideoCommentImpl;
 import org.olat.repository.RepositoryEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -120,6 +119,7 @@ public class CommentsHeaderController extends FormBasicController {
 		previousCommentButton = uifactory.addFormLink("previousComment", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		previousCommentButton.setIconRightCSS("o_icon o_icon_back");
+		previousCommentButton.setTitle(translate("comment.previous"));
 		previousCommentButton.setForceOwnDirtyFormWarning(true);
 
 		commentsDropdown = uifactory.addDropdownSingleselect("comments", "", formLayout,
@@ -130,6 +130,7 @@ public class CommentsHeaderController extends FormBasicController {
 		nextCommentButton = uifactory.addFormLink("nextComment", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		nextCommentButton.setIconRightCSS("o_icon o_icon_start");
+		nextCommentButton.setTitle(translate("comment.next"));
 		nextCommentButton.setForceOwnDirtyFormWarning(true);
 
 		addCommentButton = uifactory.addFormLink("addComment", "form.add", "form.add", formLayout, Link.BUTTON);
@@ -140,6 +141,7 @@ public class CommentsHeaderController extends FormBasicController {
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
+		commandsButton.setTitle(translate("action.more"));
 	}
 
 	public void setComments(VideoComments comments) {

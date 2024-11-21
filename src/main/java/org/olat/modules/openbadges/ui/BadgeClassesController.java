@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -33,13 +35,13 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -71,8 +73,6 @@ import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
-
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -83,7 +83,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BadgeClassesController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 
 	private static final String CMD_SELECT = "select";
-	private static final String CMD_TOOLS = "tools";
 	private static final String CMD_EDIT_BADGE = "editBadge";
 	private static final String CMD_AWARD_MANUALLY = "awardManually";
 
@@ -163,13 +162,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 		boolean owner = reSecurity == null || reSecurity.isOwner();
 		if (owner) {
-			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
-					BadgeClassTableModel.BadgeClassCols.tools.i18nHeaderKey(),
-					BadgeClassTableModel.BadgeClassCols.tools.ordinal()
-			);
-			toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fw o_icon-lg");
-			toolsColumn.setColumnCssClass("o_col_sticky_right o_col_action");
-			columnModel.addFlexiColumnModel(toolsColumn);
+			columnModel.addFlexiColumnModel(new ActionsColumnModel(BadgeClassTableModel.BadgeClassCols.tools));
 		}
 
 		tableModel = new BadgeClassTableModel(columnModel, getTranslator());
@@ -220,16 +213,6 @@ public class BadgeClassesController extends FormBasicController implements Activ
 	}
 
 	private BadgeClassRow forgeRow(UserRequest ureq, OpenBadgesManager.BadgeClassWithSizeAndCount bc) {
-		String toolId = "tool_" + bc.badgeClass().getUuid();
-		FormLink toolLink = (FormLink) flc.getComponent(toolId);
-		if (toolLink == null) {
-			toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", tableEl,
-					Link.LINK | Link.NONTRANSLATED);
-			toolLink.setTranslator(getTranslator());
-			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolLink.setTitle(translate("table.header.actions"));
-		}
-
 		String editBadgeLinkId = "edit_badge_" + bc.badgeClass().getUuid();
 		FormLink editBadgeLink = null;
 		if (bc.badgeClass().getStatus().equals(BadgeClass.BadgeClassStatus.preparation)) {
@@ -254,6 +237,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 
 		detailsVC.put(awardManuallyLinkId, awardManuallyLink.getComponent());
 
+		FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		BadgeClassRow row = new BadgeClassRow(bc, toolLink, criteriaComponentName, editBadgeLink, awardManuallyLink);
 		toolLink.setUserObject(row);
 		if (editBadgeLink != null) {
@@ -278,7 +262,7 @@ public class BadgeClassesController extends FormBasicController implements Activ
 				doCreate(ureq);
 			}
 		} else if (source instanceof FormLink link) {
-			if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof BadgeClassRow row) {
+			if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof BadgeClassRow row) {
 				doOpenTools(ureq, link, row);
 			} else if (CMD_EDIT_BADGE.equals(link.getCmd()) && link.getUserObject() instanceof BadgeClassRow row) {
 				doEdit(ureq, row);

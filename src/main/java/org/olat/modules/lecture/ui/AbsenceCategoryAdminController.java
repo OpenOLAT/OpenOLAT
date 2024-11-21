@@ -30,12 +30,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -50,7 +50,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.AbsenceCategoryAdminDataModel.CategoryCols;
-import org.olat.modules.lecture.ui.ReasonAdminDataModel.ReasonCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,8 +69,6 @@ public class AbsenceCategoryAdminController extends FormBasicController {
 	private DialogBoxController deleteDialogCtrl;
 	private EditAbsenceCategoryController editReasonCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	
-	private int counter = 0;
 	
 	@Autowired
 	private LectureService lectureService;
@@ -95,14 +92,14 @@ public class AbsenceCategoryAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CategoryCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CategoryCols.description));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CategoryCols.enabled));
-		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
-				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
+		
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
+		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
 		editColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(editColumn);
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ReasonCols.tools);
-		toolsColumn.setExportable(false);
-		toolsColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(CategoryCols.tools));
 		
 		dataModel = new AbsenceCategoryAdminDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -114,11 +111,8 @@ public class AbsenceCategoryAdminController extends FormBasicController {
 		List<AbsenceCategory> categories = lectureService.getAbsencesCategories(null);
 		List<AbsenceCategoryRow> rows = new ArrayList<>(categories.size());
 		for(AbsenceCategory category:categories) {
-			String linkName = "tools-" + counter++;
-			FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
-			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(category);
-			flc.add(linkName, toolsLink);
 			rows.add(new AbsenceCategoryRow(category, toolsLink));
 		}
 		dataModel.setObjects(rows);
@@ -181,7 +175,7 @@ public class AbsenceCategoryAdminController extends FormBasicController {
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if(cmd != null && cmd.startsWith("tools-")) {
+			if(cmd != null && cmd.equals("tools")) {
 				AbsenceCategory category = (AbsenceCategory)link.getUserObject();
 				doOpenTools(ureq, category, link);
 			}

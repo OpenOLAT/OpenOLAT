@@ -73,7 +73,7 @@ public class TBCustomFieldDefinitionDataModel extends DefaultFlexiTableDataModel
 		type("custom.field.def.type"),
 		displayInTable("custom.field.def.in.table"),
 		upDown("updown"),
-		tools("tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

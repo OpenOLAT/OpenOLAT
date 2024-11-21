@@ -36,12 +36,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -75,7 +75,6 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 	private FormLink addCompensationButton;
 	private UserDisadvantageCompensationTableModel tableModel;
 	
-	private int counter = 0;
 	private final boolean canModify;
 	private final Identity disadvantegdIdentity;
 	
@@ -126,12 +125,7 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompensationCols.status,
 				new StatusCellRenderer(getTranslator())));
-		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CompensationCols.tools);
-		toolsCol.setAlwaysVisible(true);
-		toolsCol.setExportable(false);
-		toolsCol.setIconHeader("o_icon o_icon-lg o_icon_actions o_icon-fws");
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(CompensationCols.tools));
 		
 		tableModel = new UserDisadvantageCompensationTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
@@ -159,9 +153,8 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		List<UserDisadvantageCompensationRow> rows = new ArrayList<>(compensations.size());
 		for(DisadvantageCompensation compensation:compensations) {
 			String creatorFullName = userManager.getUserDisplayName(compensation.getCreator());
-			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
+			
 			UserDisadvantageCompensationRow row = new UserDisadvantageCompensationRow(compensation, creatorFullName, toolsLink);
 			rows.add(row);
 			toolsLink.setUserObject(row);

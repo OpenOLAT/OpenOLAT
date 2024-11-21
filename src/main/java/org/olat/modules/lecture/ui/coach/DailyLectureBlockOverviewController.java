@@ -40,13 +40,13 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -74,7 +74,6 @@ import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
-import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.modules.lecture.ui.coach.DailyLectureBlockTableModel.BlockCols;
 import org.olat.modules.lecture.ui.component.IdentityComparator;
 import org.olat.modules.lecture.ui.component.LectureBlockAbsenceAlertCellRenderer;
@@ -102,7 +101,6 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private DailyLectureBlockTableModel tableModel;
 	
-	private int counter = 0;
 	private Date currentDate;
 	private final boolean withSelect;
 	private final Formatter formatter;
@@ -193,17 +191,15 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		}
 		
 		if(rollCallSecCallback.canViewDetails() && withSelect) {
-			DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(BlockCols.details.i18nHeaderKey(), BlockCols.details.ordinal(), "details",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null));
-			// set sort key even though we do not sort - added as css classes to column headers for styling
-			detailsCol.setSortKey(TeachCols.details.name());
+			DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(BlockCols.details);
+			detailsCol.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, "details", null,
+					"o_icon o_icon_lecture o_icon-lg", translate("details")), null));
+			detailsCol.setIconHeader("o_icon o_icon_lecture o_icon-lg");
 			columnsModel.addFlexiColumnModel(detailsCol);
 		}
 		
 		if(rollCallSecCallback.canExport()) {
-			StickyActionColumnModel toolsCol = new StickyActionColumnModel(BlockCols.tools);
-			toolsCol.setSortable(false);
-			columnsModel.addFlexiColumnModel(toolsCol);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(BlockCols.tools));
 		}
 		
 		tableModel = new DailyLectureBlockTableModel(columnsModel, dailyRecordingEnabled);
@@ -345,11 +341,8 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		DailyLectureBlockRow row = new DailyLectureBlockRow(block, iamTeacher);
 		row.setParent(parentRow);
 		
-		String linkName = "tools-" + counter++;
-		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
-		flc.add(linkName, toolsLink);
 		row.setTools(toolsLink);
 		
 		return row;

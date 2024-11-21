@@ -88,7 +88,7 @@ public class TBTopicDataModel extends DefaultFlexiTableDataModel<TBTopicRow> {
 		groupRestrictions("topic.group.restriction"),
 		createdBy("created.by"),
 		upDown("updown"),
-		tools("tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

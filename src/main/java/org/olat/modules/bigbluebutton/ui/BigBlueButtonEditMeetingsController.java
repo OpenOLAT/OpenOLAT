@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -43,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -166,19 +166,16 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BMeetingsCols.template));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BMeetingsCols.server, new ServerCellRenderer()));
 		if(!readOnly) {
-			DefaultFlexiColumnModel editViewCol = new DefaultFlexiColumnModel(BMeetingsCols.edit, "edit",
+			DefaultFlexiColumnModel editViewCol = new DefaultFlexiColumnModel(BMeetingsCols.edit);
+			editViewCol.setCellRenderer(
 					new BooleanCellRenderer(
 							new StaticFlexiCellRenderer(translate("edit"), "edit"),
 							new StaticFlexiCellRenderer(translate("view"), "edit")));
 			editViewCol.setExportable(false);
 			editViewCol.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(editViewCol);
-
-			StickyActionColumnModel toolsCol = new StickyActionColumnModel(BMeetingsCols.tools);
-			toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolsCol.setExportable(false);
-			toolsCol.setAlwaysVisible(true);
-			columnsModel.addFlexiColumnModel(toolsCol);
+			
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(BMeetingsCols.tools));
 		}
 		
 		tableModel = new BigBlueButtonMeetingTableModel(columnsModel, getLocale());
@@ -209,8 +206,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		BigBlueButtonMeetingRow row = new BigBlueButtonMeetingRow(meeting);
 		row.setAutoDeleteDate(bigBlueButtonManager.getAutoDeletionDate(meeting));
 		
-		FormLink toolsLink = uifactory.addFormLink("tools_" + count++, "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 		return row;

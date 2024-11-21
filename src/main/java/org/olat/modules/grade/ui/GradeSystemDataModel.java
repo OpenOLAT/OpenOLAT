@@ -77,7 +77,7 @@ implements SortableFlexiTableDataModel<GradeSystemRow> {
 		label("grade.system.label"),
 		usageCount("grade.system.usage.count"),
 		enabled("grade.system.enabled"),
-		tools("table.header.actions");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

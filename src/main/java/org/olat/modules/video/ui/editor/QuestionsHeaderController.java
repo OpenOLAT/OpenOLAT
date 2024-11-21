@@ -66,8 +66,8 @@ import org.olat.modules.video.ui.question.NewQuestionEvent;
 import org.olat.modules.video.ui.question.NewQuestionItemCalloutController;
 import org.olat.modules.video.ui.question.VideoQuestionRowComparator;
 import org.olat.repository.RepositoryEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
+
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.RootNodeLookup;
@@ -138,6 +138,7 @@ public class QuestionsHeaderController extends FormBasicController {
 		previousQuestionButton = uifactory.addFormLink("previousQuestion", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		previousQuestionButton.setIconRightCSS("o_icon o_icon_back");
+		previousQuestionButton.setTitle(translate("form.question.previous"));
 		previousQuestionButton.setForceOwnDirtyFormWarning(true);
 
 		questionsDropdown = uifactory.addDropdownSingleselect("questions", "form.question.title",
@@ -148,6 +149,7 @@ public class QuestionsHeaderController extends FormBasicController {
 		nextQuestionButton = uifactory.addFormLink("nextQuestion", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		nextQuestionButton.setIconRightCSS("o_icon o_icon_start");
+		nextQuestionButton.setTitle(translate("form.question.next"));
 		nextQuestionButton.setForceOwnDirtyFormWarning(true);
 
 		addQuestionButton = uifactory.addFormLink("addQuestion", "form.add", "form.add", formLayout, Link.BUTTON);
@@ -157,6 +159,7 @@ public class QuestionsHeaderController extends FormBasicController {
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
+		commandsButton.setTitle(translate("action.more"));
 	}
 
 	public void setQuestions(VideoQuestions questions) {
@@ -174,7 +177,7 @@ public class QuestionsHeaderController extends FormBasicController {
 				.getQuestions()
 				.stream()
 				.sorted(new VideoQuestionRowComparator())
-				.forEach((q) -> questionsKV.add(SelectionValues.entry(q.getId(), timeFormat.format(q.getBegin()) + " - " + q.getTitle())));
+				.forEach(q -> questionsKV.add(SelectionValues.entry(q.getId(), timeFormat.format(q.getBegin()) + " - " + q.getTitle())));
 		flc.contextPut("hasQuestions", !questionsKV.isEmpty());
 		questionsDropdown.setKeysAndValues(questionsKV.keys(), questionsKV.values(), null);
 

@@ -137,7 +137,7 @@ public class LastBinderListController extends FormBasicController implements Fle
 		openLink.setIconRightCSS("o_icon o_icon_start");
 
 		VFSLeaf image = portfolioService.getPosterImageLeaf(binderRow);
-		BinderRow row = new BinderRow(binderRow, image, openLink, null);
+		BinderRow row = new BinderRow(binderRow, image, openLink);
 		openLink.setUserObject(row);
 		return row;
 	}
