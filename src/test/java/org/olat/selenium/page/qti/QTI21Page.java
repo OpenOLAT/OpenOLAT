@@ -848,13 +848,19 @@ public class QTI21Page {
 	/**
 	 * Suspend the test and confirm.
 	 * 
+	 * @param waitInfoBox true, wait the modal blue info box or false, the message
 	 * @return Itself
 	 */
-	public QTI21Page suspendTest() {
+	public QTI21Page suspendTest(boolean waitInfoBox) {
 		By suspendBy = By.cssSelector("a.o_sel_suspend_test");
 		browser.findElement(suspendBy).click();
 		OOGraphene.waitBusy(browser);
 		confirm();
+		if(waitInfoBox) {
+			OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		} else {
+			OOGraphene.waitElement(By.cssSelector("#o_qti_container div.o_important"), browser);
+		}
 		return this;
 	}
 	
