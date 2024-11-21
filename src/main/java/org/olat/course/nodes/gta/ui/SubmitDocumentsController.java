@@ -48,8 +48,10 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
@@ -270,13 +272,13 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(docI18nKey, DocCols.document.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.date.i18nKey(), DocCols.date.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.createdBy.i18nKey(), DocCols.createdBy.ordinal()));
-		DefaultFlexiColumnModel downloadCol = new DefaultFlexiColumnModel(DocCols.download.i18nKey, DocCols.download.ordinal());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.date));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.createdBy));
+		DefaultFlexiColumnModel downloadCol = new DefaultFlexiColumnModel(DocCols.download);
 		columnsModel.addFlexiColumnModel(downloadCol);
 
 		if (!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.toolsLink.i18nKey, DocCols.toolsLink.ordinal()));
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(DocCols.toolsLink));
 		}
 		
 		model = new DocumentTableModel(columnsModel);
@@ -364,7 +366,7 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 				openLink.setI18nKey(editorInfo.getModeButtonLabel(getTranslator()));
 				openLink.setIconLeftCSS("o_icon o_icon-fw " + editorInfo.getModeIcon());
 			}
-			FormLink toolsLink = uifactory.addFormLink("tools_" + CodeHelper.getRAMUniqueID(), "tools", translate("table.header.action"), null, null, Link.NONTRANSLATED);
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			docList.add(new SubmittedSolution(document, createdBy, downloadLink, openLink, documentLink, toolsLink, inTranscoding));
 		}
 		model.setObjects(docList);
@@ -377,7 +379,7 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 	
 	private void updateWarnings() {
 		if(minDocs > 0 && model.getRowCount() < minDocs) {
-			String msg = translate("error.min.documents", new String[]{ Integer.toString(minDocs) });
+			String msg = translate("error.min.documents", Integer.toString(minDocs));
 			if(uploadDocButton != null) {
 				uploadDocButton.setEnabled(true);
 			}
@@ -396,7 +398,7 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 			if(copyDocButton != null) {
 				copyDocButton.setEnabled(false);
 			}
-			String msg = translate("error.max.documents", new String[]{ Integer.toString(maxDocs)});
+			String msg = translate("error.max.documents", Integer.toString(maxDocs));
 			flc.contextPut("maxDocsWarning", msg);
 			flc.contextRemove("minDocsWarning");
 		} else {
@@ -787,7 +789,7 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 		}
 	}
 	
-	public enum DocCols {
+	public enum DocCols implements FlexiColumnDef {
 		document("document"),
 		date("document.date"),
 		createdBy("table.header.created.by"),
@@ -799,8 +801,9 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 		private DocCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
-		
-		public String i18nKey() {
+
+		@Override
+		public String i18nHeaderKey() {
 			return i18nKey;
 		}
 	}
