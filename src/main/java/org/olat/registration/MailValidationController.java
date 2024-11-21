@@ -279,21 +279,8 @@ public class MailValidationController extends FormBasicController {
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
-		if (mailEl.isEmpty("email.address.maynotbeempty")) {
-			allOk = false;
-		} else if (!MailHelper.isValidEmailAddress(getEmailAddress())) {
-			mailEl.setErrorKey("email.address.notregular");
-			allOk = false;
-		} else {
-			String val = getEmailAddress();
-			
-			boolean valid = registrationManager.validateEmailUsername(val);
-			if(!valid) {
-				mailEl.setErrorKey("form.mail.whitelist.error");
-			}
-			allOk &= valid;
-		}
+
+		validateMail();
 
 		if (validationCont != null && otpEl != null) {
 			if (otpEl.isEmpty("reg.otp.may.not.be.empty")) {
@@ -302,6 +289,30 @@ public class MailValidationController extends FormBasicController {
 				otpEl.setErrorKey("reg.otp.invalid");
 				allOk = false;
 			}
+		} else {
+			allOk = false;
+		}
+
+		return allOk;
+	}
+
+	private boolean validateMail() {
+		boolean allOk = true;
+
+		mailEl.clearError();
+		if (mailEl.isEmpty("email.address.maynotbeempty")) {
+			allOk = false;
+		} else if (!MailHelper.isValidEmailAddress(getEmailAddress())) {
+			mailEl.setErrorKey("email.address.notregular");
+			allOk = false;
+		} else {
+			String val = getEmailAddress();
+
+			boolean valid = registrationManager.validateEmailUsername(val);
+			if(!valid) {
+				mailEl.setErrorKey("form.mail.whitelist.error");
+			}
+			allOk &= valid;
 		}
 
 		return allOk;
@@ -309,7 +320,7 @@ public class MailValidationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == validateMailLink && !mailEl.hasError()) {
+		if (source == validateMailLink && validateMail()) {
 			initValidation();
 			processEmail(ureq);
 			toggleFormVisibility();

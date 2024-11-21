@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Invitation;
@@ -132,7 +133,7 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 
 		// Check if the browser is supported and show a warning if needed
 		boolean isBrowserWarningOn = Settings.isBrowserAjaxBlacklisted(ureq);
-		loginContent.contextPut("browserWarningOn", isBrowserWarningOn);
+		loginContent.contextPut("browserWarningOn", isBrowserWarningOn ? Boolean.TRUE : Boolean.FALSE);
 
 		initAuthProviders(ureq, loginContent);
 
@@ -155,6 +156,14 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 			faqLink.setName(translate("login.faq"));
 			faqLink.setElementCssClass("o_login_faq");
 			loginContent.put("faq", faqLink);
+
+			// add additional login footer message for custom content
+			String helpMsg = translate("login.customhelpmsg");
+			if(!StringUtils.isBlank(helpMsg)) {
+				loginContent.contextPut("loginhelpmsg",helpMsg);
+			}
+
+			loginContent.contextPut("startLogin", Boolean.FALSE);
 		}
 
 		return loginContent;
@@ -169,7 +178,9 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		boolean multiProviderControllerAdded = false;
 
 		for (AuthenticationProvider provider : providers) {
-			if (!provider.isEnabled()) continue;
+			if (!provider.isEnabled()) {
+				continue;
+			}
 
 			String componentId = "authProvider_" + providerIndex++;
 			Controller authController = provider.createController(ureq, getWindowControl());

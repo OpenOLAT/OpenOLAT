@@ -1,12 +1,12 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
 * You may obtain a copy of the License at
 * <p>
-* http://www.apache.org/licenses/LICENSE-2.0
+* https://www.apache.org/licenses/LICENSE-2.0
 * <p>
 * Unless required by applicable law or agreed to in writing,<br>
 * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
@@ -128,10 +128,11 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	@Autowired
 	private RegistrationModule registrationModule;
 
+
 	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null, false);
 	}
-	
+
 	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl, Invitation invitation, boolean hasModuleUri) {
 		// Use fallback translator from full webapp package to translate accessibility stuff
 		super(ureq, wControl, Util.createPackageTranslator(BaseFullWebappController.class, ureq.getLocale()));
@@ -146,7 +147,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			wControl.setError(usess.getEntry("error.change.email.time").toString());
 			usess.removeEntryFromNonClearedStore("error.change.email.time");
 		}
-		
+
 		MainPanel panel = new MainPanel("content");
 		panel.setCssClass("o_loginscreen");
 		content = initLoginContent(ureq);
@@ -171,7 +172,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-		
+
 		ContextEntry entry = entries.get(0);
 		String type = entry.getOLATResourceable().getResourceableTypeName();
 		if("browsercheck".equals(type)) {
@@ -202,95 +203,120 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 		// browser not supported messages
 		// true if browserwarning should be showed
-		boolean bwo = Settings.isBrowserAjaxBlacklisted(ureq);
-		contentBorn.contextPut("browserWarningOn", bwo ? Boolean.TRUE : Boolean.FALSE);
-		
+		boolean isBrowserWarningOn = Settings.isBrowserAjaxBlacklisted(ureq);
+		contentBorn.contextPut("browserWarningOn", isBrowserWarningOn ? Boolean.TRUE : Boolean.FALSE);
+
+		initAuthProviders(ureq, contentBorn); // Authentication init
+
+		// prepare info message
+		addSystemAndNodeMessages(contentBorn);
+		addCustomLoginMessages(contentBorn);
+		// login is blocked?
+		setupLoginRestrictions(contentBorn);
+
+		// guest link
+		contentBorn.contextPut("guestLogin", loginModule.isGuestLoginEnabled());
+		contentBorn.contextPut("startLogin", Boolean.FALSE);
+
+		addCatalogLinkIfApplicable(contentBorn); // Catalog link if enabled
+		addFaqLinkIfAvailable(contentBorn);     // FAQ link if available
+
+		return contentBorn;
+	}
+
+	private void initAuthProviders(UserRequest ureq, VelocityContainer contentBorn) {
 		Collection<AuthenticationProvider> providers = loginModule.getAuthenticationProviders();
 		List<String> providerCmpIds = new ArrayList<>();
 		authenticationCtrlList.clear();
-	
-		int count = 0;
+
 		boolean multiProvidersController = false;
 		String multiProvidersControllerCmpId = null;
 		boolean multiProvidersControllerDefault = false;
-		for (AuthenticationProvider prov : providers) {
-			if(!prov.isEnabled()) continue;
+		int count = 0;
+
+		for (AuthenticationProvider provider : providers) {
+			if (!provider.isEnabled()) {
+				continue;
+			}
 
 			String cmpId = "dormant_" + count++;
-			Controller controller = prov.createController(ureq, getWindowControl());
-			if(controller instanceof OLATAuthenticationController) {// Create it only once
-				if(prov.isDefault()) {
+			Controller controller = provider.createController(ureq, getWindowControl());
+
+			if (controller instanceof OLATAuthenticationController) { // Create it only once
+				if (provider.isDefault()) {
 					multiProvidersControllerDefault = true;
 				}
-				if(multiProvidersController) {
+				if (multiProvidersController) {
 					continue;
-				} else {
-					multiProvidersController = true;
-					multiProvidersControllerCmpId = cmpId;
 				}
+				multiProvidersController = true;
+				multiProvidersControllerCmpId = cmpId;
 			}
 
 			authenticationCtrlList.add(controller);
 			listenTo(controller);
-			
 			contentBorn.put(cmpId, controller.getInitialComponent());
-			if(prov.isDefault() && !authenticationCtrlList.isEmpty()) {
+
+			if (provider.isDefault() && !authenticationCtrlList.isEmpty()) {
 				providerCmpIds.add(0, cmpId);
 			} else {
 				providerCmpIds.add(cmpId);
 			}
 		}
 
-		if(multiProvidersControllerDefault) {
+		if (multiProvidersControllerDefault) {
 			swapOLATAuthenticationController(providerCmpIds, multiProvidersControllerCmpId);
 		}
-		
+
 		contentBorn.contextPut("providers", providerCmpIds);
 		contentBorn.contextPut("locale", getLocale());
+	}
 
-		// prepare info message
+	private void addSystemAndNodeMessages(VelocityContainer contentBorn) {
 		SysInfoMessage sysInfoMsg = infoMessageMgr.getInfoMessage();
 		if (sysInfoMsg.hasMessage()) {
-			String infomsg = sysInfoMsg.getTimedMessage();
-			if (StringHelper.containsNonWhitespace(infomsg)) {
-				contentBorn.contextPut("infomsg", infomsg);				
+			String infoMsg = sysInfoMsg.getTimedMessage();
+			if (StringHelper.containsNonWhitespace(infoMsg)) {
+				contentBorn.contextPut("infomsg", infoMsg);
 			}
 		}
 
 		SysInfoMessage sysInfoNodeMsg = infoMessageMgr.getInfoMessageNodeOnly();
 		if (sysInfoNodeMsg.hasMessage()) {
-			String infomsgNode = sysInfoNodeMsg.getTimedMessage();
-			if (infomsgNode.length() > 0) {
-				contentBorn.contextPut("infomsgNode", infomsgNode);
+			String infoMsgNode = sysInfoNodeMsg.getTimedMessage();
+			if (!infoMsgNode.isEmpty()) {
+				contentBorn.contextPut("infomsgNode", infoMsgNode);
 			}
 		}
-		
-		// add additional logiin intro message for custom content
+	}
+
+	private void addCustomLoginMessages(VelocityContainer contentBorn) {
+		// add additional login intro message for custom content
 		String customMsg = translate("login.custommsg");
-		if(!StringUtils.isBlank(customMsg)) {
-			contentBorn.contextPut("logincustommsg",customMsg);
+		if (!StringUtils.isBlank(customMsg)) {
+			contentBorn.contextPut("logincustommsg", customMsg);
 		}
+
 		// add additional login footer message for custom content
 		String footerMsg = translate("login.customfootermsg");
-		if(!StringUtils.isBlank(footerMsg)) {
-			contentBorn.contextPut("loginfootermsg",footerMsg);
+		if (!StringUtils.isBlank(footerMsg)) {
+			contentBorn.contextPut("loginfootermsg", footerMsg);
 		}
-		
+
 		// add additional login footer message for custom content
 		String helpMsg = translate("login.customhelpmsg");
-		if(!StringUtils.isBlank(helpMsg)) {
-			contentBorn.contextPut("loginhelpmsg",helpMsg);
+		if (!StringUtils.isBlank(helpMsg)) {
+			contentBorn.contextPut("loginhelpmsg", helpMsg);
 		}
-		
-		//login is blocked?
-		if(AuthHelper.isLoginBlocked()) {
+	}
+
+	private void setupLoginRestrictions(VelocityContainer contentBorn) {
+		if (AuthHelper.isLoginBlocked()) {
 			contentBorn.contextPut("loginBlocked", Boolean.TRUE);
 		}
-		
-		// guest link
-		contentBorn.contextPut("guestLogin", Boolean.valueOf(loginModule.isGuestLoginEnabled()));
-		contentBorn.contextPut("startLogin", Boolean.FALSE);
-		
+	}
+
+	private void addCatalogLinkIfApplicable(VelocityContainer contentBorn) {
 		if (catalogV2Module.isEnabled() && catalogV2Module.isWebPublishEnabled() && catalogV2Module.isWebPublishLoginSite()) {
 			ExternalLink catalogLink = LinkFactory.createExternalLink("login.catalog", "", WebCatalogDispatcher.getBaseUrl().toString());
 			catalogLink.setElementCssClass("o_login_catalog_button btn btn-default o_login_btn_icon_right");
@@ -299,33 +325,33 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			catalogLink.setTarget("_self");
 			contentBorn.put("login.catalog", catalogLink);
 		}
-		
+	}
+
+	private void addFaqLinkIfAvailable(VelocityContainer contentBorn) {
 		String loginUrl = loginModule.getLoginFaqUrl();
-		if(StringHelper.containsNonWhitespace(loginUrl)) {
+		if (StringHelper.containsNonWhitespace(loginUrl)) {
 			if (helpModule.isHelpEnabled() && !loginUrl.startsWith("http")) {
 				loginUrl = helpModule.getManualProvider().getURL(getLocale(), loginUrl);
 			}
-			
 			ExternalLink faqLink = LinkFactory.createExternalLink("faq", translate("login.faq"), loginUrl);
 			faqLink.setIconLeftCSS("o_icon o_icon-fw o_icon_arrow_right");
 			faqLink.setName(translate("login.faq"));
 			faqLink.setElementCssClass("o_login_faq");
 			contentBorn.put("faq", faqLink);
 		}
-		
-		return contentBorn;
 	}
-	
+
+
 	private void swapOLATAuthenticationController(List<String> cmpIdsList, String cmpId) {
 		if(authenticationCtrlList.size() <= 1 || authenticationCtrlList.get(0) instanceof OLATAuthenticationController) {
 			return;
 		}
-		
+
 		if(cmpIdsList.remove(cmpId)) {
 			cmpIdsList.add(0, cmpId);
 		}
 	}
-	
+
 	private void initChangePassword(VelocityContainer container) {
 		if(ldapLoginModule.isLDAPEnabled()) {
 			if(ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
@@ -359,11 +385,11 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		} else if (source == changePasswordLink) {
 			openChangePassword(ureq, null);
 		} else if (ACTION_LOGIN.equals(event.getCommand())
-				&& "guest".equalsIgnoreCase(ureq.getParameter(ATTR_LOGIN_PROVIDER))) { 
+				&& "guest".equalsIgnoreCase(ureq.getParameter(ATTR_LOGIN_PROVIDER))) {
 			doGuestLogin(ureq);
 		}
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(pwChangeCtrl == source || registrationWizardCtrl == source) {
@@ -392,28 +418,28 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			doBack();
 		}
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(pwChangeCtrl);
 		removeAsListenerAndDispose(cmc);
 		pwChangeCtrl = null;
 		cmc = null;
 	}
-	
+
 	private void doBack() {
 		for(Controller ctrl:authenticationCtrlList) {
 			ctrl.getInitialComponent().setVisible(true);
 		}
 		switchVisibility(registerLink, true);
-		content.contextPut("guestLogin", Boolean.valueOf(loginModule.isGuestLoginEnabled()));
+		content.contextPut("guestLogin", loginModule.isGuestLoginEnabled());
 		content.contextPut("startLogin", Boolean.FALSE);
 		content.setDirty(true);
-		
+
 		if(changePasswordLink != null) {
 			changePasswordLink.setVisible(!loginModule.isOlatProviderLoginButton());
 		}
 	}
-	
+
 	private void doStart(Controller source) {
 		for(Controller ctrl:authenticationCtrlList) {
 			ctrl.getInitialComponent().setVisible(source == ctrl);
@@ -422,12 +448,12 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		content.contextPut("guestLogin", Boolean.FALSE);
 		content.contextPut("startLogin", Boolean.TRUE);
 		content.setDirty(true);
-		
+
 		if(changePasswordLink != null) {
 			changePasswordLink.setVisible(true);
 		}
 	}
-	
+
 	private void switchVisibility(Component cmp, boolean visible) {
 		if(cmp != null) {
 			cmp.setVisible(visible);
@@ -440,9 +466,9 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 		doLogin(ureq, identity, provider);
 	}
-	
+
 	private void doGuestLogin(UserRequest ureq) {
-		if (loginModule.isGuestLoginEnabled()) {				
+		if (loginModule.isGuestLoginEnabled()) {
 			int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				//
@@ -452,7 +478,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				getWindowControl().setError(translate("error.guest.login", WebappHelper.getMailConfig("mailSupport")));
 			} else {
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
-			}	
+			}
 		} else {
 			DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 		}
@@ -465,7 +491,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	protected void showBrowserCheckPage(UserRequest ureq) {
 		VelocityContainer browserCheck = createVelocityContainer("browsercheck");
-		browserCheck.contextPut("isBrowserAjaxReady", Boolean.valueOf(!Settings.isBrowserAjaxBlacklisted(ureq)));
+		browserCheck.contextPut("isBrowserAjaxReady", !Settings.isBrowserAjaxBlacklisted(ureq));
 		dmzPanel.pushContent(browserCheck);
 	}
 
