@@ -90,6 +90,10 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumRefImpl;
+import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
@@ -136,6 +140,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private static final String WITHOUT_TEACHERS_TAB_ID = "WithoutTeachers";
 	
 	private static final String FILTER_ROLL_CALL_STATUS = "Status";
+	private static final String FILTER_CURRICULUM = "Curriculum";
 	private static final String FILTER_TEACHERS = "Teachers";
 	
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
@@ -158,8 +163,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private FlexiFiltersTab pendingTab;
 	private FlexiFiltersTab withoutTeachersTab;
 	private Map<String,FlexiFiltersTab> tabsMap = Map.of();
-
+	
 	private FlexiTableMultiSelectionFilter teachersFilter;
+	private FlexiTableMultiSelectionFilter curriculumFilter;
 	private FlexiTableMultiSelectionFilter rollCallStatusFilter;
 	private final SelectionValues teachersValues = new SelectionValues();
 	
@@ -186,6 +192,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
@@ -359,7 +367,23 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
-
+		
+		if(entry == null && curriculumElement == null && curriculum == null) {
+			CurriculumSearchParameters searchParams = new CurriculumSearchParameters();
+			searchParams.setCurriculumAdmin(getIdentity());
+			List<Curriculum> curriculums = curriculumService.getCurriculums(searchParams);
+			
+			SelectionValues curriculumValues = new SelectionValues();
+			for(Curriculum curriculum:curriculums) {
+				curriculumValues.add(SelectionValues.entry(curriculum.getKey().toString(), curriculum.getDisplayName()));
+			}
+			
+			curriculumFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
+					FILTER_CURRICULUM, curriculumValues, true);
+			filters.add(curriculumFilter);
+			
+		}
+		
 		SelectionValues rollCallStatusValues = new SelectionValues();
 		rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.open.name(), translate("search.form.status.open")));
 		rollCallStatusValues.add(SelectionValues.entry(LectureRollCallStatus.closed.name(), translate("search.form.status.closed")));
@@ -521,13 +545,14 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			searchParams.setCurriculumElement(oneLevelOnly ? curriculumElement : null);
 			searchParams.setLectureConfiguredRepositoryEntry(false);
 		} else if(curriculum != null) {
-			searchParams.setCurriculum(curriculum);
+			searchParams.setCurriculums(List.of(curriculum));
 			searchParams.setLectureConfiguredRepositoryEntry(false);
 		} else if(entry != null) {
 			searchParams.setRepositoryEntry(entry);
 			searchParams.setLectureConfiguredRepositoryEntry(true);
 		} else {
 			searchParams.setInSomeCurriculum(true);
+			searchParams.setLectureConfiguredRepositoryEntry(false);
 		}
 		
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ROLL_CALL_STATUS);
@@ -535,17 +560,33 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			List<String> filterValues = extendedFilter.getValues();
 			if(filterValues != null && !filterValues.isEmpty()) {
 				List<LectureRollCallStatus> status = filterValues.stream()
-						.map(LectureRollCallStatus::valueOf).toList();
+						.map(LectureRollCallStatus::valueOf)
+						.toList();
 				searchParams.setRollCallStatus(status);
 			}
 		}
 		
-
+		FlexiTableFilter cFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_CURRICULUM);
+		if (cFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				List<CurriculumRef> keys = filterValues.stream()
+						.filter(StringHelper::isLong)
+						.map(Long::valueOf)
+						.map(CurriculumRefImpl::new)
+						.map(CurriculumRef.class::cast)
+						.toList();
+				searchParams.setCurriculums(keys);
+				searchParams.setInSomeCurriculum(false);
+				searchParams.setLectureConfiguredRepositoryEntry(false);
+			}
+		}
+		
 		if(FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_TEACHERS) != null) {
 			List<String> filterValues = teachersFilter.getValues();
 			if(filterValues != null && !filterValues.isEmpty()) {
 				List<IdentityRefImpl> teachersKeys = filterValues.stream()
-						.filter(value -> StringHelper.isLong(value))
+						.filter(StringHelper::isLong)
 						.map(key -> new IdentityRefImpl(Long.valueOf(key)))
 						.toList();
 				searchParams.setTeachersList(teachersKeys);

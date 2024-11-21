@@ -248,7 +248,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setLectureConfiguredRepositoryEntry(false);
 		if(curriculum != null) {
-			searchParams.setCurriculum(curriculum);
+			searchParams.setCurriculums(List.of(curriculum));
 		} else if(curriculumElement != null) {
 			searchParams.setCurriculumElementPath(curriculumElement.getMaterializedPathKeys());
 		} else {

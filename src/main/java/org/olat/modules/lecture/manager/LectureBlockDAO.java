@@ -48,6 +48,7 @@ import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
@@ -756,10 +757,10 @@ public class LectureBlockDAO {
 			sb.append("entry.status not ").in(RepositoryEntryStatusEnum.deleted()).append(")");
 		}
 		
-		if(searchParams.getCurriculum() != null) {
-			sb.and().append(" (curEl.curriculum.key=:curriculumKey or entry.key in (select crel.entry.key from repoentrytogroup as crel")
+		if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
+			sb.and().append(" (curEl.curriculum.key in (:curriculumKeys) or entry.key in (select crel.entry.key from repoentrytogroup as crel")
 			  .append(" inner join curriculumelement centryEl on (centryEl.group.key=crel.group.key)")
-			  .append(" where centryEl.curriculum.key=:curriculumKey")
+			  .append(" where centryEl.curriculum.key in (:curriculumKeys)")
 			  .append("))");
 		}
 		
@@ -860,8 +861,11 @@ public class LectureBlockDAO {
 			query.setParameter("repoEntryKey", searchParams.getRepositoryEntry().getKey());
 		}
 		
-		if(searchParams.getCurriculum() != null) {
-			query.setParameter("curriculumKey", searchParams.getCurriculum().getKey());
+		if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
+			List<Long> keys = searchParams.getCurriculums().stream()
+					.map(CurriculumRef::getKey)
+					.toList();
+			query.setParameter("curriculumKeys", keys);
 		}
 		
 		if(searchParams.getLectureBlocks() != null && !searchParams.getLectureBlocks().isEmpty()) {
