@@ -210,8 +210,9 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(infoCol);
 		
 		if(!printView && secCallback.canChangeRates()) {
-			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
-					new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
+			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
+			editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+			editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
 			editColumn.setExportable(false);
 			editColumn.setAlwaysVisible(true);
 			editColumn.setColumnCssClass("o_col_sticky_right o_col_action");

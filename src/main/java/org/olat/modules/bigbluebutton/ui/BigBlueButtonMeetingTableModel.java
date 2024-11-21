@@ -122,7 +122,7 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeetingRow> {
 		server("table.header.server"),
 		resource("meeting.resource"),
 		edit("edit"),
-		tools("tools");
+		tools("action.more");
 		
 		private final String i18nHeaderKey;
 		

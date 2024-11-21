@@ -31,12 +31,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -95,7 +95,6 @@ public class GradersListController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private GradersListTableModel tableModel;
 	
-	private int counter = 0;
 	private final RepositoryEntry referenceEntry;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -173,12 +172,7 @@ public class GradersListController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.recordedTime));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GradersCol.absence, new GraderAbsenceLeaveCellRenderer(getTranslator())));
-		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(GradersCol.tools);
-		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsCol.setHeaderLabel(translate("action.more"));
-		toolsCol.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(GradersCol.tools));
 		
 		tableModel = new GradersListTableModel(columnsModel, userPropertyHandlers, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "graders", tableModel, 24, false, getTranslator(), formLayout);
@@ -203,13 +197,9 @@ public class GradersListController extends FormBasicController {
 		GraderRow row = new GraderRow(rawGrader.getGrader(), rawGrader.getStatistics(),
 				rawGrader.getRecordedTimeInSeconds(), rawGrader.getRecordedMetadataTimeInSeconds(),
 				rawGrader.getAbsenceLeaves(), rawGrader.getGraderStatus());
-		// tools
-		String linkName = "tools-" + counter++;
-		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
-		flc.add(linkName, toolsLink);
 		row.setToolsLink(toolsLink);
 		return row;
 	}

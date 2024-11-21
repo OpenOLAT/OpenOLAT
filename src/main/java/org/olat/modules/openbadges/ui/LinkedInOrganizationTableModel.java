@@ -72,7 +72,7 @@ public class LinkedInOrganizationTableModel extends DefaultFlexiTableDataModel<L
 	public enum Columns implements FlexiSortableColumnDef {
 		organizationId("organization.id"),
 		organizationName("organization.name"),
-		tools("table.header.actions");
+		tools("action.more");
 
 		private final String i18nKey;
 

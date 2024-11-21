@@ -26,6 +26,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -38,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -46,9 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -73,10 +74,9 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.IssuedBadgesTableModel.IssuedBadgeCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
-
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -86,7 +86,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class IssuedBadgesController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 
-	private static final String CMD_TOOLS = "tools";
 	private final static String CMD_SELECT = "select";
 	private final String mediaUrl;
 	private final String downloadUrl;
@@ -128,7 +127,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		}
 
 		initForm(ureq);
-		loadModel(ureq, null);
+		loadModel(null);
 		initFilters();
 	}
 
@@ -157,12 +156,8 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		if (identity == null) {
 			columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IssuedBadgesTableModel.IssuedBadgeCols.recipient));
 		}
-
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
-				IssuedBadgesTableModel.IssuedBadgeCols.tools.i18nHeaderKey(),
-				IssuedBadgesTableModel.IssuedBadgeCols.tools.ordinal()
-		);
-		columnModel.addFlexiColumnModel(toolsColumn);
+		
+		columnModel.addFlexiColumnModel(new ActionsColumnModel(IssuedBadgeCols.tools));
 
 		tableModel = new IssuedBadgesTableModel(columnModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 10,
@@ -201,7 +196,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 		tableEl.expandFilters(true);
 	}
 
-	private void loadModel(UserRequest ureq, List<FlexiTableFilter> filters) {
+	private void loadModel(List<FlexiTableFilter> filters) {
 		removeTemporaryFiles();
 		List<IssuedBadgeRow> issuedBadgeRows = openBadgesManager.getBadgeAssertionsWithSizes(identity, courseEntry,
 						nullEntryMeansAll).stream()
@@ -275,14 +270,7 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 			row.setAddToLinkedInUrl(openBadgesManager.badgeAssertionAsLinkedInUrl(badgeAssertion));
 		}
 
-		String toolId = "tool_" + badgeAssertion.getUuid();
-		FormLink toolLink = (FormLink) flc.getComponent(toolId);
-		if (toolLink == null) {
-			toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", tableEl, Link.LINK | Link.NONTRANSLATED);
-			toolLink.setTranslator(getTranslator());
-			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolLink.setTitle(translate("table.header.actions"));
-		}
+		FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolLink.setUserObject(badgeAssertion);
 		row.setToolLink(toolLink);
 	}
@@ -341,10 +329,10 @@ public class IssuedBadgesController extends FormBasicController implements Flexi
 			}
 		} else if (source == tableEl) {
 			if (event instanceof FlexiTableSearchEvent searchEvent && FlexiTableSearchEvent.FILTER.equals(searchEvent.getCommand())) {
-				loadModel(ureq, searchEvent.getFilters());
+				loadModel(searchEvent.getFilters());
 			}
 		} else if (source instanceof FormLink link) {
-			if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof BadgeAssertion badgeAssertion) {
+			if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof BadgeAssertion badgeAssertion) {
 				doOpenTools(ureq, link, badgeAssertion);
 			}
 		}

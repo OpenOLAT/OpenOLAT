@@ -41,7 +41,6 @@ public class ChapterTableModel extends DefaultFlexiTableDataModel<ChapterTableRo
 		return switch (columnDef) {
 			case start -> chapterTableRow.getVideoChapterTableRow().getIntervals();
 			case text -> chapterTableRow.getVideoChapterTableRow().getChapterName();
-			case edit -> "";
 			case tools -> chapterTableRow.getToolLink();
 		};
 	}
@@ -49,8 +48,7 @@ public class ChapterTableModel extends DefaultFlexiTableDataModel<ChapterTableRo
 	public enum ChapterTableCols implements FlexiSortableColumnDef {
 		start("table.header.chapter.start"),
 		text("table.header.chapter.text"),
-		edit("table.header.chapter.edit"),
-		tools("table.header.chapter.tools");
+		tools("action.more");
 
 		private final String i18nKey;
 

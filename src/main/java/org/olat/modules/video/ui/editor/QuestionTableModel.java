@@ -35,8 +35,7 @@ public class QuestionTableModel extends DefaultFlexiTableDataModel<VideoQuestion
 	public enum QuestionColDef implements FlexiSortableColumnDef {
 		question("form.question.table.question"),
 		type("form.question.table.type"),
-		score("form.question.table.score"),
-		edit("form.question.table.edit");
+		score("form.question.table.score");
 
 		private final String i18nKey;
 

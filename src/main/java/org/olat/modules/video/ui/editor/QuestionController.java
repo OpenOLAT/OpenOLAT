@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -52,7 +53,6 @@ import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
 import org.olat.repository.RepositoryEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -147,9 +147,11 @@ public class QuestionController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionTableModel.QuestionColDef.type,
 				new QuestionTypeFlexiCellRenderer(assessmentTranslator)));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionTableModel.QuestionColDef.score));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(
-				QuestionTableModel.QuestionColDef.edit.i18nHeaderKey(),
-				translate(QuestionTableModel.QuestionColDef.edit.i18nHeaderKey()), EDIT_ACTION));
+		
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
+		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, EDIT_ACTION, null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
+		columnModel.addFlexiColumnModel(editColumn);
 
 		tableModel = new QuestionTableModel(columnModel);
 		questionTable = uifactory.addTableElement(getWindowControl(), "questionTable", tableModel,

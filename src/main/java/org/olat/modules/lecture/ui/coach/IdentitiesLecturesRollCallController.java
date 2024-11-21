@@ -39,10 +39,12 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -217,7 +219,8 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(col);
 		}
 		
-		DefaultFlexiColumnModel rollCallCol = new DefaultFlexiColumnModel("rollcall.do", translate("table.header.details"), "rollcall");
+		DefaultFlexiColumnModel rollCallCol = new DefaultFlexiColumnModel("rollcall.do", -1);
+		rollCallCol.setCellRenderer(new StaticFlexiCellRenderer(null, "rollcall", null, "o_icon o_icon_lecture o_icon-lg", translate("rollcall.do")));
 		rollCallCol.setIconHeader("o_icon o_icon_lecture o_icon-lg");
 		rollCallCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(rollCallCol);
@@ -326,11 +329,8 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 	private IdentityLecturesRollCallsRow forgeRow(Identity participant, ImmunityProofLevel immunoStatus) {
 		IdentityLecturesRollCallsRow row = new IdentityLecturesRollCallsRow(participant, immunoStatus);
 
-		String linkName = "tools-" + counter++;
-		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
-		flc.add(linkName, toolsLink);
 		row.setTools(toolsLink);
 
 		return row;

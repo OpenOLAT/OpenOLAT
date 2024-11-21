@@ -44,8 +44,6 @@ public class BindersDataModel extends DefaultFlexiTableDataModel<BinderRow> {
 		switch(PortfolioCols.values()[col]) {
 			case key: return portfolio.getKey();
 			case title: return portfolio.getTitle();
-			case open: return portfolio.getOpenLink();
-			case tools: return portfolio.getToolsLink();
 		}
 		return null;
 	}
@@ -64,9 +62,7 @@ public class BindersDataModel extends DefaultFlexiTableDataModel<BinderRow> {
 	
 	public enum PortfolioCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		title("table.header.title"),
-		open("table.header.open"),
-		tools("table.header.tools");
+		title("table.header.title");
 		
 		private final String i18nKey;
 		

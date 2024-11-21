@@ -36,7 +36,14 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.*;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -60,8 +67,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class ZoomConfigurationController extends FormBasicController {
-
-    private static final String CMD_TOOLS = "tools";
 
     private final SelectionValues moduleEnabledKV = new SelectionValues();
     private final SelectionValues enableForKV = new SelectionValues();
@@ -141,9 +146,7 @@ public class ZoomConfigurationController extends FormBasicController {
         ));
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 
-        StickyActionColumnModel toolsColumn = new StickyActionColumnModel(ZoomProfileCols.tools.i18nHeaderKey(), ZoomProfileCols.tools.ordinal());
-        toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-        columnsModel.addFlexiColumnModel(toolsColumn);
+        columnsModel.addFlexiColumnModel(new ActionsColumnModel(ZoomProfileCols.tools));
 
         profilesTableModel = new ZoomProfilesTableModel(columnsModel, getLocale());
         profilesTableEl = uifactory.addTableElement(getWindowControl(), "profiles", profilesTableModel, 10, false, getTranslator(), formLayout);
@@ -253,7 +256,7 @@ public class ZoomConfigurationController extends FormBasicController {
         	doAdd(ureq);
         } else if (source instanceof FormLink) {
             FormLink link = (FormLink)source;
-            if (CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof ZoomProfileRow) {
+            if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof ZoomProfileRow) {
                 doOpenTools(ureq, link, (ZoomProfileRow)link.getUserObject());
             }
         } else if (source == profilesTableEl) {
@@ -296,19 +299,12 @@ public class ZoomConfigurationController extends FormBasicController {
 
     private ZoomProfileRow mapZoomProfileToRow(ZoomProfileDAO.ZoomProfileWithConfigCount zoomProfileWithConfigCount) {
         ZoomProfileRow row = new ZoomProfileRow(zoomProfileWithConfigCount.getZoomProfile(), zoomProfileWithConfigCount.getConfigCount());
-        addToolLink(row, zoomProfileWithConfigCount.getZoomProfile());
+        addToolLink(row);
         return row;
     }
 
-    private void addToolLink(ZoomProfileRow row, ZoomProfile zoomProfile) {
-        String toolId = "tool_" + zoomProfile.getKey();
-        FormLink toolLink = (FormLink)flc.getFormComponent(toolId);
-        if (toolLink == null) {
-            toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", profilesTableEl, Link.LINK | Link.NONTRANSLATED);
-            toolLink.setTranslator(getTranslator());
-            toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-            toolLink.setTitle(translate("table.header.actions"));
-        }
+    private void addToolLink(ZoomProfileRow row) {
+        FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
         toolLink.setUserObject(row);
         row.setToolLink(toolLink);
     }

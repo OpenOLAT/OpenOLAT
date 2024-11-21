@@ -19,11 +19,15 @@
  */
 package org.olat.modules.zoom.ui;
 
-import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.*;
-
 import java.util.List;
 import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  *
@@ -43,7 +47,7 @@ public class ZoomProfilesTableModel extends DefaultFlexiTableDataModel<ZoomProfi
         studentsCanHost("table.header.profile.studentsCanHost"),
         clientId("table.header.profile.clientId"),
         applications("table.header.profile.applications"),
-        tools("table.header.actions");
+        tools("action.more");
 
         private final String i18nHeaderKey;
 

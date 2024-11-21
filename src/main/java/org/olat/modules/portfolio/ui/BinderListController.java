@@ -234,12 +234,9 @@ public class BinderListController extends FormBasicController
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		BinderRow elRow = model.getObject(row);
-		List<Component> components = new ArrayList<>(3);
+		List<Component> components = new ArrayList<>(1);
 		if(elRow.getOpenLink() != null) {
 			components.add(elRow.getOpenLink().getComponent());
-		}
-		if(elRow.getToolsLink() != null) {
-			components.add(elRow.getToolsLink().getComponent());
 		}
 		return components;
 	}
@@ -300,15 +297,9 @@ public class BinderListController extends FormBasicController
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open", "open", null, flc, Link.LINK);
 		openLink.setIconRightCSS("o_icon o_icon_start");
 		
-		String toolsLinkId = "tools_" + (++counter);
-		FormLink toolsLink = uifactory.addFormLink(toolsLinkId, "tools", null, null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.getComponent().setCustomDisplayText("");
-		toolsLink.setIconRightCSS("o_icon o_icon_settings");
-		
 		VFSLeaf image = portfolioService.getPosterImageLeaf(binderRow);
-		BinderRow row = new BinderRow(binderRow, image, openLink, toolsLink);
+		BinderRow row = new BinderRow(binderRow, image, openLink);
 		openLink.setUserObject(row);
-		toolsLink.setUserObject(row);
 		return row;
 	}
 	

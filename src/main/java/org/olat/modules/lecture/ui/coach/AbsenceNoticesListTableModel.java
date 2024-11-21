@@ -143,9 +143,9 @@ implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 		teachers("table.header.teachers"),
 		numOfLectures("table.header.num.lecture.block"),
 		reason("table.header.reason"),
-		details("table.header.infos"),
+		details("details"),
 		type("table.header.notice.type"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nKey;
 		

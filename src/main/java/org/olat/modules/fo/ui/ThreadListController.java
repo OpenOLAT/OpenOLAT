@@ -132,7 +132,9 @@ public class ThreadListController extends FormBasicController {
 			newThreadButton.setElementCssClass("o_sel_forum_thread_new");
 		}
 		if(foCallback.mayArchiveForum() || foCallback.mayFilterForUser()) {
-			toolsLink = uifactory.addFormLink("tools.link", "foToolsLink", "fo.tools.link", null, formLayout, Link.BUTTON_SMALL);
+			toolsLink = uifactory.addFormLink("tools.link", "foToolsLink", "", null, formLayout, Link.BUTTON_SMALL + Link.NONTRANSLATED);
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsLink.setTitle(translate("action.more"));
 		}
 		
 		if(formLayout instanceof FormLayoutContainer) {
@@ -148,15 +150,16 @@ public class ThreadListController extends FormBasicController {
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.type, new StatusTypeCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.thread, "select",
-				 new StaticFlexiCellRenderer("select", new StickyCellRenderer())));
+		DefaultFlexiColumnModel threadColumn = new DefaultFlexiColumnModel(ThreadListCols.thread);
+		threadColumn.setCellRenderer(new StaticFlexiCellRenderer("select", new StickyCellRenderer()));
+		columnsModel.addFlexiColumnModel(threadColumn);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.creator));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.lastModified));
 		if(!guestOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.markedMessages,
-					"marked", new StaticFlexiCellRenderer("marked", new TextFlexiCellRenderer())));
+					"marked", new TextFlexiCellRenderer()));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.unreadMessages,
-					"unread", new StaticFlexiCellRenderer("unread", new TextFlexiCellRenderer())));
+					"unread", new TextFlexiCellRenderer()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.totalMessages));
 		

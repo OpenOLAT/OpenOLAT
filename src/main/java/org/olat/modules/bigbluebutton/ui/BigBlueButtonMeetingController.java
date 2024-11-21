@@ -37,13 +37,13 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -294,9 +294,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BRecordingsCols.publish));
 			withPublish = true;
 			if(recordingsHandler.canDeleteRecordings() && recordingsHandler.allowPermanentRecordings()) {
-				StickyActionColumnModel toolsCol = new StickyActionColumnModel(BRecordingsCols.tools);
-				toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-				columnsModel.addFlexiColumnModel(toolsCol);
+				columnsModel.addFlexiColumnModel(new ActionsColumnModel(BRecordingsCols.tools));
 				withTools = true;
 			} else if(recordingsHandler.canDeleteRecordings()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", BRecordingsCols.presentation.ordinal(), "delete",
@@ -343,10 +341,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			}
 			
 			if(withTools) {
-				FormLink toolsLink = uifactory.addFormLink("tools-".concat(recId),
-						"tools", "", tableEl, Link.LINK | Link.NONTRANSLATED);
-				toolsLink.setAriaLabel(translate("table.header.actions"));
-				toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+				FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 				toolsLink.setUserObject(row);
 				row.setToolsLink(toolsLink);
 			}

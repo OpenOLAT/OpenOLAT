@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
@@ -46,7 +47,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -110,7 +110,6 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private AssessmentModeForLectureEditController assessmentModeEditCtrl;
 	
-	private int counter;
 	private final String id;
 	private final boolean admin;
 	private final boolean sortAsc;
@@ -173,14 +172,13 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.teachers));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
-		DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(TeachCols.details.i18nHeaderKey(), TeachCols.details.ordinal(), "details",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null));
-		// set sort key even though we do not sort - added as css classes to column headers for styling
-		detailsCol.setSortKey(TeachCols.details.name());
+		DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(TeachCols.details);
+		detailsCol.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(null, "details", null,
+				"o_icon o_icon_lecture o_icon-lg", translate("details")), null));
+		detailsCol.setIconHeader("o_icon o_icon_lecture o_icon-lg");
 		columnsModel.addFlexiColumnModel(detailsCol);
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(TeachCols.tools);
-		toolsCol.setSortable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TeachCols.tools));
 		
 		tableModel = new TeacherOverviewDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, defaultPageSize, false, getTranslator(), formLayout);
@@ -215,8 +213,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	
 	protected void loadModel(List<LectureBlockRow> blocks) {
 		for(LectureBlockRow row:blocks) {
-			FormLink toolsLink = uifactory.addFormLink("tools_" + (counter++), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions o_icon-fws");
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}

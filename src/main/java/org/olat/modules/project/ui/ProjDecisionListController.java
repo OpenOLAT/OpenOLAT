@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -53,7 +54,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -196,12 +196,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 		}
 		if (isVisible(DecisionCols.deletedDate)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.deletedDate));
-			StickyActionColumnModel toolsCol = new StickyActionColumnModel(DecisionCols.tools);
-			toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
-			toolsCol.setAlwaysVisible(true);
-			toolsCol.setSortable(false);
-			toolsCol.setExportable(false);
-			columnsModel.addFlexiColumnModel(toolsCol);
+			columnsModel.addFlexiColumnModel(new ActionsColumnModel(DecisionCols.tools));
 		}
 		
 		dataModel = new ProjDecisionDataModel(columnsModel, getLocale());
@@ -457,9 +452,7 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	}
 	
 	private void forgeToolsLink(ProjDecisionRow row) {
-		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

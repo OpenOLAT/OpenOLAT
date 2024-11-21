@@ -92,7 +92,7 @@ public class JupyterHubsTableModel extends DefaultFlexiTableDataModel<JupyterHub
 		ram("table.header.hub.ram"),
 		cpu("table.header.hub.cpu"),
 		applications("table.header.hub.applications"),
-		tools("table.header.actions");
+		tools("action.more");
 
 		private final String i18nHeaderKey;
 

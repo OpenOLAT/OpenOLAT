@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -46,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -92,7 +94,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TaxonomyTreeTableController extends FormBasicController implements BreadcrumbPanelAware, Activateable2 {
 
-	private static final String TOOLS_TAXONOMY_LEVEL = "tools";
 	private static final String TOOLS_IMPORT_EXPORT = "importExportTools";
 	private static final String ACTION_SELECT = "select";
 
@@ -115,7 +116,6 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private EditTaxonomyLevelController createTaxonomyLevelCtrl;
 	private StepsMainRunController importWizardCtrl;
 	
-	private int counter = 0;
 	private final Taxonomy taxonomy;
 	private boolean dirty = false;
 	
@@ -149,7 +149,9 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		mergeButton = uifactory.addFormLink("merge.taxonomy.level", formLayout, Link.BUTTON);
 		typeButton = uifactory.addFormLink("type.taxonomy.level", formLayout, Link.BUTTON);
 		moveButton = uifactory.addFormLink("move.taxonomy.level", formLayout, Link.BUTTON);
-		uifactory.addFormLink(TOOLS_IMPORT_EXPORT, TOOLS_IMPORT_EXPORT, TOOLS_TAXONOMY_LEVEL, null, formLayout, Link.BUTTON);
+		FormLink importExportLink = uifactory.addFormLink(TOOLS_IMPORT_EXPORT, TOOLS_IMPORT_EXPORT, "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
+		importExportLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions");
+		importExportLink.setTitle(translate("action.more"));
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.key));
@@ -161,12 +163,14 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.externalId, ACTION_SELECT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.typeIdentifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.numOfChildren));
-		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("zoom", translate("zoom"), "tt-focus");
+		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("zoom", -1);
+		selectColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "tt-focus", null, "o_icon o_icon-fw o_icon_enlarge", translate("show.sublevels")));
+		selectColumn.setIconHeader("o_icon o_icon_enlarge");
+		selectColumn.setHeaderLabel(translate("show.sublevels"));
 		selectColumn.setExportable(false);
+		selectColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(selectColumn);
-		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(TaxonomyLevelCols.tools);
-		toolsColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TaxonomyLevelCols.tools));
 
 		model = new TaxonomyTreeTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -241,9 +245,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 	
 	private TaxonomyLevelRow forgeRow(TaxonomyLevel taxonomyLevel) {
-		//tools
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), TOOLS_TAXONOMY_LEVEL, "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel);
 		String description = TaxonomyUIFactory.translateDescription(getTranslator(), taxonomyLevel);
 		TaxonomyLevelRow row = new TaxonomyLevelRow(taxonomyLevel, getLocale().toString(), displayName, description, toolsLink);
@@ -311,7 +313,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if(TOOLS_TAXONOMY_LEVEL.equals(cmd)) {
+			if("tools".equals(cmd)) {
 				TaxonomyLevelRow row = (TaxonomyLevelRow)link.getUserObject();
 				doOpenLevelTools(ureq, row, link);
 			} else if (TOOLS_IMPORT_EXPORT.equals(cmd)) {

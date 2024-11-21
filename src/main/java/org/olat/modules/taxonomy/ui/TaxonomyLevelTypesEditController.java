@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -79,8 +80,6 @@ public class TaxonomyLevelTypesEditController extends FormBasicController implem
 	private EditTaxonomyLevelTypeController editLevelTypeCtrl;
 	protected CloseableCalloutWindowController toolsCalloutCtrl;
 
-	private int counter = 1;
-	
 	private Taxonomy taxonomy;
 	
 	@Autowired
@@ -102,13 +101,14 @@ public class TaxonomyLevelTypesEditController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.displayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.allowedAsCompetence, new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("yes"), (String)null), new StaticFlexiCellRenderer(translate("no"), (String)null))));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.allowedAsSubject, new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("yes"), (String)null), new StaticFlexiCellRenderer(translate("no"), (String)null))));
-		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
-				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
+		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
 		editColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(editColumn);
-		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(TypesCols.tools);
-		toolsColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TypesCols.tools));
 		
 		model = new TaxonomyLevelTypesTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, 25, false, getTranslator(), formLayout);
@@ -119,7 +119,7 @@ public class TaxonomyLevelTypesEditController extends FormBasicController implem
 	public void loadModel() {
 		List<TaxonomyLevelType> types = taxonomyService.getTaxonomyLevelTypes(taxonomy);
 		List<TaxonomyLevelTypeRow> rows = types
-				.stream().map(t -> forgeRow(t))
+				.stream().map(this::forgeRow)
 				.collect(Collectors.toList());
 		model.setObjects(rows);
 		tableEl.reset(false, true, true);
@@ -128,8 +128,7 @@ public class TaxonomyLevelTypesEditController extends FormBasicController implem
 	private TaxonomyLevelTypeRow forgeRow(TaxonomyLevelType type) {
 		TaxonomyLevelTypeRow row = new TaxonomyLevelTypeRow(type);
 		if(isToolsEnable(type)) {
-			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}

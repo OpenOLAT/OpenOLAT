@@ -43,11 +43,11 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -225,9 +225,11 @@ public class AbsenceNoticesListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(wholeDateDefault, NoticeCols.end,
 				new StartEndDateCellRenderer(false, getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoticeCols.reason));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoticeCols.details));
+		DefaultFlexiColumnModel detailColumn = new DefaultFlexiColumnModel(NoticeCols.details);
+		detailColumn.setIconHeader("o_icon o_icon_info o_icon-lg");
+		columnsModel.addFlexiColumnModel(detailColumn);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoticeCols.type));
-		columnsModel.addFlexiColumnModel(new StickyActionColumnModel(NoticeCols.tools));
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(NoticeCols.tools));
 	}
 	
 	protected void reloadModel() {
@@ -314,6 +316,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		String detailsLinkName = "details-" + counter++;
 		FormLink detailsLink = uifactory.addFormLink(detailsLinkName, "details", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		detailsLink.setIconRightCSS("o_icon o_icon_info o_icon-lg");
+		detailsLink.setTitle(translate("details"));
 		detailsLink.setUserObject(row);
 		flc.add(detailsLinkName, detailsLink);
 		row.setDetailsLink(detailsLink);
@@ -328,11 +331,8 @@ public class AbsenceNoticesListController extends FormBasicController {
 		row.setTypeLink(typeLink);
 		
 		// tools
-		String linkName = "tools-" + counter++;
-		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
-		flc.add(linkName, toolsLink);
 		row.setToolsLink(toolsLink);
 
 		return row;

@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
@@ -43,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -104,7 +104,6 @@ public class LectureListRepositoryController extends FormBasicController {
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ConfirmDeleteLectureBlockController deleteLectureBlocksCtrl;
 
-	private int counter = 0;
 	private final RepositoryEntry entry;
 	private final boolean lectureManagementManaged;
 	private final LecturesSecurityCallback secCallback;
@@ -154,16 +153,14 @@ public class LectureListRepositoryController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
 
-		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
-				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
+		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
 		editColumn.setExportable(false);
 		editColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(editColumn);
-			
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(BlockCols.tools);
-		toolsColumn.setExportable(false);
-		toolsColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(BlockCols.tools));
 		
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -195,11 +192,8 @@ public class LectureListRepositoryController extends FormBasicController {
 					teachers.toString(), false, block.isAssessmentMode());
 			rows.add(row);
 			
-			String linkName = "tools-" + counter++;
-			FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
-			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
-			flc.add(linkName, toolsLink);
 			row.setToolsLink(toolsLink);
 		}
 		tableModel.setObjects(rows);
@@ -230,7 +224,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if(cmd != null && cmd.startsWith("tools-")) {
+			if(cmd != null && cmd.equals("tools")) {
 				LectureBlockRow row = (LectureBlockRow)link.getUserObject();
 				doOpenTools(ureq, row, link);
 			}

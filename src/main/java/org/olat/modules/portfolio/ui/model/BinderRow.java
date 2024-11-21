@@ -38,7 +38,6 @@ public class BinderRow implements BinderRef {
 	private final BinderStatistics binderStats;
 	private VFSLeaf image;
 	private final FormLink openLink;
-	private final FormLink toolsLink;
 	private final boolean newBinder;
 	
 	public BinderRow() {
@@ -46,14 +45,12 @@ public class BinderRow implements BinderRef {
 		image = null;
 		openLink = null;
 		newBinder = true;
-		toolsLink = null;
 	}
 	
-	public BinderRow(BinderStatistics binderStats, VFSLeaf image, FormLink openLink, FormLink toolsLink) {
+	public BinderRow(BinderStatistics binderStats, VFSLeaf image, FormLink openLink) {
 		this.binderStats = binderStats;
 		this.image = image;
 		this.openLink = openLink;
-		this.toolsLink = toolsLink;
 		newBinder = false;
 	}
 	
@@ -102,10 +99,6 @@ public class BinderRow implements BinderRef {
 
 	public FormLink getOpenLink() {
 		return openLink;
-	}
-	
-	public FormLink getToolsLink() {
-		return toolsLink;
 	}
 	
 	public boolean isBackground() {

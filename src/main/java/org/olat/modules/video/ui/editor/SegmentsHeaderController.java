@@ -48,7 +48,6 @@ import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.model.VideoSegmentCategoryImpl;
 import org.olat.modules.video.model.VideoSegmentImpl;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -100,6 +99,7 @@ public class SegmentsHeaderController extends FormBasicController {
 		previousSegmentButton = uifactory.addFormLink("previousSegment", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		previousSegmentButton.setIconRightCSS("o_icon o_icon_back");
+		previousSegmentButton.setTitle(translate("form.segment.previous"));
 		previousSegmentButton.setForceOwnDirtyFormWarning(true);
 
 		segmentsDropdown = uifactory.addDropdownSingleselect("segments", "", formLayout,
@@ -109,6 +109,7 @@ public class SegmentsHeaderController extends FormBasicController {
 		nextSegmentButton = uifactory.addFormLink("nextSegment", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		nextSegmentButton.setIconRightCSS("o_icon o_icon_start");
+		nextSegmentButton.setTitle(translate("form.segment.next"));
 		nextSegmentButton.setForceOwnDirtyFormWarning(true);
 
 		addSegmentButton = uifactory.addFormLink("addSegment", "form.add", "form.add", formLayout, Link.BUTTON);
@@ -119,6 +120,7 @@ public class SegmentsHeaderController extends FormBasicController {
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
 		commandsButton.setEnabled(!restrictedEdit);
+		commandsButton.setTitle(translate("action.more"));
 	}
 
 	public void setSegments(VideoSegments segments) {

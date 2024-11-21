@@ -20,6 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
@@ -48,12 +49,12 @@ public class QuestionModel extends DefaultFlexiTableDataModel<QuestionRow> {
 		};
 	}
 
-	public enum QuestionColumns {
-		up("quiz.up"),
-		down("quiz.down"),
+	public enum QuestionColumns implements FlexiColumnDef {
+		up("quiz.up.title"),
+		down("quiz.down.title"),
 		title("quiz.title"),
 		type("quiz.type"),
-		tools("quiz.tools");
+		tools("action.more");
 
 		private final String i18nKey;
 
@@ -61,7 +62,8 @@ public class QuestionModel extends DefaultFlexiTableDataModel<QuestionRow> {
 			this.i18nKey = i18nKey;
 		}
 
-		public String getI18nKey() {
+		@Override
+		public String i18nHeaderKey() {
 			return i18nKey;
 		}
 	}

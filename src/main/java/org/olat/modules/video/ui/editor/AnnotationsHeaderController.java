@@ -46,7 +46,6 @@ import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.model.VideoMarkerImpl;
 import org.olat.modules.video.ui.marker.VideoMarkerRowComparator;
 import org.olat.repository.RepositoryEntry;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -97,6 +96,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 		previousAnnotationButton = uifactory.addFormLink("previousAnnotation", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		previousAnnotationButton.setIconRightCSS("o_icon o_icon_back");
+		previousAnnotationButton.setTitle(translate("form.annotation.previous"));
 		previousAnnotationButton.setForceOwnDirtyFormWarning(true);
 
 		annotationsDropdown = uifactory.addDropdownSingleselect("annotations", "form.annotation.title",
@@ -106,6 +106,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 		nextAnnotationButton = uifactory.addFormLink("nextAnnotation", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		nextAnnotationButton.setIconRightCSS("o_icon o_icon_start");
+		nextAnnotationButton.setTitle(translate("form.annotation.next"));
 		nextAnnotationButton.setForceOwnDirtyFormWarning(true);
 
 		addAnnotationButton = uifactory.addFormLink("addAnnotation", "form.add", "form.add", formLayout, Link.BUTTON);
@@ -114,6 +115,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		commandsButton.setIconRightCSS("o_icon o_icon_commands");
+		commandsButton.setTitle(translate("action.more"));
 	}
 
 	public void setAnnotations(VideoMarkers annotations) {

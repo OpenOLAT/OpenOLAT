@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -45,7 +46,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -87,7 +87,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MasterController extends FormBasicController implements FlexiTableComponentDelegate {
 	private static final String THUMBNAIL_JPG_SUFFIX = ".jpg";
 	private static final String THUMBNAIL_BASE_FILE_NAME = "thumbnail_";
-	private static final String CMD_TOOLS = "tools";
 	private static final String SELECT_ACTION = "select";
 
 	private final VFSContainer thumbnailsContainer;
@@ -196,11 +195,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		}));
 
 		if (!readOnly) {
-			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(TimelineCols.tools.i18nHeaderKey(),
-					TimelineCols.tools.ordinal());
-			toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolsColumn.setColumnCssClass("o_icon-fws o_col_sticky_right o_col_action");
-			columnModel.addFlexiColumnModel(toolsColumn);
+			columnModel.addFlexiColumnModel(new ActionsColumnModel(TimelineCols.tools));
 		}
 
 		timelineModel = new TimelineModel(timelineDataSource, columnModel);
@@ -246,15 +241,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		}
 
 		for (TimelineRow timelineRow : timelineDataSource.getRows()) {
-			String toolId = "tool_" + timelineRow.getId();
-			FormLink toolLink = (FormLink) timelineTableEl.getFormComponent(toolId);
-			if (toolLink == null) {
-				toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", timelineTableEl,
-						Link.LINK | Link.NONTRANSLATED);
-				toolLink.setTranslator(getTranslator());
-				toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-				toolLink.setTitle(translate("table.header.timeline.tools"));
-			}
+			FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolLink.setUserObject(timelineRow);
 			timelineRow.setToolLink(toolLink);
 		}
@@ -382,7 +369,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				updateVisibility();
 			}
 		} else if (source instanceof FormLink formLink &&
-				CMD_TOOLS.equals(formLink.getCmd()) && formLink.getUserObject() instanceof TimelineRow timelineRow) {
+				"tools".equals(formLink.getCmd()) && formLink.getUserObject() instanceof TimelineRow timelineRow) {
 			doOpenTools(ureq, formLink, timelineRow);
 		} else if (zoomSlider == source) {
 			doZoom();

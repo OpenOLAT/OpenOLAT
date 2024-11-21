@@ -34,13 +34,13 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -58,7 +58,6 @@ import org.olat.ims.lti13.LTI13Module;
 import org.olat.modules.jupyterhub.JupyterHub;
 import org.olat.modules.jupyterhub.JupyterHubModule;
 import org.olat.modules.jupyterhub.JupyterManager;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -147,14 +146,8 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		));
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), CMD_EDIT));
-
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
-				JupyterHubsTableModel.JupyterHubCols.tools.i18nHeaderKey(),
-				JupyterHubsTableModel.JupyterHubCols.tools.ordinal()
-		);
-		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		columnsModel.addFlexiColumnModel(toolsColumn);
-
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(JupyterHubsTableModel.JupyterHubCols.tools));
+		
 		hubsTableModel = new JupyterHubsTableModel(columnsModel, getLocale());
 
 		hubsTable = uifactory.addTableElement(getWindowControl(), "hubs", hubsTableModel, 10,
@@ -170,20 +163,12 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 
 	private JupyterHubRow mapHubToHubRow(JupyterManager.JupyterHubWithCounts jupyterHubWithCounts) {
 		JupyterHubRow row = new JupyterHubRow(jupyterHubWithCounts.jupyterHub(), jupyterHubWithCounts.applicationCount(), jupyterHubWithCounts.participantCount());
-		addToolLink(row, jupyterHubWithCounts.jupyterHub());
+		addToolLink(row);
 		return row;
 	}
 
-	private void addToolLink(JupyterHubRow row, JupyterHub jupyterHub) {
-		String toolId = "tool_" + jupyterHub.getKey();
-		FormLink toolLink = (FormLink) flc.getFormComponent(toolId);
-		if (toolLink == null) {
-			toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", hubsTable,
-					Link.LINK | Link.NONTRANSLATED);
-			toolLink.setTranslator(getTranslator());
-			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-			toolLink.setTitle(translate("table.header.actions"));
-		}
+	private void addToolLink(JupyterHubRow row) {
+		FormLink toolLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolLink.setUserObject(row);
 		row.setToolLink(toolLink);
 	}

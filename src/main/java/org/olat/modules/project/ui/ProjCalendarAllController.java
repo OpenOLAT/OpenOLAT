@@ -58,13 +58,13 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
@@ -249,12 +249,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CalendarCols.lastModifiedBy));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CalendarCols.deletedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CalendarCols.deletedBy));
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CalendarCols.tools);
-		toolsCol.setIconHeader("o_icon o_icon-fws o_icon-lg o_icon_actions");
-		toolsCol.setAlwaysVisible(true);
-		toolsCol.setSortable(false);
-		toolsCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(CalendarCols.tools));
 		
 		dataModel = new ProjCalendarDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
@@ -651,9 +646,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	}
 	
 	private void forgeToolsLink(ProjCalendarRow row) {
-		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

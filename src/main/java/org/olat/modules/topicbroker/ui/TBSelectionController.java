@@ -50,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -60,7 +61,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -260,11 +260,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			selectionColumnsModel.addFlexiColumnModel(upDownModel);
 		}
 		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SelectionCols.selectionTools);
-		toolsCol.setAlwaysVisible(true);
-		toolsCol.setSortable(false);
-		toolsCol.setExportable(false);
-		selectionColumnsModel.addFlexiColumnModel(toolsCol);
+		selectionColumnsModel.addFlexiColumnModel(new ActionsColumnModel(SelectionCols.selectionTools));
 		
 		selectionDataModel = new TBSelectionDataModel(selectionColumnsModel);
 		selectionTableEl = uifactory.addTableElement(getWindowControl(), "selectionTable", selectionDataModel, 20, false, getTranslator(), formLayout);
@@ -336,11 +332,7 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 			selectionColumnsModel.addFlexiColumnModel(selectColumn);
 		}
 		
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(SelectionCols.topicTools);
-		toolsCol.setAlwaysVisible(true);
-		toolsCol.setSortable(false);
-		toolsCol.setExportable(false);
-		selectionColumnsModel.addFlexiColumnModel(toolsCol);
+		selectionColumnsModel.addFlexiColumnModel(new ActionsColumnModel(SelectionCols.topicTools));
 		
 		topicDataModel = new TBSelectionDataModel(selectionColumnsModel);
 		topicTableEl = uifactory.addTableElement(getWindowControl(), "topicTable", topicDataModel, 250, false, getTranslator(), formLayout);
@@ -611,15 +603,13 @@ public class TBSelectionController extends FormBasicController implements FlexiT
 	}
 
 	private void forgeSelectionToolsLink(TBSelectionRow row) {
-		FormLink selectionToolsLink = uifactory.addFormLink("tools_" + row.getTopic().getKey(), "selectionTools", "", null, null, Link.NONTRANSLATED);
-		selectionToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		FormLink selectionToolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), "selectionTools");
 		selectionToolsLink.setUserObject(row);
 		row.setSelectionToolsLink(selectionToolsLink);
 	}
 
 	private void forgeTopicToolsLink(TBSelectionRow row) {
-		FormLink topicToolsLink = uifactory.addFormLink("tools_" + row.getTopic().getKey(), "topicTools", "", null, null, Link.NONTRANSLATED);
-		topicToolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		FormLink topicToolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), "topicTools");
 		topicToolsLink.setUserObject(row);
 		row.setTopicToolsLink(topicToolsLink);
 	}
