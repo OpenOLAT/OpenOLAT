@@ -200,6 +200,12 @@ body.o_dmz {
 				top: 12px;
 				width: 23px;
 			}
+			&.o_login_btn_icon_right {
+				i::before {
+					left: unset;
+					right: 14px;
+				}
+			}
 		}
 		
 		.btn-primary {

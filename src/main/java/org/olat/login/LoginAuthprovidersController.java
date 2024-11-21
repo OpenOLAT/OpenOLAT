@@ -74,12 +74,12 @@ import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.WebCatalogDispatcher;
-import org.olat.registration.PwChangeController;
 import org.olat.registration.LoginHandler;
+import org.olat.registration.PwChangeController;
 import org.olat.registration.RegisterFinishCallback;
 import org.olat.registration.RegistrationAdditionalPersonalDataController;
-import org.olat.registration.RegistrationModule;
 import org.olat.registration.RegistrationLangStep00;
+import org.olat.registration.RegistrationModule;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
@@ -292,10 +292,10 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		contentBorn.contextPut("startLogin", Boolean.FALSE);
 		
 		if (catalogV2Module.isEnabled() && catalogV2Module.isWebPublishEnabled() && catalogV2Module.isWebPublishLoginSite()) {
-			ExternalLink catalogLink = LinkFactory.createExternalLink("login.catalog", "log.catalog", WebCatalogDispatcher.getBaseUrl().toString());
-			catalogLink.setElementCssClass("o_login_catalog_button btn btn-default");
-			catalogLink.setName(translate("login.catalog"));
-			catalogLink.setIconLeftCSS("o_icon o_icon_catalog");
+			ExternalLink catalogLink = LinkFactory.createExternalLink("login.catalog", "", WebCatalogDispatcher.getBaseUrl().toString());
+			catalogLink.setElementCssClass("o_login_catalog_button btn btn-default o_login_btn_icon_right");
+			catalogLink.setName(translate("login.catalog.explore"));
+			catalogLink.setIconRightCSS("o_icon o_icon_arrow_right");
 			catalogLink.setTarget("_self");
 			contentBorn.put("login.catalog", catalogLink);
 		}
