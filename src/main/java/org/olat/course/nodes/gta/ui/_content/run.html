@@ -313,9 +313,11 @@
 			#end
 		</div>
 		<div id="o_step_solution_content" class="o_content collapse #if($collapse_solution) in #end" aria-expanded="$collapse_solution" role="region">
-			#if($r.available("solutions"))
-				$r.render("solutions")
-			#end
+		#if($r.isTrue($emptySolutions))
+			<p>$r.translate("warning.empty.solution")</p>
+		#elseif($r.available("solutions"))
+			$r.render("solutions")
+		#end
 		</div>
 	</div>
 	<div class="o_button_group">
