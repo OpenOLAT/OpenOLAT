@@ -24,7 +24,7 @@
 					<input type="checkbox" checked id="bsel_${selectedRow.key()}" name="bsel_${selectedRow.key()}" value="bsel_${selectedRow.key()}">
 				</div>
 				<div class="o_badge_selector_image">
-					<img src="$mediaUrl/${selectedRow.image()}" width="${selectedRow.size().width}px" height="${selectedRow.size().height}px">
+					<img src="$mediaUrl/${selectedRow.image()}" width="${selectedRow.size().width}px" height="${selectedRow.size().height}px" alt="${altImageText}">
 				</div>
 				<div class="o_badge_selector_text">
 					<div class="o_badge_selector_status">${selectedRow.statusString()}</div>
@@ -43,7 +43,7 @@
 					<input type="checkbox" id="bsel_${unselectedRow.key()}" name="bsel_${unselectedRow.key()}" value="bsel_${unselectedRow.key()}">
 				</div>
 				<div class="o_badge_selector_image">
-					<img src="$mediaUrl/${unselectedRow.image()}" width="${unselectedRow.size().width}px" height="${unselectedRow.size().height}px">
+					<img src="$mediaUrl/${unselectedRow.image()}" width="${unselectedRow.size().width}px" height="${unselectedRow.size().height}px" alt="${altImageText}">
 				</div>
 				<div class="o_badge_selector_text">
 					<div class="o_badge_selector_status">${unselectedRow.statusString()}</div>

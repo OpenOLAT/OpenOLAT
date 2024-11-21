@@ -123,6 +123,7 @@ public class CourseSelectorController extends FormBasicController {
 		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
 		quickSearchButton.setEnabled(false);
 		quickSearchButton.setDomReplacementWrapperRequired(false);
+		quickSearchButton.setTitle(translate("search"));
 
 		quickSearchEl = uifactory.addTextElement("quickSearch", null, 32, "", formLayout);
 		quickSearchEl.setPlaceholderKey("enter.search.term", null);
@@ -136,6 +137,7 @@ public class CourseSelectorController extends FormBasicController {
 		resetQuickSearchButton.setElementCssClass("o_reset_search");
 		resetQuickSearchButton.setIconLeftCSS("o_icon o_icon_remove_filters");
 		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
+		resetQuickSearchButton.setTitle(translate("reset"));
 	}
 
 	private SelectionValues createCoursesKV(Collection<RepositoryEntry> courses) {

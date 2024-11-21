@@ -61,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BadgeSelectorController extends FormBasicController {
 	private static final String PARAMETER_KEY_BADGE_SELECTION = "bsel_";
 
-	private static final int MAX_RESULTS = 20;
+	private static final int MAX_RESULTS = 50;
 
 	private FormLink browserButton;
 	private FormLink applyButton;
@@ -94,6 +94,7 @@ public class BadgeSelectorController extends FormBasicController {
 		List<Row> selectedRows = rows.stream().filter(row -> selectedKeys.contains(row.key)).toList();
 		flc.contextPut("selectedRows", selectedRows);
 
+		flc.contextPut("altImageText", translate("badge.image"));
 		initForm(ureq);
 		doResetQuickSearch(ureq);
 	}
@@ -116,6 +117,7 @@ public class BadgeSelectorController extends FormBasicController {
 		resultsMoreEl.setVisible(false);
 
 		browserButton = uifactory.addFormLink("badge.selector.browser", formLayout, Link.BUTTON_SMALL);
+		browserButton.setVisible(false);
 		applyButton = uifactory.addFormLink("apply", formLayout, Link.BUTTON_SMALL);
 		applyButton.setPrimary(true);
 	}
@@ -127,6 +129,7 @@ public class BadgeSelectorController extends FormBasicController {
 		quickSearchButton.setIconLeftCSS("o_icon o_icon_search");
 		quickSearchButton.setEnabled(false);
 		quickSearchButton.setDomReplacementWrapperRequired(false);
+		quickSearchButton.setTitle(translate("search"));
 
 		quickSearchEl = uifactory.addTextElement("quickSearch", null, 32, "", formLayout);
 		quickSearchEl.setPlaceholderKey("enter.search.term", null);
@@ -140,6 +143,7 @@ public class BadgeSelectorController extends FormBasicController {
 		resetQuickSearchButton.setElementCssClass("o_reset_search");
 		resetQuickSearchButton.setIconLeftCSS("o_icon o_icon_remove_filters");
 		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
+		resetQuickSearchButton.setTitle(translate("reset"));
 	}
 
 	private Row row(OpenBadgesManager.BadgeClassWithSize badgeClassWithSize) {
