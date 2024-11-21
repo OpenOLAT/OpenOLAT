@@ -501,7 +501,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 	private void doAddTask(UserRequest ureq) {
 		List<TaskDefinition> currentDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
-		addTaskCtrl = new EditTaskController(ureq, getWindowControl(), tasksFolder, currentDefinitions);
+		addTaskCtrl = new EditTaskController(ureq, getWindowControl(), tasksContainer, currentDefinitions);
 		listenTo(addTaskCtrl);
 
 		String title = translate("add.task");
@@ -512,7 +512,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 
 	private void doEditMetadata(UserRequest ureq, TaskDefinition taskDef) {
 		List<TaskDefinition> currentDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
-		editTaskCtrl = new EditTaskController(ureq, getWindowControl(), taskDef, tasksFolder, currentDefinitions);
+		editTaskCtrl = new EditTaskController(ureq, getWindowControl(), taskDef, tasksContainer, currentDefinitions);
 		listenTo(editTaskCtrl);
 
 		String title = translate("edit.task");

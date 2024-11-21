@@ -544,7 +544,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 					|| assignedTask.getTaskStatus() == TaskProcess.revision || assignedTask.getTaskStatus() == TaskProcess.peerreview) {
 				setNotAvailableStatusAndCssClass("solution");
 			} else if(assignedTask.getTaskStatus() == TaskProcess.solution) {
-				if(isSolutionVisible(ureq, assignedTask) && showSolutions(availableDate)) {
+				if(isSolutionVisibleByDateAndFiles(ureq, assignedTask) && showSolutions(availableDate)) {
 					setActiveStatusAndCssClass("solution", "msg.status.available");
 				} else {
 					setNotAvailableStatusAndCssClass("solution");
@@ -553,7 +553,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				setDoneStatusAndCssClass("solution", "msg.status.available");
 			}	
 		} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.solution) {
-			if(isSolutionVisible(ureq, assignedTask) && showSolutions(availableDate)) {
+			if(isSolutionVisibleByDateAndFiles(ureq, assignedTask) && showSolutions(availableDate)) {
 				setActiveStatusAndCssClass("solution", "msg.status.available");
 			} else {
 				setNotAvailableStatusAndCssClass("solution");
@@ -566,7 +566,10 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 		solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 		listenTo(solutionsCtrl);
-		mainVC.put("solutions", solutionsCtrl.getInitialComponent());
+		mainVC.contextPut("emptySolutions", Boolean.valueOf(solutionsCtrl.getNumOfDocuments() <= 0));
+		if(solutionsCtrl.getNumOfDocuments() > 0) {
+			mainVC.put("solutions", solutionsCtrl.getInitialComponent());
+		}
 		
 		return assignedTask;
 	}

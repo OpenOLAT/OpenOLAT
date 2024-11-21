@@ -186,6 +186,8 @@ public class GTAAssignedTaskController extends BasicController {
 				documentLink.setTitle(taskInfos);
 				
 				mainVC.contextPut("size", vfsLeaf.getSize());
+			} else {
+				mainVC.contextPut("taskName", task.getTaskName());
 			}
 			
 			// Meta data
