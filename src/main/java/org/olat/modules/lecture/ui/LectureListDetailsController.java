@@ -38,10 +38,10 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
@@ -58,6 +58,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.StatisticsBusinessGroupRow;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -96,7 +97,9 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	private int counter = 0;
 	private final LectureBlockRow row;
+	private CurriculumElement curriculumElement;
 	private final UserInfoProfileConfig profileConfig;
+	private final boolean allowRepositoryEntry;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -123,6 +126,14 @@ public class LectureListDetailsController extends FormBasicController {
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
+		if(row.getCurriculumElement() != null) {
+			curriculumElement = curriculumService
+					.getCurriculumElement(new CurriculumElementRefImpl(row.getCurriculumElement().key()));
+		}
+		allowRepositoryEntry = (curriculumElement == null
+				|| curriculumElement.getType() == null
+				|| curriculumElement.getType().getMaxRepositoryEntryRelations() != 0);// 1 or more, or -1 for infinity
+		
 		initForm(ureq);
 		loadGroupsModel();
 	}
@@ -139,7 +150,9 @@ public class LectureListDetailsController extends FormBasicController {
 			editButton = uifactory.addFormLink("edit", "edit", "edit", formLayout, Link.BUTTON);
 			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			
-			initFormReferencedCourses(layoutCont);
+			if(allowRepositoryEntry) {
+				initFormReferencedCourses(layoutCont);
+			}
 			initFormTeachers(layoutCont, ureq);
 			initFormMetadata(formLayout);
 			initFormParticipantsGroupTable(formLayout);
@@ -153,11 +166,7 @@ public class LectureListDetailsController extends FormBasicController {
 				new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_user")));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status,
 				new LectureBlockParticipantGroupExcludeRenderer(getTranslator())));
-		
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(GroupCols.tools);
-		toolsColumn.setExportable(false);
-		toolsColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(GroupCols.tools));
 		
 		tableModel = new LectureListDetailsParticipantsGroupDataModel(columnsModel, getLocale());
 		
@@ -167,6 +176,9 @@ public class LectureListDetailsController extends FormBasicController {
 	}
 	
 	private void initFormReferencedCourses(FormLayoutContainer formLayout) {
+		
+		
+		
 		EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("course.empty", "lecture.course", formLayout);
 		emptyTeachersList.setTitle(translate("lecture.no.course.assigned.title"));
 		emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_CourseModule_icon");
@@ -289,10 +301,7 @@ public class LectureListDetailsController extends FormBasicController {
 		openLink.setUserObject(groupRow);
 		groupRow.setTitleLink(openLink);
 		
-		String toolsLinkName = "detailstools-" + counter++;
-		FormLink toolsLink = uifactory.addFormLink(toolsLinkName, "detailstool", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), "detailstool");
 		toolsLink.setUserObject(groupRow);
 		groupRow.setToolsLink(toolsLink);
 		return groupRow;

@@ -194,13 +194,17 @@
 	}
 }
 
-.o_lecture_courses_and_teachers {
+.o_lecture_resources {
 	display: grid;
-	grid-template-columns: 1fr 3fr;
+	grid-template-columns: 33% 33% 33%;
 	column-gap: 20px;
 
 	.o_user_info_profile {
 		background-color: #fff;
+	}
+	
+	label {
+		grid-column: 1 / -1;
 	}
 }
 

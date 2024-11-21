@@ -789,7 +789,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 		listenTo(editLectureCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
+		String title = translate("edit.lecture");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLectureCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

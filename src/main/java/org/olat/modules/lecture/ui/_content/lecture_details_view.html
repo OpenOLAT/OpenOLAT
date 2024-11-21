@@ -15,29 +15,25 @@
 		$r.render("lecture.location","vertical")
 	#end
 	$r.render("lecture.participants","vertical")
+	#if($r.available("lecture.preparation"))
+		$r.render("lecture.preparation","vertical")
+	#end
+	$r.render("lecture.compulsory","vertical")
 </div>
 
-<div class="o_lecture_courses_and_teachers">
-	<div class="o_lecture_course">
-		<label>$r.translate("referenced.courses")</label>
-		<div>
+<div class="o_lecture_resources">
+	<label class="o_block_small">$r.translate("contact.teachers.list.name")</label>
+	#if($r.isNotEmpty($profilesIds))
+		#foreach($profileId in $profilesIds)
+			<div>$r.render($profileId)</div>
+		#end
+	#end
+	#if($r.available("course.empty"))
+		<label class="o_block_small">$r.translate("referenced.courses")</label>	
 		#if($r.visible("course.empty"))
-			$r.render("course.empty")
+			<div>$r.render("course.empty")</div>
 		#end
-			
-			
-		</div>
-	</div>
-	<div class="o_lecture_teachers">
-		<label>$r.translate("contact.teachers.list.name")</label>
-		<div>	
-		#if($r.isNotEmpty($profilesIds))
-			#foreach($profileId in $profilesIds)
-				$r.render($profileId)
-			#end
-		#end
-		</div>
-	</div>
+	#end
 </div>
 
 <div class="o_block_bottom">
@@ -46,7 +42,3 @@ $r.render("participantsGroupTable")
 #if($r.available("lecture.desc"))
 	$r.render("lecture.desc","vertical")
 #end
-#if($r.available("lecture.preparation"))
-	$r.render("lecture.preparation","vertical")
-#end
-$r.render("lecture.compulsory","vertical")

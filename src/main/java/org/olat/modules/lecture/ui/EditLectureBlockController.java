@@ -286,7 +286,6 @@ public class EditLectureBlockController extends FormBasicController {
 		teacherEl = uifactory.addCheckboxesVertical("teacher", "lecture.teacher", formLayout, teachersPK.keys(), teachersPK.values(),
 				null, teachersPK.icons(), 1);
 		teacherEl.setElementCssClass("o_sel_repo_lecture_teachers");
-		teacherEl.setMandatory(true);
 		teacherEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.teachers));
 		teacherEl.setVisible(!teachersPK.isEmpty());
 		
@@ -435,12 +434,6 @@ public class EditLectureBlockController extends FormBasicController {
 		plannedLecturesEl.clearError();
 		if(!plannedLecturesEl.isOneSelected()) {
 			plannedLecturesEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		}
-		
-		teacherEl.clearError();
-		if(teacherEl.isVisible() && entry != null && !teacherEl.isAtLeastSelected(1)) {
-			teacherEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
