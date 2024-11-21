@@ -36,7 +36,7 @@ public record SessionParticipationListStatistics(SessionStatistics aggregatedSta
 	
 	public Map<EvaluationFormParticipation, SessionParticipationStatistics> toParticipationsMap() {
 		return participationsStatistics.stream()
-			.collect(Collectors.toMap(SessionParticipationStatistics::getParticipation, stats -> stats, (u, v) -> u));
+			.collect(Collectors.toMap(SessionParticipationStatistics::participation, stats -> stats, (u, v) -> u));
 	}
 	
 	public static final SessionParticipationListStatistics noStatistics() {

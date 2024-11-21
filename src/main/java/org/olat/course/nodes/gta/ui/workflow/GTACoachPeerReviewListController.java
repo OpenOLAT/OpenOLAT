@@ -88,16 +88,16 @@ public class GTACoachPeerReviewListController extends AbstractWorkflowListContro
 		automaticAssignmentButton.setVisible(isAllowToAssign());
 		
 		TaskList taskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
+		peerReviewAwardedListCtrl = new GTACoachPeerReviewAwardedListController(ureq, getWindowControl(),
+				taskList, assessedIdentities, courseEnv, gtaNode, mainForm);
+		listenTo(peerReviewAwardedListCtrl);
+		formLayout.add("awarded", peerReviewAwardedListCtrl.getInitialFormItem());
+		
 		peerReviewReceivedListCtrl = new GTACoachPeerReviewReceivedListController(ureq, getWindowControl(),
 				stackPanel, taskList, assessedIdentities,
 				courseEnv, gtaNode, mainForm);
 		listenTo(peerReviewReceivedListCtrl);
 		formLayout.add("received", peerReviewReceivedListCtrl.getInitialFormItem());
-		
-		peerReviewAwardedListCtrl = new GTACoachPeerReviewAwardedListController(ureq, getWindowControl(),
-				taskList, assessedIdentities, courseEnv, gtaNode, mainForm);
-		listenTo(peerReviewAwardedListCtrl);
-		formLayout.add("awarded", peerReviewAwardedListCtrl.getInitialFormItem());
 	}
 	
 	protected boolean isAllowToAssign() {

@@ -1373,12 +1373,15 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 	@Override
 	public boolean isDueDateEnabled(GTACourseNode cNode) {
-		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES, false)
-				|| cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD, false)) {
+		ModuleConfiguration config = cNode.getModuleConfiguration();
+		
+		if(config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES, false)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD, false)) {
 			return true;
-		} else if(cNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE) != null
-				|| cNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE) != null
-				|| cNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER) != null) {
+		} else if(config.getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE) != null
+				|| config.getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE) != null
+				|| config.getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER) != null
+				|| config.getDateValue(GTACourseNode.GTASK_PEER_REVIEW_DEADLINE) != null) {
 			return true;
 		}
 		return false;

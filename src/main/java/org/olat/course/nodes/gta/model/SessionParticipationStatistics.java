@@ -28,36 +28,6 @@ import org.olat.modules.forms.EvaluationFormSession;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SessionParticipationStatistics {
-	
-	private final SessionStatistics statistics;
-	
-	private EvaluationFormSession session;
-	private EvaluationFormParticipation participation;
-	
-	public SessionParticipationStatistics(EvaluationFormSession session, EvaluationFormParticipation participation, SessionStatistics statistics) {
-		this.session = session;
-		this.participation = participation;
-		this.statistics = statistics;
-	}
-
-	public EvaluationFormSession getSession() {
-		return session;
-	}
-
-	public void setSession(EvaluationFormSession session) {
-		this.session = session;
-	}
-
-	public EvaluationFormParticipation getParticipation() {
-		return participation;
-	}
-
-	public void setParticipation(EvaluationFormParticipation participation) {
-		this.participation = participation;
-	}
-
-	public SessionStatistics statistics() {
-		return statistics;
-	}
+public record SessionParticipationStatistics(SessionStatistics statistics, EvaluationFormSession session, EvaluationFormParticipation participation) {
+	//
 }
