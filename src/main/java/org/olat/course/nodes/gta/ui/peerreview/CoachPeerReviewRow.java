@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui.peerreview;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.boxplot.BoxPlot;
@@ -64,6 +65,7 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 	private CoachedParticipantStatus submissionStatus;
 	private DueDate peerReviewDueDate;
 	private TaskLateStatus lateStatus;
+	private Date reviewCompleteDate;
 	
 	private Identity assignee;
 	
@@ -231,6 +233,14 @@ public class CoachPeerReviewRow implements FlexiTreeTableNode {
 
 	public void setPeerReviewDueDate(DueDate dueDate) {
 		this.peerReviewDueDate = dueDate;
+	}
+	
+	public Date getReviewCompleteDate() {
+		return reviewCompleteDate;
+	}
+
+	public void setReviewCompleteDate(Date date) {
+		this.reviewCompleteDate = date;
 	}
 
 	public FormLink getToolsLink() {

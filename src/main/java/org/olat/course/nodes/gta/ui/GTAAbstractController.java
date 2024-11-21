@@ -747,14 +747,15 @@ public abstract class GTAAbstractController extends BasicController implements G
 		}
 		return solutionDueDate;
 	}
+	protected final boolean isSolutionVisibleByDateAndFiles(UserRequest ureq, Task assignedTask) {
+		return isSolutionVisibleByDate(ureq, assignedTask) 
+				&& TaskHelper.hasDocuments(gtaManager.getSolutionsDirectory(courseEnv, gtaNode));
+	}
 	
-	protected final boolean isSolutionVisible(UserRequest ureq, Task assignedTask) {
+	protected final boolean isSolutionVisibleByDate(UserRequest ureq, Task assignedTask) {
 		DueDate availableDate = getSolutionDueDate(assignedTask);
-		boolean visible = availableDate == null || 
+		return availableDate == null || 
 				(availableDate.getDueDate() != null && availableDate.getDueDate().compareTo(ureq.getRequestTimestamp()) <= 0);
-
-		File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
-		return visible && TaskHelper.hasDocuments(documentsDir);
 	}
 	
 	/**

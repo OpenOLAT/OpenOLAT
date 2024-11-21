@@ -307,7 +307,7 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 		List<SessionParticipationStatistics> statistics = new ArrayList<>();
 		for(EvaluationFormSession session:sessions) {
 			SessionStatistics sessionStatistics = calculator.calculateStatistics(session);
-			statistics.add(new SessionParticipationStatistics(session, session.getParticipation(), sessionStatistics));
+			statistics.add(new SessionParticipationStatistics(sessionStatistics, session, session.getParticipation()));
 		}
 		
 		final Set<EvaluationFormParticipation> doneParticipations = assignments.stream()
@@ -348,7 +348,7 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 		for(EvaluationFormSession session:sessions) {
 			SessionStatistics sessionStatistics = calculator.calculateStatistics(session);
 			participationToStatistics.put(session.getParticipation(),
-					new SessionParticipationStatistics(session, session.getParticipation(), sessionStatistics));
+					new SessionParticipationStatistics(sessionStatistics, session, session.getParticipation()));
 		}
 		
 		final Set<EvaluationFormParticipation> doneParticipations = assignments.stream()
@@ -367,7 +367,7 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 					SessionParticipationStatistics statistics = participationToStatistics.get(taskAssignment.getParticipation());
 					if(statistics != null) {
 						statisticsList.add(statistics);
-						taskSessions.add(statistics.getSession());
+						taskSessions.add(statistics.session());
 					}
 				}	
 			}
@@ -410,7 +410,7 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 		for(EvaluationFormSession session:sessions) {
 			SessionStatistics sessionStatistics = calculator.calculateStatistics(session);
 			participationToStatistics.put(session.getParticipation(),
-					new SessionParticipationStatistics(session, session.getParticipation(), sessionStatistics));
+					new SessionParticipationStatistics(sessionStatistics, session, session.getParticipation()));
 		}
 		
 		final Set<EvaluationFormParticipation> doneParticipations = assignments.stream()
@@ -429,7 +429,7 @@ public class GTAPeerReviewManagerImpl implements GTAPeerReviewManager {
 					SessionParticipationStatistics statistics = participationToStatistics.get(taskAssignment.getParticipation());
 					if(statistics != null) {
 						statisticsList.add(statistics);
-						taskSessions.add(statistics.getSession());
+						taskSessions.add(statistics.session());
 					}
 				}	
 			}

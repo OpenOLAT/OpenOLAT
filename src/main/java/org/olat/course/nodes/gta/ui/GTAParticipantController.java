@@ -765,7 +765,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	 * @return true if the solutions are visible
 	 */
 	private boolean setSolutions(UserRequest ureq, Task assignedTask) {
-		boolean visible = isSolutionVisible(ureq, assignedTask);
+		boolean visible = isSolutionVisibleByDate(ureq, assignedTask);
 		if(visible) {
 			DueDate availableDate = getSolutionDueDate(assignedTask);
 			if(showSolutions(availableDate)) {
@@ -773,6 +773,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 				listenTo(solutionsCtrl);
+				mainVC.contextPut("emptySolutions", Boolean.valueOf(solutionsCtrl.getNumOfDocuments() <= 0));
 				mainVC.put("solutions", solutionsCtrl.getInitialComponent());
 				
 				if(gtaManager.firstStep(gtaNode) == TaskProcess.solution) {

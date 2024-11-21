@@ -234,7 +234,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		SelectionValues coachesKV = new SelectionValues();
 		coachesKV.add(SelectionValues.entry(NOT_ASSIGNED, translate("filter.coach.not.assigned")));
 		for(CoachColumn coachColumn:coachesColumns) {
-			coachesKV.add(SelectionValues.entry(coachColumn.getCoachKey().toString(), coachColumn.getFullName()));
+			coachesKV.add(SelectionValues.entry(coachColumn.getCoachKey(), coachColumn.getFullName()));
 		}
 		FlexiTableMultiSelectionFilter coachFilter = new FlexiTableMultiSelectionFilter(translate("filter.coaches"),
 				FILTER_COACH, coachesKV, true);

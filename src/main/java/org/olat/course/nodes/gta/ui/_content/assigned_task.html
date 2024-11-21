@@ -7,11 +7,15 @@
 <div>
 	$description
 </div>
-#if($r.available("doc.link"))
+#if($r.available("doc.link") || $r.isNotEmpty($taskName))
 <div class="o_flex_block_one_line_left o_assessment_document">
 	<i class="o_icon o_icon-2x o_icon-fw $cssIcon o_flex_item_fix"> </i>
 	<div class="o_flex_item_max">
-		<h5>$r.render("doc.link")</h5>
+		#if($r.available("doc.link"))
+			<h5>$r.render("doc.link")</h5>
+		#else
+			<h5 class="text-muted">$r.escapeHtml($taskName)</h5>
+		#end
 		<div class="text-muted small">
 			$type #if($r.isNotNull($size)) | $r.formatBytes($size) #end
 		</div>

@@ -80,6 +80,7 @@ public class DirectoryController extends BasicController implements Activateable
 	private final String zipName;
 	private final String mapperUri;
 	private final File documentsDir;
+	private final int numOfDocuments;
 	private final VFSContainer documentsContainer;
 	
 	private CloseableModalController cmc;
@@ -179,12 +180,17 @@ public class DirectoryController extends BasicController implements Activateable
 			linkNames.add(new DocumentInfos(link.getComponentName(), downoadLink.getComponentName(), previewLinkCompName,
 					StringHelper.escapeHtml(createdBy), lastModified, cssClass));
 		}
+		numOfDocuments = linkNames.size();
 		mainVC.contextPut("linkNames", linkNames);
 		if(bulkReviewLink != null) {
 			bulkReviewLink.setVisible(!linkNames.isEmpty());
 		}
 
 		putInitialPanel(mainVC);
+	}
+	
+	public int getNumOfDocuments() {
+		return numOfDocuments;
 	}
 
 	@Override

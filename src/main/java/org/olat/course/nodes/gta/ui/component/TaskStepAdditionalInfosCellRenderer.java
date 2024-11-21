@@ -54,6 +54,8 @@ public class TaskStepAdditionalInfosCellRenderer implements FlexiCellRenderer {
 		} else if(cellValue instanceof CoachPeerReviewRow participantRow && participantRow.getParent() == null) {
 			render(target, participantRow.getTask(), participantRow.getLateStatus(),
 					participantRow.getPeerReviewCompletedDoerRole());
+		} else if(cellValue instanceof CoachPeerReviewRow reviewerRow && reviewerRow.getParent() != null) {
+			render(target, null, reviewerRow.getLateStatus(), null);
 		}
 	}
 	
