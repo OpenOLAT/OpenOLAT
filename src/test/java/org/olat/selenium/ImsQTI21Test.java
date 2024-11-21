@@ -653,7 +653,7 @@ public class ImsQTI21Test extends Deployments {
 				.getQTI21Page(browser);
 		userQtiPage
 			.assertOnAssessmentItem("Single choice")
-			.suspendTest();
+			.suspendTest(false);
 		//log out
 		new UserToolsPage(browser)
 			.logout();
@@ -674,7 +674,7 @@ public class ImsQTI21Test extends Deployments {
 			.answerCorrectKPrim("True", "Right")
 			.answerIncorrectKPrim("False", "Wrong")
 			.saveAnswer()
-			.suspendTest();
+			.suspendTest(false);
 		
 		//second log out
 		new UserToolsPage(browser)
@@ -1017,7 +1017,7 @@ public class ImsQTI21Test extends Deployments {
 			.saveAnswer()
 			.answerMultipleChoice("Correct")
 			.saveAnswer()
-			.suspendTest();
+			.suspendTest(true);
 		
 		//log out
 		new UserToolsPage(browser)
