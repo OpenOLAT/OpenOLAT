@@ -73,8 +73,13 @@ public class VideoPage {
 	 * @return Itself
 	 */
 	public VideoPage assetOnSegmentTooltip(int wait) {
-		By playBy = By.cssSelector("#o_videotask_segments .tooltip.o_videotask_tooltip");
-		OOGraphene.waitElementSlowly(playBy, wait, browser);
+		try {
+			By playBy = By.cssSelector("#o_videotask_segments .tooltip.o_videotask_tooltip");
+			OOGraphene.waitElementSlowly(playBy, wait, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Wait segment tooltip", browser);
+			throw e;
+		}
 		return this;
 	}
 	

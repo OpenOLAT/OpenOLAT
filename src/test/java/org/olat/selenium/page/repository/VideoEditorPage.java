@@ -66,14 +66,19 @@ public class VideoEditorPage {
 	}
 	
 	public VideoEditorPage editSegment(String start, String end) {
-		By startBy = By.cssSelector(".o_video_segment_start .o_video_apply_position_timestamp input[type='text']");
-		OOGraphene.waitElement(startBy, browser);
-		browser.findElement(startBy).clear();
-		browser.findElement(startBy).sendKeys(start);
-		
-		By endBy = By.cssSelector(".o_video_segment_end .o_video_apply_position_timestamp input[type='text']");
-		browser.findElement(endBy).clear();
-		browser.findElement(endBy).sendKeys(end);
+		try {
+			By startBy = By.cssSelector(".o_video_segment_start .o_video_apply_position_timestamp input[type='text']");
+			OOGraphene.waitElement(startBy, browser);
+			browser.findElement(startBy).clear();
+			browser.findElement(startBy).sendKeys(start);
+			
+			By endBy = By.cssSelector(".o_video_segment_end .o_video_apply_position_timestamp input[type='text']");
+			browser.findElement(endBy).clear();
+			browser.findElement(endBy).sendKeys(end);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Edit segment", browser);
+			throw e;
+		}
 		return this;
 	}
 	
