@@ -175,8 +175,6 @@ public class LecturesTest extends Deployments {
 		String lectureTitle = "1. Lecture";
 		lectureList
 			.newLectureBlock()
-			.assertOnSelectResource()
-			.nextToLectureBlockSettings()
 			.setTitle(lectureTitle)
 			.setTeacher(coach)
 			.setDate(today, hour, 0, endHour, 59)
@@ -324,8 +322,6 @@ public class LecturesTest extends Deployments {
 		String lectureTitle = "2.Lecture";
 		lectureList
 			.newLectureBlock()
-			.assertOnSelectResource()
-			.nextToLectureBlockSettings()
 			.setTitle(lectureTitle)
 			.setTeacher(coach)
 			.setDate(today, hour, 0, endHour, 59)
@@ -442,8 +438,6 @@ public class LecturesTest extends Deployments {
 		String lectureTitle = "2.Lecture";
 		lectureList
 			.newLectureBlock()
-			.assertOnSelectResource()
-			.nextToLectureBlockSettings()
 			.setTitle(lectureTitle)
 			.setTeacher(author)
 			.setDateOneHourBefore()
@@ -594,8 +588,6 @@ public class LecturesTest extends Deployments {
 		String lectureTitle = "1. Lecture";
 		lectureList
 			.newLectureBlock()
-			.assertOnSelectResource()
-			.nextToLectureBlockSettings()
 			.setTitle(lectureTitle)
 			.setTeacher(author)
 			.setDate(today, hour, 0, endHour, 59)

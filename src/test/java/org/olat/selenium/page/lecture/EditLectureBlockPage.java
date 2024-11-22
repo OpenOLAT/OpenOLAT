@@ -41,12 +41,13 @@ public class EditLectureBlockPage {
 		this.browser = browser;
 	}
 	
-	public EditLectureBlockPage assertOnSelectResource() {
+	public EditLectureBlockPage nextToLectureBlockSettings() {
+		OOGraphene.nextStep(browser);
 		return this;
 	}
 	
-	public EditLectureBlockPage nextToLectureBlockSettings() {
-		OOGraphene.nextStep(browser);
+	public EditLectureBlockPage finish() {
+		OOGraphene.finishStep(browser, false);
 		return this;
 	}
 	
@@ -108,14 +109,10 @@ public class EditLectureBlockPage {
 	}
 	
 	public EditLectureBlockPage save() {
-		OOGraphene.finishStep(browser, false);
-		
-		/*
 		By saveBy = By.cssSelector("fieldset.o_sel_repo_edit_lecture_form button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
-		*/
 		return this;
 	}
 
