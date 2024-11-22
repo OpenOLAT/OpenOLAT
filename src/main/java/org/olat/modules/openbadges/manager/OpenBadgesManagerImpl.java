@@ -42,6 +42,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -1619,8 +1620,63 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (recipient == null || courseEntry == null || courseNodeIdent == null) {
 			return new ArrayList<>();
 		}
-		return badgeAssertionDAO.getBadgeAssertions(recipient, courseEntry, false).stream()
-				.filter(ba -> conditionForCourseNodeExists(ba.getBadgeClass(), courseNodeIdent)).toList();
+
+		// The user's badges
+		List<BadgeAssertion> recipientBadges = badgeAssertionDAO.getBadgeAssertions(recipient).stream().toList();
+		
+		// We use the UUID of the badge class as an ID of badge classes and badge assertions. That's convenient and
+		// safe, because all computation below is performed for one single participant.
+		
+		// Helper map to avoid repeated deserialization of criteria
+		Map<String, BadgeCriteria> idToCriteria = new HashMap<>();
+		recipientBadges.forEach(ba -> {
+			BadgeClass bc = ba.getBadgeClass();
+			idToCriteria.put(bc.getUuid(), BadgeCriteriaXStream.fromXml(bc.getCriteria()));
+		});
+		
+		// All the user's badges that are earned automatically in direct relation with the current course node.
+		Set<String> directlyRelated = idToCriteria.keySet().stream().filter(id -> {
+			BadgeCriteria badgeCriteria = idToCriteria.get(id);
+			return badgeCriteria.isAwardAutomatically() && badgeCriteria.conditionForCourseNodeExists(courseNodeIdent);
+		}).collect(Collectors.toSet());
+
+		// All the user's badges that are earned automatically in indirect relation with the current course node.
+		Set<String> indirectlyRelated = idToCriteria.keySet().stream().filter(id -> {
+			BadgeCriteria badgeCriteria = idToCriteria.get(id);
+			return badgeCriteria.isAwardAutomatically() && hasDependencyPath(id, directlyRelated, idToCriteria);
+		}).collect(Collectors.toSet());
+		
+		return recipientBadges.stream().filter(ba -> {
+			String id = ba.getBadgeClass().getUuid();
+			return directlyRelated.contains(id) || indirectlyRelated.contains(id);
+		}).collect(Collectors.toList());
+	}
+
+	/**
+	 * Checks if the badge identified by 'dependencySource' has a badge dependency on one of the badges 
+	 * identified by 'dependencyTargets'.
+	 * 
+	 * @param dependencySource The ID of the badge to check for dependency on other badges.
+	 * @param dependencyTargets We check if one of the badge dependencies of 'dependencySource' matches any of these dependency targets.
+	 * @param idToCriteria A helper map that prevents repeated deserialization of badge criteria.
+	 * @return true if we can find a dependency.
+	 */
+	private boolean hasDependencyPath(String dependencySource, Set<String> dependencyTargets, 
+									  Map<String, BadgeCriteria> idToCriteria) {
+		
+		BadgeCriteria sourceCriteria = idToCriteria.get(dependencySource);
+		Set<String> badgeDependencies = sourceCriteria.otherBadgeClassUuids();
+		for (String badgeDependency : badgeDependencies) {
+			// dependency match found
+			if (dependencyTargets.contains(badgeDependency)) {
+				return true;
+			}
+			// follow dependency path
+			if (hasDependencyPath(badgeDependency, dependencyTargets, idToCriteria)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public boolean conditionForCourseNodeExists(BadgeClass badgeClass, String courseNodeIdent) {

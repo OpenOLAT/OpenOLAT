@@ -112,6 +112,18 @@ public class BadgeAssertionDAO {
 
 		return badgeAssertionKeys != null && !badgeAssertionKeys.isEmpty();
 	}
+	
+	public List<BadgeAssertion> getBadgeAssertions(IdentityRef recipient) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ba from badgeassertion ba ");
+		sb.append("inner join fetch ba.badgeClass bc ");
+		sb.append("where ba.recipient.key = :recipientKey ");
+		return dbInstance
+				.getCurrentEntityManager()
+				.createQuery(sb.toString(), BadgeAssertion.class)
+				.setParameter("recipientKey", recipient.getKey())
+				.getResultList();
+	}
 
 	public List<BadgeAssertion> getBadgeAssertions(IdentityRef recipient, RepositoryEntryRef courseEntry, boolean nullEntryMeansAll) {
 		QueryBuilder sb = new QueryBuilder();
