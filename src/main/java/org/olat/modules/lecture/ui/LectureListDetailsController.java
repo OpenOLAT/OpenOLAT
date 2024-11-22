@@ -198,7 +198,7 @@ public class LectureListDetailsController extends FormBasicController {
 			EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("course.empty", "lecture.course", formLayout);
 			emptyTeachersList.setTitle(translate("lecture.no.course.assigned.title"));
 			emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_CourseModule_icon");
-		} else if(formLayout instanceof FormLayoutContainer layoutCont) {
+		} else {
 			final String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(getRepositoryEntryPath());
 			
 			openEntryLink = uifactory.addFormLink("entry.open", repositoryEntry.getDisplayname(), null, formLayout, Link.LINK | Link.NONTRANSLATED);		
@@ -208,13 +208,13 @@ public class LectureListDetailsController extends FormBasicController {
 			VFSLeaf image = repositoryManager.getImage(repositoryEntry.getKey(), repositoryEntry.getOlatResource());
 			if(image != null) {
 				String thumbnailUrl = RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image);
-				layoutCont.contextPut("thumbnailUrl",thumbnailUrl);
+				formLayout.contextPut("thumbnailUrl",thumbnailUrl);
 			}
 			
-			layoutCont.contextPut("entryKey", repositoryEntry.getKey());
-			layoutCont.contextPut("entryUrl", url);
+			formLayout.contextPut("entryKey", repositoryEntry.getKey());
+			formLayout.contextPut("entryUrl", url);
 			if(StringHelper.containsNonWhitespace(repositoryEntry.getExternalRef())) {
-				layoutCont.contextPut("entryExternalRef", repositoryEntry.getExternalRef());
+				formLayout.contextPut("entryExternalRef", repositoryEntry.getExternalRef());
 			}
 		}
 	}
