@@ -49,6 +49,7 @@ public class BadgeCriteriaXStream {
 		xstream.alias(CoursePassedCondition.KEY, CoursePassedCondition.class);
 		xstream.alias(CourseScoreCondition.KEY, CourseScoreCondition.class);
 		xstream.alias(OtherBadgeEarnedCondition.KEY, OtherBadgeEarnedCondition.class);
+		xstream.alias(CompletionCriterionMetCondition.KEY, CompletionCriterionMetCondition.class);
 		xstream.alias(CourseElementPassedCondition.KEY, CourseElementPassedCondition.class);
 		xstream.alias(CourseElementScoreCondition.KEY, CourseElementScoreCondition.class);
 		xstream.alias(LearningPathProgressCondition.KEY, LearningPathProgressCondition.class);

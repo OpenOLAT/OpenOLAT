@@ -34,6 +34,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
+import org.olat.modules.openbadges.criteria.CompletionCriterionMetCondition;
 import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
 import org.olat.modules.openbadges.criteria.CourseElementScoreCondition;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
@@ -163,6 +164,12 @@ public class ConditionRow {
 			}
 		}
 
+		if (badgeCondition instanceof CompletionCriterionMetCondition completionCriterionMetCondition) {
+			courseElementsDropdown.setVisible(true);
+			if (courseElementsDropdown.containsKey(completionCriterionMetCondition.getSubIdent())) {
+				courseElementsDropdown.select(completionCriterionMetCondition.getSubIdent(), true);
+			}
+		}
 		if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
 			courseElementsDropdown.setVisible(true);
 			if (courseElementsDropdown.containsKey(courseElementPassedCondition.getSubIdent())) {
@@ -220,6 +227,7 @@ public class ConditionRow {
 				unitEl.setVisible(true);
 			}
 			case OtherBadgeEarnedCondition.KEY -> badgesDropdown.setVisible(true);
+			case CompletionCriterionMetCondition.KEY -> courseElementsDropdown.setVisible(true);
 			case CourseElementPassedCondition.KEY -> courseElementsDropdown.setVisible(true);
 			case CoursesPassedCondition.KEY -> coursesDropdown.setVisible(true);
 			case GlobalBadgesEarnedCondition.KEY -> {
@@ -306,6 +314,9 @@ public class ConditionRow {
 			);
 			case OtherBadgeEarnedCondition.KEY -> new OtherBadgeEarnedCondition(
 					badgesDropdown.isOneSelected() ? badgesDropdown.getSelectedKey() : badgesDropdown.getKeys()[0]
+			);
+			case CompletionCriterionMetCondition.KEY -> new CompletionCriterionMetCondition(
+					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedKey() : courseElementsDropdown.getKeys()[0]
 			);
 			case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(
 					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedKey() : courseElementsDropdown.getKeys()[0]
