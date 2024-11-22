@@ -112,6 +112,8 @@ import org.olat.modules.lecture.ui.blockimport.BlocksImport_1_InputStep;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlock;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
 import org.olat.modules.lecture.ui.component.IconDecoratorCellRenderer;
+import org.olat.modules.lecture.ui.component.IdentityCoachesCellRenderer;
+import org.olat.modules.lecture.ui.component.IdentityComparator;
 import org.olat.modules.lecture.ui.component.ReferenceRenderer;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
@@ -173,6 +175,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private StepsMainRunController addLectureCtrl;
 	private StepsMainRunController importBlockWizard;
 	private EditLectureBlockController editLectureCtrl;
+	private IdentitySmallListController teacherSmallListCtrl; 
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ConfirmDeleteLectureBlockController deleteLectureBlocksCtrl;
 
@@ -260,7 +263,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private  void initButtonsForm(FormItemContainer formLayout) {
 		if(curriculumElement != null) {
 			allLevelsButton = uifactory.addFormLink("search.all.levels", formLayout, Link.BUTTON);
-			allLevelsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_circle_check");
+			allLevelsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
 			allLevelsButton.setPrimary(true);
 			thisLevelButton = uifactory.addFormLink("search.this.level", formLayout, Link.BUTTON);
 			thisLevelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_exact_location");
@@ -320,7 +323,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location,
 				new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_location")));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers,
-				new IconDecoratorCellRenderer("o_icon o_icon-fw o_icon_user")));
+				new IdentityCoachesCellRenderer(userManager)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.numParticipants));
 		
 		DefaultFlexiColumnModel compulsoryColumn = new DefaultFlexiColumnModel(false, BlockCols.compulsory,
@@ -482,6 +485,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			externalRef = entry.getExternalRef();
 		}
 		
+		IdentityComparator identityComparator = new IdentityComparator(getLocale());
 		LecturesBlockSearchParameters searchParams = getSearchParams(ureq);
 		List<LectureBlockWithTeachers> blocks = lectureService.getLectureBlocksWithOptionalTeachers(searchParams);
 		
@@ -490,7 +494,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			LectureBlock b = block.getLectureBlock();
 			StringBuilder teachers = new StringBuilder();
 			String separator = translate("user.fullname.separator");
-			for(Identity teacher:block.getTeachers()) {
+			List<Identity> teachersList = new ArrayList<>(block.getTeachers());
+			if(teachersList.size() > 1) {
+				Collections.sort(teachersList, identityComparator);
+			}
+			
+			for(Identity teacher:teachersList) {
 				if(teachers.length() > 0) teachers.append(" ").append(separator).append(" ");
 				teachers.append(userManager.getUserDisplayName(teacher));
 			}
@@ -498,7 +507,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			LectureBlockRow row = new LectureBlockRow(b, displayname, externalRef,
 					teachers.toString(), false, block.getCurriculumElementRef(), block.getEntryRef(),
 					block.getNumOfParticipants(), block.isAssessmentMode());
-			row.setTeachersList(block.getTeachers());
+			row.setTeachersList(teachersList);
 			rows.add(row);
 			
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
@@ -675,6 +684,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 						doOpenLectureBlockDetails(ureq, row);
 						tableEl.expandDetails(se.getIndex());
 					}
+				} else if(IdentityCoachesCellRenderer.CMD_OTHER_TEACHERS.equals(cmd)) {
+					String targetId = IdentityCoachesCellRenderer.getOtherTeachersId(se.getIndex());
+					doShowTeachers(ureq, targetId, row);
 				}
 			} else if(event instanceof FlexiTableSearchEvent
 					|| event instanceof FlexiTableFilterTabEvent) {
@@ -923,6 +935,17 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 		
 		loadModel(ureq);
+	}
+	
+	private void doShowTeachers(UserRequest ureq, String elementId, LectureBlockRow row) {
+		List<Identity> teachers = row.getTeachersList();
+		teacherSmallListCtrl = new IdentitySmallListController(ureq, getWindowControl(), teachers);
+		listenTo(teacherSmallListCtrl);
+		
+		String title = translate("num.of.teachers", Integer.toString(teachers.size()));
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), teacherSmallListCtrl.getInitialComponent(), elementId, title, true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
 	}
 	
 	private void doOpenLectureBlockDetails(UserRequest ureq, LectureBlockRow row) {

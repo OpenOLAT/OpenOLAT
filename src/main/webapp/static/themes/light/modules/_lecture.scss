@@ -217,6 +217,10 @@
 	color: $o-lm-excluded-color;
 }
 
+.o_lectures_list>h2, .o_lectures_list>h3 {
+	margin-top: 0;
+}
+
 .o_curriculum_lectures_statistics {
 	.table {
 		width: auto;
