@@ -91,7 +91,7 @@ public class ArquillianDeployments {
 		}
 		
 		File barebonePropertiesFile = new File("src/test/profile/" + profile, "olat.local.properties");
-		PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper("${", "}", ":", true);
+		PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper("${", "}", ":", null, true);
 
 		Asset propertiesAsset = null;
 		try(InputStream inStream = new FileInputStream(barebonePropertiesFile)) {
