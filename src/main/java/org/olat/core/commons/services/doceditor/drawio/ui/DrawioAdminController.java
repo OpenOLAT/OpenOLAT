@@ -98,7 +98,8 @@ public class DrawioAdminController extends FormBasicController {
 		thumbnailEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
 		collaborationEnabled = drawioModule.isCollaborationEnabled();
-		collaborationEnabledEl = uifactory.addCheckboxesHorizontal("admin.collaboration.enabled", formLayout, ENABLED_KEYS, enableValues);
+		collaborationEnabledEl = uifactory.addCheckboxesHorizontal("admin.collaboration.experimental", formLayout, ENABLED_KEYS, enableValues);
+		collaborationEnabledEl.setHelpText(translate("admin.collaboration.info"));
 		collaborationEnabledEl.select(ENABLED_KEYS[0], drawioModule.isCollaborationEnabled());
 		collaborationEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
