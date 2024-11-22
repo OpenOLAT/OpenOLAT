@@ -620,7 +620,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return submittedDocuments == null ? 0 : submittedDocuments.length;
 	}
 	
-	protected Task stepPeerReview(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
+	protected Task stepPeerReview(UserRequest ureq, Task assignedTask) {
 		if(assignedTask != null && assignedTask.getKey() != null && assignedTask.getSurvey() == null) {
 			assignedTask = peerReviewManager.loadOrCreateSurvey(assignedTask, courseEntry, gtaNode);	
 		}

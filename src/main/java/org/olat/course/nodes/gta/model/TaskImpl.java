@@ -153,7 +153,7 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	@Column(name="g_revisions_due_date", nullable=true, insertable=true, updatable=false)
 	private Date revisionsDueDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_peerreview_due_date", nullable=true, insertable=true, updatable=true)
+	@Column(name="g_peerreview_due_date", nullable=true, insertable=true, updatable=false)
 	private Date peerReviewDueDate;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_solution_due_date", nullable=true, insertable=true, updatable=false)

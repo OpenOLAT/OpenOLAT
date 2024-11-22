@@ -164,6 +164,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.numOfReviews,
 				new NumOfCellRenderer(reviewers != null, translate("warning.awarded.reviewers"))));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.plot));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.review.view", translate("review.view"), "view"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.median));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.average));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sum));
@@ -186,7 +187,6 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 					statusRenderer));
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.review.view", translate("review.view"), "view"));
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(CoachReviewCols.tools));
 		
 		tableModel = new GTACoachPeerReviewTreeTableModel(columnsModel);
@@ -292,7 +292,10 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 			}
 			CoachPeerReviewRow sessionRow = forgeSessionRow(assignment, sessionStatistics, peerReviewDueDate);
 			sessionRow.setParent(surveyExecutorIdentityRow);
-			
+			if(sessionRow.getLateStatus() != null && (surveyExecutorIdentityRow.getLateStatus() == null
+					|| surveyExecutorIdentityRow.getLateStatus().ordinal() < sessionRow.getLateStatus().ordinal())) {
+				surveyExecutorIdentityRow.setLateStatus(sessionRow.getLateStatus());
+			}
 			rows.add(sessionRow);
 			sessionRows.add(sessionRow);
 		}
@@ -300,22 +303,14 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		decorateWithMark(surveyExecutorIdentityRow, surveyExecutorIdentityMark);
 
 		// Fill statistics
-		forgeSurveyExecutorIdentityRow(surveyExecutorIdentityRow, statistics.aggregatedStatistics(), reviewerOwnTask, peerReviewDueDate);
+		forgeSurveyExecutorIdentityRow(surveyExecutorIdentityRow, statistics.aggregatedStatistics(), reviewerOwnTask);
 		return surveyExecutorIdentityRow;
 	}
 	
-	private void forgeSurveyExecutorIdentityRow(CoachPeerReviewRow surveyExecutorIdentityRow, SessionStatistics aggregatedStatistics, Task reviewerOwnTask, DueDate peerReviewDueDate) {
+	private void forgeSurveyExecutorIdentityRow(CoachPeerReviewRow surveyExecutorIdentityRow, SessionStatistics aggregatedStatistics, Task reviewerOwnTask) {
 		decorateWithAggregatedStatistics(surveyExecutorIdentityRow, aggregatedStatistics);
 		decorateWithTools(surveyExecutorIdentityRow);
 		decorateWithStepStatus(surveyExecutorIdentityRow, reviewerOwnTask);
-		
-		if(peerReviewDueDate != null) {
-			Date completedDate = reviewerOwnTask == null ? null : reviewerOwnTask.getPeerReviewDueDate();
-			TaskLateStatus lateStatus = gtaManager.evaluateSubmissionLateStatus(completedDate, peerReviewDueDate.getReferenceDueDate(),
-					null, peerReviewDueDate.getOverridenDueDate());
-			surveyExecutorIdentityRow.setLateStatus(lateStatus);
-			surveyExecutorIdentityRow.setPeerReviewDueDate(peerReviewDueDate);
-		}
 
 		CoachedParticipantStatus submissionStatus = statusRenderer
 				.calculateSubmissionStatus(surveyExecutorIdentityRow.getIdentity(), reviewerOwnTask);
