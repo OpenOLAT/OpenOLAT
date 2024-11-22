@@ -94,13 +94,16 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.topicType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExecutorParticipationCols.topic));
-		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel(ExecutorParticipationCols.execute.i18nHeaderKey(),
-				ExecutorParticipationCols.execute.ordinal(), CMD_EXECUTE,
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer("", CMD_EXECUTE, "o_icon o_icon-lg o_icon_qual_part_execute", null),
-						null));
-		editColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(editColumn);
+		
+		DefaultFlexiColumnModel executeColumn = new DefaultFlexiColumnModel(ExecutorParticipationCols.execute);
+		executeColumn.setCellRenderer(new BooleanCellRenderer(
+				new StaticFlexiCellRenderer(null, CMD_EXECUTE, null, "o_icon o_icon-lg o_icon_qual_part_execute",
+						translate(ExecutorParticipationCols.execute.i18nHeaderKey())),
+				null));
+		executeColumn.setIconHeader("o_icon o_icon-lg o_icon_qual_part_execute");
+		executeColumn.setExportable(false);
+		executeColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(executeColumn);
 
 		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
 		searchParams.setExecutorRef(getIdentity());

@@ -51,6 +51,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -178,11 +179,12 @@ public class MediaRelationsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.editable));
 		if(editable || asAdmin) {
-			DefaultFlexiColumnModel deleteCol = new DefaultFlexiColumnModel("delete", "", "delete", "o_icon o_icon_delete_item");
-			deleteCol.setIconHeader("o_icon o_icon_delete_item");
-			deleteCol.setAlwaysVisible(true);
-			deleteCol.setExportable(false);
-			columnsModel.addFlexiColumnModel(deleteCol);
+			DefaultFlexiColumnModel removeColumn = new DefaultFlexiColumnModel("remove", -1);
+			removeColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "delete", null, "o_icon o_icon-lg o_icon_delete_item", translate("remove")));
+			removeColumn.setIconHeader("o_icon o_icon-lg o_icon_delete_item");
+			removeColumn.setAlwaysVisible(true);
+			removeColumn.setExportable(false);
+			columnsModel.addFlexiColumnModel(removeColumn);
 		}
 		
 		model = new MediaRelationsTableModel(columnsModel, getTranslator(), getLocale());

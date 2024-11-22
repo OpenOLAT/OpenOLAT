@@ -316,7 +316,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 
 		if(secCallback.canGrade()) {
 			DefaultFlexiColumnModel gradeCol = new DefaultFlexiColumnModel(GAssignmentsCol.grade);
-			gradeCol.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("grade"), "grade", null, null), null));
+			gradeCol.setCellRenderer(new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("grade"), "grade"), null));
 			gradeCol.setAlwaysVisible(true);
 			gradeCol.setExportable(false);
 			columnsModel.addFlexiColumnModel(gradeCol);

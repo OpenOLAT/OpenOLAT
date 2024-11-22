@@ -505,9 +505,9 @@ public abstract class GroupByController extends FormBasicController implements F
 		addDataColumns(columnsModel, DATA_OFFSET);
 		addTotalDataColumn(columnsModel, TOTAL_OFFSET);
 		
-		DefaultFlexiColumnModel trendColumn = new DefaultFlexiColumnModel("heatmap.table.title.trend", columnIndex++,
-				CMD_TREND, new StaticFlexiCellRenderer("", CMD_TREND, "o_icon o_icon-lg o_icon_qual_ana_trend", null));
-		trendColumn.setExportable(false);
+		DefaultFlexiColumnModel trendColumn = new DefaultFlexiColumnModel("heatmap.table.title.trend", columnIndex++);
+		trendColumn.setCellRenderer(new StaticFlexiCellRenderer(null, CMD_TREND, null, "o_icon o_icon-lg o_icon_qual_ana_trend", translate("heatmap.table.title.trend")));
+		trendColumn.setIconHeader("o_icon o_icon-lg o_icon_qual_ana_trend");
 		columnsModel.addFlexiColumnModel(trendColumn);
 		
 		initModel(columnsModel);

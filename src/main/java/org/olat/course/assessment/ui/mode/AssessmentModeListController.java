@@ -167,9 +167,9 @@ public class AssessmentModeListController extends FormBasicController implements
 
 		if(secCallback.canStartStopAssessment()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("start.exam", Cols.start.ordinal(), "start",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start", "btn btn-default btn-sm", "o_icon o_icon-fw o_icon_status_in_progress"), null)));
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start", "btn btn-default btn-sm", "o_icon o_icon-fw o_icon_status_in_progress", null), null)));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("stop.exam", Cols.stop.ordinal(), "stop",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("finish"), "stop","btn btn-default btn-sm", "o_icon o_icon-fw o_as_mode_stop"), null)));
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("finish"), "stop","btn btn-default btn-sm", "o_icon o_icon-fw o_as_mode_stop", null), null)));
 		}
 
 		DefaultFlexiColumnModel configSebCol = new DefaultFlexiColumnModel("table.header.config.seb", Cols.configSeb.ordinal(), "configSeb",

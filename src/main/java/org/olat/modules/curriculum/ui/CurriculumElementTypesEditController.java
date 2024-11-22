@@ -31,12 +31,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -78,8 +78,6 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	private EditCurriculumElementTypeController editElementTypeCtrl;
 	protected CloseableCalloutWindowController toolsCalloutCtrl;
 
-	private int counter = 1;
-
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -99,13 +97,14 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.displayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
-		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
-				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
+		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
 		editColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(editColumn);
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(TypesCols.tools);
-		toolsColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		
+		columnsModel.addFlexiColumnModel(new ActionsColumnModel(TypesCols.tools));
 		
 		model = new CurriculumElementTypesTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, 25, false, getTranslator(), formLayout);
@@ -116,7 +115,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	private void loadModel() {
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
 		List<CurriculumElementTypeRow> rows = types
-				.stream().map(t -> forgeRow(t))
+				.stream().map(this::forgeRow)
 				.collect(Collectors.toList());
 		model.setObjects(rows);
 		tableEl.reset(false, true, true);
@@ -125,8 +124,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	private CurriculumElementTypeRow forgeRow(CurriculumElementType type) {
 		CurriculumElementTypeRow row = new CurriculumElementTypeRow(type);
 		if(isToolsEnable(type)) {
-			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}
