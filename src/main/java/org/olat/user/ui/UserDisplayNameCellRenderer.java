@@ -28,6 +28,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 
 /**
@@ -54,10 +55,10 @@ public class UserDisplayNameCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof Identity) {
-			String userDisplayName = userManager.getUserDisplayName(((Identity)cellValue).getKey());
+			String userDisplayName = StringHelper.escapeHtml(userManager.getUserDisplayName(((Identity)cellValue).getKey()));
 			target.append(userDisplayName);
 		} else if (cellValue instanceof User) {
-			String userDisplayName = userManager.getUserDisplayName(((User)cellValue));
+			String userDisplayName = StringHelper.escapeHtml(userManager.getUserDisplayName(((User)cellValue)));
 			target.append(userDisplayName);
 		}
 	}

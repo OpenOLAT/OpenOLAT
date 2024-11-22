@@ -71,6 +71,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockEntry;
@@ -278,7 +279,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 		if(isShowAssignedToMeFilter()) {
 			SelectionValues assignedCoachValues = new SelectionValues();
 			assignedCoachValues.add(SelectionValues.entry("-1", translate("filter.coach.not.assigned")));
-			assignedCoachValues.add(SelectionValues.entry(getIdentity().getKey().toString(), userManager.getUserDisplayName(getIdentity())));
+			assignedCoachValues.add(SelectionValues.entry(getIdentity().getKey().toString(), StringHelper.escapeHtml(userManager.getUserDisplayName(getIdentity()))));
 			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.coach.assigned"),
 					FILTER_ASSIGNED_COACH, assignedCoachValues, true);
 			filters.add(membersFilter);
