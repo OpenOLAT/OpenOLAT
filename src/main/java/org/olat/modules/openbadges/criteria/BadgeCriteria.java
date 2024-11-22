@@ -82,6 +82,12 @@ public class BadgeCriteria {
 	}
 
 	private boolean checkCourseElementSubIdent(BadgeCondition bc, Set<String> courseElementIdents) {
+		if (bc instanceof CompletionCriterionMetCondition completionCriterionMetCondition) {
+			if (!courseElementIdents.contains(completionCriterionMetCondition.getSubIdent())) {
+				return false;
+			}
+		}
+		
 		if (bc instanceof CourseElementPassedCondition courseElementPassedCondition) {
 			if (!courseElementIdents.contains(courseElementPassedCondition.getSubIdent())) {
 				return false;
@@ -144,6 +150,9 @@ public class BadgeCriteria {
 			return false;
 		}
 		if (!allCourseElementConditionsMet(recipient, assessmentEntries)) {
+			return false;
+		}
+		if (!learningPathCourseElementConditionsMet(recipient, learningPath, assessmentEntries)) {
 			return false;
 		}
 		if (!learningPathConditionMet(recipient, learningPath, assessmentEntries)) {
@@ -247,6 +256,29 @@ public class BadgeCriteria {
 		}
 
 		return scoreCondition.satisfiesCondition(assessmentEntry.getScore().floatValue());
+	}
+	
+	private boolean learningPathCourseElementConditionsMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
+		if (!learningPath) {
+			return true;
+		}
+
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CompletionCriterionMetCondition completionCriterionMetCondition) {
+				for (AssessmentEntry assessmentEntry : assessmentEntries) {
+					if (!assessmentEntry.getIdentity().equals(recipient)) {
+						continue;
+					}
+
+					if (completionCriterionMetCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
+						return assessmentEntry.getFullyAssessed() != null && assessmentEntry.getFullyAssessed();
+					}
+				}
+				return false;
+			}
+		}
+		
+		return true;
 	}
 
 	private boolean learningPathConditionMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
@@ -388,6 +420,11 @@ public class BadgeCriteria {
 
 	public boolean conditionForCourseNodeExists(String courseNodeSubIdent) {
 		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CompletionCriterionMetCondition completionCriterionCondition) {
+				if (completionCriterionCondition.getSubIdent().equals(courseNodeSubIdent)) {
+					return true;
+				}
+			}
 			if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
 				if (courseElementPassedCondition.getSubIdent().equals(courseNodeSubIdent)) {
 					return true;

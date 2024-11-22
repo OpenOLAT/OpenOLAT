@@ -282,6 +282,7 @@ public class GTACoachPeerReviewAwardedListController extends AbstractCoachPeerRe
 		Task task = surveyExecutorIdentityRow.getTask();
 		DueDate peerReviewDueDate = gtaManager.getPeerReviewDueDate(task, surveyExecutorIdentityRow.getIdentity(),
 				null, gtaNode, courseEntry, true);
+		surveyExecutorIdentityRow.setPeerReviewDueDate(peerReviewDueDate);
 		
 		Map<EvaluationFormParticipation, SessionParticipationStatistics> statisticsMap = statistics.toParticipationsMap();
 		

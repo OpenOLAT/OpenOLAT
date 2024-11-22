@@ -54,6 +54,7 @@ import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
+import org.olat.modules.openbadges.criteria.CompletionCriterionMetCondition;
 import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
 import org.olat.modules.openbadges.criteria.CourseElementScoreCondition;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
@@ -173,6 +174,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				conditionsKV.add(SelectionValues.entry(CoursePassedCondition.KEY, translate("form.criteria.condition.course.passed")));
 				conditionsKV.add(SelectionValues.entry(CourseScoreCondition.KEY, translate("form.criteria.condition.course.score")));
 				if (createContext.isLearningPath()) {
+					if (!courseElementsKV.isEmpty()) {
+						conditionsKV.add(SelectionValues.entry(CompletionCriterionMetCondition.KEY, translate("form.criteria.condition.completion.criterion.met")));
+					}
 					conditionsKV.add(SelectionValues.entry(LearningPathProgressCondition.KEY, translate("form.criteria.condition.learning.path.progress")));
 				}
 				if (!badgesKV.isEmpty()) {
@@ -245,11 +249,17 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 			Set<String> unusedBadgeKeys = new HashSet<>(Set.of(conditionContext.badgesKV().keys()));
 			Set<String> subIdentsNotUsedInPassedCondition = new HashSet<>(Set.of(conditionContext.courseElementsKV().keys()));
+			Set<String> subIdentsNotUsedInCompletionCriterionMetCondition = new HashSet<>(Set.of(conditionContext.courseElementsKV().keys()));
 			for (ConditionRow condition : conditionRows) {
 				BadgeCondition badgeCondition = condition.asBadgeCondition();
 				if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
 					unusedBadgeKeys.remove(otherBadgeEarnedCondition.getBadgeClassUuid());
 					if (unusedBadgeKeys.isEmpty()) {
+						newConditionsKV.remove(badgeCondition.getKey());
+					}
+				} else if (badgeCondition instanceof CompletionCriterionMetCondition completionCriterionMetCondition) {
+					subIdentsNotUsedInCompletionCriterionMetCondition.remove(completionCriterionMetCondition.getSubIdent());
+					if (subIdentsNotUsedInCompletionCriterionMetCondition.isEmpty()) {
 						newConditionsKV.remove(badgeCondition.getKey());
 					}
 				} else if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
@@ -280,6 +290,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				case CourseScoreCondition.KEY -> new CourseScoreCondition(Symbol.greaterThan, 1);
 				case LearningPathProgressCondition.KEY -> new LearningPathProgressCondition(Symbol.greaterThan, 50);
 				case OtherBadgeEarnedCondition.KEY -> new OtherBadgeEarnedCondition(getUnusedBadgeKey());
+				case CompletionCriterionMetCondition.KEY -> new CompletionCriterionMetCondition(getSubIdentsNotUsedInCompletionCriterionMetCondition());
 				case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(getSubIdentsNotUsedInPassedCondition());
 				case CourseElementScoreCondition.KEY -> new CourseElementScoreCondition(getSubIdentsNotUsedInScoreCondition(), Symbol.greaterThan, 1);
 				case CoursesPassedCondition.KEY -> new CoursesPassedCondition();
@@ -305,18 +316,14 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			return unusedBadgeKeys.isEmpty() ? null : unusedBadgeKeys.iterator().next();
 		}
 
-		private SelectionValues.SelectionValue getUnusedCourseElementPassedConditions() {
-			Set<String> usedSubIdents = conditionRows.stream().map(ConditionRow::asBadgeCondition)
-					.filter(bc -> bc instanceof CourseElementPassedCondition)
-					.map(CourseElementPassedCondition.class::cast)
-					.map(CourseElementPassedCondition::getSubIdent)
-					.collect(Collectors.toSet());
-			for (SelectionValues.SelectionValue courseElement : conditionContext.courseElementsKV().keyValues()) {
-				if (!usedSubIdents.contains(courseElement.getKey())) {
-					return courseElement;
+		private String getSubIdentsNotUsedInCompletionCriterionMetCondition() {
+			Set<String> unusedSubIdents = new HashSet<>(Set.of(conditionContext.courseElementsKV().keys()));
+			for (ConditionRow condition : conditionRows) {
+				if (condition.asBadgeCondition() instanceof CompletionCriterionMetCondition completionCriterionMetCondition) {
+					unusedSubIdents.remove(completionCriterionMetCondition.getSubIdent());
 				}
 			}
-			return null;
+			return unusedSubIdents.isEmpty() ? null : unusedSubIdents.iterator().next();
 		}
 
 		private String getSubIdentsNotUsedInPassedCondition() {
