@@ -72,7 +72,7 @@ public class ForumPage {
 	}
 	
 	public ForumPage userFilter() {
-		By toolBy = By.xpath("//div[contains(@class,'o_forum_toolbar')]/a[contains(@class,'btn')][span/i[contains(@class,'o_icon_actions')]]");
+		By toolBy = By.xpath("//div[contains(@class,'o_forum_toolbar')]/a[contains(@class,'btn')][i[contains(@class,'o_icon_actions')]]");
 		OOGraphene.waitElement(toolBy, browser);
 		browser.findElement(toolBy).click();
 		OOGraphene.waitCallout(browser);
