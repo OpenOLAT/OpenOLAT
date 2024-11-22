@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -62,7 +63,7 @@ public class EditTaxonomyCompetenceController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String fullName = userManager.getUserDisplayName(competence.getIdentity());
+		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(competence.getIdentity()));
 		uifactory.addStaticTextElement("taxonomy.competence.fullName", fullName, formLayout);
 
 		TaxonomyCompetenceTypes competenceType = competence.getCompetenceType();
