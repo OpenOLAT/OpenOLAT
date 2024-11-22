@@ -77,6 +77,7 @@ import org.olat.modules.lecture.ui.component.LectureBlockParticipantGroupExclude
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
@@ -290,23 +291,29 @@ public class LectureListDetailsController extends FormBasicController {
 		List<Group> selectedGroups = lectureService.getLectureBlockToGroups(row.getLectureBlock());
 		
 		if(row.getEntry() != null && row.getEntry().key() != null && repositoryEntry != null) {
+			boolean curriculumType = (repositoryEntry.getRuntimeType() == RepositoryEntryRuntimeType.curricular);
+			
 			Group defaultGroup = repositoryService.getDefaultGroup(repositoryEntry);
 			int participants = repositoryService.countMembers(repositoryEntry, GroupRoles.participant.name());
-			groupList.add(decorateRow(new LectureBlockParticipantGroupRow(repositoryEntry, defaultGroup,
+			if(!curriculumType || selectedGroups.contains(defaultGroup)) {
+				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(repositoryEntry, defaultGroup,
 					participants, !selectedGroups.contains(defaultGroup))));
+			}
 		
 			BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 			List<StatisticsBusinessGroupRow> businessGroups = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, null, repositoryEntry);
 			for(StatisticsBusinessGroupRow businessGroup:businessGroups) {
-				boolean excluded = !selectedGroups.contains(businessGroup.getBaseGroup());
-				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(businessGroup, excluded)));
+				boolean included = selectedGroups.contains(businessGroup.getBaseGroup());
+				if(!curriculumType || included) {
+					groupList.add(decorateRow(new LectureBlockParticipantGroupRow(businessGroup, !included)));
+				}
 			}
 			
 			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(repositoryEntry);
 			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
-				boolean excluded = !selectedGroups.contains(elementInfos.curriculumElement().getGroup());
-				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, excluded)));
+				boolean included = selectedGroups.contains(elementInfos.curriculumElement().getGroup());
+				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(elementInfos, !included)));
 			}
 		} else if(row.getCurriculumElement() != null && row.getCurriculumElement().key() != null) {
 			CurriculumElementRef curriculumElementRef = new CurriculumElementRefImpl(row.getCurriculumElement().key());
@@ -418,9 +425,9 @@ public class LectureListDetailsController extends FormBasicController {
 		} else if(groupRow.getBusinessGroup() != null) {
 			businessPath = "[BusinessGroup:" + groupRow.getBusinessGroup().getKey() + "]";	
 		} else if(groupRow.getCurriculumElement() != null) {
-			CurriculumElementInfos curriculumElement = groupRow.getCurriculumElement();
-			businessPath = "[CurriculumAdmin:0][Curriculum:" + curriculumElement.curriculum().getKey()
-					+ "][CurriculumElement:" + curriculumElement.getKey() + "]";	
+			CurriculumElementInfos element = groupRow.getCurriculumElement();
+			businessPath = "[CurriculumAdmin:0][Curriculum:" + element.curriculum().getKey()
+					+ "][CurriculumElement:" + element.getKey() + "]";	
 		} else {
 			businessPath = null;
 		}
