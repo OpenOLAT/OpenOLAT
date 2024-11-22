@@ -82,10 +82,6 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 		this(label, action, false, false, linkCSS, null, null);
 	}
 	
-	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconLeftCSS) {
-		this(label, action, false, false, linkCSS, iconLeftCSS, null);
-	}
-	
 	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconLeftCSS, String linkTitle) {
 		this(label, action, false, false, linkCSS, iconLeftCSS, linkTitle);
 	}

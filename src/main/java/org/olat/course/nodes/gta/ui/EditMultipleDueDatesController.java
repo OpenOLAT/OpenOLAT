@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -75,6 +76,8 @@ public class EditMultipleDueDatesController extends FormBasicController {
 	private final RepositoryEntry courseEntry;
 	private final CourseEnvironment courseEnv;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private GTAManager gtaManager;
 	
@@ -253,6 +256,9 @@ public class EditMultipleDueDatesController extends FormBasicController {
 				dueDates.setSolutionDueDate(solutionDueDateEl.getDate());
 			}
 			dueDates = gtaManager.updateTaskDueDate(dueDates);
+			dbInstance.commit();
+			
+			task = gtaManager.getTask(dueDates);
 			
 			if(task.getTaskStatus().ordinal() > TaskProcess.peerreview.ordinal()
 					&& dueDates.getPeerReviewDueDate() != null

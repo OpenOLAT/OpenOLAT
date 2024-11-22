@@ -87,7 +87,7 @@ public class CurriculumElementsListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LectureCurriculumCols.numOfParticipants));
 		if(secCallback.viewAs() == LectureRoles.lecturemanager || secCallback.viewAs() == LectureRoles.mastercoach || secCallback.viewAs() == LectureRoles.teacher) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.absences", LectureCurriculumCols.absences.ordinal(), "absences",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.absences"), "absences", null, "o_icon o_icon_lecture o_icon-fw"), null)));
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.absences"), "absences", null, "o_icon o_icon_lecture o_icon-fw", null), null)));
 		}
 
 		tableModel = new CurriculumElementsTableModel(columnsModel, getLocale());

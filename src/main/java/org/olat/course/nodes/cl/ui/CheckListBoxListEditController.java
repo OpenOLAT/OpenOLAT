@@ -129,11 +129,11 @@ public class CheckListBoxListEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("up", Cols.up.ordinal(), "up",
 				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer("", "up", "o_icon o_icon-lg o_icon_move_up", translate("up")),
+						new StaticFlexiCellRenderer("", "up", null, "o_icon o_icon-lg o_icon_move_up", translate("up")),
 						null)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("down", Cols.down.ordinal(), "down",
 				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer("", "down", "o_icon o_icon-lg o_icon_move_down", translate("down")),
+						new StaticFlexiCellRenderer("", "down", null, "o_icon o_icon-lg o_icon_move_down", translate("down")),
 						null)));
 		
 		model = new CheckboxConfigDataModel(getTranslator(), columnsModel);

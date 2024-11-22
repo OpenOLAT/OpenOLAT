@@ -49,10 +49,10 @@ import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.modules.fo.ReadOnlyForumCallback;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.Message;
+import org.olat.modules.fo.ReadOnlyForumCallback;
 import org.olat.modules.fo.Status;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.model.ForumThread;
@@ -201,7 +201,7 @@ public class SelectThreadStepForm extends StepFormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.totalMessages));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.select, "select",
-				new StaticFlexiCellRenderer(translate("select"), "select", "", "o_icon o_icon_select o_icon-fw")));		
+				new StaticFlexiCellRenderer(translate("select"), "select", "", "o_icon o_icon_select o_icon-fw", null)));
 		
 		threadTableModel = new ThreadListDataModel(columnsModel, getTranslator());
 		threadTable = uifactory.addTableElement(getWindowControl(), "threads", threadTableModel, getTranslator(), formLayout);

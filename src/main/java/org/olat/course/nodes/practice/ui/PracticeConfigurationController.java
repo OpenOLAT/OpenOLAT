@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -202,10 +203,11 @@ public class PracticeConfigurationController extends FormBasicController {
 		DefaultFlexiColumnModel titleCol = new DefaultFlexiColumnModel(PracticeResourceCols.title);
 		columnsModel.addFlexiColumnModel(titleCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PracticeResourceCols.numOfQuestions));
-		DefaultFlexiColumnModel removeCol = new DefaultFlexiColumnModel("remove", "", "remove", "o_icon o_icon_delete_item");
-		removeCol.setIconHeader("o_icon o_icon_delete_item");
-		removeCol.setHeaderTooltip(translate("remove"));
-		columnsModel.addFlexiColumnModel(removeCol);
+		
+		DefaultFlexiColumnModel removeColumn = new DefaultFlexiColumnModel("remove", -1);
+		removeColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "remove", null, "o_icon o_icon-lg o_icon_delete_item", translate("remove")));
+		removeColumn.setIconHeader("o_icon o_icon-lg o_icon_delete_item");
+		columnsModel.addFlexiColumnModel(removeColumn);
 		
 		resourcesModel = new PracticeResourceTableModel(columnsModel, getLocale());
 		resourcesTableEl = uifactory.addTableElement(getWindowControl(), "resources.list", resourcesModel, 12, false, getTranslator(), formLayout);

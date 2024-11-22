@@ -161,6 +161,16 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.numOfReviewers,
 				new NumOfCellRenderer(assessedIdentities != null, translate("warning.received.reviews"))));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.plot));
+		
+		DefaultFlexiColumnModel reviewCol = new DefaultFlexiColumnModel(CoachReviewCols.editReview.i18nHeaderKey(),
+				CoachReviewCols.editReview.ordinal(), "view",
+				new BooleanCellRenderer(
+						new StaticFlexiCellRenderer(translate("review.execute"), "execute"),
+						new StaticFlexiCellRenderer(translate("review.view"), "view")));
+		reviewCol.setAlwaysVisible(true);
+		reviewCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(reviewCol);
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.median));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.average));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.sum));
@@ -172,16 +182,6 @@ public class GTACoachPeerReviewReceivedListController extends AbstractCoachPeerR
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CoachReviewCols.submissionStatus,
 					statusRenderer));
 		}
-		
-		DefaultFlexiColumnModel leaveCol = new DefaultFlexiColumnModel(CoachReviewCols.editReview.i18nHeaderKey(),
-				CoachReviewCols.editReview.ordinal(), "view",
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer(translate("review.execute"), "execute"),
-						new StaticFlexiCellRenderer(translate("review.view"), "view")));
-		leaveCol.setAlwaysVisible(true);
-		leaveCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(leaveCol);
-		
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(CoachReviewCols.tools));
 		
 		tableModel = new GTACoachPeerReviewTreeTableModel(columnsModel);

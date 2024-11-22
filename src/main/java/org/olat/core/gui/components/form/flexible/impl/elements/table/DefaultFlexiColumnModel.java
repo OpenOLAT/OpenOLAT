@@ -202,11 +202,6 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 				new StaticFlexiCellRenderer(action, new TextFlexiCellRenderer()));
 	}
 	
-	public DefaultFlexiColumnModel(String headerKey, String label, String action, String iconCss) {
-		this(true, true, headerKey, null, -1, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT,
-				new StaticFlexiCellRenderer(label, action, null, iconCss));
-	}
-	
 	/**
 	 * Always visible
 	 * @param headerKey

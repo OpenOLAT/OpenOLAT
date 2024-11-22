@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.ui;
 
 import java.util.Date;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -68,6 +69,8 @@ public class EditDueDatesController extends FormBasicController {
 	private final RepositoryEntry courseEntry;
 	private final CourseEnvironment courseEnv;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private GTAManager gtaManager;
 	
@@ -168,6 +171,9 @@ public class EditDueDatesController extends FormBasicController {
 		dueDates.setPeerReviewDueDate(peerReviewDueDateEl.getDate());
 		dueDates.setSolutionDueDate(solutionDueDateEl.getDate());
 		dueDates = gtaManager.updateTaskDueDate(dueDates);
+		dbInstance.commit();
+		
+		task = gtaManager.getTask(dueDates);
 		
 		if(task.getTaskStatus().ordinal() > TaskProcess.peerreview.ordinal()
 				&& peerReviewDueDateEl.isVisible()

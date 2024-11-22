@@ -133,9 +133,9 @@ public class SitesConfigurationController extends FormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SiteCols.defaultOrder.i18nKey(), SiteCols.defaultOrder.ordinal(), false, null));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("up", SiteCols.up.ordinal(), "up",
-				new StaticFlexiCellRenderer("", "up", "o_icon o_icon-lg o_icon_move_up", translate("up"))));
+				new StaticFlexiCellRenderer("", "up", null, "o_icon o_icon-lg o_icon_move_up", translate("up"))));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("down", SiteCols.down.ordinal(), "down",
-				new StaticFlexiCellRenderer("", "down", "o_icon o_icon-lg o_icon_move_down", translate("down"))));
+				new StaticFlexiCellRenderer("", "down", null, "o_icon o_icon-lg o_icon_move_down", translate("down"))));
 
 		model = new SiteDefModel(columnsModel);
 		

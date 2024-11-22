@@ -71,7 +71,7 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 		identifier("table.type.header.type.identifier"),
 		displayName("table.type.header.type.displayName"),
 		externalId("table.type.header.type.externalId"),
-		tools("table.header.tools");
+		tools("action.more");
 		
 		private final String i18nHeaderKey;
 		

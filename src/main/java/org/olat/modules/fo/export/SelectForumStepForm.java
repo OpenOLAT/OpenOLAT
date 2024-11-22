@@ -113,7 +113,7 @@ public class SelectForumStepForm extends StepFormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.forum));
 		tableColumnModel.addFlexiColumnModel(
 				new DefaultFlexiColumnModel(Cols.select, "forum.select", new StaticFlexiCellRenderer(
-						translate("forum.select"), "forum.select", "", "o_icon o_icon_select o_icon-fw")));
+						translate("forum.select"), "forum.select", "", "o_icon o_icon_select o_icon-fw", null)));
 		
 		tableModel = new NodeTableDataModel(courseNodes, tableColumnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);

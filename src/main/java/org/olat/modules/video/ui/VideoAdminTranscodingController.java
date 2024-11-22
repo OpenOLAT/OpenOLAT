@@ -90,14 +90,22 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.numberTranscodings));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.failedTranscodings));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.missingTranscodings));
-		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.transcode, "quality.transcode", 
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("quality.transcode"), "quality.transcode",
-						"", "o_icon o_icon_refresh o_icon-fw"), null)));
-		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.delete, "quality.delete", 
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("quality.delete"), "quality.delete",
-						"", "o_icon o_icon_delete_item o_icon-fw"), null)));
-		tableModel = new TranscodingTableModel(transcodingModel, getTranslator());
 		
+		DefaultFlexiColumnModel transcodeColumn = new DefaultFlexiColumnModel(TranscodingCols.transcode);
+		transcodeColumn.setCellRenderer(new BooleanCellRenderer(
+				new StaticFlexiCellRenderer(translate("quality.transcode"),
+						"quality.transcode", "", "o_icon o_icon_refresh o_icon-fw",
+				null), null));
+		transcodingModel.addFlexiColumnModel(transcodeColumn);
+		
+		DefaultFlexiColumnModel deleteColumn = new DefaultFlexiColumnModel(TranscodingCols.delete);
+		deleteColumn.setCellRenderer(new BooleanCellRenderer(
+				new StaticFlexiCellRenderer(translate("quality.delete"),
+						"quality.delete", "", "o_icon o_icon_delete_item o_icon-fw",
+				null), null));
+		transcodingModel.addFlexiColumnModel(deleteColumn);
+		
+		tableModel = new TranscodingTableModel(transcodingModel, getTranslator());
 		transcodingTable = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 		transcodingTable.setCustomizeColumns(false);
 		transcodingTable.setNumOfRowsEnabled(false);

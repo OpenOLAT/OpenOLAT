@@ -223,8 +223,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 
 		if(lectureModule.isEnabled()) {
 			DefaultFlexiColumnModel lecturesCol = new DefaultFlexiColumnModel("table.header.lectures", CurriculumCols.lectures.ordinal(), "lectures",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer("", "lectures", null,
-							"o_icon o_icon-fw o_icon-lg o_icon_lecture", translate("table.header.lectures")),
+					new BooleanCellRenderer(new StaticFlexiCellRenderer("", "lectures", null, "o_icon o_icon-fw o_icon-lg o_icon_lecture", translate("table.header.lectures")),
 							null));
 			lecturesCol.setExportable(false);
 			lecturesCol.setIconHeader("o_icon o_icon-lg o_icon_lecture");
