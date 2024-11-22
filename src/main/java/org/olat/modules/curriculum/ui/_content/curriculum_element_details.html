@@ -28,7 +28,7 @@
 	</div>
 	<div class="o_title_cmds">
 	#if($r.available("more") || $r.available("structure"))
-		<div class="o_curriculum_title_actions">$r.render("structure") $r.render("more")</div>
+		<div class="o_curriculum_title_actions">$r.render("structure") <div class="btn-group">$r.render("structure.previous") $r.render("structure.next")</div> $r.render("more")</div>
 	#end
 	</div>
 </div>

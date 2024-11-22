@@ -666,6 +666,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				if(rootElement != null) {
 					fireEvent(ureq, event);
 				} else {
+					toolbarPanel.popController(source);
 					doOpenCurriculumElementDetails(ureq, cee.getCurriculumElement(), cee.getContext());
 				}
 			}

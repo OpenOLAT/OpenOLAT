@@ -27,7 +27,11 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_RESOURCES;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_STRUCTURE;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -60,6 +64,7 @@ import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.event.CurriculumElementEvent;
 import org.olat.modules.curriculum.ui.event.SelectCurriculumElementRowEvent;
@@ -85,7 +90,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private int structuresTab;
 	private int userManagerTab;
 
+	private Link nextButton;
 	private Link deleteButton;
+	private Link previousButton;
 	private Link structureButton;
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
@@ -131,6 +138,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		tabPane.addListener(this);
 		initTabPane(ureq);
 		initMetadata();
+		initStructure();
 		
 		mainVC.put("tabs", tabPane);
 		putInitialPanel(mainVC);
@@ -148,6 +156,74 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		return curriculumElement;
 	}
 	
+
+	private void initStructure() {
+		structureButton = LinkFactory.createCustomLink("structure", "structure", "structure.goto", Link.BUTTON, mainVC, this);
+		structureButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
+		structureButton.setTitle(translate("action.structure"));
+		
+		previousButton = LinkFactory.createCustomLink("structure.previous", "previous", "", Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
+		previousButton.setIconLeftCSS("o_icon o_icon-fw o_icon_slide_up");
+		previousButton.setTitle(translate("structure.previous"));
+		
+		nextButton = LinkFactory.createCustomLink("structure.next", "next", "", Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
+		nextButton.setIconLeftCSS("o_icon o_icon-fw o_icon_slide_down");
+		nextButton.setTitle(translate("structure.next"));
+		
+		CurriculumElement next = null;
+		CurriculumElement previous = null;
+		// Load and evaluate implementation tree
+		List<CurriculumElementRow> elements = buildCurriculumPartialTree();
+		if(elements.size() > 1) {
+			int index = 0;
+			for(int i=0; i<elements.size(); i++) {
+				if(curriculumElement.getKey().equals(elements.get(i).getKey())) {
+					index = i;
+					break;
+				}
+			}
+			
+			if(index - 1 >= 0) {
+				previous = elements.get(index - 1).getCurriculumElement();
+			}
+			if(index + 1 < elements.size()) {
+				next = elements.get(index + 1).getCurriculumElement();
+			}
+		}
+		
+		nextButton.setEnabled(next != null);
+		nextButton.setUserObject(next);
+		previousButton.setEnabled(previous != null);
+		previousButton.setUserObject(previous);
+	}
+	
+	private List<CurriculumElementRow> buildCurriculumPartialTree() {
+		CurriculumElement rootElement = getRootElement();
+		List<CurriculumElement> elements = curriculumService.getCurriculumElementsDescendants(rootElement);
+		if(rootElement != null && !elements.contains(rootElement)) {
+			elements.add(rootElement);
+		}
+		
+		List<CurriculumElementRow> rows = new ArrayList<>(elements.size());
+		Map<Long, CurriculumElementRow> keyToRows = new HashMap<>();
+		for(CurriculumElement element:elements) {
+			CurriculumElementRow row = new CurriculumElementRow(element);
+			rows.add(row);
+			keyToRows.put(element.getKey(), row);
+		}
+		// Build parent line
+		for(CurriculumElementRow row:rows) {
+			if(row.getParentKey() != null) {
+				row.setParent(keyToRows.get(row.getParentKey()));
+			}
+		}
+		
+		if(rows.size() > 1) {
+			Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
+		}
+		return rows;
+	}
+	
 	private void initMetadata() {
 		if(secCallback.canEditCurriculumElement(curriculumElement)
 				&& !CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.delete)) {
@@ -162,10 +238,6 @@ public class CurriculumElementDetailsController extends BasicController implemen
 
 			mainVC.put(commandsDropdown.getComponentName(), commandsDropdown);
 		}
-		
-		structureButton = LinkFactory.createCustomLink("structure", "structure", "", Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
-		structureButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
-		structureButton.setTitle(translate("action.structure"));
 		
 		mainVC.contextPut("level", getLevel());
 		mainVC.contextPut("displayName", curriculumElement.getDisplayName());
@@ -356,7 +428,11 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			doConfirmDeleteCurriculumElement(ureq);
 		} else if(structureButton == source) {
 			doOpenStructure( ureq, structureButton);
-		} 
+		} else if(previousButton == source && previousButton.getUserObject() instanceof CurriculumElement el) {
+			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
+		} else if(nextButton == source && nextButton.getUserObject() instanceof CurriculumElement el) {
+			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
+		}
 	}
 	
 	@Override
@@ -387,13 +463,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	}
 	
 	private void doOpenStructure(UserRequest ureq, Link link) {
-		CurriculumElement rootElement;
-		if(curriculumElement.getParent() == null) {
-			rootElement = curriculumElement;
-		} else {
-			List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(curriculumElement);
-			rootElement = parentLine.get(0);
-		}
+		CurriculumElement rootElement = getRootElement();
 		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(),
 				rootElement, curriculumElement, true);
 		listenTo(curriculumStructureCalloutCtrl);
@@ -405,6 +475,17 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		toolsCalloutCtrl.activate();
 	}
 	
+	private CurriculumElement getRootElement() {
+		CurriculumElement rootElement;
+		if(curriculumElement.getParent() == null) {
+			rootElement = curriculumElement;
+		} else {
+			List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(curriculumElement);
+			rootElement = parentLine.get(0);
+		}
+		return rootElement;
+	}
+
 	private void doConfirmDeleteCurriculumElement(UserRequest ureq) {
 		removeAsListenerAndDispose(deleteCurriculumElementCtrl);
 		removeAsListenerAndDispose(cmc);
