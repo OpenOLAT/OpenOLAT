@@ -22,17 +22,39 @@
 </div>
 
 <div class="o_lecture_resources">
-	<label class="o_block_small">$r.translate("contact.teachers.list.name")</label>
+	<label>$r.translate("contact.teachers.list.name")</label>
 	#if($r.isNotEmpty($profilesIds))
 		#foreach($profileId in $profilesIds)
-			<div>$r.render($profileId)</div>
+			<div class="o_lecture_resource">$r.render($profileId)</div>
 		#end
 	#end
-	#if($r.available("course.empty"))
-		<label class="o_block_small">$r.translate("referenced.courses")</label>	
+	#if($r.available("course.empty") || $r.available("entry.open"))
+		<label>$r.translate("referenced.courses")</label>
+		<div class="o_lecture_resource">	
 		#if($r.visible("course.empty"))
-			<div>$r.render("course.empty")</div>
+			$r.render("course.empty")
+		#elseif($r.available("entry.open")) 
+			<div class=" o_lecture_course_card">
+				<div class="o_thumbnail">
+					<div class="o_thumbnail_file_img">
+						<a href="$entryUrl" onclick="${f.ffXHREvent("select_entry","${entryKey}")}; return false;" title="$r.escapeForHtmlAttribute(${row.displayName()})">
+						#if($r.isNotEmpty($thumbnailUrl))
+							<img src="${thumbnailUrl}" alt="$r.translate("rentry.pic.alt")">
+						#else
+							<div class="o_visual_not_available"></div>
+						#end
+						</a>
+					</div>
+				</div>
+				<div class="o_card_meta">
+					<h4 class="o_card_title">$r.render("entry.open")</h4>
+					#if($r.isNotEmpty(${entryExternalRef}))
+						<small>$r.escapeHtml(${entryExternalRef})</small>
+					#end
+				</div>
+			</div>
 		#end
+		</div>
 	#end
 </div>
 

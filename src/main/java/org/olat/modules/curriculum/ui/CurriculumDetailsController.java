@@ -230,7 +230,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(overviewCtrl == source || lectureBlocksWidgetCtrl == source) {
+		if(overviewCtrl == source || lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}
@@ -241,8 +241,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			}
 			cmc.deactivate();
 			cleanUp();
-		}
-		else if(cmc == source) {
+		} else if(cmc == source) {
 			cleanUp();
 		}
 	}

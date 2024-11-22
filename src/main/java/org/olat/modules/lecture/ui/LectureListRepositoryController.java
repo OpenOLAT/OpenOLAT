@@ -80,6 +80,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
@@ -92,8 +93,10 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
@@ -144,6 +147,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private static final String FILTER_CURRICULUM = "Curriculum";
 	private static final String FILTER_TEACHERS = "Teachers";
 	
+	private static final String CMD_CURRICULUM_ELEMENT = "element";
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
 
 	private FormLink allLevelsButton;
@@ -309,7 +313,9 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.assessmentMode,
 				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_assessment_mode"), null)));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.curriculumElement,
+		
+		String elementCmd = entry == null ? CMD_CURRICULUM_ELEMENT : null;
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.curriculumElement, elementCmd,
 				new ReferenceRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.entry,
 				new ReferenceRenderer()));
@@ -684,6 +690,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 						doOpenLectureBlockDetails(ureq, row);
 						tableEl.expandDetails(se.getIndex());
 					}
+				} else if(CMD_CURRICULUM_ELEMENT.equals(cmd)) {
+					doOpenCurriculumElement(ureq, row);
 				} else if(IdentityCoachesCellRenderer.CMD_OTHER_TEACHERS.equals(cmd)) {
 					String targetId = IdentityCoachesCellRenderer.getOtherTeachersId(se.getIndex());
 					doShowTeachers(ureq, targetId, row);
@@ -966,6 +974,25 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		removeAsListenerAndDispose(row.getDetailsController());
 		flc.remove(row.getDetailsController().getInitialFormItem());
 		row.setDetailsController(null);
+	}
+	
+	private void doOpenCurriculumElement(UserRequest ureq, LectureBlockRow row) {
+		if(row.getCurriculumElement() == null) return;
+		
+		StringBuilder elementPath = new StringBuilder();
+		CurriculumElement el = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(row.getCurriculumElement().key()));
+		if(curriculumElement != null && curriculumElement.equals(el)) {
+			elementPath.append("[Overview:0]");
+		} else {
+			if(curriculum == null && curriculumElement == null) {
+				elementPath.append("[Curriculum:").append(el.getCurriculum().getKey()).append("]");
+			}
+			elementPath.append("[CurriculumElement:").append(el.getKey()).append("]");
+		}
+
+		List<ContextEntry> entries = BusinessControlFactory.getInstance()
+				.createCEListFromString(elementPath.toString());
+		fireEvent(ureq, new ActivateEvent(entries));
 	}
 	
 	private void doOpenTools(UserRequest ureq, LectureBlockRow row, FormLink link) {

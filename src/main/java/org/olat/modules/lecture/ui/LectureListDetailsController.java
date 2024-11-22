@@ -27,8 +27,11 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -55,6 +58,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.StatisticsBusinessGroupRow;
@@ -73,8 +77,9 @@ import org.olat.modules.lecture.ui.component.LectureBlockParticipantGroupExclude
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntryRefImpl;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfile;
 import org.olat.user.UserInfoProfileConfig;
@@ -91,21 +96,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LectureListDetailsController extends FormBasicController {
 	
 	private FormLink editButton;
+	private FormLink openEntryLink;
 	private FlexiTableElement tableEl;
 	private StaticTextElement participantsEl;
 	private LectureListDetailsParticipantsGroupDataModel tableModel;
 	
 	private int counter = 0;
 	private final LectureBlockRow row;
+	private MapperKey mapperThumbnailKey;
 	private CurriculumElement curriculumElement;
 	private final UserInfoProfileConfig profileConfig;
 	private final boolean allowRepositoryEntry;
+	private final RepositoryEntry repositoryEntry;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private MapperService mapperService;
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
@@ -114,6 +124,8 @@ public class LectureListDetailsController extends FormBasicController {
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -125,6 +137,11 @@ public class LectureListDetailsController extends FormBasicController {
 		profileConfig.setChatEnabled(true);
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
+		
+		repositoryEntry = row.getEntry() != null ? repositoryService.loadByKey(row.getEntry().key()) : null;
+		if(repositoryEntry != null) {
+			mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(900, 600));
+		}
 		
 		if(row.getCurriculumElement() != null) {
 			curriculumElement = curriculumService
@@ -176,12 +193,33 @@ public class LectureListDetailsController extends FormBasicController {
 	}
 	
 	private void initFormReferencedCourses(FormLayoutContainer formLayout) {
-		
-		
-		
-		EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("course.empty", "lecture.course", formLayout);
-		emptyTeachersList.setTitle(translate("lecture.no.course.assigned.title"));
-		emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_CourseModule_icon");
+		if(repositoryEntry == null) {		
+			EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("course.empty", "lecture.course", formLayout);
+			emptyTeachersList.setTitle(translate("lecture.no.course.assigned.title"));
+			emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_CourseModule_icon");
+		} else if(formLayout instanceof FormLayoutContainer layoutCont) {
+			final String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(getRepositoryEntryPath());
+			
+			openEntryLink = uifactory.addFormLink("entry.open", repositoryEntry.getDisplayname(), null, formLayout, Link.LINK | Link.NONTRANSLATED);		
+			openEntryLink.setEscapeMode(EscapeMode.html);
+			openEntryLink.setUrl(url);
+			
+			VFSLeaf image = repositoryManager.getImage(repositoryEntry.getKey(), repositoryEntry.getOlatResource());
+			if(image != null) {
+				String thumbnailUrl = RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl(), image);
+				layoutCont.contextPut("thumbnailUrl",thumbnailUrl);
+			}
+			
+			layoutCont.contextPut("entryKey", repositoryEntry.getKey());
+			layoutCont.contextPut("entryUrl", url);
+			if(StringHelper.containsNonWhitespace(repositoryEntry.getExternalRef())) {
+				layoutCont.contextPut("entryExternalRef", repositoryEntry.getExternalRef());
+			}
+		}
+	}
+	
+	private String getRepositoryEntryPath() {
+		return "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
 	}
 	
 	private void initFormTeachers(FormLayoutContainer formLayout, UserRequest ureq) {
@@ -251,21 +289,20 @@ public class LectureListDetailsController extends FormBasicController {
 		List<LectureBlockParticipantGroupRow> groupList = new ArrayList<>();
 		List<Group> selectedGroups = lectureService.getLectureBlockToGroups(row.getLectureBlock());
 		
-		if(row.getEntry() != null && row.getEntry().key() != null) {
-			RepositoryEntry entry = repositoryService.loadBy(new RepositoryEntryRefImpl(row.getEntry().key()));
-			Group defaultGroup = repositoryService.getDefaultGroup(entry);
-			int participants = repositoryService.countMembers(entry, GroupRoles.participant.name());
-			groupList.add(decorateRow(new LectureBlockParticipantGroupRow(entry, defaultGroup,
+		if(row.getEntry() != null && row.getEntry().key() != null && repositoryEntry != null) {
+			Group defaultGroup = repositoryService.getDefaultGroup(repositoryEntry);
+			int participants = repositoryService.countMembers(repositoryEntry, GroupRoles.participant.name());
+			groupList.add(decorateRow(new LectureBlockParticipantGroupRow(repositoryEntry, defaultGroup,
 					participants, !selectedGroups.contains(defaultGroup))));
 		
 			BusinessGroupQueryParams params = new BusinessGroupQueryParams();
-			List<StatisticsBusinessGroupRow> businessGroups = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, null, entry);
+			List<StatisticsBusinessGroupRow> businessGroups = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, null, repositoryEntry);
 			for(StatisticsBusinessGroupRow businessGroup:businessGroups) {
 				boolean excluded = !selectedGroups.contains(businessGroup.getBaseGroup());
 				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(businessGroup, excluded)));
 			}
 			
-			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(entry);
+			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(repositoryEntry);
 			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
 				boolean excluded = !selectedGroups.contains(elementInfos.curriculumElement().getGroup());
@@ -338,6 +375,8 @@ public class LectureListDetailsController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(editButton == source) {
 			fireEvent(ureq, new EditLectureBlockRowEvent(row));
+		} else if(openEntryLink == source) {
+			doOpenRepositoryEntry(ureq);
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("detailstool".equals(cmd) && link.getUserObject() instanceof LectureBlockParticipantGroupRow groupRow) {
@@ -360,6 +399,11 @@ public class LectureListDetailsController extends FormBasicController {
 				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
 		listenTo(toolsCalloutCtrl);
 		toolsCalloutCtrl.activate();
+	}
+	
+	private void doOpenRepositoryEntry(UserRequest ureq) {
+		String businessPath = getRepositoryEntryPath();
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doOpen(UserRequest ureq, LectureBlockParticipantGroupRow groupRow) {

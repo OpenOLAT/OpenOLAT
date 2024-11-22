@@ -61,7 +61,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private final LecturesSecurityCallback lecturesSecCallback;
 
 	private CurriculumDashboardController overviewCtrl;
-	private LectureListRepositoryController eventsCtrl;
+	private LectureListRepositoryController lecturesCtrl;
 	private CurriculumSearchManagerController searchCtrl;
 	private CurriculumComposerController implementationsCtrl;
 	private CurriculumListManagerController curriculumListCtrl;
@@ -142,7 +142,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 			if(event == Event.DONE_EVENT) {
 				doSearch(ureq, searchFieldCtrl.getSearchString());
 			}
-		} else if(lectureBlocksWidgetCtrl == source) {
+		} else if(lectureBlocksWidgetCtrl == source || lecturesCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			}
@@ -205,11 +205,11 @@ public class CurriculumManagerRootController extends BasicController implements 
 	
 	private LectureListRepositoryController doOpenLecturesBlocks(UserRequest ureq) {
 		toolbarPanel.popUpToRootController(ureq);
-		removeAsListenerAndDispose(eventsCtrl);
+		removeAsListenerAndDispose(lecturesCtrl);
 		
-		eventsCtrl = new LectureListRepositoryController(ureq, getWindowControl(), lecturesSecCallback);
-		listenTo(eventsCtrl);
-		toolbarPanel.pushController(translate("curriculum.lectures"), eventsCtrl);
-		return eventsCtrl;
+		lecturesCtrl = new LectureListRepositoryController(ureq, getWindowControl(), lecturesSecCallback);
+		listenTo(lecturesCtrl);
+		toolbarPanel.pushController(translate("curriculum.lectures"), lecturesCtrl);
+		return lecturesCtrl;
 	}
 }

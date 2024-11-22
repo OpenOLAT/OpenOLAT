@@ -198,13 +198,79 @@
 	display: grid;
 	grid-template-columns: 33% 33% 33%;
 	column-gap: 20px;
-
-	.o_user_info_profile {
-		background-color: #fff;
-	}
+	row-gap: 10px;
+	justify-items: stretch;
 	
 	label {
 		grid-column: 1 / -1;
+	}
+	
+	.o_lecture_resource, .o_empty_panel, .o_user_info_profile {
+		height: 82px;
+	}
+	
+	.o_user_info_profile {
+		background-color: #fff;
+		width: 100%;
+	}
+	
+	.o_empty_panel {
+		border: $o-user-info-border;
+	}
+	
+	.o_lecture_course_card {
+		display: grid;
+		grid-template-columns: 112px 1fr auto;
+		gap: 10px;
+		padding: 5px;
+		border: $o-curriculum-widget-card-border;
+		border-radius: $o-curriculum-widget-card-border-radius;
+		background-color: #fff;
+		
+		.o_thumbnail, .o_visual_not_available {
+			width: 112px;
+			height: 75px;
+			
+			img {
+				max-width: 112px;
+				max-height: 112px;
+			}
+		}
+		
+		.o_visual_not_available {
+			background-image:url('#{$o-images-path}no_preview.png');
+			background-repeat:no-repeat;
+			background-position:50% 50%;		
+			background-size: contain;
+		}
+		
+		.o_thumbnail_file_img {
+			width: 112px;
+			height: 75px;
+		
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			overflow: hidden;
+		}
+		
+		.o_card_meta {
+			display: flex;
+			flex-direction: column;
+			justify-content: start;
+			
+			.o_card_title {
+				margin: 2px 0 0 0;
+			}
+			
+			h4 ~ small {
+				order: 1;
+			}
+			
+			> * {
+				order: 2;
+			}
+		}
 	}
 }
 

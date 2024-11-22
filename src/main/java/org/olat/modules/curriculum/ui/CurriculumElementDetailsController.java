@@ -361,7 +361,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(structureCtrl == source || coursesWidgetCtrl == source || lectureBlocksWidgetCtrl == source) {
+		if(structureCtrl == source || coursesWidgetCtrl == source
+				|| lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			} else if(event instanceof CurriculumElementEvent) {
