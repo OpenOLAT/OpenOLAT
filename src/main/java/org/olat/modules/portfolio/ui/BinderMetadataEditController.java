@@ -159,7 +159,7 @@ public class BinderMetadataEditController extends FormBasicController {
 			// owners 		
 			StringBuilder sb = new StringBuilder();
 			if(binder == null || binder.getKey() == null) {
-				sb.append(userManager.getUserDisplayName(getIdentity()));
+				sb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(getIdentity())));
 			} else {
 				List<Identity> owners = portfolioService.getMembers(binder, ContentRoles.owner.name());
 				for(Identity owner:owners) {

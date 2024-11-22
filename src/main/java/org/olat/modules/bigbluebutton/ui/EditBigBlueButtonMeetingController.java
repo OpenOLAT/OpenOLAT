@@ -232,7 +232,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		Identity creator = meeting == null ? getIdentity() : meeting.getCreator();
 		if(creator != null) {
-			String creatorFullName = userManager.getUserDisplayName(creator);
+			String creatorFullName = StringHelper.escapeHtml(userManager.getUserDisplayName(creator));
 			uifactory.addStaticTextElement("meeting.creator", creatorFullName, formLayout);
 		}
 		
