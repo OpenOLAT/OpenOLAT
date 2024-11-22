@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.json.JSONObject;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,6 +39,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -53,9 +57,6 @@ import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
-
-import jakarta.servlet.http.HttpServletRequest;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -103,7 +104,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		BadgeClass badgeClass = badgeAssertion.getBadgeClass();
 		flc.contextPut("badgeClass", badgeClass);
 
-		String recipientName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
+		String recipientName = StringHelper.escapeHtml(userManager.getUserDisplayName(badgeAssertion.getRecipient()));
 		flc.contextPut("recipientName", recipientName);
 
 		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
@@ -131,11 +132,11 @@ public class BadgeAssertionPublicController extends FormBasicController {
 
 		if (badgeAssertion.getAwardedBy() != null) {
 			Identity awardedByIdentity = badgeAssertion.getAwardedBy();
-			String awardedBy = userManager.getUserDisplayName(awardedByIdentity);
+			String awardedBy = StringHelper.escapeHtml(userManager.getUserDisplayName(awardedByIdentity));
 			uifactory.addStaticTextElement("form.awarded.by", awardedBy, formLayout);
 
 			if (awardedByIdentity.getUser() != null && awardedByIdentity.getUser().getEmail() != null) {
-				String awardedContact = awardedByIdentity.getUser().getEmail();
+				String awardedContact = StringHelper.escapeHtml(awardedByIdentity.getUser().getEmail());
 				uifactory.addStaticTextElement("form.contact", awardedContact, formLayout);
 			}
 		}
@@ -166,7 +167,7 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		RepositoryEntry courseEntry = badgeClass.getEntry();
 		if (courseEntry != null) {
 			ICourse course = CourseFactory.loadCourse(courseEntry);
-			uifactory.addStaticTextElement("form.course", course.getCourseTitle(), formLayout);
+			uifactory.addStaticTextElement("form.course", StringHelper.escapeHtml(course.getCourseTitle()), formLayout);
 		}
 
 		flc.contextPut("fileName", "badge_" + badgeAssertion.getBakedImage());

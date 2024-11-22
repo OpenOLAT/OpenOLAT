@@ -53,10 +53,10 @@ public class IdentityListCellRenderer implements FlexiCellRenderer {
 				}
 				User user = identity.getUser();
 				if(StringHelper.containsNonWhitespace(user.getLastName())) {
-					target.append(" ").append(user.getLastName());
+					target.append(" ").append(StringHelper.escapeHtml(user.getLastName()));
 				}
 				if(StringHelper.containsNonWhitespace(user.getFirstName())) {
-					target.append(" ").append(user.getFirstName());
+					target.append(" ").append(StringHelper.escapeHtml(user.getFirstName()));
 				}
 				sep = true;
 			}
