@@ -176,9 +176,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
-	private StepsMainRunController addLectureCtrl;
 	private StepsMainRunController importBlockWizard;
+	private EditLectureBlockController addLectureCtrl;
 	private EditLectureBlockController editLectureCtrl;
+	private StepsMainRunController addLectureWizardCtrl;
 	private IdentitySmallListController teacherSmallListCtrl; 
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ConfirmDeleteLectureBlockController deleteLectureBlocksCtrl;
@@ -719,13 +720,19 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(editLectureCtrl == source) {
+		if(addLectureCtrl == source || deleteLectureBlocksCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(editLectureCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				reloadModel(ureq, editLectureCtrl.getLectureBlock());
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(addLectureCtrl == source) {
+		} else if(addLectureWizardCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -750,12 +757,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
 			}
-		} else if(deleteLectureBlocksCtrl == source) {
-			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel(ureq);
-			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(source instanceof LectureListDetailsController) {
 			if(event instanceof EditLectureBlockRowEvent editRowEvent) {
 				doEditLectureBlock(ureq, editRowEvent.getRow());
@@ -766,12 +767,14 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(deleteLectureBlocksCtrl);
-		removeAsListenerAndDispose(editLectureCtrl);
+		removeAsListenerAndDispose(addLectureWizardCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(editLectureCtrl);
 		removeAsListenerAndDispose(addLectureCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		deleteLectureBlocksCtrl = null;
+		addLectureWizardCtrl = null;
 		toolsCalloutCtrl = null;
 		editLectureCtrl = null;
 		addLectureCtrl = null;
@@ -816,13 +819,52 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 
 	private void doAddLectureBlock(UserRequest ureq) {
-		if(guardModalController(addLectureCtrl) || !secCallback.canNewLectureBlock()) return;
+		if(guardModalController(addLectureWizardCtrl) || !secCallback.canNewLectureBlock()) return;
 		
 		if(entry == null && curriculumElement == null && curriculum == null) {
 			showWarning("error.no.entry.curriculum");
-			return;
+		} else if(entry != null) {
+			doAddLectureBlockSimplified(ureq, entry);
+		} else if(curriculumElement != null && isAddLectureBlockToLonelyCurriculumElement(curriculumElement)) {
+			doAddLectureBlockSimplified(ureq, curriculumElement);
+		} else {
+			doAddLectureBlockWizard(ureq);
 		}
+	}
+	
+	private boolean isAddLectureBlockToLonelyCurriculumElement(CurriculumElement element) {
+		if(element.getType() != null && element.getType().isSingleElement()) {
+			return true;
+		}
+		List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(element);
+		return descendants.isEmpty();
+	}
+	
+	private void doAddLectureBlockSimplified(UserRequest ureq, RepositoryEntry entry) {
+		removeAsListenerAndDispose(addLectureCtrl);
 		
+		addLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, null, false);
+		listenTo(addLectureCtrl);
+
+		String title = translate("add.lecture");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addLectureCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddLectureBlockSimplified(UserRequest ureq, CurriculumElement element) {
+		removeAsListenerAndDispose(addLectureCtrl);
+		
+		addLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), element, null, false);
+		listenTo(addLectureCtrl);
+
+		String title = translate("add.lecture");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addLectureCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddLectureBlockWizard(UserRequest ureq) {	
 		List<RepositoryEntry> entries = entry == null ? List.of() : List.of(entry);
 		AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement, entries);
 		addLecture.setEntry(entry);
@@ -832,10 +874,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		AddLectureBlockStepCallback stop = new AddLectureBlockStepCallback(addLecture);
 		String title = translate("add.lecture");
 		
-		removeAsListenerAndDispose(addLectureCtrl);
-		addLectureCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, null, title, "");
-		listenTo(addLectureCtrl);
-		getWindowControl().pushAsModalDialog(addLectureCtrl.getInitialComponent());
+		removeAsListenerAndDispose(addLectureWizardCtrl);
+		addLectureWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, null, title, "");
+		listenTo(addLectureWizardCtrl);
+		getWindowControl().pushAsModalDialog(addLectureWizardCtrl.getInitialComponent());
 	}
 	
 	private void doImportLecturesBlock(UserRequest ureq) {
