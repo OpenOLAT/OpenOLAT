@@ -1,6 +1,6 @@
 <div class="o_card o_lecture_card">
 	<div class="o_thumbnail">
-		<div class="o_gta_file_img">
+		<div class="o_lecture_file_img">
 			#if($row.isThumbnailAvailable())
 				<img src="${row.getThumbnailUrl()}" alt="$r.translate("rentry.pic.alt")"/>
 			#else
@@ -19,7 +19,7 @@
 			</div>
 		</div>
 		<div class="o_card_radio_select">
-			<input id="radio_$rowId" type='radio' name='tb_ms' value='$rowId' #if($r.isTrue($rowSelected))checked='checked'#end>
+			<input id="radio_$rowId" type='radio' name='tb_ms' value='$rowId' #if($r.isTrue($rowSelected))checked='checked'#end onclick="o_ffTableToggleRowCheck('$rowId','o_row_selected'); $f.ffXHREvent("chkbox", "$rowIndex");">
 		</div>	
 	</div>
 </div>

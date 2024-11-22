@@ -1242,7 +1242,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String deselectAllColumn = form.getRequestParameter("cc-deselectall");
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
-		} else if(StringHelper.containsNonWhitespace(checkbox)) {
+		} else if(StringHelper.containsNonWhitespace(checkbox) && matchDispatchUri(dispatchuri)) {
 			toogleSelectIndex(ureq, checkbox);
 		} else if(StringHelper.containsNonWhitespace(details) && dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			toogleDetails(details, ureq);

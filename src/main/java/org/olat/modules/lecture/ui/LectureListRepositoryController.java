@@ -825,19 +825,21 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			showWarning("error.no.entry.curriculum");
 		} else if(entry != null) {
 			doAddLectureBlockSimplified(ureq, entry);
-		} else if(curriculumElement != null && isAddLectureBlockToLonelyCurriculumElement(curriculumElement)) {
-			doAddLectureBlockSimplified(ureq, curriculumElement);
+		} else if(curriculumElement != null) {
+			List<RepositoryEntry> entries = this.curriculumService.getRepositoryEntries(curriculumElement);
+			AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement, entries);
+			addLecture.setCurriculumElement(curriculumElement);
+			
+			List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
+			if(descendants.isEmpty() && entries.isEmpty()) {
+				doAddLectureBlockSimplified(ureq, curriculumElement);
+			} else {
+				doAddLectureBlockWizard(ureq, addLecture);
+			}
 		} else {
-			doAddLectureBlockWizard(ureq);
+			AddLectureContext addLecture = new AddLectureContext(curriculum, null, List.of());
+			doAddLectureBlockWizard(ureq, addLecture);
 		}
-	}
-	
-	private boolean isAddLectureBlockToLonelyCurriculumElement(CurriculumElement element) {
-		if(element.getType() != null && element.getType().isSingleElement()) {
-			return true;
-		}
-		List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(element);
-		return descendants.isEmpty();
 	}
 	
 	private void doAddLectureBlockSimplified(UserRequest ureq, RepositoryEntry entry) {
@@ -864,12 +866,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		cmc.activate();
 	}
 	
-	private void doAddLectureBlockWizard(UserRequest ureq) {	
-		List<RepositoryEntry> entries = entry == null ? List.of() : List.of(entry);
-		AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement, entries);
-		addLecture.setEntry(entry);
-		addLecture.setCurriculumElement(curriculumElement);
-		
+	private void doAddLectureBlockWizard(UserRequest ureq, AddLectureContext addLecture) {	
 		AddLectureBlock1ResourcesStep step = new AddLectureBlock1ResourcesStep(ureq, addLecture);
 		AddLectureBlockStepCallback stop = new AddLectureBlockStepCallback(addLecture);
 		String title = translate("add.lecture");

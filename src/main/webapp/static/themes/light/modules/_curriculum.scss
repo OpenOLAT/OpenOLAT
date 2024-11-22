@@ -590,8 +590,10 @@ $o-curriculum-entry-bg							: #CCFFCC;
 			height: 80px;
 			
 			img {
-				max-width: 120px;
-				max-height: 120px;
+				display: block;
+				width: 120px;
+				height: 80px;
+				object-fit: cover;
 			}
 		}
 		

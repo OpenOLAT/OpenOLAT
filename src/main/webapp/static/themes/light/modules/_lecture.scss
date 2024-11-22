@@ -177,12 +177,27 @@
 }
 
 .o_lecture_card {
+	height: 100%;
+	
+	
+	
 	.o_card_title > small {
 		display: block;
 	}
 	
 	.o_card_meta {
 		padding: 10px;
+	}
+	
+	.o_lecture_file_img {
+		height: 172px;
+		
+		>img {
+			display: block;
+  			object-fit: cover;
+			width: 100%;
+			height: 172px;
+		}
 	}
 	
 	.o_visual_not_available {
@@ -271,6 +286,12 @@
 				order: 2;
 			}
 		}
+	}
+}
+
+.o_lecture_courses_selection {
+	.o_table_row.row {
+		margin: 0;
 	}
 }
 
