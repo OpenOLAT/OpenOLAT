@@ -38,6 +38,11 @@ import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.criteria.BadgeCondition;
+import org.olat.modules.openbadges.criteria.BadgeCriteria;
+import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
+import org.olat.modules.openbadges.criteria.CourseElementPassedCondition;
+import org.olat.modules.openbadges.criteria.OtherBadgeEarnedCondition;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
@@ -208,5 +213,72 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		Assert.assertEquals(originalConfiguration.isAwardEnabled(), copiedConfiguration.isAwardEnabled());
 		Assert.assertEquals(originalConfiguration.isCoachCanAward(), copiedConfiguration.isCoachCanAward());
 		Assert.assertTrue(copiedConfiguration.isOwnerCanAward());
+	}
+	
+	@Test
+	public void getRuleEarnedBadgeAssertions() {
+		
+		// arrange
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("author-1");
+		Identity recipient = JunitTestHelper.createAndPersistIdentityAsRndUser("badge-assertion-recipient-1");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(author);
+		String verification = "{\"type\":\"hosted\"}";
+
+		// badge A: directly related to course node A
+		String courseNodeIdentA = OpenBadgesFactory.createIdentifier();
+		BadgeClassImpl badgeA = BadgeTestData.createTestBadgeClass("Badge A", "image.png", course);
+		BadgeCriteria badgeCriteriaA = new BadgeCriteria();
+		badgeCriteriaA.setAwardAutomatically(true);
+		BadgeCondition badgeConditionA = new CourseElementPassedCondition(courseNodeIdentA);
+		badgeCriteriaA.getConditions().add(badgeConditionA);
+		badgeA.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteriaA));
+		badgeClassDAO.updateBadgeClass(badgeA);
+		String uuidA = OpenBadgesFactory.createIdentifier();
+		String recipientObjectA = OpenBadgesManagerImpl.createRecipientObject(recipient, badgeA.getSalt());
+		BadgeAssertion badgeAssertionA = badgeAssertionDAO.createBadgeAssertion(uuidA, recipientObjectA, badgeA,
+				verification, new Date(), recipient, null);
+
+		// badge B: indirectly related to course node A
+		String courseNodeIdentB = OpenBadgesFactory.createIdentifier();
+		BadgeClassImpl badgeB = BadgeTestData.createTestBadgeClass("Badge B", "image.png", course);
+		BadgeCriteria badgeCriteriaB = new BadgeCriteria();
+		badgeCriteriaB.setAwardAutomatically(true);
+		BadgeCondition badgeConditionB1 = new CourseElementPassedCondition(courseNodeIdentB);
+		BadgeCondition badgeConditionB2 = new OtherBadgeEarnedCondition(badgeA.getUuid());
+		badgeCriteriaB.getConditions().add(badgeConditionB1);
+		badgeCriteriaB.getConditions().add(badgeConditionB2);
+		badgeB.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteriaB));
+		badgeClassDAO.updateBadgeClass(badgeB);
+		String uuidB = OpenBadgesFactory.createIdentifier();
+		String recipientObjectB = OpenBadgesManagerImpl.createRecipientObject(recipient, badgeB.getSalt());
+		BadgeAssertion badgeAssertionB = badgeAssertionDAO.createBadgeAssertion(uuidB, recipientObjectB, badgeB,
+				verification, new Date(), recipient, null);
+
+		// badge C: not related to course node
+		String courseNodeIdentC = OpenBadgesFactory.createIdentifier();
+		BadgeClassImpl badgeC = BadgeTestData.createTestBadgeClass("Badge C", "image.png", course);
+		BadgeCriteria badgeCriteriaC = new BadgeCriteria();
+		badgeCriteriaC.setAwardAutomatically(true);
+		BadgeCondition badgeConditionC = new CourseElementPassedCondition(courseNodeIdentC);
+		badgeCriteriaC.getConditions().add(badgeConditionC);
+		badgeC.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteriaC));
+		badgeClassDAO.updateBadgeClass(badgeC);
+		String uuidC = OpenBadgesFactory.createIdentifier();
+		String recipientObjectC = OpenBadgesManagerImpl.createRecipientObject(recipient, badgeC.getSalt());
+		BadgeAssertion badgeAssertionC = badgeAssertionDAO.createBadgeAssertion(uuidC, recipientObjectC, badgeC,
+				verification, new Date(), recipient, null);
+
+
+		// act
+		
+		List<BadgeAssertion> badgeAssertions = openBadgesManager.getRuleEarnedBadgeAssertions(recipient, course, courseNodeIdentA);
+		
+		// assert
+		
+		Assert.assertEquals(2, badgeAssertions.size());
+		Assert.assertTrue(badgeAssertions.contains(badgeAssertionA));
+		Assert.assertTrue(badgeAssertions.contains(badgeAssertionB));
+		Assert.assertFalse(badgeAssertions.contains(badgeAssertionC));
 	}
 }

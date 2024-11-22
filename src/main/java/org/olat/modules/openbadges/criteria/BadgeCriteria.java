@@ -401,4 +401,14 @@ public class BadgeCriteria {
 		}
 		return false;
 	}
+
+	public Set<String> otherBadgeClassUuids() {
+		Set<String> uuids = new HashSet<>();
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeEarnedCondition) {
+				uuids.add(otherBadgeEarnedCondition.getBadgeClassUuid());
+			}
+		}
+		return uuids;
+	}
 }
