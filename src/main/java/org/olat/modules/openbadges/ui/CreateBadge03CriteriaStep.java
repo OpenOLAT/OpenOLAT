@@ -352,6 +352,10 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					allOk &= false;
 				}
 			}
+			
+			for (ConditionRow conditionRow : conditionRows) {
+				allOk &= conditionRow.validate();
+			}
 
 			descriptionEl.clearError();
 			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {

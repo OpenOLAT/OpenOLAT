@@ -324,4 +324,49 @@ public class ConditionRow {
 			default -> null;
 		};
 	}
+	
+	public boolean validate() {
+		boolean allOk = true;
+		
+		coursesDropdown.clearError();
+		if (coursesDropdown.isVisible()) {
+			if (coursesDropdown.getCourses().isEmpty()) {
+				coursesDropdown.setErrorKey("alert");
+				allOk &= false;
+			}
+		}
+		
+		courseElementsDropdown.clearError();
+		if (courseElementsDropdown.isVisible()) {
+			if (!courseElementsDropdown.isOneSelected()) {
+				courseElementsDropdown.setErrorKey("alert");
+				allOk &= false;
+			}
+		}
+		
+		badgesDropdown.clearError();
+		if (badgesDropdown.isVisible()) {
+			if (!badgesDropdown.isOneSelected()) {
+				badgesDropdown.setErrorKey("alert");
+				allOk &= false;
+			}
+		}
+		
+		globalBadgesDropdown.clearError();
+		if (globalBadgesDropdown.isVisible()) {
+			if (globalBadgesDropdown.getSelection().isEmpty()) {
+				globalBadgesDropdown.setErrorKey("alert");
+				allOk &= false;
+			}
+		}
+		
+		valueEl.clearError();
+		if (valueEl.isVisible()) {
+			if (!StringHelper.containsNonWhitespace(valueEl.getValue())) {
+				valueEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+		}
+		return allOk;
+	}
 }
