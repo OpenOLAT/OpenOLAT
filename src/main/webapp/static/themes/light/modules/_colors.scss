@@ -85,54 +85,6 @@
 	}
 }
 
-.o_color_border {
-	&.o_color_lightgray {
-		border-color: $o-darker-color-light-gray;
-	}
-	&.o_color_yellow {
-		border-color: $o-darker-color-yellow;
-	}
-	&.o_color_orange {
-		border-color: $o-darker-color-orange;
-	}
-	&.o_color_brown {
-		border-color: $o-darker-color-brown;
-	}
-	&.o_color_red {
-		border-color: $o-darker-color-red;
-	}
-	&.o_color_orchid {
-		border-color: $o-darker-color-orchid;
-	}
-	&.o_color_purple {
-		border-color: $o-darker-color-purple;
-	}
-	&.o_color_lightblue {
-		border-color: $o-darker-color-light-blue;
-	}
-	&.o_color_cobaltblue {
-		border-color: $o-darker-color-cobalt-blue;
-	}
-	&.o_color_darkblue {
-		border-color: $o-darker-color-dark-blue;
-	}
-	&.o_color_lightgreen {
-		border-color: $o-darker-color-light-green;
-	}
-	&.o_color_seagreen {
-		border-color: $o-darker-color-sea-green;
-	}
-	&.o_color_gold {
-		border-color: $o-darker-color-gold;
-	}
-	&.o_color_silver {
-		border-color: $o-darker-color-silver;
-	}
-	&.o_color_bronze {
-		border-color: $o-darker-color-bronze;
-	}
-}
-
 .o_color_contrast_border {
 	&.o_color_lightgray {
 		border-color: $o-bright-text-and-border;
