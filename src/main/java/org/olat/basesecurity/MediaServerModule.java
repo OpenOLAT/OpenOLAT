@@ -67,7 +67,7 @@ public class MediaServerModule extends AbstractSpringModule {
 
 	public static final String YOUTUBE_MEDIA_SRC = "https://youtu.be https://www.youtube.com";
 	public static final String VIMEO_MEDIA_SRC = "https://vimeo.com https://player.vimeo.com";
-	public static final String NANOO_TV_MEDIA_SRC = "https://nanoo.tv";
+	public static final String NANOO_TV_MEDIA_SRC = "https://www.nanoo.tv https://nanoo.tv";
 
 
 	@Value("${media.server.mode:configure}")
@@ -244,14 +244,14 @@ public class MediaServerModule extends AbstractSpringModule {
 		return getCustomMediaServers().stream().map(MediaServer::getDomain).collect(Collectors.toList());
 	}
 
-	public List<String> getMediaServerNames() {
-		ArrayList<String> result = new ArrayList<>(getPredefinedMediaServerNames());
+	public List<String> getMediaServerNames(boolean useAsRepositoryEntry) {
+		ArrayList<String> result = new ArrayList<>(getPredefinedMediaServerNames(useAsRepositoryEntry));
 		result.addAll(getCustomMediaServerNames());
 		result.add(PANOPTO_NAME);
 		return result;
 	}
 
-	private List<String> getPredefinedMediaServerNames() {
+	private List<String> getPredefinedMediaServerNames(boolean useAsRepositoryEntry) {
 		List<String> names = new ArrayList<>();
 		if (isAllowAll() || isMediaServerEnabled(YOUTUBE_KEY)) {
 			names.add(YOUTUBE_NAME);
@@ -259,8 +259,10 @@ public class MediaServerModule extends AbstractSpringModule {
 		if (isAllowAll() || isMediaServerEnabled(VIMEO_KEY)) {
 			names.add(VIMEO_NAME);
 		}
-		if (isAllowAll() || isMediaServerEnabled(NANOO_TV_KEY)) {
-			names.add(NANOO_TV_NAME);
+		if (!useAsRepositoryEntry) {
+			if (isAllowAll() || isMediaServerEnabled(NANOO_TV_KEY)) {
+				names.add(NANOO_TV_NAME);
+			}
 		}
 		return names;
 	}

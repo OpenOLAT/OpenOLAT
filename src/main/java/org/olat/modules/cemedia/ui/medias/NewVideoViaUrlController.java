@@ -65,7 +65,7 @@ public class NewVideoViaUrlController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String servers = MediaUIHelper.toHtmlListItems(mediaServerModule.getMediaServerNames(), getTranslator(),
+		String servers = MediaUIHelper.toHtmlListItems(mediaServerModule.getMediaServerNames(false), getTranslator(),
 				MAX_NUMBER_OF_PLATFORMS_TO_DISPLAY);
 
 		setFormInfo("add.video.via.url.info", new String[]{servers});
