@@ -580,8 +580,10 @@ The "important!" avoids hiding the image by bootstrap.
 	@extend %o_block_large; /* large to have space for year */
 	.o_head {
 		position: relative;
-		height: 50px;
 		padding-left: $line-height-computed * 2 + $padding-base-horizontal;
+	}
+	.o_info_msg_head {
+		height: 50px;
 	}
 	.o_datecomp {
 		position: absolute;
