@@ -20,6 +20,7 @@
 package org.olat.core.gui.components.link;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 
 /**
@@ -91,6 +92,16 @@ public class ExternalLinkItemImpl extends FormItemImpl implements ExternalLinkIt
 	@Override
 	public void setTooltip(String tip) {
 		externalLink.setTooltip(tip);
+	}
+	
+	@Override
+	public EscapeMode getEscapeMode() {
+		return externalLink.getEscapeMode();
+	}
+
+	@Override
+	public void setEscapeMode(EscapeMode escapeMode) {
+		externalLink.setEscapeMode(escapeMode);
 	}
 
 	@Override

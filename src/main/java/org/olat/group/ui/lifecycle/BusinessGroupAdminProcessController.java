@@ -20,6 +20,7 @@
 package org.olat.group.ui.lifecycle;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.ExternalLinkItem;
@@ -54,10 +55,13 @@ public class BusinessGroupAdminProcessController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		inactiveStepLink = uifactory.addExternalLink("inactive.step", "javascript:o_scrollToElement('#inactive');", "_self", formLayout);
 		inactiveStepLink.setElementCssClass("btn btn-default btn-arrow-right");
+		inactiveStepLink.setEscapeMode(EscapeMode.none);
 		softDeleteStepLink = uifactory.addExternalLink("soft.step", "javascript:o_scrollToElement('#soft');", "_self", formLayout);
 		softDeleteStepLink.setElementCssClass("btn btn-default btn-arrow-right");
+		softDeleteStepLink.setEscapeMode(EscapeMode.none);
 		definitiveDeleteStepLink = uifactory.addExternalLink("definitive.step", "javascript:o_scrollToElement('#delete');", "_self", formLayout);
 		definitiveDeleteStepLink.setElementCssClass("btn btn-default btn-arrow-right");
+		definitiveDeleteStepLink.setEscapeMode(EscapeMode.none);
 	}
 
 	protected void updateUI() {

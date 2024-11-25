@@ -22,6 +22,7 @@ package org.olat.core.gui.components.link;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.EscapeMode;
 
 /**
  * 
@@ -39,6 +40,7 @@ public class ExternalLink extends AbstractComponent {
 	private String tooltip;
 	private String iconLeftCSS;
 	private String cssClass;
+	private EscapeMode escapeMode = EscapeMode.html;
 	
 	public ExternalLink(String id, String name) {
 		super(id, name);
@@ -96,6 +98,14 @@ public class ExternalLink extends AbstractComponent {
 
 	public void setTooltip(String tooltip) {
 		this.tooltip = tooltip;
+	}
+
+	public EscapeMode getEscapeMode() {
+		return escapeMode;
+	}
+
+	public void setEscapeMode(EscapeMode escapeMode) {
+		this.escapeMode = escapeMode;
 	}
 
 	@Override
