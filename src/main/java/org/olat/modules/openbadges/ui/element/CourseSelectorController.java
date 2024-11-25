@@ -131,6 +131,7 @@ public class CourseSelectorController extends FormBasicController {
 		quickSearchEl.setDomReplacementWrapperRequired(false);
 		quickSearchEl.addActionListener(FormEvent.ONKEYUP);
 		quickSearchEl.setFocus(true);
+		quickSearchEl.setAriaLabel(translate("enter.search.term"));
 
 		resetQuickSearchButton = uifactory.addFormLink("resetQuickSearch", "", null, formLayout,
 				Link.BUTTON | Link.NONTRANSLATED);

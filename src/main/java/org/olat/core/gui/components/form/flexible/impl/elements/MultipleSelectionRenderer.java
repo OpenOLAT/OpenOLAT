@@ -344,7 +344,9 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append(" o_checkbox_h_aligned ", stF.isHorizontallyAlignedCheckboxes());
 		sb.append(cssClass, cssClass != null).append("'");
 		if(StringHelper.containsNonWhitespace(value)) {
-			sb.append(" for='").append(formDispatchId).append("'");
+			if (stF.getForId() == null) { // set 'for' attribute only if there is no 'for' attribute on element's label
+				sb.append(" for='").append(formDispatchId).append("'");
+			}
 			if(stF.isWithTitleOnLabels()) {
 				sb.append(" title='").append(value).append("'");
 			}
