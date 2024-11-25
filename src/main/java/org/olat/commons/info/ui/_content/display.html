@@ -43,7 +43,7 @@ function o_activateInfoTool(toolname) {
 <div class="clearfix"><div class="o_infomsg o_block_with_datecomp">
 	#foreach($info in $infos)
 		<div class="o_msg o_block_large clearfix">
-			<div class="o_head">
+			<div class="o_head o_info_msg_head">
 				$r.render("info.date.${info.getKey()}")
 				<h3 class="o_title">
 					$r.escapeHtml(${info.getTitle()})
