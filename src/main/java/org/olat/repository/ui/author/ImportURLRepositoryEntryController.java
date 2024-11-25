@@ -126,7 +126,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<String> mediaServerNames = mediaServerModule.getMediaServerNames();
+		List<String> mediaServerNames = mediaServerModule.getMediaServerNames(true);
 		mediaServerNames.add(0, MP4_NAME);
 		mediaServerNames.add(1, M3U8_NAME);
 		int nbOthers = mediaServerNames.size();

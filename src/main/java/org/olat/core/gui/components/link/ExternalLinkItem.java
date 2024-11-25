@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.link;
 
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 
 /**
@@ -54,5 +55,9 @@ public interface ExternalLinkItem extends FormItem {
 	String getTooltip();
 	
 	void setTooltip(String tip);
+	
+	public EscapeMode getEscapeMode();
+	
+	public void setEscapeMode(EscapeMode escapeMode);
 
 }

@@ -104,6 +104,7 @@ import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoFormat;
+import org.olat.modules.video.VideoFormatExtended;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
@@ -180,6 +181,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 
 	private static final String YOUTUBE_OEMBED_URL = "https://www.youtube.com/oembed?format=json&url=";
 	private static final String VIMEO_OEMBED_URL =  "https://vimeo.com/api/oembed.json?url=";
+	private static final String NANOO_TV_OEMBED_URL =  "https://www.nanoo.tv/services/oembed?url=";
 	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 	private static final SimpleDateFormat vttDateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 	
@@ -1752,7 +1754,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 			return ImmutablePair.nullPair();
 		}
 
-		VideoFormat videoFormat = VideoFormat.valueOfUrl(url);
+		VideoFormatExtended videoFormat = VideoFormatExtended.valueOfUrl(url);
 		if (videoFormat == null) {
 			return ImmutablePair.nullPair();
 		}
@@ -1770,11 +1772,13 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 		return new ImmutablePair<>(oembedJson.optString("title"), oembedJson.optString("description"));
 	}
 
-	private String getOembedUrl(VideoFormat videoFormat, String url) {
-		if (videoFormat == VideoFormat.youtube) {
+	private String getOembedUrl(VideoFormatExtended videoFormat, String url) {
+		if (videoFormat == VideoFormatExtended.youtube) {
 			return YOUTUBE_OEMBED_URL + StringHelper.urlEncodeUTF8(url);
-		} else if (videoFormat == VideoFormat.vimeo) {
+		} else if (videoFormat == VideoFormatExtended.vimeo) {
 			return VIMEO_OEMBED_URL + StringHelper.urlEncodeUTF8(url);
+		} else if (videoFormat == VideoFormatExtended.nanoo) {
+			return NANOO_TV_OEMBED_URL + StringHelper.urlEncodeUTF8(url);
 		} else {
 			return null;
 		}
@@ -1786,7 +1790,7 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 			return null;
 		}
 
-		VideoFormat videoFormat = VideoFormat.valueOfUrl(url);
+		VideoFormatExtended videoFormat = VideoFormatExtended.valueOfUrl(url);
 		if (videoFormat == null) {
 			log.info("Unknown video format: {}", url);
 			return null;

@@ -82,7 +82,7 @@ public class ExternalLinkRenderer extends DefaultComponentRenderer {
 			sb.append("> </i> ");
 		}
 		if(StringHelper.containsNonWhitespace(linkText)) {
-			sb.append("<span>").appendHtmlEscaped(linkText).append("</span>");
+			sb.append("<span>").append(linkText, link.getEscapeMode()).append("</span>");
 		}
 		if(isIconLink && StringHelper.containsNonWhitespace(title)) {
 			sb.append("<span class='sr-only'>").appendHtmlEscaped(link.getTooltip()).append("</span>");
