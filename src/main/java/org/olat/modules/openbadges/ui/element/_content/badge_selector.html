@@ -21,14 +21,15 @@
 			#foreach($selectedRow in $selectedRows)
 			<div class="o_badge_selector_row">
 				<div class="o_badge_selector_checkbox">
-					<input type="checkbox" checked id="bsel_${selectedRow.key()}" name="bsel_${selectedRow.key()}" value="bsel_${selectedRow.key()}">
+					<input type="checkbox" checked id="bsel_${selectedRow.key()}" name="bsel_${selectedRow.key()}" value="bsel_${selectedRow.key()}" 
+						   title="$r.translate("select")" aria-labelledby="bsel_${selectedRow.key()}_label">
 				</div>
 				<div class="o_badge_selector_image">
 					<img src="$mediaUrl/${selectedRow.image()}" width="${selectedRow.size().width}px" height="${selectedRow.size().height}px" alt="${altImageText}">
 				</div>
 				<div class="o_badge_selector_text">
 					<div class="o_badge_selector_status">${selectedRow.statusString()}</div>
-					<div class="o_badge_selector_title_version">${selectedRow.title()} &middot; $r.translate("form.version") ${selectedRow.version()}</div>
+					<div id="bsel_${selectedRow.key()}_label" class="o_badge_selector_title_version">${selectedRow.title()} &middot; $r.translate("form.version") ${selectedRow.version()}</div>
 				</div>
 			</div>
 			#end
@@ -40,14 +41,15 @@
 			#foreach($unselectedRow in $unselectedRows)
 			<div class="o_badge_selector_row">
 				<div class="o_badge_selector_checkbox">
-					<input type="checkbox" id="bsel_${unselectedRow.key()}" name="bsel_${unselectedRow.key()}" value="bsel_${unselectedRow.key()}">
+					<input type="checkbox" id="bsel_${unselectedRow.key()}" name="bsel_${unselectedRow.key()}" value="bsel_${unselectedRow.key()} 
+					title="$r.translate("select")" aria-labelledby="bsel_${unselectedRow.key()}_label">
 				</div>
 				<div class="o_badge_selector_image">
 					<img src="$mediaUrl/${unselectedRow.image()}" width="${unselectedRow.size().width}px" height="${unselectedRow.size().height}px" alt="${altImageText}">
 				</div>
 				<div class="o_badge_selector_text">
 					<div class="o_badge_selector_status">${unselectedRow.statusString()}</div>
-					<div class="o_badge_selector_title_version">${unselectedRow.title()} &middot; $r.translate("form.version") ${unselectedRow.version()}</div>
+					<div id="bsel_${unselectedRow.key()}_label" class="o_badge_selector_title_version">${unselectedRow.title()} &middot; $r.translate("form.version") ${unselectedRow.version()}</div>
 				</div>
 			</div>
 			#end
