@@ -86,9 +86,9 @@ public class TextFlexiCellRenderer implements FlexiCellRenderer {
 		} else if(cellValue instanceof Boolean) {
 			Boolean bool = (Boolean)cellValue;
 			if(bool.booleanValue()) {
-				target.append("<input type='checkbox' value='' checked='checked' disabled='disabled' />");
+				target.append("<input type='checkbox' value='' checked='checked' disabled='disabled' aria-label='").append(translator.translate("a11y.active")).append("' />");
 			} else {
-				target.append("<input type='checkbox' value='' disabled='disabled' />");
+				target.append("<input type='checkbox' value='' disabled='disabled' aria-label='").append(translator.translate("a11y.inactive")).append("' />");
 			}
 		} else if (cellValue != null) {
 			target.append( cellValue.toString() );
