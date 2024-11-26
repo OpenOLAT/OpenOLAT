@@ -262,7 +262,7 @@ public class CollectUrlVideoMediaController extends AbstractCollectMediaControll
 			if (mediaServerModule.isRestrictedDomain(urlEl.getValue())) {
 				return;
 			}
-			Pair<String, String> titleAndDescription = videoManager.lookUpTitleAndDescription(urlEl.getValue());
+			Pair<String, String> titleAndDescription = videoManager.lookUpTitleAndDescription(urlEl.getValue(), false);
 			if (StringHelper.containsNonWhitespace(titleAndDescription.getLeft())) {
 				titleEl.setValue(titleAndDescription.getLeft());
 			}

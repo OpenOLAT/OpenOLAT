@@ -313,6 +313,8 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		
 		boolean allOk = super.validateFormLogic(ureq);
 
+		allOk &= validateResources();	
+		
 		organisationEl.clearError();
 		if(organisationEl.isVisible() && !organisationEl.isOneSelected()) {
 			organisationEl.setErrorKey("form.legende.mandatory");
@@ -480,7 +482,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		if (mediaServerModule.isRestrictedDomain(urlEl.getValue())) {
 			return;
 		}
-		Pair<String, String> titleAndDescription = videoManager.lookUpTitleAndDescription(urlEl.getValue());
+		Pair<String, String> titleAndDescription = videoManager.lookUpTitleAndDescription(urlEl.getValue(), true);
 		if (StringHelper.containsNonWhitespace(titleAndDescription.getLeft())) {
 			String title = titleAndDescription.getLeft();
 			int len = Math.min(title.length(), displaynameEl.getMaxLength());

@@ -1749,13 +1749,17 @@ public class VideoManagerImpl implements VideoManager, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public Pair<String, String> lookUpTitleAndDescription(String url) {
+	public Pair<String, String> lookUpTitleAndDescription(String url, boolean forRepositoryEntry) {
 		if (!StringHelper.containsNonWhitespace(url)) {
 			return ImmutablePair.nullPair();
 		}
 
 		VideoFormatExtended videoFormat = VideoFormatExtended.valueOfUrl(url);
 		if (videoFormat == null) {
+			return ImmutablePair.nullPair();
+		}
+		
+		if (videoFormat == VideoFormatExtended.nanoo && forRepositoryEntry) {
 			return ImmutablePair.nullPair();
 		}
 
