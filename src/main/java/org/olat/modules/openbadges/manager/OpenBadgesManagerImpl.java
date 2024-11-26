@@ -1621,8 +1621,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return new ArrayList<>();
 		}
 
-		// The user's badges
-		List<BadgeAssertion> recipientBadges = badgeAssertionDAO.getBadgeAssertions(recipient).stream().toList();
+		// The user's issued badges
+		List<BadgeAssertion> recipientBadges = badgeAssertionDAO.getBadgeAssertions(recipient).stream()
+				.filter(ba -> BadgeAssertion.BadgeAssertionStatus.issued.equals(ba.getStatus())).toList();
 		
 		// We use the UUID of the badge class as an ID of badge classes and badge assertions. That's convenient and
 		// safe, because all computation below is performed for one single participant.

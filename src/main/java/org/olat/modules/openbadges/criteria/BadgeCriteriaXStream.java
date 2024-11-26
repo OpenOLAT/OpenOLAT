@@ -38,7 +38,8 @@ public class BadgeCriteriaXStream {
 	static {
 		Class<?>[] types = new Class[] {
 				BadgeCriteria.class, BadgeCondition.class, CoursePassedCondition.class, CourseScoreCondition.class,
-				OtherBadgeEarnedCondition.class, CourseElementPassedCondition.class, CourseElementScoreCondition.class,
+				OtherBadgeEarnedCondition.class, CompletionCriterionMetCondition.class, 
+				CourseElementPassedCondition.class, CourseElementScoreCondition.class,
 				LearningPathProgressCondition.class, CoursesPassedCondition.class,
 				GlobalBadgesEarnedCondition.class
 		};
