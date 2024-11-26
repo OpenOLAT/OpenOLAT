@@ -19,8 +19,11 @@
 <div class="o_extlink clearfix o_block_large_bottom">
 	<h4>$r.translate("details.extlinkheader")</h4>
 	<div class="o_copy_code o_nowrap">
-		<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
-		<input type="text" value="$extlink" onclick="this.select()"/>
+		<a href="javascript:;" id="o_extlink">
+			<i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode" aria-hidden='true' title='$r.translateInAttribute("qr.code")'>&nbsp;</i>
+			<span class='sr-only'>$r.translate("link.resource")</span>
+		</a>
+		<input type="text" value="$extlink" onclick="this.select()" aria-labelledby="o_extlink"/>
 		<script>
 		jQuery(function() {
 			o_QRCodePopup('o_extlink', '$extlink', 'right');
@@ -29,8 +32,11 @@
 	</div>
 	#if ($isGuestAllowed)
 		<div class="o_copy_code o_nowrap">
-			<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
-			<input type="text" value="${extlink}?guest=true&amp;lang=$r.getLanguageCode()" onclick="this.select()"/>
+			<a href="javascript:;" id="o_extlink2">
+				<i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode" aria-hidden='true' title='$r.translateInAttribute("qr.code")'>&nbsp;</i>
+				<span class='sr-only'>$r.translate("link.resource")</span>
+			</a>
+			<input type="text" value="${extlink}?guest=true&amp;lang=$r.getLanguageCode()" onclick="this.select()" aria-labelledby="o_extlink2"/>
 			<script>
 			jQuery(function() {
 				o_QRCodePopup('o_extlink2', '${extlink}?guest=true&amp;lang=$r.getLanguageCode()', 'right');

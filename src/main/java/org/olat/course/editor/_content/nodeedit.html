@@ -11,11 +11,16 @@
 		<p>$r.translate("nodeEdit.linksIntro")</p>
 		<div class="o_block">
 			$r.translate("nodeEdit.extLink"):## compact form needed for Firefox
-			<div class="o_copy_code o_nowrap"><a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"> </i></a><input type="text" value="$extLink" onclick="this.select()"></div>
+			<div class="o_copy_code o_nowrap">
+				<a href="javascript:;" id="o_extlink">
+					<i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode" aria-hidden='true' title='$r.translateInAttribute("qr.code")' > </i>
+					<span class='sr-only'>$r.translate("link.resource")</span>
+				</a>
+				<input type="text" value="$extLink" onclick="this.select()" aria-labelledby="o_extlink"></div>
 		</div>
 		<div class="o_block">
-			$r.translate("nodeEdit.intLink"):
-			<div class="o_copy_code o_nowrap"><input type="text" value="$intLink" onclick="this.select()"/></div>
+			<span id="o_intlink">$r.translate("nodeEdit.intLink")</span>:
+			<div class="o_copy_code o_nowrap"><input type="text" value="$intLink" onclick="this.select()" aria-labelledby="o_intlink"/></div>
 		</div>
 	#o_togglebox_end()
 	
