@@ -54,6 +54,6 @@ public class OlatRestApplication extends Application {
 	}
 	
 	public RestRegistrationService getRestRegistrationService() {
-		return (RestRegistrationService)CoreSpringFactory.getBean(RestRegistrationService.class);
+		return CoreSpringFactory.getImpl(RestRegistrationService.class);
 	}
 }
