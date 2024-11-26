@@ -411,7 +411,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 			Integer validForMinutes = registrationModule.getValidUntilMinutesGui();
 			tk.setRegistrationKey(createRegistrationToken());
 			Integer validMinutes = validForMinutes != null ? validForMinutes : VALID_UNTIL_30_DAYS;
-			Date validUntil = addMinutes(tk.getCreationDate(), validMinutes);
+			Date validUntil = addMinutes(new Date(), validMinutes);
 			tk.setValidUntil(validUntil);
 			dbInstance.getCurrentEntityManager().merge(tk);
 			return tk;

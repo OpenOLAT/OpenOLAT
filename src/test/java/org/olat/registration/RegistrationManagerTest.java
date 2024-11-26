@@ -31,6 +31,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,7 +153,8 @@ public class RegistrationManagerTest extends OlatTestCase {
 	/**
 	 * Test load of temp key.
 	 */
-	@Test public void testCreateTemporaryKeyEntry() {
+	@Test
+	public void testCreateTemporaryKeyEntry() {
 		String emailaddress = UUID.randomUUID() + "@openolat.com";
 		String ipaddress = "130.60.112.10";
 
@@ -164,6 +166,38 @@ public class RegistrationManagerTest extends OlatTestCase {
 		Assert.assertNotNull(result.getValidUntil());
 		Assert.assertEquals(ipaddress, result.getIpAddress());
 		Assert.assertEquals(emailaddress, result.getEmailAddress());
+	}
+
+	@Test
+	public void testUpdateTemporaryRegistrationKey() {
+		// Create a temporary key entry
+		String emailAddress = UUID.randomUUID() + "@openolat.com";
+		String ipAddress = "192.168.1.1";
+		TemporaryKey originalKey = registrationManager.loadOrCreateTemporaryKeyByEmail(
+				emailAddress, ipAddress, RegistrationManager.REGISTRATION, 30
+		);
+		dbInstance.commitAndCloseSession();
+
+		// Validate initial state
+		Assert.assertNotNull(originalKey);
+		Assert.assertNotNull(originalKey.getRegistrationKey());
+		Assert.assertNotNull(originalKey.getValidUntil());
+		String originalRegistrationKey = originalKey.getRegistrationKey();
+		Date originalCreationDate = originalKey.getCreationDate();
+		Date originalValidUntil = originalKey.getValidUntil();
+
+		// Update temporary key
+		TemporaryKey updatedKey = registrationManager.updateTemporaryRegistrationKey(emailAddress);
+		dbInstance.commitAndCloseSession();
+
+		// Validate the update
+		Assert.assertNotNull(updatedKey);
+		Assert.assertEquals(originalKey.getKey(), updatedKey.getKey()); // Same record updated
+		Assert.assertEquals(emailAddress, updatedKey.getEmailAddress()); // Email should remain unchanged
+		Assert.assertNotEquals(originalRegistrationKey, updatedKey.getRegistrationKey()); // Registration key should be updated
+		Assert.assertEquals(originalCreationDate, updatedKey.getCreationDate()); // Creation date should remain unchanged
+		Assert.assertNotEquals(originalValidUntil, updatedKey.getValidUntil()); // Valid until date should be updated
+		Assert.assertTrue(updatedKey.getValidUntil().after(originalValidUntil)); // Ensure validUntil is extended
 	}
 	
 	@Test
