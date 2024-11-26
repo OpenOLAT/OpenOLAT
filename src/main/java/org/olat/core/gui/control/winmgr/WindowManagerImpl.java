@@ -46,17 +46,16 @@ import org.olat.core.helpers.Settings;
  */
 public class WindowManagerImpl implements WindowManager {
 	
-	private GlobalSettings globalSettings;
+	private final GlobalSettings globalSettings;
 	private boolean ajaxEnabled = false;
 	
 	private boolean showDebugInfo = false;
 	private boolean idDivsForced = false;
 
-	private PopupBrowserWindowControllerCreator pbwcc;
+	private final PopupBrowserWindowControllerCreator pbwcc;
 	
 	public WindowManagerImpl() {
-		pbwcc = (PopupBrowserWindowControllerCreator) 
-			CoreSpringFactory.getBean(PopupBrowserWindowControllerCreator.class);
+		pbwcc = CoreSpringFactory.getImpl(PopupBrowserWindowControllerCreator.class);
 
 		final AJAXFlags aflags = new AJAXFlags(this);
 		globalSettings = new GlobalSettings() {

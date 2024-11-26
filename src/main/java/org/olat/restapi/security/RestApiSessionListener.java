@@ -38,7 +38,7 @@ public class RestApiSessionListener implements HttpSessionListener {
 
 	@Override
 	public void sessionDestroyed(HttpSessionEvent se) {
-		RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
+		RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
 		HttpSession session = se.getSession();
 		securityBean.unbindTokenToSession(session);
 	}
