@@ -192,6 +192,7 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 	}
 
 	private void updateButtonUI() {
+		boolean noBadgeSelected = false;
 		String linkTitle = badgesKV.keyValues().stream()
 				.filter(kv -> selectedKeys.contains(Long.parseLong(kv.getKey())))
 				.map(SelectionValues.SelectionValue::getValue)
@@ -199,9 +200,13 @@ public class BadgeSelectorElementImpl extends FormItemImpl implements BadgeSelec
 				.collect(Collectors.joining(", "));
 		if (!StringHelper.containsNonWhitespace(linkTitle)) {
 			linkTitle = "&nbsp;";
+			noBadgeSelected = true;
 		}
 		if (button != null) {
 			button.setI18nKey(linkTitle);
+			if (noBadgeSelected) {
+				button.setTitle(translator.translate("badge.selector.none"));
+			}
 		}
 	}
 	public BadgeSelectorController getSelectorController() {

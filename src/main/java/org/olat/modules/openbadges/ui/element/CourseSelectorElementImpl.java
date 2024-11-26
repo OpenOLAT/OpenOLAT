@@ -206,11 +206,19 @@ public class CourseSelectorElementImpl extends FormItemImpl implements CourseSel
 	}
 
 	private void updateButtonUI(boolean setDirty) {
+		boolean noCourseSelected = false;
 		String linkTitle = visibleCourses.stream()
 				.filter(course -> selectedKeys.contains(course.getKey()))
 				.map(course -> StringHelper.escapeHtml(course.getDisplayname()))
 				.sorted(Collator.getInstance(getTranslator().getLocale())).collect(Collectors.joining(", "));
+		if (!StringHelper.containsNonWhitespace(linkTitle)) {
+			linkTitle = "&nbsp;";
+			noCourseSelected = true;
+		}
 		button.setI18nKey(linkTitle);
+		if (noCourseSelected) {
+			button.setTitle(translator.translate("course.selector.none"));
+		}
 
 		if (setDirty) {
 			getFormItemComponent().setDirty(true);
