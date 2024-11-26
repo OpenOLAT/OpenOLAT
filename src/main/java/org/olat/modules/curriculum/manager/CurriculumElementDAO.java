@@ -38,6 +38,7 @@ import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
+import org.olat.basesecurity.GroupMembershipHistory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
@@ -62,6 +63,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipImpl;
 import org.olat.modules.curriculum.model.CurriculumElementNode;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
@@ -1053,6 +1055,69 @@ public class CurriculumElementDAO {
 				.setParameter("elementKeys", elementKeys)
 				.setParameter("roles", roleList)
 				.getResultList();
+	}
+	
+
+	public List<CurriculumElementMembershipHistory> getMembershipInfosAndHistory(List<? extends CurriculumRef> curriculums,
+			Collection<? extends CurriculumElementRef> elements, Identity... identities) {
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select el.key, membershiphistory from curriculumelement el")
+		  .append(" inner join el.group baseGroup")
+		  .append(" inner join bgroupmemberhistory membershiphistory on (membershiphistory.group.key = baseGroup.key)")
+		  .append(" inner join fetch membershiphistory.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" inner join fetch membershiphistory.creator creator")
+		  .append(" inner join fetch creator.user creatorUser");
+		boolean and = false;
+		if(identities != null && identities.length > 0) {
+			and = and(sb, and);
+			sb.append("ident.key in (:identIds) ");
+		}
+		if(elements != null && !elements.isEmpty()) {
+			and = and(sb, and);
+			sb.append("el.key in (:elementKeys)");
+		}
+		if(curriculums != null && !curriculums.isEmpty()) {
+			and = and(sb, and);
+			sb.append("el.curriculum.key in (:curriculumKeys)");
+		}
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(identities != null && identities.length > 0) {
+			List<Long> ids = new ArrayList<>(identities.length);
+			for(Identity id:identities) {
+				ids.add(id.getKey());
+			}
+			query.setParameter("identIds", ids);
+		}
+		if(elements != null && !elements.isEmpty()) {
+			List<Long> elementKeys = elements.stream()
+					.map(CurriculumElementRef::getKey).toList();
+			query.setParameter("elementKeys", elementKeys);
+		}
+		if(curriculums != null &&!curriculums.isEmpty()) {
+			List<Long> curriculumKeys = curriculums.stream()
+					.map(CurriculumRef::getKey).toList();
+			query.setParameter("curriculumKeys", curriculumKeys);
+		}
+		
+		List<Object[]> rawObjects = query.getResultList();
+		Map<IdentityToElementKey, CurriculumElementMembershipHistory> history = new HashMap<>();
+		for(Object[] object:rawObjects) {
+			Long elementKey = (Long)object[0];
+			GroupMembershipHistory membershipHistory = (GroupMembershipHistory)object[1];
+			Long identityKey = membershipHistory.getIdentity().getKey();
+			if(CurriculumRoles.isValueOf(membershipHistory.getRole())) {
+				CurriculumRoles cRole = CurriculumRoles.valueOf(membershipHistory.getRole());
+				IdentityToElementKey key = new IdentityToElementKey(identityKey, elementKey);
+				CurriculumElementMembershipHistory membership = history
+						.computeIfAbsent(key, k -> new CurriculumElementMembershipHistory(k.getIdentityKey(), k.getCurriculumElementKey()));
+				membership.addHistoiryPoint(cRole, membershipHistory);
+			}
+		}
+		return new ArrayList<>(history.values());
 	}
 	
 	public List<CurriculumElementMembership> getMembershipInfos(List<? extends CurriculumRef> curriculums, Collection<? extends CurriculumElementRef> elements, Identity... identities) {

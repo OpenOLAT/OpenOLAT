@@ -117,6 +117,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 		List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(curriculum, member);
 		Map<Long, CurriculumElementMembership> membershipsMap = memberships.stream()
 				.collect(Collectors.toMap(CurriculumElementMembership::getCurriculumElementKey, u -> u, (u, v) -> u));
+
 		
 		List<MemberRolesDetailsRow> rows = new ArrayList<>();
 		Map<Long, MemberRolesDetailsRow> rowsMap = new HashMap<>();

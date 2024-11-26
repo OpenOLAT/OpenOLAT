@@ -32,6 +32,8 @@ import org.olat.resource.OLATResource;
  */
 public interface GroupMembershipHistory {
 	
+	public Long getKey();
+	
 	public Date getCreationDate();
 
 	public String getRole();

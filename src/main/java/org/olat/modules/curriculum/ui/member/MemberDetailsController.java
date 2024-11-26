@@ -58,6 +58,7 @@ public class MemberDetailsController extends FormBasicController {
 	private final UserInfoProfileConfig profileConfig;
 	
 	private final MemberRolesDetailsController rolesDetailsCtrl;
+	private final MemberHistoryDetailsController historyDetailsCtrl;
 	
 	@Autowired
 	private BaseSecurity securityManager;
@@ -77,6 +78,10 @@ public class MemberDetailsController extends FormBasicController {
 				curriculum,  elements, member);
 		listenTo(rolesDetailsCtrl);
 		
+		historyDetailsCtrl = new MemberHistoryDetailsController(ureq, getWindowControl(), rootForm,
+				elements.get(0), member);
+		listenTo(historyDetailsCtrl);
+		
 		initForm(ureq);
 	}
 
@@ -95,6 +100,7 @@ public class MemberDetailsController extends FormBasicController {
 		editMemberShipButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 	
 		formLayout.add("roles", rolesDetailsCtrl.getInitialFormItem());
+		formLayout.add("history", historyDetailsCtrl.getInitialFormItem());
 	}
 
 	@Override
