@@ -236,7 +236,9 @@ public class ForumMessageListController extends FormBasicController {
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
 		treeNodeRenderer.setFlatBySearchAndFilter(true);
 		treeNodeRenderer.setFlatBySort(true);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForumMessageCols.thread, "select", treeNodeRenderer));
+		DefaultFlexiColumnModel threadModel = new DefaultFlexiColumnModel(ForumMessageCols.thread);
+		threadModel.setCellRenderer(treeNodeRenderer);		
+		columnsModel.addFlexiColumnModel(threadModel);
 		sorts.add(new FlexiTableSort(translate(ForumMessageCols.thread.i18nHeaderKey()), ForumMessageCols.thread.name()));
 
 		int colPos = USER_PROPS_OFFSET;
