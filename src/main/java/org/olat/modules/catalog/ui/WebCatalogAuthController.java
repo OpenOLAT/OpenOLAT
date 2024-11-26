@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.dispatcher.AuthenticatedDispatcher;
 import org.olat.login.PublicLoginAuthProvidersController;
 import org.olat.repository.RepositoryEntry;
 
@@ -40,13 +41,14 @@ public class WebCatalogAuthController extends BasicController {
 	public WebCatalogAuthController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
 
-		String redirectPath = null;
+		// add path to session, so the user gets redirected to the specific catalog page after successful login
 		if (entry != null) {
-			String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
-			redirectPath = BusinessControlFactory.getInstance().getAsRestPart(BusinessControlFactory.getInstance().createFromString(businessPath).getEntries(), true);
+			String businessPath = "[Catalog:0][Search:0][Infos:" + entry.getKey() + "]";
+			String redirectPath = BusinessControlFactory.getInstance().getAsRestPart(BusinessControlFactory.getInstance().createFromString(businessPath).getEntriesDownTheControls(), true);
+			ureq.getUserSession().putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_REDIRECT_PATH, redirectPath);
 		}
 
-		PublicLoginAuthProvidersController loginAuthProvidersCtrl = new PublicLoginAuthProvidersController(ureq, wControl, redirectPath, null);
+		PublicLoginAuthProvidersController loginAuthProvidersCtrl = new PublicLoginAuthProvidersController(ureq, wControl, null);
 		listenTo(loginAuthProvidersCtrl);
 		putInitialPanel(loginAuthProvidersCtrl.getInitialComponent());
 	}

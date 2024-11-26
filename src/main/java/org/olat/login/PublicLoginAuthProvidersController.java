@@ -77,7 +77,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PublicLoginAuthProvidersController extends MainLayoutBasicController implements Activateable2, LoginHandler {
 
 
-	private final String redirectPath;
 	private final Invitation invitation;
 	private final StackedPanel dmzPanel;
 	private final List<Controller> authenticationCtrlList = new ArrayList<>();
@@ -103,10 +102,9 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 	@Autowired
 	private RegistrationModule registrationModule;
 
-	public PublicLoginAuthProvidersController(UserRequest ureq, WindowControl wControl, String redirectPath, Invitation invitation) {
+	public PublicLoginAuthProvidersController(UserRequest ureq, WindowControl wControl, Invitation invitation) {
 		// Use fallback translator from full webapp package to translate accessibility stuff
 		super(ureq, wControl, Util.createPackageTranslator(BaseFullWebappController.class, ureq.getLocale()));
-		this.redirectPath = redirectPath;
 		this.invitation = invitation;
 
 		UserSession usess = ureq.getUserSession();
@@ -350,7 +348,7 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 
 	@Override
 	public void doLogin(UserRequest ureq, Identity persistedIdentity, String authProvider) {
-		int loginStatus = AuthHelper.doLogin(persistedIdentity, authProvider, ureq, redirectPath);
+		int loginStatus = AuthHelper.doLogin(persistedIdentity, authProvider, ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			// it's ok
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {

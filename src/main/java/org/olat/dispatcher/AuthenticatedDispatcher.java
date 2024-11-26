@@ -85,6 +85,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	
 	public static final String AUTHDISPATCHER_BUSINESSPATH = "AuthDispatcher:businessPath";
 	public static final String AUTHDISPATCHER_REDIRECT_URL = "AuthDispatcher:redirectUrl";
+	public static final String AUTHDISPATCHER_REDIRECT_PATH = "AuthDispatcher:redirectPath";
 	
 	protected static final String QUESTIONMARK = "?";
 	protected static final String GUEST = "guest";

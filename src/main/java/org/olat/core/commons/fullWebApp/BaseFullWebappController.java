@@ -111,6 +111,7 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
+import org.olat.dispatcher.AuthenticatedDispatcher;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
@@ -268,7 +269,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
     		// present an overlay with configured afterlogin-controllers or nothing if none configured.
     		// presented only once per session.
     		Boolean alreadySeen = ((Boolean)usess.getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
-    		if (usess.isAuthenticated() && alreadySeen == null) {
+    		if (usess.isAuthenticated() && alreadySeen == null && usess.getEntry(AuthenticatedDispatcher.AUTHDISPATCHER_REDIRECT_PATH) == null) {
     			resumeSessionCtrl = new ResumeSessionController(ureq, getWindowControl());
     			listenTo(resumeSessionCtrl);
     			resumeSessionCtrl.getInitialComponent();
@@ -280,7 +281,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
     			&& (resumeSessionCtrl == null || (!resumeSessionCtrl.redirect() && !resumeSessionCtrl.userInteractionNeeded()))
     			&& usess.getEntry("AuthDispatcher:businessPath") == null) {
     		String bc = initializeDefaultSite(ureq);
-    		if(StringHelper.containsNonWhitespace(bc) && usess.getEntry("redirect-bc") == null) {
+    		if(StringHelper.containsNonWhitespace(bc) && usess.getEntry("redirect-bc") == null && usess.getEntry(AuthenticatedDispatcher.AUTHDISPATCHER_REDIRECT_PATH) == null) {
     			usess.putEntry("redirect-bc", bc);
     		}
     	}

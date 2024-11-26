@@ -72,6 +72,7 @@ import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.TransientAssessmentInspection;
 import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.dispatcher.AuthenticatedDispatcher;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
 import org.olat.modules.invitation.InvitationService;
@@ -129,10 +130,6 @@ public class AuthHelper {
 	 * @return True if success, false otherwise.
 	 */
 	public static int doLogin(Identity identity, String authProvider, UserRequest ureq) {
-		return doLogin(identity, authProvider, ureq, null);
-	}
-
-	public static int doLogin(Identity identity, String authProvider, UserRequest ureq, String redirectPath) {
 		int initializeStatus = initializeLogin(identity, authProvider, ureq, false);
 		if (initializeStatus != LOGIN_OK) {
 			return initializeStatus; // login not successful
@@ -155,6 +152,7 @@ public class AuthHelper {
 		ureq.overrideWindowComponentID(currentWindow.getDispatchID());
 
 		RedirectMediaResource redirect;
+		String redirectPath = (String) ureq.getUserSession().getEntry(AuthenticatedDispatcher.AUTHDISPATCHER_REDIRECT_PATH);
 		String redirectTo = (String)ureq.getUserSession().getEntry("redirect-bc");
 		if(StringHelper.containsNonWhitespace(redirectPath)) {
 			String url = WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + redirectPath + "?oow=" + currentWindow.getDispatchID();
