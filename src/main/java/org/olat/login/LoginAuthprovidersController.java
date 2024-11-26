@@ -53,10 +53,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.wizard.Step;
-import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -74,14 +70,9 @@ import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.WebCatalogDispatcher;
-import org.olat.registration.LoginHandler;
 import org.olat.registration.PwChangeController;
-import org.olat.registration.RegisterFinishCallback;
-import org.olat.registration.RegistrationAdditionalPersonalDataController;
-import org.olat.registration.RegistrationLangStep00;
 import org.olat.registration.RegistrationModule;
 import org.olat.shibboleth.ShibbolethDispatcher;
-import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -92,7 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  02.09.2007 <br>
  * @author patrickb
  */
-public class LoginAuthprovidersController extends MainLayoutBasicController implements Activateable2, LoginHandler {
+public class LoginAuthprovidersController extends MainLayoutBasicController implements Activateable2 {
 
 	private static final String ACTION_LOGIN = "login";
 	public  static final String ATTR_LOGIN_PROVIDER = "lp";
@@ -107,7 +98,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	private CloseableModalController cmc;
 	private PwChangeController pwChangeCtrl;
-	private StepsMainRunController registrationWizardCtrl;
+
 
 	@Autowired
 	private HelpModule helpModule;
@@ -118,8 +109,6 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private CatalogV2Module catalogV2Module;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
@@ -127,7 +116,6 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private InfoMessageManager infoMessageMgr;
 	@Autowired
 	private RegistrationModule registrationModule;
-
 
 	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null, false);
@@ -163,9 +151,9 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 		dmzPanel = putInitialPanel(panel);
 
-		// if the call is from an invitation, directly open Registration
+		// if the call is from an invitation or as rest call, directly open Registration
 		if (invitation != null || hasModuleUri) {
-			openRegistration(ureq);
+			doOpenRegistration(ureq);
 		}
 	}
 
@@ -186,7 +174,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			AuthenticationProvider olatProvider = loginModule.getAuthenticationProvider(BaseSecurityModule.getDefaultAuthProviderIdentifier());
 			if (olatProvider.isEnabled() && registrationModule.isSelfRegistrationEnabled()
 					&& registrationModule.isSelfRegistrationLinkEnabled()) {
-				openRegistration(ureq);
+				doOpenRegistration(ureq);
 			}
 		} else if("changepw".equals(type)) {
 			String email = null;
@@ -195,6 +183,11 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			}
 			openChangePassword(ureq, email);
 		}
+	}
+
+	private void doOpenRegistration(UserRequest ureq) {
+		LoginProcessEventController loginProcessEventCtrl = new LoginProcessEventController(ureq, getWindowControl(), dmzPanel, invitation);
+		loginProcessEventCtrl.doOpenRegistration(ureq);
 	}
 
 	private VelocityContainer initLoginContent(UserRequest ureq) {
@@ -381,7 +374,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == registerLink) {
-			openRegistration(ureq);
+			doOpenRegistration(ureq);
 		} else if (source == changePasswordLink) {
 			openChangePassword(ureq, null);
 		} else if (ACTION_LOGIN.equals(event.getCommand())
@@ -392,7 +385,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(pwChangeCtrl == source || registrationWizardCtrl == source) {
+		if(pwChangeCtrl == source) {
 			if (event == Event.CANCELLED_EVENT) {
 				if (loginModule.getAuthenticationProvider(ShibbolethDispatcher.PROVIDER_SHIB) != null) {
 					// Redirect to context path to prevent Javascript error when using Shibboleth provider
@@ -464,7 +457,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		Identity identity = authEvent.getIdentity();
 		String provider = authEvent.getProvider() == null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : authEvent.getProvider();
 
-		doLogin(ureq, identity, provider);
+		LoginProcessEventController loginProcessEventCtrl = new LoginProcessEventController(ureq, getWindowControl(), dmzPanel, invitation);
+		loginProcessEventCtrl.doLogin(ureq, identity, provider);
 	}
 
 	private void doGuestLogin(UserRequest ureq) {
@@ -521,17 +515,6 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		dmzPanel.pushContent(aboutVC);
 	}
 
-	private void openRegistration(UserRequest ureq) {
-		boolean isAdditionalRegistrationFormEnabled = !userManager
-				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
-		Step startReg = new RegistrationLangStep00(ureq, invitation, registrationModule.isDisclaimerEnabled(),
-				registrationModule.isEmailValidationEnabled(), isAdditionalRegistrationFormEnabled);
-		registrationWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startReg, new RegisterFinishCallback(invitation, this),
-				new CancelCallback(), translate("menu.register"), "o_sel_registration_start_wizard");
-		listenTo(registrationWizardCtrl);
-		dmzPanel.pushContent(registrationWizardCtrl.getInitialComponent());
-	}
-
 	private void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
 		if (userModule.isAnyPasswordChangeAllowed()) {
@@ -547,32 +530,6 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			cmc.activate();
 		} else {
 			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
-		}
-	}
-
-	@Override
-	public void showError(String errorKey) {
-		super.showError(errorKey);
-	}
-
-	@Override
-	public void doLogin(UserRequest ureq, Identity persistedIdentity, String authProvider) {
-		int loginStatus = AuthHelper.doLogin(persistedIdentity, authProvider, ureq);
-		if (loginStatus == AuthHelper.LOGIN_OK) {
-			// it's ok
-		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
-		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
-			getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
-		} else {
-			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
-		}
-	}
-
-	private static class CancelCallback implements StepRunnerCallback {
-		@Override
-		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-			return Step.NOSTEP;
 		}
 	}
 }

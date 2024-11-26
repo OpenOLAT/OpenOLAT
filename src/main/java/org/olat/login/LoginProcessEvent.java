@@ -17,31 +17,20 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.registration;
+package org.olat.login;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.id.Identity;
+import org.olat.core.gui.control.Event;
 
 /**
- * Initial date: Nov 14, 2024
+ * Initial date: Nov 26, 2024
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface LoginHandler {
+public class LoginProcessEvent extends Event {
 
-	/**
-	 * initiate login process after registration process
-	 *
-	 * @param ureq
-	 * @param persistedIdentity
-	 * @param authProvider
-	 */
-	void doLogin(UserRequest ureq, Identity persistedIdentity, String authProvider);
+	public static final LoginProcessEvent REGISTER_EVENT = new LoginProcessEvent("register");
 
-	/**
-	 * showError in Controller
-	 *
-	 * @param errorKey
-	 */
-	void showError(String errorKey);
+	public LoginProcessEvent(String command) {
+		super(command);
+	}
 }

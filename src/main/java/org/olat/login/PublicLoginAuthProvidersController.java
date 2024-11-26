@@ -26,10 +26,8 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Invitation;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.services.help.HelpModule;
-import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.ExternalLink;
@@ -44,10 +42,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.wizard.Step;
-import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -60,12 +54,7 @@ import org.olat.ldap.LDAPLoginModule;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.registration.PwChangeController;
-import org.olat.registration.RegisterFinishCallback;
-import org.olat.registration.LoginHandler;
-import org.olat.registration.RegistrationAdditionalPersonalDataController;
 import org.olat.registration.RegistrationModule;
-import org.olat.registration.RegistrationLangStep00;
-import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,10 +63,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class PublicLoginAuthProvidersController extends MainLayoutBasicController implements Activateable2, LoginHandler {
+public class PublicLoginAuthProvidersController extends MainLayoutBasicController implements Activateable2 {
 
 
-	private final Invitation invitation;
 	private final StackedPanel dmzPanel;
 	private final List<Controller> authenticationCtrlList = new ArrayList<>();
 
@@ -87,7 +75,6 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 
 	private CloseableModalController cmc;
 	private PwChangeController pwChangeCtrl;
-	private StepsMainRunController registrationWizardCtrl;
 
 	@Autowired
 	private HelpModule helpModule;
@@ -96,16 +83,13 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
 	private RegistrationModule registrationModule;
 
-	public PublicLoginAuthProvidersController(UserRequest ureq, WindowControl wControl, Invitation invitation) {
+	public PublicLoginAuthProvidersController(UserRequest ureq, WindowControl wControl) {
 		// Use fallback translator from full webapp package to translate accessibility stuff
 		super(ureq, wControl, Util.createPackageTranslator(BaseFullWebappController.class, ureq.getLocale()));
-		this.invitation = invitation;
 
 		UserSession usess = ureq.getUserSession();
 		if (usess.getEntry("error.change.email") != null) {
@@ -242,7 +226,7 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == registerLink) {
-			openRegistration(ureq);
+			fireEvent(ureq, LoginProcessEvent.REGISTER_EVENT);
 		} else if (source == changePasswordLink) {
 			openChangePassword(ureq);
 		}
@@ -250,7 +234,7 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == registrationWizardCtrl || source == pwChangeCtrl) {
+		if (source == pwChangeCtrl) {
 			if (event == Event.CANCELLED_EVENT) {
 				content = initLoginContent(ureq);
 				initChangePassword(content);
@@ -283,7 +267,8 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		Identity identity = authEvent.getIdentity();
 		String provider = authEvent.getProvider() == null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : authEvent.getProvider();
 
-		doLogin(ureq, identity, provider);
+		LoginProcessEventController loginProcessEventCtrl = new LoginProcessEventController(ureq, getWindowControl(), dmzPanel, null);
+		loginProcessEventCtrl.doLogin(ureq, identity, provider);
 	}
 
 	private void doStart(Controller source) {
@@ -312,17 +297,6 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		}
 	}
 
-	private void openRegistration(UserRequest ureq) {
-		boolean isAdditionalRegistrationFormEnabled = !userManager
-				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
-		Step startReg = new RegistrationLangStep00(ureq, invitation, registrationModule.isDisclaimerEnabled(),
-				registrationModule.isEmailValidationEnabled(), isAdditionalRegistrationFormEnabled);
-		registrationWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startReg, new RegisterFinishCallback(invitation, this),
-				new CancelCallback(), translate("menu.register"), "o_sel_registration_start_wizard");
-		listenTo(registrationWizardCtrl);
-		dmzPanel.pushContent(registrationWizardCtrl.getInitialComponent());
-	}
-
 	private void openChangePassword(UserRequest ureq) {
 		// double-check if allowed first
 		if (userModule.isAnyPasswordChangeAllowed()) {
@@ -338,32 +312,6 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 			cmc.activate();
 		} else {
 			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
-		}
-	}
-
-	@Override
-	public void showError(String errorKey) {
-		super.showError(errorKey);
-	}
-
-	@Override
-	public void doLogin(UserRequest ureq, Identity persistedIdentity, String authProvider) {
-		int loginStatus = AuthHelper.doLogin(persistedIdentity, authProvider, ureq);
-		if (loginStatus == AuthHelper.LOGIN_OK) {
-			// it's ok
-		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
-		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
-			getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
-		} else {
-			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
-		}
-	}
-
-	private static class CancelCallback implements StepRunnerCallback {
-		@Override
-		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-			return Step.NOSTEP;
 		}
 	}
 

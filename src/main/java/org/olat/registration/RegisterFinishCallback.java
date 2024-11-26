@@ -30,8 +30,8 @@ import org.olat.basesecurity.Invitation;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
@@ -42,6 +42,7 @@ import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
+import org.olat.login.LoginProcessEventController;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.user.UserManager;
@@ -59,7 +60,7 @@ public class RegisterFinishCallback implements StepRunnerCallback {
 	private static final Logger log = Tracing.createLoggerFor(RegisterFinishCallback.class);
 
 	private Invitation invitation;
-	private final MainLayoutBasicController loginCtrl;
+	private final Controller loginCtrl;
 
 	@Autowired
 	private LoginModule loginModule;
@@ -79,7 +80,7 @@ public class RegisterFinishCallback implements StepRunnerCallback {
 	private UserPropertiesConfig userPropertiesConfig;
 
 
-	public RegisterFinishCallback(Invitation invitation, MainLayoutBasicController loginCtrl) {
+	public RegisterFinishCallback(Invitation invitation, Controller loginCtrl) {
 		CoreSpringFactory.autowireObject(this);
 		this.invitation = invitation;
 		this.loginCtrl = loginCtrl;
@@ -93,7 +94,7 @@ public class RegisterFinishCallback implements StepRunnerCallback {
 		if (identity == null) {
 			identity = createNewUser(runContext);
 			if (identity == null) {
-				((LoginHandler) loginCtrl).showError("user.notregistered");
+				((LoginProcessEventController) loginCtrl).showError("user.notregistered");
 				return null;
 			}
 		} else {
@@ -105,8 +106,8 @@ public class RegisterFinishCallback implements StepRunnerCallback {
 			invitationService.acceptInvitation(invitation, identity);
 		}
 
-		if (loginCtrl instanceof LoginHandler loginHandler) {
-			loginHandler.doLogin(ureq, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		if (loginCtrl instanceof LoginProcessEventController loginProcessEventController) {
+			loginProcessEventController.doLogin(ureq, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 		}
 		return StepsMainRunController.DONE_MODIFIED;
 	}

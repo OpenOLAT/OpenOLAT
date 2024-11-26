@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.catalog.ui;
@@ -62,6 +62,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
+import org.olat.login.LoginProcessEvent;
+import org.olat.login.LoginProcessEventController;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterSearchParams;
@@ -91,7 +93,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 24 May 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class CatalogRepositoryEntryListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate, CatalogRepositoryEntryRowItemCreator {
@@ -99,7 +101,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	private BreadcrumbedStackedPanel stackPanel;
 	private FlexiTableElement tableEl;
 	private CatalogRepositoryEntryDataModel dataModel;
-	private CatalogRepositoryEntryDataSource dataSource;
+	private final CatalogRepositoryEntryDataSource dataSource;
 	private final CatalogRepositoryEntrySearchParams searchParams;
 	
 	private CatalogRepositoryEntryInfosController infosCtrl;
@@ -308,7 +310,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 
 	@Override
 	public void forgeDetailsLink(CatalogRepositoryEntryRow row) {
-		String url = CatalogBCFactory.get(searchParams.isWebPublish()).getInfosUrl(() -> row.getKey());
+		String url = CatalogBCFactory.get(searchParams.isWebPublish()).getInfosUrl(row::getKey);
 		
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, flc, Link.LINK);
 		detailsLink.setIconRightCSS("o_icon o_icon_details");
@@ -351,9 +353,8 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> cmps = null;
-		if (rowObject instanceof CatalogRepositoryEntryRow) {
+		if (rowObject instanceof CatalogRepositoryEntryRow catalogRow) {
 			cmps = new ArrayList<>(2);
-			CatalogRepositoryEntryRow catalogRow = (CatalogRepositoryEntryRow)rowObject;
 			if (catalogRow.getDetailsLink() != null) {
 				cmps.add(catalogRow.getDetailsLink().getComponent());
 			}
@@ -392,8 +393,8 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 
 	public void search(UserRequest ureq, String searchString, boolean reset) {
 		if (StringHelper.containsNonWhitespace(searchString)) {
-			List<CatalogSearchTerm> searchTems = catalogService.getSearchTerms(searchString, getLocale());
-			searchParams.setSearchTerms(searchTems);
+			List<CatalogSearchTerm> searchTerms = catalogService.getSearchTerms(searchString, getLocale());
+			searchParams.setSearchTerms(searchTerms);
 		} else {
 			searchParams.setSearchTerms(null);
 		}
@@ -407,13 +408,19 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == infosCtrl) {
-			if (event instanceof BookedEvent) {
-				Long repositoryEntryKey = ((BookedEvent)event).getRepositoryEntry().getKey();
+			if (event instanceof BookedEvent bookedEvent) {
+				Long repositoryEntryKey = bookedEvent.getRepositoryEntry().getKey();
 				doBooked(ureq, repositoryEntryKey);
 			}
 		} else if (authCtrl == source) {
 			lightboxCtrl.deactivate();
 			cleanUp();
+			if (event instanceof LoginProcessEvent) {
+				LoginProcessEventController loginProcessEventCtrl = new LoginProcessEventController(ureq, getWindowControl(), stackPanel, null);
+				if (event == LoginProcessEvent.REGISTER_EVENT) {
+					loginProcessEventCtrl.doOpenRegistration(ureq);
+				}
+			}
 		} else if (lightboxCtrl == source) {
 			cleanUp();
 		}
@@ -455,8 +462,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if ("start".equals(cmd)){
 				CatalogRepositoryEntryRow row = (CatalogRepositoryEntryRow)link.getUserObject();

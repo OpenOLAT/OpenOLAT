@@ -48,7 +48,7 @@ public class WebCatalogAuthController extends BasicController {
 			ureq.getUserSession().putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_REDIRECT_PATH, redirectPath);
 		}
 
-		PublicLoginAuthProvidersController loginAuthProvidersCtrl = new PublicLoginAuthProvidersController(ureq, wControl, null);
+		PublicLoginAuthProvidersController loginAuthProvidersCtrl = new PublicLoginAuthProvidersController(ureq, wControl);
 		listenTo(loginAuthProvidersCtrl);
 		putInitialPanel(loginAuthProvidersCtrl.getInitialComponent());
 	}
@@ -60,7 +60,7 @@ public class WebCatalogAuthController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source instanceof PublicLoginAuthProvidersController && event == Event.CANCELLED_EVENT) {
+		if (source instanceof PublicLoginAuthProvidersController) {
 			fireEvent(ureq, event);
 		}
 	}

@@ -83,6 +83,11 @@ body.o_dmz {
 	@else {
 		text-align: center;
 	}
+
+	/* for loginCtrl in lightbox or modal dialog e.g. in webcatalog */
+	&.o_login_popup {
+		padding: 0 0 0 0;
+	}
 	
 	/* header and lead message */	
 	.o_login_intro {
