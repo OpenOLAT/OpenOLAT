@@ -99,9 +99,11 @@
 	    <test.env.db.name>olattest</test.env.db.name>
 	    <test.env.db.user>olat</test.env.db.user>
 	    <test.env.db.pass>olat</test.env.db.pass>
+	    <test.env.db.host>localhost</test.env.db.host>
 	    <test.env.db.host.port>3306</test.env.db.host.port>
 	    <test.env.db.postgresql.user>postgres</test.env.db.postgresql.user>
 	    <test.env.db.postgresql.pass>postgres</test.env.db.postgresql.pass>
+	    <test.env.db.postgresql.host>localhost</test.env.db.postgresql.host>
 	    <test.env.db.postgresql.host.port>5432</test.env.db.postgresql.host.port>
 	    <test.env.db.oracle.name>orcl</test.env.db.oracle.name>
 	    <test.env.db.oracle.user>OLATTEST</test.env.db.oracle.user>
@@ -788,7 +790,7 @@
 						<!-- common configuration shared by all executions -->
 						<configuration>
 							<driver>com.mysql.cj.jdbc.Driver</driver>
-							<url>jdbc:mysql://localhost:${test.env.db.host.port}/${test.env.db.name}</url>
+							<url>jdbc:mysql://${test.env.db.host}:${test.env.db.host.port}/${test.env.db.name}</url>
 							<username>${test.env.db.user}</username>
 							<password>${test.env.db.pass}</password>
 						</configuration>
@@ -802,7 +804,7 @@
 								</goals>
 								<configuration>
 									<!-- need another database to drop the targeted one -->
-									<url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
+									<url>jdbc:mysql://${test.env.db.host}:${test.env.db.host.port}/olat</url>
 									<autocommit>true</autocommit>
 									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 									<!-- ignore error when database is not avaiable -->
@@ -817,7 +819,7 @@
 									<goal>execute</goal>
 								</goals>
 								<configuration>
-									<url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
+									<url>jdbc:mysql://${test.env.db.host}:${test.env.db.host.port}/olat</url>
 									<!-- no transaction -->
 									<autocommit>true</autocommit>
 									<sqlCommand>create database ${test.env.db.name} default character set utf8</sqlCommand>
@@ -863,7 +865,7 @@
 								</goals>
 								<configuration>
 									<!-- need another database to drop the targeted one -->
-									<url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
+									<url>jdbc:mysql://${test.env.db.host}:${test.env.db.host.port}/olat</url>
 									<autocommit>true</autocommit>
 									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 									<!-- ignore error when database is not avaiable -->
@@ -877,7 +879,7 @@
 									<goal>execute</goal>
 								</goals>
 								<configuration>
-									<url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
+									<url>jdbc:mysql://${test.env.db.host}:${test.env.db.host.port}/olat</url>
 									<!-- no transaction -->
 									<autocommit>true</autocommit>
 									<sqlCommand>create database ${test.env.db.name} default character set utf8</sqlCommand>
@@ -988,7 +990,7 @@
 						<!-- common configuration shared by all executions -->
 						<configuration>
 							<driver>org.postgresql.Driver</driver>
-							<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/${test.env.db.name}</url>
+							<url>jdbc:postgresql://${test.env.db.postgresql.host}:${test.env.db.postgresql.host.port}/${test.env.db.name}</url>
 							<username>${test.env.db.postgresql.user}</username>
 							<password>${test.env.db.postgresql.pass}</password>
 						</configuration>
@@ -1002,7 +1004,7 @@
 								</goals>
 								<configuration>
 									<!-- need another database to drop the targeted one -->
-									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<url>jdbc:postgresql://${test.env.db.postgresql.host}:${test.env.db.postgresql.host.port}/postgres</url>
 									<autocommit>true</autocommit>
 									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 									<!-- ignore error when database is not avaiable -->
@@ -1017,7 +1019,7 @@
 									<goal>execute</goal>
 								</goals>
 								<configuration>
-									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<url>jdbc:postgresql://${test.env.db.postgresql.host}:${test.env.db.postgresql.host.port}/postgres</url>
 									<!-- no transaction -->
 									<autocommit>true</autocommit>
 									<sqlCommand>create database ${test.env.db.name}</sqlCommand>
@@ -1050,7 +1052,7 @@
 									<goal>execute</goal>
 								</goals>
 								<configuration>
-									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<url>jdbc:postgresql://${test.env.db.postgresql.host}:${test.env.db.postgresql.host.port}/postgres</url>
 									<autocommit>true</autocommit>
 									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 								</configuration>
@@ -1065,7 +1067,7 @@
 								</goals>
 								<configuration>
 									<!-- need another database to drop the targeted one -->
-									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<url>jdbc:postgresql://${test.env.db.postgresql.host}:${test.env.db.postgresql.host.port}/postgres</url>
 									<autocommit>true</autocommit>
 									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 									<!-- ignore error when database is not avaiable -->
@@ -1080,7 +1082,7 @@
 									<goal>execute</goal>
 								</goals>
 								<configuration>
-									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<url>jdbc:postgresql://${test.env.db.postgresql.host}:${test.env.db.postgresql.host.port}/postgres</url>
 									<!-- no transaction -->
 									<autocommit>true</autocommit>
 									<sqlCommand>create database ${test.env.db.name}</sqlCommand>
@@ -1109,7 +1111,7 @@
 									<goal>execute</goal>
 								</goals>
 								<configuration>
-									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<url>jdbc:postgresql://${test.env.db.postgresql.host}:${test.env.db.postgresql.host.port}/postgres</url>
 									<autocommit>true</autocommit>
 									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 								</configuration>

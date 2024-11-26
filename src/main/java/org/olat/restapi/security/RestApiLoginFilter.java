@@ -111,7 +111,7 @@ public class RestApiLoginFilter implements Filter {
 		if(request instanceof HttpServletRequest httpRequest && response instanceof HttpServletResponse httpResponse) {
 			try {
 				String requestURI = getRequestURI(httpRequest);
-				RestModule restModule = (RestModule)CoreSpringFactory.getBean("restModule");
+				RestModule restModule = CoreSpringFactory.getImpl(RestModule.class);
 				if(restModule == null || !restModule.isEnabled() && !isRequestURIAlwaysEnabled(requestURI)) {
 					httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
 					return;
@@ -336,7 +336,7 @@ public class RestApiLoginFilter implements Filter {
 		}
 
 		String token = request.getHeader(RestSecurityHelper.SEC_TOKEN);
-		RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
+		RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
 		if(StringHelper.containsNonWhitespace(token) && securityBean.isTokenRegistrated(token, request.getSession(true))) {
 			//is authenticated by token, follow its current token
 			followToken(token, request, response, chain);
@@ -412,7 +412,7 @@ public class RestApiLoginFilter implements Filter {
 			}
 
 			request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
-			RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
+			RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
 			Identity identity = securityBean.getIdentity(token);
 			int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 			if(loginStatus == AuthHelper.LOGIN_OK) {
