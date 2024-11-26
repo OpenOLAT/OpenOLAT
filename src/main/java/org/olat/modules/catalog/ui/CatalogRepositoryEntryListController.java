@@ -63,7 +63,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.login.LoginProcessEvent;
-import org.olat.login.LoginProcessEventController;
+import org.olat.login.LoginProcessController;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterSearchParams;
@@ -416,7 +416,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 			lightboxCtrl.deactivate();
 			cleanUp();
 			if (event instanceof LoginProcessEvent) {
-				LoginProcessEventController loginProcessEventCtrl = new LoginProcessEventController(ureq, getWindowControl(), stackPanel, null);
+				LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), stackPanel, null);
 				if (event == LoginProcessEvent.REGISTER_EVENT) {
 					loginProcessEventCtrl.doOpenRegistration(ureq);
 				}

@@ -36,7 +36,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.login.LoginProcessEvent;
-import org.olat.login.LoginProcessEventController;
+import org.olat.login.LoginProcessController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.accesscontrol.ACService;
@@ -85,7 +85,7 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 			lightboxCtrl.deactivate();
 			cleanUp();
 			if (event instanceof LoginProcessEvent) {
-				LoginProcessEventController loginProcessEventCtrl = new LoginProcessEventController(ureq, getWindowControl(), stackPanel, null);
+				LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), stackPanel, null);
 				if (event == LoginProcessEvent.REGISTER_EVENT) {
 					loginProcessEventCtrl.doOpenRegistration(ureq);
 				}

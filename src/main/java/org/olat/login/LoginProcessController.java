@@ -48,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class LoginProcessEventController extends BasicController {
+public class LoginProcessController extends BasicController {
 
 
 	private final StackedPanel stackPanel;
@@ -61,7 +61,7 @@ public class LoginProcessEventController extends BasicController {
 	@Autowired
 	private RegistrationModule registrationModule;
 
-	public LoginProcessEventController(UserRequest ureq, WindowControl wControl, StackedPanel stackPanel, Invitation invitation) {
+	public LoginProcessController(UserRequest ureq, WindowControl wControl, StackedPanel stackPanel, Invitation invitation) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.invitation = invitation;

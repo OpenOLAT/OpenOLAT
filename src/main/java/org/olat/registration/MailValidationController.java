@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -168,8 +167,7 @@ public class MailValidationController extends FormBasicController {
 		String[] whereFromAttrs = new String[]{ serverPath, today };
 
 		if (isEmailEligibleForRegistration(email)) {
-			temporaryKey = loadOrCreateTemporaryKey(ureq, email, ip);
-			sendRegistrationEmail(ureq, email, serverPath, temporaryKey, whereFromAttrs);
+			temporaryKey = loadOrCreateTemporaryKey(ureq, email, ip, whereFromAttrs);
 		} else {
 			// if users with this email address exists, they are informed.
 			informExistingUser(email, whereFromAttrs);
@@ -180,26 +178,24 @@ public class MailValidationController extends FormBasicController {
 		return registrationManager.isRegistrationPending(email) || userManager.isEmailAllowed(email);
 	}
 
-	private TemporaryKey loadOrCreateTemporaryKey(UserRequest ureq, String email, String ip) {
-		TemporaryKey tk = null;
+	private TemporaryKey loadOrCreateTemporaryKey(UserRequest ureq, String email, String ip, String[] whereFromAttrs) {
+		TemporaryKey tk;
 		if (userModule.isEmailUnique()) {
 			tk = registrationManager.loadTemporaryKeyByEmail(email);
 			// if temporaryKey already exists, then update otp
 			resendNewOtp(ureq);
-		}
-		if (tk == null) {
+		} else {
 			tk = registrationManager.loadOrCreateTemporaryKeyByEmail(
 					email, ip, RegistrationManager.REGISTRATION, registrationModule.getValidUntilMinutesGui()
 			);
+			sendRegistrationEmail(email, tk, whereFromAttrs);
 		}
 		return tk;
 	}
 
-	private void sendRegistrationEmail(UserRequest ureq, String email, String serverPath, TemporaryKey tk, String[] whereFromAttrs) {
-		String link = buildRegistrationLink(ureq, serverPath, tk);
+	private void sendRegistrationEmail(String email, TemporaryKey tk, String[] whereFromAttrs) {
 		String[] bodyAttrs = new String[]{
 				tk.getRegistrationKey(), //0
-				"<a href=\"" + link + "\">" + link + "</a>" //1
 		};
 		String body = buildEmailBody(bodyAttrs, whereFromAttrs);
 
@@ -208,11 +204,6 @@ public class MailValidationController extends FormBasicController {
 		} else {
 			showError("email.notsent");
 		}
-	}
-
-	private String buildRegistrationLink(UserRequest ureq, String serverPath, TemporaryKey tk) {
-		return serverPath + DispatcherModule.getPathDefault() + "registration/index.html?key="
-				+ tk.getRegistrationKey() + "&language=" + i18nModule.getLocaleKey(ureq.getLocale());
 	}
 
 	private String buildEmailBody(String[] bodyAttrs, String[] whereFromAttrs) {
@@ -271,7 +262,7 @@ public class MailValidationController extends FormBasicController {
 		String[] whereFromAttrs = new String[]{ serverPath, today };
 
 		if (temporaryKey != null) {
-			sendRegistrationEmail(ureq, getEmailAddress(), "", temporaryKey, whereFromAttrs);
+			sendRegistrationEmail(getEmailAddress(), temporaryKey, whereFromAttrs);
 		}
 		otpEl.reset();
 	}

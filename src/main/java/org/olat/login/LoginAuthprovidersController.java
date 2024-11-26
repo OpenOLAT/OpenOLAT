@@ -186,7 +186,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	}
 
 	private void doOpenRegistration(UserRequest ureq) {
-		LoginProcessEventController loginProcessEventCtrl = new LoginProcessEventController(ureq, getWindowControl(), dmzPanel, invitation);
+		LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, invitation);
 		loginProcessEventCtrl.doOpenRegistration(ureq);
 	}
 
@@ -457,7 +457,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		Identity identity = authEvent.getIdentity();
 		String provider = authEvent.getProvider() == null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : authEvent.getProvider();
 
-		LoginProcessEventController loginProcessEventCtrl = new LoginProcessEventController(ureq, getWindowControl(), dmzPanel, invitation);
+		LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, invitation);
 		loginProcessEventCtrl.doLogin(ureq, identity, provider);
 	}
 

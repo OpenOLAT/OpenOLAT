@@ -69,7 +69,7 @@ public class MailHelper {
 	
 	public static String getMailFooter(Locale locale) {
 		Translator trans = getTranslator(locale);
-		return trans.translate("footer.no.userdata", new String[] { Settings.getServerContextPathURI() });
+		return trans.translate("footer.no.userdata", Settings.getServerContextPathURI());
 	}
 	
 	public static String getMailFooter(Identity sender) {

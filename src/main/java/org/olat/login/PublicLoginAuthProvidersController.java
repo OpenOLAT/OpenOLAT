@@ -267,7 +267,7 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		Identity identity = authEvent.getIdentity();
 		String provider = authEvent.getProvider() == null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : authEvent.getProvider();
 
-		LoginProcessEventController loginProcessEventCtrl = new LoginProcessEventController(ureq, getWindowControl(), dmzPanel, null);
+		LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, null);
 		loginProcessEventCtrl.doLogin(ureq, identity, provider);
 	}
 
