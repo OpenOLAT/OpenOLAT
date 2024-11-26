@@ -609,11 +609,12 @@ public interface VideoManager {
 	/**
 	 * Uses the oEmbed API to look up the title and description of a streaming video identified by the given 'url'.
 	 *
-	 * @param url The url of the streaming video. Currently supports youtube and vimeo.
+	 * @param url                The url of the streaming video. Currently supports youtube and vimeo. If 'forRepositoryEntry' is false, it also supports nanoo.tv.
+	 * @param forRepositoryEntry This tells the method that the lookup is for a repository entry.
 	 * @return A pair consisting of a title and a description. If no data can be found for one of the elements, a null
-	 *         objects is returned.
+	 * objects is returned.
 	 */
-	public Pair<String, String> lookUpTitleAndDescription(String url);
+	public Pair<String, String> lookUpTitleAndDescription(String url, boolean forRepositoryEntry);
 
 	/**
 	 * Uses the oEmbed API to look up the thumbnail of a streaming video identified by the given 'url'.
