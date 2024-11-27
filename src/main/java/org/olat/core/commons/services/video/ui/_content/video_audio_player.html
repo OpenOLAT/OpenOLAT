@@ -4,12 +4,15 @@
 	#if($nanoo)
 	<div id="$r.getCId()_wrapper">
 	</div>
+	#if(!$restrictedUrl)
 	<script>
 		"use strict";
+		o_info.mediaServers = [$mediaServers];
 		jQuery(function() {
 			BPlayer.insertPlayer('$mediaUrl', '$r.getCId()_wrapper', 1280, 720, '', 0, 'video', '', false, false, true, '');
 		});
 	</script>
+	#end
 	#else
 	<div class="olatFlashMovieViewer">
 		#if($contentType.startsWith("audio"))

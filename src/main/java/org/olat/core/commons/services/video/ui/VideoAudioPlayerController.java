@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.olat.basesecurity.MediaServerModule;
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
@@ -56,6 +57,9 @@ public class VideoAudioPlayerController extends BasicController {
 	
 	@Autowired
 	private DocEditorService docEditorService;
+
+	@Autowired
+	private MediaServerModule mediaServerModule;
 
 	private final VelocityContainer videoAudioPlayerVC;
 
@@ -111,7 +115,12 @@ public class VideoAudioPlayerController extends BasicController {
 				videoAudioPlayerVC.contextPut("nanoo", videoFormat.equals(VideoFormatExtended.nanoo));
 				videoAudioPlayerVC.contextPut("mediaUrl", adjustStreamingVideoUrl(streamingVideoUrl, videoFormat));
 				videoAudioPlayerVC.contextPut("contentType", videoFormat.mimeType());
+				if (videoFormat.equals(VideoFormatExtended.nanoo)) {
+					videoAudioPlayerVC.contextPut("mediaServers", mediaServerModule.getMediaServerUrlsString());
+				}
 			}
+			boolean restrictedUrl = mediaServerModule.isRestrictedDomain(streamingVideoUrl);
+			videoAudioPlayerVC.contextPut("restrictedUrl", restrictedUrl);
 		}
 
 		putInitialPanel(videoAudioPlayerVC);

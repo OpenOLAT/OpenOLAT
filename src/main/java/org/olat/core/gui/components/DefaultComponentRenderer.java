@@ -372,6 +372,10 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 				sb.append(" for=\"").append(forId).append("\"");
 			}
 		}
+		if (component.getFormItem().isMandatory()) {
+			sb.append(" aria-required='true'");
+			
+		}
 		sb.append(">");
 		if (component.getFormItem().isMandatory()) {
 			String hover = translator.translate("form.mandatory.hover");

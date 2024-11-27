@@ -32,12 +32,13 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.guistack.GuiStack;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.control.winmgr.Command;
-import org.olat.core.gui.control.winmgr.WindowManagerImpl;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.event.GenericEventListener;
@@ -194,7 +195,11 @@ public class WindowControlMocker implements WindowControl{
 
 	public static class WindowBackOfficeMocker implements WindowBackOffice {
 		
-		private final WindowManager windowManager = new WindowManagerImpl();
+		private final WindowManager windowManager;
+		
+		public WindowBackOfficeMocker() {
+			windowManager = new WindowManagerMocker(this);
+		}
 
 		@Override
 		public void dispose() {
@@ -275,6 +280,54 @@ public class WindowControlMocker implements WindowControl{
 		@Override
 		public void removeCycleListener(GenericEventListener gel) {
 			//
+		}
+	}
+	
+	public static final class WindowManagerMocker implements WindowManager {
+
+		private boolean ajaxEnabled;
+		private final WindowBackOffice windowBackOffice;
+		
+		public WindowManagerMocker(WindowBackOffice windowBackOffice) {
+			this.windowBackOffice = windowBackOffice;
+		}
+		
+		@Override
+		public void setAjaxWanted(UserRequest ureq) {
+			//
+		}
+
+		@Override
+		public GlobalSettings getGlobalSettings() {
+			return null;
+		}
+
+		@Override
+		public WindowBackOffice createWindowBackOffice(String windowName, String csrfToken,
+				ChiefController owner, WindowSettings settings) {
+			return windowBackOffice;
+		}
+
+		@Override
+		public boolean isAjaxEnabled() {
+			return ajaxEnabled;
+		}
+
+		@Override
+		public void setAjaxEnabled(boolean enabled) {
+			this.ajaxEnabled = enabled;
+		}
+
+		@Override
+		public PopupBrowserWindow createNewPopupBrowserWindowFor(
+				UserRequest ureq, ControllerCreator controllerCreator) {
+			return null;
+		}
+
+		@Override
+		public PopupBrowserWindow createNewUnauthenticatedPopupWindowFor(
+				UserRequest ureq, ControllerCreator controllerCreator) {
+			return null;
 		}
 	}
 }

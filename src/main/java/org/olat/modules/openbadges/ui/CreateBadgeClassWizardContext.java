@@ -87,13 +87,7 @@ public class CreateBadgeClassWizardContext {
 
 	public boolean showRecipientsStep() {
 		if (isGlobalBadge()) {
-			if (!badgeCriteria.isAwardAutomatically()) {
-				return false;
-			}
-			if (!badgeCriteria.hasGlobalBadgeConditions()) {
-				return false;
-			}
-			return true;
+			return automatic;
 		}
 		CourseEnvironment courseEnv = courseEnvironment();
 		if (courseEnv == null) {
@@ -191,6 +185,7 @@ public class CreateBadgeClassWizardContext {
 	private boolean startFromScratch = false;
 	private Long sourceBadgeClassKey;
 	private Locale locale;
+	private boolean automatic = false;
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry, CourseNode courseNode,
 										 RepositoryEntrySecurity reSecurity, Translator translator) {
@@ -238,6 +233,7 @@ public class CreateBadgeClassWizardContext {
 		backgroundColorId = null;
 		title = null;
 		badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+		automatic = badgeCriteria.isAwardAutomatically();
 		this.badgeClass = badgeClass;
 		issuer = new Profile(badgeClass);
 
@@ -248,6 +244,7 @@ public class CreateBadgeClassWizardContext {
 	private void initCriteria() {
 		badgeCriteria = new BadgeCriteria();
 		badgeCriteria.setAwardAutomatically(false);
+		automatic = false;
 		addDefaultRule();
 	}
 
@@ -403,6 +400,10 @@ public class CreateBadgeClassWizardContext {
 		this.startFromScratch = startFromScratch;
 	}
 
+	public void setAutomatic(boolean automatic) {
+		this.automatic = automatic;
+	}
+
 	public Long getSourceBadgeClassKey() {
 		return sourceBadgeClassKey;
 	}
@@ -431,6 +432,7 @@ public class CreateBadgeClassWizardContext {
 		selectedTemplateKey = OWN_BADGE_KEY;
 		selectedTemplateImage = null;
 		badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+		automatic = badgeCriteria.isAwardAutomatically();
 	}
 
 	public void startFromScratch() {

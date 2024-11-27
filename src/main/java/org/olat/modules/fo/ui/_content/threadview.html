@@ -11,9 +11,9 @@
 				$r.render("archive.thread")
 			#end
 			#if(!$guestOnly && (($r.available("close.thread") && $r.visible("close.thread")) || ($r.available("open.thread") && $r.visible("open.thread")) || ($r.available("hide.thread") && $r.visible("hide.thread")) || ($r.available("show.thread") && $r.visible("show.thread")) || ($r.available("msg.sticky") && $r.visible("msg.sticky")) || ($r.available("remove.sticky") && $r.visible("remove.sticky"))))
-			<button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown">
-				<i class="o_icon o_icon-fw o_icon_settings"></i>
-				<span class="caret"></span>
+			<button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown">
+				<i class="o_icon o_icon-fw o_icon_actions" aria-hidden='true' title='$r.translateInAttribute("action.more")'> </i>
+				<span class='sr-only'>$r.translate("action.more")</span>
 			</button>
 			<ul class="dropdown-menu">
 				#if($r.available("close.thread") && $r.visible("close.thread"))
@@ -148,7 +148,8 @@
 			#if($r.available("exile_${message.key}"))
 			<div class="btn-group">
 				<button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown">
-					<i class="o_icon o_icon-fw o_icon_settings"> </i><span class="caret"> </span>
+					<i class="o_icon o_icon-fw o_icon_actions" aria-hidden='true' title='$r.translateInAttribute("action.more")'> </i>
+					<span class='sr-only'>$r.translate("action.more")</span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right">
 					#if($r.available("split_${message.key}"))

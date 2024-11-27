@@ -132,14 +132,14 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 			Boolean enableWaitinglist = Boolean.TRUE;
 			Boolean enableAutoCloseRanks = Boolean.TRUE;
 			RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-			log.info("testAddToWaitingListAndFireEvent: resource=" + resource);
+			log.info("testAddToWaitingListAndFireEvent: resource={}", resource);
 			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
 					bgWithWaitingListDesc, BusinessGroup.BUSINESS_TYPE,
 					-1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
 			bgWithWaitingList.setMaxParticipants(Integer.valueOf(2));
-			log.info("TEST bgWithWaitingList=" + bgWithWaitingList);
-			log.info("TEST bgWithWaitingList.getMaxParticipants()=" + bgWithWaitingList.getMaxParticipants() );
-			log.info("TEST bgWithWaitingList.getWaitingListEnabled()=" + bgWithWaitingList.getWaitingListEnabled() );
+			log.info("TEST bgWithWaitingList={}", bgWithWaitingList);
+			log.info("TEST bgWithWaitingList.getMaxParticipants()={}", bgWithWaitingList.getMaxParticipants() );
+			log.info("TEST bgWithWaitingList.getWaitingListEnabled()={}", bgWithWaitingList.getWaitingListEnabled() );
 			// create mock objects
 			testTranslator = Util.createPackageTranslator(EnrollmentManagerConcurrentTest.class, new Locale("de"));
 			// Identities
@@ -175,11 +175,11 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 		ienv.setIdentity(wg1);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, cenv);
 		CoursePropertyManager coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		log.info("enrollmentManager=" + enrollmentManager);
-		log.info("bgWithWaitingList=" + bgWithWaitingList);
-		assertTrue("bgWithWaitingList is null",bgWithWaitingList != null);
-		log.info("userCourseEnv=" + userCourseEnv);
-		log.info("userCourseEnv.getCourseEnvironment()=" + userCourseEnv.getCourseEnvironment());
+		log.info("enrollmentManager={}", enrollmentManager);
+		log.info("bgWithWaitingList={}", bgWithWaitingList);
+		Assert.assertNotNull("bgWithWaitingList is null",bgWithWaitingList);
+		log.info("userCourseEnv={}", userCourseEnv);
+		log.info("userCourseEnv.getCourseEnvironment()={}", userCourseEnv.getCourseEnvironment());
 		enrollmentManager.doEnroll(userCourseEnv, wg1Roles, bgWithWaitingList, enNode, coursePropertyManager, new WindowControlMocker(), testTranslator,
 				new ArrayList<>()/*enrollableGroupNames*/, new ArrayList<>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());	
 		assertTrue("Enrollment failed, user='wg1'", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	

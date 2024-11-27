@@ -226,6 +226,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == awardProcedureCards) {
 				boolean awardAutomatically = KEY_AUTOMATIC.equals(awardProcedureCards.getSelectedKey());
+				createContext.setAutomatic(awardAutomatically);
 				flc.contextPut("awardAutomatically", awardAutomatically);
 			} else if (source.getUserObject() instanceof ConditionRow conditionRow) {
 				if (source == conditionRow.getConditionDropdown()) {

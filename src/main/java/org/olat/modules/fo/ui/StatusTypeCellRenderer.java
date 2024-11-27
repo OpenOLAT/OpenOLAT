@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.fo.Status;
 
 /**
@@ -45,20 +46,30 @@ public class StatusTypeCellRenderer implements FlexiCellRenderer {
 			Status messageStatus = Status.getStatus(status);
 			boolean isSticky = messageStatus.isSticky();
 			boolean isClosed = messageStatus.isClosed();
+			String statusTranslated = translator.translate("msg.status") + " ";
 
 			target.append("<i class='o_icon o_forum_");
 			if(isSticky && isClosed) {
 				target.append("status_sticky_closed");
+				statusTranslated += translator.translate("msg.status.sticky") + " / " + translator.translate("msg.status.closed");
 			} else if(isSticky) {
 				target.append("status_sticky");
+				statusTranslated += translator.translate("msg.status.sticky");
 			} else if(isClosed) {
 				target.append("status_closed");
+				statusTranslated += translator.translate("msg.status.closed");
 			} else if(messageStatus.isHidden()) {
 				target.append("status_hidden");
+				statusTranslated += translator.translate("msg.status.hidden");
 			} else {
 				target.append("status_thread");
+				statusTranslated += translator.translate("msg.status.thread");
 			}
-			target.append("_icon'> </i>");
+			target.append("_icon' aria-hidden='true' title='");
+			target.append(StringHelper.escapeForHtmlAttribute(statusTranslated));
+			target.append("' aria-hidden='true'> </i><span class='sr-only'>");
+			target.append(statusTranslated);
+			target.append("</span>");
 		}
 	}
 }

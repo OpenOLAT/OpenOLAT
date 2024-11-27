@@ -225,6 +225,11 @@ public class MediaServerModule extends AbstractSpringModule {
 		result.addAll(getCustomMediaServerUrls());
 		return result;
 	}
+	
+	public String getMediaServerUrlsString() {
+		return getMediaServerUrls().stream().map(mediaServerUrl -> "'" + mediaServerUrl + "'")
+				.collect(Collectors.joining(","));
+	}
 
 	private List<String> getPredefinedMediaServerUrls() {
 		List<String> urls = new ArrayList<>();

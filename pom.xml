@@ -84,7 +84,7 @@
 		<org.postgresql.version>42.7.4</org.postgresql.version>
 		<org.infinispan.version>15.0.11.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.26.0</version.selenium>
+		<version.selenium>4.27.0</version.selenium>
 		<activemq.artemis.version>2.38.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<jakarta.xml.bind-api>4.0.2</jakarta.xml.bind-api>
@@ -2132,12 +2132,12 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.20.0</version>
+			<version>6.21.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.17.2</version>
+			<version>1.17.3</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
@@ -2304,7 +2304,7 @@
    		<dependency>
 			<groupId>io.github.sashirestela</groupId>
 			<artifactId>simple-openai</artifactId>
-			<version>3.9.2</version>
+			<version>3.9.3</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
