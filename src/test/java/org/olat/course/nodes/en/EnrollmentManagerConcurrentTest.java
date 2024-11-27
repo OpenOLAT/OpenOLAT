@@ -46,7 +46,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.gui.control.generic.popup.PopupBrowserWindowControllerCreator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
@@ -119,8 +118,6 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private PopupBrowserWindowControllerCreator popupControllerCreator;
 	
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -260,8 +257,6 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 	
 	@Test
 	public void testConcurrentEnrollmentWithWaitingList() {
-		Assert.assertNotNull(popupControllerCreator);
-		
 		int numOfUsers = isOracleConfigured() ? 12 : 30;
 		List<Identity> ids = new ArrayList<>(numOfUsers);	
 		for(int i=0; i<numOfUsers; i++) {
