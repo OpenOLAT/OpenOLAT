@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.MediaServerMode;
@@ -1291,8 +1290,6 @@ public class RichTextConfiguration implements Disposable {
 
 		sb.append("  o_info.mediaServerMode = 'configure';\n");
 		sb.append("  o_info.mediaServerRestrictedWarning = '").append(translator.translate("error.media.restricted")).append("';\n");
-		String mediaServersString = mediaServerModule.getMediaServerUrls().stream()
-				.map(mediaServerUrl -> "'" + mediaServerUrl + "'").collect(Collectors.joining(","));
-		sb.append("  o_info.mediaServers = [").append(mediaServersString).append("];\n");
+		sb.append("  o_info.mediaServers = [").append(mediaServerModule.getMediaServerUrlsString()).append("];\n");
 	}
 }
