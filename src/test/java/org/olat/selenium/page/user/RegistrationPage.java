@@ -101,16 +101,16 @@ public class RegistrationPage {
 	}
 	
 	public String extractOtp(SmtpMessage message) {
-		String link = extractRegistrationLink(message);
-		int index = link.indexOf("key=");
+		String body = message.getBody();
+		int index = body.indexOf("'otp'>");
 		if(index >= 0) {
-			link = link.substring(index + 4);
+			body = body.substring(index + 6);
 		}
-		int nextIndex = link.indexOf("&");
+		int nextIndex = body.indexOf("</span");
 		if(nextIndex >= 0) {
-			link = link.substring(0, nextIndex);
+			body = body.substring(0, nextIndex);
 		}
-		return link;
+		return body;
 	}
 	
 	public String extractRegistrationLink(SmtpMessage message) {
