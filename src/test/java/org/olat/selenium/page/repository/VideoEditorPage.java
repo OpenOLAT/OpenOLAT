@@ -56,12 +56,17 @@ public class VideoEditorPage {
 	}
 	
 	public VideoEditorPage addSegment() {
-		By addBy = By.cssSelector(".o_video_edit_segments .o_video_common_form_header_add_item a.btn");
-		OOGraphene.waitElement(addBy, browser);
-		browser.findElement(addBy).click();
-		
-		By startBy = By.cssSelector(".o_video_segment_end .o_video_apply_position_timestamp input[type='text']");
-		OOGraphene.waitElement(startBy, browser);
+		try {
+			By addBy = By.cssSelector(".o_video_edit_segments .o_video_common_form_header_add_item a.btn");
+			OOGraphene.waitElement(addBy, browser);
+			browser.findElement(addBy).click();
+			
+			By startBy = By.cssSelector(".o_video_segment_end .o_video_apply_position_timestamp input[type='text']");
+			OOGraphene.waitElement(startBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Add segment", browser);
+			throw e;
+		}
 		return this;
 	}
 	
