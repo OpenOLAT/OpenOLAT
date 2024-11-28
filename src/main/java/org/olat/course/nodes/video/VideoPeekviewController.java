@@ -91,6 +91,7 @@ public class VideoPeekviewController  extends BasicController implements Control
 			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
 			emptyStateCmp.setTranslator(getTranslator());
 			putInitialPanel(emptyStateCmp);
+			return;
 		}
 
 		peekviewVC = createVelocityContainer("peekview");
