@@ -281,8 +281,8 @@ public class LTI13PlatformDispatcherDelegate {
 			.expiration(expirationDate)
 			.issuer(lti13Module.getPlatformIss())
 			.audience()
-				.add(clientId)
-			.and()
+				// Single is perhaps deprecated but array is supported not by some LTI tools (server error)
+				.single(clientId)
 			.subject(sub)
 			.claim("nonce", nonce);
 		
