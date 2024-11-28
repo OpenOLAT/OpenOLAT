@@ -215,7 +215,6 @@ public class SinglePageController extends BasicController implements Activateabl
 		if (restrict) {
 			myContent.contextPut("mediaServerRestrictedWarning", translate("error.restricted"));
 			myContent.contextPut("mediaServerUrls", mediaServerModule.getMediaServerUrls());
-			mediaServerModule.getMediaSrcUrls();
 		}
 	}
 

@@ -217,6 +217,13 @@ public class MediaServerModule extends AbstractSpringModule {
 		if (isAllowAll() || isMediaServerEnabled(NANOO_TV_KEY)) {
 			urls.addAll(Arrays.stream(NANOO_TV_MEDIA_SRC.split(" ")).toList());
 		}
+		
+		if (!isAllowAll()) {
+			for (MediaServer customMediaServer : customMediaServers) {
+				urls.add("http://" + customMediaServer.getDomain());
+				urls.add("https://" + customMediaServer.getDomain());
+			}
+		}
 		return urls;
 	}
 
