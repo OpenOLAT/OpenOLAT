@@ -346,7 +346,7 @@ public class RegistrationModule extends AbstractSpringModule {
 		return selfRegistrationOrganisationKey;
 	}
 	
-	public void setselfRegistrationOrganisationKey(String key) {
+	public void setSelfRegistrationOrganisationKey(String key) {
 		selfRegistrationOrganisationKey = key;
 		setStringProperty("registration.organisation.key", key, true);
 	}

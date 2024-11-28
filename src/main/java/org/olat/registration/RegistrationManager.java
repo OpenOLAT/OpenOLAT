@@ -30,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,6 +47,8 @@ import jakarta.persistence.TemporalType;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -125,12 +128,14 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public Organisation getOrganisationForRegistration() {
-		String key = registrationModule.getSelfRegistrationOrganisationKey();
-		
+	public Organisation getOrganisationForRegistration(String organisationKey) {
+		if (organisationKey == null) {
+			organisationKey = registrationModule.getSelfRegistrationOrganisationKey();
+		}
+
 		Organisation organisation = null;
-		if(StringHelper.containsNonWhitespace(key) && !"default".equals(key) && StringHelper.isLong(key)) {
-			organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(key)));
+		if(StringHelper.containsNonWhitespace(organisationKey) && !"default".equals(organisationKey) && StringHelper.isLong(organisationKey)) {
+			organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationKey)));
 		}
 		if(organisation == null) {
 			organisation = organisationService.getDefaultOrganisation();
@@ -140,16 +145,6 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 
 
 	public boolean validateEmailUsername(String email) {
-		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
-			// if organisation e-mail domains are enabled, the domain list is deactivated.
-			return true;
-		}
-		
-		List<String> whiteList = registrationModule.getDomainList();
-		if(whiteList.isEmpty()) {
-			return true;
-		}
-		
 		if(!StringHelper.containsNonWhitespace(email)) {
 			return false;
 		}
@@ -157,21 +152,39 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		if(index < 0 || index+1 >= email.length()) {
 			return false;
 		}
-		
-		String emailDomain = email.substring(index+1);
-		boolean valid = false;
-		for(String domain:whiteList) {
-			try {
-				String pattern = convertDomainPattern(domain);
-				if(emailDomain.matches(pattern)) {
-					valid = true;
-					break;
-				}
-			} catch (Exception e) {
-				log.error("Error matching an email adress", e);
-			}
+
+		List<String> whiteList;
+		// if organisation e-mail domains are enabled, the regular domain list is deactivated.
+		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+			OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+			List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
+			whiteList = emailDomains.stream()
+					.flatMap(domain -> Arrays.stream(domain.getDomain().split(","))) // Split each domain string by "," (inspired by registrationModule.getDomainList())
+					.map(String::trim) // Remove any leading/trailing whitespace
+					.filter(domain -> !domain.isEmpty()) // Exclude empty entries
+					.toList();
+		} else {
+			whiteList = registrationModule.getDomainList();
 		}
-		return valid;
+
+		if (whiteList.isEmpty()) {
+			return true;
+		} else {
+			String emailDomain = email.substring(index+1);
+			boolean valid = false;
+			for(String domain:whiteList) {
+				try {
+					String pattern = convertDomainPattern(domain);
+					if(emailDomain.matches(pattern)) {
+						valid = true;
+						break;
+					}
+				} catch (Exception e) {
+					log.error("Error matching an email adress", e);
+				}
+			}
+			return valid;
+		}
 	}
 	
 	/**
@@ -216,18 +229,18 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 * @param tk Temporary key
 	 * @return the newly created subject or null
 	 */
-	public Identity createNewUserAndIdentityFromTemporaryKey(String login, String pwd, User user, TemporaryKey tk) {
+	public Identity createNewUserAndIdentityFromTemporaryKey(String login, String pwd, User user, TemporaryKey tk, String selectedOrgaKey) {
 		Date expirationDate = null;
 		Integer expiration = registrationModule.getAccountExpirationInDays();
-		if(expiration != null && expiration.intValue() > 0) {
-			expirationDate = DateUtils.addDays(new Date(), expiration.intValue());
+		if(expiration != null && expiration > 0) {
+			expirationDate = DateUtils.addDays(new Date(), expiration);
 			expirationDate = CalendarUtils.endOfDay(expirationDate);
 		}
 		
 		String provider = pwd != null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : null;
 		String issuer = pwd != null ? BaseSecurity.DEFAULT_ISSUER : null;
-		
-		Organisation organisation = getOrganisationForRegistration();
+
+		Organisation organisation = getOrganisationForRegistration(selectedOrgaKey);
 		Identity identity = securityManager
 				.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
 						provider, issuer, null, login, pwd,  organisation, expirationDate);

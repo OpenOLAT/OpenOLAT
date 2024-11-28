@@ -78,6 +78,7 @@ public class RegistrationPersonalDataStep03Controller extends StepFormBasicContr
 		runContext.put(RegWizardConstants.USERNAME, registrationPersonalDataCtrl.getLogin());
 		runContext.put(RegWizardConstants.PASSKEYS, registrationPersonalDataCtrl.getPasskeys());
 		runContext.put(RegWizardConstants.PROPFORMITEMS, registrationPersonalDataCtrl.getPropFormItems());
+		runContext.put(RegWizardConstants.SELECTEDORGANIZATIONKEY, registrationPersonalDataCtrl.getSelectedOrganisationKey());
 	}
 
 	@Override

@@ -361,7 +361,7 @@ public class RegistrationAdminController extends FormBasicController {
 	
 	private void initOrganisationsEl(FormLayoutContainer formLayout) {
 		List<Organisation> organisations = organisationService.getOrganisations(OrganisationStatus.notDelete());
-		Organisation registrationOrg = registrationManager.getOrganisationForRegistration();
+		Organisation registrationOrg = registrationManager.getOrganisationForRegistration(null);
 		String registrationOrgKey = registrationOrg.getKey().toString();
 		
 		String[] theKeys = new String[organisations.size()];
@@ -615,7 +615,7 @@ public class RegistrationAdminController extends FormBasicController {
 		registrationModule.setSelfRegistrationLoginEnabled(registrationLoginElement.isSelected(0));
 		
 		if(organisationsEl.isOneSelected()) {
-			registrationModule.setselfRegistrationOrganisationKey(organisationsEl.getSelectedKey());
+			registrationModule.setSelfRegistrationOrganisationKey(organisationsEl.getSelectedKey());
 		}
 		if(pendingRegistrationStatusEl.isOneSelected()) {
 			registrationModule.setRegistrationPendingStatus(RegistrationPendingStatus.valueOf(pendingRegistrationStatusEl.getSelectedKey()));

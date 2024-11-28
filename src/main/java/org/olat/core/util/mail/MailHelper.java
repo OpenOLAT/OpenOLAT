@@ -353,4 +353,19 @@ public class MailHelper {
 		}
 		return attachmentList;
 	}
+
+	/**
+	 * extracts domain from a given E-Mail inlucding TLD
+	 * @param email the address to extract the domain from
+	 * @return extracted domain from a given E-Mail
+	 */
+	public static String getMailDomain(String email) {
+		if (email != null && !email.isBlank()) {
+			int atIndex = email.indexOf('@');
+			if (atIndex > 0 && atIndex < email.length() - 1) {
+				return email.substring(atIndex + 1).trim();
+			}
+		}
+		return ""; // return for invalid cases
+	}
 }

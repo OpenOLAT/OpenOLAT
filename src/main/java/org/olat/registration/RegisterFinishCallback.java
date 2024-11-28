@@ -148,7 +148,13 @@ public class RegisterFinishCallback implements StepRunnerCallback {
 
 		// create an identity with the given username / pwd and the user object
 		List<Authentication> passkeys = (List<Authentication>) runContext.get(RegWizardConstants.PASSKEYS);
-		Identity identity = registrationManager.createNewUserAndIdentityFromTemporaryKey(username, password, volatileUser, (TemporaryKey) runContext.get(RegWizardConstants.TEMPORARYKEY));
+
+		// if organisation module and emailDomain is enabled, then set the selected orgaKey
+		// otherwise selectedOrgaKey is null
+		String selectedOrgaKey = (String) runContext.get(RegWizardConstants.SELECTEDORGANIZATIONKEY);
+
+		TemporaryKey temporaryKey = (TemporaryKey) runContext.get(RegWizardConstants.TEMPORARYKEY);
+		Identity identity = registrationManager.createNewUserAndIdentityFromTemporaryKey(username, password, volatileUser, temporaryKey, selectedOrgaKey);
 
 		if (identity != null && passkeys != null && !passkeys.isEmpty()) {
 			securityManager.persistAuthentications(identity, passkeys);

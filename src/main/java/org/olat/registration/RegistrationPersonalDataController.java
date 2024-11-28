@@ -27,13 +27,19 @@ package org.olat.registration;
 
 import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -54,6 +60,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.SyntaxValidator;
@@ -82,6 +89,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private final Map<String,FormItem> propFormItems = new HashMap<>();
 	
 	private SingleSelection lang;
+	private SingleSelection organisationSelection;
 	private TextElement usernameEl;
 	private StaticTextElement usernameStatic;
 	private TextElement newpass1;
@@ -109,6 +117,10 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private LoginModule loginModule;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private RegistrationManager registrationManager;
 
@@ -207,6 +219,15 @@ public class RegistrationPersonalDataController extends FormBasicController {
 		return propFormItems;
 	}
 
+	public String getSelectedOrganisationKey() {
+		if (organisationModule.isEnabled()
+				&& organisationModule.isEmailDomainEnabled()
+				&& organisationSelection != null) {
+			return organisationSelection.getSelectedKey();
+		}
+		return null;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer userCont = FormLayoutContainer.createDefaultFormLayout("user", getTranslator());
@@ -296,6 +317,39 @@ public class RegistrationPersonalDataController extends FormBasicController {
 			lang.select(languageKey, true);
 		} else if(languageKeys.length > 0) {
 			lang.select(languageKeys[0], true);
+		}
+
+		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+			OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+			// ensure to only get organisations with matching mailDomains
+			String mailDomain = MailHelper.getMailDomain(email);
+			searchParams.setDomains(Collections.singletonList(mailDomain));
+			List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
+
+			if (emailDomains != null && !emailDomains.isEmpty()) {
+				// Extract orgKey as keys
+				String[] orgKeys = emailDomains.stream()
+						.map(domain -> domain.getKey().toString())
+						.toArray(String[]::new);
+				// Extract concatenated displayName and Location as values
+				String[] orgValues = emailDomains.stream()
+						.sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName())) // Sort by displayName
+						.map(domain -> {
+							String displayName = domain.getOrganisation().getDisplayName();
+							String location = domain.getOrganisation().getLocation();
+							return StringHelper.containsNonWhitespace(location) ? displayName + " · " + location : displayName; // location can be null, ignore if it is empty/null
+						})
+						.toArray(String[]::new);
+
+				organisationSelection = uifactory.addDropdownSingleselect("user.organisation", formLayout, orgKeys, orgValues, null);
+				if (emailDomains.size() == 1) {
+					organisationSelection.select(orgKeys[0], true);
+					organisationSelection.setEnabled(false);
+				} else {
+					organisationSelection.enableNoneSelection(translate("user.organisation.select"));
+					organisationSelection.setMandatory(true);
+				}
+			}
 		}
 	}
 

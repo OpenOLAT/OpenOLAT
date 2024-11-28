@@ -35,6 +35,7 @@ public class RegWizardConstants {
 	public static final String PASSKEYS = "passkeys";
 	public static final String TEMPORARYKEY = "temporarykey";
 	public static final String PROPFORMITEMS = "propformitems";
+	public static final String SELECTEDORGANIZATIONKEY = "selectedorganizationkey";
 	public static final String ADDITIONALPROPFORMITEMS = "additionalpropformitems";
 
 	/**

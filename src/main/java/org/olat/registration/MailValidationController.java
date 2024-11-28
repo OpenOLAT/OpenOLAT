@@ -167,7 +167,7 @@ public class MailValidationController extends FormBasicController {
 		String[] whereFromAttrs = new String[]{ serverPath, today };
 
 		if (isEmailEligibleForRegistration(email)) {
-			temporaryKey = loadOrCreateTemporaryKey(ureq, email, ip, whereFromAttrs);
+			loadOrCreateTemporaryKey(ureq, email, ip, whereFromAttrs);
 		} else {
 			// if users with this email address exists, they are informed.
 			informExistingUser(email, whereFromAttrs);
@@ -178,24 +178,24 @@ public class MailValidationController extends FormBasicController {
 		return registrationManager.isRegistrationPending(email) || userManager.isEmailAllowed(email);
 	}
 
-	private TemporaryKey loadOrCreateTemporaryKey(UserRequest ureq, String email, String ip, String[] whereFromAttrs) {
-		TemporaryKey tk;
+	private void loadOrCreateTemporaryKey(UserRequest ureq, String email, String ip, String[] whereFromAttrs) {
 		if (userModule.isEmailUnique()) {
-			tk = registrationManager.loadTemporaryKeyByEmail(email);
-			// if temporaryKey already exists, then update otp
-			resendNewOtp(ureq);
-		} else {
-			tk = registrationManager.loadOrCreateTemporaryKeyByEmail(
+			temporaryKey = registrationManager.loadTemporaryKeyByEmail(email);
+		}
+		if (temporaryKey == null) {
+			temporaryKey = registrationManager.loadOrCreateTemporaryKeyByEmail(
 					email, ip, RegistrationManager.REGISTRATION, registrationModule.getValidUntilMinutesGui()
 			);
-			sendRegistrationEmail(email, tk, whereFromAttrs);
+			sendRegistrationEmail(email, whereFromAttrs);
+		} else {
+			// if temporaryKey already exists, then update otp
+			resendNewOtp(ureq);
 		}
-		return tk;
 	}
 
-	private void sendRegistrationEmail(String email, TemporaryKey tk, String[] whereFromAttrs) {
+	private void sendRegistrationEmail(String email, String[] whereFromAttrs) {
 		String[] bodyAttrs = new String[]{
-				tk.getRegistrationKey(), //0
+				temporaryKey.getRegistrationKey(), //0
 		};
 		String body = buildEmailBody(bodyAttrs, whereFromAttrs);
 
@@ -262,7 +262,7 @@ public class MailValidationController extends FormBasicController {
 		String[] whereFromAttrs = new String[]{ serverPath, today };
 
 		if (temporaryKey != null) {
-			sendRegistrationEmail(getEmailAddress(), temporaryKey, whereFromAttrs);
+			sendRegistrationEmail(getEmailAddress(), whereFromAttrs);
 		}
 		otpEl.reset();
 	}
