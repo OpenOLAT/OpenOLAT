@@ -231,6 +231,7 @@ public class VideoRunController extends BasicController {
 			myContent = createVelocityContainer("novideo");
 			EmptyStateFactory.create("emptyStateCmp", myContent, this, emptyState);
 			main.setContent(myContent);
+			return;
 		}
 		
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
