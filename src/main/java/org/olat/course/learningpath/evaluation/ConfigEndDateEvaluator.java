@@ -49,25 +49,27 @@ public class ConfigEndDateEvaluator implements EndDateEvaluator {
 	public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 			RepositoryEntry courseEntry, Identity identity, Blocker blocker) {
 		Overridable<Date> endDate = currentEvaluation.getEndDate().clone();
-		if (AssessmentObligation.mandatory == currentEvaluation.getObligation().getCurrent()) {
-			DueDateConfig endDateConfig = getLearningPathService().getConfigs(courseNode).getEndDateConfig();
-			Date configEndDate = getDueDateService().getDueDate(endDateConfig, courseEntry, identity);
-			if (configEndDate == null) {
-				// If end date is deleted in config, it can not be overridden.
-				endDate.reset();
-			}
-			endDate.setCurrent(configEndDate);
-		} else {
-			endDate = Overridable.empty();
+		DueDateConfig endDateConfig = getLearningPathService().getConfigs(courseNode).getEndDateConfig();
+		Date configEndDate = getDueDateService().getDueDate(endDateConfig, courseEntry, identity);
+		if (configEndDate == null) {
+			// If end date is deleted in config, it can not be overridden.
+			endDate.reset();
 		}
-		evaluateBlocker(currentEvaluation.getFullyAssessed(), endDate.getCurrent(), blocker);
+		endDate.setCurrent(configEndDate);
+		
+		AssessmentObligation obligation = currentEvaluation.getObligation().getCurrent();
+		evaluateBlocker(currentEvaluation.getFullyAssessed(), endDate.getCurrent(), obligation, blocker);
 		return endDate;
 	}
 
-	void evaluateBlocker(Boolean fullyAssessed, Date configEndDate, Blocker blocker) {
+	void evaluateBlocker(Boolean fullyAssessed, Date configEndDate, AssessmentObligation obligation, Blocker blocker) {
 		Date now = new Date();
 		if (configEndDate != null && configEndDate.before(now) && isNotFullyAssessed(fullyAssessed)) {
-			blocker.block();
+			if (AssessmentObligation.mandatory == obligation) {
+				blocker.block();
+			} else {
+				blocker.blockNoPassThrough();
+			}
 		}
 	}
 

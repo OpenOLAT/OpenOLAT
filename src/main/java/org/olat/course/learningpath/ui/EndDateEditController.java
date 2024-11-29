@@ -34,6 +34,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Overridable;
@@ -97,7 +98,7 @@ public class EndDateEditController extends FormBasicController implements Contro
 		if (overridden) {
 			String[] args = new String[] {
 					formatter.formatDateAndTime(endDate.getOriginal()),
-					userManager.getUserDisplayName(endDate.getModBy()),
+					StringHelper.escapeHtml(userManager.getUserDisplayName(endDate.getModBy())),
 					formatter.formatDateAndTime(endDate.getModDate())
 				};
 			String infoText = translate("override.end.date.info", args);

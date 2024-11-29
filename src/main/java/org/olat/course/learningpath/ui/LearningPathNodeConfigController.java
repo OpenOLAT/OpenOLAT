@@ -322,9 +322,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		boolean obligationMandatory = hasMandatoryObligation();
-		endDateEl.setVisible(obligationMandatory);
-				
 		durationEl.setMandatory(isDurationMandatory());
 		
 		boolean triggerScore = triggerEl != null
@@ -527,16 +524,14 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		allOk &= startDateEl.validate();
 		
 		endDateEl.clearError();
-		if (endDateEl.isVisible()) {
-			allOk &= endDateEl.validate();
-			if (allOk) {
-				DueDateConfig startDateConfig = startDateEl.getDueDateConfig();
-				DueDateConfig endDateConfig = endDateEl.getDueDateConfig();
-				if (startDateConfig.getAbsoluteDate() != null && endDateConfig.getAbsoluteDate() != null) {
-					if(endDateConfig.getAbsoluteDate().before(startDateConfig.getAbsoluteDate())) {
-						endDateEl.setErrorKey("error.start.after.end");
-						allOk &= false;
-					}
+		allOk &= endDateEl.validate();
+		if (allOk) {
+			DueDateConfig startDateConfig = startDateEl.getDueDateConfig();
+			DueDateConfig endDateConfig = endDateEl.getDueDateConfig();
+			if (startDateConfig.getAbsoluteDate() != null && endDateConfig.getAbsoluteDate() != null) {
+				if(endDateConfig.getAbsoluteDate().before(startDateConfig.getAbsoluteDate())) {
+					endDateEl.setErrorKey("error.start.after.end");
+					allOk &= false;
 				}
 			}
 		}
@@ -598,7 +593,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		DueDateConfig startDateConfig = startDateEl.getDueDateConfig();
 		learningPathConfigs.setStartDateConfig(startDateConfig);
 		
-		DueDateConfig endDateConfig = endDateEl.isVisible()? endDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		DueDateConfig endDateConfig = endDateEl.getDueDateConfig();
 		learningPathConfigs.setEndDateConfig(endDateConfig);
 		
 		Integer duration = StringHelper.containsNonWhitespace(durationEl.getValue())
