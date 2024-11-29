@@ -78,6 +78,7 @@ public class RegistrationAdminController extends FormBasicController {
 	private MultipleSelectionElement registrationLoginElement;
 	private MultipleSelectionElement staticPropElement;
 	private MultipleSelectionElement emailValidationEl;
+	private MultipleSelectionElement allowRecurringUserEl;
 	private SingleSelection propertyElement;
 	private SingleSelection pendingRegistrationStatusEl;
 	private TextElement pendingRegistrationNotificationEl;
@@ -199,6 +200,10 @@ public class RegistrationAdminController extends FormBasicController {
 		emailValidationEl.addActionListener(FormEvent.ONCHANGE);
 		emailValidationEl.select("on", registrationModule.isEmailValidationEnabled());
 		emailValidationEl.setEnabled(!orgEmailDomainEnabled);
+
+		allowRecurringUserEl = uifactory.addCheckboxesHorizontal("enable.recurring.user", "admin.enable.recurring.user", settingsContainer, enableRegistrationKeys, new String[]{translate("admin.enable.recurring.user.label")});
+		allowRecurringUserEl.addActionListener(FormEvent.ONCHANGE);
+		allowRecurringUserEl.select("on", registrationModule.isAllowRecurringUserEnabled());
 		
 		initOrganisationsEl(settingsContainer);
 		
@@ -394,15 +399,17 @@ public class RegistrationAdminController extends FormBasicController {
 			updateUI();
 		} else if(source == emailValidationEl) {
 			registrationModule.setEmailValidationEnabled(emailValidationEl.isSelected(0));
+		} else if (source == allowRecurringUserEl) {
+			registrationModule.setAllowRecurringUserEnabled(allowRecurringUserEl.isSelected(0));
 		} else if (source == staticPropElement) {
 			registrationModule.setStaticPropertyMappingEnabled(staticPropElement.isSelected(0));
 			updateUI();
-		} else if(source == pendingRegistrationStatusEl) {
+		} else if (source == pendingRegistrationStatusEl) {
 			updateUI();
-		} else if(source == openCourseBrowserLink) {
+		} else if (source == openCourseBrowserLink) {
 			openCourseBrowser(ureq);
-		} else if (source instanceof FormLink) {
-			if (((FormLink) source).getCmd().equals("remove_course")) {
+		} else if (source instanceof FormLink link) {
+			if (link.getCmd().equals("remove_course")) {
 				if (source.getUserObject() instanceof Long) {
 					registrationModule.removeCourseFromAutoEnrolment((Long) source.getUserObject());
 					initForm(ureq);

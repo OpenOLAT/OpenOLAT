@@ -19,7 +19,6 @@
  */
 package org.olat.registration;
 
-import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -29,28 +28,29 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
- * Initial date: Okt 25, 2024
+ * Initial date: Nov 29, 2024
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RegistrationLangStep00 extends BasicStep {
+public class RegistrationRecurringUserStep02 extends BasicStep {
 
+	private final boolean isAdditionalRegistrationFormEnabled;
 
-	public RegistrationLangStep00(UserRequest ureq, Invitation invitation, boolean isDisclaimerEnabled,
-								  boolean isEmailValidationEnabled, boolean isAdditionalRegistrationFormEnabled,
-								  boolean isRecurringRegistrationEnabled) {
+	public RegistrationRecurringUserStep02(UserRequest ureq, boolean isAdditionalRegistrationFormEnabled) {
 		super(ureq);
+		this.isAdditionalRegistrationFormEnabled = isAdditionalRegistrationFormEnabled;
 
-		setI18nTitleAndDescr("select.language", "select.language.description");
-		if (isDisclaimerEnabled) {
-			setNextStep(new RegistrationDisclaimerStep01(ureq, invitation, isEmailValidationEnabled, isAdditionalRegistrationFormEnabled, isRecurringRegistrationEnabled));
-		} else if (isRecurringRegistrationEnabled) {
-			setNextStep(new RegistrationRecurringUserStep02(ureq, isAdditionalRegistrationFormEnabled));
-		} else if (invitation == null && isEmailValidationEnabled) {
-			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
+		setI18nTitleAndDescr("admin.enable.recurring.user.title", "step3.reg.recurring.text");
+		updateNextStep(ureq, false);
+	}
+
+	private void updateNextStep(UserRequest ureq, boolean isRecurringUser) {
+		if (isRecurringUser) {
+			setNextStep(new RegistrationSupportFormStep03(ureq));
 		} else {
-			setNextStep(new RegistrationPersonalDataStep04(ureq, invitation, isAdditionalRegistrationFormEnabled));
+			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
 		}
+
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public class RegistrationLangStep00 extends BasicStep {
 	}
 
 	@Override
-	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new RegistrationLangStep00Controller(ureq, wControl, form, runContext);
+	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext runContext, Form form) {
+		return new RegistrationRecurringUserStep02Controller(ureq, windowControl, form, runContext, this::updateNextStep);
 	}
 }

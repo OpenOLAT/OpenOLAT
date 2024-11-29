@@ -19,7 +19,6 @@
  */
 package org.olat.registration;
 
-import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -30,35 +29,26 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
- * Initial date: Okt 28, 2024
+ * Initial date: Nov 14, 2024
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RegistrationPersonalDataStep03 extends BasicStep {
+public class RegistrationAdditionalDataStep05 extends BasicStep {
 
-	private final Invitation invitation;
-	private final boolean isAdditionalRegistrationFormEnabled;
-
-	public RegistrationPersonalDataStep03(UserRequest ureq, Invitation invitation, boolean isAdditionalRegistrationFormEnabled) {
+	public RegistrationAdditionalDataStep05(UserRequest ureq) {
 		super(ureq);
-		this.invitation = invitation;
-		this.isAdditionalRegistrationFormEnabled = isAdditionalRegistrationFormEnabled;
-		setI18nTitleAndDescr("registration.form.personal.data.title", "select.language.description");
 
-		if (isAdditionalRegistrationFormEnabled) {
-			setNextStep(new RegistrationAdditionalDataStep04(ureq));
-		} else {
-			setNextStep(Step.NOSTEP);
-		}
+		setI18nTitleAndDescr("step.add.reg.title", "step.add.reg.text");
+		setNextStep(Step.NOSTEP);
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, isAdditionalRegistrationFormEnabled, !isAdditionalRegistrationFormEnabled);
+		return new PrevNextFinishConfig(false, false, true);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new RegistrationPersonalDataStep03Controller(ureq, wControl, form, runContext, invitation);
+		return new RegistrationAdditionalDataStep05Controller(ureq, wControl, form, runContext);
 	}
 }

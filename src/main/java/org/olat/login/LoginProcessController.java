@@ -87,7 +87,7 @@ public class LoginProcessController extends BasicController {
 		boolean isAdditionalRegistrationFormEnabled = !userManager
 				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
 		Step startReg = new RegistrationLangStep00(ureq, invitation, registrationModule.isDisclaimerEnabled(),
-				registrationModule.isEmailValidationEnabled(), isAdditionalRegistrationFormEnabled);
+				registrationModule.isEmailValidationEnabled(), isAdditionalRegistrationFormEnabled, registrationModule.isAllowRecurringUserEnabled());
 		registrationWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startReg, new RegisterFinishCallback(invitation, this),
 				new CancelCallback(), translate("menu.register"), "o_sel_registration_start_wizard");
 		listenTo(registrationWizardCtrl);

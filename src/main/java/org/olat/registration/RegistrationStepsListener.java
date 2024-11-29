@@ -19,30 +19,20 @@
  */
 package org.olat.registration;
 
+import org.olat.core.gui.UserRequest;
+
 /**
- * Initial date: Nov 11, 2024
+ * Initial date: Nov 29, 2024
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RegWizardConstants {
-
-	public static final String CHOSEN_LANG = "lang";
-	public static final String EMAIL = "email";
-	public static final String FIRSTNAME = "firstname";
-	public static final String LASTNAME = "lastname";
-	public static final String PASSWORD = "password";
-	public static final String USERNAME = "username";
-	public static final String PASSKEYS = "passkeys";
-	public static final String TEMPORARYKEY = "temporarykey";
-	public static final String PROPFORMITEMS = "propformitems";
-	public static final String SELECTEDORGANIZATIONKEY = "selectedorganizationkey";
-	public static final String ADDITIONALPROPFORMITEMS = "additionalpropformitems";
-	public static final String RECURRINGDETAILS = "recurringdetails";
+public interface RegistrationStepsListener {
 
 	/**
-	 * private constructor to hide the implicit public one
+	 * let the basic step know, that step sequence changed
+	 * @param ureq
+	 * @param isRecurringUser based on the user selection
 	 */
-	private RegWizardConstants() {
-	}
+	void onStepsChanged(UserRequest ureq, boolean isRecurringUser);
 
 }

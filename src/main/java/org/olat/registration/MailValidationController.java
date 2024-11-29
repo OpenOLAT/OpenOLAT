@@ -47,7 +47,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
@@ -83,8 +82,6 @@ public class MailValidationController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private RegistrationModule registrationModule;
-	@Autowired
-	private I18nModule i18nModule;
 	@Autowired
 	private UserModule userModule;
 	@Autowired
@@ -271,7 +268,7 @@ public class MailValidationController extends FormBasicController {
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		validateMail();
+		allOk &= validateMail();
 
 		if (validationCont != null && otpEl != null) {
 			if (otpEl.isEmpty("reg.otp.may.not.be.empty")) {

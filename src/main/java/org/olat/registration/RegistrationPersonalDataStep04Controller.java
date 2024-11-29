@@ -36,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RegistrationPersonalDataStep03Controller extends StepFormBasicController {
+public class RegistrationPersonalDataStep04Controller extends StepFormBasicController {
 
 
 	private final StepsRunContext runContext;
@@ -45,7 +45,7 @@ public class RegistrationPersonalDataStep03Controller extends StepFormBasicContr
 	@Autowired
 	private I18nModule i18nModule;
 
-	public RegistrationPersonalDataStep03Controller(UserRequest ureq, WindowControl wControl,
+	public RegistrationPersonalDataStep04Controller(UserRequest ureq, WindowControl wControl,
 													Form rootForm, StepsRunContext runContext,
 													Invitation invitation) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);

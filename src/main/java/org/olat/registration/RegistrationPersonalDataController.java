@@ -222,7 +222,8 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	public String getSelectedOrganisationKey() {
 		if (organisationModule.isEnabled()
 				&& organisationModule.isEmailDomainEnabled()
-				&& organisationSelection != null) {
+				&& organisationSelection != null
+				&& organisationSelection.isOneSelected()) {
 			return organisationSelection.getSelectedKey();
 		}
 		return null;
@@ -362,12 +363,12 @@ public class RegistrationPersonalDataController extends FormBasicController {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
 			if (fi.isEnabled() ) {
 				if(fi instanceof TextElement textEl && !validateElement(textEl)) {
-					allOk &= false;
+					allOk = false;
 				} else if(!userPropertyHandler.isValid(null, fi, null)) {
 					if (userPropertyHandler instanceof EmailProperty) {
 						allOk &= registrationManager.isEmailReserved(getEmail());
 					} else {
-						allOk &= false;
+						allOk = false;
 					}
 				}
 			}
@@ -382,17 +383,23 @@ public class RegistrationPersonalDataController extends FormBasicController {
 			
 			if(!StringHelper.containsNonWhitespace(newpass1.getValue())) {
 				newpass1.setErrorKey("form.check4");
-				allOk &= false;
+				allOk = false;
 			}
 			
 			if (!StringHelper.containsNonWhitespace(newpass2.getValue())) {
 				newpass2.setErrorKey("form.check4");
-				allOk &= false;
+				allOk = false;
 			}
 		}
 		
 		allOk &= validatePassword();
 		allOk &= validatePasskeys();
+
+		if (organisationSelection != null && !organisationSelection.isOneSelected()) {
+			organisationSelection.clearError();
+			organisationSelection.setErrorKey("form.legende.mandatory");
+			allOk = false;
+		}
 		return allOk;
 	}
 	

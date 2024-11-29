@@ -68,6 +68,7 @@ public class RegistrationModule extends AbstractSpringModule {
 	private static final String EMAIL_VLIDATION_ENABLED = "email.validation.enabled";
 	private static final String ACCOUNT_EXPIRATION = "registration.account.expiration";
 	private static final String AUTO_ENROLMENT_COURSES = "registration.auto.enrolment.courses";
+	private static final String RECURRING_USERS_ENABLED = "registration.recurring.users.enabled";
 	
 	@Value("${registration.enableSelfRegistration}")
 	private boolean selfRegistrationEnabled;
@@ -77,6 +78,8 @@ public class RegistrationModule extends AbstractSpringModule {
 	private boolean selfRegistrationLoginEnabled;
 	@Value("${registration.email.validation}")
 	private boolean emailValidationEnabled;
+	@Value("${registration.recurring.user}")
+	private boolean allowRecurringUserEnabled;
 	@Value("${registration.valid.minutes.gui}")
 	private Integer validUntilMinutesGui;
 	@Value("${registration.valid.hours.rest}")
@@ -215,6 +218,15 @@ public class RegistrationModule extends AbstractSpringModule {
 		this.emailValidationEnabled = emailValidationEnabled;
 		setStringProperty(EMAIL_VLIDATION_ENABLED, Boolean.toString(emailValidationEnabled), true);
 		resetEmailUserProperty();
+	}
+
+	public boolean isAllowRecurringUserEnabled() {
+		return allowRecurringUserEnabled;
+	}
+
+	public void setAllowRecurringUserEnabled(boolean allowRecurringUserEnabled) {
+		this.allowRecurringUserEnabled = allowRecurringUserEnabled;
+		setStringProperty(RECURRING_USERS_ENABLED, Boolean.toString(allowRecurringUserEnabled), true);
 	}
 	
 	public void resetEmailUserProperty() {
@@ -511,7 +523,12 @@ public class RegistrationModule extends AbstractSpringModule {
 			emailValidationEnabled = Boolean.parseBoolean(emailValidationObj);
 		}
 		resetEmailUserProperty();
-		
+
+		String recurringUserObj = getStringPropertyValue(RECURRING_USERS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(recurringUserObj)) {
+			allowRecurringUserEnabled = Boolean.parseBoolean(recurringUserObj);
+		}
+
 		String enableNotificationEmailObj = getStringPropertyValue("registration.enableNotificationEmail", true);
 		if(StringHelper.containsNonWhitespace(enableNotificationEmailObj)) {
 			registrationNotificationEmailEnabled = "true".equals(enableNotificationEmailObj);

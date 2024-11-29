@@ -19,35 +19,46 @@
  */
 package org.olat.registration;
 
+import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
- * Initial date: Okt 25, 2024
+ * Initial date: Okt 28, 2024
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RegistrationMailStep02 extends BasicStep {
+public class RegistrationPersonalDataStep04 extends BasicStep {
 
-	public RegistrationMailStep02(UserRequest ureq, boolean isAdditionalRegistrationFormEnabled) {
+	private final Invitation invitation;
+	private final boolean isAdditionalRegistrationFormEnabled;
+
+	public RegistrationPersonalDataStep04(UserRequest ureq, Invitation invitation, boolean isAdditionalRegistrationFormEnabled) {
 		super(ureq);
+		this.invitation = invitation;
+		this.isAdditionalRegistrationFormEnabled = isAdditionalRegistrationFormEnabled;
+		setI18nTitleAndDescr("registration.form.personal.data.title", "select.language.description");
 
-		setI18nTitleAndDescr("admin.enable.email.validation", "step1.reg.text");
-		setNextStep(new RegistrationPersonalDataStep03(ureq, null, isAdditionalRegistrationFormEnabled));
+		if (isAdditionalRegistrationFormEnabled) {
+			setNextStep(new RegistrationAdditionalDataStep05(ureq));
+		} else {
+			setNextStep(Step.NOSTEP);
+		}
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, true, false);
+		return new PrevNextFinishConfig(false, isAdditionalRegistrationFormEnabled, !isAdditionalRegistrationFormEnabled);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new RegistrationMailStep02Controller(ureq, wControl, form, runContext);
+		return new RegistrationPersonalDataStep04Controller(ureq, wControl, form, runContext, invitation);
 	}
 }

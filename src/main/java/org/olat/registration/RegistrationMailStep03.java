@@ -19,7 +19,6 @@
  */
 package org.olat.registration;
 
-import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -33,24 +32,13 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RegistrationLangStep00 extends BasicStep {
+public class RegistrationMailStep03 extends BasicStep {
 
-
-	public RegistrationLangStep00(UserRequest ureq, Invitation invitation, boolean isDisclaimerEnabled,
-								  boolean isEmailValidationEnabled, boolean isAdditionalRegistrationFormEnabled,
-								  boolean isRecurringRegistrationEnabled) {
+	public RegistrationMailStep03(UserRequest ureq, boolean isAdditionalRegistrationFormEnabled) {
 		super(ureq);
 
-		setI18nTitleAndDescr("select.language", "select.language.description");
-		if (isDisclaimerEnabled) {
-			setNextStep(new RegistrationDisclaimerStep01(ureq, invitation, isEmailValidationEnabled, isAdditionalRegistrationFormEnabled, isRecurringRegistrationEnabled));
-		} else if (isRecurringRegistrationEnabled) {
-			setNextStep(new RegistrationRecurringUserStep02(ureq, isAdditionalRegistrationFormEnabled));
-		} else if (invitation == null && isEmailValidationEnabled) {
-			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
-		} else {
-			setNextStep(new RegistrationPersonalDataStep04(ureq, invitation, isAdditionalRegistrationFormEnabled));
-		}
+		setI18nTitleAndDescr("admin.enable.email.validation", "step1.reg.text");
+		setNextStep(new RegistrationPersonalDataStep04(ureq, null, isAdditionalRegistrationFormEnabled));
 	}
 
 	@Override
@@ -60,6 +48,6 @@ public class RegistrationLangStep00 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new RegistrationLangStep00Controller(ureq, wControl, form, runContext);
+		return new RegistrationMailStep03Controller(ureq, wControl, form, runContext);
 	}
 }

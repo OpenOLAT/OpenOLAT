@@ -36,14 +36,17 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 public class RegistrationDisclaimerStep01 extends BasicStep {
 
 	public RegistrationDisclaimerStep01(UserRequest ureq, Invitation invitation,
-										boolean isEmailValidationEnabled, boolean isAdditionalRegistrationFormEnabled) {
+										boolean isEmailValidationEnabled, boolean isAdditionalRegistrationFormEnabled,
+										boolean isRecurringRegistrationEnabled) {
 		super(ureq);
 
 		setI18nTitleAndDescr("disclaimer.header", "step4.reg.text");
-		if (isEmailValidationEnabled && invitation == null) {
-			setNextStep(new RegistrationMailStep02(ureq, isAdditionalRegistrationFormEnabled));
+		if (isRecurringRegistrationEnabled) {
+			setNextStep(new RegistrationRecurringUserStep02(ureq, isAdditionalRegistrationFormEnabled));
+		} else if (isEmailValidationEnabled && invitation == null) {
+			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
 		} else {
-			setNextStep(new RegistrationPersonalDataStep03(ureq, invitation, isAdditionalRegistrationFormEnabled));
+			setNextStep(new RegistrationPersonalDataStep04(ureq, invitation, isAdditionalRegistrationFormEnabled));
 		}
 	}
 

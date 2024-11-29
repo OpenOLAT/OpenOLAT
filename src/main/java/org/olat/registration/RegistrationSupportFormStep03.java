@@ -24,22 +24,21 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
-import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
- * Initial date: Nov 14, 2024
+ * Initial date: Nov 29, 2024
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RegistrationAdditionalDataStep04 extends BasicStep {
+public class RegistrationSupportFormStep03 extends BasicStep {
 
-	public RegistrationAdditionalDataStep04(UserRequest ureq) {
+
+	public RegistrationSupportFormStep03(UserRequest ureq) {
 		super(ureq);
 
-		setI18nTitleAndDescr("step.add.reg.title", "step.add.reg.text");
-		setNextStep(Step.NOSTEP);
+		setI18nTitleAndDescr("step3.reg.support.form.title", "step3.reg.support.form.text");
 	}
 
 	@Override
@@ -48,7 +47,7 @@ public class RegistrationAdditionalDataStep04 extends BasicStep {
 	}
 
 	@Override
-	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new RegistrationAdditionalDataStep04Controller(ureq, wControl, form, runContext);
+	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext runContext, Form form) {
+		return new RegistrationSupportFormStep03Controller(ureq, windowControl, form, runContext);
 	}
 }

@@ -34,13 +34,13 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RegistrationMailStep02Controller extends StepFormBasicController {
+public class RegistrationMailStep03Controller extends StepFormBasicController {
 
 
 	private final StepsRunContext runContext;
 	private final MailValidationController emailForm;
 
-	public RegistrationMailStep02Controller(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public RegistrationMailStep03Controller(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.runContext = runContext;
 		this.emailForm = new MailValidationController(ureq, wControl, rootForm);

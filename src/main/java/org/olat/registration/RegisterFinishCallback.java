@@ -88,27 +88,30 @@ public class RegisterFinishCallback implements StepRunnerCallback {
 
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-		Identity identity = (invitation != null && invitation.getIdentity() != null) ? invitation.getIdentity() : null;
+		if (runContext.get(RegWizardConstants.RECURRINGDETAILS) == null) {
+			Identity identity = (invitation != null && invitation.getIdentity() != null) ? invitation.getIdentity() : null;
 
-		// Make sure we have an identity
-		if (identity == null) {
-			identity = createNewUser(runContext);
+			// Make sure we have an identity
 			if (identity == null) {
-				((LoginProcessController) loginCtrl).showError("user.notregistered");
-				return null;
+				identity = createNewUser(runContext);
+				if (identity == null) {
+					((LoginProcessController) loginCtrl).showError("user.notregistered");
+					return null;
+				}
+			} else {
+				handleExistingIdentity(identity, runContext);
 			}
-		} else {
-			handleExistingIdentity(identity, runContext);
+
+			updateUserData(identity, runContext);
+			if (invitation != null) {
+				invitationService.acceptInvitation(invitation, identity);
+			}
+
+			if (loginCtrl instanceof LoginProcessController loginProcessCtrl) {
+				loginProcessCtrl.doLogin(ureq, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+			}
 		}
 
-		updateUserData(identity, runContext);
-		if (invitation != null) {
-			invitationService.acceptInvitation(invitation, identity);
-		}
-
-		if (loginCtrl instanceof LoginProcessController loginProcessCtrl) {
-			loginProcessCtrl.doLogin(ureq, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-		}
 		return StepsMainRunController.DONE_MODIFIED;
 	}
 
