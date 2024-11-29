@@ -28,6 +28,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbookStyles;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.course.ICourse;
@@ -102,9 +103,20 @@ public class ForumReportExportData {
 			String title = message.getParent() == null ? "" : message.getTitle();
 			Date creationDate = message.getCreationDate();
 			Date lastModifiedDate = message.getLastModified();
-			String creatorFirstName = creator.getUser().getFirstName();
-			String creatorLastName = creator.getUser().getLastName();
-			String creatorNickName = creator.getUser().getNickName();
+
+			String creatorFirstName;
+			String creatorLastName;
+			String creatorNickName;
+			if (StringHelper.containsNonWhitespace(message.getPseudonym())) {
+				creatorFirstName = message.getPseudonym();
+				creatorLastName = message.getPseudonym();
+				creatorNickName = message.getPseudonym();
+			} else {
+				creatorFirstName = creator.getUser().getFirstName();
+				creatorLastName = creator.getUser().getLastName();
+				creatorNickName = creator.getUser().getNickName();
+			}
+
 			int wordCount = message.getNumOfWords();
 			int charCount = message.getNumOfCharacters();
 
