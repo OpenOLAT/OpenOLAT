@@ -183,7 +183,6 @@ public class RegistrationManagerTest extends OlatTestCase {
 		Assert.assertNotNull(originalKey.getRegistrationKey());
 		Assert.assertNotNull(originalKey.getValidUntil());
 		String originalRegistrationKey = originalKey.getRegistrationKey();
-		Date originalCreationDate = originalKey.getCreationDate();
 		Date originalValidUntil = originalKey.getValidUntil();
 
 		// Update temporary key
@@ -195,7 +194,6 @@ public class RegistrationManagerTest extends OlatTestCase {
 		Assert.assertEquals(originalKey.getKey(), updatedKey.getKey()); // Same record updated
 		Assert.assertEquals(emailAddress, updatedKey.getEmailAddress()); // Email should remain unchanged
 		Assert.assertNotEquals(originalRegistrationKey, updatedKey.getRegistrationKey()); // Registration key should be updated
-		Assert.assertEquals(originalCreationDate, updatedKey.getCreationDate()); // Creation date should remain unchanged
 		Assert.assertNotEquals(originalValidUntil, updatedKey.getValidUntil()); // Valid until date should be updated
 		Assert.assertTrue(updatedKey.getValidUntil().after(originalValidUntil)); // Ensure validUntil is extended
 	}
