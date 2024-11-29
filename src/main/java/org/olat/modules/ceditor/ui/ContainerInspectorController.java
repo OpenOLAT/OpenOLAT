@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -80,6 +81,14 @@ public class ContainerInspectorController extends FormBasicController implements
 		return translate("inspector.layout");
 	}
 	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		super.event(ureq, source, event);
+		if (needToChangeAlertBoxSettings()) {
+			doChangeAlertBoxSettings(ureq);
+		}
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source instanceof ContainerEditorController && event instanceof ChangePartEvent cpe) {
@@ -147,6 +156,15 @@ public class ContainerInspectorController extends FormBasicController implements
 		}
 	}
 
+	private boolean needToChangeAlertBoxSettings() {
+		ContainerSettings settings = container.getContainerSettings();
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(settings);
+		if (alertBoxComponents.titleEl().getValue() != null) {
+			return !alertBoxComponents.titleEl().getValue().equals(alertBoxSettings.getTitle());
+		}
+		return false;
+	}
+	
 	private void doChangeAlertBoxSettings(UserRequest ureq) {
 		ContainerSettings settings = container.getContainerSettings();
 
