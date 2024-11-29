@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -84,7 +85,18 @@ public class ContainerInFormInspectorController extends FormBasicController impl
 		}
 		return translate("container.name");
 	}
-	
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		super.event(ureq, source, event);
+		if (needToSetName()) {
+			doSetName(ureq);
+		}
+		if (needToChangeAlertBoxSettings()) {
+			doChangeAlertBoxSettings(ureq);
+		}
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source instanceof ContainerEditorController && event instanceof ChangePartEvent cpe) {
@@ -175,6 +187,24 @@ public class ContainerInFormInspectorController extends FormBasicController impl
 			boolean active = layoutLink.getUserObject() == newLayout;
 			layoutLink.setElementCssClass(active ? "active" : "");
 		}
+	}
+
+	private boolean needToSetName() {
+		ContainerSettings settings = container.getContainerSettings();
+		String name = settings.getName();
+		if (nameEl.getValue() != null) {
+			return !nameEl.getValue().equals(name);
+		}
+		return false;
+	}
+	
+	private boolean needToChangeAlertBoxSettings() {
+		ContainerSettings settings = container.getContainerSettings();
+		AlertBoxSettings alertBoxSettings = getAlertBoxSettings(settings);
+		if (alertBoxComponents.titleEl().getValue() != null) {
+			return !alertBoxComponents.titleEl().getValue().equals(alertBoxSettings.getTitle());
+		}
+		return false;
 	}
 
 	private void doChangeAlertBoxSettings(UserRequest ureq) {
