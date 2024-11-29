@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.olat.modules.assessment.model.AssessmentObligation.mandatory;
-import static org.olat.modules.assessment.model.AssessmentObligation.optional;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -91,28 +90,6 @@ public class ConfigEndDateEvaluatorTest {
 		assertThat(endDate.getCurrent()).isEqualTo(overriddenDate);
 		assertThat(endDate.getOriginal()).isEqualTo(configDate);
 	}
-	
-	@Test
-	public void shouldGetNoDateIfOptional() {
-		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
-		LearningPathService learningPathService = mock(LearningPathService.class);
-		sut.setLearningPathService(learningPathService);
-		sut.setDueDateService(new DueDateServiceImpl());
-		
-		Date configDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
-		Date overriddenDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
-		CourseNode courseNode = new SPCourseNode();
-		LearningPathConfigs lpConfigs = lpConfigs(configDate);
-		when(learningPathService.getConfigs(courseNode)).thenReturn(lpConfigs);
-		AssessmentEvaluation currentEvaluation = createEvaluation(optional);
-		currentEvaluation.getEndDate().setCurrent(configDate);
-		currentEvaluation.getEndDate().override(overriddenDate, null, null);
-		
-		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, null, null, new SequentialBlocker(AssessmentObligation.mandatory));
-		
-		assertThat(endDate.getCurrent()).isNull();
-		assertThat(endDate.getOriginal()).isNull();
-	}
 
 	@Test
 	public void shouldNotBlockIfNotFullyAssessedAndConfigDateNotOver() {
@@ -120,7 +97,7 @@ public class ConfigEndDateEvaluatorTest {
 		Date configDateNotOver = DateUtils.toDate(LocalDate.now().plusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
-		sut.evaluateBlocker(Boolean.FALSE, configDateNotOver, blocker);
+		sut.evaluateBlocker(Boolean.FALSE, configDateNotOver, AssessmentObligation.mandatory, blocker);
 		
 		assertThat(blocker.isBlocked()).isFalse();
 	}
@@ -131,7 +108,7 @@ public class ConfigEndDateEvaluatorTest {
 		Date configDateNotOver = DateUtils.toDate(LocalDate.now().plusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
-		sut.evaluateBlocker(Boolean.TRUE, configDateNotOver, blocker);
+		sut.evaluateBlocker(Boolean.TRUE, configDateNotOver, AssessmentObligation.mandatory, blocker);
 		
 		assertThat(blocker.isBlocked()).isFalse();
 	}
@@ -142,7 +119,7 @@ public class ConfigEndDateEvaluatorTest {
 		Date configDateNotOver = DateUtils.toDate(LocalDate.now().plusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
-		sut.evaluateBlocker(null, configDateNotOver, blocker);
+		sut.evaluateBlocker(null, configDateNotOver, AssessmentObligation.mandatory, blocker);
 		
 		assertThat(blocker.isBlocked()).isFalse();
 	}
@@ -153,7 +130,7 @@ public class ConfigEndDateEvaluatorTest {
 		Date configDateOver = DateUtils.toDate(LocalDate.now().minusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
-		sut.evaluateBlocker(Boolean.FALSE, configDateOver, blocker);
+		sut.evaluateBlocker(Boolean.FALSE, configDateOver, AssessmentObligation.mandatory, blocker);
 		
 		assertThat(blocker.isBlocked()).isTrue();
 	}
@@ -164,7 +141,7 @@ public class ConfigEndDateEvaluatorTest {
 		Date configDateOver = DateUtils.toDate(LocalDate.now().minusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
-		sut.evaluateBlocker(Boolean.TRUE, configDateOver, blocker);
+		sut.evaluateBlocker(Boolean.TRUE, configDateOver, AssessmentObligation.mandatory, blocker);
 		
 		assertThat(blocker.isBlocked()).isFalse();
 	}
@@ -175,7 +152,7 @@ public class ConfigEndDateEvaluatorTest {
 		Date configDateOver = DateUtils.toDate(LocalDate.now().minusDays(3));
 		
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
-		sut.evaluateBlocker(null, configDateOver, blocker);
+		sut.evaluateBlocker(null, configDateOver, AssessmentObligation.mandatory, blocker);
 		
 		assertThat(blocker.isBlocked()).isTrue();
 	}
