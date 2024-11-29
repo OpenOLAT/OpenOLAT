@@ -19,12 +19,15 @@
  */
 package org.olat.course.nodes.survey;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.noderight.NodeRightService;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.repository.RepositoryService;
 
 /**
  * 
@@ -37,8 +40,8 @@ public class SurveyRunSecurityCallback {
 	private final boolean admin;
 	private final boolean courseReadOnly;
 	private final boolean guestOnly;
-	private final boolean executor;
-	private final boolean reportViewer;
+	private boolean executor;
+	private boolean reportViewer;
 	
 	public SurveyRunSecurityCallback(ModuleConfiguration moduleConfiguration, UserCourseEnvironment userCourseEnv) {
 		this.courseReadOnly = userCourseEnv.isCourseReadOnly();
@@ -48,6 +51,24 @@ public class SurveyRunSecurityCallback {
 		this.executor = nodeRightService.isGranted(moduleConfiguration, userCourseEnv, surveyModule.getExecutionNodeRightType());
 		this.reportViewer = nodeRightService.isGranted(moduleConfiguration, userCourseEnv, surveyModule.getReportNodeRightType());
 		this.admin = userCourseEnv.isAdmin();
+		if (admin) {
+			if (executor) {
+				// Only course owners may execute but not managers.
+				// The NodeRightService returns managers as executers as well, so we exclude them now.
+				RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+				executor = repositoryService.hasRoleExpanded(
+						userCourseEnv.getIdentityEnvironment().getIdentity(),
+						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+						GroupRoles.owner.name());
+			} else if (!reportViewer) {
+				// Managers may always see the report (if selected in role switcher)
+				RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+				reportViewer = repositoryService.hasRoleExpanded(
+						userCourseEnv.getIdentityEnvironment().getIdentity(),
+						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+						OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.learnresourcemanager.name());
+			}
+		}
 	}
 
 	public boolean isGuestOnly() {
