@@ -67,6 +67,12 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.coach.manager.CoachingDAO;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
@@ -111,6 +117,7 @@ import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
+import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.manager.LectureBlockDAO;
 import org.olat.modules.lecture.manager.LectureBlockToGroupDAO;
@@ -184,7 +191,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
 	@Autowired
 	private CoordinatorManager coordinator;
-	
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private InvitationDAO invitationDao;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		List<CurriculumElementType> defaultTypes = curriculumElementTypeDao.loadByExternalId(DEFAULT_CURRICULUM_ELEMENT_TYPE);
@@ -1382,5 +1397,52 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CurriculumElement.class, event.getCurriculumElementKey());
 		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, ores);
 	}
+
+	@Override
+	public List<BusinessGroup> deleteInternalGroupMembershipsAndInvitations(RepositoryEntry courseEntry) {
+		List<BusinessGroup> businessGroups = getAllBusinessGroups(courseEntry);
+		for (BusinessGroup businessGroup : businessGroups) {
+			deleteGroupMembershipsAndInvitation(businessGroup);
+		}
+		return businessGroups;
+	}
 	
+	private List<BusinessGroup> getAllBusinessGroups(RepositoryEntry courseEntry) {
+		if (!RepositoryEntryRuntimeType.curricular.equals(courseEntry.getRuntimeType())) {
+			return Collections.emptyList();
+		}
+
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		return businessGroupService
+				.findBusinessGroups(params, courseEntry, 0, -1).stream()
+				.filter(bg -> {
+					if (LTI13Service.LTI_GROUP_TYPE.equals(bg.getTechnicalType())) {
+						return false;
+					}
+					if (StringHelper.containsNonWhitespace(bg.getManagedFlagsString())) {
+						return false;
+					}
+					List<Long> entryKeys = businessGroupRelationDao.getRepositoryEntryKeys(bg);
+					if (entryKeys.size() != 1) {
+						return false;
+					}
+					return true;
+				})
+				.toList();
+	}
+
+	private void deleteGroupMembershipsAndInvitation(BusinessGroup businessGroup) {
+		groupDao.removeMemberships(businessGroup.getBaseGroup());
+		groupMembershipHistoryDao.deleteMembershipHistory(businessGroup.getBaseGroup());
+		
+		// Also delete invitations related to the group
+		invitationDao.deleteInvitation(businessGroup.getBaseGroup());
+	}
+
+	@Override
+	public void deleteInternalGroups(List<BusinessGroup> internalGroups, Identity doer) {
+		for (BusinessGroup businessGroup : internalGroups) {
+			businessGroupLifecycleManager.deleteBusinessGroup(businessGroup, doer, false);
+		}
+	}
 }

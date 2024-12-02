@@ -142,8 +142,9 @@ public interface RepositoryService {
 	/**
 	 * Delete only the database object
 	 * @param entry
+	 * @param doer
 	 */
-	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry);
+	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry, Identity doer);
 
 	/**
 	 * This will change the status of the repository entry to "closed" (statusCode=2).

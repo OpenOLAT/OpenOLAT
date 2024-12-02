@@ -74,6 +74,7 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.course.todo.CourseToDoService;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
@@ -698,7 +699,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		dbInstance.commit();
 
 		if(debug) log.debug("deleteRepositoryEntry after reload entry={}", entry);
-		deleteRepositoryEntryAndBaseGroups(entry);
+		deleteRepositoryEntryAndBaseGroups(entry, identity);
 
 		log.info(Tracing.M_AUDIT, "deleteRepositoryEntry Done entry={}", entry);
 		return errors;
@@ -707,9 +708,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	/**
 	 *
 	 * @param entry
+	 * @param doer
 	 */
 	@Override
-	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry) {
+	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry, Identity doer) {
 		RepositoryEntry reloadedEntry = dbInstance.getCurrentEntityManager()
 				.getReference(RepositoryEntry.class, entry.getKey());
 		Long resourceKey = reloadedEntry.getOlatResource().getKey();
@@ -719,6 +721,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			groupDao.removeMemberships(defaultGroup);
 		}
 		groupMembershipHistoryDao.deleteMembershipHistory(defaultGroup);
+		List<BusinessGroup> internalGroups = curriculumService.deleteInternalGroupMembershipsAndInvitations(reloadedEntry);
 		reToGroupDao.removeRelations(reloadedEntry);
 		dbInstance.commit();
 		
@@ -736,6 +739,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			if(defaultGroup != null) {
 				groupDao.removeGroup(defaultGroup);
 			}
+			curriculumService.deleteInternalGroups(internalGroups, doer);
 			dbInstance.commit();
 
 			OLATResource reloadedResource = resourceManager.findResourceById(resourceKey);

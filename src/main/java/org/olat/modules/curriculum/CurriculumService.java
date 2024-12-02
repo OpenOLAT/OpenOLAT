@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -601,4 +602,19 @@ public interface CurriculumService {
 	 */
 	public void numberRootCurriculumElement(CurriculumElement rootElement);
 
+	/**
+	 * Removes course-internal business groups relationships for 'courseEntry' of runtime type 'curricular'.
+
+	 * @param courseEntry The repository entry of the course
+	 * @return The list of course-internal business groups that are concerned (use this for deletion in the method below).
+	 */
+	public List<BusinessGroup> deleteInternalGroupMembershipsAndInvitations(RepositoryEntry courseEntry);
+
+	/**
+	 * Permanently removes the internal business groups 'internalGroups'.
+	 *
+	 * @param internalGroups The business groups to delete (including all dependencies).
+	 * @param doer The person performing the delete action.
+	 */
+	public void deleteInternalGroups(List<BusinessGroup> internalGroups, Identity doer);
 }
