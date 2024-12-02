@@ -45,7 +45,7 @@ public class RegistrationLangStep00 extends BasicStep {
 		if (isDisclaimerEnabled) {
 			setNextStep(new RegistrationDisclaimerStep01(ureq, invitation, isEmailValidationEnabled, isAdditionalRegistrationFormEnabled, isRecurringRegistrationEnabled));
 		} else if (isRecurringRegistrationEnabled) {
-			setNextStep(new RegistrationRecurringUserStep02(ureq, isAdditionalRegistrationFormEnabled));
+			setNextStep(new RegistrationRecurringUserStep02(ureq, isAdditionalRegistrationFormEnabled, isEmailValidationEnabled, invitation));
 		} else if (invitation == null && isEmailValidationEnabled) {
 			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
 		} else {

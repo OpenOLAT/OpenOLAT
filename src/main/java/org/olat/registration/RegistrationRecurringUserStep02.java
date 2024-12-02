@@ -19,6 +19,7 @@
  */
 package org.olat.registration;
 
+import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -35,10 +36,15 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 public class RegistrationRecurringUserStep02 extends BasicStep {
 
 	private final boolean isAdditionalRegistrationFormEnabled;
+	private final boolean isEmailValidationEnabled;
+	private final Invitation invitation;
 
-	public RegistrationRecurringUserStep02(UserRequest ureq, boolean isAdditionalRegistrationFormEnabled) {
+	public RegistrationRecurringUserStep02(UserRequest ureq, boolean isAdditionalRegistrationFormEnabled,
+										   boolean isEmailValidationEnabled, Invitation invitation) {
 		super(ureq);
 		this.isAdditionalRegistrationFormEnabled = isAdditionalRegistrationFormEnabled;
+		this.isEmailValidationEnabled = isEmailValidationEnabled;
+		this.invitation = invitation;
 
 		setI18nTitleAndDescr("admin.enable.recurring.user.title", "step3.reg.recurring.text");
 		updateNextStep(ureq, false);
@@ -47,8 +53,10 @@ public class RegistrationRecurringUserStep02 extends BasicStep {
 	private void updateNextStep(UserRequest ureq, boolean isRecurringUser) {
 		if (isRecurringUser) {
 			setNextStep(new RegistrationSupportFormStep03(ureq));
-		} else {
+		} else if (isEmailValidationEnabled) {
 			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
+		} else {
+			setNextStep(new RegistrationPersonalDataStep04(ureq, invitation, isAdditionalRegistrationFormEnabled));
 		}
 
 	}

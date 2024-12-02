@@ -42,7 +42,7 @@ public class RegistrationDisclaimerStep01 extends BasicStep {
 
 		setI18nTitleAndDescr("disclaimer.header", "step4.reg.text");
 		if (isRecurringRegistrationEnabled) {
-			setNextStep(new RegistrationRecurringUserStep02(ureq, isAdditionalRegistrationFormEnabled));
+			setNextStep(new RegistrationRecurringUserStep02(ureq, isAdditionalRegistrationFormEnabled, isEmailValidationEnabled, invitation));
 		} else if (isEmailValidationEnabled && invitation == null) {
 			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
 		} else {
