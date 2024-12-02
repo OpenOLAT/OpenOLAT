@@ -32,6 +32,7 @@ import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.ObligationOverridable;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -45,11 +46,11 @@ public class LearningPathNoAccessResolverTest {
 
 	@Test
 	public void shouldGetStartInFuture() {
-		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
-		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture()));
-		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture()));
-		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture(), null));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture(), null));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
 
 		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
 		
@@ -61,16 +62,35 @@ public class LearningPathNoAccessResolverTest {
 		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getGoToNodeIdent()).as("Child 4 is blocked by child 2").isEqualTo(child2.getIdent());
 		softly.assertAll();
 	}
+
+	@Test
+	public void shouldGetEndInPast() {
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, inPast()));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, inPast()));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
+
+		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(sut.getNoAccessMessage(child1.getCourseNode()).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child2.getCourseNode()).getReason()).as("Child 2 has end in past").isEqualTo(NoAccessReason.endDateInPast);
+		softly.assertThat(sut.getNoAccessMessage(child3.getCourseNode()).getReason()).as("Child 3 has end in past").isEqualTo(NoAccessReason.endDateInPast);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getReason()).as("Child 4 previous not done").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getGoToNodeIdent()).as("Child 4 is blocked by child 2").isEqualTo(child2.getIdent());
+		softly.assertAll();
+	}
 	
 	@Test
 	public void shouldGetFirstMandatoryNotFullyAssessedCourseNode_first() {
-		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
-		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		LearningPathTreeNode child5 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		LearningPathTreeNode child6 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null, null));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
+		LearningPathTreeNode child5 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child6 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
 		
 		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
 		
@@ -89,13 +109,13 @@ public class LearningPathNoAccessResolverTest {
 	
 	@Test
 	public void shouldGetFirstMandatoryNotFullyAssessedCourseNode_mandatory() {
-		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
-		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.optional, Boolean.FALSE, AssessmentEntryStatus.notStarted, null));
-		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		LearningPathTreeNode child5 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		LearningPathTreeNode child6 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.optional, Boolean.FALSE, AssessmentEntryStatus.notStarted, null, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null, null));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
+		LearningPathTreeNode child5 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child6 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
 
 		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
 		
@@ -113,11 +133,11 @@ public class LearningPathNoAccessResolverTest {
 	
 	@Test
 	public void shouldGetFirstMandatoryNotFullyAssessedCourseNode_excluded() {
-		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
-		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.excluded, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.excluded, Boolean.FALSE, AssessmentEntryStatus.inProgress, null, null));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null, null));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
 
 		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
 		
@@ -132,13 +152,13 @@ public class LearningPathNoAccessResolverTest {
 	
 	@Test
 	public void shouldGetLastAccessibleCourseNode_mix() {
-		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
-		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture()));
-		LearningPathTreeNode child5 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		LearningPathTreeNode child6 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null, null));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture(), null));
+		LearningPathTreeNode child5 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child6 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
 		
 		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
 		
@@ -154,17 +174,17 @@ public class LearningPathNoAccessResolverTest {
 	}
 	@Test
 	public void shouldGetLastAccessibleCourseNode_not_sequention() {
-		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
-		LearningPathTreeNode child1 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		LearningPathTreeNode child2 = add(root, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		LearningPathTreeNode child21 = add(child2, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		LearningPathTreeNode child22 = add(child2, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		LearningPathTreeNode child3 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notStarted, null));
-		LearningPathTreeNode child4 = add(root, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notStarted, null));
-		LearningPathTreeNode child41 = add(child4, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		LearningPathTreeNode child42 = add(child4, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		LearningPathTreeNode child5 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.notStarted, null));
-		LearningPathTreeNode child6 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notStarted, null));
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null, null));
+		LearningPathTreeNode child1 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null, null));
+		LearningPathTreeNode child2 = add(root, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null, null));
+		LearningPathTreeNode child21 = add(child2, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null, null));
+		LearningPathTreeNode child22 = add(child2, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
+		LearningPathTreeNode child3 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notStarted, null, null));
+		LearningPathTreeNode child4 = add(root, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notStarted, null, null));
+		LearningPathTreeNode child41 = add(child4, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null, null));
+		LearningPathTreeNode child42 = add(child4, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null, null));
+		LearningPathTreeNode child5 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.notStarted, null, null));
+		LearningPathTreeNode child6 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notStarted, null, null));
 		
 		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
 		
@@ -194,14 +214,18 @@ public class LearningPathNoAccessResolverTest {
 	}
 	
 	private AssessmentEvaluation ae(AssessmentObligation obligation, Boolean fullyAssessed,
-			AssessmentEntryStatus status, Date startDate) {
+			AssessmentEntryStatus status, Date startDate, Date endDate) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null, status,
 				null, fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, startDate,
-				null, ObligationOverridable.of(obligation), null, null, null);
+				Overridable.of(endDate), ObligationOverridable.of(obligation), null, null, null);
 	}
 
 	private Date inFuture() {
 		return DateUtils.addDays(new Date(), 3);
+	}
+
+	private Date inPast() {
+		return DateUtils.addDays(new Date(), -3);
 	}
 
 

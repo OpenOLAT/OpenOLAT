@@ -117,8 +117,6 @@
 	    <test.env.azure.adfs.refresh.token></test.env.azure.adfs.refresh.token>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
-	    <test.env.webdriver.chrome.driver></test.env.webdriver.chrome.driver>
-	    <test.env.webdriver.gecko.driver></test.env.webdriver.gecko.driver>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>
 	</properties>
@@ -1375,14 +1373,11 @@
 						<test.env.azure.adfs.tenant>${test.env.azure.adfs.tenant}</test.env.azure.adfs.tenant>
 						<test.env.azure.adfs.refresh.token>${test.env.azure.adfs.refresh.token}</test.env.azure.adfs.refresh.token>
 						<arquillian.launch>tomcat-10-managed</arquillian.launch>
-						<webdriver.http.factory>jdk-http-client</webdriver.http.factory>
 						<webdriver.browser>${test.env.webdriver.browser}</webdriver.browser>
-						<webdriver.chrome.driver>${test.env.webdriver.chrome.driver}</webdriver.chrome.driver>
-						<webdriver.gecko.driver>${test.env.webdriver.gecko.driver}</webdriver.gecko.driver>
 					</systemPropertyVariables>
 					<testNGArtifactName>none:none</testNGArtifactName>
 					<includes>
-						<include>org/olat/selenium/*Test.java</include>
+						<include>org/olat/selenium/SeleniumTest.java</include>
 					</includes>
 				</configuration>
 				<executions>
@@ -1441,6 +1436,43 @@
 								<filtering>false</filtering>
 							</resource>
 						</webResources>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-antrun-plugin</artifactId>
+										<versionRange>[1.8,)</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>sql-maven-plugin</artifactId>
+										<versionRange>[1.5,)</versionRange>
+										<goals>
+											<goal>execute</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
 

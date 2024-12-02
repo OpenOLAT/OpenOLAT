@@ -38,6 +38,7 @@ public class GradersSearchParameters {
 	private Date gradingFrom;
 	private Date closedToDate;
 	private Date closedFromDate;
+	private Date assignmentDateFrom;
 	private Identity grader;
 	private Identity manager;
 	private List<GraderStatus> status;
@@ -73,6 +74,14 @@ public class GradersSearchParameters {
 
 	public void setClosedFromDate(Date closedFromDate) {
 		this.closedFromDate = closedFromDate;
+	}
+
+	public Date getAssignmentDateFrom() {
+		return assignmentDateFrom;
+	}
+
+	public void setAssignmentDateFrom(Date assignmentDateFrom) {
+		this.assignmentDateFrom = assignmentDateFrom;
 	}
 
 	public List<GraderStatus> getStatus() {
