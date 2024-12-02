@@ -45,6 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.cache.CacheWrapper;
@@ -844,6 +845,13 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		return assignment;
 	}
 	
+	/**
+	 * Choose a grader, if several found, fair distribution on the last
+	 * 28 days or as specified by the grading module.
+	 * 
+	 * @param referenceEntry The course
+	 * @return A grader
+	 */
 	protected GraderToIdentity selectGrader(RepositoryEntry referenceEntry) {
 		List<GraderToIdentity> activeGraders = activeGraders(referenceEntry);
 		GraderToIdentity choosedGrader = null;
@@ -852,6 +860,9 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		} else if(activeGraders.size() > 1) {
 			GradersSearchParameters searchParameters = new GradersSearchParameters();
 			searchParameters.setReferenceEntry(referenceEntry);
+			final int days = gradingModule.getCountAssignmentDays();
+			final Date takeInAccount = DateUtils.getStartOfDay(DateUtils.addDays(new Date(), -days));
+			searchParameters.setAssignmentDateFrom(takeInAccount);
 			List<GraderStatistics> gradersStatistics = gradedToIdentityDao.getGradersStatistics(searchParameters);
 			choosedGrader = selectedLessAssigned(gradersStatistics, activeGraders);
 		}

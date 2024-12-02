@@ -47,6 +47,9 @@ public class GradingModule extends AbstractSpringModule implements ConfigOnOff {
 
 	@Value("${grading.correction.real.minutes.visibility:administrator,learnresourcemanager,author,grader}")
 	private String correctionRealMinutesVisibility;
+	
+	@Value("${grading.count.assignment.days:28}")
+	private int countAssignmentDays;
 
 	@Autowired
 	public GradingModule(CoordinatorManager coordinatorManager) {
@@ -101,5 +104,9 @@ public class GradingModule extends AbstractSpringModule implements ConfigOnOff {
 		}
 		correctionRealMinutesVisibility = sb.toString();
 		setStringProperty(PROP_REAL_MINUTES_VISIBILITY, correctionRealMinutesVisibility, true);
+	}
+
+	public int getCountAssignmentDays() {
+		return countAssignmentDays;
 	}
 }

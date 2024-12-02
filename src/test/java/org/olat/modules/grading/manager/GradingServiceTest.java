@@ -213,6 +213,56 @@ public class GradingServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void selectGrader_oldAssignments() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-9");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		
+		Identity student1 = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-9-1");
+		AssessmentEntry assessment1 = assessmentEntryDao.createAssessmentEntry(student1, null, entry, "test-1", false, entry);
+		AssessmentEntry assessment2 = assessmentEntryDao.createAssessmentEntry(student1, null, entry, "test-2", false, entry);
+		AssessmentEntry assessment3 = assessmentEntryDao.createAssessmentEntry(student1, null, entry, "test-3", false, entry);
+		AssessmentEntry assessment4 = assessmentEntryDao.createAssessmentEntry(student1, null, entry, "test-4", false, entry);
+
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-9-grader1");
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-9-grader2");
+		
+		GraderToIdentity graderRelation1 = gradedToIdentityDao.createRelation(entry, identity1);
+		GraderToIdentity graderRelation2 = gradedToIdentityDao.createRelation(entry, identity2);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(graderRelation1);
+		Assert.assertNotNull(graderRelation2);
+		
+		// Set some assignments in the past for grader 1
+		Date pastDate = DateUtils.addDays(new Date(), -365);
+		GradingAssignment assignment1 = gradingAssignmentDao.createGradingAssignment(graderRelation1, entry, assessment1, pastDate, null);
+		GradingAssignment assignment2 = gradingAssignmentDao.createGradingAssignment(graderRelation1, entry, assessment2, pastDate, null);
+		assignment1.setAssignmentDate(pastDate);
+		gradingAssignmentDao.updateAssignment(assignment1);
+		assignment2.setAssignmentDate(pastDate);
+		gradingAssignmentDao.updateAssignment(assignment2);
+		dbInstance.commitAndCloseSession();
+		
+		// Assign the graders to current assessment
+		GradingAssignment assignment3 = gradingService.assignGrader(entry, assessment3, new Date(), true);
+		dbInstance.commitAndCloseSession();
+		GradingAssignment assignment4 = gradingService.assignGrader(entry, assessment4, new Date(), true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(assignment3);
+		Assert.assertNotNull(assignment4);
+		
+		GraderToIdentity grader3 = assignment3.getGrader();
+		GraderToIdentity grader4 = assignment4.getGrader();
+		Assert.assertNotNull(grader3);
+		Assert.assertNotNull(grader4);
+		Assert.assertNotNull(grader3.getIdentity());
+		Assert.assertNotNull(grader4.getIdentity());
+		Assert.assertNotEquals(grader3.getIdentity(), grader4.getIdentity());
+
+		Assert.assertTrue(grader3.getIdentity().equals(identity1) || grader4.getIdentity().equals(identity1));
+		Assert.assertTrue(grader3.getIdentity().equals(identity2) || grader4.getIdentity().equals(identity2));
+	}
+	
+	@Test
 	public void selectGrader_absences() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-8");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
