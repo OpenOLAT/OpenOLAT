@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -44,13 +45,20 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CourseModule;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.CurriculumListManagerController;
@@ -58,6 +66,8 @@ import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetDataModel.EntriesCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.AccessRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,11 +81,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CoursesWidgetController extends FormBasicController implements FlexiTableComponentDelegate {
 	
 	private FormLink coursesLink;
+	private FormLink addResourcesButton;
+	private EmptyPanelItem emptyList;
 	private FlexiTableElement entriesTableEl;
 	private CoursesWidgetDataModel entriesTableModel;
 
+	private final boolean resourcesManaged;
 	private final MapperKey mapperThumbnailKey;
-	private final List<RepositoryEntry> repositoryEntries;
+	private final CurriculumElement curriculumElement;
+	private final CurriculumSecurityCallback secCallback;
+	private final CurriculumElementType curriculumElementType;
+	
+	private CloseableModalController cmc;
+	private ReferencableEntriesSearchController repoSearchCtr;
 
 	@Autowired
 	private MapperService mapperService;
@@ -84,16 +102,18 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public CoursesWidgetController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
+	public CoursesWidgetController(UserRequest ureq, WindowControl wControl,
+			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "courses_widget", Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
-		repositoryEntries = curriculumService.getRepositoryEntries(curriculumElement);
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(900, 600));
 		
+		this.secCallback = secCallback;
+		this.curriculumElement = curriculumElement;
+		this.curriculumElementType = curriculumElement.getType();
+		resourcesManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.resources);
+		
 		initForm(ureq);
-
-		if(!repositoryEntries.isEmpty()) {
-			loadModel();
-		}
+		loadModel();
 	}
 	
 	@Override
@@ -109,13 +129,18 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		coursesLink = uifactory.addFormLink("curriculum.courses", formLayout);
 		coursesLink.setIconRightCSS("o_icon o_icon-fw o_icon_course_next");
 		
-		if(repositoryEntries.isEmpty()) {
-			EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("course.empty", null, formLayout);
-			emptyTeachersList.setTitle(translate("curriculum.no.course.assigned.title"));
-			emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_CourseModule_icon");
-		} else {
-			initFormTable(formLayout);
+		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)
+				&& (curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 0)) {
+			addResourcesButton = uifactory.addFormLink("add.resources", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
+			addResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			addResourcesButton.setTitle("add.resources");
 		}
+
+		emptyList = uifactory.addEmptyPanel("course.empty", null, formLayout);
+		emptyList.setTitle(translate("curriculum.no.course.assigned.title"));
+		emptyList.setIconCssClass("o_icon o_icon-lg o_CourseModule_icon");
+
+		initFormTable(formLayout);
 	}
 	
 	private void initFormTable(FormItemContainer formLayout) {
@@ -140,7 +165,9 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		entriesTableEl.setRowRenderer(row, this);
 	}
 	
-	private void loadModel() {
+	public void loadModel() {
+		List<RepositoryEntry> repositoryEntries = curriculumService.getRepositoryEntries(curriculumElement);
+		
 		AccessRenderer renderer = new AccessRenderer(getLocale());
 		List<CourseWidgetRow> rows = new ArrayList<>();
 		for(RepositoryEntry entry:repositoryEntries) {
@@ -148,6 +175,15 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		}
 		entriesTableModel.setObjects(rows);
 		entriesTableEl.reset(true, true, true);
+		
+		boolean empty = rows.isEmpty();
+		entriesTableEl.setVisible(!empty);
+		emptyList.setVisible(empty);
+		
+		int maxRelations = curriculumElementType == null ? Integer.MAX_VALUE : curriculumElementType.getMaxRepositoryEntryRelations();
+		if(addResourcesButton != null) {
+			addResourcesButton.setVisible(maxRelations > rows.size());
+		}
 	}
 	
 	private CourseWidgetRow forgeRow(RepositoryEntry entry, AccessRenderer renderer) {
@@ -166,6 +202,31 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		openLink.setUserObject(row);
 		return row;
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(repoSearchCtr == source) {
+			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				doAddRepositoryEntry(repoSearchCtr.getSelectedEntry());
+				loadModel();
+			} else if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) {
+				doAddRepositoryEntry(repoSearchCtr.getSelectedEntries());
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(repoSearchCtr);
+		removeAsListenerAndDispose(cmc);
+		repoSearchCtr = null;
+		cmc = null;
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -173,6 +234,8 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 			List<ContextEntry> entries = BusinessControlFactory.getInstance()
 					.createCEListFromResourceType(CurriculumListManagerController.CONTEXT_RESOURCES);
 			fireEvent(ureq, new ActivateEvent(entries));
+		} else if(addResourcesButton == source) {
+			doChooseResources(ureq);
 		} else if(source instanceof FormLink link && "open".equals(link.getCmd())
 				&& link.getUserObject() instanceof CourseWidgetRow row) {
 			doOpen(ureq, row);
@@ -197,6 +260,39 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 	private void doOpen(UserRequest ureq, Long entryKey) {
 		String businessPath = "[RepositoryEntry:" + entryKey + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void doChooseResources(UserRequest ureq) {
+		if(guardModalController(repoSearchCtr)) return;
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean adminSearch = roles.hasRole(OrganisationRoles.administrator)
+				|| roles.hasRole(OrganisationRoles.learnresourcemanager)
+				|| roles.hasRole(OrganisationRoles.curriculummanager);
+		boolean orgSearch = secCallback.canEditCurriculumElement(curriculumElement) && !adminSearch;
+		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+				new String[]{ CourseModule.getCourseTypeName() }, null, null, translate("add.resources"),
+				false, false, true, orgSearch, adminSearch, false, Can.referenceable);
+		listenTo(repoSearchCtr);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("add.resources"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddRepositoryEntry(RepositoryEntry entry) {
+		doAddRepositoryEntry(List.of(entry));
+	}
+	
+	private void doAddRepositoryEntry(List<RepositoryEntry> entries) {
+		boolean moveLectureBlocks = false;
+		if(entries.size() == 1 && entriesTableModel.getRowCount() == 0) {
+			moveLectureBlocks = true;
+		}
+		
+		for(RepositoryEntry entry:entries) {
+			curriculumService.addRepositoryEntry(curriculumElement, entry, moveLectureBlocks);
+		}
 	}
 	
 	private static class EntriesDelegate implements FlexiTableCssDelegate {

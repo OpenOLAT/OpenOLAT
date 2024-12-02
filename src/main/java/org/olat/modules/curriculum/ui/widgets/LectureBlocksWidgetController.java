@@ -194,7 +194,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		return tableEl;
 	}
 	
-	private void loadModel(Date now) {
+	public void loadModel(Date now) {
 		loadTodayModel(now);
 		loadNextDaysModel(now);
 	}

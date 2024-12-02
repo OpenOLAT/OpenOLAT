@@ -443,9 +443,10 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		background-color: $o-curriculum-widget-bg-color;
 	}
 		
-	.o_curriculum_widget_title h4 {
+	.o_curriculum_widget_title>h3 {
 		padding: 5px 15px;
 		margin: 5px 0;
+		font-size: 18px;
 	}
 	
 	.o_header_with_buttons {
@@ -455,6 +456,10 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	.o_curriculum_widget_cmds {
 		font-size: 18px;
 		margin-right: 15px;
+	}
+	
+	.o_header_with_buttons h3+.o_button_group.o_curriculum_widget_cmds {
+		margin-top: 8px;
 	}
 	
 	.o_curriculum_widget_cards {
@@ -584,6 +589,11 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		border: $o-curriculum-widget-card-border;
 		border-radius: $o-curriculum-widget-card-border-radius;
 		background-color: #fff;
+		
+		h4 {
+			margin: 3px 0;
+			flex-grow: 2;
+		}
 		
 		.o_thumbnail, .o_visual_not_available {
 			width: 120px;

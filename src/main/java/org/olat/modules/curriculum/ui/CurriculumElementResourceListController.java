@@ -179,7 +179,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 		return null;
 	}
 	
-	private void loadModel() {
+	public void loadModel() {
 		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
 		tableModel.setObjects(entries);
 		tableEl.reset(true, true, true);

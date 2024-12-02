@@ -42,6 +42,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -352,7 +353,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		listenTo(overviewCtrl);
 		
 		if(curriculumElement.getParent() != null) {
-			coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement);
+			coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
 			listenTo(coursesWidgetCtrl);
 			overviewCtrl.addWidget("courses", coursesWidgetCtrl);
 		}
@@ -432,6 +433,23 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
 		} else if(nextButton == source && nextButton.getUserObject() instanceof CurriculumElement el) {
 			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
+		} else if(tabPane == source) {
+			if(event instanceof TabbedPaneChangedEvent tpce) {
+				if(overviewCtrl != null && tpce.getNewComponent() == overviewCtrl.getInitialComponent()) {
+					updateOverviewDashboard(ureq);
+				} else if(resourcesCtrl != null && tpce.getNewComponent() == resourcesCtrl.getInitialComponent()) {
+					resourcesCtrl.loadModel();
+				}
+			}
+		}
+	}
+	
+	private void updateOverviewDashboard(UserRequest ureq) {
+		if(coursesWidgetCtrl != null) {
+			coursesWidgetCtrl.loadModel();
+		}
+		if(lectureBlocksWidgetCtrl != null) {
+			lectureBlocksWidgetCtrl.loadModel(ureq.getRequestTimestamp());
 		}
 	}
 	
