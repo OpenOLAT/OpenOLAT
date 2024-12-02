@@ -96,6 +96,11 @@ public class LearningPathNoAccessResolver implements NoAccessResolver {
 									linkNodeIdent = lpTreeNode.getIdent();
 								}
 								inaccessibleNodeIdentToNoAccess.put(lpTreeNode.getIdent(), NoAccessResolver.startDateInFuture(assessmentEvaluation.getStartDate()));
+							} else if (isEndInPast(assessmentEvaluation)) {
+								if (linkNodeIdent == null) {
+									linkNodeIdent = lpTreeNode.getIdent();
+								}
+								inaccessibleNodeIdentToNoAccess.put(lpTreeNode.getIdent(), NoAccessResolver.endDateInPast(assessmentEvaluation.getEndDate().getCurrent()));
 							} else {
 								if (linkNodeIdent == null) {
 									linkNodeIdent = toDoNodeIdent;
@@ -110,6 +115,12 @@ public class LearningPathNoAccessResolver implements NoAccessResolver {
 
 		private boolean isStartInFuture(AssessmentEvaluation assessmentEvaluation) {
 			return assessmentEvaluation.getStartDate() != null && assessmentEvaluation.getStartDate().after(new Date());
+		}
+		
+		private boolean isEndInPast(AssessmentEvaluation assessmentEvaluation) {
+			return assessmentEvaluation.getEndDate() != null
+					&& assessmentEvaluation.getEndDate().getCurrent() != null
+					&& assessmentEvaluation.getEndDate().getCurrent().before(new Date());
 		}
 		
 		private boolean isFullyAssessed(AssessmentEvaluation assessmentEvaluation) {

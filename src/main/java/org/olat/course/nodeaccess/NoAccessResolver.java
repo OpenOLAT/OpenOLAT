@@ -34,7 +34,7 @@ import org.olat.course.nodes.CourseNode;
  */
 public interface NoAccessResolver {
 	
-	public enum NoAccessReason { condition, previousNotDone, startDateInFuture, unknown }
+	public enum NoAccessReason { condition, previousNotDone, startDateInFuture, endDateInPast, unknown }
 	
 	public NoAccess getNoAccessMessage(CourseNode courseNode);
 	
@@ -52,6 +52,10 @@ public interface NoAccessResolver {
 	
 	public static NoAccess startDateInFuture(Date date) {
 		return new NoAccess(NoAccessReason.startDateInFuture, null, null, date);
+	}
+	
+	public static NoAccess endDateInPast(Date date) {
+		return new NoAccess(NoAccessReason.endDateInPast, null, null, date);
 	}
 	
 	public class NoAccess {
