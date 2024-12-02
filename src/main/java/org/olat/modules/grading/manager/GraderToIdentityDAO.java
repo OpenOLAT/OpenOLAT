@@ -466,6 +466,9 @@ public class GraderToIdentityDAO {
 			GradingAssignmentDAO.applyAssignmentSearchParameters(sb, searchParams.getGradingFrom(), searchParams.getGradingTo());
 			sb.append(")");
 		}
+		if(searchParams.getAssignmentDateFrom() != null) {
+			sb.and().append("assignment.assignmentDate>=:assignmentFromDate");
+		}
 		
 		if(applyFromTo && (searchParams.getClosedFromDate() != null || searchParams.getClosedToDate() != null)) {
 			sb.and()
@@ -562,6 +565,10 @@ public class GraderToIdentityDAO {
 			sb.and().append("assignment.closingDate<=:closedToDate");
 		}
 		
+		if(searchParams.getAssignmentDateFrom() != null) {
+			sb.and().append("assignment.assignmentDate>=:assignmentFromDate");
+		}
+		
 		sb.append(" group by rel.identity.key");
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -607,6 +614,9 @@ public class GraderToIdentityDAO {
 		}
 		if(applyDates && searchParams.getClosedToDate() != null) {
 			query.setParameter("closedToDate", searchParams.getClosedToDate(), TemporalType.TIMESTAMP);
+		}
+		if(searchParams.getAssignmentDateFrom() != null) {
+			query.setParameter("assignmentFromDate", searchParams.getAssignmentDateFrom(), TemporalType.TIMESTAMP);
 		}
 		if(searchParams.getManager() != null) {
 			query.setParameter("managerKey", searchParams.getManager().getKey());
