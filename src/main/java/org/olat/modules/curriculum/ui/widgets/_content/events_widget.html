@@ -10,21 +10,15 @@
 		#end
 	</div>
 	<div class="o_curriculum_widget_numbers">
-		<div class="o_curriculum_widget_number">
-			<div class="o_curriculum_widget_label">$r.render("num.of.events.today", "label")</div>
-			<div class="o_curriculum_widget_value">$r.render("num.of.events.today", "nolayout")</div>
-		</div>
-		<div class="o_curriculum_widget_number">
-			<div class="o_curriculum_widget_label">$r.render("num.of.events.next.days", "label")</div>
-			<div class="o_curriculum_widget_value">$r.render("num.of.events.next.days", "nolayout")</div>
-		</div>
+		$r.render("num.of.events.today", "nolayout")
+		$r.render("num.of.events.next.days", "nolayout")
 	</div>
 	#if($r.isFalse($minimized))
 	<fieldset class="o_curriculum_widget_table">
 		<legend>$r.render("curriculum.lectures.today")</legend>
 		$r.render("today")
 	</fieldset>
-	<fieldset class="o_curriculum_widget_table">
+	<fieldset class="o_curriculum_widget_table o_curriculum_widget_upcoming_events">
 		<legend>$r.render("curriculum.lectures.next.days")</legend>
 		$r.render("nextDays")
 	</fieldset>

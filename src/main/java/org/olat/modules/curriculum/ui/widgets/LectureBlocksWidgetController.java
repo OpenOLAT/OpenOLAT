@@ -30,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -78,12 +77,12 @@ public class LectureBlocksWidgetController extends FormBasicController {
 	private FormLink lecturesLink;
 	private FormLink minimizeButton;
 	private FormLink addLecturesLink;
+	private FormLink eventsTodayLink;
+	private FormLink eventsNextDaysLink;
 	private FlexiTableElement todayTableEl;
 	private FlexiTableElement nextDaysTableEl;
 	private LectureBlocksWidgetTableModel todayTableModel;
 	private LectureBlocksWidgetTableModel nextDaysTableModel;
-	private StaticTextElement eventsTodayEl;
-	private StaticTextElement eventsNextDaysEl;
 
 	private AtomicBoolean minimized;
 	private Curriculum curriculum;
@@ -155,8 +154,8 @@ public class LectureBlocksWidgetController extends FormBasicController {
 			addLecturesLink.setTitle(translate("curriculum.add.lectures"));
 		}
 		
-		eventsTodayEl = uifactory.addStaticTextElement("num.of.events.today", "", formLayout);
-		eventsNextDaysEl = uifactory.addStaticTextElement("num.of.events.next.days", "", formLayout);
+		eventsTodayLink = uifactory.addFormLink("num.of.events.today", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
+		eventsNextDaysLink = uifactory.addFormLink("num.of.events.next.days", "", null, formLayout, Link.LINK | Link.NONTRANSLATED);
 		
 		todayLink = uifactory.addFormLink("curriculum.lectures.today", formLayout);
 		upcomingLink = uifactory.addFormLink("curriculum.lectures.next.days", formLayout);
@@ -215,7 +214,9 @@ public class LectureBlocksWidgetController extends FormBasicController {
 				.toList();
 		todayTableModel.setObjects(rows);
 		todayTableEl.reset(true, true, true);
-		eventsTodayEl.setValue(Long.toString(numOfBlocks));
+		
+		String text = getText(translate("num.of.events.today"), Long.toString(numOfBlocks));
+		eventsTodayLink.setI18nKey(text);
 	}
 	
 	private void trimBeforeNow(List<LectureBlock> lectureBlocks, Date now) {
@@ -240,8 +241,19 @@ public class LectureBlocksWidgetController extends FormBasicController {
 				.map(LectureBlockWidgetRow::new)
 				.toList();
 		nextDaysTableModel.setObjects(rows);
-		nextDaysTableEl.reset(true, true, true);	
-		eventsNextDaysEl.setValue(Long.toString(numOfBlocks));
+		nextDaysTableEl.reset(true, true, true);
+		
+		String text = getText(translate("num.of.events.next.days"), Long.toString(numOfBlocks));
+		eventsNextDaysLink.setI18nKey(text);
+	}
+	
+	private String getText(String label, String value) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<span class=\"o_curriculum_widget_number\">")
+		  .append("<label class=\"o_curriculum_widget_label\">").append(label).append("</label>")
+		  .append("<span class=\"o_curriculum_widget_value\">").append(value).append("</span>")
+		  .append("</span>");
+		return sb.toString();
 	}
 	
 	private LecturesBlockSearchParameters getSearchParameters() {
@@ -281,16 +293,10 @@ public class LectureBlocksWidgetController extends FormBasicController {
 			List<ContextEntry> entries = BusinessControlFactory.getInstance()
 					.createCEListFromResourceType(CurriculumListManagerController.CONTEXT_LECTURES);
 			fireEvent(ureq, new ActivateEvent(entries));
-		} else if(todayLink == source) {
-			List<ContextEntry> entries = BusinessControlFactory.getInstance()
-					.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES),
-							OresHelper.createOLATResourceableType("Today"));
-			fireEvent(ureq, new ActivateEvent(entries));
-		} else if(upcomingLink == source) {
-			List<ContextEntry> entries = BusinessControlFactory.getInstance()
-					.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES),
-							OresHelper.createOLATResourceableType("Upcoming"));
-			fireEvent(ureq, new ActivateEvent(entries));
+		} else if(todayLink == source || eventsTodayLink == source) {
+			fireActivateLectureEvent(ureq, "Today");
+		} else if(upcomingLink == source || eventsNextDaysLink == source) {
+			fireActivateLectureEvent(ureq, "Upcoming");
 		} else if(addLecturesLink == source) {
 			doAddLectureBlock(ureq);
 		} else if(minimizeButton == source) {
@@ -307,6 +313,13 @@ public class LectureBlocksWidgetController extends FormBasicController {
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void fireActivateLectureEvent(UserRequest ureq, String filter) {
+		List<ContextEntry> entries = BusinessControlFactory.getInstance()
+				.createCEListFromString(OresHelper.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES),
+						OresHelper.createOLATResourceableType(filter));
+		fireEvent(ureq, new ActivateEvent(entries));
 	}
 
 	@Override

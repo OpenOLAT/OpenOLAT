@@ -568,6 +568,11 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		.o_lecture_title {
 			font-weight: bold;
 		}
+		.o_lecture_ref {
+			display: block;
+			height: 16px;
+		}
+		
 		.o_lecture_day {
 			display: block;
 		}
@@ -579,6 +584,10 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		.o_curriculum_now .o_lecture_time i.o_icon_time {
 			@include o-add-icon('hourglass-half', false);
 		}
+	}
+	
+	.o_curriculum_widget_upcoming_events {
+		margin-top: 20px;
 	}
 	
 	.o_curriculum_course_card {

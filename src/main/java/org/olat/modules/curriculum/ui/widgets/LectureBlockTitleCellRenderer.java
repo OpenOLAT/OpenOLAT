@@ -50,6 +50,8 @@ public class LectureBlockTitleCellRenderer implements FlexiCellRenderer {
 				target.append("<small class='o_lecture_ref'>")
 				      .appendHtmlEscaped(lectureBlock.getExternalRef())
 				      .append("</small>");
+			} else {
+				target.append("<small class='o_lecture_ref'></small>");
 			}
 			target.append("</span>");
 		}
