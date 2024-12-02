@@ -30,9 +30,9 @@
 	#if ($hasDidYouMean)
 		<div class="o_empty_state">
 			<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_icon_database"></i></div>
-			<h3 class="o_empty_msg">
+			<div class="o_empty_msg">
 				$r.translate("search.did.you.mean")
-			</h3>
+			</div>
 			<div class="o_empty_hint">
 				$r.translate("search.did.you.mean.hint")
 		      	#set ($wordCounter = 0)

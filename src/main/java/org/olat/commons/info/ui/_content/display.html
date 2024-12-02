@@ -18,9 +18,9 @@ function o_activateInfoTool(toolname) {
 #if($infos.isEmpty())
 	<div class="o_empty_state">
 		<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_icon_news"></i></div>
-		<h3 class="o_empty_msg">
+		<div class="o_empty_msg">
 			$r.translate("display.no_messages")
-		</h3>
+		</div>
 		#if($r.available("new_message"))
 		<div class="o_empty_hint">
 			$r.translate("display.no_messages.hint")

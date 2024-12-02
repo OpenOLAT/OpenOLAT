@@ -188,9 +188,10 @@ ul.o_dropdown {
 		}
 	}
 	.o_empty_msg {
-		margin-top: 0.5em;
+		margin: 0.5em 0;
 		color: $o-empty-msg-color;	
 		font-size: 1.5em;
+		font-weight: 500;
 	}
 	.o_empty_hint {
 		margin: 0.5em;

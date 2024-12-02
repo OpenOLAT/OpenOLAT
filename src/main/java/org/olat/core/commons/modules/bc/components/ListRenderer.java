@@ -150,7 +150,7 @@ public class ListRenderer {
 		if (children.isEmpty()) {
 			sb.append("<div class=\"o_empty_state\">")
 				.append("<div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon o_icon_files'></i></div>")
-				.append("<h3 class=\"o_empty_msg\">").append(translator.translate("NoFiles")).append("</h3>");
+				.append("<div class=\"o_empty_msg\">").append(translator.translate("NoFiles")).append("</div>");
 			if (currentContainer.canWrite() == VFSStatus.YES) {
 				sb.append("<div class=\"o_empty_hint\">").append(translator.translate("NoFiles.hint.readwrite")).append("</div>")
 					.append("<div class=\"o_empty_action\"><a class='btn btn-default btn-primary' ");

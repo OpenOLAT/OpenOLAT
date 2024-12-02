@@ -61,7 +61,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		} else {
 			Util.createPackageTranslator(EmptyState.class, translator.getLocale()).translate("default.message");
 		}
-		sb.append("<h3 class='o_empty_msg'>").append(message).append("</h3>");
+		sb.append("<div class='o_empty_msg'>").append(message).append("</div>");
 
 		if (StringHelper.containsNonWhitespace(emptyState.getHintTranslated())) {
 			sb.append("<div class='o_empty_hint'>").append(emptyState.getHintTranslated()).append("</div>");

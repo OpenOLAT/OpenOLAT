@@ -92,7 +92,7 @@ public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 	protected void renderEmptyState(StringOutput sb, Translator translator) {
 			sb.append("<div class=\"o_empty_state\"");
 			sb.append("><div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon o_page_icon'></i></div>")
-			  .append("<h3 class=\"o_empty_msg\">").append(translator.translate("no.content")).append("</h3>");						
+			  .append("<div class=\"o_empty_msg\">").append(translator.translate("no.content")).append("</div>");						
 			sb.append("</div>");
 		}
 	

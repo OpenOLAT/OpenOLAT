@@ -176,7 +176,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append(" id=\"").append(wrapperSelector).append("\"");
 		}
 		sb.append("><div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon ").append(emptyMessageIconCss).append("'></i></div>")
-			.append("<h3 class=\"o_empty_msg\">").append(translator.translate(emptyMessageKey)).append("</h3>");			
+			.append("<div class=\"o_empty_msg\">").append(translator.translate(emptyMessageKey)).append("</div>");			
 		if (emptyMessageHintKey != null) {
 			sb.append("<div class=\"o_empty_hint\">").append(translator.translate(emptyMessageHintKey)).append("</div>");
 		}			
