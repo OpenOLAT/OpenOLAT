@@ -157,7 +157,7 @@ public class CurriculumElementDAO {
 			inner join fetch el.curriculum curriculum
 			inner join fetch el.group baseGroup
 			left join fetch el.type elementType
-			inner join fetch el.resource rsrc
+			left join fetch el.resource rsrc
 			where el.key=:key""";
 		
 		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
