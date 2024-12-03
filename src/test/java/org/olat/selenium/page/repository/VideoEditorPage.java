@@ -88,10 +88,16 @@ public class VideoEditorPage {
 	}
 	
 	public VideoEditorPage save() {
-		By saveBy = By.cssSelector(".o_video_segment_buttons>button.btn.btn-primary");
-		browser.findElement(saveBy).click();
-		By dirtySaveBy = By.xpath("//div[contains(@class,'o_video_segment_buttons')]/button[contains(@class,'btn-primary') and not(contains(@class,'o_button_dirty'))]");
-		OOGraphene.waitElement(dirtySaveBy, browser);
+		try {
+			By saveBy = By.cssSelector(".o_video_segment_buttons>button.btn.btn-primary");
+			browser.findElement(saveBy).click();
+			OOGraphene.waitBusy(browser);
+			By dirtySaveBy = By.xpath("//div[contains(@class,'o_video_segment_buttons')]/button[contains(@class,'btn-primary') and not(contains(@class,'o_button_dirty'))]");
+			OOGraphene.waitElement(dirtySaveBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Save segment", browser);
+			throw e;
+		}
 		return this;
 	}
 	
