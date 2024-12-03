@@ -1048,6 +1048,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// goto node:
 		// after a click in the tree, evaluate the model anew, and set the
 		// selection of the tree again
+		UserCourseEnvironmentImpl userCourseEnv = getUce();
+		if (userCourseEnv != null) {
+			userCourseEnv.getScoreAccounting().evaluateAll(true);
+		}
 		NodeClickedRef nclr = navHandler.evaluateJumpToTreeNode(ureq, getWindowControl(), treeModel, tev, this, null, currentNodeController, singleBranch);
 		if (!nclr.isVisible()) {
 			getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
