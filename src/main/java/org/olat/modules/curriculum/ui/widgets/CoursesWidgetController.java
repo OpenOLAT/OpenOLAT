@@ -180,9 +180,9 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 		entriesTableEl.setVisible(!empty);
 		emptyList.setVisible(empty);
 		
-		int maxRelations = curriculumElementType == null ? Integer.MAX_VALUE : curriculumElementType.getMaxRepositoryEntryRelations();
+		int maxRelations = curriculumElementType == null ? -1 : curriculumElementType.getMaxRepositoryEntryRelations();
 		if(addResourcesButton != null) {
-			addResourcesButton.setVisible(maxRelations > rows.size());
+			addResourcesButton.setVisible(maxRelations == -1 || maxRelations > rows.size());
 		}
 	}
 	
