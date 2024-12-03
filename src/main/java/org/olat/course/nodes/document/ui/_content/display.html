@@ -9,7 +9,7 @@
 		<div class="o_cnd_file">
 			#if($item.isThumbnailAvailable())
 				<div class="o_cnd_thumbnail" aria-hidden="true">
-					<img src="$item.getThumbnailUrl()"/>
+					<img src="$item.getThumbnailUrl()" alt=""/>
 				</div>
 			#else
 				<div class="o_cnd_file_icon" aria-hidden="true">
@@ -28,10 +28,10 @@
 						<div><span class="o_legend">$r.translate("legend.license"): </span>$item.licenseName</div>
 					#end
 					#if($item.licensor)
-						<div><span class="o_legend">$r.translate("legend.licensor"): </span>$item.licensor</div>
+						<div><span class="o_legend">$r.translate("legend.licensor"): </span>$r.escapeHtml($item.licensor)</div>
 					#end
 					#if($item.storageLocation)
-						<div><span class="o_legend">$r.translate("legend.storage.location"): </span>$item.storageLocation</div>
+						<div><span class="o_legend">$r.translate("legend.storage.location"): </span>$r.escapeHtml($item.storageLocation)</div>
 					#end
 				</div>
 			</div>
@@ -43,15 +43,15 @@
 		#if ($metadataToggle && $r.isNotNull($info))
 			<div class="o_cnd_meta clearfix">
 				<table class="table table-condensed">
-					#if ($info.getCreator())<tr><th>$r.translate("mf.creator")</th><td>$info.getCreator()</td></tr>#end
+					#if ($info.getCreator())<tr><th>$r.translate("mf.creator")</th><td>$r.escapeHtml($info.getCreator())</td></tr>#end
 					#if ($item.getLocalizedPublicationDate())<tr><th>$r.translate("mf.publishDate")</th><td>$item.getLocalizedPublicationDate()</td></tr>#end
-					#if ($info.getFilename())<tr><th>$r.translate("mf.filename")</th><td>$info.getFilename()</td></tr>#end
-					#if ($info.getComment())<tr><th>$r.translate("mf.comment")</th><td>$info.getComment()</td></tr>#end
-					#if ($info.getPublisher())<tr><th>$r.translate("mf.publisher")</th><td>$info.getPublisher()</td></tr>#end
-					#if ($info.getSource())<tr><th>$r.translate("mf.source")</th><td>$info.getSource()</td></tr>#end
-					#if ($info.getCity())<tr><th>$r.translate("mf.city")</th><td>$info.getCity()</td></tr>#end
+					#if ($info.getFilename())<tr><th>$r.translate("mf.filename")</th><td>$r.escapeHtml($info.getFilename())</td></tr>#end
+					#if ($info.getComment())<tr><th>$r.translate("mf.comment")</th><td>$r.escapeHtml($info.getComment())</td></tr>#end
+					#if ($info.getPublisher())<tr><th>$r.translate("mf.publisher")</th><td>$r.escapeHtml($info.getPublisher())</td></tr>#end
+					#if ($info.getSource())<tr><th>$r.translate("mf.source")</th><td>$r.escapeHtml($info.getSource())</td></tr>#end
+					#if ($info.getCity())<tr><th>$r.translate("mf.city")</th><td>$r.escapeHtml($info.getCity())</td></tr>#end
 					#if ($info.getPages())<tr><th>$r.translate("mf.pages")</th><td>$info.getPages()</td></tr>#end
-					#if ($info.getLanguage())<tr><th>$r.translate("mf.language")</th><td>$info.getLanguage()</td></tr>#end
+					#if ($info.getLanguage())<tr><th>$r.translate("mf.language")</th><td>$r.escapeHtml($info.getLanguage())</td></tr>#end
 					#if ($info.getUrl())<tr><th>$r.translate("mf.url")</th><td>$info.getUrl()</td></tr>#end
 					#if ($item.getLocalizedLastModified())<tr><th>$r.translate("mf.lastModified")</th><td>$item.getLocalizedLastModified()</td></tr>#end
 					#if ($info.getFormattedSize())<tr><th>$r.translate("mf.size")</th><td>$info.getFormattedSize()</td></tr>#end
