@@ -141,6 +141,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_customize { @include o-add-icon('gear');}
 .o_icon_database { @include o-add-icon('database');}
 .o_icon_deactivate { @include o-add-icon('ban');}
+.o_icon_decline { @include o-add-icon('xmark');}
 .o_icon_delete_item { @include o-add-icon('trash-can', false);}
 .o_icon_delete { @include o-add-icon('minus-circle'); color: #A87E7E;}
 .o_icon_deleted { @include o-add-icon('trash-can', false);}
@@ -294,6 +295,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_objectives { @include o-add-icon('bullseye');}
 .o_icon_order { @include o-add-icon('arrows-v');}
 .o_icon_overriden { @include o-add-icon('pencil');}
+.o_icon_modified { @include o-add-icon('angle-double-down');}
 .o_icon_move_down { @include o-add-icon('angle-double-down');}
 .o_icon_move_left { @include o-add-icon('angle-double-left');}
 .o_icon_move_right { @include o-add-icon('angle-double-right');}
@@ -926,18 +928,19 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_order_status_warning_icon { @include o-add-icon('exclamation'); color: $brand-warning;}
 .o_ac_order_status_pending_icon { @include o-add-icon('clock', false);}
 
-/* Membership status */
+/* Membership status (and pseudo status) */
 .o_membership_status_booking { @include o-add-icon('clock', false); color: $brand-primary; }
 .o_membership_status_parentbooking { @include o-add-icon('arrow-up');}
 .o_membership_status_transfer { @include o-add-icon('arrow-right');}
 .o_membership_status_reservation { @include o-add-icon('clock');}
+.o_membership_status_pending { @include o-add-icon('hourglass-half'); color: $brand-warning;}
 .o_membership_status_active { @include o-add-icon('circle-check'); color: $brand-success;}
-.o_membership_status_declined { @include o-add-icon('times'); color: $brand-danger;}
-.o_membership_status_cancel { @include o-add-icon('minus'); color: $brand-warning;}
-.o_membership_status_cancelwithfee { @include o-add-icon('minus'); color: $brand-warning;}
-.o_membership_status_resourcedeleted { @include o-add-icon('trash'); color: $brand-danger;}
-.o_membership_status_finished { @include o-add-icon('lock'); color: $brand-warning;}
-.o_membership_status_removed { @include o-add-icon('minus'); color: $brand-warning;}
+.o_membership_status_declined { @include o-add-icon('circle-xmark', true); }
+.o_membership_status_cancel { @include o-add-icon('circle-xmark', true);}
+.o_membership_status_cancelwithfee { @include o-add-icon('circle-xmark', true)}
+.o_membership_status_resourcedeleted { @include o-add-icon('trash', true);}
+.o_membership_status_finished { @include o-add-icon('check'); color: $brand-success;}
+.o_membership_status_removed { @include o-add-icon('minus', true);}
 
 /* Menu tree status icons for course editor and SCORM module */
 .o_scorm_org { @include o-add-icon('archive');}

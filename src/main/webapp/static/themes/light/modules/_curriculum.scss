@@ -653,6 +653,21 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	font-weight: bold;
 }
 
+.o_membership_modified {
+	border: $o-curriculum-activity-border;
+	border-radius: $o-curriculum-activity-border-radius;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-items: center;
+	padding: 2px 1px 1px 2px;
+	
+	>i {
+		font-size: 80%;
+	}
+}
+
 .o_labeled_light {
 	&.o_curriculum_status_preparation {
 		font-weight: normal;
@@ -734,7 +749,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		font-weight: normal;
 	    background-color: #fff;
 	    border-color: $o-curriculum-status-preparation-color;
-	    color: $o-curriculum-status-preparation-color;
+	    color: $o-curriculum-status-preparation-color !important;
 	}
 	
 	&.o_gmembership_status_active,
@@ -742,21 +757,25 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		font-weight: normal;
 	    background-color: #fff;
 	    border-color: $o-curriculum-status-active-color;
-	    color: $o-curriculum-status-active-color;
+	    color: $o-curriculum-status-active-color !important;
 	}
 	
 	&.o_gmembership_status_declined,
-	&.o_gmembership_status_cancelwithdee,
-	&.o_gmembership_status_cancelled {
-	    background-color: $o-curriculum-status-cancelled-color;
-		color: #fff;
+	&.o_gmembership_status_cancelwithfee,
+	&.o_gmembership_status_cancel {
+	    border-color: $o-curriculum-status-cancelled-color;
+	    color: $o-curriculum-status-cancelled-color !important;
+	}
+	
+	&.o_gmembership_status_finished {
+		border-color: $o-curriculum-status-finished-color;
+	    color: $o-curriculum-status-finished-color !important;
 	}
 	
 	&.o_gmembership_status_resourcedeleted,
-	&.o_gmembership_status_finished,
 	&.o_gmembership_status_removed {
-		background-color: $o-curriculum-status-deleted-color;
-	    color: #fff;
+		border-color: $o-curriculum-status-deleted-color;
+	    color: $o-curriculum-status-deleted-color !important;
 	}
 }
 

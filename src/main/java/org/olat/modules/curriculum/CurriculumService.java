@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -59,6 +60,8 @@ import org.olat.repository.RepositoryEntryRef;
 public interface CurriculumService {
 	
 	public static final String DEFAULT_CURRICULUM_ELEMENT_TYPE = "default-curriculum-element-type";
+	
+	public static final String RESERVATION_PREFIX = "curriculum_";
 	
 	/**
 	 * Create and persist a curriculum.
@@ -444,10 +447,15 @@ public interface CurriculumService {
 	 * @param member The identity to make a member of
 	 * @param role The role of the member
 	 */
-	//TODO curriculum (only one method)
 	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor);
 	
-	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor, String adminNote);
+	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor, String note);
+	
+	public void addMemberReservation(CurriculumElement element, Identity member, CurriculumRoles role, Date expirationDate,
+			Boolean userConfirmation, Identity actor, String note);
+	
+	public void addMemberHistory(CurriculumElement element, Identity member, CurriculumRoles role,
+			GroupMembershipStatus status, Identity actor, String note);
 	
 	/**
 	 * Remove a member of the curriculum element and discard all its roles.
@@ -464,7 +472,11 @@ public interface CurriculumService {
 	 * @param member The identity which loose the membership
 	 * @param role The role
 	 */
-	public void removeMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor);
+	public boolean removeMember(CurriculumElement element, Identity member, CurriculumRoles role,
+			GroupMembershipStatus reason, Identity actor, String adminNote);
+	
+	public boolean removeMemberReservation(CurriculumElement element, Identity member, CurriculumRoles role,
+			GroupMembershipStatus reason, Identity actor, String adminNote);
 	
 	/**
 	 * Remove the members of the curriculum elements linked to the repository entry.<br>

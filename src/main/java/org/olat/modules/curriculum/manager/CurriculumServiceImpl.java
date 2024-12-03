@@ -61,6 +61,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
@@ -135,7 +136,10 @@ import org.olat.repository.manager.RepositoryEntryMyCourseQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -169,6 +173,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private RepositoryEntryMyCourseQueries myCourseQueries;
 	@Autowired
 	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
+	@Autowired
+	private ACReservationDAO reservationDao;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -879,7 +885,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			if(changes.getCurriculumElementOwner().booleanValue()) {
 				addMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner, actor);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner, actor);
+				removeMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner,
+						GroupMembershipStatus.removed, actor, null);
 			}
 		}
 		
@@ -887,7 +894,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			if(changes.getMasterCoach().booleanValue()) {
 				addMember(element, changes.getMember(), CurriculumRoles.mastercoach, actor);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.mastercoach, actor);
+				removeMember(element, changes.getMember(), CurriculumRoles.mastercoach,
+						GroupMembershipStatus.removed, actor, null);
 			}
 		}
 		
@@ -895,7 +903,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			if(changes.getRepositoryEntryOwner().booleanValue()) {
 				addMember(element, changes.getMember(), CurriculumRoles.owner, actor);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.owner, actor);
+				removeMember(element, changes.getMember(), CurriculumRoles.owner,
+						GroupMembershipStatus.removed, actor, null);
 			}
 		}
 
@@ -903,7 +912,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			if(changes.getCoach().booleanValue()) {
 				addMember(element, changes.getMember(), CurriculumRoles.coach, actor);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.coach, actor);
+				removeMember(element, changes.getMember(), CurriculumRoles.coach,
+						GroupMembershipStatus.removed, actor, null);
 			}
 		}
 
@@ -911,7 +921,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			if(changes.getParticipant().booleanValue()) {
 				addMember(element, changes.getMember(), CurriculumRoles.participant, actor);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.participant, actor);
+				removeMember(element, changes.getMember(), CurriculumRoles.participant,
+						GroupMembershipStatus.removed, actor, null);
 			}
 		}
 	}
@@ -920,17 +931,16 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor) {
 		addMember(element, member, role, actor, null);
 	}
-
 	@Override
 	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor,
-			String adminNote) {
+			String note) {
 		GroupMembershipInheritance inheritanceMode;
 		if(CurriculumRoles.isInheritedByDefault(role)) {
 			inheritanceMode = GroupMembershipInheritance.root;
 		} else {
 			inheritanceMode = GroupMembershipInheritance.none;
 		}
-		addMember(element, member, role, inheritanceMode, actor, adminNote);
+		addMember(element, member, role, inheritanceMode, actor, null);
 		dbInstance.commit();
 	}
 	
@@ -1026,15 +1036,18 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public void removeMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor) {
+	public boolean removeMember(CurriculumElement element, Identity member, CurriculumRoles role,
+			GroupMembershipStatus reason, Identity actor, String adminNote) {
 		Group elementGroup = element.getGroup();
 		List<CurriculumElementMembershipEvent> events = new ArrayList<>();
 		GroupMembership membership = groupDao.getMembership(elementGroup, member, role.name());
-		groupDao.removeMembership(elementGroup, member, role.name());
-		groupMembershipHistoryDao.createMembershipHistory(elementGroup, member,
-				role.name(), GroupMembershipStatus.removed, null, null,
-				actor, null);
-		events.add(CurriculumElementMembershipEvent.identityRemoved(element, member, role));
+		int removed = groupDao.removeMembership(elementGroup, member, role.name());
+		if(removed > 0) {
+			groupMembershipHistoryDao.createMembershipHistory(elementGroup, member,
+					role.name(), reason, null, null,
+					actor, adminNote);
+			events.add(CurriculumElementMembershipEvent.identityRemoved(element, member, role));
+		}
 		
 		if(membership != null && (membership.getInheritanceMode() == GroupMembershipInheritance.root
 				|| membership.getInheritanceMode() == GroupMembershipInheritance.none)) {
@@ -1049,6 +1062,24 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		dbInstance.commitAndCloseSession();
 		sendDeferredEvents(events);
+		return removed > 0;
+	}
+
+	@Override
+	public boolean removeMemberReservation(CurriculumElement element, Identity member, CurriculumRoles role,
+			GroupMembershipStatus reason, Identity actor, String adminNote) {
+		OLATResource resource = element.getResource();
+		ResourceReservation reservation = reservationDao.loadReservation(member, resource);
+		if(reservation != null) {
+			Group group = element.getGroup();
+			reservationDao.deleteReservation(reservation);
+			if(reason != null) {
+				groupMembershipHistoryDao.createMembershipHistory(group, member, role.name(),
+					reason, null, null, actor, adminNote);
+			}
+			dbInstance.commit();
+		}
+		return reservation != null;
 	}
 
 	@Override
@@ -1062,6 +1093,30 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		dbInstance.commitAndCloseSession();
 		sendDeferredEvents(events);
+	}
+	
+	@Override
+	public void addMemberReservation(CurriculumElement element, Identity member, CurriculumRoles role,
+			Date expirationDate, Boolean confirmBy, Identity actor, String note) {
+		OLATResource resource = element.getResource();
+		ResourceReservation reservation = reservationDao.loadReservation(member, resource);
+		if(reservation == null) {
+			Date expiration = DateUtils.addMonth(new Date(), 6);
+			Group group = element.getGroup();
+			reservationDao.createReservation(member, "curriculum_" + role, expiration, confirmBy, resource);
+			groupMembershipHistoryDao.createMembershipHistory(group, member, role.name(),
+					GroupMembershipStatus.reservation, null, null, actor, note);
+			dbInstance.commit();
+		}
+	}
+	
+	@Override
+	public void addMemberHistory(CurriculumElement element, Identity member, CurriculumRoles role,
+			GroupMembershipStatus status, Identity actor, String note) {
+		Group group = element.getGroup();
+		groupMembershipHistoryDao.createMembershipHistory(group, member, role.name(),
+				status, null, null, actor, note);
+		dbInstance.commit();
 	}
 
 	@Override

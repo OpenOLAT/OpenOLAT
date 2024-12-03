@@ -32,6 +32,7 @@ import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
@@ -155,6 +156,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	private CloseableCalloutWindowController calloutCtrl;
 
 	private int counter = 0;
+	private boolean memberChanged;
 	private final boolean chatEnabled;
 	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
@@ -373,8 +375,18 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		return components;
 	}
 	
-	private void reloadMember(Identity member) {
-		//TODO curriculum
+	private void reloadMember(UserRequest ureq, Identity member) {
+		boolean openDetails = false;
+		MemberRow row = tableModel.getObject(member);
+		if(row != null && row.getDetailsController() != null) {
+			doCloseMemberDetails(row);
+			openDetails = true;
+		}
+		loadModel(false);
+		if(openDetails) {
+			MemberRow reloadedRow = tableModel.getObject(member);
+			doOpenMemberDetails(ureq, reloadedRow);
+		}
 	}
 	
 	private void loadModel(boolean reset) {
@@ -524,8 +536,13 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		} else if(editSingleMemberCtrl == source) {
 			if(event == Event.BACK_EVENT) {
 				toolbarPanel.popController(editSingleMemberCtrl);
-				reloadMember(editSingleMemberCtrl.getMember());
+				if(memberChanged) {
+					reloadMember(ureq, editSingleMemberCtrl.getMember());
+					memberChanged = false;
+				}
 				cleanUp();
+			} else if(event == Event.CHANGED_EVENT) {
+				memberChanged = true;
 			}
 		} else if(toolsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -655,7 +672,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 			List<CurriculumRoles> roles = memberToRemove.getRoles();
 			for(CurriculumRoles role:roles) {
 				Identity member = securityManager.loadIdentityByKey(memberToRemove.getIdentityKey());
-				curriculumService.removeMember(curriculumElement, member, role, getIdentity());
+				curriculumService.removeMember(curriculumElement, member, role, GroupMembershipStatus.removed, getIdentity(), null);
 			}
 		}
 		loadModel(true);

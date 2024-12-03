@@ -717,9 +717,12 @@ $o-curriculum-status-preparation-color			: $o-repo-preparation-color !default;
 $o-curriculum-status-provisional-color			: $o-repo-preparation-color !default;
 $o-curriculum-status-confirmed-color			: $o-repo-coachpublished-color !default;
 $o-curriculum-status-active-color				: $o-repo-published-color !default;
-$o-curriculum-status-finished-color				: $o-repo-closed-color !default;
+$o-curriculum-status-finished-color				: $o-repo-published-color !default;
 $o-curriculum-status-cancelled-color			: $o-repo-trash-color !default;
-$o-curriculum-status-deleted-color				: $o-repo-deleted-color !default;
+$o-curriculum-status-deleted-color				: $o-repo-trash-color !default;
+
+$o-curriculum-activity-border					: 1px solid $brand-warning !default;
+$o-curriculum-activity-border-radius			: 4px !default;
 
 /* Curriculum overview */
 $o-curriculum-widget-border						: 1px solid #e7e7e7 !default;

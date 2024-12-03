@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui.member;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.curriculum.CurriculumRoles;
 
@@ -68,6 +70,18 @@ implements SortableFlexiTableDataModel<MemberRow> {
 		MemberRow member = getObject(row);
 		return member.getInheritanceMode() == GroupMembershipInheritance.root
 				|| member.getInheritanceMode() == GroupMembershipInheritance.none;
+	}
+	
+	public MemberRow getObject(Identity identity) {
+		if(identity == null) return null;
+		
+		List<MemberRow> objects = getObjects();
+		for(MemberRow obj:objects) {
+			if(obj.getIdentityKey().equals(identity.getKey())) {
+				return obj;
+			}
+		}
+		return null;
 	}
 
 	@Override

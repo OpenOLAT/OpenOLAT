@@ -152,15 +152,16 @@ public class CurriculumElementDAO {
 	}
 	
 	public CurriculumElement loadByKey(Long key) {
-		StringBuilder sb = new StringBuilder(128);
-		sb.append("select el from curriculumelement el")
-		  .append(" inner join fetch el.curriculum curriculum")
-		  .append(" inner join fetch el.group baseGroup")
-		  .append(" left join fetch el.type elementType")
-		  .append(" where el.key=:key");
+		String sb = """
+			select el from curriculumelement el
+			inner join fetch el.curriculum curriculum
+			inner join fetch el.group baseGroup
+			left join fetch el.type elementType
+			inner join fetch el.resource rsrc
+			where el.key=:key""";
 		
 		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CurriculumElement.class)
+				.createQuery(sb, CurriculumElement.class)
 				.setParameter("key", key)
 				.getResultList();
 		return elements == null || elements.isEmpty() ? null : elements.get(0);
@@ -865,6 +866,7 @@ public class CurriculumElementDAO {
 		  .append(" inner join el.group as baseGroup")
 		  .append(" left join fetch el.parent as parent")
 		  .append(" left join fetch el.type as type")
+		  .append(" left join fetch el.resource as resource")
 		  .append(" where el.curriculum.key=:curriculumKey")
 		  .append(" and el.key!=:elementKey and el.materializedPathKeys like :materializedPath");
 		  

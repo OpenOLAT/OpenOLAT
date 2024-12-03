@@ -17,50 +17,36 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui.component;
+package org.olat.modules.curriculum.ui.member;
 
-import java.util.Locale;
-
-import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
-import org.olat.modules.curriculum.ui.CurriculumManagerController;
 
 /**
  * 
- * Initial date: 11 nov. 2024<br>
+ * Initial date: 29 nov. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GroupMembershipStatusRenderer implements FlexiCellRenderer {
-	
+public class ModificationCellRenderer implements FlexiCellRenderer {
+
 	private final Translator translator;
 	
-	public GroupMembershipStatusRenderer(Locale locale) {
-		translator = Util.createPackageTranslator(CurriculumManagerController.class, locale);
+	public ModificationCellRenderer(Translator translator) {
+		this.translator = translator;
 	}
-
+	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
-		if(cellValue instanceof GroupMembershipStatus status) {
-			render(target, status);
-		} else if(cellValue instanceof String str) {
-			target.appendHtmlEscaped(str);
+		if(cellValue instanceof Boolean modified && modified.booleanValue()) {
+			target.append("<span class='o_membership_modified'><i class='o_icon o_icon-fw o_icon_retry' title='")
+			      .append(translator.translate("has.modification"))
+			      .append("'> </i></span>");
 		}
-	}
-	
-	public void render(StringOutput target, GroupMembershipStatus status) {
-		String statusName = status.name().toLowerCase();
-		String label = translator.translate("membership.".concat(status.name()));
-		target.append("<span class='o_labeled_light o_gmembership_status_").append(statusName).append("'>")
-		  .append("<i class='o_icon o_membership_status_").append(statusName.toLowerCase()).append(" o_icon-fw' title='").append(label).append("'> </i> ")
-		  .append(label)
-	      .append("</span");
 	}
 }

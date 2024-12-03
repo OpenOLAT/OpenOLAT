@@ -19,12 +19,14 @@
  */
 package org.olat.modules.curriculum.ui.member;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
-import org.olat.modules.curriculum.ui.member.EditMemberController.Modification;
+import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
  * 
@@ -35,8 +37,9 @@ import org.olat.modules.curriculum.ui.member.EditMemberController.Modification;
 public class EditMemberCurriculumElementRow extends AbstractCurriculumElementRow {
 	
 	private EditMemberCurriculumElementRow parent;
-	private final EnumMap<CurriculumRoles,FormLink> rolesChangeLinks = new EnumMap<>(CurriculumRoles.class);
-	private final EnumMap<CurriculumRoles,Modification> modifications = new EnumMap<>(CurriculumRoles.class);
+	private final EnumMap<CurriculumRoles,FormLink> rolesModelLinks = new EnumMap<>(CurriculumRoles.class);
+	private final EnumMap<CurriculumRoles,MembershipModification> modifications = new EnumMap<>(CurriculumRoles.class);
+	private final EnumMap<CurriculumRoles,ResourceReservation> rolesReservation = new EnumMap<>(CurriculumRoles.class);
 	
 	public EditMemberCurriculumElementRow(CurriculumElement curriculumElement) {
 		super(curriculumElement);
@@ -51,24 +54,40 @@ public class EditMemberCurriculumElementRow extends AbstractCurriculumElementRow
 		this.parent = parent;
 	}
 
+	public ResourceReservation getReservation(CurriculumRoles role) {
+		return rolesReservation.get(role);
+	}
+
+	public void addReservation(CurriculumRoles role, ResourceReservation reservation) {
+		rolesReservation.put(role, reservation);
+	}
+
 	public void addButton(CurriculumRoles role, FormLink button) {
-		rolesChangeLinks.put(role, button);
+		rolesModelLinks.put(role, button);
 	}
 	
 	public FormLink getButton(CurriculumRoles role) {
-		return rolesChangeLinks.get(role);
+		return rolesModelLinks.get(role);
 	}
 	
-	public void addModification(CurriculumRoles role, Modification modification) {
+	public void addModification(CurriculumRoles role, MembershipModification modification) {
 		modifications.put(role, modification);
 	}
 	
-	public Modification getModification(CurriculumRoles role) {
+	public MembershipModification getModification(CurriculumRoles role) {
 		return modifications.get(role);
+	}
+	
+	public List<MembershipModification> getModifications() {
+		return new ArrayList<>(modifications.values());
 	}
 	
 	public void resetModification() {
 		modifications.clear();
+	}
+	
+	public void removeModification(CurriculumRoles role) {
+		modifications.remove(role);
 	}
 	
 	public boolean hasModifications() {

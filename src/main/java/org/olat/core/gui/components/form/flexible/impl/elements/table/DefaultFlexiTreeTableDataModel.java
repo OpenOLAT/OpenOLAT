@@ -71,8 +71,10 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	
 	private final int getIndentation(FlexiTreeTableNode node) {
 		int indentation = 0;
-		for(FlexiTreeTableNode parent=node.getParent(); parent != null; parent=parent.getParent()) {
-			indentation++;
+		if(node != null) {
+			for(FlexiTreeTableNode parent=node.getParent(); parent != null; parent=parent.getParent()) {
+				indentation++;
+			}
 		}
 		return indentation;
 	}

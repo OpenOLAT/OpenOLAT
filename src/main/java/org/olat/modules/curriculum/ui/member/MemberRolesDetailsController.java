@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.GroupMembershipHistory;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,16 +42,22 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFl
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
+import org.olat.modules.curriculum.ui.component.GroupMembershipHistoryComparator;
 import org.olat.modules.curriculum.ui.component.GroupMembershipStatusRenderer;
 import org.olat.modules.curriculum.ui.member.MemberRolesDetailsTableModel.MemberDetailsCols;
+import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,7 +77,9 @@ public class MemberRolesDetailsController extends FormBasicController {
 	private final Identity member;
 	private final Curriculum curriculum;
 	private final List<CurriculumElement> elements;
-	
+
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -97,10 +106,10 @@ public class MemberRolesDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberDetailsCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberDetailsCols.externalId));
 		
+		GroupMembershipStatusRenderer statusRenderer = new GroupMembershipStatusRenderer(getLocale());
 		for(CurriculumRoles role:CurriculumRoles.values()) {
 			String i18nLabel = "role.".concat(role.name());
-			DefaultFlexiColumnModel col = new DefaultFlexiColumnModel(i18nLabel, role.ordinal() + ROLES_OFFSET, null, false, null,
-					new GroupMembershipStatusRenderer(getLocale()));
+			DefaultFlexiColumnModel col = new DefaultFlexiColumnModel(i18nLabel, role.ordinal() + ROLES_OFFSET, null, false, null, statusRenderer);
 			col.setDefaultVisible(true);
 			col.setAlwaysVisible(false);
 			columnsModel.addFlexiColumnModel(col);
@@ -114,11 +123,23 @@ public class MemberRolesDetailsController extends FormBasicController {
 	}
 	
 	protected void loadModel() {
+		// Memberships
 		List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(curriculum, member);
 		Map<Long, CurriculumElementMembership> membershipsMap = memberships.stream()
 				.collect(Collectors.toMap(CurriculumElementMembership::getCurriculumElementKey, u -> u, (u, v) -> u));
-
 		
+		// Reservations
+		List<ResourceReservation> reservations = acService.getReservations(member);
+		Map<ResourceToRoleKey,ResourceReservation> reservationsMap = reservations.stream()
+				.filter(reservation -> StringHelper.containsNonWhitespace(reservation.getType()))
+				.filter(reservation -> reservation.getType().startsWith(CurriculumService.RESERVATION_PREFIX))
+				.collect(Collectors.toMap(reservation -> new ResourceToRoleKey(ResourceToRoleKey.reservationToRole(reservation.getType()), reservation.getResource()) , r -> r, (u, v) -> u));
+		
+		// History
+		List<CurriculumElementMembershipHistory> curriculumHistory = curriculumService.getCurriculumElementMembershipsHistory(curriculum, member);
+		Map<Long, CurriculumElementMembershipHistory> historyMap = curriculumHistory.stream()
+				.collect(Collectors.toMap(CurriculumElementMembershipHistory::getCurriculumElementKey, u -> u, (u, v) -> u));
+
 		List<MemberRolesDetailsRow> rows = new ArrayList<>();
 		Map<Long, MemberRolesDetailsRow> rowsMap = new HashMap<>();
 		EnumMap<CurriculumRoles,Boolean> usedRoles = new EnumMap<>(CurriculumRoles.class);
@@ -129,12 +150,8 @@ public class MemberRolesDetailsController extends FormBasicController {
 			rowsMap.put(row.getKey(), row);
 			
 			CurriculumElementMembership membership = membershipsMap.get(element.getKey());
-			if(membership != null && membership.hasMembership()) {
-				for(CurriculumRoles role:membership.getRoles()) {
-					row.addStatus(role, GroupMembershipStatus.active);
-					usedRoles.put(role, Boolean.TRUE);
-				}
-			}
+			CurriculumElementMembershipHistory history = historyMap.get(element.getKey());
+			forgeStatus(row, membership, history, reservationsMap, usedRoles);
 		}
 		
 		for(MemberRolesDetailsRow row:rows) {
@@ -154,6 +171,46 @@ public class MemberRolesDetailsController extends FormBasicController {
 		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private void forgeStatus(MemberRolesDetailsRow row, CurriculumElementMembership membership,
+			CurriculumElementMembershipHistory history, Map<ResourceToRoleKey,ResourceReservation> reservationsMap,
+			EnumMap<CurriculumRoles,Boolean> usedRoles) {
+		List<CurriculumRoles> membershipRoles = membership == null ? List.of() : membership.getRoles();
+		OLATResource resource = row.getCurriculumElement().getResource();
+		
+		for(CurriculumRoles role:CurriculumRoles.values()) {
+			ResourceReservation reservation = reservationsMap.get(new ResourceToRoleKey(role, resource));
+			
+			if(membershipRoles.contains(role)) {
+				row.addStatus(role, GroupMembershipStatus.active);
+				usedRoles.put(role, Boolean.TRUE);
+			} else if(reservation != null) {
+				row.addStatus(role, GroupMembershipStatus.reservation);
+				usedRoles.put(role, Boolean.TRUE);
+			} else {
+				GroupMembershipHistory lastHistory = lastHistoryPoint(role, history);
+				if(lastHistory != null) {
+					row.addStatus(role, lastHistory.getStatus());
+					usedRoles.put(role, Boolean.TRUE);
+				}
+			}
+		}
+	}
+	
+	private GroupMembershipHistory lastHistoryPoint(CurriculumRoles role, CurriculumElementMembershipHistory history) {
+		if(history == null) return null;
+		
+		List<GroupMembershipHistory> roleHistory = history.getHistory(role);
+		if(roleHistory == null || roleHistory.isEmpty()) {
+			return null;
+		}
+		if(roleHistory.size() == 1) {
+			return roleHistory.get(0);
+		}
+		
+		Collections.sort(roleHistory, new GroupMembershipHistoryComparator());
+		return roleHistory.get(0);
 	}
 
 	@Override

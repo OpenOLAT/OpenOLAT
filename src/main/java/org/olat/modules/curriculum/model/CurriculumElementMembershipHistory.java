@@ -58,6 +58,10 @@ public class CurriculumElementMembershipHistory {
 		historyByRole.add(point);
 	}
 	
+	public List<GroupMembershipHistory> getHistory(CurriculumRoles role) {
+		return membershipHistory.get(role);
+	}
+	
 	public List<GroupMembershipHistory> getHistory() {
 		List<GroupMembershipHistory> history = new ArrayList<>();
 		for(List<GroupMembershipHistory> val:membershipHistory.values()) {

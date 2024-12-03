@@ -42,6 +42,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -1223,7 +1224,8 @@ public class CurriculumElementsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		curriculumService.removeMember(curriculumElement, identity, role, getIdentity(httpRequest));
+		curriculumService.removeMember(curriculumElement, identity, role,
+				GroupMembershipStatus.removed, getIdentity(httpRequest), null);
 		return Response.ok().build();
 	}
 	

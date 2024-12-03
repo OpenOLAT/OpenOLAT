@@ -54,6 +54,36 @@ implements FlexiTableFooterModel {
 	public boolean hasChildren(int row) {
 		return false;
 	}
+	
+	public boolean isParentOf(EditMemberCurriculumElementRow parentRow, EditMemberCurriculumElementRow node) {
+		for(EditMemberCurriculumElementRow parent=node.getParent(); parent != null; parent=parent.getParent()) {
+			if(parent != null && parent.getKey().equals(parentRow.getKey())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int getIndexOf(EditMemberCurriculumElementRow row) {
+		int numOfObjects = this.getRowCount();
+		for(int i=0; i<numOfObjects; i++) {
+			EditMemberCurriculumElementRow object = this.getObject(i);
+			if(object.getKey().equals(row.getKey())) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public EditMemberCurriculumElementRow getObject(CurriculumElement curriculumElement) {
+		List<EditMemberCurriculumElementRow> rows = getObjects();
+		for(EditMemberCurriculumElementRow row:rows) {
+			if(curriculumElement.getKey().equals(row.getKey())) {
+				return row;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
@@ -61,6 +91,7 @@ implements FlexiTableFooterModel {
 		if(col >= 0 && col < COLS.length) {
 			CurriculumElement element = detailsRow.getCurriculumElement();
 			return switch(COLS[col]) {
+				case modifications -> detailsRow.hasModifications();
 				case key -> element.getKey();
 				case displayName -> element.getDisplayName();
 				case externalRef -> element.getIdentifier();
@@ -72,7 +103,8 @@ implements FlexiTableFooterModel {
 		int roleCol = col - EditMemberController.ROLES_OFFSET;
 		if(roleCol >= 0 && roleCol < ROLES.length) {
 			CurriculumRoles role = ROLES[roleCol];
-			return detailsRow.getButton(role);	
+			MembershipModification mod = detailsRow.getModification(role);
+			return mod == null ? detailsRow.getButton(role) : mod.nextStatus();	
 		}
 		return "ERROR";
 	}
@@ -104,6 +136,7 @@ implements FlexiTableFooterModel {
 	}
 
 	public enum MemberElementsCols implements FlexiSortableColumnDef {
+		modifications("table.header.modification"),
 		key("table.header.key"),
 		displayName("table.header.displayName"),
 		externalRef("table.header.external.ref"),
