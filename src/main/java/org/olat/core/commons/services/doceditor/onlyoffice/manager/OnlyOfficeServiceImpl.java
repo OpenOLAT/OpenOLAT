@@ -39,6 +39,7 @@ import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.ApiConfigImpl;
+import org.olat.core.commons.services.doceditor.onlyoffice.model.CoEditingImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.DocumentImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.EditorConfigImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.EmbeddedImpl;
@@ -54,12 +55,12 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.httpclient.HttpClientService;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -174,6 +175,15 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		user.setName(name);
 		user.setId(identityService.getGlobalIdentityId(identity));
 		editorConfig.setUser(user);
+		
+		CoEditingImpl coEditing = new CoEditingImpl();
+		if (edit || onlyOfficeModule.isLiveviewEnabled()) {
+			coEditing.setMode("fast");
+		} else {
+			coEditing.setMode("strict");
+		}
+		coEditing.setChange(false);
+		editorConfig.setCoEditing(coEditing);
 		
 		String token = onlyOfficeSecurityService.getApiConfigToken(document, editorConfig);
 		apiConfig.setToken(token);

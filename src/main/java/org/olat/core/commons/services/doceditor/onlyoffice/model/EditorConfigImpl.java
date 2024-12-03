@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.onlyoffice.model;
 
+import org.olat.core.commons.services.doceditor.onlyoffice.CoEditing;
 import org.olat.core.commons.services.doceditor.onlyoffice.EditorConfig;
 import org.olat.core.commons.services.doceditor.onlyoffice.Embedded;
 import org.olat.core.commons.services.doceditor.onlyoffice.User;
@@ -44,6 +45,7 @@ public class EditorConfigImpl implements EditorConfig {
 	// private Object recent;
 	// private String createUrl;
 	private Embedded embedded;
+	private CoEditing coEditing;
 	
 	@Override
 	public String getCallbackUrl() {
@@ -88,5 +90,14 @@ public class EditorConfigImpl implements EditorConfig {
 
 	public void setEmbedded(Embedded embedded) {
 		this.embedded = embedded;
+	}
+
+	@Override
+	public CoEditing getCoEditing() {
+		return coEditing;
+	}
+
+	public void setCoEditing(CoEditing coEditing) {
+		this.coEditing = coEditing;
 	}
 }

@@ -56,6 +56,7 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String ONLYOFFICE_BASE_URL = "onlyoffice.baseUrl";
 	private static final String ONLYOFFICE_JWT_SECRET = "onlyoffice.jwt.secret";
 	private static final String ONLYOFFICE_EDITOR_ENABLED = "onlyoffice.editor.enabled";
+	private static final String ONLYOFFICE_LIVEVIEW_ENABLED = "onlyoffice.liveview.enabled";
 	private static final String ONLYOFFICE_MOBILE_MODES = "onlyoffice.mobile.modes";
 	private static final String ONLYOFFICE_MOBILE_QUERY = "onlyoffice.mobile.query";
 	private static final String ONLYOFFICE_LICENSE_EDIT = "onlyoffice.license.edit";
@@ -81,6 +82,8 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private SecretKey jwtSignKey;
 	@Value("${onlyoffice.editor.enabled:false}")
 	private boolean editorEnabled;
+	@Value("${onlyoffice.liveview.enabled}")
+	private boolean liveviewEnabled;
 	@Value("${onlyoffice.mobile.modes}")
 	private String mobileModesConfig;
 	private Set<Mode> mobileModes;
@@ -141,6 +144,11 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		String editorEnabledObj = getStringPropertyValue(ONLYOFFICE_EDITOR_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(editorEnabledObj)) {
 			editorEnabled = "true".equals(editorEnabledObj);
+		}
+		
+		String liveviewEnabledObj = getStringPropertyValue(ONLYOFFICE_LIVEVIEW_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(liveviewEnabledObj)) {
+			liveviewEnabled = "true".equals(liveviewEnabledObj);
 		}
 		
 		mobileModesConfig = getStringPropertyValue(ONLYOFFICE_MOBILE_MODES, mobileModesConfig);
@@ -251,6 +259,15 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	public void setEditorEnabled(boolean editorEnabled) {
 		this.editorEnabled = enabled;
 		setStringProperty(ONLYOFFICE_EDITOR_ENABLED, Boolean.toString(editorEnabled), true);
+	}
+
+	public boolean isLiveviewEnabled() {
+		return liveviewEnabled;
+	}
+
+	public void setLiveviewEnabled(boolean liveviewEnabled) {
+		this.liveviewEnabled = liveviewEnabled;
+		setStringProperty(ONLYOFFICE_LIVEVIEW_ENABLED, Boolean.toString(liveviewEnabled), true);
 	}
 
 	public Set<Mode> getMobileModes() {
