@@ -176,10 +176,16 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 			int requestHour = getRequestValue("o_dch_".concat(receiverId));
 			if (requestHour > -1) {
 				hour = requestHour;
+				if (!isTimeOnly() && !defaultTimeAtEndOfDay && !StringHelper.containsNonWhitespace(getValue())) {
+					hour = 0;
+				}
 			}
 			int requestMinute = getRequestValue("o_dcm_".concat(receiverId));
 			if (requestMinute > -1) {
 				minute = requestMinute;
+				if (!isTimeOnly() && !defaultTimeAtEndOfDay && !StringHelper.containsNonWhitespace(getValue())) {
+					minute = 0;
+				}
 			}
 			if(isSecondDate()) {
 				String secondReceiverId = receiverId.concat("_snd");
