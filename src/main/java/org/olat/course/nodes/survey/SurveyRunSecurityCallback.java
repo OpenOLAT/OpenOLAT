@@ -42,6 +42,7 @@ public class SurveyRunSecurityCallback {
 	private final boolean guestOnly;
 	private boolean executor;
 	private boolean reportViewer;
+	private boolean reportViewerManger;
 	
 	public SurveyRunSecurityCallback(ModuleConfiguration moduleConfiguration, UserCourseEnvironment userCourseEnv) {
 		this.courseReadOnly = userCourseEnv.isCourseReadOnly();
@@ -60,14 +61,14 @@ public class SurveyRunSecurityCallback {
 						userCourseEnv.getIdentityEnvironment().getIdentity(),
 						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
 						GroupRoles.owner.name());
-			} else if (!reportViewer) {
-				// Managers may always see the report (if selected in role switcher)
-				RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-				reportViewer = repositoryService.hasRoleExpanded(
-						userCourseEnv.getIdentityEnvironment().getIdentity(),
-						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-						OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.learnresourcemanager.name());
 			}
+			// Managers may always see the report (if selected in role switcher)
+			// even without prior fill in the survey (e.g. to reset the survey)
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			reportViewerManger = repositoryService.hasRoleExpanded(
+					userCourseEnv.getIdentityEnvironment().getIdentity(),
+					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+					OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.learnresourcemanager.name());
 		}
 	}
 
@@ -96,6 +97,10 @@ public class SurveyRunSecurityCallback {
 	}
 	
 	public boolean canViewReporting(EvaluationFormParticipation participation) {
+		if (reportViewerManger) {
+			return true;
+		}
+		
 		if (isReportViewer()) {
 			if (!isExecutor()) {
 				return true;
