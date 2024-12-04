@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -210,7 +211,7 @@ public class CreateBadgeClassWizardContext {
 		}
 		badgeClassImpl.setIssuer(issuer.asJsonObject(Constants.TYPE_VALUE_ISSUER).toString());
 		badgeClassImpl.setVersionWithScan("1.0");
-		badgeClassImpl.setLanguage("en");
+		badgeClassImpl.setLanguage(I18nModule.getDefaultLocale().getLanguage());
 		badgeClassImpl.setValidityEnabled(false);
 		badgeClassImpl.setEntry(entry);
 		backgroundColorId = "gold";

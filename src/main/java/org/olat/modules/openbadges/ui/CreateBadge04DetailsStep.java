@@ -21,6 +21,7 @@ package org.olat.modules.openbadges.ui;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,7 +120,18 @@ public class CreateBadge04DetailsStep extends BasicStep {
 				createContext = createBadgeClassWizardContext;
 			}
 
+			BadgeClass badgeClass = createContext.getBadgeClass();
+
 			languagesKV = openBadgesManager.getAvailableLanguages(getLocale());
+			if (badgeClass != null && StringHelper.containsNonWhitespace(badgeClass.getLanguage())) {
+				if (!languagesKV.containsKey(badgeClass.getLanguage())) {
+					String languageDisplayName = Locale.forLanguageTag(badgeClass.getLanguage()).getDisplayName(getLocale());
+					if (!StringHelper.containsNonWhitespace(languageDisplayName)) {
+						languageDisplayName = badgeClass.getLanguage();
+					}
+					languagesKV.add(SelectionValues.entry(badgeClass.getLanguage(), languageDisplayName));
+				}
+			}
 
 			expirationKV = new SelectionValues();
 			expirationKV.add(SelectionValues.entry(Expiration.never.name(), translate("form.never")));
@@ -139,7 +151,6 @@ public class CreateBadge04DetailsStep extends BasicStep {
 			});
 
 			boolean isEditMode = CreateBadgeClassWizardContext.Mode.edit.equals(createContext.getMode());
-			BadgeClass badgeClass = createContext.getBadgeClass();
 			if (OpenBadgesUIFactory.isSpecifyVersion()) {
 				usedNameVersionTuples = openBadgesManager.getBadgeClassNameVersionTuples(isEditMode, badgeClass);
 			} else {
