@@ -57,6 +57,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 
 /**
  * Initial Date:  Feb 6, 2004
@@ -85,6 +86,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private Boolean adminAnyCourse;
 	private Boolean coachAnyCourse;
 	private Boolean participantAnyCourse;
+	private Role currentRole;
 	
 	private Boolean certification;
 	private Boolean courseReadOnlyByStatus;
@@ -489,5 +491,13 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 			initScoreAccounting();
 		}
 		this.allUsersParticipant = null;
+	}
+
+	public void setCurrentRole(Role currentRole) {
+		this.currentRole = currentRole;
+	}
+
+	public Role getCurrentRole() {
+		return currentRole;
 	}
 }

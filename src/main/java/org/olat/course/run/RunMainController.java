@@ -254,6 +254,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// build up the running structure for this user
 		// get all group memberships for this course
 		uce = loadUserCourseEnvironment(ureq, reSecurity);
+		if (reSecurity instanceof SingleRoleRepositoryEntrySecurity singleRoleSecuriry) {
+			uce.setCurrentRole(singleRoleSecuriry.getCurrentRole());
+		}
 		
 		// build score now
 		uce.getScoreAccounting().evaluateAll(true);
