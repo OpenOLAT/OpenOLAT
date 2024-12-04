@@ -19,15 +19,16 @@
  */
 package org.olat.course.nodes.survey;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.noderight.NodeRightService;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 
 /**
  * 
@@ -56,20 +57,27 @@ public class SurveyRunSecurityCallback {
 			if (executor) {
 				// Only course owners may execute but not managers.
 				// The NodeRightService returns managers as executers as well, so we exclude them now.
+				executor = isCurrentlyOwner(userCourseEnv);
+			}
+			if (!executor) {
+				// Managers may always see the report (if selected in role switcher)
+				// even without prior fill in the survey (e.g. to reset the survey)
 				RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-				executor = repositoryService.hasRoleExpanded(
+				reportViewerManger = repositoryService.hasRoleExpanded(
 						userCourseEnv.getIdentityEnvironment().getIdentity(),
 						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-						GroupRoles.owner.name());
+						OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.learnresourcemanager.name());
 			}
-			// Managers may always see the report (if selected in role switcher)
-			// even without prior fill in the survey (e.g. to reset the survey)
-			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-			reportViewerManger = repositoryService.hasRoleExpanded(
-					userCourseEnv.getIdentityEnvironment().getIdentity(),
-					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-					OrganisationRoles.administrator.name(), OrganisationRoles.principal.name(), OrganisationRoles.learnresourcemanager.name());
 		}
+	}
+	
+	private boolean isCurrentlyOwner(UserCourseEnvironment userCourseEnv) {
+		if (userCourseEnv instanceof UserCourseEnvironmentImpl uceImpl) {
+			if (uceImpl.getCurrentRole() != null && uceImpl.getCurrentRole() == Role.owner) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public boolean isGuestOnly() {

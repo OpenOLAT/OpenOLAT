@@ -408,6 +408,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 		if(uce != null) {
 			uce.setUserRoles(reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach(), reSecurity.isCoach(), reSecurity.isParticipant());
+			uce.setCurrentRole(reSecurity.getCurrentRole());
 			if(reSecurity.isPrincipal() || reSecurity.isMasterCoach()) {
 				uce.setCourseReadOnlyByRole(Boolean.TRUE);
 				uce.setCourseReadOnlyByStatus(reSecurity.isReadOnly());

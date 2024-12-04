@@ -151,10 +151,6 @@
 	border-left: 3px solid $o-video-time-marker-default-bg-color;
 	padding: 5px;
 	
-	&:has(a) {
-		z-index: 10000;
-	}
-	
 	&.o_video_marker_lightgray {
 		border-left-color: $o-video-color-light-gray;
 	}
