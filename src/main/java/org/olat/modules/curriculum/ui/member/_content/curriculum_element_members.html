@@ -1,0 +1,14 @@
+<div class="o_flex_first_grow o_block">
+	#if($r.available("search.all.levels"))
+	<div class="btn-group">
+		$r.render("search.all.levels")
+		$r.render("search.this.level")
+	</div>	
+	#end
+	#if($r.available("add.member"))
+	<div class="">
+		$r.render("add.member")
+	</div>
+	#end
+</div>
+$r.render("table")

@@ -105,6 +105,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.search.service.document.RepositoryEntryDocument;
 import org.olat.search.service.indexer.LifeFullIndexer;
@@ -1860,7 +1861,8 @@ public class RepositoryManager {
 			}
 		}
 
-		List<ResourceReservation> reservations = reservationDao.loadReservations(Collections.singletonList(re.getOlatResource()));
+		SearchReservationParameters searchParams = new SearchReservationParameters(List.of(re.getOlatResource()));
+		List<ResourceReservation> reservations = reservationDao.loadReservations(searchParams);
 		for(ResourceReservation reservation:reservations) {
 			if(members.contains(reservation.getIdentity())) {
 				reservationDao.deleteReservation(reservation);

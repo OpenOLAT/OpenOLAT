@@ -24,12 +24,15 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -42,6 +45,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class MemberRow extends UserPropertiesRow {
 	
 	private Date registration;
+	private List<ResourceReservation> reservations;
 	private final GroupMembershipInheritance inheritanceMode;
 
 	private String onlineStatus;
@@ -50,6 +54,13 @@ public class MemberRow extends UserPropertiesRow {
 	private MemberDetailsController detailsCtrl;
 	
 	private final EnumMap<CurriculumRoles, AtomicInteger> numOfRoles = new EnumMap<>(CurriculumRoles.class);
+	private final EnumMap<CurriculumRoles, AtomicInteger> numOfReservations = new EnumMap<>(CurriculumRoles.class);
+	
+	
+	public MemberRow(Identity member, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		super(member, userPropertyHandlers, locale);
+		inheritanceMode = GroupMembershipInheritance.none;
+	}
 	
 	public MemberRow(CurriculumMember member, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(member.getIdentity(), userPropertyHandlers, locale);
@@ -84,6 +95,32 @@ public class MemberRow extends UserPropertiesRow {
 	
 	public void addRole(CurriculumRoles roleToAdd) {
 		numOfRoles.computeIfAbsent(roleToAdd, r -> new AtomicInteger(0)).incrementAndGet();
+	}
+	
+	public int getNumOfReservations() {
+		int numOf = 0;
+		for(Map.Entry<CurriculumRoles,AtomicInteger> entry:numOfReservations.entrySet()) {
+			numOf += entry.getValue().get();
+		}
+		return numOf;
+	}
+	
+	public int getNumOfReservations(CurriculumRoles role) {
+		AtomicInteger numOf = numOfReservations.get(role);
+		return numOf == null ? 0 : numOf.get();
+	}
+	
+	public List<ResourceReservation> getReservations() {
+		return reservations == null ? List.of() : reservations;
+	}
+	
+	public void addReservation(CurriculumRoles roleToAdd, ResourceReservation reservation) {
+		numOfReservations.computeIfAbsent(roleToAdd, r -> new AtomicInteger(0))
+			.incrementAndGet();
+		if(reservations == null) {
+			reservations = new ArrayList<>();
+		}
+		reservations.add(reservation);
 	}
 
 	public FormLink getToolsLink() {

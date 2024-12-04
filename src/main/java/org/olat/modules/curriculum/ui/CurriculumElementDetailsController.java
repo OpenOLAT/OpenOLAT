@@ -328,7 +328,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_MEMBERS), null);
 			userManagementCtrl = new CurriculumElementUserManagementController(uureq, subControl, toolbarPanel, curriculumElement, secCallback);
 			listenTo(userManagementCtrl);
-			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
+			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[Active:0][All:0]");
 			userManagementCtrl.activate(uureq, all, null);
 			return userManagementCtrl.getInitialComponent();
 		});

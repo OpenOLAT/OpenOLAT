@@ -19,20 +19,26 @@
  */
 package org.olat.modules.curriculum.ui.member;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
  * 
@@ -41,13 +47,14 @@ import org.olat.modules.curriculum.CurriculumRoles;
  *
  */
 public class MemberManagementTableModel extends DefaultFlexiTableDataModel<MemberRow>
-implements SortableFlexiTableDataModel<MemberRow> {
+implements SortableFlexiTableDataModel<MemberRow>, FilterableFlexiTableModel {
 	
 	private static final MemberCols[] COLS = MemberCols.values();
 	
 	private final Locale locale;
 	private final Translator translator;
 	private final boolean onlineStatusEnabled;
+	private List<MemberRow> backupRows;
 	
 	public MemberManagementTableModel(FlexiTableColumnModel columnModel, Translator translator,
 			Locale locale, boolean onlineStatusEnabled) {
@@ -63,6 +70,117 @@ implements SortableFlexiTableDataModel<MemberRow> {
 			MemberManagementTableSortDelegate sort = new MemberManagementTableSortDelegate(orderBy, this, locale);
 			super.setObjects(sort.sort());
 		}
+	}
+	
+	@Override
+	public void filter(String quickSearch, List<FlexiTableFilter> filters) {
+		if(filters != null && (StringHelper.containsNonWhitespace(quickSearch) || (!filters.isEmpty() && filters.get(0) != null))) {
+			String searchString = quickSearch == null ? null : quickSearch.toLowerCase();
+			List<CurriculumRoles> roles = getFilterByRoles(filters);
+			ConfirmationByEnum confirmationBy = getFilterByConfirmationBy(filters);
+			boolean confirmationDate = getFilterByConfirmationDate(filters);
+			
+			List<MemberRow> filteredRows = backupRows.stream()
+					.filter(row -> acceptSearch(row, searchString)
+							&& acceptRoles(row, roles)
+							&& isConfirmationBy(row, confirmationBy)
+							&& isConfirmationDate(row, confirmationDate))
+					.toList();
+			super.setObjects(filteredRows);
+		} else {
+			super.setObjects(backupRows);
+		}
+	}
+	
+	private List<CurriculumRoles> getFilterByRoles(List<FlexiTableFilter> filters) {
+		FlexiTableFilter rolesFilter = FlexiTableFilter.getFilter(filters, CurriculumElementMemberUsersController.FILTER_ROLE);
+		if (rolesFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				return filterValues.stream()
+						.map(CurriculumRoles::valueOf)
+						.toList();
+			}
+		}
+		return List.of();
+	}
+
+	private ConfirmationByEnum getFilterByConfirmationBy(List<FlexiTableFilter> filters) {
+		FlexiTableFilter rolesFilter = FlexiTableFilter.getFilter(filters, CurriculumElementPendingUsersController.FILTER_CONFIRMATION_BY);
+		if (rolesFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+			String value = extendedFilter.getValue();
+			if(StringHelper.containsNonWhitespace(value)) {
+				return ConfirmationByEnum.valueOf(value);
+			}
+		}
+		return null;
+	}
+	
+	private boolean getFilterByConfirmationDate(List<FlexiTableFilter> filters) {
+		FlexiTableFilter rolesFilter = FlexiTableFilter.getFilter(filters, CurriculumElementPendingUsersController.FILTER_CONFIRMATION_DATE);
+		if (rolesFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+			String value = extendedFilter.getValue();
+			if(StringHelper.containsNonWhitespace(value) && "true".equals(value)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean acceptSearch(MemberRow row, String searchString) {
+		if(searchString == null) return true;
+		
+		String[] userProps = row.getIdentityProps();
+		for(String userProp:userProps) {
+			if(userProp != null && userProp.toLowerCase().contains(searchString)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean acceptRoles(MemberRow row, List<CurriculumRoles> roles) {
+		if(roles == null || roles.isEmpty()) return true;
+		
+		for(CurriculumRoles role:roles) {
+			int numOfRole = row.getNumOfRole(role);
+			if(numOfRole > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean isConfirmationBy(MemberRow row, ConfirmationByEnum by) {
+		if(by == null) return true;
+		
+		List<ResourceReservation> reservations = row.getReservations();
+		if(reservations != null && !reservations.isEmpty()) {
+			for(ResourceReservation reservation:reservations) {
+				Boolean confirmationByUser = reservation.getUserConfirmable();
+				if(by == ConfirmationByEnum.ADMINISTRATIVE_ROLE && confirmationByUser != null && !confirmationByUser.booleanValue()) {
+					return true;
+				}
+				if(by == ConfirmationByEnum.PARTICIPANT && (confirmationByUser == null || confirmationByUser.booleanValue())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private boolean isConfirmationDate(MemberRow row, boolean hasDate) {
+		if(!hasDate) return true;
+		
+		List<ResourceReservation> reservations = row.getReservations();
+		if(reservations != null && !reservations.isEmpty()) {
+			for(ResourceReservation reservation:reservations) {
+				if(reservation.getExpirationDate() != null) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	@Override
@@ -101,6 +219,7 @@ implements SortableFlexiTableDataModel<MemberRow> {
 				case asOwner -> row.getNumOfRole(CurriculumRoles.owner);
 				case asMasterCoach -> row.getNumOfRole(CurriculumRoles.mastercoach);
 				case asElementOwner -> row.getNumOfRole(CurriculumRoles.curriculumelementowner);
+				case pending -> row.getNumOfReservations();
 				case online -> getChatLink(row);
 				case tools -> row.getToolsLink();
 				default -> "ERROR";
@@ -139,6 +258,12 @@ implements SortableFlexiTableDataModel<MemberRow> {
 		return chatLink;
 	}
 	
+	@Override
+	public void setObjects(List<MemberRow> objects) {
+		backupRows = new ArrayList<>(objects);
+		super.setObjects(objects);
+	}
+	
 	public enum MemberCols implements FlexiSortableColumnDef {
 		online("table.header.online"),
 		role("table.header.role"),
@@ -148,6 +273,7 @@ implements SortableFlexiTableDataModel<MemberRow> {
 		asOwner("table.header.num.as.owner"),
 		asMasterCoach("table.header.num.as.mastercoach"),
 		asElementOwner("table.header.num.as.element.owner"),
+		pending("table.header.num.pending"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;

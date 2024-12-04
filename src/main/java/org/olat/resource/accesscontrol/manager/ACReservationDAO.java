@@ -23,14 +23,17 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.ResourceReservationImpl;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -70,16 +73,35 @@ public class ACReservationDAO {
 		return reservations.get(0);
 	}
 	
-	public List<ResourceReservation> loadReservations(List<OLATResource> resources) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select reservation from resourcereservation as reservation ")
-		  .append(" where reservation.resource.key in (:resourceKey)");
+	public List<ResourceReservation> loadReservations(SearchReservationParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select reservation from resourcereservation as reservation ");
 		
-		List<Long> resourceKeys = PersistenceHelper.toKeys(resources);
+		if(searchParams.getResources() != null && !searchParams.getResources().isEmpty()) {
+			sb.and().append("reservation.resource.key in (:resourceKey)");
+		}
 		
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
-				.setParameter("resourceKey", resourceKeys)
-				.getResultList();
+		if(searchParams.getConfirmationByUser() != null) {
+			if(searchParams.getConfirmationByUser().booleanValue()) {
+				sb.and().append("reservation.userConfirmable is null or reservation.userConfirmable = true");
+			} else {
+				sb.and().append("reservation.userConfirmable = false");
+			}
+		}
+		
+		if(searchParams.isWithConfirmationDate()) {
+			sb.and().append("reservation.expirationDate is not null");
+		}
+		
+		TypedQuery<ResourceReservation> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), ResourceReservation.class);
+		
+		if(searchParams.getResources() != null && !searchParams.getResources().isEmpty()) {
+			List<Long> resourceKeys = PersistenceHelper.toKeys(searchParams.getResources());
+			query.setParameter("resourceKey", resourceKeys);
+		}
+				
+		return query.getResultList();
 	}
 	
 	public List<ResourceReservation> loadReservations(IdentityRef identity) {

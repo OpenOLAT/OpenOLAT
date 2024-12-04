@@ -17,6 +17,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_absence_authorized { @include o-add-icon('circle-check', false); color: $brand-success;}
 .o_icon_absence_leave { @include o-add-icon('clock', false);}
 .o_icon_absence_unauthorized { @include o-add-icon('exclamation-circle'); color: $brand-danger }
+.o_icon_accept_all { @include o-add-icon('check-double');}
 .o_icon_accepted { @include o-add-icon('thumbs-up');}
 .o_icon_accessibility { @include o-add-icon('wheelchair');}
 .o_icon_actions { @include o-add-icon('ellipsis-v');}

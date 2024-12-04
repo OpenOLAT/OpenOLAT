@@ -108,6 +108,7 @@ import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -1188,7 +1189,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			dbInstance.commit();
 		}
 
-		List<ResourceReservation> reservations = reservationDao.loadReservations(groupResources);
+		SearchReservationParameters searchParams = new SearchReservationParameters(groupResources);
+		List<ResourceReservation> reservations = reservationDao.loadReservations(searchParams);
 		for(ResourceReservation reservation:reservations) {
 			if(identities.contains(reservation.getIdentity())) {
 				reservationDao.deleteReservation(reservation);

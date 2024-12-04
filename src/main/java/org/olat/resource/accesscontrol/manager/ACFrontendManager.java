@@ -96,6 +96,7 @@ import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutStatus;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
@@ -523,7 +524,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 	@Override
 	public List<ResourceReservation> getReservations(List<OLATResource> resources) {
-		return reservationDao.loadReservations(resources);
+		return reservationDao.loadReservations(new SearchReservationParameters(resources));
+	}
+
+	@Override
+	public List<ResourceReservation> getReservations(SearchReservationParameters searchParams) {
+		return reservationDao.loadReservations(searchParams);
 	}
 
 	@Override

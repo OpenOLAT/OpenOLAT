@@ -37,6 +37,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -174,7 +175,6 @@ public interface ACService {
 	
 	public boolean tryAutoBooking(Identity identity, RepositoryEntry entry, AccessResult acResult);
 
-
 	/**
 	 * Get the reservation form an identity on a resource
 	 * @param identity
@@ -186,9 +186,16 @@ public interface ACService {
 	/**
 	 * Get the reservations pending a list of resources.
 	 * @param resources
-	 * @return
+	 * @return A list of reservations
 	 */
 	public List<ResourceReservation> getReservations(List<OLATResource> resources);
+	
+	/**
+	 * Get the reservations pending a list of resources, confirmation settings...
+	 * @param The search parameters
+	 * @return A list of reservations
+	 */
+	public List<ResourceReservation> getReservations(SearchReservationParameters searchParams);
 
 	/**
 	 * The list of pending reservations
