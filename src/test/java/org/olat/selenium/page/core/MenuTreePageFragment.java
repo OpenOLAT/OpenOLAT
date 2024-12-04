@@ -19,14 +19,10 @@
  */
 package org.olat.selenium.page.core;
 
-import java.util.List;
-
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * Fragment which contains the menu tree. The WebElement to create
@@ -95,18 +91,8 @@ public class MenuTreePageFragment {
 	}
 
 	public MenuTreePageFragment assertTitleNotExists(String title) {
-		boolean found = false;
-		WebElement tree = browser.findElement(treeBy);
-		List<WebElement> nodeLinks = tree.findElements(By.cssSelector("li>div>span.o_tree_link>a"));
-		for(WebElement nodeLink:nodeLinks) {
-			String text = nodeLink.getText();
-			if(text.contains(title)) {
-				OOGraphene.waitBusy(browser);
-				found = true;
-			}
-		}
-		
-		Assert.assertFalse("Link found with title: " + title, found);
+		By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li/div/span[contains(@class,'o_tree_link')]/a[span[contains(text(),'" + title + "')]]");
+		OOGraphene.waitElementDisappears(linkBy, 5, browser);
 		return this;
 	}
 }
