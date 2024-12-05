@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MemberUserDetailsController extends UserInfoController {
 	
-	public static final String usageIdentifyer = CurriculumElementUserManagementController.usageIdentifyer;
+	public static final String usageIdentifyer = AbstractMembersController.usageIdentifyer;
 	
 	private final Identity member;
 	

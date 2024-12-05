@@ -55,6 +55,8 @@ public class MemberDetailsController extends FormBasicController {
 	private FormLink editMemberShipButton;
 	
 	private final Identity member;
+	private final boolean withEdit;
+	private final boolean withAcceptDecline;
 	private final UserInfoProfileConfig profileConfig;
 	
 	private final MemberRolesDetailsController rolesDetailsCtrl;
@@ -65,13 +67,15 @@ public class MemberDetailsController extends FormBasicController {
 	@Autowired
 	private UserInfoService userInfoService;
 	
-	public MemberDetailsController(UserRequest ureq, WindowControl wControl,
+	public MemberDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			Curriculum curriculum, List<CurriculumElement> elements, MemberRow row,
-			UserInfoProfileConfig profileConfig, Form rootForm) {
+			UserInfoProfileConfig profileConfig, boolean withEdit, boolean withAcceptDecline) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "member_details_view", rootForm);
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale()));
 
+		this.withEdit = withEdit;
 		this.profileConfig = profileConfig;
+		this.withAcceptDecline = withAcceptDecline;
 		member = securityManager.loadIdentityByKey(row.getIdentityKey());
 
 		rolesDetailsCtrl = new MemberRolesDetailsController(ureq, getWindowControl(), rootForm,
@@ -98,6 +102,7 @@ public class MemberDetailsController extends FormBasicController {
 		
 		editMemberShipButton = uifactory.addFormLink("edit.member", formLayout, Link.BUTTON);
 		editMemberShipButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+		editMemberShipButton.setVisible(withEdit);
 	
 		formLayout.add("roles", rolesDetailsCtrl.getInitialFormItem());
 		formLayout.add("history", historyDetailsCtrl.getInitialFormItem());

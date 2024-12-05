@@ -226,7 +226,7 @@ implements SortableFlexiTableDataModel<MemberRow>, FilterableFlexiTableModel {
 			};
 		}
 		
-		int propPos = col - CurriculumUserManagementController.USER_PROPS_OFFSET;
+		int propPos = col - AbstractMembersController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
 	

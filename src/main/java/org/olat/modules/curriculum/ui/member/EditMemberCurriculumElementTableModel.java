@@ -55,6 +55,11 @@ implements FlexiTableFooterModel {
 		return false;
 	}
 	
+	@Override
+	public boolean hasOpenCloseAll() {
+		return false;
+	}
+	
 	public boolean isParentOf(EditMemberCurriculumElementRow parentRow, EditMemberCurriculumElementRow node) {
 		for(EditMemberCurriculumElementRow parent=node.getParent(); parent != null; parent=parent.getParent()) {
 			if(parent != null && parent.getKey().equals(parentRow.getKey())) {

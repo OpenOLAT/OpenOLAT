@@ -56,6 +56,11 @@ implements FlexiTableFooterModel {
 	}
 
 	@Override
+	public boolean hasOpenCloseAll() {
+		return false;
+	}
+
+	@Override
 	public Object getValueAt(int row, int col) {
 		MemberRolesDetailsRow detailsRow = getObject(row);
 		if(col >= 0 && col < COLS.length) {

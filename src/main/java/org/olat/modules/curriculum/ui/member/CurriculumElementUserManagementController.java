@@ -22,7 +22,6 @@ package org.olat.modules.curriculum.ui.member;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.admin.user.UserTableDataModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.scope.Scope;
@@ -53,9 +52,6 @@ import org.olat.user.UserAvatarMapper;
  */
 public class CurriculumElementUserManagementController extends BasicController implements Activateable2 {
 
-	public static final int USER_PROPS_OFFSET = 500;
-	public static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
-	
 	private static final String ACTIVE_SCOPE = "Active";
 	private static final String PENDING_SCOPE = "Pending";
 	private static final String NON_MEMBERS_SCOPE = "NonMembers";
@@ -168,7 +164,7 @@ public class CurriculumElementUserManagementController extends BasicController i
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(NON_MEMBERS_SCOPE), null);
 		nonMembersCtrl = new CurriculumElementNonMembersController(ureq, swControl, toolbarPanel,
-				curriculumElement, avatarMapper, avatarMapperBaseURL);
+				curriculumElement, secCallback, avatarMapper, avatarMapperBaseURL);
 		listenTo(nonMembersCtrl);
 		
 		mainVC.put(MAIN_CONTROLLER, nonMembersCtrl.getInitialComponent());
