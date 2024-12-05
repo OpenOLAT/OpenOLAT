@@ -172,7 +172,8 @@ public class ModifyRuntimeTypeController extends FormBasicController {
 		if (entry.getRuntimeType() == runtimeType) {
 			return false;
 		}
-		if (repositoryService.hasUserManaged(entry) || !repositoryService.canSwitchTo(entry, runtimeType)) {
+		if (repositoryService.hasUserManaged(entry) || 
+				!RepositoryService.RuntimeTypeCheckDetails.ok.equals(repositoryService.canSwitchTo(entry, runtimeType))) {
 			return false;
 		}
 		

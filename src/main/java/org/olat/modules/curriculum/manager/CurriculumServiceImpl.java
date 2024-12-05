@@ -70,7 +70,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
-import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.lti13.LTI13Service;
@@ -199,11 +199,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
-	private BusinessGroupService businessGroupService;
+	private BusinessGroupDAO businessGroupDAO;
 	@Autowired
 	private InvitationDAO invitationDao;
-	@Autowired
-	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 
@@ -1464,7 +1462,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		return businessGroupService
+		return businessGroupDAO
 				.findBusinessGroups(params, courseEntry, 0, -1).stream()
 				.filter(bg -> {
 					if (LTI13Service.LTI_GROUP_TYPE.equals(bg.getTechnicalType())) {
@@ -1492,6 +1490,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public void deleteInternalGroups(List<BusinessGroup> internalGroups, Identity doer) {
+		BusinessGroupLifecycleManager businessGroupLifecycleManager = CoreSpringFactory.getImpl(BusinessGroupLifecycleManager.class);
 		for (BusinessGroup businessGroup : internalGroups) {
 			businessGroupLifecycleManager.deleteBusinessGroup(businessGroup, doer, false);
 		}

@@ -486,20 +486,31 @@ public interface RepositoryService {
 	 * Performs a check on 'entry' without modifying it.
 	 * Returns true if the runtimeType of the 'entry' can be switched to the desired 'runtimeType'.
 	 *
-	 * @param entry The repositoryEntry to perform the check for.
+	 * @param entry       The repositoryEntry to perform the check for.
 	 * @param runtimeType The desired runtimeType.
 	 * @return True if the runtimeType of the 'entry' could be changed to the desired 'runtimeType'.
 	 */
-	boolean canSwitchTo(RepositoryEntry entry, RepositoryEntryRuntimeType runtimeType);
+	RuntimeTypeCheckDetails canSwitchTo(RepositoryEntry entry, RepositoryEntryRuntimeType runtimeType);
 
 	/**
 	 * Returns the set of runtime types that the 'entry' is allowed to switch to.
 	 *
 	 * @param entry The repositoryEntry to perform the check for.
-	 * @return A set of runtime types that the 'entry' can be set to.
+	 * @return A set of runtime types that the 'entry' can be set to, plus result details of the check.
 	 */
-	Set<RepositoryEntryRuntimeType> allowedRuntimeTypes(RepositoryEntry entry);
+	RuntimeTypesAndCheckDetails allowedRuntimeTypes(RepositoryEntry entry);
 
+	record RuntimeTypesAndCheckDetails(Set<RepositoryEntryRuntimeType> runtimeTypes, RuntimeTypeCheckDetails checkDetails) {}
+	
+	enum RuntimeTypeCheckDetails {
+		ltiDeploymentExists,
+		participantExists,
+		coachExists,
+		ok,
+		wrongState,
+		curriculumElementExists
+	}
+	
 	/**
 	 * Returns the set of runtime types that are possible for the provided 'entries'.
 	 *
@@ -540,4 +551,13 @@ public interface RepositoryService {
 	 * @return The default value for the runtime type. Depends on the 'resource' and on the system configuration.
 	 */
 	RepositoryEntryRuntimeType getDefaultRuntimeType(OLATResource resource);
+
+	/**
+	 * Returns true if the course specified by 'entry' has a mixed setup: standalone runtime type and 
+	 * referenced by a curriculum. This is a legacy constellation.
+
+	 * @param entry Repository entry of a course.
+	 * @return True if a mixed setup is detected.
+	 */
+	boolean isMixedSetup(RepositoryEntry entry);
 }

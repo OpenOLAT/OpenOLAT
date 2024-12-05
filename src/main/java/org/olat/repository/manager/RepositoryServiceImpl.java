@@ -75,11 +75,12 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.course.todo.CourseToDoService;
 import org.olat.group.BusinessGroup;
-import org.olat.ims.lti13.LTI13Service;
+import org.olat.ims.lti13.manager.LTI13SharedToolDeploymentDAO;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.openbadges.OpenBadgesManager;
@@ -204,9 +205,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
-	private CurriculumService curriculumService;
+	private CurriculumElementDAO curriculumElementDAO;
 	@Autowired
-	private LTI13Service lti13Service;
+	private LTI13SharedToolDeploymentDAO lti13SharedToolDeploymentDAO;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -712,6 +713,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	 */
 	@Override
 	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry, Identity doer) {
+		CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		RepositoryEntry reloadedEntry = dbInstance.getCurrentEntityManager()
 				.getReference(RepositoryEntry.class, entry.getKey());
 		Long resourceKey = reloadedEntry.getOlatResource().getKey();
@@ -1123,64 +1125,69 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public boolean canSwitchTo(RepositoryEntry entry, RepositoryEntryRuntimeType runtimeType) {
+	public RuntimeTypeCheckDetails canSwitchTo(RepositoryEntry entry, RepositoryEntryRuntimeType runtimeType) {
 		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			switch (runtimeType) {
 				case embedded -> {
-					return false;
+					return RuntimeTypeCheckDetails.wrongState;
 				}
 				case standalone -> {
-					if (curriculumService.getCuriculumElementCount(entry) > 0) {
-						return false;
+					if (curriculumElementDAO.countElements(entry) > 0) {
+						return RuntimeTypeCheckDetails.curriculumElementExists;
 					}
 				}
 				case curricular -> {
-					if (!canSwitchToCurricular(entry)) {
-						return false;
-					}
+					return canSwitchToCurricular(entry);
 				}
 			}
 		} else {
 			if (runtimeType == RepositoryEntryRuntimeType.curricular) {
-				return false;
+				return RuntimeTypeCheckDetails.wrongState;
 			}
 		}
 
-		return true;
+		return RuntimeTypeCheckDetails.ok;
 	}
 
 	@Override
-	public Set<RepositoryEntryRuntimeType> allowedRuntimeTypes(RepositoryEntry entry) {
+	public RuntimeTypesAndCheckDetails allowedRuntimeTypes(RepositoryEntry entry) {
 		Set<RepositoryEntryRuntimeType> runtimeTypes = new HashSet<>();
-
+		RuntimeTypeCheckDetails checkDetails = RuntimeTypeCheckDetails.ok;
+		
 		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
-			if (curriculumService.getCuriculumElementCount(entry) == 0) {
+			if (curriculumElementDAO.countElements(entry) == 0) {
 				runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
 			}
-			if (curriculumModule.isEnabled() && canSwitchToCurricular(entry)) {
-				runtimeTypes.add(RepositoryEntryRuntimeType.curricular);
+			if (curriculumModule.isEnabled()) {
+				checkDetails = canSwitchToCurricular(entry);
+				if (checkDetails.equals(RuntimeTypeCheckDetails.ok)) {
+					runtimeTypes.add(RepositoryEntryRuntimeType.curricular);
+				}
 			}
 		} else {
 			runtimeTypes.add(RepositoryEntryRuntimeType.embedded);
 			runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
 		}
 
-		return runtimeTypes;
+		return new RuntimeTypesAndCheckDetails(runtimeTypes, checkDetails);
 	}
 
-	private boolean canSwitchToCurricular(RepositoryEntry entry) {
+	private RuntimeTypeCheckDetails canSwitchToCurricular(RepositoryEntry entry) {
 		Map<String, Long> roleToCount = this.reToGroupDao.getRoleToCountMemebers(entry);
 
 		if (roleToCount.containsKey(GroupRoles.participant.name()) && roleToCount.get(GroupRoles.participant.name()) > 0) {
-			return false;
+			return RuntimeTypeCheckDetails.participantExists;
 		}
 		if (roleToCount.containsKey(GroupRoles.coach.name()) && roleToCount.get(GroupRoles.coach.name()) > 0) {
-			return false;
+			return RuntimeTypeCheckDetails.coachExists;
 		}
-		if (!lti13Service.getContexts(entry).isEmpty()) {
-			return false;
+		if (lti13SharedToolDeploymentDAO.getSharedToolDeploymentCount(entry) > 0) {
+			return RuntimeTypeCheckDetails.ltiDeploymentExists;
 		}
-		return true;
+		if (curriculumElementDAO.countElements(entry) > 0) {
+			return RuntimeTypeCheckDetails.curriculumElementExists;
+		}
+		return RuntimeTypeCheckDetails.ok;
 	}
 
 	@Override
@@ -1234,5 +1241,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			return RepositoryEntryRuntimeType.standalone;
 		}
 		return null;
+	}
+
+	@Override
+	public boolean isMixedSetup(RepositoryEntry entry) {
+		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			if (curriculumModule.isEnabled()) {
+				return curriculumElementDAO.countElements(entry) > 0;
+			}
+		}
+		return false;
 	}
 }

@@ -96,6 +96,17 @@ public class LTI13SharedToolDeploymentDAO {
 			.getResultList();
 	}
 	
+	public long getSharedToolDeploymentCount(RepositoryEntryRef entryRef) {
+		QueryBuilder sb = new QueryBuilder();
+		sb
+				.append("select count(deployment) from ltisharedtooldeployment deployment")
+				.append(" where deployment.entry.key=:entryKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("entryKey", entryRef.getKey())
+				.getSingleResult();
+	}
+	
 	public List<LTI13SharedToolDeployment> getSharedToolDeployment(BusinessGroupRef businessGroup) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select deployment from ltisharedtooldeployment deployment")

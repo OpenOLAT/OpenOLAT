@@ -210,6 +210,11 @@ public class AuthoringEditAccessController extends BasicController {
 		} else {
 			mainVC.contextRemove("warningOffersMsg");
 		}
+		if (repositoryService.isMixedSetup(entry)) {
+			mainVC.contextPut("warningMixedSetup", translate("error.mixed.setup"));
+		} else {
+			mainVC.contextRemove("warningMixedSetup");
+		}
 	}
 	
 	private void initRuntimeType(UserRequest ureq, VelocityContainer vc) {

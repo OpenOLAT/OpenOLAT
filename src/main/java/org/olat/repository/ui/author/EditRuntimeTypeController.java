@@ -54,7 +54,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 	private RepositoryEntry entry;
 	private final int numOfOffers;
 	private final boolean hasUserManager;
-	private final Set<RepositoryEntryRuntimeType> allowedRuntimeTypes;
+	private final RepositoryService.RuntimeTypesAndCheckDetails allowedRuntimeTypesAndDetails;
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -69,7 +69,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 		this.entry = entry;
 		hasUserManager = repositoryService.hasUserManaged(entry);
 		numOfOffers = acService.findOfferByResource(entry.getOlatResource(), true, null, null).size();
-		allowedRuntimeTypes = repositoryService.allowedRuntimeTypes(entry);
+		allowedRuntimeTypesAndDetails = repositoryService.allowedRuntimeTypes(entry);
 		initForm(ureq);
 	}
 	
@@ -86,8 +86,16 @@ public class EditRuntimeTypeController extends FormBasicController {
 		}
 		
 		StringBuilder warnings = new StringBuilder();
-		if(hasUserManager) {
-			warnings.append("<p>").append(translate("change.runtime.type.warning")).append("</p>");
+		switch (allowedRuntimeTypesAndDetails.checkDetails()) {
+			case ltiDeploymentExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.ltiDeploymentExists")).append("</p>");
+			case participantExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.participantExists")).append("</p>");
+			case coachExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.coachExists")).append("</p>");
+			case curriculumElementExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.curriculumElementExists")).append("</p>");
+		}
+		if (warnings.isEmpty()) {
+			if(hasUserManager) {
+				warnings.append("<p>").append(translate("change.runtime.type.warning")).append("</p>");
+			}
 		}
 		if(numOfOffers > 0) {
 			warnings.append("<p>").append(translate("change.runtime.type.warning.offers", Integer.toString(numOfOffers))).append("</p>");
@@ -109,14 +117,14 @@ public class EditRuntimeTypeController extends FormBasicController {
 					translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".title"),
 					translate("runtime.type." + RepositoryEntryRuntimeType.standalone.name() + ".desc"),
 					"o_icon o_icon_people", null,
-					allowedRuntimeTypes.contains(RepositoryEntryRuntimeType.standalone)));
+					allowedRuntimeTypesAndDetails.runtimeTypes().contains(RepositoryEntryRuntimeType.standalone)));
 		}
 		if (possibleRuntimeTypes.contains(RepositoryEntryRuntimeType.curricular)) {
 			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.curricular.name(),
 					translate("runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".title"),
 					translate("runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".desc"),
 					"o_icon o_icon_curriculum", null,
-					allowedRuntimeTypes.contains(RepositoryEntryRuntimeType.curricular)));
+					allowedRuntimeTypesAndDetails.runtimeTypes().contains(RepositoryEntryRuntimeType.curricular)));
 		}
 
 		runtimeTypeEl = uifactory.addCardSingleSelectHorizontal("cif.runtime.type", "cif.runtime.type", formLayout, runtimeTypeKV);
