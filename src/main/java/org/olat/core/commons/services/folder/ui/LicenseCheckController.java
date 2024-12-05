@@ -19,10 +19,8 @@
  */
 package org.olat.core.commons.services.folder.ui;
 
-import java.util.List;
-import java.util.function.Consumer;
-
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
+import org.olat.core.commons.services.folder.ui.FolderController.CopyMoveParams;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -42,8 +40,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,26 +54,19 @@ public class LicenseCheckController extends FormBasicController {
 	private TextElement licensorEl;
 	private TextAreaElement licenseFreetextEl;
 	
-	private final boolean suppressVersion;
-	private final VFSContainer targetContainer;
-	private final List<VFSItem> itemsToCopy;
+	private final CopyMoveParams copyMoveParams;
 	private final int numMissingLicenses;
-	private final Consumer<List<String>> successMessage;
 
 	@Autowired
 	private LicenseService licenseService;
 	@Autowired
 	private FolderLicenseHandler licenseHandler;
 
-	protected LicenseCheckController(UserRequest ureq, WindowControl wControl, boolean suppressVersion, VFSContainer targetContainer,
-			List<VFSItem> itemsToCopy, int numMissingLicenses, Consumer<List<String>> successMessage) {
+	protected LicenseCheckController(UserRequest ureq, WindowControl wControl, CopyMoveParams copyMoveParams, int numMissingLicenses) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(LicenseUIFactory.class, getLocale(), getTranslator()));
-		this.suppressVersion = suppressVersion;
-		this.targetContainer = targetContainer;
-		this.itemsToCopy = itemsToCopy;
+		this.copyMoveParams = copyMoveParams;
 		this.numMissingLicenses = numMissingLicenses;
-		this.successMessage = successMessage;
 		
 		initForm(ureq);
 	}
@@ -119,23 +108,12 @@ public class LicenseCheckController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		copyMoveParams.setLicense(getLicense());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
-	public boolean isSuppressVersion() {
-		return suppressVersion;
-	}
 
-	public VFSContainer getTargetContainer() {
-		return targetContainer;
-	}
-
-	public List<VFSItem> getItemsToCopy() {
-		return itemsToCopy;
-	}
-
-	public Consumer<List<String>> getSuccessMessage() {
-		return successMessage;
+	public CopyMoveParams getCopyMoveParams() {
+		return copyMoveParams;
 	}
 
 	public License getLicense() {
