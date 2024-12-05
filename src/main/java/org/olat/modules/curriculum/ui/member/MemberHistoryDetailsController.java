@@ -120,7 +120,7 @@ public class MemberHistoryDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(noteCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.actor));
 		
-		tableModel = new MemberHistoryDetailsTableModel(columnsModel);
+		tableModel = new MemberHistoryDetailsTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "historyTable", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setCustomizeColumns(true);
@@ -209,10 +209,10 @@ public class MemberHistoryDetailsController extends FormBasicController {
 	
 	private MemberHistoryDetailsRow forgeRow(GroupMembershipHistory point) {
 		MemberHistoryDetailsRow row = new MemberHistoryDetailsRow(element, point);
-		Identity user = point.getCreator();
-		if(user != null) {
-			String userDisplayName = userManager.getUserDisplayName(user);
-			row.setUserDisplayName(userDisplayName);
+		Identity actor = point.getCreator();
+		if(actor != null) {
+			String userDisplayName = userManager.getUserDisplayName(actor);
+			row.setActorDisplayName(userDisplayName);
 		}
 		return row;
 	}

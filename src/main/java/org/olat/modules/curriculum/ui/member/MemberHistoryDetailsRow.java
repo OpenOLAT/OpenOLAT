@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.basesecurity.GroupMembershipHistory;
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.core.id.Identity;
 import org.olat.group.ui.main.CourseMembership;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -36,7 +37,9 @@ import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
  */
 public class MemberHistoryDetailsRow extends AbstractCurriculumElementRow {
 	
+	private Identity identity;
 	private String userDisplayName;
+	private String actorDisplayName;
 	private final CurriculumRoles role;
 	private final CourseMembership membership;
 	private final GroupMembershipHistory point;
@@ -47,7 +50,16 @@ public class MemberHistoryDetailsRow extends AbstractCurriculumElementRow {
 		membership = new CourseMembership();
 		membership.setCurriculumElementRole(point.getRole());
 		role = CurriculumRoles.isValueOf(point.getRole()) ? CurriculumRoles.valueOf(point.getRole()) : null;
-		
+	}
+	
+	public MemberHistoryDetailsRow(Identity identity, String userDisplayName, GroupMembershipHistory point) {
+		super(null);
+		this.point = point;
+		this.identity = identity;
+		this.userDisplayName = userDisplayName;
+		membership = new CourseMembership();
+		membership.setCurriculumElementRole(point.getRole());
+		role = CurriculumRoles.isValueOf(point.getRole()) ? CurriculumRoles.valueOf(point.getRole()) : null;
 	}
 
 	@Override
@@ -74,6 +86,10 @@ public class MemberHistoryDetailsRow extends AbstractCurriculumElementRow {
 	public GroupMembershipStatus getStatus() {
 		return point.getStatus();
 	}
+	
+	public Identity getIdentity() {
+		return identity;
+	}
 
 	public String getUserDisplayName() {
 		return userDisplayName;
@@ -83,4 +99,11 @@ public class MemberHistoryDetailsRow extends AbstractCurriculumElementRow {
 		this.userDisplayName = userDisplayName;
 	}
 
+	public String getActorDisplayName() {
+		return actorDisplayName;
+	}
+
+	public void setActorDisplayName(String actorDisplayName) {
+		this.actorDisplayName = actorDisplayName;
+	}
 }

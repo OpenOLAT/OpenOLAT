@@ -179,7 +179,7 @@ public class CurriculumElementUserManagementController extends BasicController i
 		removeAsListenerAndDispose(historyCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(HISTORY_SCOPE), null);
-		historyCtrl = new CurriculumElementHistoryController(ureq, swControl);
+		historyCtrl = new CurriculumElementHistoryController(ureq, swControl, curriculumElement);
 		listenTo(historyCtrl);
 		
 		mainVC.put(MAIN_CONTROLLER, historyCtrl.getInitialComponent());

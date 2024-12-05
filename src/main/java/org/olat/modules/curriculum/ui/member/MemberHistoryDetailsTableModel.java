@@ -21,12 +21,15 @@ package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableDateRangeFilter.DateRange;
 import org.olat.core.util.StringHelper;
@@ -38,14 +41,24 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class MemberHistoryDetailsTableModel extends DefaultFlexiTableDataModel<MemberHistoryDetailsRow>
-implements FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<MemberHistoryDetailsRow>, FilterableFlexiTableModel {
 	
 	private static final MemberHistoryCols[] COLS = MemberHistoryCols.values();
 
+	private final Locale locale;
 	private List<MemberHistoryDetailsRow> backups;
 	
-	public MemberHistoryDetailsTableModel(FlexiTableColumnModel columnModel) {
+	public MemberHistoryDetailsTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
+	}
+	
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			MemberHistoryDetailsTableSortDelegate sort = new MemberHistoryDetailsTableSortDelegate(orderBy, this, locale);
+			super.setObjects(sort.sort());
+		}
 	}
 
 	@Override
@@ -92,20 +105,26 @@ implements FilterableFlexiTableModel {
 		}
 		return null;
 	}
-
+	
 	@Override
 	public Object getValueAt(int row, int col) {
 		MemberHistoryDetailsRow detailsRow = getObject(row);
+		return getValueAt(detailsRow, col);
+	}
+
+	@Override
+	public Object getValueAt(MemberHistoryDetailsRow detailsRow, int col) {
 		if(col >= 0 && col < COLS.length) {
 			return switch(COLS[col]) {
 				case key -> detailsRow.getHistoryKey();
 				case creationDate -> detailsRow.getDate();
+				case member -> detailsRow.getUserDisplayName();
 				case role -> detailsRow.getMembership();
 				case activity -> detailsRow.getStatus();
 				case originalValue -> "";
 				case newValue -> detailsRow.getStatus();
 				case note -> null;
-				case actor -> detailsRow.getUserDisplayName();
+				case actor -> detailsRow.getActorDisplayName();
 				default -> "ERROR";
 			};
 		}
@@ -122,6 +141,7 @@ implements FilterableFlexiTableModel {
 	public enum MemberHistoryCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		creationDate("table.header.date"),
+		member("table.header.member"),
 		role("table.header.role"),
 		activity("table.header.activity"),
 		originalValue("table.header.original.value"),
@@ -142,7 +162,7 @@ implements FilterableFlexiTableModel {
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return this == key || this == creationDate;
 		}
 
 		@Override
