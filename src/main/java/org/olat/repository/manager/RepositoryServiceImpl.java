@@ -1157,6 +1157,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			if (curriculumElementDAO.countElements(entry) == 0) {
 				runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
+			} else {
+				if (curriculumModule.isEnabled() && RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType())) {
+					checkDetails = RuntimeTypeCheckDetails.curriculumElementExists;
+				}
 			}
 			if (curriculumModule.isEnabled()) {
 				checkDetails = canSwitchToCurricular(entry);
@@ -1246,6 +1250,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public boolean isMixedSetup(RepositoryEntry entry) {
 		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			if (!RepositoryEntryRuntimeType.standalone.equals(entry.getRuntimeType())) {
+				return false;
+			}
 			if (curriculumModule.isEnabled()) {
 				return curriculumElementDAO.countElements(entry) > 0;
 			}
