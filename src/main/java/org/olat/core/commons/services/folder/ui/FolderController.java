@@ -273,6 +273,7 @@ public class FolderController extends FormBasicController implements Activateabl
 	private Controller quotaEditCtrl;
 	private FileBrowserTargetController copySelectFolderCtrl;
 	private LicenseCheckController licenseCheckCtrl;
+	private OverwriteConfirmationController overwriteConfirmationCtrl;
 	private RenameController renameCtrl;
 	private Controller metadataCtrl;
 	private RevisionListController revisonsCtrl;
@@ -1475,7 +1476,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			// No clean up. Uploaded, temporary files are deleted when controller is disposed.
 			// The clean up if no license check is needed.
 			if (event instanceof FileBrowserSelectionEvent selectionEvent) {
-				doCopyMove(ureq, false, false, currentContainer, selectionEvent.getVfsItems(), null);
+				CopyMoveParams params = new CopyMoveParams(false, false, selectionEvent.getVfsItems(), null);
+				params.setTargetContainer(currentContainer);
+				doCopyMoveValidate(ureq, params);
 			} else {
 				cleanUp();
 			}
@@ -1542,26 +1545,27 @@ public class FolderController extends FormBasicController implements Activateabl
 			cleanUp();
 		} else if (copySelectFolderCtrl == source) {
 			cmc.deactivate();
-			if (event == Event.DONE_EVENT && copySelectFolderCtrl.getUserObject() instanceof CopyUserObject copyUserObject) {
-				doCopyMove(ureq,
-						copyUserObject.move(),
-						copyUserObject.suppressVersion(),
-						copySelectFolderCtrl.getSelectedContainer(),
-						copyUserObject.itemsToCopy(),
-						copyUserObject.successMessage());
+			if (event == Event.DONE_EVENT && copySelectFolderCtrl.getUserObject() instanceof CopyMoveParams copyMoveParams) {
+				copyMoveParams.setTargetContainer(copySelectFolderCtrl.getSelectedContainer());
+				doCopyMoveValidate(ureq, copyMoveParams);
 			} else {
 				cleanUp();
 			}
 		} else if (licenseCheckCtrl == source) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
-				doCopyMove(ureq,
-					false,
-					licenseCheckCtrl.isSuppressVersion(),
-					licenseCheckCtrl.getTargetContainer(),
-					licenseCheckCtrl.getItemsToCopy(),
-					licenseCheckCtrl.getLicense(),
-					licenseCheckCtrl.getSuccessMessage());
+				doCopyMoveValidated(ureq, licenseCheckCtrl.getCopyMoveParams());
+			}
+			cleanUp();
+		} else if (overwriteConfirmationCtrl == source) {
+			cmc.deactivate();
+			if (event == Event.DONE_EVENT) {
+				// If dialog closed without pressing a button, we abort the process
+				if (overwriteConfirmationCtrl.getOverwrite() != null) {
+					CopyMoveParams copyMoveParams = overwriteConfirmationCtrl.getCopyMoveParams();
+					copyMoveParams.setOverwrite(overwriteConfirmationCtrl.getOverwrite());
+					doCopyMoveValidateLicense(ureq, copyMoveParams);
+				}
 			}
 			cleanUp();
 		} else if (zipConfirmationCtrl == source) {
@@ -1596,8 +1600,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			cleanUp();
 		} else if (restoreSelectFolderCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				if (restoreSelectFolderCtrl.getUserObject() instanceof CopyUserObject copyUserObject) {
-					doRestore(ureq, restoreSelectFolderCtrl.getSelectedContainer(), copyUserObject.itemsToCopy());
+				if (restoreSelectFolderCtrl.getUserObject() instanceof CopyMoveParams copyMoveParams) {
+					doRestore(ureq, restoreSelectFolderCtrl.getSelectedContainer(), copyMoveParams.getItemsToCopy());
 				}
 			}
 			cmc.deactivate();
@@ -1630,6 +1634,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		removeAsListenerAndDispose(revisonsCtrl);
 		removeAsListenerAndDispose(copySelectFolderCtrl);
 		removeAsListenerAndDispose(licenseCheckCtrl);
+		removeAsListenerAndDispose(overwriteConfirmationCtrl);
 		removeAsListenerAndDispose(zipConfirmationCtrl);
 		removeAsListenerAndDispose(emailCtrl);
 		removeAsListenerAndDispose(deleteSoftlyConfirmationCtrl);
@@ -1650,6 +1655,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		revisonsCtrl = null;
 		copySelectFolderCtrl = null;
 		licenseCheckCtrl = null;
+		overwriteConfirmationCtrl = null;
 		zipConfirmationCtrl = null;
 		emailCtrl = null;
 		deleteSoftlyConfirmationCtrl = null;
@@ -1815,7 +1821,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			List<VFSItem> items = uploadFilesInfos.stream()
 					.map(infos -> (VFSItem)new NamedLeaf(infos.fileName(), new LocalFileImpl(infos.file())))
 					.toList();
-			doCopyMove(ureq, false, false, container, items, this::showUploadSuccessMessage);
+			CopyMoveParams params = new CopyMoveParams(false, false, items, this::showUploadSuccessMessage);
+			params.setTargetContainer(container);
+			doCopyMoveValidate(ureq, params);
 		}
 	}
 
@@ -1836,7 +1844,9 @@ public class FolderController extends FormBasicController implements Activateabl
 			VFSItem item = container.resolve(filename);
 			if(dir instanceof VFSContainer subContainer && item != null
 					&& canEdit(subContainer) && canMove(item, item.getMetaInfo())) {
-				doCopyMove(ureq, true, true, subContainer, List.of(item), null, this::showDropSuccessMessage);
+				CopyMoveParams params = new CopyMoveParams(true, true, List.of(item), this::showDropSuccessMessage);
+				params.setTargetContainer(subContainer);
+				doCopyMoveValidate(ureq, params);
 			}
 		}
 	}
@@ -2226,7 +2236,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		copySelectFolderCtrl = new FileBrowserTargetController(ureq, getWindowControl(), rootContainer, currentContainer,
 				translate(submitI18nKey), !move);
 		listenTo(copySelectFolderCtrl);
-		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, suppressVersion, List.of(vfsItem), getCopyMoveSuccessMessage(move)));
+		copySelectFolderCtrl.setUserObject(new CopyMoveParams(move, suppressVersion, List.of(vfsItem), getCopyMoveSuccessMessage(move)));
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				copySelectFolderCtrl.getInitialComponent(), true, translate(titleI18nKey), true);
@@ -2258,49 +2268,19 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 	}
 
-	private void doCopyMove(UserRequest ureq, boolean move, boolean suppressVersion, VFSContainer targetContainer,
-			List<VFSItem> itemsToCopy, Consumer<List<String>> successMessage) {
-		if (licensesEnabled && folderModule.isForceLicenseCheck() && !move) {
-			int numMissingLicenses = 0;
-			for (VFSItem itemToCopy : itemsToCopy) {
-				if (isLicenseMissing(itemToCopy)) {
-					numMissingLicenses++;
-				}
-			}
-			
-			if (numMissingLicenses > 0) {
-				if (guardModalController(licenseCheckCtrl)) {
-					return;
-				}
-				licenseCheckCtrl = new LicenseCheckController(ureq, getWindowControl(), suppressVersion,
-						targetContainer, itemsToCopy, numMissingLicenses, successMessage);
-				listenTo(licenseCheckCtrl);
-				
-				cmc = new CloseableModalController(getWindowControl(), translate("close"),
-						licenseCheckCtrl.getInitialComponent(), true, translate("license.check.title"), true);
-				listenTo(cmc);
-				cmc.activate();
-				return;
-			}
-		}
-		
-		doCopyMove(ureq, move, suppressVersion, targetContainer, itemsToCopy, null, successMessage);
-		cleanUp();
-	}
-
 	// FileBrowserCopyToController.doCopy() should do the same
-	private void doCopyMove(UserRequest ureq, boolean move, boolean suppressVersion, VFSContainer targetContainer,
-			List<VFSItem> itemsToCopy, License license, Consumer<List<String>> successMessage) {
-		if (isItemNotAvailable(ureq, targetContainer, true)) return;
+	private void doCopyMoveValidate(UserRequest ureq, CopyMoveParams params) {
+		if (isItemNotAvailable(ureq, params.getTargetContainer(), true)) return;
 		
-		if (!canEdit(targetContainer)) {
+		if (!canEdit(params.getTargetContainer())) {
 			showWarning("error.copy.target.read.only");
 			return;
 		}
 		
-		for (VFSItem itemToCopy : itemsToCopy) {
+		List<VFSItem> itemsWithSameNameExists = new ArrayList<>(1);
+		for (VFSItem itemToCopy : params.getItemsToCopy()) {
 			if (itemToCopy instanceof VFSContainer sourceContainer) {
-				if (VFSManager.isContainerDescendantOrSelf(targetContainer, sourceContainer)) {
+				if (VFSManager.isContainerDescendantOrSelf(params.getTargetContainer(), sourceContainer)) {
 					showWarning("error.copy.overlapping");
 					loadModel(ureq);
 					return;
@@ -2316,22 +2296,84 @@ public class FolderController extends FormBasicController implements Activateabl
 				loadModel(ureq);
 				return;
 			}
+			
+			if (params.getTargetContainer().resolve(itemToCopy.getName()) != null) {
+				itemsWithSameNameExists.add(itemToCopy);
+			}
 		}
+		
+		if (!itemsWithSameNameExists.isEmpty() && !params.isSuppressVersion()) {
+			doShowOverwriteConfirmation(ureq, params, itemsWithSameNameExists);
+			return;
+		}
+		
+		
+		doCopyMoveValidateLicense(ureq, params);
+	}
+
+	private void doShowOverwriteConfirmation(UserRequest ureq, CopyMoveParams params, List<VFSItem> itemsWithSameNameExists) {
+		if (guardModalController(overwriteConfirmationCtrl)) {
+			return;
+		}
+		
+		overwriteConfirmationCtrl = new OverwriteConfirmationController(ureq, getWindowControl(), params, itemsWithSameNameExists);
+		listenTo(overwriteConfirmationCtrl);
+		
+		String title = VFSStatus.YES == params.getTargetContainer().canVersion()
+				? translate("overwrite.overwrite.title")
+				: translate("overwrite.replace.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				overwriteConfirmationCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doCopyMoveValidateLicense(UserRequest ureq, CopyMoveParams params) {
+		if (licensesEnabled && folderModule.isForceLicenseCheck() && !params.isMove()) {
+			int numMissingLicenses = 0;
+			for (VFSItem itemToCopy : params.getItemsToCopy()) {
+				if (isLicenseMissing(itemToCopy)) {
+					numMissingLicenses++;
+				}
+			}
+			
+			if (numMissingLicenses > 0) {
+				if (guardModalController(licenseCheckCtrl)) {
+					return;
+				}
+				licenseCheckCtrl = new LicenseCheckController(ureq, getWindowControl(), params,
+						numMissingLicenses);
+				listenTo(licenseCheckCtrl);
+				
+				cmc = new CloseableModalController(getWindowControl(), translate("close"),
+						licenseCheckCtrl.getInitialComponent(), true, translate("license.check.title"), true);
+				listenTo(cmc);
+				cmc.activate();
+				return;
+			}
+		}
+		
+		doCopyMoveValidated(ureq, params);
+		cleanUp();
+	}
+
+	private void doCopyMoveValidated(UserRequest ureq, CopyMoveParams params) {
+		boolean versioning = versionsEnabled && !params.isSuppressVersion() && (params.getOverwrite() == null || params.getOverwrite().booleanValue());
 		
 		FolderAddEvent addEvent = new FolderAddEvent();
 		VFSSuccess vfsStatus = VFSSuccess.SUCCESS;
-		ListIterator<VFSItem> listIterator = itemsToCopy.listIterator();
+		ListIterator<VFSItem> listIterator = params.itemsToCopy.listIterator();
 		while (listIterator.hasNext() && vfsStatus == VFSSuccess.SUCCESS) {
 			VFSItem vfsItemToCopy = listIterator.next();
 			// Paranoia: Check isItemNotAvailable and canEdit before every single file.
-			if (!isItemNotAvailable(ureq, targetContainer, false) && canCopy(vfsItemToCopy, null)) {
+			if (!isItemNotAvailable(ureq, params.getTargetContainer(), false) && canCopy(vfsItemToCopy, null)) {
 				boolean fileIgnored = false;
-				if (canEdit(targetContainer)) {
-					vfsStatus = isQuotaAvailable(targetContainer, vfsItemToCopy, move);
+				if (canEdit(params.getTargetContainer())) {
+					vfsStatus = isQuotaAvailable(params.getTargetContainer(), vfsItemToCopy, params.move);
 					if (vfsStatus == VFSSuccess.SUCCESS) {
-						VFSItem targetItem = targetContainer.resolve(vfsItemToCopy.getName());
-						if (versionsEnabled && !suppressVersion && vfsItemToCopy instanceof VFSLeaf newLeaf && targetItem instanceof VFSLeaf currentLeaf && targetItem.canVersion() == VFSStatus.YES) {
-							if (newLeaf.getRelPath() != null && currentLeaf.getRelPath() != null && newLeaf.getRelPath().equalsIgnoreCase(currentLeaf.getRelPath())) {
+						VFSItem targetItem = params.getTargetContainer().resolve(vfsItemToCopy.getName());
+						if (versioning && vfsItemToCopy instanceof VFSLeaf newLeaf && targetItem instanceof VFSLeaf currentLeaf && targetItem.canVersion() == VFSStatus.YES) {
+							if (isSameLeaf(vfsItemToCopy, targetItem)) {
 								fileIgnored = true;
 							} else {
 								boolean success = vfsRepositoryService.addVersion(currentLeaf, ureq.getIdentity(), false, "", newLeaf.getInputStream());
@@ -2340,11 +2382,21 @@ public class FolderController extends FormBasicController implements Activateabl
 								}
 							}
 						} else {
-							vfsItemToCopy = appendMissingLicense(vfsItemToCopy, license);
 							if (targetItem != null) {
-								vfsItemToCopy = makeNameUnique(targetContainer, vfsItemToCopy);
+								if (params.getOverwrite() != null && params.getOverwrite().booleanValue()) {
+									if (isSameLeaf(vfsItemToCopy, targetItem)) {
+										fileIgnored = true;
+									} else {
+										targetItem.deleteSilently();
+									}
+								} else {
+									vfsItemToCopy = makeNameUnique(params.getTargetContainer(), vfsItemToCopy);
+								}
 							}
-							vfsStatus = targetContainer.copyFrom(vfsItemToCopy, getIdentity());
+							if (!fileIgnored) {
+								vfsItemToCopy = appendMissingLicense(vfsItemToCopy, params.getLicense());
+								vfsStatus = params.getTargetContainer().copyFrom(vfsItemToCopy, getIdentity());
+							}
 						}
 					}
 				} else {
@@ -2352,7 +2404,7 @@ public class FolderController extends FormBasicController implements Activateabl
 				}
 				if (vfsStatus == VFSSuccess.SUCCESS) {
 					addEvent.addFilename(vfsItemToCopy.getName());
-					if (move && !fileIgnored) {
+					if (params.isMove() && !fileIgnored) {
 						vfsItemToCopy.deleteSilently();
 					}
 				}
@@ -2367,14 +2419,14 @@ public class FolderController extends FormBasicController implements Activateabl
 			showWarning("error.copy.quota.ulimit.exceeded");
 		} else if (vfsStatus != VFSSuccess.SUCCESS) {
 			showWarning("error.copy");
-		} else if (successMessage != null) {
-			successMessage.accept(addEvent.getFilenames());
+		} else if (params.getSuccessMessage() != null) {
+			params.getSuccessMessage().accept(addEvent.getFilenames());
 		}
 		
 		loadModel(ureq);
 		markNews();
 		if (!addEvent.getFilenames().isEmpty()) {
-			if (move) {
+			if (params.isMove()) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else {
 				fireEvent(ureq, addEvent);
@@ -2395,6 +2447,15 @@ public class FolderController extends FormBasicController implements Activateabl
 			}
 		}
 		return VFSSuccess.SUCCESS;
+	}
+	
+	private boolean isSameLeaf(VFSItem vfsItem1, VFSItem vfsItem2) {
+		if (vfsItem1 instanceof VFSLeaf vfsLeaf1 && vfsItem2 instanceof VFSLeaf vfsLeaf2) {
+			if (vfsLeaf1.getRelPath() != null && vfsLeaf2.getRelPath() != null && vfsLeaf1.getRelPath().equalsIgnoreCase(vfsLeaf2.getRelPath())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private VFSItem makeNameUnique(VFSContainer targetContainer, VFSItem vfsItem) {
@@ -2469,7 +2530,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		copySelectFolderCtrl = new FileBrowserTargetController(ureq, getWindowControl(), rootContainer, currentContainer,
 				translate(submitI18nKey), !move);
 		listenTo(copySelectFolderCtrl);
-		copySelectFolderCtrl.setUserObject(new CopyUserObject(move, true, itemsToCopy, getCopyMoveSuccessMessage(move)));
+		copySelectFolderCtrl.setUserObject(new CopyMoveParams(move, false, itemsToCopy, getCopyMoveSuccessMessage(move)));
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				copySelectFolderCtrl.getInitialComponent(), true, translate(titleI18nKey), true);
@@ -3123,7 +3184,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		restoreSelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, startContainer,
 				translate("restore"));
 		listenTo(restoreSelectFolderCtrl);
-		restoreSelectFolderCtrl.setUserObject(new CopyUserObject(true, true, List.of(vfsItem), null));
+		restoreSelectFolderCtrl.setUserObject(new CopyMoveParams(true, true, List.of(vfsItem), null));
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), restoreSelectFolderCtrl.getInitialComponent(),
 				true, translate( "restore"), true);
@@ -3200,7 +3261,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		restoreSelectFolderCtrl = new FolderTargetController(ureq, getWindowControl(), rootContainer, rootContainer,
 				translate("restore"));
 		listenTo(restoreSelectFolderCtrl);
-		restoreSelectFolderCtrl.setUserObject(new CopyUserObject(true, true, selecteditems, null));
+		restoreSelectFolderCtrl.setUserObject(new CopyMoveParams(true, true, selecteditems, null));
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), restoreSelectFolderCtrl.getInitialComponent(),
 				true, translate( "restore"), true);
@@ -3488,11 +3549,64 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 	}
 	
-	private static record CopyUserObject(
-			Boolean move,
-			boolean suppressVersion,
-			List<VFSItem> itemsToCopy,
-			Consumer<List<String>> successMessage) {
+	public static final class CopyMoveParams {
+		
+		private final boolean move;
+		private final boolean suppressVersion;
+		private final List<VFSItem> itemsToCopy;
+		private final Consumer<List<String>> successMessage;
+		private VFSContainer targetContainer;
+		private License license;
+		private Boolean overwrite;
+		
+		public CopyMoveParams(boolean move, boolean suppressVersion, List<VFSItem> itemsToCopy,
+				Consumer<List<String>> successMessage) {
+			this.move = move;
+			this.suppressVersion = suppressVersion;
+			this.itemsToCopy = itemsToCopy;
+			this.successMessage = successMessage;
+		}
+
+		public boolean isMove() {
+			return move;
+		}
+
+		public boolean isSuppressVersion() {
+			return suppressVersion;
+		}
+
+		public List<VFSItem> getItemsToCopy() {
+			return itemsToCopy;
+		}
+
+		public Consumer<List<String>> getSuccessMessage() {
+			return successMessage;
+		}
+
+		public VFSContainer getTargetContainer() {
+			return targetContainer;
+		}
+
+		public void setTargetContainer(VFSContainer targetContainer) {
+			this.targetContainer = targetContainer;
+		}
+
+		public License getLicense() {
+			return license;
+		}
+
+		public void setLicense(License license) {
+			this.license = license;
+		}
+
+		public Boolean getOverwrite() {
+			return overwrite;
+		}
+
+		public void setOverwrite(Boolean overwrite) {
+			this.overwrite = overwrite;
+		}
+		
 	}
 
 }
