@@ -508,7 +508,8 @@ public interface RepositoryService {
 		coachExists,
 		ok,
 		wrongState,
-		curriculumElementExists
+		curriculumElementExists,
+		groupWithOtherCoursesExists,
 	}
 	
 	/**

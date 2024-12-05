@@ -75,6 +75,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.course.todo.CourseToDoService;
 import org.olat.group.BusinessGroup;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.ims.lti13.manager.LTI13SharedToolDeploymentDAO;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
@@ -211,6 +212,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 
 	@Override
 	public RepositoryEntry create(Identity initialAuthor, String initialAuthorAlt, String resourceName,
@@ -1190,6 +1193,13 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		}
 		if (curriculumElementDAO.countElements(entry) > 0) {
 			return RuntimeTypeCheckDetails.curriculumElementExists;
+		}
+		return checkGroupsForSwitchingToCurricular(entry);
+	}
+
+	private RuntimeTypeCheckDetails checkGroupsForSwitchingToCurricular(RepositoryEntry entry) {
+		if (businessGroupRelationDao.hasGroupWithCourses(entry)) {
+			return RuntimeTypeCheckDetails.groupWithOtherCoursesExists;
 		}
 		return RuntimeTypeCheckDetails.ok;
 	}

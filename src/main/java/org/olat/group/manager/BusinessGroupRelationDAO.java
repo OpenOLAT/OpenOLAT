@@ -718,4 +718,28 @@ public class BusinessGroupRelationDAO {
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 	}
+	
+	public boolean hasGroupWithCourses(RepositoryEntryRef courseEntry) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb
+				.append("select count(re.key) from repositoryentry re")
+				.append(" inner join repoentrytogroup rel on rel.entry.key = re.key")
+				.append(" inner join bgroup gr on gr.key = rel.group.key")
+				.append(" inner join repoentrytogroup home_rel on home_rel.group.key = gr.key")
+				.append(" inner join repositoryentry home_re on home_re.key = home_rel.entry.key")
+				.append(" inner join businessgroup bg on bg.baseGroup.key = gr.key")
+				.append(" inner join olatresource res on res.key = re.olatResource.key")
+				.append(" where home_re.key = :courseEntryKey")
+				.append(" and not home_rel.defaultGroup")
+				.append(" and not rel.defaultGroup")
+				.append(" and re.key <> home_re.key")
+				.append(" and res.resName = 'CourseModule'");
+		
+		Long result = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("courseEntryKey", courseEntry.getKey())
+				.getSingleResult();
+		
+		return result != null && result > 0;
+	}
 }
