@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -37,7 +38,7 @@ import org.olat.core.util.StringHelper;
 /**
  * 
  * Initial date: 26 nov. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class MemberHistoryDetailsTableModel extends DefaultFlexiTableDataModel<MemberHistoryDetailsRow>
@@ -75,6 +76,7 @@ implements SortableFlexiTableDataModel<MemberHistoryDetailsRow>, FilterableFlexi
 					filteredRows.add(row);
 				}
 			}
+			super.setObjects(filteredRows);
 		} else {
 			super.setObjects(backups);
 		}
@@ -91,8 +93,9 @@ implements SortableFlexiTableDataModel<MemberHistoryDetailsRow>, FilterableFlexi
 		if(range == null) {
 			return true;
 		}
-		return (range.getStart() == null || range.getStart().compareTo(row.getDate()) <= 0)
-				&& (range.getEnd() == null || range.getEnd().compareTo(row.getDate()) >= 0);
+		Date date = row.getDate();
+		return (range.getStart() == null || range.getStart().compareTo(date) <= 0)
+				&& (range.getEnd() == null || range.getEnd().compareTo(date) >= 0);
 	}
 	
 	private DateRange getFrom(List<FlexiTableFilter> filters) {
@@ -120,10 +123,10 @@ implements SortableFlexiTableDataModel<MemberHistoryDetailsRow>, FilterableFlexi
 				case creationDate -> detailsRow.getDate();
 				case member -> detailsRow.getUserDisplayName();
 				case role -> detailsRow.getMembership();
-				case activity -> detailsRow.getStatus();
-				case originalValue -> "";
-				case newValue -> detailsRow.getStatus();
-				case note -> null;
+				case activity -> detailsRow.getActivity();
+				case previousStatus -> detailsRow.getPreviousStatus();
+				case status -> detailsRow.getStatus();
+				case note -> detailsRow.getNoteLink();
 				case actor -> detailsRow.getActorDisplayName();
 				default -> "ERROR";
 			};
@@ -144,8 +147,8 @@ implements SortableFlexiTableDataModel<MemberHistoryDetailsRow>, FilterableFlexi
 		member("table.header.member"),
 		role("table.header.role"),
 		activity("table.header.activity"),
-		originalValue("table.header.original.value"),
-		newValue("table.header.new.value"),
+		previousStatus("table.header.original.value"),
+		status("table.header.new.value"),
 		note("table.header.note"),
 		actor("table.header.actor");
 		

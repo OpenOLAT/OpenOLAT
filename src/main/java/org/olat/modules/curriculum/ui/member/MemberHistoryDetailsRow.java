@@ -21,50 +21,42 @@ package org.olat.modules.curriculum.ui.member;
 
 import java.util.Date;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembershipHistory;
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.group.ui.main.CourseMembership;
-import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
-import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
 
 /**
  * 
  * Initial date: 26 nov. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class MemberHistoryDetailsRow extends AbstractCurriculumElementRow {
+public class MemberHistoryDetailsRow {
 	
 	private Identity identity;
 	private String userDisplayName;
 	private String actorDisplayName;
+	private String activity;
+	private final Group group;
 	private final CurriculumRoles role;
 	private final CourseMembership membership;
 	private final GroupMembershipHistory point;
+	private GroupMembershipStatus previousStatus;
 	
-	public MemberHistoryDetailsRow(CurriculumElement curriculumElement, GroupMembershipHistory point) {
-		super(curriculumElement);
-		this.point = point;
-		membership = new CourseMembership();
-		membership.setCurriculumElementRole(point.getRole());
-		role = CurriculumRoles.isValueOf(point.getRole()) ? CurriculumRoles.valueOf(point.getRole()) : null;
-	}
+	private FormLink noteLink;
 	
 	public MemberHistoryDetailsRow(Identity identity, String userDisplayName, GroupMembershipHistory point) {
-		super(null);
 		this.point = point;
+		this.group = point.getGroup();
 		this.identity = identity;
 		this.userDisplayName = userDisplayName;
 		membership = new CourseMembership();
 		membership.setCurriculumElementRole(point.getRole());
 		role = CurriculumRoles.isValueOf(point.getRole()) ? CurriculumRoles.valueOf(point.getRole()) : null;
-	}
-
-	@Override
-	public ComparableCurriculumElementRow getParent() {
-		return null;
 	}
 	
 	public Long getHistoryKey() {
@@ -87,8 +79,32 @@ public class MemberHistoryDetailsRow extends AbstractCurriculumElementRow {
 		return point.getStatus();
 	}
 	
+	public Group getGroup() {
+		return group;
+	}
+	
 	public Identity getIdentity() {
 		return identity;
+	}
+
+	public String getActivity() {
+		return activity;
+	}
+
+	public void setActivity(String activity) {
+		this.activity = activity;
+	}
+
+	public GroupMembershipStatus getPreviousStatus() {
+		return previousStatus;
+	}
+
+	public void setPreviousStatus(GroupMembershipStatus previousStatus) {
+		this.previousStatus = previousStatus;
+	}
+	
+	public String getAdminNote() {
+		return point.getAdminNote();
 	}
 
 	public String getUserDisplayName() {
@@ -105,5 +121,13 @@ public class MemberHistoryDetailsRow extends AbstractCurriculumElementRow {
 
 	public void setActorDisplayName(String actorDisplayName) {
 		this.actorDisplayName = actorDisplayName;
+	}
+
+	public FormLink getNoteLink() {
+		return noteLink;
+	}
+
+	public void setNoteLink(FormLink noteLink) {
+		this.noteLink = noteLink;
 	}
 }
