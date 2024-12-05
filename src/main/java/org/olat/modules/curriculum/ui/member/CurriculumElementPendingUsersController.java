@@ -369,7 +369,6 @@ public class CurriculumElementPendingUsersController extends FormBasicController
 				
 				forgeLinks(row);
 				forgeOnlineStatus(row, loadStatus);
-				keyToMemberMap.put(row.getIdentityKey(), row);
 			}
 		}
 		

@@ -36,6 +36,7 @@ import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
@@ -435,9 +436,7 @@ public interface CurriculumService {
 	
 	public void updateCurriculumElementMemberships(Identity doer, Roles roles, List<CurriculumElementMembershipChange> changes, MailPackage mailing);
 	
-	public List<CurriculumElementMembershipHistory> getCurriculumElementMembershipsHistory(Curriculum curriculum, Identity identity);
-	
-	public List<CurriculumElementMembershipHistory> getCurriculumElementMembershipsHistory(Collection<? extends CurriculumElementRef> elements, Identity... identities);
+	public List<CurriculumElementMembershipHistory> getCurriculumElementMembershipsHistory(CurriculumElementMembershipHistorySearchParameters params);
 	
 	/**
 	 * Add a member with the specified role to the curriculum element. The

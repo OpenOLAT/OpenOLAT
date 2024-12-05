@@ -167,7 +167,8 @@ public class CurriculumElementUserManagementController extends BasicController i
 		removeAsListenerAndDispose(nonMembersCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(NON_MEMBERS_SCOPE), null);
-		nonMembersCtrl = new CurriculumElementNonMembersController(ureq, swControl);
+		nonMembersCtrl = new CurriculumElementNonMembersController(ureq, swControl, toolbarPanel,
+				curriculumElement, avatarMapper, avatarMapperBaseURL);
 		listenTo(nonMembersCtrl);
 		
 		mainVC.put(MAIN_CONTROLLER, nonMembersCtrl.getInitialComponent());

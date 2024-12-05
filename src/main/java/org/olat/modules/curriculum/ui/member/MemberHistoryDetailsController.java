@@ -52,6 +52,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.component.GroupMembershipStatusRenderer;
 import org.olat.modules.curriculum.ui.member.MemberHistoryDetailsTableModel.MemberHistoryCols;
@@ -191,7 +192,10 @@ public class MemberHistoryDetailsController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<CurriculumElementMembershipHistory> membershipsHistory = curriculumService.getCurriculumElementMembershipsHistory(List.of(element), member);
+		CurriculumElementMembershipHistorySearchParameters searchParams = new CurriculumElementMembershipHistorySearchParameters();
+		searchParams.setElements(List.of(element));
+		searchParams.setIdentities(List.of(member));
+		List<CurriculumElementMembershipHistory> membershipsHistory = curriculumService.getCurriculumElementMembershipsHistory(searchParams);
 		List<MemberHistoryDetailsRow> rows = new ArrayList<>();
 		for(CurriculumElementMembershipHistory elementHistory:membershipsHistory) {
 			List<GroupMembershipHistory> points = elementHistory.getHistory();

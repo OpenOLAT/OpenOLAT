@@ -64,6 +64,7 @@ import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipImpl;
 import org.olat.modules.curriculum.model.CurriculumElementNode;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
@@ -1060,10 +1061,9 @@ public class CurriculumElementDAO {
 	}
 	
 
-	public List<CurriculumElementMembershipHistory> getMembershipInfosAndHistory(List<? extends CurriculumRef> curriculums,
-			Collection<? extends CurriculumElementRef> elements, Identity... identities) {
+	public List<CurriculumElementMembershipHistory> getMembershipInfosAndHistory(CurriculumElementMembershipHistorySearchParameters params) {
 		
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select el.key, membershiphistory from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
 		  .append(" inner join bgroupmemberhistory membershiphistory on (membershiphistory.group.key = baseGroup.key)")
@@ -1071,38 +1071,43 @@ public class CurriculumElementDAO {
 		  .append(" inner join fetch ident.user identUser")
 		  .append(" inner join fetch membershiphistory.creator creator")
 		  .append(" inner join fetch creator.user creatorUser");
-		boolean and = false;
-		if(identities != null && identities.length > 0) {
-			and = and(sb, and);
-			sb.append("ident.key in (:identIds) ");
+		
+		if(params.getIdentities() != null && !params.getIdentities().isEmpty()) {
+			sb.and().append("ident.key in (:identIds) ");
 		}
-		if(elements != null && !elements.isEmpty()) {
-			and = and(sb, and);
-			sb.append("el.key in (:elementKeys)");
+		if(params.getElements() != null && !params.getElements().isEmpty()) {
+			sb.and().append("el.key in (:elementKeys)");
 		}
-		if(curriculums != null && !curriculums.isEmpty()) {
-			and = and(sb, and);
-			sb.append("el.curriculum.key in (:curriculumKeys)");
+		if(params.getCurriculum() != null) {
+			sb.and().append("el.curriculum.key=:curriculumKey");
+		}
+		if(params.isExcludeMembers()) {
+			sb.and().append("ident.key not in (select member.group.key from bgroupmember member")
+			  .append(" where member.identity.key=ident.key and member.group.key=el.group.key")
+			  .append(")");
+		}
+		if(params.isExcludeReservations()) {
+			sb.and().append("baseGroup.key not in (select member.group.key from bgroupmember member")
+			  .append(" where member.identity.key=ident.key")
+			  .append(")");
 		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
-		if(identities != null && identities.length > 0) {
-			List<Long> ids = new ArrayList<>(identities.length);
-			for(Identity id:identities) {
-				ids.add(id.getKey());
-			}
+		if(params.getIdentities() != null && !params.getIdentities().isEmpty()) {
+			List<Long> ids = params.getIdentities().stream()
+					.map(Identity::getKey)
+					.toList();
 			query.setParameter("identIds", ids);
 		}
-		if(elements != null && !elements.isEmpty()) {
-			List<Long> elementKeys = elements.stream()
-					.map(CurriculumElementRef::getKey).toList();
+		if(params.getElements() != null && !params.getElements().isEmpty()) {
+			List<Long> elementKeys = params.getElements().stream()
+					.map(CurriculumElementRef::getKey)
+					.toList();
 			query.setParameter("elementKeys", elementKeys);
 		}
-		if(curriculums != null &&!curriculums.isEmpty()) {
-			List<Long> curriculumKeys = curriculums.stream()
-					.map(CurriculumRef::getKey).toList();
-			query.setParameter("curriculumKeys", curriculumKeys);
+		if(params.getCurriculum() != null) {
+			query.setParameter("curriculumKey", params.getCurriculum().getKey());
 		}
 		
 		List<Object[]> rawObjects = query.getResultList();
@@ -1110,12 +1115,12 @@ public class CurriculumElementDAO {
 		for(Object[] object:rawObjects) {
 			Long elementKey = (Long)object[0];
 			GroupMembershipHistory membershipHistory = (GroupMembershipHistory)object[1];
-			Long identityKey = membershipHistory.getIdentity().getKey();
+			Identity identity = membershipHistory.getIdentity();
 			if(CurriculumRoles.isValueOf(membershipHistory.getRole())) {
 				CurriculumRoles cRole = CurriculumRoles.valueOf(membershipHistory.getRole());
-				IdentityToElementKey key = new IdentityToElementKey(identityKey, elementKey);
+				IdentityToElementKey key = new IdentityToElementKey(identity.getKey(), elementKey);
 				CurriculumElementMembershipHistory membership = history
-						.computeIfAbsent(key, k -> new CurriculumElementMembershipHistory(k.getIdentityKey(), k.getCurriculumElementKey()));
+						.computeIfAbsent(key, k -> new CurriculumElementMembershipHistory(identity, k.getCurriculumElementKey()));
 				membership.addHistoiryPoint(cRole, membershipHistory);
 			}
 		}

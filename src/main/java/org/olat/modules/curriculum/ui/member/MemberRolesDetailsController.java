@@ -50,6 +50,7 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.component.GroupMembershipHistoryComparator;
@@ -136,7 +137,10 @@ public class MemberRolesDetailsController extends FormBasicController {
 				.collect(Collectors.toMap(reservation -> new ResourceToRoleKey(ResourceToRoleKey.reservationToRole(reservation.getType()), reservation.getResource()) , r -> r, (u, v) -> u));
 		
 		// History
-		List<CurriculumElementMembershipHistory> curriculumHistory = curriculumService.getCurriculumElementMembershipsHistory(curriculum, member);
+		CurriculumElementMembershipHistorySearchParameters searchParams = new CurriculumElementMembershipHistorySearchParameters();
+		searchParams.setCurriculum(curriculum);
+		searchParams.setIdentities(List.of(member));
+		List<CurriculumElementMembershipHistory> curriculumHistory = curriculumService.getCurriculumElementMembershipsHistory(searchParams);
 		Map<Long, CurriculumElementMembershipHistory> historyMap = curriculumHistory.stream()
 				.collect(Collectors.toMap(CurriculumElementMembershipHistory::getCurriculumElementKey, u -> u, (u, v) -> u));
 

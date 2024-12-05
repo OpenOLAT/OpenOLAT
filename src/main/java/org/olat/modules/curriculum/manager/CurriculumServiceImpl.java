@@ -103,6 +103,7 @@ import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.model.CurriculumElementNode;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
@@ -821,14 +822,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public List<CurriculumElementMembershipHistory> getCurriculumElementMembershipsHistory(Curriculum curriculum, Identity identity) {
-		if(identity == null) return new ArrayList<>();
-		return curriculumElementDao.getMembershipInfosAndHistory(Collections.singletonList(curriculum), null, identity);
-	}
-	
-	@Override
-	public List<CurriculumElementMembershipHistory> getCurriculumElementMembershipsHistory(Collection<? extends CurriculumElementRef> elements, Identity... identities) {
-		return curriculumElementDao.getMembershipInfosAndHistory(null, elements, identities);
+	public List<CurriculumElementMembershipHistory> getCurriculumElementMembershipsHistory(
+			CurriculumElementMembershipHistorySearchParameters params) {
+		return curriculumElementDao.getMembershipInfosAndHistory(params);
 	}
 	
 	@Override

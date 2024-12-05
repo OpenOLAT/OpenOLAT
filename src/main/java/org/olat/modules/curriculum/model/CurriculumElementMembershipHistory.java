@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.GroupMembershipHistory;
+import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
@@ -35,18 +36,22 @@ import org.olat.modules.curriculum.CurriculumRoles;
  */
 public class CurriculumElementMembershipHistory {
 	
-	private final Long identityKey;
+	private final Identity identity;
 	private final Long curriculumElementKey;
 	
 	private final Map<CurriculumRoles, List<GroupMembershipHistory>> membershipHistory = new EnumMap<>(CurriculumRoles.class);
 	
-	public CurriculumElementMembershipHistory(Long identityKey, Long curriculumElementKey) {
-		this.identityKey = identityKey;
+	public CurriculumElementMembershipHistory(Identity identity, Long curriculumElementKey) {
+		this.identity = identity;
 		this.curriculumElementKey = curriculumElementKey;
 	}
 	
+	public Identity getIdentity() {
+		return identity;
+	}
+	
 	public Long getIdentityKey() {
-		return identityKey;
+		return identity.getKey();
 	}
 
 	public Long getCurriculumElementKey() {
