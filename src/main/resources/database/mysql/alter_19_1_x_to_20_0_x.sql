@@ -13,10 +13,25 @@ alter table o_cur_element_type add column c_single_element bool default false no
 alter table o_cur_element_type add column c_max_repo_entries bigint default -1 not null;
 alter table o_cur_element_type add column c_allow_as_root bool default true not null;
 
+alter table o_cur_curriculum_element add column c_teaser varchar(256);
+alter table o_cur_curriculum_element add column c_authors varchar(256);
+alter table o_cur_curriculum_element add column c_mainlanguage varchar(256);
+alter table o_cur_curriculum_element add column c_location varchar(256);
+alter table o_cur_curriculum_element add column c_objectives mediumtext;
+alter table o_cur_curriculum_element add column c_requirements mediumtext;
+alter table o_cur_curriculum_element add column c_credits temediumtextxt;
+alter table o_cur_curriculum_element add column c_expenditureofwork varchar(256);
+alter table o_cur_curriculum_element add column c_min_participants integer;
+alter table o_cur_curriculum_element add column c_max_participants integer;
+alter table o_cur_curriculum_element add column c_taught_by varchar(128);
+alter table o_cur_curriculum_element add column c_show_outline boolean default true not null;
+alter table o_cur_curriculum_element add column c_show_lectures boolean default true not null;
 alter table o_cur_curriculum_element add column pos_impl varchar(64);
 alter table o_cur_curriculum_element add column fk_resource bigint;
+alter table o_cur_curriculum_element add column fk_educational_type bigint;
 
 alter table o_cur_curriculum_element add constraint cur_el_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);
+alter table o_cur_curriculum_element add constraint cur_el_edutype_idx foreign key (fk_educational_type) references o_re_educational_type (id);
 
 -- Organisations
 alter table o_org_organisation add column o_location varchar(255);

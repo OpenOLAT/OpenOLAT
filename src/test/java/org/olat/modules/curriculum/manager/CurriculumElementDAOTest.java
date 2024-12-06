@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -46,6 +47,7 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.TaughtBy;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -99,6 +101,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals("1. Element", element.getDisplayName());
 		Assert.assertEquals(curriculum, element.getCurriculum());
 		Assert.assertEquals(type, element.getType());
+		Assert.assertTrue(element.getTaughtBys().isEmpty());
 	}
 	
 	/**
@@ -141,6 +144,26 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		List<CurriculumElement> root3Children = curriculumElementDao.getChildren(root3);
 		Assert.assertEquals(1, root3Children.size());
 		Assert.assertEquals(element3_1, root3Children.get(0));
+	}
+	
+	@Test
+	public void updateCurriculumElement() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1a", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-cur-el-1a", "Type for", "First element", "AC-234");
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1a", "1. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, type, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Assert.assertNotNull(element);
+		dbInstance.commitAndCloseSession();
+		
+		element.setTaughtBys(Set.of(TaughtBy.curriculumOwners, TaughtBy.teachers));
+		curriculumElementDao.update(element);
+		dbInstance.commitAndCloseSession();
+		
+		element = curriculumElementDao.loadByKey(element.getKey());
+		Assert.assertEquals(2, element.getTaughtBys().size());
+		Assert.assertTrue(element.getTaughtBys().contains(TaughtBy.curriculumOwners));
+		Assert.assertTrue(element.getTaughtBys().contains(TaughtBy.teachers));
 	}
 	
 	@Test

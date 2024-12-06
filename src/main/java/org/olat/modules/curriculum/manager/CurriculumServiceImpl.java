@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.manager;
 
 import static org.olat.modules.curriculum.CurriculumElementRepositoryEntryEvent.REPOSITORY_ENTRY_ADDED;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,6 +69,9 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -79,6 +83,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementMembershipEvent;
@@ -164,6 +169,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CoachingDAO coachingDao;
 	@Autowired
 	private CurriculumDAO curriculumDao;
+	@Autowired
+	private CurriculumStorage curriculumStorage;
 	@Autowired
 	private CurriculumMemberQueries memberQueries;
 	@Autowired
@@ -1379,6 +1386,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		return true;
 	}
 	
+	@Override
 	public CurriculumElement getImplementationOf(CurriculumElement curriculumElement) {
 		if(curriculumElement.getParent() == null) {
 			return curriculumElement;
@@ -1388,6 +1396,28 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			return parentLine.get(0);
 		}
 		return curriculumElement;
+	}
+	
+	@Override
+	public VFSContainer getMediaContainer(CurriculumElement curriculumElement) {
+		VFSContainer mediaContainer = curriculumStorage.getMediaContainer(curriculumElement);
+		mediaContainer = new NamedContainerImpl(curriculumElement.getDisplayName(), mediaContainer);
+		return mediaContainer;
+	}
+	
+	@Override
+	public void storeCurriculumElemenFile(CurriculumElementRef element, CurriculumElementFileType type, File file, String filename, Identity savedBy) {
+		curriculumStorage.storeCurriculumElementFile(element, type, savedBy, file, filename);
+	}
+	
+	@Override
+	public void deleteCurriculumElemenFile(CurriculumElementRef element, CurriculumElementFileType type) {
+		curriculumStorage.deleteCurriculumElementFile(element, type);
+	}
+	
+	@Override
+	public VFSLeaf getCurriculumElemenFile(CurriculumElementRef element, CurriculumElementFileType type) {
+		return curriculumStorage.getCurriculumElementFile(element, type);
 	}
 	
 	@Override

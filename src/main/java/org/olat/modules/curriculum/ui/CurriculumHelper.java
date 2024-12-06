@@ -19,7 +19,9 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 
@@ -63,5 +65,41 @@ public class CurriculumHelper {
 
 		String i18nKey = parentElement == null ? "select.value.element" : "select.value.element.parent";
 		return translator.translate(i18nKey, args);
+	}
+	
+	public static String getParticipantRange(Translator translator, CurriculumElement element) {
+		if (element.getMinParticipants() == null && element.getMaxParticipants() == null) {
+			return null;
+		}
+		
+		String participants = "<i class=\"o_icon o_icon_num_participants\"></i> ";
+		if (element.getMinParticipants() != 0 && element.getMinParticipants() != 0) {
+			participants += translator.translate("curriculum.element.participants.min.max",
+					String.valueOf(element.getMinParticipants()), String.valueOf(element.getMaxParticipants()));
+		} else if (element.getMinParticipants() != 0) {
+			participants += translator.translate("curriculum.element.participants.min",
+					String.valueOf(element.getMaxParticipants()));
+		} else {
+			participants += translator.translate("curriculum.element.participants.max",
+					String.valueOf(element.getMaxParticipants()));
+		}
+		return participants;
+	}
+	
+	public static boolean validateTextElement(TextElement el, boolean mandatory, int maxLength) {
+		if (el != null) {
+			el.clearError();
+			if(el.isVisible() && el.isEnabled()) {
+				String val = el.getValue();
+				if (mandatory && !StringHelper.containsNonWhitespace(val)) {
+					el.setErrorKey("form.legende.mandatory");
+					return false;
+				} else if (StringHelper.containsNonWhitespace(val) && val.length() > maxLength) {
+					el.setErrorKey("input.toolong", Integer.toString(maxLength));
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 }

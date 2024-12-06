@@ -55,6 +55,9 @@ import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.TaughtBy;
+import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.model.RepositoryEntryEducationalTypeImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 
@@ -100,12 +103,34 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	private String displayName;
 	@Column(name="c_description", nullable=true, insertable=true, updatable=true)
 	private String description;
+	@Column(name="c_teaser", nullable=true, insertable=true, updatable=true)
+	private String teaser;
+	@Column(name="c_authors", nullable=true, insertable=true, updatable=true)
+	private String authors;
+	
+	@Column(name="c_mainlanguage", nullable=true, insertable=true, updatable=true)
+	private String mainLanguage;
+	@Column(name="c_location", nullable=true, insertable=true, updatable=true)
+	private String location;
+	@Column(name="c_objectives", nullable=true, insertable=true, updatable=true)
+	private String objectives;
+	@Column(name="c_requirements", nullable=true, insertable=true, updatable=true)
+	private String requirements;
+	@Column(name="c_credits", nullable=true, insertable=true, updatable=true)
+	private String credits;
+	@Column(name="c_expenditureofwork", nullable=true, insertable=true, updatable=true)
+	private String expenditureOfWork;
+	
 	@Column(name="c_calendars", nullable=true, insertable=true, updatable=true)
 	private String calendarsEnabledString;
 	@Column(name="c_lectures", nullable=true, insertable=true, updatable=true)
 	private String lecturesEnabledString;
 	@Column(name="c_learning_progress", nullable=true, insertable=true, updatable=true)
 	private String learningProgressEnabledString;
+	@Column(name="c_show_outline", nullable=true, insertable=true, updatable=true)
+	private boolean showOutline;
+	@Column(name="c_show_lectures", nullable=true, insertable=true, updatable=true)
+	private boolean showLectures;
 	
 	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
 	private String status;
@@ -115,6 +140,14 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="c_end", nullable=true, insertable=true, updatable=true)
 	private Date endDate;
+	
+	@Column(name="c_min_participants", nullable=true, insertable=true, updatable=true)
+	private Long minParticipants;
+	@Column(name="c_max_participants", nullable=true, insertable=true, updatable=true)
+	private Long maxParticipants;
+	@Column(name="c_taught_by", nullable=true, insertable=true, updatable=true)
+	private String taughtByValue;
+	private transient Set<TaughtBy> taughtBys;
 	
 	@Column(name="c_external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
@@ -147,6 +180,9 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@ManyToOne(targetEntity=CurriculumElementTypeImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_type", nullable=true, insertable=true, updatable=true)
 	private CurriculumElementType type;
+	@ManyToOne(targetEntity=RepositoryEntryEducationalTypeImpl.class,fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_educational_type", nullable=true, insertable=true, updatable=true)
+	private RepositoryEntryEducationalType educationalType;
 	
 	@OneToMany(targetEntity=CurriculumElementToTaxonomyLevelImpl.class, fetch=FetchType.LAZY)
 	@JoinColumn(name="fk_cur_element")
@@ -214,6 +250,110 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 		this.description = description;
 	}
 	
+	@Override
+	public String getTeaser() {
+		return teaser;
+	}
+
+	@Override
+	public void setTeaser(String teaser) {
+		this.teaser = teaser;
+	}
+
+	@Override
+	public String getAuthors() {
+		return authors;
+	}
+
+	@Override
+	public void setAuthors(String authors) {
+		this.authors = authors;
+	}
+
+	@Override
+	public String getMainLanguage() {
+		return mainLanguage;
+	}
+
+	@Override
+	public void setMainLanguage(String mainLanguage) {
+		this.mainLanguage = mainLanguage;
+	}
+
+	@Override
+	public String getLocation() {
+		return location;
+	}
+
+	@Override
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	@Override
+	public String getObjectives() {
+		return objectives;
+	}
+
+	@Override
+	public void setObjectives(String objectives) {
+		this.objectives = objectives;
+	}
+
+	@Override
+	public String getRequirements() {
+		return requirements;
+	}
+
+	@Override
+	public void setRequirements(String requirements) {
+		this.requirements = requirements;
+	}
+
+	@Override
+	public String getCredits() {
+		return credits;
+	}
+
+	@Override
+	public void setCredits(String credits) {
+		this.credits = credits;
+	}
+
+	@Override
+	public String getExpenditureOfWork() {
+		return expenditureOfWork;
+	}
+
+	@Override
+	public void setExpenditureOfWork(String expenditureOfWork) {
+		this.expenditureOfWork = expenditureOfWork;
+	}
+
+	public String getCalendarsEnabledString() {
+		return calendarsEnabledString;
+	}
+
+	public void setCalendarsEnabledString(String calendarsEnabledString) {
+		this.calendarsEnabledString = calendarsEnabledString;
+	}
+
+	public String getLecturesEnabledString() {
+		return lecturesEnabledString;
+	}
+
+	public void setLecturesEnabledString(String lecturesEnabledString) {
+		this.lecturesEnabledString = lecturesEnabledString;
+	}
+
+	public String getLearningProgressEnabledString() {
+		return learningProgressEnabledString;
+	}
+
+	public void setLearningProgressEnabledString(String learningProgressEnabledString) {
+		this.learningProgressEnabledString = learningProgressEnabledString;
+	}
+
 	public String getCalendarsEnabled() {
 		return calendarsEnabledString;
 	}
@@ -306,6 +446,26 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	}
 
 	@Override
+	public boolean isShowOutline() {
+		return showOutline;
+	}
+
+	@Override
+	public void setShowOutline(boolean showOutline) {
+		this.showOutline = showOutline;
+	}
+
+	@Override
+	public boolean isShowLectures() {
+		return showLectures;
+	}
+
+	@Override
+	public void setShowLectures(boolean showLectures) {
+		this.showLectures = showLectures;
+	}
+
+	@Override
 	@Transient
 	public CurriculumElementStatus getElementStatus() {
 		if(StringHelper.containsNonWhitespace(status)) {
@@ -349,6 +509,40 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Override
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
+	}
+
+	@Override
+	public Long getMinParticipants() {
+		return minParticipants;
+	}
+
+	@Override
+	public void setMinParticipants(Long minParticipants) {
+		this.minParticipants = minParticipants;
+	}
+
+	@Override
+	public Long getMaxParticipants() {
+		return maxParticipants;
+	}
+
+	@Override
+	public void setMaxParticipants(Long maxParticipants) {
+		this.maxParticipants = maxParticipants;
+	}
+
+	@Override
+	public Set<TaughtBy> getTaughtBys() {
+		if (taughtBys == null) {
+			taughtBys = TaughtBy.split(taughtByValue);
+		}
+		return taughtBys;
+	}
+
+	@Override
+	public void setTaughtBys(Set<TaughtBy> taughtBys) {
+		this.taughtBys = taughtBys;
+		this.taughtByValue = TaughtBy.join(taughtBys);
 	}
 
 	@Override
@@ -481,6 +675,16 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Override
 	public void setType(CurriculumElementType type) {
 		this.type = type;
+	}
+
+	@Override
+	public RepositoryEntryEducationalType getEducationalType() {
+		return educationalType;
+	}
+
+	@Override
+	public void setEducationalType(RepositoryEntryEducationalType educationalType) {
+		this.educationalType = educationalType;
 	}
 
 	@Override

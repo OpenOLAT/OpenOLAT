@@ -108,6 +108,8 @@ public class CurriculumElementDAO {
 		element.setCalendars(calendars);
 		element.setLectures(lectures);
 		element.setLearningProgress(learningProgress);
+		element.setShowOutline(true);
+		element.setShowLectures(true);
 		if(status == null) {
 			element.setStatus(CurriculumElementStatus.active.name());
 		} else {

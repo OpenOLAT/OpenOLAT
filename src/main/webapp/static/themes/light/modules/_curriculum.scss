@@ -649,6 +649,51 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	}
 }
 
+.o_curriculum_metadata_header {
+	display: grid;
+	width: 100%;
+	margin-bottom: 30px;
+
+	>div {
+		grid-area: 1 / 1;
+	}
+	.o_curriculum_metadata_header_image {
+		img {
+			min-width: 72px;
+			max-width: 72px;
+			width: 72px;
+			height: 48px;
+			object-fit: cover;
+		}
+	}
+	.o_curriculum_metadata_header_content {
+		border: $o-curriculum-widget-border;
+		border-radius: $o-curriculum-widget-border-radius;
+		padding: 10px;
+		background-color: $o-curriculum-widget-bg-color;
+		height: 100px;
+
+		display: flex;
+		gap: 10px;
+		align-items: center;
+		.o_curriculum_metadata_header_values {
+			display: flex;
+			flex-flow: row wrap;
+			gap: 20px;
+			max-height: 44px;
+			padding-bottom: 1px; // taxonomy labels need this
+			overflow-y: hidden;
+		}
+		.o_curriculum_metadata_header_cmd {
+			margin-left: auto;
+		}
+	}
+	.btn-group {
+		place-self: end center;
+		transform: translateY(50%);
+	}
+}
+
 .o_curriculum_element_active a {
 	font-weight: bold;
 }

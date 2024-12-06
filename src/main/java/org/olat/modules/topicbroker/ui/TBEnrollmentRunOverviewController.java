@@ -93,7 +93,7 @@ public class TBEnrollmentRunOverviewController extends FormBasicController {
 		WidgetGroup widgetGroup = WidgetFactory.createWidgetGroup("widgets", flc.getFormItemComponent());
 		
 		participantsWidget = WidgetFactory.createFigureWidget("participantsWidget", flc.getFormItemComponent(),
-				translate("widget.participants.title"), "o_icon_tb_participants");
+				translate("widget.participants.title"), "o_icon_num_participants");
 		widgetGroup.add(participantsWidget);
 		
 		enrollmentsWidget = WidgetFactory.createFigureWidget("enrollmentsWidget", flc.getFormItemComponent(),

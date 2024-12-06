@@ -293,6 +293,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_mix { @include o-add-icon('arrows-rotate');}
 .o_icon_mobile { @include o-add-icon('mobile');}
 .o_icon_move { @include o-add-icon('arrows');}
+.o_icon_num_participants { @include o-add-icon('user-group');}
 .o_icon_objectives { @include o-add-icon('bullseye');}
 .o_icon_order { @include o-add-icon('arrows-v');}
 .o_icon_overriden { @include o-add-icon('pencil');}
@@ -1169,7 +1170,6 @@ i.o_lp_done { @include o-add-icon('check-circle');}
 .o_icon_tb_enroll { @include o-add-icon('rotate-right');}
 .o_icon_tb_withdraw { @include o-add-icon('rotate-left');}
 .o_icon_tb_unselect { @include o-add-icon('trash-can', false);}
-.o_icon_tb_participants { @include o-add-icon('user-group');}
 .o_icon_tb_enrollments { @include o-add-icon('clipboard-list');}
 .o_icon_tb_topics { @include o-add-icon('circle', false);}
 .o_icon_tb_notification { @include o-add-icon('envelope-open-text');}

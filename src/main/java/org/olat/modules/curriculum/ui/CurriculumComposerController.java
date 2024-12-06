@@ -147,9 +147,9 @@ public class CurriculumComposerController extends FormBasicController implements
 	private CloseableModalController cmc;
 	private CopySettingsController copyCtrl;
 	private ReferencesController referencesCtrl;
-	private EditCurriculumElementController newElementCtrl;
+	private EditCurriculumElementMetadataController newElementCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	private EditCurriculumElementController newSubElementCtrl;
+	private EditCurriculumElementMetadataController newSubElementCtrl;
 	private MoveCurriculumElementController moveElementCtrl;
 	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
@@ -788,7 +788,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(guardModalController(newElementCtrl)) return;
 
 		CurriculumElement parentElement = rootElement == null ? null : rootElement;
-		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), parentElement,
+		newElementCtrl = new EditCurriculumElementMetadataController(ureq, getWindowControl(), parentElement,
 				type, curriculum, secCallback);
 		listenTo(newElementCtrl);
 		
@@ -805,7 +805,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			showWarning("warning.curriculum.element.deleted");
 		} else {
 			Curriculum elementsCurriculum = parentElement.getCurriculum();
-			newSubElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), parentElement,
+			newSubElementCtrl = new EditCurriculumElementMetadataController(ureq, getWindowControl(), parentElement,
 					type, elementsCurriculum, secCallback);
 			newSubElementCtrl.setParentElement(parentElement);
 			listenTo(newSubElementCtrl);

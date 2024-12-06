@@ -387,7 +387,7 @@ public class TBTopicSelectionsEditController extends FormBasicController {
 	private void updateTopicConfigUI() {
 		String infos = "<ul class=\"list-unstyled\">";
 		
-		infos += TBUIFactory.createInfo("o_icon_tb_participants", translate("topic.participants.label.min.max",
+		infos += TBUIFactory.createInfo("o_icon_num_participants", translate("topic.participants.label.min.max",
 				String.valueOf(topic.getMinParticipants()),
 				String.valueOf(topic.getMaxParticipants())));
 		

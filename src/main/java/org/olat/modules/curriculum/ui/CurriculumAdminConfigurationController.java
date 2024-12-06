@@ -115,12 +115,10 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		
 		List<Taxonomy> taxonomies = taxonomyService.getTaxonomyList();
 		String[] taxonomyKeys = taxonomies.stream().map(taxonomy -> taxonomy.getKey().toString()).toArray(String[]::new);
-		String[] taxonomyNames = taxonomies.stream().map(taxonomy -> taxonomy.getDisplayName()).toArray(String[]::new);
+		String[] taxonomyNames = taxonomies.stream().map(Taxonomy::getDisplayName).toArray(String[]::new);
 		
 		linkedTaxonomiesEl = uifactory.addCheckboxesVertical("taxonomy.linked.elements", formLayout, taxonomyKeys, taxonomyNames, 1);
-		if (curriculumModule.getLinkedTaxonomies() != null) {
-			curriculumModule.getLinkedTaxonomies().stream().forEach(taxonomy -> linkedTaxonomiesEl.select(taxonomy.getKey().toString(), true));
-		}
+		curriculumModule.getTaxonomyRefs().stream().forEach(taxonomy -> linkedTaxonomiesEl.select(taxonomy.getKey().toString(), true));
 		linkedTaxonomiesEl.addActionListener(FormEvent.ONCHANGE);
 
 		SelectionValues runtimeTypeKV = new SelectionValues();

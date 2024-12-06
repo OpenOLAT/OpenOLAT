@@ -254,7 +254,7 @@ public class TBUIFactory {
 	}
 	
 	public static String getParticipantRange(Translator translator, TBTopic topic) {
-		String participants = "<i class=\"o_icon o_icon_tb_participants\"></i> ";
+		String participants = "<i class=\"o_icon o_icon_num_participants\"></i> ";
 		if (topic.getMinParticipants() > 0) {
 			participants += translator.translate("topic.participants.label.min.max",
 					String.valueOf(topic.getMinParticipants()), String.valueOf(topic.getMaxParticipants()));

@@ -1,0 +1,75 @@
+<div class="o_curriculum_metadata_header">
+	<div class="o_curriculum_metadata_header_content">
+		#if($r.isNotEmpty($imageUrl))
+			<div class="o_curriculum_metadata_header_image">
+				<img alt="" src="$imageUrl">
+			</div>
+		#end
+		<div class="o_curriculum_metadata_header_values">
+			#if($r.isNotEmpty($key))
+				<div class="o_curriculum_metadata_header_key">
+					<div>
+						<strong>$r.translate("curriculum.element.key")</strong>
+					</div>
+					<div>
+						$key
+					</div>
+				</div>
+			#end
+			#if($r.isNotEmpty($externalId))
+				<div class="o_curriculum_metadata_header_external_id">
+					<div>
+						<strong>$r.translate("curriculum.element.external.id")</strong>
+					</div>
+					<div>
+						$r.escapeHtml($externalId)
+					</div>
+				</div>
+			#end
+			#if($r.isNotEmpty($educationalTypeI18nKey))
+				<div class="o_curriculum_metadata_header_educational_type">
+					<div>
+						<strong>$r.translate("cif.educational.type")</strong>
+					</div>
+					<div class="$educationalTypeCss">
+						<span class="o_educational_type">
+						<span>$r.translate($educationalTypeI18nKey)</span>
+					</span>
+					</div>
+				</div>
+			#end
+			#if($taxonomyLevels && !$taxonomyLevels.empty)
+				<div class="o_curriculum_metadata_header_taxonomy o_taxonomy_levels">
+					<div>
+						<strong>$r.translate("cif.taxonomy.levels")</strong>
+					</div>
+					<div>
+						#foreach($taxonomy in $taxonomyLevels)
+							<span class="o_tag o_taxonomy" title="$r.escapeForHtmlAttribute($taxonomy.materializedPathIdentifiersWithoutSlash)">
+								$r.escapeHtml($taxonomy.displayName)
+							</span>
+						#end
+						#if($taxonomyLevelsEllipsis)
+							&nbsp;...
+						#end
+					</div>
+				</div>
+			#end
+			#if($r.isNotEmpty($participants))
+				<div class="o_curriculum_metadata_header_participants">
+					<div>
+						<strong>$r.translate("curriculum.element.participants")</strong>
+					</div>
+					<div>
+						$participants
+					</div>
+				</div>
+			#end
+		</div>
+		<div class="o_curriculum_metadata_header_cmd">
+			$r.render("preview")
+		</div>
+	</div>
+	$r.render("segments")
+</div>
+$r.render("content")

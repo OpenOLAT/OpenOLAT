@@ -25,6 +25,7 @@ import java.util.Set;
 import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.resource.OLATResource;
 
 /**
@@ -44,11 +45,43 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	public String getDescription();
 	
 	public void setDescription(String description);
+
+	String getTeaser();
+
+	void setTeaser(String teaser);
+	
+	String getAuthors();
+
+	void setAuthors(String authors);
+
+	String getMainLanguage();
+
+	void setMainLanguage(String mainLanguage);
+
+	String getLocation();
+
+	void setLocation(String location);
+
+	String getObjectives();
+	
+	void setObjectives(String objectives);
+
+	String getRequirements();
+
+	void setRequirements(String requirements);
+
+	String getCredits();
+
+	void setCredits(String credits);
+
+	String getExpenditureOfWork();
+
+	void setExpenditureOfWork(String expenditureOfWork);
 	
 	public String getExternalId();
 	
 	public void setExternalId(String externalId);
-	
+
 	public Date getBeginDate();
 	
 	public void setBeginDate(Date date);
@@ -56,7 +89,19 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	public Date getEndDate();
 	
 	public void setEndDate(Date date);
-	
+
+	Long getMinParticipants();
+
+	void setMinParticipants(Long minParticipants);
+
+	Long getMaxParticipants();
+
+	void setMaxParticipants(Long maxParticipants);
+
+	Set<TaughtBy> getTaughtBys();
+
+	void setTaughtBys(Set<TaughtBy> taughtBys);
+
 	/**
 	 * @return true if calendars aggregation is available at this level of the curriculum
 	 */
@@ -77,6 +122,14 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	public CurriculumLearningProgress getLearningProgress();
 	
 	public void setLearningProgress(CurriculumLearningProgress learningProgress);
+
+	boolean isShowOutline();
+
+	void setShowOutline(boolean showOutline);
+
+	boolean isShowLectures();
+
+	void setShowLectures(boolean showLectures);
 	
 	public CurriculumElementStatus getElementStatus();
 	
@@ -106,11 +159,14 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	
 	public void setType(CurriculumElementType type);
 	
+	public RepositoryEntryEducationalType getEducationalType();
+	
+	public void setEducationalType(RepositoryEntryEducationalType educationalType);
+	
 	public Group getGroup();
 	
 	public Set<CurriculumElementToTaxonomyLevel> getTaxonomyLevels();
 	
 	public OLATResource getResource();
-	
 
 }

@@ -3950,20 +3950,34 @@ create table o_cur_curriculum_element (
   c_identifier varchar(64),
   c_displayname varchar(255) not null,
   c_description mediumtext,
+  c_teaser varchar(256),
+  c_authors varchar(256),
+  c_mainlanguage varchar(256),
+  c_location varchar(256),
+  c_objectives mediumtext,
+  c_requirements mediumtext,
+  c_credits mediumtext,
+  c_expenditureofwork varchar(256),
   c_status varchar(32),
   c_begin datetime,
   c_end datetime,
+  c_min_participants integer,
+  c_max_participants integer,
+  c_taught_by varchar(128),
   c_external_id varchar(64),
   c_m_path_keys varchar(255),
   c_managed_flags varchar(255),
   c_calendars varchar(16),
   c_lectures varchar(16),
   c_learning_progress varchar(16),
+  c_show_outline boolean default true not null,
+  c_show_lectures boolean default true not null,
   fk_group bigint not null,
   fk_resource bigint,
   fk_parent bigint,
   fk_curriculum bigint not null,
   fk_curriculum_parent bigint,
+  fk_educational_type bigint,
   fk_type bigint,
   primary key (id)
 );
@@ -5992,6 +6006,7 @@ alter table o_cur_curriculum_element add constraint cur_el_to_cur_el_idx foreign
 alter table o_cur_curriculum_element add constraint cur_el_to_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
 alter table o_cur_curriculum_element add constraint cur_el_type_to_el_type_idx foreign key (fk_type) references o_cur_element_type (id);
 alter table o_cur_curriculum_element add constraint cur_el_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);
+alter table o_cur_curriculum_element add constraint cur_el_edutype_idx foreign key (fk_educational_type) references o_re_educational_type (id);
 
 alter table o_cur_element_type_to_type add constraint cur_type_to_type_idx foreign key (fk_type) references o_cur_element_type (id);
 alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx foreign key (fk_allowed_sub_type) references o_cur_element_type (id);

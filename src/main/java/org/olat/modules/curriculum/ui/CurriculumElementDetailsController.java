@@ -277,9 +277,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	}
 
 	private void initTabPane(UserRequest ureq) {
-		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> {
-			return createDashBoard(uureq).getInitialComponent();
-		});
+		overviewTab = tabPane.addTab(ureq, translate("curriculum.overview"), uureq -> createDashBoard(uureq).getInitialComponent());
 		
 		// Implementations
 		if(canChildren) {

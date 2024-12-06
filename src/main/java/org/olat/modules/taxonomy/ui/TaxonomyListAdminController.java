@@ -183,7 +183,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		boolean docPoolEnabled = taxonomy.getKey().toString().equals(docPoolModule.getTaxonomyTreeKey());
 		boolean qPoolEnabled = taxonomy.getKey().toString().equals(questionPoolModule.getTaxonomyQPoolKey());
 		boolean ePortfolioEnabled = portfolioModule.isTaxonomyLinkingEnabled() && portfolioModule.isTaxonomyLinked(taxonomy.getKey());
-		boolean curriculumEnabled = curriculumModule.isTaxonomyLinked(taxonomy.getKey());
+		boolean curriculumEnabled = curriculumModule.getTaxonomyRefs().stream().map(TaxonomyRef::getKey).anyMatch(key -> key.equals(taxonomy.getKey()));
 		boolean mediaEnabled = mediaModule.isTaxonomyLinked(taxonomy.getKey(), false);
 		
 		String id = Long.toString(++counter);

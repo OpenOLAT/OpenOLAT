@@ -20,6 +20,7 @@
  */
 package org.olat.modules.curriculum;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -408,6 +411,14 @@ public interface CurriculumService {
 	 * @return The implementation / root curriculum element of the specified element
 	 */
 	public CurriculumElement getImplementationOf(CurriculumElement curriculumElement);
+	
+	public VFSContainer getMediaContainer(CurriculumElement curriculumElement);
+
+	public void storeCurriculumElemenFile(CurriculumElementRef element, CurriculumElementFileType type, File file, String filename, Identity savedBy);
+	
+	public void deleteCurriculumElemenFile(CurriculumElementRef element, CurriculumElementFileType type);
+
+	public VFSLeaf getCurriculumElemenFile(CurriculumElementRef element, CurriculumElementFileType type);
 	
 	/**
 	 * The list of members of the specified curriculum element.

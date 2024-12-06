@@ -20,20 +20,20 @@
 package org.olat.modules.curriculum;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.modules.curriculum.site.CurriculumManagementContextEntryControllerCreator;
-import org.olat.modules.taxonomy.Taxonomy;
-import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,13 +65,9 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private String userOverviewRights;
 	@Value("${curriculum.linked.taxonomies}")
 	private String linkedTaxonomies;
+	private List<TaxonomyRef> taxonomyRefs;
 	@Value("${curriculum.default.course.runtime.type}")
 	private String defaultCourseRuntimeType;
-	
-	private static final Logger log = Tracing.createLoggerFor(CurriculumModule.class);
-	
-	@Autowired
-	private TaxonomyDAO taxonomyDAO;
 	
 	@Autowired
 	private CurriculumModule(CoordinatorManager coordinateManager) {
@@ -105,10 +101,8 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 		String enabledTaxonomiesObj = getStringPropertyValue(LINKED_TAXONOMIES, true);
 		if (StringHelper.containsNonWhitespace(enabledTaxonomiesObj)) {
 			linkedTaxonomies = enabledTaxonomiesObj;
+			taxonomyRefs = null;
 		}
-		
-		// To verify taxonomy keys are set correctly and contain no non-existing or wrong formatted values
-		getLinkedTaxonomies();
 		
 		userOverviewRights = getStringPropertyValue(USER_OVERVIEW_RIGHTS, userOverviewRights);
 
@@ -182,66 +176,27 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 		setStringProperty(USER_OVERVIEW_RIGHTS, rights, true);
 	}
 	
-	public boolean isTaxonomyLinkingReady() {
-		List<Taxonomy> taxonomies = getLinkedTaxonomies();
-		return taxonomies != null && !taxonomies.isEmpty();
-	}
-	
-	public List<Taxonomy> getLinkedTaxonomies() {
-		if (!StringHelper.containsNonWhitespace(linkedTaxonomies)) {
-			return null;
-		}
-		
-		String[] taxonomies = linkedTaxonomies.replace(" ", "").split(",");
-		List<Taxonomy> taxonomyList = new ArrayList<>();
-		
-		for (String taxonomyString : taxonomies) {
-			try {
-				Long taxonomyKey = Long.valueOf(taxonomyString);
-				Taxonomy taxonomy = taxonomyDAO.loadByKey(taxonomyKey);
-				
-				if (taxonomy != null) {
-					if (taxonomyList.contains(taxonomy)) {
-						log.warn("Misconfigured taxonomies detected: {} was added multiple times and should be removed from curriculum.linked.taxonomies", taxonomyString);
-					} else {
-						taxonomyList.add(taxonomy);
-					}
-				} else {
-					log.warn("Misconfigured taxonomies detected: {} does not exist and should be removed from curriculum.linked.taxonomies", taxonomyString);
-				}
-			} catch (Exception e) {
-				log.warn("Misconfigured taxonomies detected: {} needs to be removed from curriculum.linked.taxonomies", taxonomyString);
+	public List<TaxonomyRef> getTaxonomyRefs() {
+		if (taxonomyRefs == null) {
+			if (StringHelper.containsNonWhitespace(linkedTaxonomies)) {
+				taxonomyRefs = Arrays.stream(linkedTaxonomies.split(","))
+					.filter(StringHelper::isLong)
+					.map(Long::valueOf)
+					.map(TaxonomyRefImpl::new)
+					.collect(Collectors.toList());
+			} else {
+				taxonomyRefs = Collections.emptyList();
 			}
 		}
-		
-		return taxonomyList;
+		return taxonomyRefs;
 	}
 	
 	public void setLinkedTaxonomies(Collection<String> collection) {
-		if (collection == null) {
-			return;
-		}
-		
 		String linkedTaxonomies = collection.stream().collect(Collectors.joining(","));
 		
 		this.linkedTaxonomies = linkedTaxonomies;
 		setStringProperty(LINKED_TAXONOMIES, linkedTaxonomies, true);
-	}
-	
-	public boolean isTaxonomyLinked(Long taxonomyKey) {
-		if (!StringHelper.containsNonWhitespace(linkedTaxonomies)) {
-			return false;
-		}
-		
-		String[] taxonomies = linkedTaxonomies.replaceAll(" ", "").split(",");
-		
-		for (String taxonomy : taxonomies) {
-			if (taxonomy.equals(taxonomyKey.toString())) {
-				return true;
-			}
-		}
-		
-		return false;
+		taxonomyRefs = null;
 	}
 
 	public RepositoryEntryRuntimeType getDefaultCourseRuntimeType() {
