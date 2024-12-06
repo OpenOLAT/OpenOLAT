@@ -682,7 +682,7 @@ public class RepositoryEntryRelationDAO {
 				inner join rel.group as baseGroup
 				left join businessgroup as bgp on (bgp.baseGroup.key=baseGroup.key)
 				left join curriculumelement curEl on (curEl.group.key=baseGroup.key)
-				where entry.key=:repoKey and (curEl.key is not null or bgp.key is not null)""";
+				where entry.key=:repoKey and (curEl.key is not null and bgp.key is not null)""";
 		
 		List<Long> relKeys = dbInstance.getCurrentEntityManager()
 				.createQuery(query, Long.class)

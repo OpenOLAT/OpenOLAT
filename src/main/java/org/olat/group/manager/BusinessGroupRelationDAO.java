@@ -742,4 +742,41 @@ public class BusinessGroupRelationDAO {
 		
 		return result != null && result > 0;
 	}
+	
+	public boolean hasGroupWithOffersOrLtiDeployments(RepositoryEntryRef courseEntry) {
+		StringBuilder sb = new StringBuilder();
+
+		sb
+				.append("select (")
+				.append("(select count(offer.key) from acoffer offer where offer.resource.key = bg.resource.key and offer.valid),")
+				.append("(select count(deployment.key) from ltisharedtooldeployment deployment where deployment.businessGroup.key = bg.key)")
+				.append(" )")
+				.append(" from bgroup gr")
+				.append(" inner join repoentrytogroup home_rel on home_rel.group.key = gr.key")
+				.append(" inner join repositoryentry home_re on home_re.key = home_rel.entry.key")
+				.append(" inner join businessgroup bg on bg.baseGroup.key = gr.key")
+				.append(" where home_re.key = :courseEntryKey")
+				.append(" and not home_rel.defaultGroup");
+		
+		List<Object[]> results = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+				.setParameter("courseEntryKey", courseEntry.getKey())
+				.getResultList();
+		
+		for  (Object[] result : results) {
+			if (result.length < 2) {
+				continue;
+			}
+			if (result[0] instanceof Long offerCount) {
+				if (offerCount > 0) {
+					return true;
+				}
+			}
+			if (result[1] instanceof Long ltiDeploymentCount) {
+				if (ltiDeploymentCount > 0) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }

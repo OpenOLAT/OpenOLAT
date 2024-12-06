@@ -91,6 +91,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 			case participantExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.participantExists")).append("</p>");
 			case coachExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.coachExists")).append("</p>");
 			case curriculumElementExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.curriculumElementExists")).append("</p>");
+			case groupWithOffersOrLtiExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.groupWithOffersOrLtiExists")).append("</p>");
 			case groupWithOtherCoursesExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.groupWithOtherCoursesExists")).append("</p>");
 		}
 		if (warnings.isEmpty()) {

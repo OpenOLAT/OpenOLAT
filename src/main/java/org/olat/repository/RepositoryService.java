@@ -509,6 +509,7 @@ public interface RepositoryService {
 		ok,
 		wrongState,
 		curriculumElementExists,
+		groupWithOffersOrLtiExists,
 		groupWithOtherCoursesExists,
 	}
 	

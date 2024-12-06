@@ -1201,6 +1201,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if (businessGroupRelationDao.hasGroupWithCourses(entry)) {
 			return RuntimeTypeCheckDetails.groupWithOtherCoursesExists;
 		}
+		if (businessGroupRelationDao.hasGroupWithOffersOrLtiDeployments(entry)) {
+			return RuntimeTypeCheckDetails.groupWithOffersOrLtiExists;
+		}
 		return RuntimeTypeCheckDetails.ok;
 	}
 
