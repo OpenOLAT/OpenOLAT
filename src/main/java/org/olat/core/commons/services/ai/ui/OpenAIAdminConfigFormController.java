@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OpenAIAdminConfigFormController extends FormBasicController {
 	private static final String PLACEHOLDER = "xxx-placeholder-xxx";
+	private static final int KEY_MAXLENGTH = 512;
 
 	private TextElement apiKeyEl;
 	private TextElement chatModelEl;
@@ -69,7 +70,7 @@ public class OpenAIAdminConfigFormController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(apiKey)) {
 			apiKey = PLACEHOLDER;
 		}
-		apiKeyEl = uifactory.addPasswordElement("ai.openai.apikey", "ai.openai.apikey", 128, apiKey, formLayout);
+		apiKeyEl = uifactory.addPasswordElement("ai.openai.apikey", "ai.openai.apikey", KEY_MAXLENGTH, apiKey, formLayout);
 		apiKeyEl.setMandatory(true);
 
 		String chatModel = openAiSPI.getChatModel();
@@ -91,6 +92,10 @@ public class OpenAIAdminConfigFormController extends FormBasicController {
 			apiKeyEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
+		if (apiKeyEl.getValue().length() >= apiKeyEl.getMaxLength()) {
+			apiKeyEl.setErrorKey("form.legende.form.error.toolong", String.valueOf(KEY_MAXLENGTH));
+			allOk &= false;
+		}		
 		chatModelEl.clearError();
 		if(!StringHelper.containsNonWhitespace(chatModelEl.getValue())) {
 			chatModelEl.setErrorKey("form.legende.mandatory");

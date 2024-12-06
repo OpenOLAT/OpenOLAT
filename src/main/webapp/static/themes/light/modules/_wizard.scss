@@ -97,6 +97,9 @@
 						content: counter(sub-step-counter) ". ";
 						counter-increment: sub-step-counter;
 					}
+					span.sr-only::before {
+						counter-increment: none !important;
+					}
 				}
 			}
 		}

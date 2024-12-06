@@ -157,7 +157,6 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private final String subIdent;
 	private final Identity assessedIdentity;
 	
-	private int count = 0;
 	private final boolean readOnly;
 	private final IQTESTCourseNode courseNode;
 	private final RepositoryEntrySecurity reSecurity;
@@ -271,6 +270,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 							new StaticFlexiCellRenderer(translate("pull"), "open"))));
 			correctionCol = new DefaultFlexiColumnModel(TSCols.correct.i18nHeaderKey(), TSCols.correct.ordinal(), "correction",
 					new CorrectionCellRender());
+			correctionCol.setDefaultVisible(false);
+			correctionCol.setAlwaysVisible(false);
 			columnsModel.addFlexiColumnModel(correctionCol);
 			DefaultFlexiColumnModel cancelCol = new DefaultFlexiColumnModel(TSCols.invalidate.i18nHeaderKey(), TSCols.invalidate.ordinal(), "invalidate",
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("invalidate"), "invalidate"), null));
@@ -293,6 +294,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				deleteButton.setIconLeftCSS("o_icon o_icon_delete_item"); 
 			}
 		}
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "qti-details-" + entry.getKey() + "-" + subIdent);
 	}
 	
 	protected void updateModel() {
@@ -317,9 +320,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			infos.add(forgeDetailsRow(sessionStatistics));
 		}
 		if(correctionCol != null) {
+			boolean visible = manualCorrections || tableEl.isColumnModelVisible(correctionCol);
 			correctionCol.setAlwaysVisible(manualCorrections);
-			correctionCol.setDefaultVisible(manualCorrections);
-			tableEl.setColumnModelVisible(correctionCol, manualCorrections);
+			correctionCol.setDefaultVisible(visible);
+			tableEl.setColumnModelVisible(correctionCol, visible);
 		}
 		
 		Collections.sort(infos, new AssessmentTestSessionDetailsComparator());
