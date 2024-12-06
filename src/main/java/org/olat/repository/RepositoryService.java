@@ -506,6 +506,7 @@ public interface RepositoryService {
 		ltiDeploymentExists,
 		participantExists,
 		coachExists,
+		offerExists,
 		ok,
 		wrongState,
 		curriculumElementExists,

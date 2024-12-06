@@ -748,7 +748,7 @@ public class BusinessGroupRelationDAO {
 
 		sb
 				.append("select (")
-				.append("(select count(offer.key) from acoffer offer where offer.resource.key = bg.resource.key and offer.valid),")
+				.append("(select count(offer.key) from acoffer offer where offer.resource.key = bg.resource.key and offer.valid = true),")
 				.append("(select count(deployment.key) from ltisharedtooldeployment deployment where deployment.businessGroup.key = bg.key)")
 				.append(" )")
 				.append(" from bgroup gr")

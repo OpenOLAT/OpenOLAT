@@ -119,6 +119,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.resource.references.ReferenceManager;
@@ -209,6 +210,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private CurriculumElementDAO curriculumElementDAO;
 	@Autowired
 	private LTI13SharedToolDeploymentDAO lti13SharedToolDeploymentDAO;
+	@Autowired
+	private ACOfferDAO acOfferDAO;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -1193,6 +1196,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		}
 		if (curriculumElementDAO.countElements(entry) > 0) {
 			return RuntimeTypeCheckDetails.curriculumElementExists;
+		}
+		if (acOfferDAO.offerExists(entry.getOlatResource())) {
+			return RuntimeTypeCheckDetails.offerExists;
 		}
 		return checkGroupsForSwitchingToCurricular(entry);
 	}

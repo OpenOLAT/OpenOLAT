@@ -90,6 +90,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 			case ltiDeploymentExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.ltiDeploymentExists")).append("</p>");
 			case participantExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.participantExists")).append("</p>");
 			case coachExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.coachExists")).append("</p>");
+			case offerExists -> warnings.append("<p>").append(translate("change.runtine.type.warning.offerExists")).append("</p>");
 			case curriculumElementExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.curriculumElementExists")).append("</p>");
 			case groupWithOffersOrLtiExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.groupWithOffersOrLtiExists")).append("</p>");
 			case groupWithOtherCoursesExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.groupWithOtherCoursesExists")).append("</p>");
@@ -98,9 +99,9 @@ public class EditRuntimeTypeController extends FormBasicController {
 			if(hasUserManager) {
 				warnings.append("<p>").append(translate("change.runtime.type.warning")).append("</p>");
 			}
-		}
-		if(numOfOffers > 0) {
-			warnings.append("<p>").append(translate("change.runtime.type.warning.offers", Integer.toString(numOfOffers))).append("</p>");
+			if(numOfOffers > 0) {
+				warnings.append("<p>").append(translate("change.runtime.type.warning.offers", Integer.toString(numOfOffers))).append("</p>");
+			}
 		}
 		if(!warnings.isEmpty()) {
 			setFormTranslatedWarning(warnings.toString());

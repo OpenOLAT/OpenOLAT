@@ -177,6 +177,19 @@ public class ACOfferDAO {
 				.setParameter("resourceKey", olatResource.getKey())
 				.getSingleResult().longValue() > 0;
 	}
+	
+	public boolean offerExists(OLATResource olatResource) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(*)");
+		sb.append("  from acoffer offer");
+		sb.and().append(" offer.valid = true");
+		sb.and().append(" offer.resource.key=:resourceKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKey", olatResource.getKey())
+				.getSingleResult() > 0;
+	}
 
 	public List<OLATResource> loadGuestAccessibleResources(List<OLATResource> resources) {
 		QueryBuilder sb = new QueryBuilder();
