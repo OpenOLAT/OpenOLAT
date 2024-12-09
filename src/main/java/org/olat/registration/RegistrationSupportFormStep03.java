@@ -43,7 +43,7 @@ public class RegistrationSupportFormStep03 extends BasicStep {
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, false, true);
+		return new PrevNextFinishConfig(false, false, false);
 	}
 
 	@Override
