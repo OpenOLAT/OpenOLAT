@@ -88,9 +88,18 @@ public class ProjectModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 	
 	public boolean canCreateProject(Roles roles) {
-		return roles.isAdministrator()
-				|| getCreateRoles().isEmpty()
-				|| getCreateRoles().stream().anyMatch(role -> roles.hasRole(role));
+		if (roles.isAdministrator()) {
+			return true;
+		}
+		
+		if (getCreateRoles().isEmpty()) {
+			// External users and guests are never allowed to create projects even if "all" can create projects
+			if (!roles.isInviteeOnly() && !roles.isGuestOnly()) {
+				return true;
+			}
+		}
+		
+		return getCreateRoles().stream().anyMatch(role -> roles.hasRole(role));
 	}
 	
 	public Set<OrganisationRoles> getCreateRoles() {
