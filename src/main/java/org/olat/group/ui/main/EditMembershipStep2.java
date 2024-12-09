@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -54,6 +55,7 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.EditMemberShipReviewTableModel.EditMemberShipReviewCols;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.RepositoryManager;
@@ -277,33 +279,35 @@ public class EditMembershipStep2 extends BasicStep {
 			}
 			
 			// Curriculum changes
-			if (changeEvent.getCurriculumChanges().size() > 0) {
+			if (!changeEvent.getCurriculumChanges().isEmpty()) {
 				Map<CurriculumElement, List<EditMembershipReviewTableRow>> changedCurriculumTableRows = new HashMap<>();
 				
 				// Init helper map				
 				for (CurriculumElementMembershipChange change : changeEvent.getCurriculumChanges()) {
 					EditMembershipReviewTableRow parentRow;
+					final CurriculumElement curriculumElement = change.getCurriculumElement();
 					
-					if (!changedCurriculumTableRows.containsKey(change.getElement())) {
+					if (!changedCurriculumTableRows.containsKey(curriculumElement)) {
 						List<EditMembershipReviewTableRow> curriculumRows = new ArrayList<>();
 						parentRow = new EditMembershipReviewTableRow(null, 1, true);
-						parentRow.setNameOrIdentifier(change.getElement().getDisplayName());
+						parentRow.setNameOrIdentifier(curriculumElement.getDisplayName());
 						curriculumRows.add(parentRow);
-						changedCurriculumTableRows.put(change.getElement(), curriculumRows);
+						changedCurriculumTableRows.put(curriculumElement, curriculumRows);
 					} else {
-						parentRow = changedCurriculumTableRows.get(change.getElement()).get(0);
+						parentRow = changedCurriculumTableRows.get(curriculumElement).get(0);
 					}
 					
 					EditMembershipReviewTableRow changeRow = new EditMembershipReviewTableRow(parentRow, 0, false);
 					changeRow.setNameOrIdentifier(change.getMember().getUser().getFirstName() + " " + change.getMember().getUser().getLastName());
 					
-					RepoPermission curriculumPermission = PermissionHelper.getPermission(change.getElement(), change.getMember(), curriculumService.getCurriculumElementMemberships(Collections.singletonList(change.getElement()), change.getMember()));
+					RepoPermission curriculumPermission = PermissionHelper.getPermission(curriculumElement, change.getMember(),
+							curriculumService.getCurriculumElementMemberships(Collections.singletonList(curriculumElement), change.getMember()));
 					
-					if (change.getParticipant() != null) {
-						if (change.getParticipant()) {
+					if (change.getNextStatus(CurriculumRoles.participant) != null) {
+						if (change.getNextStatus(CurriculumRoles.participant) == GroupMembershipStatus.active) {
 							changeRow.setParticipantPermissionState(2);
 							changeRow.increaseTotalAddedParticipant();
-						} else {
+						} else if(change.getNextStatus(CurriculumRoles.participant) == GroupMembershipStatus.removed) {
 							changeRow.setParticipantPermissionState(4);
 							changeRow.increaseTotalRemovedParticipant();
 						}
@@ -313,11 +317,11 @@ public class EditMembershipStep2 extends BasicStep {
 						changeRow.setParticipantPermissionState(3);
 					}
 					
-					if (change.getCurriculumElementOwner() != null) {
-						if (change.getCurriculumElementOwner()) {
+					if (change.getNextStatus(CurriculumRoles.curriculumelementowner) != null) {
+						if (change.getNextStatus(CurriculumRoles.curriculumelementowner) == GroupMembershipStatus.active) {
 							changeRow.setOwnerPermissionState(2);
 							changeRow.increaseTotalAddedOwner();
-						} else {
+						} else if(change.getNextStatus(CurriculumRoles.curriculumelementowner) == GroupMembershipStatus.removed) {
 							changeRow.setParticipantPermissionState(4);
 							changeRow.increaseTotalRemovedOwner();
 						}
@@ -327,11 +331,11 @@ public class EditMembershipStep2 extends BasicStep {
 						changeRow.setOwnerPermissionState(3);
 					}
 					
-					if (change.getCoach() != null) {
-						if (change.getCoach()) {
+					if (change.getNextStatus(CurriculumRoles.coach) != null) {
+						if (change.getNextStatus(CurriculumRoles.curriculumelementowner) == GroupMembershipStatus.active) {
 							changeRow.setTutorPermissionState(2);
 							changeRow.increaseTotalAddedPTutor();
-						} else {
+						} else if(change.getNextStatus(CurriculumRoles.curriculumelementowner) == GroupMembershipStatus.removed) {
 							changeRow.setTutorPermissionState(4);
 							changeRow.increaseTotalRemovedTutor();
 						}
@@ -341,9 +345,9 @@ public class EditMembershipStep2 extends BasicStep {
 						changeRow.setTutorPermissionState(3);
 					}
 					
-					List<EditMembershipReviewTableRow> tableRows = changedCurriculumTableRows.get(change.getElement());
+					List<EditMembershipReviewTableRow> tableRows = changedCurriculumTableRows.get(curriculumElement);
 					tableRows.add(changeRow);
-					changedCurriculumTableRows.put(change.getElement(), tableRows);
+					changedCurriculumTableRows.put(curriculumElement, tableRows);
 				}
 				
 				// Check if there are any changes in the curricula

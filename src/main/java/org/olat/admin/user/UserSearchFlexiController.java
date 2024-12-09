@@ -117,7 +117,8 @@ public class UserSearchFlexiController extends FormBasicController {
 	private Map <String,FormItem>propFormItems;
 	private FlexiTableElement tableEl;
 	private UserSearchFlexiTableModel userTableModel;
-	
+
+	private boolean showTable;
 	private boolean showSelectUsersButton;
 	private boolean multiSelection;
 	private boolean isAdministrativeUser;
@@ -143,9 +144,15 @@ public class UserSearchFlexiController extends FormBasicController {
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles,
 			boolean multiSelection, boolean showSelectButton) {
+		this(ureq, wControl, rootForm, repositoryEntryRole, excludedRoles, multiSelection, showSelectButton, true);
+	}
+	
+	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			GroupRoles repositoryEntryRole, OrganisationRoles[] excludedRoles,
+			boolean multiSelection, boolean showSelectButton, boolean showTable) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "usersearchext", rootForm);
 		
-		init(ureq, null, repositoryEntryRole, excludedRoles, multiSelection, showSelectButton);
+		init(ureq, null, repositoryEntryRole, excludedRoles, multiSelection, showSelectButton, showTable);
 
 		initForm(ureq);
 	}
@@ -153,7 +160,7 @@ public class UserSearchFlexiController extends FormBasicController {
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, GroupRoles repositoryEntryRole, boolean multiSelection) {
 		super(ureq, wControl, "usersearchext");
 		
-		init(ureq, null, repositoryEntryRole, null, multiSelection, true);
+		init(ureq, null, repositoryEntryRole, null, multiSelection, true, true);
 		
 		initForm(ureq);
 	}
@@ -161,16 +168,17 @@ public class UserSearchFlexiController extends FormBasicController {
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, UserSearchProvider searchProvider, boolean multiSelection) {
 		super(ureq, wControl, "usersearchext");
 		
-		init(ureq, searchProvider, null, null, multiSelection, true);
+		init(ureq, searchProvider, null, null, multiSelection, true, true);
 
 		initForm(ureq);
 	}
 	
 	private void init(UserRequest ureq, UserSearchProvider searchProvider, GroupRoles repositoryEntryRole,
-			OrganisationRoles[] excludedRoles, boolean multiSelect, boolean showSelectButton) {
+			OrganisationRoles[] excludedRoles, boolean multiSelect, boolean showSelectButton, boolean showTable) {
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
 
+		this.showTable = showTable;
 		this.multiSelection = multiSelect;
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -407,20 +415,17 @@ public class UserSearchFlexiController extends FormBasicController {
 		} else if(searchButton == source) {
 			if(validateForm(ureq)) {
 				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
-				doSearch();
+				doSearch(ureq);
 			}
 		} else if(source == completerEl) {
-			if(event instanceof AutoCompleteFormEvent) {
-				AutoCompleteFormEvent acfe = (AutoCompleteFormEvent)event;
-				if(StringHelper.containsNonWhitespace(acfe.getKey())) {
-					doSelect(ureq, acfe.getKey());
-				}
+			if(event instanceof AutoCompleteFormEvent acfe
+					&& StringHelper.containsNonWhitespace(acfe.getKey())) {
+				doSelect(ureq, acfe.getKey());
 			}
 		} else if (source == selectUsersButton) {
 			fireEvent(ureq, new MultiIdentityChosenEvent(userTableModel.getObjects(tableEl.getMultiSelectedIndex())));
 		} else if (tableEl == source) {
-			if(event instanceof SelectionEvent && "select".equals(event.getCommand())) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se && "select".equals(se.getCommand())) {
 				Identity chosenIdent = userTableModel.getObject(se.getIndex());
 				fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
 			}
@@ -442,10 +447,10 @@ public class UserSearchFlexiController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String searchValue = getAutoCompleterSearchValue();
-		if(StringHelper.containsNonWhitespace(searchValue) && !this.hasSearchProperties()) {
+		if(StringHelper.containsNonWhitespace(searchValue) && !hasSearchProperties()) {
 			doSelect(ureq, searchValue);
 		} else if(validateForm(ureq)) {
-			doSearch();
+			doSearch(ureq);
 		}
 	}
 	
@@ -498,16 +503,20 @@ public class UserSearchFlexiController extends FormBasicController {
 		}
 	}
 	
-	public void doSearch() {
+	public void doSearch(UserRequest ureq) {
 		String login = loginEl.getValue();
 		Map<String, String> userPropertiesSearch = collectSearchProperties();
 		List<Identity> users = search.searchUsers(login, userPropertiesSearch, true);
-
-		tableEl.setVisible(true);
-		tableEl.setEmptyTableMessageKey("error.no.user.found");
-		userTableModel.setObjects(users);
-		tableEl.reset(true, true, true);
-		flc.contextPut("showButton","true");
+		
+		if(showTable) {
+			tableEl.setVisible(true);
+			tableEl.setEmptyTableMessageKey("error.no.user.found");
+			userTableModel.setObjects(users);
+			tableEl.reset(true, true, true);
+			flc.contextPut("showButton","true");
+		} else {
+			fireEvent(ureq, new MultiIdentityChosenEvent(users));
+		}
 	}
 	
 	private Map<String, String> collectSearchProperties() {

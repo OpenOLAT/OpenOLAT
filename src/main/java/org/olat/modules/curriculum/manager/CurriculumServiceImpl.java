@@ -124,6 +124,7 @@ import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
+import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
 import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.manager.LectureBlockDAO;
@@ -820,6 +821,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(identity == null) return new ArrayList<>();
 		return curriculumElementDao.getMembershipInfos(Collections.singletonList(curriculum), null, identity);
 	}
+	
+	@Override
+	public List<CurriculumElementMembership> getCurriculumElementMemberships(List<CurriculumElement> elements, List<Identity> identities) {
+		Identity[] idArr = identities.toArray(new Identity[identities.size()]);
+		return curriculumElementDao.getMembershipInfos(null, elements, idArr);
+	}
 
 	@Override
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<? extends CurriculumElementRef> elements, Identity... identities) {
@@ -874,56 +881,45 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		
 		for(CurriculumElementMembershipChange additionToNotifiy:additionsToNotifiy.values()) {
-			Curriculum curriculum = additionToNotifiy.getElement().getCurriculum();
-			CurriculumMailing.sendEmail(doer, additionToNotifiy.getMember(), curriculum, additionToNotifiy.getElement(), mailing);
+			CurriculumElement curriculumElement = additionToNotifiy.getCurriculumElement();
+			Curriculum curriculum = curriculumElement.getCurriculum();
+			CurriculumMailing.sendEmail(doer, additionToNotifiy.getMember(), curriculum, curriculumElement, mailing);
 		}
 	}
 	
 	private void updateCurriculumElementMembership(CurriculumElementMembershipChange changes, Identity actor) {
-		CurriculumElement element = changes.getElement();
+		final CurriculumElement element = changes.getCurriculumElement();
+		List<CurriculumRoles> rolesToChange = changes.getRoles();
+		for(CurriculumRoles role:rolesToChange) {
+			GroupMembershipStatus nextStatus = changes.getNextStatus(role);
+			String adminNote = changes.getAdminNoteBy(role);
+			updateCurriculumElementMembership(element, changes.getMember(), role, nextStatus,
+					changes.getConfirmationBy(), changes.getConfirmUntil(),
+					actor, adminNote);
+		}
+	}
+	
+	private void updateCurriculumElementMembership(CurriculumElement element,
+			Identity member, CurriculumRoles role, GroupMembershipStatus nextStatus,
+			ConfirmationByEnum confirmationBy, Date confirmUntil,
+			Identity actor, String adminNote) {
 		
-		if(changes.getCurriculumElementOwner() != null) {
-			if(changes.getCurriculumElementOwner().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner, actor);
-			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner,
-						GroupMembershipStatus.removed, actor, null);
-			}
-		}
-		
-		if(changes.getMasterCoach() != null) {
-			if(changes.getMasterCoach().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.mastercoach, actor);
-			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.mastercoach,
-						GroupMembershipStatus.removed, actor, null);
-			}
-		}
-		
-		if(changes.getRepositoryEntryOwner() != null) {
-			if(changes.getRepositoryEntryOwner().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.owner, actor);
-			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.owner,
-						GroupMembershipStatus.removed, actor, null);
-			}
-		}
-
-		if(changes.getCoach() != null) {
-			if(changes.getCoach().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.coach, actor);
-			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.coach,
-						GroupMembershipStatus.removed, actor, null);
-			}
-		}
-
-		if(changes.getParticipant() != null) {
-			if(changes.getParticipant().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.participant, actor);
-			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.participant,
-						GroupMembershipStatus.removed, actor, null);
+		if(nextStatus == GroupMembershipStatus.active) {
+			removeMemberReservation(element, member, role, null, null, null);
+			addMember(element, member, role, actor, adminNote);
+		} else if(nextStatus == GroupMembershipStatus.reservation) {
+			Boolean confirmBy = confirmationBy == ConfirmationByEnum.PARTICIPANT ? Boolean.TRUE : Boolean.FALSE;
+			addMemberReservation(element, member, role, confirmUntil, confirmBy, actor, adminNote);
+		} else if(nextStatus == GroupMembershipStatus.removed) {
+			removeMember(element, member, role, nextStatus, actor, adminNote);
+		}  else if(nextStatus == GroupMembershipStatus.cancel
+				|| nextStatus == GroupMembershipStatus.cancelWithFee
+				|| nextStatus == GroupMembershipStatus.removed
+				|| nextStatus == GroupMembershipStatus.declined) {
+			boolean removed = removeMemberReservation(element, member, role, nextStatus, actor, adminNote);
+			removed |= removeMember(element, member, role, nextStatus, actor, adminNote);
+			if(!removed) {
+				addMemberHistory(element, member, role, nextStatus, actor, adminNote);
 			}
 		}
 	}
@@ -932,16 +928,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor) {
 		addMember(element, member, role, actor, null);
 	}
+	
 	@Override
 	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, Identity actor,
-			String note) {
+			String adminNote) {
 		GroupMembershipInheritance inheritanceMode;
 		if(CurriculumRoles.isInheritedByDefault(role)) {
 			inheritanceMode = GroupMembershipInheritance.root;
 		} else {
 			inheritanceMode = GroupMembershipInheritance.none;
 		}
-		addMember(element, member, role, inheritanceMode, actor, null);
+		addMember(element, member, role, inheritanceMode, actor, adminNote);
 		dbInstance.commit();
 	}
 	

@@ -17,7 +17,7 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui.member;
+package org.olat.modules.curriculum.ui.wizard;
 
 import java.util.List;
 
@@ -27,21 +27,20 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.ui.member.MembershipModification;
 
 /**
  * 
- * Initial date: 12 nov. 2024<br>
+ * Initial date: 9 déc. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EditMemberCurriculumElementTableModel extends DefaultFlexiTreeTableDataModel<EditMemberCurriculumElementRow>
+public class RightsCurriculumElementsTableModel extends DefaultFlexiTreeTableDataModel<RightsCurriculumElementRow>
 implements FlexiTableFooterModel {
 
-	private static final MemberElementsCols[] COLS = MemberElementsCols.values();
-	private static final CurriculumRoles[] ROLES = CurriculumRoles.values();
-	
-	public EditMemberCurriculumElementTableModel(FlexiTableColumnModel columnModel) {
+	private static final RightsElementsCols[] COLS = RightsElementsCols.values();
+
+	public RightsCurriculumElementsTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
 	
@@ -60,8 +59,8 @@ implements FlexiTableFooterModel {
 		return false;
 	}
 	
-	public boolean isParentOf(EditMemberCurriculumElementRow parentRow, EditMemberCurriculumElementRow node) {
-		for(EditMemberCurriculumElementRow parent=node.getParent(); parent != null; parent=parent.getParent()) {
+	public boolean isParentOf(RightsCurriculumElementRow parentRow, RightsCurriculumElementRow node) {
+		for(RightsCurriculumElementRow parent=node.getParent(); parent != null; parent=parent.getParent()) {
 			if(parent != null && parent.getKey().equals(parentRow.getKey())) {
 				return true;
 			}
@@ -69,10 +68,10 @@ implements FlexiTableFooterModel {
 		return false;
 	}
 	
-	public int getIndexOf(EditMemberCurriculumElementRow row) {
-		int numOfObjects = this.getRowCount();
+	public int getIndexOf(RightsCurriculumElementRow row) {
+		int numOfObjects = getRowCount();
 		for(int i=0; i<numOfObjects; i++) {
-			EditMemberCurriculumElementRow object = this.getObject(i);
+			RightsCurriculumElementRow object = getObject(i);
 			if(object.getKey().equals(row.getKey())) {
 				return i;
 			}
@@ -80,9 +79,9 @@ implements FlexiTableFooterModel {
 		return -1;
 	}
 	
-	public EditMemberCurriculumElementRow getObject(CurriculumElement curriculumElement) {
-		List<EditMemberCurriculumElementRow> rows = getObjects();
-		for(EditMemberCurriculumElementRow row:rows) {
+	public RightsCurriculumElementRow getObject(CurriculumElement curriculumElement) {
+		List<RightsCurriculumElementRow> rows = getObjects();
+		for(RightsCurriculumElementRow row:rows) {
 			if(curriculumElement.getKey().equals(row.getKey())) {
 				return row;
 			}
@@ -92,26 +91,22 @@ implements FlexiTableFooterModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		EditMemberCurriculumElementRow detailsRow = getObject(row);
-		if(col >= 0 && col < COLS.length) {
-			CurriculumElement element = detailsRow.getCurriculumElement();
-			return switch(COLS[col]) {
-				case modifications -> detailsRow.hasModifications();
-				case key -> element.getKey();
-				case displayName -> element.getDisplayName();
-				case externalRef -> element.getIdentifier();
-				case externalId -> element.getExternalId();
-				default -> "ERROR";
-			};
-		}
-		
-		int roleCol = col - EditMemberController.ROLES_OFFSET;
-		if(roleCol >= 0 && roleCol < ROLES.length) {
-			CurriculumRoles role = ROLES[roleCol];
-			MembershipModification mod = detailsRow.getModification(role);
-			return mod == null ? detailsRow.getButton(role) : mod.nextStatus();
-		}
-		return "ERROR";
+		RightsCurriculumElementRow detailsRow = getObject(row);
+		CurriculumElement element = detailsRow.getCurriculumElement();
+		return switch(COLS[col]) {
+			case modifications -> detailsRow.getModification() != null;
+			case key -> element.getKey();
+			case displayName -> element.getDisplayName();
+			case externalRef -> element.getIdentifier();
+			case externalId -> element.getExternalId();
+			case roleToModify -> getAction(detailsRow);
+			default -> "ERROR";
+		};
+	}
+	
+	private Object getAction(RightsCurriculumElementRow detailsRow) {
+		MembershipModification mod = detailsRow.getModification();
+		return mod == null ? detailsRow.getAddButton() : mod.nextStatus();
 	}
 
 	@Override
@@ -121,35 +116,34 @@ implements FlexiTableFooterModel {
 
 	@Override
 	public Object getFooterValueAt(int col) {
-		int roleCol = col - EditMemberController.ROLES_OFFSET;
-		if(roleCol >= 0 && roleCol < ROLES.length) {
-			CurriculumRoles role = ROLES[roleCol];
-			int count = countRoles(role);
+		if(col == RightsElementsCols.roleToModify.ordinal()) {
+			int count = countRoles();
 			return count + "/" + getRowCount() ;	
 		}
 		return null;
 	}
 	
-	private int countRoles(CurriculumRoles role) {
+	private int countRoles() {
 		int count = 0;
-		for(EditMemberCurriculumElementRow detailsRow:getObjects()) {
-			if(detailsRow.getButton(role) != null) {
+		for(RightsCurriculumElementRow detailsRow:getObjects()) {
+			if(detailsRow.getModification() != null) {
 				count++;
 			}
 		}
 		return count;
 	}
 
-	public enum MemberElementsCols implements FlexiSortableColumnDef {
+	public enum RightsElementsCols implements FlexiSortableColumnDef {
 		modifications("table.header.modification"),
 		key("table.header.key"),
 		displayName("table.header.displayName"),
 		externalRef("table.header.external.ref"),
-		externalId("table.header.external.id");
+		externalId("table.header.external.id"),
+		roleToModify("table.header.external.id");
 		
 		private final String i18nKey;
 		
-		private MemberElementsCols(String i18nKey) {
+		private RightsElementsCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 		

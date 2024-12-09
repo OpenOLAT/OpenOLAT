@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
@@ -783,45 +784,43 @@ public class EditMembershipController extends FormBasicController {
 		for(MemberCurriculumOption option : changedCurriculaOptions) {
 			if (members != null) {
 				for (Identity member : members) {
-					List<CurriculumElementMembership> curriculumElementMemberships = allMemberships.stream().filter(membership -> membership.getIdentityKey().equals(member.getKey())).collect(Collectors.toList());
+					List<CurriculumElementMembership> curriculumElementMemberships = allMemberships.stream()
+							.filter(membership -> membership.getIdentityKey().equals(member.getKey()))
+							.collect(Collectors.toList());
+					
 					RepoPermission rePermission = PermissionHelper.getPermission(option.getElement(), member, curriculumElementMemberships);
-					CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, option.getElement());
-		
-					change.setRepositoryEntryOwner(getChange(option.getOwner().getSelection(), rePermission.isOwner()));
-					change.setCoach(getChange(option.getCoach().getSelection(), rePermission.isTutor()));
-					change.setParticipant(getChange(option.getParticipant().getSelection(), rePermission.isParticipant()));
+					CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(member, option.getElement());
+					change.setChangBy(CurriculumRoles.owner, getStatus(option.getOwner().getSelection(), rePermission.isOwner()));
+					change.setChangBy(CurriculumRoles.coach, getStatus(option.getCoach().getSelection(), rePermission.isTutor()));
+					change.setChangBy(CurriculumRoles.participant, getStatus(option.getParticipant().getSelection(), rePermission.isParticipant()));
 					
 					if(option.getMasterCoach() != null) {
-						change.setMasterCoach(getChange(option.getMasterCoach().getSelection(), rePermission.isMasterCoach()));
+						change.setChangBy(CurriculumRoles.mastercoach, getStatus(option.getMasterCoach().getSelection(), rePermission.isMasterCoach()));
 					}
 					if(option.getElementOwner() != null) {
-						change.setCurriculumElementOwner(getChange(option.getElementOwner().getSelection(), rePermission.isCurriculumElementOwner()));
+						change.setChangBy(CurriculumRoles.curriculumelementowner, getStatus(option.getElementOwner().getSelection(), rePermission.isCurriculumElementOwner()));
 					}
 					
-					if(change.getCurriculumElementOwner() != null || change.getRepositoryEntryOwner() != null
-							|| change.getCoach() != null || change.getParticipant() != null
-							|| change.getCurriculumElementOwner() != null || change.getMasterCoach() != null) {
+					if(!change.isEmpty()) {
 						changes.add(change);
 					}
 				}
 			} else {
 				RepoPermission rePermission = PermissionHelper.getPermission(option.getElement(), member, curriculumElementMemberships);
-				CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, option.getElement());
+				CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(member, option.getElement());
 	
-				change.setRepositoryEntryOwner(getChange(option.getOwner().getSelection(), rePermission.isOwner()));
-				change.setCoach(getChange(option.getCoach().getSelection(), rePermission.isTutor()));
-				change.setParticipant(getChange(option.getParticipant().getSelection(), rePermission.isParticipant()));
+				change.setChangBy(CurriculumRoles.owner, getStatus(option.getOwner().getSelection(), rePermission.isOwner()));
+				change.setChangBy(CurriculumRoles.coach, getStatus(option.getCoach().getSelection(), rePermission.isTutor()));
+				change.setChangBy(CurriculumRoles.participant, getStatus(option.getParticipant().getSelection(), rePermission.isParticipant()));
 				
 				if(option.getMasterCoach() != null) {
-					change.setMasterCoach(getChange(option.getMasterCoach().getSelection(), rePermission.isMasterCoach()));
+					change.setChangBy(CurriculumRoles.mastercoach, getStatus(option.getMasterCoach().getSelection(), rePermission.isMasterCoach()));
 				}
 				if(option.getElementOwner() != null) {
-					change.setCurriculumElementOwner(getChange(option.getElementOwner().getSelection(), rePermission.isCurriculumElementOwner()));
+					change.setChangBy(CurriculumRoles.curriculumelementowner, getStatus(option.getElementOwner().getSelection(), rePermission.isCurriculumElementOwner()));
 				}
 				
-				if(change.getCurriculumElementOwner() != null || change.getRepositoryEntryOwner() != null
-						|| change.getCoach() != null || change.getParticipant() != null
-						|| change.getCurriculumElementOwner() != null || change.getMasterCoach() != null) {
+				if(!change.isEmpty()) {
 					changes.add(change);
 				}
 			}
@@ -833,9 +832,15 @@ public class EditMembershipController extends FormBasicController {
 	private Boolean getChange(Boolean selection, boolean permissionState) {
 		if (selection == null || selection == permissionState) {
 			return null;
-		} else {
-			return selection;
 		}
+		return Boolean.valueOf(selection);
+	}
+	
+	private GroupMembershipStatus getStatus(Boolean selection, boolean permissionState) {
+		if (selection == null || selection == permissionState) {
+			return null;
+		}
+		return selection ? GroupMembershipStatus.active : GroupMembershipStatus.removed;
 	}
 	
 	private static boolean containsChange(AddRemoveElement addRemove) {

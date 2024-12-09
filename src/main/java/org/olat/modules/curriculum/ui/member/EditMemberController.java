@@ -51,11 +51,13 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
@@ -81,7 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditMemberController extends FormBasicController {
 
-	protected static final int ROLES_OFFSET = 500;
+	public static final int ROLES_OFFSET = 500;
 
 	private static final String CMD_ADD = "add";
 	private static final String CMD_ACTIVE = "active";
@@ -415,41 +417,36 @@ public class EditMemberController extends FormBasicController {
 		for(EditMemberCurriculumElementRow row:rows) {
 			allModifications.addAll(row.getModifications());
 		}
+		
+		List<CurriculumElementMembershipChange> changes = new ArrayList<>();
 		for(MembershipModification modification:allModifications) {
-			applyModification(modification);
+			changes.add(getModification(modification));
 		}
+		
+		//TODO curriculum send mail / notification
+		MailPackage mailPackage = new MailPackage(false);
+		curriculumService.updateCurriculumElementMemberships(member, ureq.getUserSession().getRoles(), changes, mailPackage);
 		
 		loadModel();
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void applyModification(MembershipModification modification) {
+	private CurriculumElementMembershipChange getModification(MembershipModification modification) {
 		final CurriculumRoles role = modification.role();
 		final GroupMembershipStatus nextStatus = modification.nextStatus();
 		final CurriculumElement curriculumElement = modification.curriculumElement();
 		
-		if(nextStatus == GroupMembershipStatus.active) {
-			curriculumService.removeMemberReservation(curriculumElement, member, role, null, null, null);
-			curriculumService.addMember(curriculumElement, member, role,
-					getIdentity(), modification.adminNote());
-		} else if(nextStatus == GroupMembershipStatus.reservation) {
-			Boolean confirmBy = modification.confirmationBy() == ConfirmationByEnum.PARTICIPANT ? Boolean.TRUE : Boolean.FALSE;
-			curriculumService.addMemberReservation(curriculumElement, member, role, modification.confirmUntil(), confirmBy,
-					getIdentity(), modification.adminNote());
-		} else if(nextStatus == GroupMembershipStatus.cancel
-				|| nextStatus == GroupMembershipStatus.cancelWithFee
-				|| nextStatus == GroupMembershipStatus.removed
-				|| nextStatus == GroupMembershipStatus.declined) {
-			boolean removed = curriculumService.removeMemberReservation(curriculumElement, member, role, nextStatus,
-					getIdentity(), modification.adminNote());
-			removed |= curriculumService.removeMember(curriculumElement, member, role, nextStatus,
-					getIdentity(), modification.adminNote());
-			if(!removed) {
-				curriculumService.addMemberHistory(curriculumElement, member, role, nextStatus,
-						getIdentity(), modification.adminNote());
-			}
+		CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(member, curriculumElement);
+		change.setChangBy(role, nextStatus);
+		change.setAdminNote(role, modification.adminNote());
+
+		if(nextStatus == GroupMembershipStatus.reservation) {
+			change.setConfirmation(modification.confirmation());
+			change.setConfirmationBy(modification.confirmationBy());
+			change.setConfirmUntil(modification.confirmUntil());
 		}
+		return change;
 	}
 
 	private void setModification(MembershipModification modification) {

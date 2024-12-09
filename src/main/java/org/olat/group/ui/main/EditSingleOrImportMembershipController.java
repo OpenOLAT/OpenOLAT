@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -767,30 +768,32 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		
 		for(MemberCurriculumOption option:curriculumTableDataModel.getObjects()) {
 			RepoPermission rePermission = PermissionHelper.getPermission(option.getElement(), member, curriculumElementMemberships);
-			CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, option.getElement());
-			boolean cOwner = option.getOwner().isAtLeastSelected(1);
-			change.setRepositoryEntryOwner(rePermission.isOwner() == cOwner ? null : Boolean.valueOf(cOwner));
-			boolean cCoach = option.getCoach().isAtLeastSelected(1);
-			change.setCoach(rePermission.isTutor() == cCoach ? null : Boolean.valueOf(cCoach));
-			boolean cParticipant = option.getParticipant().isAtLeastSelected(1);
-			change.setParticipant(rePermission.isParticipant() == cParticipant ? null : Boolean.valueOf(cParticipant));
+			CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(member, option.getElement());
+			
+			change.setChangBy(CurriculumRoles.owner, changeTo(option.getOwner(), rePermission.isOwner()));
+			change.setChangBy(CurriculumRoles.coach, changeTo(option.getCoach(), rePermission.isTutor()));
+			change.setChangBy(CurriculumRoles.participant, changeTo(option.getParticipant(), rePermission.isParticipant()));
 			if(option.getMasterCoach() != null) {
-				boolean cMasterCoach = option.getMasterCoach().isAtLeastSelected(1);
-				change.setMasterCoach(rePermission.isMasterCoach() == cMasterCoach ? null : Boolean.valueOf(cMasterCoach));
+				change.setChangBy(CurriculumRoles.mastercoach, changeTo(option.getMasterCoach(), rePermission.isMasterCoach()));
 			}
 			if(option.getElementOwner() != null) {
-				boolean cElementOwner = option.getElementOwner().isAtLeastSelected(1);
-				change.setCurriculumElementOwner(rePermission.isCurriculumElementOwner() == cElementOwner ? null : Boolean.valueOf(cElementOwner));
+				change.setChangBy(CurriculumRoles.curriculumelementowner, changeTo(option.getElementOwner(), rePermission.isCurriculumElementOwner()));
 			}
 			
-			if(change.getCurriculumElementOwner() != null || change.getRepositoryEntryOwner() != null
-					|| change.getCoach() != null || change.getParticipant() != null
-					|| change.getCurriculumElementOwner() != null || change.getMasterCoach() != null) {
+			if(!change.isEmpty()) {
 				changes.add(change);
 			}
 		}
 		
 		e.setCurriculumChanges(changes);
+	}
+	
+	private GroupMembershipStatus changeTo(MultipleSelectionElement roleEl, boolean currentRole) {
+		boolean cRole = roleEl.isAtLeastSelected(1);
+		if(currentRole == cRole) {
+			return null;
+		}
+		return cRole ? GroupMembershipStatus.active : GroupMembershipStatus.removed;
 	}
 	
 	private static class MemberCurriculumOption {

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,13 +14,12 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.course.member.wizard;
+package org.olat.modules.curriculum.ui.wizard;
 
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.admin.user.UserSearchFlexiController;
@@ -43,38 +42,41 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
+import org.olat.course.member.wizard.ImportMemberByUsernamesController;
+import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.springframework.beans.factory.annotation.Autowired;
-
 
 /**
  * 
- * Initial date: 3 nov. 2022<br>
+ * Initial date: 6 déc. 2024<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ImportMemberByController extends StepFormBasicController {
+public class AddMembersController extends StepFormBasicController {
 	
 	private static final String SEARCH = "search";
 	private static final String LIST = "list";
 
 	private SingleSelection importTypeEl;
 	
+	private final MembersContext membersContext;
+	
 	private UserSearchFlexiController searchController;
 	private ImportMemberByUsernamesController importController;
 	
-	private final MembersByNameContext context;
-	
 	@Autowired
 	private BaseSecurityModule securityModule;
-
-	public ImportMemberByController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	
+	public AddMembersController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			StepsRunContext runContext, MembersContext membersContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
-		
-		context = (MembersByNameContext)getOrCreateFromRunContext(ImportMemberByUsernamesController.RUN_CONTEXT_KEY, MembersByNameContext::new);
+		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale(), getTranslator()));
+		this.membersContext = membersContext;
 		
 		initForm (ureq);
 	}
-	
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer chooseCont = FormLayoutContainer.createDefaultFormLayout("choose", getTranslator());
@@ -92,36 +94,15 @@ public class ImportMemberByController extends StepFormBasicController {
 		doOpenSearch(ureq);
 	}
 	
-	private void doOpenSearch(UserRequest ureq) {
-		removeAsListenerAndDispose(importController);
-		importController = null;
-		
-		searchController = new UserSearchFlexiController(ureq, getWindowControl(), mainForm, null,
-				new OrganisationRoles[] { OrganisationRoles.invitee, OrganisationRoles.guest }, true, false);
-		listenTo(searchController);
-
-		flc.add("search", searchController.getInitialFormItem());
-	}
-	
-	private void doOpenImport(UserRequest ureq) {
-		removeAsListenerAndDispose(searchController);
-		searchController = null;
-		
-		importController = new ImportMemberByUsernamesController(ureq, getWindowControl(), mainForm,
-				getRunContext(), ImportMemberByUsernamesController.RUN_CONTEXT_KEY, null);
-		listenTo(importController);
-		flc.add("search", importController.getInitialFormItem());
-	}
-
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(event instanceof SingleIdentityChosenEvent e) {
-			context.setIdentities(Collections.singleton(e.getChosenIdentity()));
+			membersContext.setSearchedIdentities(List.of(e.getChosenIdentity()));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else if(event instanceof MultiIdentityChosenEvent e) {
-			context.setIdentities(new HashSet<>(e.getChosenIdentities()));
+			membersContext.setSearchedIdentities(new ArrayList<>(e.getChosenIdentities()));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-		} else if(source == this.importController) {
+		} else if(source == importController) {
 			if(event == StepsEvent.ACTIVATE_NEXT) {
 				fireEvent(ureq, event);
 			}
@@ -129,7 +110,7 @@ public class ImportMemberByController extends StepFormBasicController {
 			super.event(ureq, source, event);
 		}
 	}
-
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(importTypeEl == source) {
@@ -144,7 +125,7 @@ public class ImportMemberByController extends StepFormBasicController {
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
+	
 	@Override
 	protected void formNext(UserRequest ureq) {
 		// The import do it alone
@@ -153,7 +134,7 @@ public class ImportMemberByController extends StepFormBasicController {
 			if(identities.isEmpty()) {
 				searchController.doSearch(ureq);
 			} else {
-				context.setIdentities(new HashSet<>(identities));
+				membersContext.setSearchedIdentities(new ArrayList<>(identities));
 				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 			}
 		}
@@ -161,7 +142,27 @@ public class ImportMemberByController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//do nothing
+		//
 	}
 	
+	private void doOpenSearch(UserRequest ureq) {
+		removeAsListenerAndDispose(importController);
+		importController = null;
+		
+		searchController = new UserSearchFlexiController(ureq, getWindowControl(), mainForm, null,
+				new OrganisationRoles[] { OrganisationRoles.invitee, OrganisationRoles.guest }, true, false, false);
+		listenTo(searchController);
+
+		flc.add("search", searchController.getInitialFormItem());
+	}
+	
+	private void doOpenImport(UserRequest ureq) {
+		removeAsListenerAndDispose(searchController);
+		searchController = null;
+		
+		importController = new ImportMemberByUsernamesController(ureq, getWindowControl(), mainForm,
+				getRunContext(), ImportMemberByUsernamesController.RUN_CONTEXT_KEY, null);
+		listenTo(importController);
+		flc.add("search", importController.getInitialFormItem());
+	}
 }

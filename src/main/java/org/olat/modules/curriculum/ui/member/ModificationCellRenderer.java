@@ -44,9 +44,19 @@ public class ModificationCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
 		if(cellValue instanceof Boolean modified && modified.booleanValue()) {
-			target.append("<span class='o_membership_modified'><i class='o_icon o_icon-fw o_icon_retry' title='")
-			      .append(translator.translate("has.modification"))
-			      .append("'> </i></span>");
+			renderModification(target, "has.modification", "o_membership_modify", "o_icon_retry");
+		} else if(cellValue instanceof ModificationStatus modification) {
+			switch(modification) {
+				case MODIFICATION: renderModification(target, "has.modification", "o_membership_modify", "o_icon_retry"); break;
+				case ADD: renderModification(target, "has.add", "o_membership_add", "o_icon_plus"); break;
+				default: break;
+			}
 		}
+	}
+	
+	private void renderModification(StringOutput target, String i18nKey, String cssClass, String iconCssClass) {
+		target.append("<span class='").append(cssClass).append("'><i class='o_icon o_icon-fw ").append(iconCssClass).append("' title='")
+	      .append(translator.translate(i18nKey))
+	      .append("'> </i></span>");
 	}
 }

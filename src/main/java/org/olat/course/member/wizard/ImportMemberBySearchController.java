@@ -81,7 +81,7 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 	protected void formNext(UserRequest ureq) {
 		List<Identity> identities = searchController.getSelectedIdentities();
 		if(identities.isEmpty()) {
-			searchController.doSearch();
+			searchController.doSearch(ureq);
 		} else {
 			context.setIdentities(new HashSet<>(identities));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

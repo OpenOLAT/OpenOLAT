@@ -148,7 +148,7 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 		List<CurriculumElementMembershipChange> allModifications = new ArrayList<>();
 		for(CurriculumElementMembershipChange grChange:elementChanges) {
 			for(Identity member:members) {
-				allModifications.add(new CurriculumElementMembershipChange(member, grChange));
+				allModifications.add(CurriculumElementMembershipChange.copy(member, grChange));
 			}
 		}
 		return allModifications;
@@ -166,7 +166,7 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 		for(CurriculumElementMembershipChange change:curriculumChanges) {
 			int segments = change.numOfSegments();
 			if(root == null || segments < numOfSegments) {
-				root = change.getElement();
+				root = change.getCurriculumElement();
 				numOfSegments = segments;
 			}
 		}

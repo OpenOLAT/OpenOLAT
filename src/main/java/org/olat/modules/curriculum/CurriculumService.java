@@ -443,6 +443,8 @@ public interface CurriculumService {
 	
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Curriculum curriculum, Identity identity);
 	
+	public List<CurriculumElementMembership> getCurriculumElementMemberships(List<CurriculumElement> elements, List<Identity> identities);
+	
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<? extends CurriculumElementRef> elements, Identity... identities);
 	
 	public void updateCurriculumElementMemberships(Identity doer, Roles roles, List<CurriculumElementMembershipChange> changes, MailPackage mailing);

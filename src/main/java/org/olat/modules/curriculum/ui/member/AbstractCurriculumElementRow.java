@@ -34,7 +34,7 @@ public abstract class AbstractCurriculumElementRow implements ComparableCurricul
 
 	private final CurriculumElement curriculumElement;
 	
-	AbstractCurriculumElementRow(CurriculumElement curriculumElement) {
+	public AbstractCurriculumElementRow(CurriculumElement curriculumElement) {
 		this.curriculumElement = curriculumElement;
 	}
 	

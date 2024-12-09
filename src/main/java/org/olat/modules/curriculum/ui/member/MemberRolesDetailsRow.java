@@ -36,6 +36,7 @@ public class MemberRolesDetailsRow extends AbstractCurriculumElementRow {
 	
 	private final List<CurriculumRoles> roles;
 	private final EnumMap<CurriculumRoles,GroupMembershipStatus> rolesStatus = new EnumMap<>(CurriculumRoles.class);
+	private final EnumMap<CurriculumRoles,MembershipModification> modifications = new EnumMap<>(CurriculumRoles.class);
 	
 	private MemberRolesDetailsRow parent;
 	
@@ -54,6 +55,15 @@ public class MemberRolesDetailsRow extends AbstractCurriculumElementRow {
 	
 	public GroupMembershipStatus getStatus(CurriculumRoles role) {
 		return rolesStatus.get(role);
+	}
+	
+	public GroupMembershipStatus getModificationStatus(CurriculumRoles role) {
+		MembershipModification modification = modifications.get(role);
+		return modification == null ? null : modification.nextStatus();
+	}
+	
+	public void addModification(CurriculumRoles role, MembershipModification modification) {
+		modifications.put(role, modification);
 	}
 	
 	@Override

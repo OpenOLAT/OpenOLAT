@@ -62,6 +62,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -77,6 +78,9 @@ import org.olat.modules.curriculum.ui.RoleListController;
 import org.olat.modules.curriculum.ui.event.EditMemberEvent;
 import org.olat.modules.curriculum.ui.event.RoleEvent;
 import org.olat.modules.curriculum.ui.member.MemberManagementTableModel.MemberCols;
+import org.olat.modules.curriculum.ui.wizard.AddMember1SearchStep;
+import org.olat.modules.curriculum.ui.wizard.AddMemberFinishCallback;
+import org.olat.modules.curriculum.ui.wizard.MembersContext;
 import org.olat.user.UserAvatarMapper;
 
 /**
@@ -90,6 +94,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	protected static final String FILTER_ROLE = "Role";
 	
 	private FormLink addMemberButton;
+	private FormLink importMemberButton;
 	private FormLink removeMembershipButton;
 	
 	private CloseableModalController cmc;
@@ -98,6 +103,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	
 	private ToolsController toolsCtrl;
 	private RoleListController roleListCtrl;
+	private StepsMainRunController addMemberCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	private boolean memberChanged;
@@ -123,6 +129,9 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
 			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
+			
+			importMemberButton = uifactory.addFormLink("add.member.2", "add.member", null, formLayout, Link.BUTTON);
+			importMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		
 			removeMembershipButton = uifactory.addFormLink("remove.memberships", formLayout, Link.BUTTON);
 		}
@@ -290,6 +299,15 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			if(event instanceof RoleEvent re) {
 				doSearchMember(ureq, re.getRole());
 			}
+		} else if(source == addMemberCtrl) {
+			if (event == Event.CANCELLED_EVENT) {
+				getWindowControl().pop();
+				cleanUp();
+			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				getWindowControl().pop();
+				loadModel(true);
+				cleanUp();
+			}
 		} else if(editSingleMemberCtrl == source) {
 			if(event == Event.BACK_EVENT) {
 				toolbarPanel.popController(editSingleMemberCtrl);
@@ -319,10 +337,12 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		super.cleanUp();
 		removeAsListenerAndDispose(confirmRemoveCtrl);
 		removeAsListenerAndDispose(userSearchCtrl);
+		removeAsListenerAndDispose(addMemberCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmRemoveCtrl = null;
 		userSearchCtrl = null;
+		addMemberCtrl = null;
 		calloutCtrl = null;
 		cmc = null;
 	}
@@ -335,7 +355,9 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addMemberButton == source) {
-			doRollCallout(ureq);
+			doRoleCallout(ureq);
+		} else if(importMemberButton == source) {
+			doAddMemberWizard(ureq);
 		} else if(removeMembershipButton == source) {
 			doConfirmRemoveAllMemberships(ureq);
 		}
@@ -382,8 +404,20 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		}
 		loadModel(true);
 	}
+
+	private void doAddMemberWizard(UserRequest ureq) {
+		MembersContext membersContex = new MembersContext(CurriculumRoles.participant, curriculum, curriculumElement, descendants);
+		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContex);
+		AddMemberFinishCallback finish = new AddMemberFinishCallback(membersContex);
+		
+		String title = translate("wizard.add.member");
+		removeAsListenerAndDispose(addMemberCtrl);
+		addMemberCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, title, "");
+		listenTo(addMemberCtrl);
+		getWindowControl().pushAsModalDialog(addMemberCtrl.getInitialComponent());
+	}
 	
-	private void doRollCallout(UserRequest ureq) {
+	private void doRoleCallout(UserRequest ureq) {
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(roleListCtrl);
 		

@@ -698,8 +698,15 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	font-weight: bold;
 }
 
-.o_membership_modified {
-	border: $o-curriculum-activity-border;
+.o_membership_add {
+	border: $o-curriculum-activity-add-border;
+}
+
+.o_membership_modify{
+	border: $o-curriculum-activity-modify-border;
+}
+
+.o_membership_modify, .o_membership_add {
 	border-radius: $o-curriculum-activity-border-radius;
 	width: 20px;
 	height: 20px;
@@ -789,12 +796,18 @@ $o-curriculum-entry-bg							: #CCFFCC;
 
 .o_labeled_light {
 	&.o_gmembership_status_booking,
-	&.o_gmembership_status_transfer,
-	&.o_gmembership_status_reservation, {
+	&.o_gmembership_status_transfer {
 		font-weight: normal;
 	    background-color: #fff;
 	    border-color: $o-curriculum-status-preparation-color;
 	    color: $o-curriculum-status-preparation-color !important;
+	}
+	
+	&.o_gmembership_status_reservation, {
+		font-weight: normal;
+	    background-color: #fff;
+	    border-color: $o-curriculum-status-reservation-color;
+	    color: $o-curriculum-status-reservation-color !important;
 	}
 	
 	&.o_gmembership_status_active,

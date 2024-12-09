@@ -73,7 +73,7 @@ public class UserSearchController extends StepFormBasicController {
 	protected void formNext(UserRequest ureq) {
 		List<Identity> identities = searchController.getSelectedIdentities();
 		if(identities.isEmpty()) {
-			searchController.doSearch();
+			searchController.doSearch(ureq);
 		} else {
 			((EditAbsenceNoticeWrapper)getFromRunContext("absence")).setIdentity(identities.get(0));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

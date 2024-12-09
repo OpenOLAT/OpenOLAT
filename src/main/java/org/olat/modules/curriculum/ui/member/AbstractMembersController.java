@@ -88,7 +88,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-abstract class AbstractMembersController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
+public abstract class AbstractMembersController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	public static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
@@ -417,8 +417,9 @@ abstract class AbstractMembersController extends FormBasicController implements 
 		elements.add(curriculumElement);
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
+		Identity member = securityManager.loadIdentityByKey(row.getIdentityKey());
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
-				curriculum, elements, row, profileConfig, withEdit, withAcceptDecline);
+				curriculum, elements, member, profileConfig, withEdit, withAcceptDecline, true);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

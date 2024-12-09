@@ -21,7 +21,6 @@ package org.olat.modules.curriculum.ui.member;
 
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -58,35 +57,43 @@ public class MemberDetailsController extends FormBasicController {
 	private final boolean withEdit;
 	private final boolean withAcceptDecline;
 	private final UserInfoProfileConfig profileConfig;
-	
+
+	private MemberHistoryDetailsController historyDetailsCtrl;
 	private final MemberRolesDetailsController rolesDetailsCtrl;
-	private final MemberHistoryDetailsController historyDetailsCtrl;
 	
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private UserInfoService userInfoService;
 	
 	public MemberDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			Curriculum curriculum, List<CurriculumElement> elements, MemberRow row,
-			UserInfoProfileConfig profileConfig, boolean withEdit, boolean withAcceptDecline) {
+			Curriculum curriculum, List<CurriculumElement> elements, Identity identity,
+			UserInfoProfileConfig profileConfig, boolean withEdit, boolean withAcceptDecline, boolean withHistory) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "member_details_view", rootForm);
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale()));
 
+		this.member = identity;
 		this.withEdit = withEdit;
 		this.profileConfig = profileConfig;
 		this.withAcceptDecline = withAcceptDecline;
-		member = securityManager.loadIdentityByKey(row.getIdentityKey());
 
 		rolesDetailsCtrl = new MemberRolesDetailsController(ureq, getWindowControl(), rootForm,
 				curriculum,  elements, member);
 		listenTo(rolesDetailsCtrl);
 		
-		historyDetailsCtrl = new MemberHistoryDetailsController(ureq, getWindowControl(), rootForm,
-				elements.get(0), member);
-		listenTo(historyDetailsCtrl);
+		if(withHistory) {
+			historyDetailsCtrl = new MemberHistoryDetailsController(ureq, getWindowControl(), rootForm,
+					elements.get(0), member);
+			listenTo(historyDetailsCtrl);
+		}
 		
 		initForm(ureq);
+	}
+	
+	public List<MemberRolesDetailsRow> getRolesDetailsRows() {
+		return rolesDetailsCtrl.getRolesDetailsRows();
+	}
+	
+	public void setModifications(List<MembershipModification> modifications) {
+		rolesDetailsCtrl.setModifications(modifications);
 	}
 
 	@Override
@@ -105,7 +112,9 @@ public class MemberDetailsController extends FormBasicController {
 		editMemberShipButton.setVisible(withEdit);
 	
 		formLayout.add("roles", rolesDetailsCtrl.getInitialFormItem());
-		formLayout.add("history", historyDetailsCtrl.getInitialFormItem());
+		if(historyDetailsCtrl != null) {
+			formLayout.add("history", historyDetailsCtrl.getInitialFormItem());
+		}
 	}
 
 	@Override

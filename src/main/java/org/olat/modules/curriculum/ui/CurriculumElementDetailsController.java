@@ -161,7 +161,6 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private void initStructure() {
 		structureButton = LinkFactory.createCustomLink("structure", "structure", "structure.goto", Link.BUTTON, mainVC, this);
 		structureButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
-		structureButton.setTitle(translate("action.structure"));
 		
 		previousButton = LinkFactory.createCustomLink("structure.previous", "previous", "", Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
 		previousButton.setIconLeftCSS("o_icon o_icon-fw o_icon_slide_up");

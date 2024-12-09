@@ -95,6 +95,29 @@ public class MemberRolesDetailsController extends FormBasicController {
 		initForm(ureq);
 		loadModel();
 	}
+	
+	public List<MemberRolesDetailsRow> getRolesDetailsRows() {
+		return tableModel.getObjects();
+	}
+	
+	public void setModifications(List<MembershipModification> modifications) {
+		List<MemberRolesDetailsRow> rows = tableModel.getObjects();
+		Map<Long,MemberRolesDetailsRow> rowsMap = rows.stream()
+				.collect(Collectors.toMap(MemberRolesDetailsRow::getKey, r -> r, (u, v) -> u));
+		EnumMap<CurriculumRoles,Boolean> usedRoles = new EnumMap<>(CurriculumRoles.class);
+		for(MembershipModification modification:modifications) {
+			CurriculumElement element = modification.curriculumElement();
+			MemberRolesDetailsRow row = rowsMap.get(element.getKey());
+			if(row != null) {
+				CurriculumRoles role = modification.role();
+				row.addModification(role, modification);
+				usedRoles.put(role, Boolean.TRUE);
+			}
+		}
+
+		updateRolesColumnsVisibility(usedRoles);
+		tableEl.reset(false, false, true);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -146,7 +169,6 @@ public class MemberRolesDetailsController extends FormBasicController {
 
 		List<MemberRolesDetailsRow> rows = new ArrayList<>();
 		Map<Long, MemberRolesDetailsRow> rowsMap = new HashMap<>();
-		EnumMap<CurriculumRoles,Boolean> usedRoles = new EnumMap<>(CurriculumRoles.class);
 		for(CurriculumElement element:elements) {
 			List<CurriculumRoles> elementRoles = new ArrayList<>();
 			MemberRolesDetailsRow row = new MemberRolesDetailsRow(element, elementRoles);
@@ -155,7 +177,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 			
 			CurriculumElementMembership membership = membershipsMap.get(element.getKey());
 			CurriculumElementMembershipHistory history = historyMap.get(element.getKey());
-			forgeStatus(row, membership, history, reservationsMap, usedRoles);
+			forgeStatus(row, membership, history, reservationsMap);
 		}
 		
 		for(MemberRolesDetailsRow row:rows) {
@@ -165,21 +187,42 @@ public class MemberRolesDetailsController extends FormBasicController {
 		}
 		
 		// Update columns visibility
-		for(CurriculumRoles role:CurriculumRoles.values()) {
-			FlexiColumnModel col = columnsModel.getColumnModelByIndex(role.ordinal() + ROLES_OFFSET);
-			if(col instanceof DefaultFlexiColumnModel) {
-				tableEl.setColumnModelVisible(col, usedRoles.containsKey(role));
-			}
-		}
+		EnumMap<CurriculumRoles,Boolean> usedRoles = updateRolesColumnsVisibility(rows);
+		updateRolesColumnsVisibility(usedRoles);
 		
 		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
+	private EnumMap<CurriculumRoles,Boolean> updateRolesColumnsVisibility(List<MemberRolesDetailsRow> rows) {
+		EnumMap<CurriculumRoles,Boolean> usedRoles = new EnumMap<>(CurriculumRoles.class);
+		for(MemberRolesDetailsRow row:rows) {
+			for(CurriculumRoles role:CurriculumRoles.values()) {
+				if(usedRoles.containsKey(role)) {
+					continue;
+				}
+				
+				if(row.getStatus(role) != null) {
+					usedRoles.put(role, Boolean.TRUE);
+				}
+			}
+		}
+		return usedRoles;
+	}
+	
+	private void updateRolesColumnsVisibility(EnumMap<CurriculumRoles,Boolean> usedRoles) {
+		// Update columns visibility
+		for(CurriculumRoles role:CurriculumRoles.values()) {
+			FlexiColumnModel col = columnsModel.getColumnModelByIndex(role.ordinal() + ROLES_OFFSET);
+			if(col instanceof DefaultFlexiColumnModel) {
+				tableEl.setColumnModelVisible(col, usedRoles.containsKey(role));
+			}
+		}
+	}
+	
 	private void forgeStatus(MemberRolesDetailsRow row, CurriculumElementMembership membership,
-			CurriculumElementMembershipHistory history, Map<ResourceToRoleKey,ResourceReservation> reservationsMap,
-			EnumMap<CurriculumRoles,Boolean> usedRoles) {
+			CurriculumElementMembershipHistory history, Map<ResourceToRoleKey,ResourceReservation> reservationsMap) {
 		List<CurriculumRoles> membershipRoles = membership == null ? List.of() : membership.getRoles();
 		OLATResource resource = row.getCurriculumElement().getResource();
 		
@@ -188,15 +231,12 @@ public class MemberRolesDetailsController extends FormBasicController {
 			
 			if(membershipRoles.contains(role)) {
 				row.addStatus(role, GroupMembershipStatus.active);
-				usedRoles.put(role, Boolean.TRUE);
 			} else if(reservation != null) {
 				row.addStatus(role, GroupMembershipStatus.reservation);
-				usedRoles.put(role, Boolean.TRUE);
 			} else {
 				GroupMembershipHistory lastHistory = lastHistoryPoint(role, history);
 				if(lastHistory != null) {
 					row.addStatus(role, lastHistory.getStatus());
-					usedRoles.put(role, Boolean.TRUE);
 				}
 			}
 		}
