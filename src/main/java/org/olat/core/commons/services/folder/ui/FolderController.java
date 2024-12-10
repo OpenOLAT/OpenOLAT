@@ -1566,8 +1566,9 @@ public class FolderController extends FormBasicController implements Activateabl
 					copyMoveParams.setOverwrite(overwriteConfirmationCtrl.getOverwrite());
 					doCopyMoveValidateLicense(ureq, copyMoveParams);
 				}
+			} else {
+				cleanUp();
 			}
-			cleanUp();
 		} else if (zipConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				doZip(ureq, zipConfirmationCtrl.getFileName(), zipConfirmationCtrl.getItemsToZip());
