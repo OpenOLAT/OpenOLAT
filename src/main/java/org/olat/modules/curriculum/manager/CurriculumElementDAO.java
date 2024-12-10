@@ -1070,6 +1070,7 @@ public class CurriculumElementDAO {
 		  .append(" inner join el.group baseGroup")
 		  .append(" inner join bgroupmemberhistory membershiphistory on (membershiphistory.group.key = baseGroup.key)")
 		  .append(" inner join fetch membershiphistory.identity ident")
+		  .append(" inner join fetch membershiphistory.group hGroup")
 		  .append(" inner join fetch ident.user identUser")
 		  .append(" inner join fetch membershiphistory.creator creator")
 		  .append(" inner join fetch creator.user creatorUser");

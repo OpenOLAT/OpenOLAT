@@ -83,7 +83,7 @@ public class MemberDetailsController extends FormBasicController {
 		
 		if(withHistory) {
 			historyDetailsCtrl = new MemberHistoryDetailsController(ureq, getWindowControl(), rootForm,
-					elements.get(0), member);
+					selectedCurriculumElement, member);
 			listenTo(historyDetailsCtrl);
 		}
 		

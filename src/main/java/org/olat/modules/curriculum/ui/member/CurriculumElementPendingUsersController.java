@@ -20,14 +20,10 @@
 package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.admin.user.UserSearchController;
-import org.olat.basesecurity.events.MultiIdentityChosenEvent;
-import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -57,6 +53,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -70,6 +67,9 @@ import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.event.EditMemberEvent;
 import org.olat.modules.curriculum.ui.member.MemberManagementTableModel.MemberCols;
+import org.olat.modules.curriculum.ui.wizard.AddMember1SearchStep;
+import org.olat.modules.curriculum.ui.wizard.AddMemberFinishCallback;
+import org.olat.modules.curriculum.ui.wizard.MembersContext;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
@@ -88,10 +88,10 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	protected static final String FILTER_CONFIRMATION_DATE = "confirmationDate";
 	
 	private FormLink acceptAllButton;
-	private FormLink addReservationButton;
+	private FormLink addParticipantsButton;
 
 	private CloseableModalController cmc;
-	private UserSearchController userSearchCtrl;
+	private StepsMainRunController addMemberCtrl;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
@@ -122,8 +122,8 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 			acceptAllButton = uifactory.addFormLink("accept.all", formLayout, Link.BUTTON);
 			acceptAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_accept_all");
 			
-			addReservationButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
-			addReservationButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+			addParticipantsButton = uifactory.addFormLink("add.participants", formLayout, Link.BUTTON);
+			addParticipantsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		}
 	}
 
@@ -239,20 +239,15 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(userSearchCtrl == source) {
-			if (event instanceof SingleIdentityChosenEvent singleEvent) {
-				Identity choosenIdentity = singleEvent.getChosenIdentity();
-				if (choosenIdentity != null) {
-					List<Identity> toAdd = Collections.singletonList(choosenIdentity);
-					doAddMemberReservation(toAdd, (CurriculumRoles)userSearchCtrl.getUserObject());
-				}
-			} else if (event instanceof MultiIdentityChosenEvent multiEvent) {
-				if(!multiEvent.getChosenIdentities().isEmpty()) {
-					doAddMemberReservation(multiEvent.getChosenIdentities(), (CurriculumRoles)userSearchCtrl.getUserObject());
-				}
+		 if(source == addMemberCtrl) {
+			if (event == Event.CANCELLED_EVENT) {
+				getWindowControl().pop();
+				cleanUp();
+			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				getWindowControl().pop();
+				loadModel(true);
+				cleanUp();
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(editSingleMemberCtrl == source) {
 			if(event == Event.BACK_EVENT) {
 				toolbarPanel.popController(editSingleMemberCtrl);
@@ -280,10 +275,10 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	@Autowired
 	protected void cleanUp() {
 		super.cleanUp();
-		removeAsListenerAndDispose(userSearchCtrl);
+		removeAsListenerAndDispose(addMemberCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(cmc);
-		userSearchCtrl = null;
+		addMemberCtrl = null;
 		calloutCtrl = null;
 		cmc = null;
 	}
@@ -295,8 +290,8 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addReservationButton == source) {
-			doAddReservation(ureq);
+		if(addParticipantsButton == source) {
+			doAddMemberWizard(ureq, CurriculumRoles.participant);
 		} else if(acceptAllButton == source) {
 			doAcceptAll(ureq);
 		}
@@ -317,29 +312,17 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		// TODO curriculum
 		getWindowControl().setWarning("Not implemented");
 	}
-	
-	private void doAddReservation(UserRequest ureq) {
-		doAddReservation(ureq, CurriculumRoles.participant);
-	}
-	
-	private void doAddReservation(UserRequest ureq, CurriculumRoles role) {
-		if(guardModalController(userSearchCtrl)) return;
 
-		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);
-		userSearchCtrl.setUserObject(role);
-		listenTo(userSearchCtrl);
+	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
+		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants);
+		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContex);
+		AddMemberFinishCallback finish = new AddMemberFinishCallback(membersContex);
 		
-		String title = translate("add.member.role",  translate("role.".concat(role.name())));
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doAddMemberReservation(List<Identity> identitiesToAdd, CurriculumRoles role) {
-		for(Identity identityToAdd:identitiesToAdd) {
-			curriculumService.addMemberReservation(curriculumElement, identityToAdd, role, null, Boolean.TRUE, getIdentity(), null);
-		}
-		loadModel(true);
+		removeAsListenerAndDispose(addMemberCtrl);
+		String title = translate("wizard.add." + role.name());
+		addMemberCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, title, "");
+		listenTo(addMemberCtrl);
+		getWindowControl().pushAsModalDialog(addMemberCtrl.getInitialComponent());
 	}
 	
 	@Override

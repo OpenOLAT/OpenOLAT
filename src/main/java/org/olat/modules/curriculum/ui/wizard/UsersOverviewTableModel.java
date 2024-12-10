@@ -66,7 +66,7 @@ implements SortableFlexiTableDataModel<UserRow> {
 		if(col >= 0 && col < COLS.length) {
 			return switch(COLS[col]) {
 				case modifications -> row.getModificationStatus();
-				case role -> "";
+				case role -> row.getRoles();
 				default -> "ERROR";
 			};
 		}
@@ -77,7 +77,7 @@ implements SortableFlexiTableDataModel<UserRow> {
 
 	public enum UserOverviewCols implements FlexiSortableColumnDef {
 		modifications("table.header.activity"),
-		role("table.header.role");
+		role("table.header.current.roles");
 		
 		private final String i18nKey;
 		

@@ -20,7 +20,12 @@
 package org.olat.modules.curriculum.ui.wizard;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -49,9 +54,13 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.member.AbstractMembersController;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
+import org.olat.modules.curriculum.ui.wizard.UsersOverviewTableModel.UserOverviewCols;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoService;
@@ -84,6 +93,8 @@ public class UsersOverviewController extends StepFormBasicController implements 
 	private UserInfoService userInfoService;
 	@Autowired
 	protected BaseSecurityModule securityModule;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	public UsersOverviewController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, MembersContext membersContext) {
@@ -119,6 +130,8 @@ public class UsersOverviewController extends StepFormBasicController implements 
 			colIndex++;
 		}
 		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserOverviewCols.role));
+		
 		tableModel = new UsersOverviewTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
@@ -135,11 +148,52 @@ public class UsersOverviewController extends StepFormBasicController implements 
 				.map(id -> new UserRow(id, userPropertyHandlers, getLocale()))
 				.toList();
 		
+		loadMemberships(identities, rows);
+		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 		if(rows.size() == 1) {
 			tableEl.setMultiSelectedIndex(Set.of(Integer.valueOf(0)));
 		}
+	}
+	
+	private void loadMemberships(List<Identity> identities, List<UserRow> rows) {
+		List<CurriculumElementMembership> memberships = curriculumService
+				.getCurriculumElementMemberships(membersContext.getAllCurriculumElements(), identities);
+		Map<Long,EnumSet<CurriculumRoles>> identityToRoles = new HashMap<>();
+		for(CurriculumElementMembership membership:memberships) {
+			List<CurriculumRoles> roles = membership.getRoles();
+			if(!roles.isEmpty()) {
+				identityToRoles.computeIfAbsent(membership.getIdentityKey(), id -> EnumSet.noneOf(CurriculumRoles.class))
+					.addAll(roles);
+			}
+		}
+		
+		for(UserRow row:rows) {
+			Set<CurriculumRoles> rolesSet = identityToRoles.get(row.getIdentityKey());
+			String roles;
+			if(rolesSet.isEmpty()) {
+				roles = null;
+			} else if(rolesSet.size() == 1) {
+				roles = toString(rolesSet);
+			} else {
+				List<CurriculumRoles> rolesList = new ArrayList<>(rolesSet);
+				Collections.sort(rolesList);
+				roles = toString(rolesList);
+			}
+			row.setRoles(roles);
+		}
+	}
+	
+	private String toString(Collection<CurriculumRoles> roles) {
+		StringBuilder sb = new StringBuilder(32);
+		for(CurriculumRoles role:roles) {
+			if(sb.length() > 0) {
+				sb.append(", ");
+			}
+			sb.append(translate("role.".concat(role.name())));
+		}
+		return sb.toString();
 	}
 	
 	@Override

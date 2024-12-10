@@ -37,6 +37,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class UserRow extends UserPropertiesRow {
 
+	private String roles;
 	private final Identity identity;
 	private ModificationStatus modificationStatus;
 	private List<MembershipModification> modifications;
@@ -52,6 +53,14 @@ public class UserRow extends UserPropertiesRow {
 		return identity;
 	}
 	
+	public String getRoles() {
+		return roles;
+	}
+
+	public void setRoles(String roles) {
+		this.roles = roles;
+	}
+
 	public List<MembershipModification> getModifications() {
 		return modifications;
 	}
