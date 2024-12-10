@@ -20,20 +20,19 @@
 package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupMembershipStatus;
-import org.olat.basesecurity.events.MultiIdentityChosenEvent;
-import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown.CaretPosition;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -74,9 +73,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
-import org.olat.modules.curriculum.ui.RoleListController;
 import org.olat.modules.curriculum.ui.event.EditMemberEvent;
-import org.olat.modules.curriculum.ui.event.RoleEvent;
 import org.olat.modules.curriculum.ui.member.MemberManagementTableModel.MemberCols;
 import org.olat.modules.curriculum.ui.wizard.AddMember1SearchStep;
 import org.olat.modules.curriculum.ui.wizard.AddMemberFinishCallback;
@@ -91,18 +88,20 @@ import org.olat.user.UserAvatarMapper;
  */
 public class CurriculumElementMemberUsersController extends AbstractMembersController implements FlexiTableComponentDelegate, Activateable2 {
 
+	private static final String CMD_ADD_MEMBER = "add-member";
+	private static final CurriculumRoles[] ADMIN_ROLES = {
+			CurriculumRoles.coach, CurriculumRoles.mastercoach,
+			CurriculumRoles.owner, CurriculumRoles.curriculumelementowner
+		};
 	protected static final String FILTER_ROLE = "Role";
 	
-	private FormLink addMemberButton;
-	private FormLink importMemberButton;
+	private FormLink addParticipantButton;
 	private FormLink removeMembershipButton;
 	
 	private CloseableModalController cmc;
-	private UserSearchController userSearchCtrl;
 	private DialogBoxController confirmRemoveCtrl;
 	
 	private ToolsController toolsCtrl;
-	private RoleListController roleListCtrl;
 	private StepsMainRunController addMemberCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
@@ -126,12 +125,19 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		
 		// Add/remove buttons
 		if(!membersManaged && secCallback.canManagerCurriculumElementUsers(curriculumElement)) {
-			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
-			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
-			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
+			addParticipantButton = uifactory.addFormLink("add.participants", "add.participants", null, formLayout, Link.BUTTON);
+			addParticipantButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 			
-			importMemberButton = uifactory.addFormLink("add.member.2", "add.member", null, formLayout, Link.BUTTON);
-			importMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+			DropdownItem addDropdown = uifactory.addDropdownMenu("add.members", null, null, flc, getTranslator());
+			addDropdown.setOrientation(DropdownOrientation.right);
+			addDropdown.setCaretPosition(CaretPosition.right);
+			addDropdown.setAriaLabel(translate("add.member"));
+			for(CurriculumRoles role:ADMIN_ROLES) {
+				String id = "add.".concat(role.name());
+				FormLink addMemberButton = uifactory.addFormLink(id, CMD_ADD_MEMBER, id, null, formLayout, Link.LINK);
+				addMemberButton.setUserObject(role);
+				addDropdown.addElement(addMemberButton);
+			}
 		
 			removeMembershipButton = uifactory.addFormLink("remove.memberships", formLayout, Link.BUTTON);
 		}
@@ -279,26 +285,6 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 				List<MemberRow> rows = (List<MemberRow>)confirmRemoveCtrl.getUserObject();
 				doRemove(rows);
 			}
-		} else if(userSearchCtrl == source) {
-			if (event instanceof SingleIdentityChosenEvent singleEvent) {
-				Identity choosenIdentity = singleEvent.getChosenIdentity();
-				if (choosenIdentity != null) {
-					List<Identity> toAdd = Collections.singletonList(choosenIdentity);
-					doAddMember(toAdd, (CurriculumRoles)userSearchCtrl.getUserObject());
-				}
-			} else if (event instanceof MultiIdentityChosenEvent multiEvent) {
-				if(!multiEvent.getChosenIdentities().isEmpty()) {
-					doAddMember(multiEvent.getChosenIdentities(), (CurriculumRoles)userSearchCtrl.getUserObject());
-				}
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(roleListCtrl == source) {
-			calloutCtrl.deactivate();
-			cleanUp();
-			if(event instanceof RoleEvent re) {
-				doSearchMember(ureq, re.getRole());
-			}
 		} else if(source == addMemberCtrl) {
 			if (event == Event.CANCELLED_EVENT) {
 				getWindowControl().pop();
@@ -336,12 +322,10 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	protected void cleanUp() {
 		super.cleanUp();
 		removeAsListenerAndDispose(confirmRemoveCtrl);
-		removeAsListenerAndDispose(userSearchCtrl);
 		removeAsListenerAndDispose(addMemberCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmRemoveCtrl = null;
-		userSearchCtrl = null;
 		addMemberCtrl = null;
 		calloutCtrl = null;
 		cmc = null;
@@ -354,12 +338,13 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addMemberButton == source) {
-			doRoleCallout(ureq);
-		} else if(importMemberButton == source) {
-			doAddMemberWizard(ureq);
+		if(addParticipantButton == source) {
+			doAddMemberWizard(ureq, CurriculumRoles.participant);
 		} else if(removeMembershipButton == source) {
 			doConfirmRemoveAllMemberships(ureq);
+		} else if(source instanceof FormLink link && CMD_ADD_MEMBER.equals(link.getCmd())
+				&& link.getUserObject() instanceof CurriculumRoles role) {
+			doAddMemberWizard(ureq, role);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -405,53 +390,16 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		loadModel(true);
 	}
 
-	private void doAddMemberWizard(UserRequest ureq) {
-		MembersContext membersContex = new MembersContext(CurriculumRoles.participant, curriculum, curriculumElement, descendants);
+	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
+		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants);
 		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContex);
 		AddMemberFinishCallback finish = new AddMemberFinishCallback(membersContex);
 		
-		String title = translate("wizard.add.member");
 		removeAsListenerAndDispose(addMemberCtrl);
+		String title = translate("wizard.add." + role.name());
 		addMemberCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, title, "");
 		listenTo(addMemberCtrl);
 		getWindowControl().pushAsModalDialog(addMemberCtrl.getInitialComponent());
-	}
-	
-	private void doRoleCallout(UserRequest ureq) {
-		removeAsListenerAndDispose(calloutCtrl);
-		removeAsListenerAndDispose(roleListCtrl);
-		
-		String title = translate("add.member");
-		CurriculumRoles[] roles = new CurriculumRoles[] {
-				CurriculumRoles.curriculumelementowner, CurriculumRoles.mastercoach,
-				CurriculumRoles.owner, CurriculumRoles.coach, CurriculumRoles.participant
-		};
-		roleListCtrl = new RoleListController(ureq, getWindowControl(), roles);
-		listenTo(roleListCtrl);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), roleListCtrl.getInitialComponent(), addMemberButton, title, true, null);
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();	
-	}
-	
-	private void doSearchMember(UserRequest ureq, CurriculumRoles role) {
-		if(guardModalController(userSearchCtrl)) return;
-
-		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);
-		userSearchCtrl.setUserObject(role);
-		listenTo(userSearchCtrl);
-		
-		String title = translate("add.member.role",  translate("role.".concat(role.name())));
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doAddMember(List<Identity> identitiesToAdd, CurriculumRoles role) {
-		for(Identity identityToAdd:identitiesToAdd) {
-			curriculumService.addMember(curriculumElement, identityToAdd, role, getIdentity());
-		}
-		loadModel(true);
 	}
 	
 	@Override

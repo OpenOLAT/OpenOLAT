@@ -35,9 +35,11 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -78,6 +80,8 @@ public class MemberRolesDetailsController extends FormBasicController {
 	private final Identity member;
 	private final Curriculum curriculum;
 	private final List<CurriculumElement> elements;
+	private final CurriculumRoles alwaysVisibleRole;
+	private final CurriculumElement selectedCurriculumElement;
 
 	@Autowired
 	private ACService acService;
@@ -85,9 +89,12 @@ public class MemberRolesDetailsController extends FormBasicController {
 	private CurriculumService curriculumService;
 	
 	public MemberRolesDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			Curriculum curriculum, List<CurriculumElement> elements, Identity member) {
+			Curriculum curriculum, CurriculumElement selectedCurriculumElement, List<CurriculumElement> elements,
+			Identity member, CurriculumRoles alwaysVisibleRole) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "member_details_roles", rootForm);
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale()));
+		this.selectedCurriculumElement = selectedCurriculumElement;
+		this.alwaysVisibleRole = alwaysVisibleRole;
 		this.elements = new ArrayList<>(elements);
 		this.curriculum = curriculum;
 		this.member = member;
@@ -144,6 +151,9 @@ public class MemberRolesDetailsController extends FormBasicController {
 		tableEl.setExportEnabled(true);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setFooter(true);
+		if(selectedCurriculumElement != null) {
+			tableEl.setCssDelegate(new SelectedCurriculumElementCssDelegate());
+		}
 	}
 	
 	protected void loadModel() {
@@ -212,6 +222,10 @@ public class MemberRolesDetailsController extends FormBasicController {
 	}
 	
 	private void updateRolesColumnsVisibility(EnumMap<CurriculumRoles,Boolean> usedRoles) {
+		if(alwaysVisibleRole != null) {
+			usedRoles.put(alwaysVisibleRole, Boolean.TRUE);
+		}
+		
 		// Update columns visibility
 		for(CurriculumRoles role:CurriculumRoles.values()) {
 			FlexiColumnModel col = columnsModel.getColumnModelByIndex(role.ordinal() + ROLES_OFFSET);
@@ -260,5 +274,16 @@ public class MemberRolesDetailsController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private class SelectedCurriculumElementCssDelegate extends DefaultFlexiTableCssDelegate {
+		@Override
+		public String getRowCssClass(FlexiTableRendererType type, int pos) {
+			MemberRolesDetailsRow row = tableModel.getObject(pos);
+			if(selectedCurriculumElement.equals(row.getCurriculumElement())) {
+				return "o_row_selected";
+			}
+			return null;
+		}
 	}
 }

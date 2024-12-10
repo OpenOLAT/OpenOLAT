@@ -90,6 +90,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 	
 	private final String avatarMapperBaseURL;
 	private final MembersContext membersContext;
+	private final CurriculumRoles roleToModify;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
 
@@ -111,6 +112,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.membersContext = membersContext;
+		roleToModify = membersContext.getRoleToModify();
 		
 		detailsVC = createVelocityContainer("member_details");
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "imp-cur-avatars", avatarMapper);
@@ -254,7 +256,8 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
-				curriculum, elements, row.getIdentity(), profileConfig, false, false, false);
+				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), profileConfig,
+				membersContext.getRoleToModify(), false, false, false);
 		
 		// Add relevant modifications to the details view
 		List<MemberRolesDetailsRow> currentDetailsRows = detailsCtrl.getRolesDetailsRows();
@@ -266,7 +269,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			MembershipModification modification = it.next();
 			MemberRolesDetailsRow detailsRow = rowsMap.get(modification.curriculumElement().getKey());
 			if(detailsRow != null) {
-				GroupMembershipStatus currentStatus = detailsRow.getStatus(CurriculumRoles.participant);
+				GroupMembershipStatus currentStatus = detailsRow.getStatus(roleToModify);
 				if((currentStatus == GroupMembershipStatus.active)
 					|| (currentStatus == GroupMembershipStatus.reservation
 						&& modification.nextStatus() == GroupMembershipStatus.reservation)) {

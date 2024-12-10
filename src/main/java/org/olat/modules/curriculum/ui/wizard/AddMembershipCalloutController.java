@@ -29,6 +29,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -67,14 +68,15 @@ public class AddMembershipCalloutController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String suffix = Long.toString(CodeHelper.getRAMUniqueID());
 		// apply to
 		SelectionValues applyToPK = new SelectionValues();
 		applyToPK.add(SelectionValues.entry(ChangeApplyToEnum.CONTAINED.name(), translate("apply.membership.to.contained")));
 		applyToPK.add(SelectionValues.entry(ChangeApplyToEnum.CURRENT.name(), translate("apply.membership.to.current")));
-		applyToEl = uifactory.addRadiosVertical("apply.membership.to", "apply.membership.to", formLayout, applyToPK.keys(), applyToPK.values());
+		applyToEl = uifactory.addRadiosVertical("apply.membership.to." + suffix, "apply.membership.to", formLayout, applyToPK.keys(), applyToPK.values());
 		applyToEl.select(ChangeApplyToEnum.CONTAINED.name(), true);
 		
-		adminNoteEl = uifactory.addTextAreaElement("admin.note", "admin.note", 2000, 4, 32, false, false, false, "", formLayout);
+		adminNoteEl = uifactory.addTextAreaElement("admin.note." + suffix, "admin.note", 2000, 4, 32, false, false, false, "", formLayout);
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("add", buttonsCont);

@@ -227,7 +227,8 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
-				curriculum, elements, row.getIdentity(), profileConfig, false, false, false);
+				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), profileConfig,
+				membersContext.getRoleToModify(), false, false, false);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

@@ -36,6 +36,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.event.EditMemberEvent;
 import org.olat.user.UserInfoProfile;
@@ -65,8 +66,9 @@ public class MemberDetailsController extends FormBasicController {
 	private UserInfoService userInfoService;
 	
 	public MemberDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			Curriculum curriculum, List<CurriculumElement> elements, Identity identity,
-			UserInfoProfileConfig profileConfig, boolean withEdit, boolean withAcceptDecline, boolean withHistory) {
+			Curriculum curriculum, CurriculumElement selectedCurriculumElement, List<CurriculumElement> elements,
+			Identity identity, UserInfoProfileConfig profileConfig, CurriculumRoles alwaysVisibleRole,
+			boolean withEdit, boolean withAcceptDecline, boolean withHistory) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "member_details_view", rootForm);
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale()));
 
@@ -76,7 +78,7 @@ public class MemberDetailsController extends FormBasicController {
 		this.withAcceptDecline = withAcceptDecline;
 
 		rolesDetailsCtrl = new MemberRolesDetailsController(ureq, getWindowControl(), rootForm,
-				curriculum,  elements, member);
+				curriculum, selectedCurriculumElement, elements, member, alwaysVisibleRole);
 		listenTo(rolesDetailsCtrl);
 		
 		if(withHistory) {

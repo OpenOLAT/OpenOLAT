@@ -34,12 +34,15 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -83,6 +86,7 @@ public class RightsController extends StepFormBasicController {
 	
 	private final CurriculumRoles roleToModify;
 	private final MembersContext membersContext;
+	private final CurriculumElement curriculumElement;
 	private final List<CurriculumElement> curriculumElements;
 
 	private CloseableCalloutWindowController calloutCtrl;
@@ -94,9 +98,9 @@ public class RightsController extends StepFormBasicController {
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 		this.membersContext = membersContext;
 		roleToModify = membersContext.getRoleToModify();
-		curriculumElements = new ArrayList<>(membersContext.getDescendants());
-		curriculumElements.add(0, membersContext.getCurriculumElement());
-		
+		curriculumElement = membersContext.getCurriculumElement();
+		curriculumElements = membersContext.getAllCurriculumElements();
+
 		initForm(ureq);
 		loadModel();
 		updateUI();
@@ -118,6 +122,7 @@ public class RightsController extends StepFormBasicController {
 				confirmationPK.keys(), confirmationPK.values(), confirmationPK.descriptions(), confirmationPK.icons());
 		confirmationTypeEl.addActionListener(FormEvent.ONCLICK);
 		confirmationTypeEl.select(ConfirmationMembershipEnum.WITH.name(), true);
+		confirmationTypeEl.setVisible(roleToModify == CurriculumRoles.participant);
 		
 		// confirmation by
 		SelectionValues confirmationByPK = new SelectionValues();
@@ -126,9 +131,14 @@ public class RightsController extends StepFormBasicController {
 		confirmationByEl = uifactory.addRadiosVertical("confirmation.membership.by", formLayout,
 				confirmationByPK.keys(), confirmationByPK.values());
 		confirmationByEl.select(ConfirmationByEnum.ADMINISTRATIVE_ROLE.name(), true);
+		confirmationByEl.setVisible(roleToModify == CurriculumRoles.participant);
 		
 		// confirmation until
 		confirmUntilEl = uifactory.addDateChooser("confirmation.until", "confirmation.until", null, formLayout);
+		confirmUntilEl.setVisible(roleToModify == CurriculumRoles.participant);
+		
+		SpacerElement spacerEl = uifactory.addSpacerElement("confirm_spacer", formLayout, false);
+		spacerEl.setVisible(roleToModify == CurriculumRoles.participant);
 		
 		// apply to
 		SelectionValues applyToPK = new SelectionValues();
@@ -143,6 +153,7 @@ public class RightsController extends StepFormBasicController {
 		applyToEl.select(ChangeApplyToEnum.CONTAINED.name(), true);
 		
 		adminNoteEl = uifactory.addTextAreaElement("admin.note", "admin.note", 2000, 4, 32, false, false, false, "", formLayout);
+		adminNoteEl.setVisible(roleToModify == CurriculumRoles.participant);
 	}
 	
 	private void initTableForm(FormItemContainer formLayout) {
@@ -166,13 +177,15 @@ public class RightsController extends StepFormBasicController {
 		tableEl.setCustomizeColumns(true);
 		tableEl.setFooter(true);
 		tableEl.setFormLayout("0_12");
+		tableEl.setCssDelegate(new SelectedCurriculumElementCssDelegate());
 	}
 	
 	private void updateUI() {
-		boolean withConfirmation = confirmationTypeEl.isOneSelected()
+		boolean participant = roleToModify == CurriculumRoles.participant;
+		boolean withConfirmation = participant && confirmationTypeEl.isOneSelected()
 				&& ConfirmationMembershipEnum.WITH.name().equals(confirmationTypeEl.getSelectedKey());
-		confirmationByEl.setVisible(withConfirmation);
-		confirmUntilEl.setVisible(withConfirmation);
+		confirmationByEl.setVisible(withConfirmation && participant);
+		confirmUntilEl.setVisible(withConfirmation && participant);
 		
 		boolean individualElements = applyToEl.isOneSelected()
 				&& ChangeApplyToEnum.valueOf(applyToEl.getSelectedKey()) == ChangeApplyToEnum.CURRENT;
@@ -279,12 +292,15 @@ public class RightsController extends StepFormBasicController {
 
 	@Override
 	protected void formNext(UserRequest ureq) {
-		ConfirmationMembershipEnum confirmation = ConfirmationMembershipEnum.valueOf(confirmationTypeEl.getSelectedKey()); 
-		GroupMembershipStatus nextStatus = getNextStatus();
+		boolean participant = roleToModify == CurriculumRoles.participant;
+		ConfirmationMembershipEnum confirmation = participant
+				? ConfirmationMembershipEnum.valueOf(confirmationTypeEl.getSelectedKey())
+				: ConfirmationMembershipEnum.WITHOUT;
+		GroupMembershipStatus nextStatus = participant ? getNextStatus() : GroupMembershipStatus.active;
 		
 		Date confirmationUntil = null;
 		ConfirmationByEnum confirmationBy = null;
-		if(confirmation == ConfirmationMembershipEnum.WITH) {
+		if(participant && confirmation == ConfirmationMembershipEnum.WITH) {
 			confirmationUntil = confirmUntilEl.getDate();
 			confirmationBy = ConfirmationByEnum.valueOf(confirmationByEl.getSelectedKey());
 		}
@@ -319,8 +335,9 @@ public class RightsController extends StepFormBasicController {
 	}
 	
 	private GroupMembershipStatus getNextStatus() {
+		boolean participant = roleToModify == CurriculumRoles.participant;
 		ConfirmationMembershipEnum confirmation = ConfirmationMembershipEnum.valueOf(confirmationTypeEl.getSelectedKey());
-		return (confirmation == ConfirmationMembershipEnum.WITH)
+		return (participant && confirmation == ConfirmationMembershipEnum.WITH)
 				? GroupMembershipStatus.reservation : GroupMembershipStatus.active;
 	}
 	
@@ -361,5 +378,16 @@ public class RightsController extends StepFormBasicController {
 		}
 		
 		tableEl.reset(false, false, true);
+	}
+	
+	private class SelectedCurriculumElementCssDelegate extends DefaultFlexiTableCssDelegate {
+		@Override
+		public String getRowCssClass(FlexiTableRendererType type, int pos) {
+			RightsCurriculumElementRow row = tableModel.getObject(pos);
+			if(curriculumElement.equals(row.getCurriculumElement())) {
+				return "o_row_selected";
+			}
+			return null;
+		}
 	}
 }

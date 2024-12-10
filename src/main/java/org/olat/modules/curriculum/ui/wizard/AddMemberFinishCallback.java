@@ -72,6 +72,7 @@ public class AddMemberFinishCallback implements StepRunnerCallback {
 
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+		final CurriculumRoles roleToModify = membersContext.getRoleToModify();
 		final List<Identity> identities = membersContext.getSelectedIdentities();
 		final List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
 		List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(curriculumElements, identities);
@@ -79,7 +80,7 @@ public class AddMemberFinishCallback implements StepRunnerCallback {
 				.collect(Collectors.toMap(membership -> new IdentityToObject(membership.getIdentityKey(), membership.getCurriculumElementKey()) , u -> u, (u, v) -> u));
 		
 		// Reservations
-		String roleKeyWord = CurriculumService.RESERVATION_PREFIX.concat(membersContext.getRoleToModify().name());
+		String roleKeyWord = CurriculumService.RESERVATION_PREFIX.concat(roleToModify.name());
 		List<OLATResource> elementsResources = membersContext.getAllCurriculumElementResources();
 		SearchReservationParameters searchParams = new SearchReservationParameters(elementsResources);
 		List<ResourceReservation> reservations = acService.getReservations(searchParams);
@@ -97,18 +98,19 @@ public class AddMemberFinishCallback implements StepRunnerCallback {
 				
 				CurriculumElementMembership membership = membershipsMap.get(new IdentityToObject(identity.getKey(), curriculumElement.getKey()));
 				ResourceReservation reservation = reservationsMap.get(new IdentityToObject(identity.getKey(), resource.getKey()));
-				if((membership == null || !membership.isParticipant())
+				if((membership == null || !membership.getRoles().contains(roleToModify))
 						&& (reservation == null || modification.nextStatus() != GroupMembershipStatus.reservation)) {
 					changes.add(applyModification(identity, modification));
 				}
 			}
 		}
 		
-		MailerResult result = new MailerResult();
-		MailTemplate template = membersContext.getMailTemplate();
-		MailPackage mailPackage = new MailPackage(template, result, (MailContext)null, template != null);
-		curriculumService.updateCurriculumElementMemberships(ureq.getIdentity(), ureq.getUserSession().getRoles(), changes, mailPackage);
-		
+		if(!changes.isEmpty()) {
+			MailerResult result = new MailerResult();
+			MailTemplate template = membersContext.getMailTemplate();
+			MailPackage mailPackage = new MailPackage(template, result, (MailContext)null, template != null);
+			curriculumService.updateCurriculumElementMemberships(ureq.getIdentity(), ureq.getUserSession().getRoles(), changes, mailPackage);
+		}
 		return StepsMainRunController.DONE_MODIFIED;
 	}
 	
