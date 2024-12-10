@@ -46,14 +46,16 @@ public class MemberHistoryDetailsRow {
 	private final CourseMembership membership;
 	private final GroupMembershipHistory point;
 	private GroupMembershipStatus previousStatus;
+	private final String curriculumElementName;
 	
 	private FormLink noteLink;
 	
-	public MemberHistoryDetailsRow(Identity identity, String userDisplayName, GroupMembershipHistory point) {
+	public MemberHistoryDetailsRow(Identity identity, String userDisplayName, String curriculumElementName, GroupMembershipHistory point) {
 		this.point = point;
 		this.group = point.getGroup();
 		this.identity = identity;
 		this.userDisplayName = userDisplayName;
+		this.curriculumElementName = curriculumElementName;
 		membership = new CourseMembership();
 		membership.setCurriculumElementRole(point.getRole());
 		role = CurriculumRoles.isValueOf(point.getRole()) ? CurriculumRoles.valueOf(point.getRole()) : null;
@@ -69,6 +71,10 @@ public class MemberHistoryDetailsRow {
 	
 	public CurriculumRoles getRole() {
 		return role;
+	}
+	
+	public String getCurriculumElementName() {
+		return curriculumElementName;
 	}
 	
 	public CourseMembership getMembership() {

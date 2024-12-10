@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElement;
 
 /**
  * 
@@ -36,7 +36,7 @@ public class CurriculumElementMembershipHistorySearchParameters {
 	private List<Identity> identities;
 
 	private Curriculum curriculum;
-	private List<? extends CurriculumElementRef> elements;
+	private List<CurriculumElement> elements;
 	
 	private boolean excludeMembers;
 	private boolean excludeReservations;
@@ -57,11 +57,11 @@ public class CurriculumElementMembershipHistorySearchParameters {
 		this.curriculum = curriculum;
 	}
 	
-	public List<? extends CurriculumElementRef> getElements() {
+	public List<CurriculumElement> getElements() {
 		return elements;
 	}
 	
-	public void setElements(List<? extends CurriculumElementRef> elements) {
+	public void setElements(List<CurriculumElement> elements) {
 		this.elements = elements;
 	}
 

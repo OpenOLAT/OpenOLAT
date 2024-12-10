@@ -123,6 +123,7 @@ implements SortableFlexiTableDataModel<MemberHistoryDetailsRow>, FilterableFlexi
 				case creationDate -> detailsRow.getDate();
 				case member -> detailsRow.getUserDisplayName();
 				case role -> detailsRow.getMembership();
+				case curriculumElement -> detailsRow.getCurriculumElementName();
 				case activity -> detailsRow.getActivity();
 				case previousStatus -> detailsRow.getPreviousStatus();
 				case status -> detailsRow.getStatus();
@@ -146,6 +147,7 @@ implements SortableFlexiTableDataModel<MemberHistoryDetailsRow>, FilterableFlexi
 		creationDate("table.header.date"),
 		member("table.header.member"),
 		role("table.header.role"),
+		curriculumElement("table.header.curriculum.element.displayName"),
 		activity("table.header.activity"),
 		previousStatus("table.header.original.value"),
 		status("table.header.new.value"),

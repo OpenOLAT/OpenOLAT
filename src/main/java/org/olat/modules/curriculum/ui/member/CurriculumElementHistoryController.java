@@ -72,7 +72,7 @@ public class CurriculumElementHistoryController extends AbstractHistoryControlle
 	}
 	
 	private void initTableForm(FormItemContainer formLayout) {
-		initTable(formLayout, true);
+		initTable(formLayout, true, true);
 		initFilters();
 		initFiltersPresets();
 	}
@@ -124,6 +124,7 @@ public class CurriculumElementHistoryController extends AbstractHistoryControlle
 	private void doToggleLevels(boolean thisLevel) {
 		allLevelsButton.setPrimary(!thisLevel);
 		thisLevelButton.setPrimary(thisLevel);
+		tableEl.setColumnModelVisible(curriculumElementCol, !thisLevel);
 		loadModel(true);
 	}
 }

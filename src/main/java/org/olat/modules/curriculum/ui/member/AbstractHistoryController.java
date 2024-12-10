@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembershipHistory;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.commons.persistence.SortKey;
@@ -91,6 +92,7 @@ public abstract class AbstractHistoryController extends FormBasicController {
 	
 	protected FlexiTableElement tableEl;
 	protected MemberHistoryDetailsTableModel tableModel;
+	protected DefaultFlexiColumnModel curriculumElementCol;
 	
 	private int counter = 0;
 	protected final CurriculumElement curriculumElement;
@@ -117,7 +119,7 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		this.curriculumElement = curriculumElement;
 	}
 	
-	protected void initTable(FormItemContainer formLayout, boolean withMember) {
+	protected void initTable(FormItemContainer formLayout, boolean withMember, boolean withCurriculumElement) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberHistoryCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.creationDate));
@@ -126,6 +128,8 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.role,
 				new CurriculumMembershipCellRenderer(getTranslator(), ", ")));
+		curriculumElementCol = new DefaultFlexiColumnModel(withCurriculumElement, MemberHistoryCols.curriculumElement);
+		columnsModel.addFlexiColumnModel(curriculumElementCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.activity));
 		GroupMembershipStatusRenderer memberStatusRenderer = new GroupMembershipStatusRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.previousStatus,
@@ -199,11 +203,13 @@ public abstract class AbstractHistoryController extends FormBasicController {
 	protected void loadModel(boolean reset) {
 		CurriculumElementMembershipHistorySearchParameters searchParams = getSearchParameters();
 		List<CurriculumElementMembershipHistory> membershipsHistory = curriculumService.getCurriculumElementMembershipsHistory(searchParams);
+		Map<Group,CurriculumElement> groupToElements = getGroupsToCurriculumElementsMap(searchParams.getElements());
+		
 		List<MemberHistoryDetailsRow> rows = new ArrayList<>();
 		for(CurriculumElementMembershipHistory elementHistory:membershipsHistory) {
 			List<GroupMembershipHistory> points = elementHistory.getHistory();
 			for(GroupMembershipHistory point:points) {
-				rows.add(forgeRow(point));
+				rows.add(forgeRow(point, groupToElements));
 			}
 		}
 		
@@ -211,6 +217,16 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		fillPreviousValue(rows);
 		tableModel.setObjects(rows);
 		tableEl.reset(reset, reset, true);
+	}
+	
+	private Map<Group,CurriculumElement> getGroupsToCurriculumElementsMap(List<CurriculumElement> elements) {
+		Map<Group,CurriculumElement> groupToElements = new HashMap<>();
+		if(elements != null && !elements.isEmpty()) {
+			for(CurriculumElement element:elements) {
+				groupToElements.put(element.getGroup(), element);
+			}
+		}
+		return groupToElements;
 	}
 	
 	private void fillPreviousValue(List<MemberHistoryDetailsRow> rows) {
@@ -233,11 +249,12 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		tableEl.reset(true, true, true);
 	}
 	
-	private MemberHistoryDetailsRow forgeRow(GroupMembershipHistory point) {
+	private MemberHistoryDetailsRow forgeRow(GroupMembershipHistory point, Map<Group,CurriculumElement> groupToElements) {
 		Identity user = point.getIdentity();
 		String userDisplayName = userManager.getUserDisplayName(user);
-		
-		MemberHistoryDetailsRow row = new MemberHistoryDetailsRow(user, userDisplayName, point);
+		CurriculumElement curriculumElement = groupToElements.get(point.getGroup());
+		String curriculumElementName = curriculumElement == null ? null : curriculumElement.getDisplayName();
+		MemberHistoryDetailsRow row = new MemberHistoryDetailsRow(user, userDisplayName, curriculumElementName, point);
 		row.setActivity(toActivityString(row));
 
 		Identity actor = point.getCreator();

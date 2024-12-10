@@ -58,7 +58,7 @@ public class MemberHistoryDetailsController extends AbstractHistoryController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("details.history.title", new String[] { StringHelper.escapeHtml(curriculumElement.getDisplayName()) });
 
-		initTable(formLayout, false);
+		initTable(formLayout, false, false);
 		initFilters();
 		initFiltersPresets();
 	}
