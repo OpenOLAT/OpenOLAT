@@ -1498,7 +1498,7 @@ $o-bright-text-and-border : #FCFCFC;
 $o-dark-text-and-border   : #555555;
 
 /* Video Colors */
-$o-video-color             : #FCFCFC;
+$o-video-color             : $o-bright-text-and-border;
 
 $o-video-color-light-gray  : $o-color-light-gray;
 $o-video-color-yellow      : $o-color-yellow;
@@ -1514,19 +1514,7 @@ $o-video-color-light-green : $o-color-light-green;
 $o-video-color-sea-green   : $o-color-sea-green;
 $o-video-color-practice    : #FFFFFF;
 
-$o-video-border-color             : $o-bright-text-and-border;
-$o-video-border-color-light-gray  : $o-video-border-color;
-$o-video-border-color-yellow      : $o-video-border-color;
-$o-video-border-color-orange      : $o-video-border-color;
-$o-video-border-color-brown       : $o-video-border-color;
-$o-video-border-color-red         : $o-video-border-color;
-$o-video-border-color-orchid      : $o-video-border-color;
-$o-video-border-color-purple      : $o-video-border-color;
-$o-video-border-color-light-blue  : $o-video-border-color;
-$o-video-border-color-cobalt-blue : $o-video-border-color;
-$o-video-border-color-dark-blue   : $o-video-border-color;
-$o-video-border-color-light-green : $o-video-border-color;
-$o-video-border-color-sea-green   : $o-video-border-color;
+$o-video-border-color      : $o-bright-text-and-border;
 
 /* Educational course types */
 $o-edu-type-standard-course-color 			: o-a11y-color($gray) !default;
