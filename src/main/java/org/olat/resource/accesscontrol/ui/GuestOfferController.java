@@ -22,7 +22,6 @@ package org.olat.resource.accesscontrol.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -67,25 +66,21 @@ public class GuestOfferController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_accesscontrol_guest_form");
 		
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, offer.getDescription(), formLayout);
-		descEl.setElementCssClass("o_sel_accesscontrol_description");
-		
-		uifactory.addStaticTextElement("offer.period", translate("offer.period.status"), formLayout);
-		
 		SelectionValues catalogSV = new SelectionValues();
 		if (catalogModule.isEnabled() && catalogModule.isWebPublishEnabled()) {
 			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
 		}
-		catalogEl = uifactory.addCheckboxesVertical("offer.catalog", formLayout, catalogSV.keys(), catalogSV.values(), 1);
+		catalogEl = uifactory.addCheckboxesVertical("offer.publish.in", formLayout, catalogSV.keys(), catalogSV.values(), 1);
 		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
 		catalogEl.select(CATALOG_WEB, offer != null && offer.isCatalogWebPublish());
 		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
 		
-		if (catalogEl.isVisible() && catalogInfo.isShowDetails()) {
-			StaticTextElement catalogEl = uifactory.addStaticTextElement("access.info.catalog.entries", null, catalogInfo.getDetails(), formLayout);
-			catalogEl.setLabel("noTransOnlyParam", new String[] {catalogInfo.getDetailsLabel()});
-			catalogEl.setHelpText(catalogInfo.getDetailsHelpText());
-		}
+		uifactory.addStaticTextElement("offer.period", translate("offer.period.status"), formLayout);
+		
+		uifactory.addSpacerElement("others", formLayout, false);
+		
+		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, offer.getDescription(), formLayout);
+		descEl.setElementCssClass("o_sel_accesscontrol_description");
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);

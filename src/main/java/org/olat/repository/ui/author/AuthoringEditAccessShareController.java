@@ -39,7 +39,6 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -47,7 +46,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -60,11 +58,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
-import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.oaipmh.OAIPmhModule;
-import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyModule;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -100,9 +94,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 	private SingleSelection accessEl;
 	private FormLayoutContainer repoLinkCont;
-	private FormLayoutContainer catalogLinksCont;
 	private FormLayoutContainer oaiCont;
-	private FormLink showMicrositeLinks;
 	private SingleSelection leaveEl;
 	private SingleSelection statusEl;
 	private MultiSelectionFilterElement organisationsEl;
@@ -130,8 +122,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	@Autowired
 	private CatalogV2Module catalogModule;
 	@Autowired
-	private TaxonomyModule taxonomyModule;
-	@Autowired
 	private LicenseService licenseService;
 	@Autowired
 	private OAIPmhModule oaiPmhModule;
@@ -140,7 +130,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = readOnly;
@@ -149,12 +138,10 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		initForm(ureq);
 		updateRuntimeTypeUI();
-		updateCatalogLinksUI();
 	}
 
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
-		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.readOnly = false;
@@ -162,7 +149,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		status = true;
 
 		initForm(ureq);
-		updateCatalogLinksUI();
 	}
 
 	public boolean isPublicVisible() {
@@ -268,14 +254,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		generalCont.add("repoLink", repoLinkCont);
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 		repoLinkCont.contextPut("repoLink", new ExtLink(entry.getKey().toString(), url, null));
-
-		catalogLinksCont = FormLayoutContainer.createCustomFormLayout("catalogLinks", getTranslator(), velocity_root + "/catalog_links.html");
-		catalogLinksCont.setLabel("cif.catalog.links", null);
-		catalogLinksCont.setRootForm(mainForm);
-		generalCont.add("catalogLinks", catalogLinksCont);
-
-		showMicrositeLinks = uifactory.addFormLink("show.additional", "nodeConfigForm.show.additional", null, catalogLinksCont, Link.LINK);
-		showMicrositeLinks.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
 
 		initLeaveOption(generalCont);
 
@@ -481,7 +459,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == accessEl) {
-			updateCatalogLinksUI();
 			markDirty();
 			if (embbeded) {
 				fireEvent(ureq, new PublicVisibleEvent(accessEl.isKeySelected(KEY_PUBLIC)));
@@ -502,31 +479,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 				&& enableMetadataIndexingEl.isSelected(0)
 				&& (entry.getEntryStatus() != RepositoryEntryStatusEnum.published ||
 				!isEntryLicenseAllowedForIndexing()));
-	}
-
-	private void updateCatalogLinksUI() {
-		catalogLinksCont.setVisible(catalogModule.isEnabled() && accessEl.isVisible() && accessEl.isKeySelected(KEY_PUBLIC));
-
-		if (catalogLinksCont.isVisible()) {
-			String url = CatalogBCFactory.get(false).getInfosUrl(entry);
-			catalogLinksCont.contextPut("searchLink", new ExtLink(entry.getKey().toString(), url, null));
-			
-			showMicrositeLinks.setVisible(false);
-			if (taxonomyModule.isEnabled()) {
-				HashSet<TaxonomyLevel> taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(entry));
-				if (!taxonomyLevels.isEmpty()) {
-					showMicrositeLinks.setVisible(true);
-					List<ExtLink> taxonomyLinks = new ArrayList<>(taxonomyLevels.size());
-					for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
-						url = CatalogBCFactory.get(false).getTaxonomyLevelUrl(taxonomyLevel);
-						String name = translate("cif.catalog.links.microsite", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
-						ExtLink extLink = new ExtLink(taxonomyLevel.getKey().toString(), url, name);
-						taxonomyLinks.add(extLink);
-						catalogLinksCont.contextPut("taxonomyLinks", taxonomyLinks);
-					}
-				}
-			}
-		}
 	}
 
 	@Override

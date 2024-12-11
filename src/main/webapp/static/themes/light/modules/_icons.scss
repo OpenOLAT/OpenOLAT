@@ -78,6 +78,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_caret { @include o-add-icon('caret-down');}
 .o_icon_caret_right { @include o-add-icon('caret-right');}
 .o_icon_catalog { @include o-add-icon('sitemap');}
+.o_icon_catalog_extern { @include o-add-icon('globe');}
+.o_icon_catalog_intern { @include o-add-icon('book-open');}
 .o_icon_catalog_sub { @include o-add-icon('folder');}
 .o_icon_certificate { @include o-add-icon('certificate');}
 .o_icon_chat { @include o-add-icon('comment', false);}
@@ -328,7 +330,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_notification { @include o-add-icon('rss');}
 .o_icon_number_of { @include o-add-icon('hashtag');}
 .o_icon_offer_active { @include o-add-icon('eye'); color: $o-ac-offer-active-color;}
+.o_icon_offer_ended { @include o-add-icon('ban'); }
 .o_icon_offer_inactive { @include o-add-icon('eye-slash'); color: $o-ac-offer-inactive-color;}
+.o_icon_offer_ongoing { @include o-add-icon('hourglass'); }
+.o_icon_offer_planned { @include o-add-icon('clock'); }
 .o_icon_ok { @include o-add-icon('check'); color: $brand-success}
 .o_icon_onedrive { @include o-add-icon('cloud'); }
 .o_icon_open_tree { @include o-add-icon('caret-right');}
@@ -917,6 +922,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_guests_icon { @include o-add-icon('user-circle', false);}
 .o_ac_openaccess_icon { @include o-add-icon('user-secret');}
 .o_ac_paypal_icon { @include o-add-brand-icon('cc-paypal');}
+.o_ac_bookable_icon { @include o-add-icon('cart-shopping'); }
+.o_ac_fully_booked_icon { @include o-add-icon('cart-shopping'); }
 .o_ac_status_canceled_icon { @include o-add-icon('minus'); color: $brand-warning;}
 .o_ac_status_error_icon { @include o-add-icon('times'); color: $brand-danger;}
 .o_ac_status_new_icon { @include o-add-icon('asterisk'); color: $brand-primary;}

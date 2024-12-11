@@ -25,6 +25,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -53,11 +54,16 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.Roles;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.modules.catalog.ui.CatalogBCFactory;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.author.AuthoringEditAccessShareController.ExtLink;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -79,9 +85,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AccessConfigurationController extends FormBasicController {
 	
-	private static final String ICON_ACTIVE = "<i class=\"o_icon o_icon-fw o_icon_offer_active\"> </i> ";
-	private static final String ICON_INACTIVE = "<i class=\"o_icon o_icon-fw o_icon_offer_inactive\"> </i> ";
+	private static final String ICON_CATALOG_EXTERN = "<i class=\"o_icon o_icon-fw o_icon_catalog_extern\"> </i> ";
+	private static final String ICON_CATALOG_INTERN = "<i class=\"o_icon o_icon-fw o_icon_catalog_intern\"> </i> ";
 	
+	private FormLink addButton;
 	private DropdownItem addMethodDropdown;
 	private FormLink addOpenAccessLink;
 	private FormLink addOpenAccessButton;
@@ -90,6 +97,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private final List<FormLink> addOfferLinks = new ArrayList<>();
 
 	private CloseableModalController cmc;
+	private FormLayoutContainer overviewContainer;
 	private FormLayoutContainer offersContainer;
 	private OpenAccessOfferController openAccessOfferCtrl;
 	private GuestOfferController guestOfferCtrl;
@@ -97,13 +105,13 @@ public class AccessConfigurationController extends FormBasicController {
 	private AbstractConfigurationMethodController editMethodCtrl;
 	private MethodSelectionController methodSelectionCtrl;
 
-	private final List<Offer> deletedOfferList = new ArrayList<>();
-	private final List<AccessInfo> accessInfos = new ArrayList<>();
+	private final List<Offer> deletedOfferList = new ArrayList<>(1);
+	private final List<AccessInfo> accessInfos = new ArrayList<>(3);
 	
 	private int counter = 0;
 	private final String displayName;
 	private final OLATResource resource;
-	private RepositoryEntryStatusEnum reStatus;
+	private String notAvailableStatus;
 	private boolean allowPaymentMethod;
 	private final boolean openAccessSupported;
 	private final boolean guestSupported;
@@ -128,6 +136,7 @@ public class AccessConfigurationController extends FormBasicController {
 			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
 			CatalogInfo catalogInfo, boolean readOnly, boolean managedBookings, String helpUrl) {
 		super(ureq, wControl, "access_configuration");
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.resource = resource;
 		this.displayName = displayName;
@@ -151,6 +160,7 @@ public class AccessConfigurationController extends FormBasicController {
 			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
 			CatalogInfo catalogInfo, boolean readOnly, boolean managedBookings, String helpUrl) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "access_configuration", form);
+		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.resource = resource;
 		this.displayName = displayName;
@@ -214,8 +224,9 @@ public class AccessConfigurationController extends FormBasicController {
 		return deletedOfferList;
 	}
 
-	public void setReStatus(RepositoryEntryStatusEnum reStatus) {
-		this.reStatus = reStatus;
+	public void setNotAvailableStatus(String notAvailableStatus) {
+		this.notAvailableStatus = notAvailableStatus;
+		updateCatalogOverviewUI();
 	}
 
 	public void setAllowPaymentMethod(boolean allowPayment) {
@@ -235,6 +246,8 @@ public class AccessConfigurationController extends FormBasicController {
 		setFormTitle("offers.title");
 		setFormContextHelp(helpUrl);
 		
+		forgeCatalogInfos(formLayout);
+		
 		String confPage = velocity_root + "/configuration_list.html";
 		offersContainer = FormLayoutContainer.createCustomFormLayout("offers", getTranslator(), confPage);
 		offersContainer.setRootForm(mainForm);
@@ -251,9 +264,12 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		if(!readOnly) {
 			if (!managedBookings) {
-				addMethodDropdown = uifactory.addDropdownMenu("create.offer", "create.offer", null, formLayout, getTranslator());
+				addButton = uifactory.addFormLink("create.offer", formLayout, Link.BUTTON);
+				
+				addMethodDropdown = uifactory.addDropdownMenu("create.more", null, null, formLayout, getTranslator());
 				addMethodDropdown.setElementCssClass("o_sel_accesscontrol_create");
 				addMethodDropdown.setOrientation(DropdownOrientation.right);
+				addMethodDropdown.setAriaLabel("action.nore");
 				addMethodDropdown.setExpandContentHeight(true);
 				
 				for(AccessMethod method:methods) {
@@ -306,6 +322,8 @@ public class AccessConfigurationController extends FormBasicController {
 			
 			updateAddUI();
 		}
+		
+		updateCatalogOverviewUI();
 	}
 	
 	private void updateAddUI() {
@@ -407,6 +425,8 @@ public class AccessConfigurationController extends FormBasicController {
 			editOpenAccessOffer(ureq, null);
 		} else if (source == addGuestLink || source == addGuestButton) {
 			editGuestOffer(ureq, null);
+		} else if (source == addButton) {
+			doCreateOffer(ureq);
 		} else if (source instanceof FormLink) {
 			FormLink button = (FormLink)source;
 			String cmd = button.getCmd();
@@ -459,7 +479,6 @@ public class AccessConfigurationController extends FormBasicController {
 			if(accessInfo.getLink() != null && accessInfo.getLink().equals(link)) {
 				accessInfo.setLink(link);
 				accessInfo.setOfferOrganisations(offerOrganisations);
-				forgeCatalogInfos(accessInfo);
 				updated = true;
 			}
 		}
@@ -489,7 +508,6 @@ public class AccessConfigurationController extends FormBasicController {
 		infos.setConfigCont(cont);
 		
 		infos.setOfferOrganisations(offerOrganisations);
-		forgeCatalogInfos(infos);
 		cont.contextPut("offer", infos);
 		
 		if (!readOnly && !managedBookings) {
@@ -505,7 +523,6 @@ public class AccessConfigurationController extends FormBasicController {
 			if (accessInfo.getOffer().equals(offer)) {
 				accessInfo.setOffer(offer);
 				accessInfo.setOfferOrganisations(offerOrganisations);
-				forgeCatalogInfos(accessInfo);
 				updated = true;
 			}
 		}
@@ -526,7 +543,6 @@ public class AccessConfigurationController extends FormBasicController {
 			
 			infos.setOffer(offer);
 			infos.setOfferOrganisations(offerOrganisations);
-			forgeCatalogInfos(infos);
 			cont.contextPut("offer", infos);
 			if (!readOnly) {
 				forgeLinks(infos);
@@ -558,7 +574,6 @@ public class AccessConfigurationController extends FormBasicController {
 		infos.setConfigCont(cont);
 		
 		infos.setOffer(offer);
-		forgeCatalogInfos(infos);
 		
 		if (!readOnly) {
 			forgeLinks(infos);
@@ -568,32 +583,98 @@ public class AccessConfigurationController extends FormBasicController {
 		updateAddUI();
 	}
 
-	private void forgeCatalogInfos(AccessInfo infos) {
-		if (catalogInfo.isShowDetails()) {
-			infos.setCatalogDetailsLabel(translate("access.info.catalog.entries"));
-			if (catalogInfo.getCatalogVisibility().test(infos.getOffer())) {
-				infos.setCatalogIcon(ICON_ACTIVE);
-				infos.setCatalogDetails(catalogInfo.getDetails());
+	private void forgeCatalogInfos(FormItemContainer formLayout) {
+		if (catalogInfo.isCatalogSupported()) {
+			String overviewPage = velocity_root + "/access_overview.html";
+			overviewContainer = FormLayoutContainer.createCustomFormLayout("overview", getTranslator(), overviewPage);
+			overviewContainer.setRootForm(mainForm);
+			formLayout.add(overviewContainer);
+			
+			if (catalogInfo.isShowDetails()) {
+				overviewContainer.contextPut("detailsLabel", catalogInfo.getDetailsLabel());
+				overviewContainer.contextPut("details", catalogInfo.getDetails());
+				overviewContainer.contextPut("showQRCode", catalogInfo.isShowQRCode());
 				
-				if (catalogInfo.isWebCatalogSupported()) {
-					String catalogIn = ICON_ACTIVE + translate("access.info.catalog.in.catalog");
-					if (infos.getOffer().isCatalogWebPublish()) {
-						catalogIn += " " + ICON_ACTIVE + translate("access.info.catalog.in.web.catalog");
-					}
-					infos.setCatalogIn(catalogIn);
+				if (StringHelper.containsNonWhitespace(catalogInfo.getEditBusinessPath())) {
+					FormLink catEditLink = uifactory.addFormLink("catEdit", "catalog", null, "", overviewContainer, Link.NONTRANSLATED + Link.LINK);
+					catEditLink.setI18nKey(catalogInfo.getEditLabel());
+					catEditLink.setIconLeftCSS("o_icon o_icon_link_extern");
 				}
-			} else {
-				infos.setCatalogIcon(ICON_INACTIVE);
-				infos.setCatalogDetails(translate("access.info.catalog.oo.not.active"));
 			}
-			if (StringHelper.containsNonWhitespace(catalogInfo.getEditBusinessPath())) {
-				FormLink catEditLink = uifactory.addFormLink("cat_" + (++counter), "catalog", null, "", infos.getConfigCont(), Link.NONTRANSLATED + Link.LINK);
-				catEditLink.setI18nKey(catalogInfo.getEditLabel());
-				catEditLink.setIconLeftCSS("o_icon o_icon_link_extern");
-				offersContainer.add(catEditLink.getName(), catEditLink);
-				infos.setCatalogEditLink(catEditLink);
+			
+			if (StringHelper.containsNonWhitespace(catalogInfo.getCatalogBusinessPath())) {
+				long id = CodeHelper.getRAMUniqueID();
+				overviewContainer.contextPut("id", String.valueOf(id));
+				overviewContainer.contextPut("catalogUrl", catalogInfo.getCatalogBusinessPath());
+				
+				if (catalogInfo.getMicrosites() != null && !catalogInfo.getMicrosites().isEmpty()) {
+					FormLink showMicrositeLinks = uifactory.addFormLink("show.additional" + id, "nodeConfigForm.show.additional", null, overviewContainer, Link.LINK);
+					showMicrositeLinks.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
+					
+					HashSet<TaxonomyLevel> taxonomyLevels = new HashSet<>(catalogInfo.getMicrosites());
+					List<ExtLink> taxonomyLinks = new ArrayList<>(taxonomyLevels.size());
+					for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
+						String url = CatalogBCFactory.get(false).getTaxonomyLevelUrl(taxonomyLevel);
+						String name = translate("cif.catalog.links.microsite", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
+						ExtLink extLink = new ExtLink(taxonomyLevel.getKey().toString() + id, url, name);
+						taxonomyLinks.add(extLink);
+						overviewContainer.contextPut("taxonomyLinks", taxonomyLinks);
+					}
+				}
 			}
 		}
+	}
+	
+	private void updateCatalogOverviewUI() {
+		if (overviewContainer == null) {
+			return;
+		}
+		
+		String internalCatalog = getCatalogStatus(accessInfos);
+		overviewContainer.contextPut("internalCatalog", internalCatalog);
+		
+		if (catalogInfo.isWebCatalogSupported()) {
+			List<AccessInfo> externalCatalogInfos = accessInfos.stream().filter(info -> info.getOffer().isCatalogWebPublish()).toList();
+			String externalCatalog = getCatalogStatus(externalCatalogInfos);
+			overviewContainer.contextPut("externalCatalog", externalCatalog);
+		}
+	}
+	
+	private String getCatalogStatus(List<AccessInfo> catalogAccessInfo) {
+		String catalogStatus = null;
+		if (catalogInfo.isCatalogSupported()) {
+			if (!catalogInfo.isNotAvailableEntry()) {
+				boolean atLeastOneActive = catalogAccessInfo.stream().anyMatch(AccessInfo::isActive);
+				if (atLeastOneActive) {
+					if (catalogInfo.isFullyBooked()) {
+						catalogStatus = "<span class=\"o_labeled_light o_ac_fully_booked\"><i class=\"o_icon o_ac_fully_booked_icon\"> </i> "
+										+ translate("offers.overview.fully.booked")
+										+ "</span>";
+					} else {
+						if (StringHelper.containsNonWhitespace(notAvailableStatus)) {
+							boolean onlyWithOpenPeriod = !catalogAccessInfo.stream().anyMatch(AccessInfo::isWithPeriod);
+							if (onlyWithOpenPeriod) {
+								catalogStatus = "<span class=\"o_labeled_light o_ac_not_available\"><i class=\"o_icon o_ac_fully_booked_icon\"> </i> "
+												+ translate("offers.overview.not.available")
+												+ "</span> "
+												+ translate("offers.overview.not.available.status", notAvailableStatus);
+							}
+						}
+					}
+					if (!StringHelper.containsNonWhitespace(catalogStatus)) {
+						catalogStatus = "<span class=\"o_labeled_light o_ac_bookable\"><i class=\"o_icon o_ac_bookable_icon\"> </i> "
+								+ translate("offers.overview.bookable")
+								+ "</span>";
+					}
+				}
+			}
+			if (!StringHelper.containsNonWhitespace(catalogStatus)) {
+				catalogStatus = "<span class=\"o_labeled_light o_ac_not_available\"><i class=\"o_icon o_ac_not_available_icon\"> </i> "
+								+ translate("offers.overview.not.available")
+								+ "</span>";
+			}
+		}
+		return catalogStatus;
 	}
 
 	protected void forgeLinks(AccessInfo infos) {
@@ -709,9 +790,9 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 	}
 	
-	public void doAddFirstOffer(UserRequest ureq) {
+	public void doCreateOffer(UserRequest ureq) {
 		guardModalController(methodSelectionCtrl);
-		if (accessInfos.isEmpty() && !readOnly && !managedBookings) {
+		if (!readOnly && !managedBookings) {
 			methodSelectionCtrl = new MethodSelectionController(ureq, getWindowControl(), openAccessSupported, guestSupported, methods);
 			listenTo(methodSelectionCtrl);
 			String title = translate("offer.add");
@@ -854,12 +935,10 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		private final IconPanelItem iconPanel;
 		private Offer offer;
+		private boolean active;
+		private boolean withPeriod;
+		private String dates;
 		private Collection<Organisation> offerOrganisations;
-		private String catalogIcon;
-		private String catalogDetailsLabel;
-		private String catalogDetails;
-		private FormLink catalogEditLink;
-		private String catalogIn;
 		private OfferAccess link;
 		private AccessMethodHandler handler;
 		private FormLayoutContainer configCont;
@@ -873,67 +952,70 @@ public class AccessConfigurationController extends FormBasicController {
 			this.offer = link != null? link.getOffer(): null;
 			this.link = link;
 			this.handler = handler;
+			initDates();
 		}
 
 		public IconPanelItem getIconPanel() {
 			return iconPanel;
 		}
 
+		public boolean isActive() {
+			return active;
+		}
+
+		public boolean isWithPeriod() {
+			return withPeriod;
+		}
+		
+		public String getDates() {
+			return dates;
+		}
+
+		private void initDates() {
+			Date from = offer.getValidFrom();
+			Date to = offer.getValidTo();
+			if (to != null && to.before(new Date())) {
+				dates = "<span class=\"o_labeled_light o_ac_offer_ended\"><i class=\"o_icon o_icon_offer_ended\"> </i> " + translate("access.period.ended") + "</span> "
+					+ "<del>" + formatPeriod(from, to) + "</del>";
+				active = false;
+				withPeriod = true;
+			} else if (from != null && from.after(new Date())) {
+				dates = "<span class=\"o_labeled_light o_ac_offer_planned\"><i class=\"o_icon o_icon_offer_planned\"> </i> " + translate("access.period.planned") + "</span> "
+					+ formatPeriod(from, to)
+					+ " | <strong>" + translate("access.period.starts.in", String.valueOf(DateUtils.countDays(new Date(), from))) + "</strong>";
+				active = false;
+				withPeriod = true;
+			} else if (to != null && to.after(new Date())) {
+				dates = "<span class=\"o_labeled_light o_ac_offer_ongoing\"><i class=\"o_icon o_icon_offer_ongoing\"> </i> " + translate("access.period.ongoing") + "</span> "
+					+ formatPeriod(from, to)
+					+ " | <strong>" + translate("access.period.ends.in", String.valueOf(DateUtils.countDays(new Date(), to))) + "</strong>";
+				active = true;
+				withPeriod = true;
+			} else {
+				dates = "<span class=\"o_labeled_light o_ac_offer_ongoing\"><i class=\"o_icon o_icon_offer_ongoing\"> </i> " + translate("access.period.ongoing") + "</span> "
+					+ translate("access.period.none");
+				active = true;
+				withPeriod = false;
+			}
+		}
+		
+		private String formatPeriod(Date from, Date to) {
+			if (from != null && to != null) {
+				return translate("access.period.range", formatter.formatDate(from), formatter.formatDate(to));
+			} else if (from != null) {
+				return translate("access.period.range.from", formatter.formatDate(from));
+			} else if (to != null) {
+				return translate("access.period.range.to", formatter.formatDate(to));
+			}
+			return "";
+		}
+		
 		public boolean isPaymentMethod() {
 			return handler != null? handler.isPaymentMethod(): false;
 		}
 		
 		public boolean isOverlapAllowed(AccessInfo info) {
 			return handler != null? handler.isOverlapAllowed(info.handler): false;
-		}
-
-		public String getDates() {
-			if(offer != null) {
-				if (reStatus != null) {
-					if (offer.isGuestAccess()) {
-						return RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_GUEST)
-								? ICON_ACTIVE + translate("access.status.active.status", translate("cif.status." + reStatus.name()))
-								: ICON_INACTIVE + translate("access.status.inactive", translate("cif.status." + reStatus.name()));
-					} else if (offer.isOpenAccess()) {
-						return RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_OPEN)
-								? ICON_ACTIVE + translate("access.status.active.status", translate("cif.status." + reStatus.name()))
-								: ICON_INACTIVE + translate("access.status.inactive", translate("cif.status." + reStatus.name()));
-					} else {
-						Date from = offer.getValidFrom();
-						Date to = offer.getValidTo();
-						if (from == null && to == null) {
-							return RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_METHOD)
-									? ICON_ACTIVE + translate("access.status.active.status", translate("cif.status." + reStatus.name()))
-									: ICON_INACTIVE + translate("access.status.inactive", translate("cif.status." + reStatus.name()));
-						} else if(from != null && to != null) {
-							return RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_METHOD_PERIOD)
-									? ICON_ACTIVE + translate("access.status.active.from.to", formatter.formatDate(from), formatter.formatDate(to))
-									: ICON_INACTIVE + translate("access.status.inactive", translate("cif.status." + reStatus.name()));
-						} else if(from != null) {
-							return RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_METHOD_PERIOD)
-									? ICON_ACTIVE + translate("access.status.active.from", formatter.formatDate(from), translate("cif.status.closed"))
-									: ICON_INACTIVE + translate("access.status.inactive", translate("cif.status." + reStatus.name()));
-						} else if(to != null) {
-							return RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_METHOD_PERIOD)
-									? ICON_ACTIVE + translate("access.status.active.to", translate("cif.status." + reStatus.name()), formatter.formatDate(to))
-									: ICON_INACTIVE + translate("access.status.inactive", translate("cif.status." + reStatus.name()));
-						}
-					}
-				} else {
-					Date from = offer.getValidFrom();
-					Date to = offer.getValidTo();
-					if (from == null && to == null) {
-						return ICON_ACTIVE + translate("access.active");
-					} else if(from != null && to != null) {
-						return ICON_ACTIVE + translate("access.active.from.to", formatter.formatDate(from), formatter.formatDate(to));
-					} else if(from != null) {
-						return  ICON_ACTIVE + translate("access.active.from", formatter.formatDate(from));
-					} else if(to != null) {
-						return ICON_ACTIVE + translate("access.active.to", formatter.formatDate(to));
-					}
-				}
-			}
-			return null;
 		}
 		
 		public String getDescriptionInfo() {
@@ -963,6 +1045,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public void setOffer(Offer offer) {
 			this.offer = offer;
+			initDates();
 		}
 
 		@Override
@@ -983,44 +1066,17 @@ public class AccessConfigurationController extends FormBasicController {
 					.collect(Collectors.joining(", "));
 		}
 
-		public String getCatalogIcon() {
-			return catalogIcon;
-		}
-
-		public void setCatalogIcon(String catalogIcon) {
-			this.catalogIcon = catalogIcon;
-		}
-
-		public String getCatalogDetailsLabel() {
-			return catalogDetailsLabel;
-		}
-
-		public void setCatalogDetailsLabel(String catalogDetailsLabel) {
-			this.catalogDetailsLabel = catalogDetailsLabel;
-		}
-
-		public String getCatalogDetails() {
-			return catalogDetails;
-		}
-
-		public void setCatalogDetails(String catalogDetails) {
-			this.catalogDetails = catalogDetails;
-		}
-
-		public FormLink getCatalogEditLink() {
-			return catalogEditLink;
-		}
-
-		public void setCatalogEditLink(FormLink catalogEditLink) {
-			this.catalogEditLink = catalogEditLink;
-		}
-
-		public String getCatalogIn() {
-			return catalogIn;
-		}
-
-		public void setCatalogIn(String catalogIn) {
-			this.catalogIn = catalogIn;
+		public String getPublishIn() {
+			String publishIn = null;
+			if (offer != null) {
+				if (offer.isCatalogPublish()) {
+					publishIn = ICON_CATALOG_INTERN + translate("offer.publish.in.intern");
+					if (offer.isCatalogWebPublish()) {
+						publishIn += ", " + ICON_CATALOG_EXTERN + translate("offer.publish.in.extern");
+					}
+				}
+			}
+			return publishIn;
 		}
 
 		public FormLayoutContainer getConfigCont() {

@@ -1241,19 +1241,6 @@ div.o_reminder_custom_email {
 		display: grid;
 		grid-template-columns: 1fr;
 		
-		.o_ac_active_wrapper {
-			display: flex;
-			.o_ac_active_icon {
-				padding-right: 3px;
-			}
-			.o_ac_active_text {
-				display: flex;
-				a {
-					margin-left: 10px;
-					flex-shrink: 0;
-				}
-			}
-		}
 		>.o_cmds {
 			padding-right: 15px;
 		}

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
@@ -31,15 +30,18 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.catalog.ui.CatalogBCFactory;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
-import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 
 /**
@@ -64,38 +66,38 @@ public class RepositoryCatalogInfoFactory {
 		return sb.toString();
 	}
 	
-	public static CatalogInfo createCatalogInfo(RepositoryEntry entry, Locale locale, boolean showBusinessPath) {
+	public static CatalogInfo createCatalogInfo(RepositoryEntry entry, Locale locale, boolean showBusinessPath, boolean showRQCode) {
 		CatalogV2Module catalogV2Module = CoreSpringFactory.getImpl(CatalogV2Module.class);
 		if (catalogV2Module.isEnabled()) {
 			Translator translator = Util.createPackageTranslator(TaxonomyUIFactory.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
 			translator = Util.createPackageTranslator(RepositoryService.class, locale, translator);
 			String details;
-			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(translator,
-					CoreSpringFactory.getImpl(RepositoryService.class).getTaxonomy(entry));
+			List<TaxonomyLevel> taxonomyLevels = CoreSpringFactory.getImpl(RepositoryService.class).getTaxonomy(entry);
 			if (taxonomyLevels.isEmpty()) {
-				details = translator.translate("access.no.taxonomy.level");
+				details = translator.translate("access.taxonomy.level.not.yet");
 			} else {
-				details = wrapTaxonomyLevels(taxonomyLevels);
+				List<TaxonomyLevelNamePath> taxonomyLevelPaths = TaxonomyUIFactory.getNamePaths(translator, taxonomyLevels);
+				details = wrapTaxonomyLevels(taxonomyLevelPaths);
 			}
 			String editBusinessPath = null;
 			if (showBusinessPath) {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
 			}
-			Predicate<Offer> catalogVisibility = offer -> offer.isGuestAccess() || offer.isOpenAccess() || offer.isCatalogPublish();
 			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), true,
-					translator.translate("cif.taxonomy.levels.catalog"),
-					translator.translate("cif.taxonomy.levels.help.catalog"), details, catalogVisibility,
-					editBusinessPath, translator.translate("access.open.metadata"));
+					translator.translate("access.taxonomy.level"), details, false,
+					getStatusNotAvailable(translator, entry.getEntryStatus()), false, editBusinessPath,
+					translator.translate("access.open.metadata"), CatalogBCFactory.get(false).getInfosUrl(entry),
+					taxonomyLevels, showRQCode);
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
 			String details = null;
-			Predicate<Offer> catalogVisibility = null;
+			boolean notAvailableEntry;
 			List<CatalogEntry> catalogEntries = CoreSpringFactory.getImpl(CatalogManager.class).getCatalogCategoriesFor(entry);
 			if (catalogEntries.isEmpty()) {
 				details = translator.translate("access.no.catalog.entry");
-				catalogVisibility = offer -> false;
+				notAvailableEntry = true;
 			} else {
 				List<String> catalogEntryPaths = new ArrayList<>(catalogEntries.size());
 				for (CatalogEntry catalogEntry : catalogEntries) {
@@ -109,15 +111,15 @@ public class RepositoryCatalogInfoFactory {
 				details = catalogEntryPaths.stream()
 						.sorted()
 						.collect(Collectors.joining(", "));
-				catalogVisibility = offer -> true;
+				notAvailableEntry = false;
 			}
 			String editBusinessPath = null;
 			if (showBusinessPath) {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			}
-			return new CatalogInfo(true, false, true, translator.translate("access.info.catalog.entries"),
-					translator.translate("cif.taxonomy.levels.help.catalog"), details, catalogVisibility,
-					editBusinessPath, translator.translate("access.open.catalog"));
+			return new CatalogInfo(true, false, true, translator.translate("access.info.catalog.entries"), details,
+					notAvailableEntry, null, false, editBusinessPath, translator.translate("access.open.catalog"), null,
+					null, showRQCode);
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}
@@ -131,5 +133,16 @@ public class RepositoryCatalogInfoFactory {
 			addParentNames(names, catalogEntry.getParent());
 		}
 	}
+	
+	public static final String getStatusNotAvailable(Translator translator, RepositoryEntryStatusEnum reStatus) {
+		CatalogV2Module catalogV2Module = CoreSpringFactory.getImpl(CatalogV2Module.class);
+		if (catalogV2Module.isEnabled()) {
+			if (!RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_METHOD)) {
+				return translator.translate(reStatus.i18nKey());
+			}
+		}
+		return null;
+	}
+	
 
 }

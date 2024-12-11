@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -43,7 +42,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
@@ -102,13 +100,30 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String desc = null;
-		if(link.getOffer() != null) {
-			desc = link.getOffer().getDescription();
+		// Catalog
+		SelectionValues catalogSV = new SelectionValues();
+		if (catalogModule.isEnabled()) {
+			catalogSV.add(SelectionValues.entry(CATALOG_OO, translate("offer.publish.in.intern")));
+			if (catalogModule.isWebPublishEnabled()) {
+				catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.publish.in.extern")));
+			}
 		}
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, formLayout);
-		descEl.setElementCssClass("o_sel_accesscontrol_description");
+		catalogEl = uifactory.addCheckboxesVertical("offer.publish.in", formLayout, catalogSV.keys(), catalogSV.values(), 1);
+		if (catalogEl.getKeys().contains(CATALOG_OO)) {
+			catalogEl.select(CATALOG_OO, link.getOffer() != null && link.getOffer().isCatalogPublish());
+		}
+		if (catalogEl.getKeys().contains(CATALOG_WEB)) {
+			catalogEl.select(CATALOG_WEB, link.getOffer() != null && link.getOffer().isCatalogWebPublish());
+		}
+		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
+		catalogEl.addActionListener(FormEvent.ONCHANGE);
 		
+		// Organisations
+		if (organisationModule.isEnabled() && offerOrganisationsSupported) {
+			initFormOrganisations(formLayout);
+		}
+		
+		// Period
 		SelectionValues periodSV = new SelectionValues();
 		periodSV.add(SelectionValues.entry(PERIOD_STATUS, translate("offer.period.status")));
 		periodSV.add(SelectionValues.entry(PERIOD_DATE, translate("offer.period.date")));
@@ -124,50 +139,37 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		datesEl.setSecondDate(link.getValidTo());
 		datesEl.setSeparator("offer.period.date.to");
 		
-		if (organisationModule.isEnabled() && offerOrganisationsSupported) {
-			initFormOrganisations(formLayout);
-		}
+		uifactory.addSpacerElement("confirmations", formLayout, false);
 		
-		SelectionValues catalogSV = new SelectionValues();
-		if (catalogModule.isEnabled()) {
-			catalogSV.add(SelectionValues.entry(CATALOG_OO, translate("offer.catalog.openolat")));
-			if (catalogModule.isWebPublishEnabled()) {
-				catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
-			}
-		}
-		catalogEl = uifactory.addCheckboxesVertical("offer.catalog", formLayout, catalogSV.keys(), catalogSV.values(), 1);
-		if (catalogEl.getKeys().contains(CATALOG_OO)) {
-			catalogEl.select(CATALOG_OO, link.getOffer() != null && link.getOffer().isCatalogPublish());
-		}
-		if (catalogEl.getKeys().contains(CATALOG_WEB)) {
-			catalogEl.select(CATALOG_WEB, link.getOffer() != null && link.getOffer().isCatalogWebPublish());
-		}
-		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
-		catalogEl.addActionListener(FormEvent.ONCHANGE);
-		
-		if (catalogEl.isVisible() && catalogInfo.isShowDetails()) {
-			StaticTextElement catalogEl = uifactory.addStaticTextElement("access.info.catalog.entries", null, catalogInfo.getDetails(), formLayout);
-			catalogEl.setLabel("noTransOnlyParam", new String[] {catalogInfo.getDetailsLabel()});
-			catalogEl.setHelpText(catalogInfo.getDetailsHelpText());
-			catalogEl.setDomWrapperElement(DomWrapperElement.div);
-		}
-		
-		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", formLayout, onKeys,
-				new String[] { translate("confirmation.email.selfregistered") });
-		confirmationEmailEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationEmail());
-		
+		// Confirmations
 		if (isConfirmationByManagerSupported()) {
 			confirmationByManagerEl = uifactory.addCheckboxesHorizontal("confirmation.by.manager", formLayout, onKeys,
 					new String[] { translate("confirmation.by.manager.required") });
 			confirmationByManagerEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationByManagerRequired());
 		}
 		
+		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", formLayout, onKeys,
+				new String[] { translate("confirmation.email.selfregistered") });
+		confirmationEmailEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationEmail());
+		
+		uifactory.addSpacerElement("others", formLayout, false);
+		
+		// Custom
 		initCustomFormElements(formLayout);
 		
+		// Description
+		String desc = null;
+		if(link.getOffer() != null) {
+			desc = link.getOffer().getDescription();
+		}
+		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, formLayout);
+		descEl.setElementCssClass("o_sel_accesscontrol_description");
+		
+		// Buttons
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
 		formLayout.add(buttonGroupLayout);
-
+		
 		if(edit) {
 			uifactory.addFormSubmitButton("save", buttonGroupLayout);
 		} else {
@@ -190,7 +192,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		}
 		
 		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.organisations", formLayout, getWindowControl(), orgSV);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.offered.to", formLayout, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
 		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}

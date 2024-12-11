@@ -292,6 +292,40 @@
 	}
 }
 
+.o_ac_offers_details_text {
+	display: flex;
+	a {
+		margin-left: 10px;
+		flex-shrink: 0;
+	}
+}
+.o_labeled_light {
+	&.o_ac_offer_planned {
+		border-color: 		$o-ac-planned-color;
+		color: 				$o-ac-planned-color;
+	}
+	&.o_ac_offer_ongoing {
+		border-color: 		$o-ac-ongoing-color;
+		color: 				$o-ac-ongoing-color;
+	}
+	&.o_ac_offer_ended {
+		border-color: 		$o-ac-ended-color;
+		color: 				$o-ac-ended-color;
+	}
+	&.o_ac_bookable {
+		border-color: 		$o-ac-bookable-color;
+		color: 				$o-ac-bookable-color;
+	}
+	&.o_ac_fully_booked {
+		border-color: 		$o-ac-fully-booked-color;
+		color: 				$o-ac-fully-booked-color;
+	}
+	&.o_ac_not_available {
+		border-color: 		$o-ac-not-available-color;
+		color: 				$o-ac-not-available-color;
+	}
+}
+
 
 tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,
 tr.o_entry_unpublished, tr.o_entry_unpublished td, tr.o_entry_unpublished td span {

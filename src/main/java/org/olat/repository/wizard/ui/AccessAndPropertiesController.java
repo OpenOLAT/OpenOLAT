@@ -76,12 +76,12 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 		
 		boolean guestSupported = handlerFactory.getRepositoryHandler(entry).supportsGuest(entry);
 		Collection<Organisation> defaultOfferOrganisations = repositoryService.getOrganisations(entry);
-		CatalogInfo catalogInfo = RepositoryCatalogInfoFactory.createCatalogInfo(entry, getLocale(), false);
+		boolean showRQCode = false; // QR-Code can't be displayed in a wizard
+		CatalogInfo catalogInfo = RepositoryCatalogInfoFactory.createCatalogInfo(entry, getLocale(), false, showRQCode);
 		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 		accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), rootForm,
 				entry.getOlatResource(), entry.getDisplayname(), true, true, guestSupported, true,
 				defaultOfferOrganisations, catalogInfo, false, managedBookings, "manual_user/learningresources/Access_configuration#offer");
-		accessOffersCtrl.setReStatus(entry.getEntryStatus());
 		listenTo(accessOffersCtrl);
 		
 		initForm(ureq);
@@ -103,7 +103,7 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 					accessOffersCtrl.setDefaultOfferOrganisations(accessShareCtrl.getSelectedOrganisations());
 				}
 			} else if (event instanceof StatusEvent se) {
-				accessOffersCtrl.setReStatus(se.getStatus());
+				accessOffersCtrl.setNotAvailableStatus(RepositoryCatalogInfoFactory.getStatusNotAvailable(getTranslator(), se.getStatus()));
 			}
 		}
 		super.event(ureq, source, event);

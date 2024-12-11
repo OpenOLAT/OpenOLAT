@@ -185,7 +185,7 @@ public class AuthoringEditAccessController extends BasicController {
 		boolean publicEnabledNow = accessShareCtrl.isPublicVisible() && accessOffersCtrl == null;
 		initAccessOffers(ureq, mainVC);
 		if (publicEnabledNow) {
-			accessOffersCtrl.doAddFirstOffer(ureq);
+			accessOffersCtrl.doCreateOffer(ureq);
 		}
 		initAccessOverview(ureq, mainVC);
 		updateUI();
@@ -258,9 +258,8 @@ public class AuthoringEditAccessController extends BasicController {
 			boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 			accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(),
 					entry.getDisplayname(), true, true, guestSupported, true, defaultOfferOrganisations,
-					RepositoryCatalogInfoFactory.createCatalogInfo(entry, getLocale(), true), readOnly, managedBookings,
+					RepositoryCatalogInfoFactory.createCatalogInfo(entry, getLocale(), true, true), readOnly, managedBookings,
 					"manual_user/learningresources/Access_configuration#offer");
-			accessOffersCtrl.setReStatus(entry.getEntryStatus());
 			listenTo(accessOffersCtrl);
 			vc.put("offers", accessOffersCtrl.getInitialComponent());
 		} else {

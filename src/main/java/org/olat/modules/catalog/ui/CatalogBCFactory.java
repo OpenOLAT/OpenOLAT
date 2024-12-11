@@ -29,6 +29,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.catalog.WebCatalogDispatcher;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -48,7 +49,9 @@ public class CatalogBCFactory {
 	private static final List<ContextEntry> CES_SEARCH = List.of(CE_CATALOG, CE_SEARCH);
 	private static final List<ContextEntry> CES_WEB_SEARCH = List.of(CE_SEARCH);
 	
+	// Legacy: Key of the RepositoryEntry
 	private static final String ORES_TYPE_INFOS = "Infos";
+	private static final String ORES_TYPE_OFFER = "Offer";
 	private static final String ORES_TYPE_TAXONOMY = "Microsite";
 	public static final String ORES_TYPE_TAXONOMY_ADMIN = "TaxonomyAdmin";
 	
@@ -107,6 +110,30 @@ public class CatalogBCFactory {
 	
 	public static boolean isInfosType(OLATResourceable ores) {
 		return ORES_TYPE_INFOS.equalsIgnoreCase(ores.getResourceableTypeName());
+	}
+	
+	public String getOfferUrl(OLATResource resource) {
+		List<ContextEntry> ces = createOfferCes(resource);
+		return getUrl(ces);
+	}
+	
+	private List<ContextEntry> createOfferCes(OLATResource resource) {
+		List<ContextEntry> ces = createBaseCes();
+		ces.add(CE_SEARCH);
+		ces.add(createOfferCe(resource));
+		return ces;
+	}
+
+	private ContextEntry createOfferCe(OLATResource resource) {
+		return BusinessControlFactory.getInstance().createContextEntry(createOfferOres(resource));
+	}
+
+	public static OLATResourceable createOfferOres(OLATResource resource) {
+		return OresHelper.createOLATResourceableInstance(ORES_TYPE_OFFER, resource.getKey());
+	}
+	
+	public static boolean isOfferType(OLATResourceable ores) {
+		return ORES_TYPE_OFFER.equalsIgnoreCase(ores.getResourceableTypeName());
 	}
 	
 	public String getTaxonomyLevelUrl(TaxonomyLevelRef taxonomyLevel) {

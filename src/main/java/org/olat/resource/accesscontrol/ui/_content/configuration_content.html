@@ -1,35 +1,9 @@
-#if($offer.dates)
+#if($offer.publishIn)
 	<div>
-		<label class="control-label col-sm-3" for="o_ac_date_${offer.link.key}">$r.translate("offer.period")</label>
-	</div>
-	<div class="form-control-static col-sm-9" id="o_ac_date_${offer.link.key}">
-		$offer.dates
-	</div>
-#end
-
-#if($offer.catalogDetails)
-	<div>
-		<label class="control-label col-sm-3" for="o_ac_cat_${offer.link.key}">$offer.catalogDetailsLabel</label>
-	</div>
-	<div class="form-control-static col-sm-9 o_ac_active_wrapper" id="o_ac_cat_${offer.link.key}">
-		<div class="o_ac_active_icon">
-			$offer.catalogIcon
-		</div>
-		<div class="o_ac_active_text">
-			$offer.catalogDetails
-			#if($r.available($offer.catalogEditLink.component.componentName))
-				$r.render("$offer.catalogEditLink.component.componentName")
-			#end
-		</div>
-	</div>
-#end
-
-#if($offer.catalogIn)
-	<div>
-		<label class="control-label col-sm-3" for="o_ac_catin_${offer.link.key}">$r.translate("access.info.catalog.in")</label>
+		<label class="control-label col-sm-3" for="o_ac_catin_${offer.link.key}">$r.translate("access.info.published.in")</label>
 	</div>
 	<div class="form-control-static col-sm-9" id="o_ac_catin_${offer.link.key}">
-		$offer.catalogIn
+		$offer.publishIn
 	</div>
 #end
 
@@ -42,12 +16,12 @@
 	</div>
 #end
 
-#if($offer.descriptionInfo)
+#if($offer.dates)
 	<div>
-		<label class="control-label col-sm-3" for="o_ac_desc_${offer.link.key}">$r.translate("offer.description")</label>
+		<label class="control-label col-sm-3" for="o_ac_date_${offer.link.key}">$r.translate("offer.period")</label>
 	</div>
-	<div class="form-control-static col-sm-9" id="o_ac_desc_${offer.link.key}">
-		$r.xssScan($offer.descriptionInfo)
+	<div class="form-control-static col-sm-9" id="o_ac_date_${offer.link.key}">
+		$offer.dates
 	</div>
 #end
 
@@ -57,6 +31,15 @@
 	</div>
 	<div class="form-control-static col-sm-9" id="o_ac_price_${offer.link.key}">
 		$offer.price
+	</div>
+#end
+
+#if($offer.descriptionInfo)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_desc_${offer.link.key}">$r.translate("offer.description")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_desc_${offer.link.key}">
+		$r.xssScan($offer.descriptionInfo)
 	</div>
 #end
 

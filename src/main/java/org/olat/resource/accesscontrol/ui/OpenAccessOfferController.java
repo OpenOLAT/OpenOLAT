@@ -28,7 +28,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -88,6 +87,29 @@ public class OpenAccessOfferController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_accesscontrol_open_form");
 		
+		// Catalog
+		SelectionValues catalogSV = new SelectionValues();
+		if (catalogModule.isWebPublishEnabled()) {
+			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
+		}
+		catalogEl = uifactory.addCheckboxesVertical("offer.publish.in", formLayout, catalogSV.keys(), catalogSV.values(), 1);
+		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
+		if (catalogEl.getKeys().contains(CATALOG_WEB)) {
+			catalogEl.select(CATALOG_WEB,offer != null && offer.isCatalogWebPublish());
+		}
+		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
+		
+		// Organisations
+		if (organisationModule.isEnabled() && offerOrganisationsSupported) {
+			initFormOrganisations(formLayout);
+		}
+		
+		// Period
+		uifactory.addStaticTextElement("offer.period", translate("offer.period.status"), formLayout);
+		
+		uifactory.addSpacerElement("others", formLayout, false);
+		
+		// Description
 		String desc = null;
 		if(offer != null) {
 			desc = offer.getDescription();
@@ -95,29 +117,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, formLayout);
 		descEl.setElementCssClass("o_sel_accesscontrol_description");
 		
-		uifactory.addStaticTextElement("offer.period", translate("offer.period.status"), formLayout);
-		
-		if (organisationModule.isEnabled() && offerOrganisationsSupported) {
-			initFormOrganisations(formLayout);
-		}
-		
-		SelectionValues catalogSV = new SelectionValues();
-		if (catalogModule.isWebPublishEnabled()) {
-			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
-		}
-		catalogEl = uifactory.addCheckboxesVertical("offer.catalog", formLayout, catalogSV.keys(), catalogSV.values(), 1);
-		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
-		if (catalogEl.getKeys().contains(CATALOG_WEB)) {
-			catalogEl.select(CATALOG_WEB,offer != null && offer.isCatalogWebPublish());
-		}
-		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
-		
-		if (catalogEl.isVisible() && catalogInfo.isShowDetails()) {
-			StaticTextElement catalogEl = uifactory.addStaticTextElement("access.info.catalog.entries", null, catalogInfo.getDetails(), formLayout);
-			catalogEl.setLabel("noTransOnlyParam", new String[] {catalogInfo.getDetailsLabel()});
-			catalogEl.setHelpText(catalogInfo.getDetailsHelpText());
-		}
-		
+		// Buttons
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
 		formLayout.add(buttonGroupLayout);
@@ -142,7 +142,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		}
 		
 		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.organisations", formLayout, getWindowControl(), orgSV);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.offered.to", formLayout, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
 		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}

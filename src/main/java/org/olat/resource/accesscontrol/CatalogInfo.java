@@ -19,34 +19,44 @@
  */
 package org.olat.resource.accesscontrol;
 
-import java.util.function.Predicate;
+import java.util.List;
+
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 public class CatalogInfo {
 
-	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, null, null, null, null, null, null);
+	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, null, null, true, null, false, null, null, null, null, true);
 
 	private final boolean catalogSupported;
 	private final boolean webCatalogSupported;
 	private final boolean showDetails;
 	private final String detailsLabel;
-	private final String detailsHelpText;
 	private final String details;
-	private final Predicate<Offer> catalogVisibility;
+	private final boolean notAvailableEntry;
+	private final String notAvailableStatus;
+	private final boolean fullyBooked;
 	private final String editBusinessPath;
 	private final String editLabel;
+	private final String catalogBusinessPath;
+	private final List<TaxonomyLevel> microsites;
+	private final boolean showQRCode;
 
 	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, boolean showDetails, String detailsLabel,
-			String detailsHelpText, String details, Predicate<Offer> catalogVisibility, String editBusinessPath,
-			String editLabel) {
+			String details, boolean notAvailableEntry, String notAvailableStatus, boolean fullyBooked,
+			String editBusinessPath, String editLabel, String catalogBusinessPath, List<TaxonomyLevel> microsites, boolean showQRCode) {
 		this.catalogSupported = catalogSupported;
 		this.webCatalogSupported = webCatalogSupported;
 		this.showDetails = showDetails;
 		this.detailsLabel = detailsLabel;
-		this.detailsHelpText = detailsHelpText;
 		this.details = details;
-		this.catalogVisibility = catalogVisibility;
+		this.notAvailableEntry = notAvailableEntry;
+		this.notAvailableStatus = notAvailableStatus;
+		this.fullyBooked = fullyBooked;
 		this.editBusinessPath = editBusinessPath;
 		this.editLabel = editLabel;
+		this.catalogBusinessPath = catalogBusinessPath;
+		this.microsites = microsites;
+		this.showQRCode = showQRCode;
 	}
 
 	public boolean isCatalogSupported() {
@@ -65,16 +75,20 @@ public class CatalogInfo {
 		return detailsLabel;
 	}
 
-	public String getDetailsHelpText() {
-		return detailsHelpText;
-	}
-
 	public String getDetails() {
 		return details;
 	}
 
-	public Predicate<Offer> getCatalogVisibility() {
-		return catalogVisibility;
+	public boolean isNotAvailableEntry() {
+		return notAvailableEntry;
+	}
+
+	public String getNotAvailableStatus() {
+		return notAvailableStatus;
+	}
+
+	public boolean isFullyBooked() {
+		return fullyBooked;
 	}
 
 	public String getEditBusinessPath() {
@@ -83,6 +97,18 @@ public class CatalogInfo {
 
 	public String getEditLabel() {
 		return editLabel;
+	}
+
+	public String getCatalogBusinessPath() {
+		return catalogBusinessPath;
+	}
+
+	public List<TaxonomyLevel> getMicrosites() {
+		return microsites;
+	}
+
+	public boolean isShowQRCode() {
+		return showQRCode;
 	}
 
 }

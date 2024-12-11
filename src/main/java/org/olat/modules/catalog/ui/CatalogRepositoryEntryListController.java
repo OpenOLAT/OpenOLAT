@@ -62,8 +62,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
-import org.olat.login.LoginProcessEvent;
 import org.olat.login.LoginProcessController;
+import org.olat.login.LoginProcessEvent;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterSearchParams;
@@ -370,7 +370,25 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 		if (entries == null || entries.isEmpty()) return;
 		
 		ContextEntry entry = entries.get(0);
-		if (CatalogBCFactory.isInfosType(entry.getOLATResourceable())) {
+		if (CatalogBCFactory.isOfferType(entry.getOLATResourceable())) {
+			Long key = entry.getOLATResourceable().getResourceableId();
+			tableEl.resetSearch(ureq);
+			dataModel.clear();
+			dataModel.load(null, null, 0, -1);
+			CatalogRepositoryEntryRow row = dataModel.getObjectByKey(key);
+			if (row != null) {
+				int index = dataModel.getObjects().indexOf(row);
+				if (index >= 1 && tableEl.getPageSize() > 1) {
+					int page = index / tableEl.getPageSize();
+					tableEl.setPage(page);
+				}
+				doOpenDetails(ureq, row.getKey());
+				if (infosCtrl != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					infosCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
+			}
+		} else if (CatalogBCFactory.isInfosType(entry.getOLATResourceable())) {
 			Long key = entry.getOLATResourceable().getResourceableId();
 			tableEl.resetSearch(ureq);
 			dataModel.clear();

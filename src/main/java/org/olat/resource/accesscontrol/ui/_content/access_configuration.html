@@ -13,9 +13,16 @@
 		<div class="clearfix">$r.contextHelpWithWrapper("$off_chelp_url")</div>
 	#end
 	
+	#if($r.available("overview") && $r.visible("overview"))
+		$r.render("overview")
+	#end
+	
 	#if($r.available("create.offer") && $r.visible("create.offer"))
 		<div class="o_button_group o_button_group_right o_button_group_top">
-			$r.render("create.offer")
+			<div class="btn-group">
+				$r.render("create.offer")
+				$r.render("create.more")
+			</div>
 		</div>
 	#end
 	<div>
