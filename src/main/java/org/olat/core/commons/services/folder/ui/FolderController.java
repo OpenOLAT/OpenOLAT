@@ -2216,11 +2216,11 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void doCopySelectFolder(UserRequest ureq, FolderRow row) {
-		doCopyMoveSelectFolder(ureq, row, false, true, "copy.to", "copy");
+		doCopyMoveSelectFolder(ureq, row, false, false, "copy.to", "copy");
 	}
 	
 	private void doMoveSelectFolder(UserRequest ureq, FolderRow row) {
-		doCopyMoveSelectFolder(ureq, row, true, true, "move.to", "move");
+		doCopyMoveSelectFolder(ureq, row, true, false, "move.to", "move");
 	}
 	
 	private void doCopyMoveSelectFolder(UserRequest ureq, FolderRow row, boolean move, boolean suppressVersion,
