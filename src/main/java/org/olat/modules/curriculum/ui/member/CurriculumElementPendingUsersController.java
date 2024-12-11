@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.UserRequest;
@@ -89,6 +90,8 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	protected static final String FILTER_CONFIRMATION_DATE = "confirmationDate";
 	
 	private FormLink acceptAllButton;
+	private FormLink acceptBatchButton;
+	private FormLink declineBatchButton;
 	private FormLink addParticipantsButton;
 
 	private ToolsController toolsCtrl;
@@ -124,6 +127,9 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 			
 			addParticipantsButton = uifactory.addFormLink("add.participants", formLayout, Link.BUTTON);
 			addParticipantsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+			
+			acceptBatchButton = uifactory.addFormLink("accept", formLayout, Link.BUTTON);
+			declineBatchButton = uifactory.addFormLink("decline", formLayout, Link.BUTTON);
 		}
 	}
 
@@ -137,6 +143,18 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.asParticipant,
 				numOfRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.pending));
+	}
+
+	@Override
+	protected void initTableForm(FormItemContainer formLayout) {
+		super.initTableForm(formLayout);
+		
+		if(acceptBatchButton != null) {
+			tableEl.addBatchButton(acceptBatchButton);
+		}
+		if(declineBatchButton != null) {
+			tableEl.addBatchButton(declineBatchButton);
+		}
 	}
 
 	@Override
@@ -301,6 +319,10 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 			doAddMemberWizard(ureq, CurriculumRoles.participant);
 		} else if(acceptAllButton == source) {
 			doAcceptAll(ureq);
+		} else if(acceptBatchButton == source) {
+			doAccepBatch(ureq);
+		} else if(declineBatchButton == source) {
+			doDeclineBatch(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -314,6 +336,11 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 				reservations.addAll(rowReservations);
 			}
 		}
+		doAccept(ureq, reservations);
+	}
+	
+	private void doAccepBatch(UserRequest ureq) {
+		List<ResourceReservation> reservations = getSelectedReservations();
 		doAccept(ureq, reservations);
 	}
 	
@@ -335,8 +362,17 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		cmc.activate();
 	}
 	
+	private void doDeclineBatch(UserRequest ureq) {
+		List<ResourceReservation> reservations = getSelectedReservations();
+		doDecline(ureq, reservations);
+	}
+	
 	private void doDecline(UserRequest ureq, MemberRow member) {
 		List<ResourceReservation> reservations = member.getReservations();
+		doDecline(ureq, reservations);
+	}
+
+	private void doDecline(UserRequest ureq, List<ResourceReservation> reservations) {
 		List<CurriculumElement> curriculumElements = getAllCurriculumElements();
 		acceptCtrl = new AcceptDeclineMembershipsController(ureq, getWindowControl(),
 				curriculum, curriculumElement, curriculumElements,
@@ -347,6 +383,18 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), acceptCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private List<ResourceReservation> getSelectedReservations() {
+		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
+		List<ResourceReservation> selectedReservations = new ArrayList<>(selectedIndexes.size() + 5);
+		for(Integer index:selectedIndexes) {
+			MemberRow row = tableModel.getObject(index.intValue());
+			if(row.getReservations() != null) {
+				selectedReservations.addAll(row.getReservations());
+			}
+		}
+		return selectedReservations;
 	}
 
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {

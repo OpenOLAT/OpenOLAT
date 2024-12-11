@@ -128,6 +128,10 @@ public class MemberRow extends UserPropertiesRow {
 			reservations = new ArrayList<>();
 		}
 		reservations.add(reservation);
+		
+		if(registration == null || registration.after(reservation.getCreationDate())) {
+			registration = reservation.getCreationDate();
+		}
 	}
 
 	public FormLink getToolsLink() {
