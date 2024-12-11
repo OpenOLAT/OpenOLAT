@@ -51,7 +51,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -61,6 +64,7 @@ import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
+import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.component.GroupMembershipHistoryComparator;
 import org.olat.modules.curriculum.ui.component.GroupMembershipStatusRenderer;
@@ -379,9 +383,11 @@ public class EditMemberController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(backButton == source) {
 			fireEvent(ureq, Event.BACK_EVENT);
-		} else if(applyCustomNotificationButton == source
-				|| applyWithoutNotificationButton == source) {
-			doApply(ureq);
+		} else if(applyWithoutNotificationButton == source) {
+			doApply(ureq, new MailPackage(false));
+		} else if(applyCustomNotificationButton == source) {
+			//TODO curriculum custom notification
+			doApplyWithNotifications(ureq);
 		} else if(resetButton == source) {
 			doReset();
 		} else if(source instanceof FormLink link) {
@@ -400,7 +406,7 @@ public class EditMemberController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doApply(ureq);
+		doApplyWithNotifications(ureq);
 	}
 	
 	private void doReset() {
@@ -411,7 +417,14 @@ public class EditMemberController extends FormBasicController {
 		tableEl.reset(false, false, true);
 	}
 	
-	private void doApply(UserRequest ureq) {
+	private void doApplyWithNotifications(UserRequest ureq) {
+		MailerResult result = new MailerResult();
+		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
+		doApply(ureq, mailing);
+	}
+
+	private void doApply(UserRequest ureq, MailPackage mailPackage) {
 		List<EditMemberCurriculumElementRow> rows = tableModel.getObjects();
 		List<MembershipModification> allModifications = new ArrayList<>();
 		for(EditMemberCurriculumElementRow row:rows) {
@@ -423,12 +436,9 @@ public class EditMemberController extends FormBasicController {
 			changes.add(getModification(modification));
 		}
 		
-		//TODO curriculum send mail / notification
-		MailPackage mailPackage = new MailPackage(false);
 		curriculumService.updateCurriculumElementMemberships(member, ureq.getUserSession().getRoles(), changes, mailPackage);
 		
 		loadModel();
-		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -438,7 +448,7 @@ public class EditMemberController extends FormBasicController {
 		final CurriculumElement curriculumElement = modification.curriculumElement();
 		
 		CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(member, curriculumElement);
-		change.setChangBy(role, nextStatus);
+		change.setNextStatus(role, nextStatus);
 		change.setAdminNote(role, modification.adminNote());
 
 		if(nextStatus == GroupMembershipStatus.reservation) {

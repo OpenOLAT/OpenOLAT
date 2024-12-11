@@ -105,7 +105,7 @@ public abstract class AbstractHistoryController extends FormBasicController {
 	@Autowired
 	protected CurriculumService curriculumService;
 	
-	public AbstractHistoryController(UserRequest ureq, WindowControl wControl, String page,
+	protected AbstractHistoryController(UserRequest ureq, WindowControl wControl, String page,
 			CurriculumElement curriculumElement) {
 		super(ureq, wControl, page, Util
 				.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));

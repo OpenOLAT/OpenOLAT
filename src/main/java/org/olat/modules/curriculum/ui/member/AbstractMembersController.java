@@ -51,6 +51,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
@@ -332,6 +333,16 @@ public abstract class AbstractMembersController extends FormBasicController impl
 			}
 		}
 	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof MemberDetailsController detailsCtrl) {
+			if(detailsCtrl.getUserObject() instanceof MemberRow row) {
+				doCloseMemberDetails(row);
+			}
+			loadModel(false);
+		}
+	}
 	
 	protected void cleanUp() {
 		removeAsListenerAndDispose(editSingleMemberCtrl);
@@ -418,8 +429,10 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
 		Identity member = securityManager.loadIdentityByKey(row.getIdentityKey());
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, withEdit, withAcceptDecline, true, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
-				curriculum, curriculumElement, elements, member, profileConfig, null, withEdit, withAcceptDecline, true);
+				curriculum, curriculumElement, elements, member, config);
+		detailsCtrl.setUserObject(row);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

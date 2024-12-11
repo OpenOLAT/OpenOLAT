@@ -1,8 +1,16 @@
 $r.render("profil")
 
-#if($r.available("edit.member"))
+#if($r.available("edit.member") || $r.available("accept") || $r.available("decline"))
 <div class="o_button_group o_button_group_right">
-	$r.render("edit.member")
+	#if($r.available("accept"))
+		$r.render("accept")
+	#end
+	#if($r.available("decline"))
+		$r.render("decline")
+	#end
+	#if($r.available("edit.member"))
+		$r.render("edit.member")
+	#end
 </div>
 #end
 

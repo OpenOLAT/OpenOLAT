@@ -770,14 +770,14 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 			RepoPermission rePermission = PermissionHelper.getPermission(option.getElement(), member, curriculumElementMemberships);
 			CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(member, option.getElement());
 			
-			change.setChangBy(CurriculumRoles.owner, changeTo(option.getOwner(), rePermission.isOwner()));
-			change.setChangBy(CurriculumRoles.coach, changeTo(option.getCoach(), rePermission.isTutor()));
-			change.setChangBy(CurriculumRoles.participant, changeTo(option.getParticipant(), rePermission.isParticipant()));
+			change.setNextStatus(CurriculumRoles.owner, changeTo(option.getOwner(), rePermission.isOwner()));
+			change.setNextStatus(CurriculumRoles.coach, changeTo(option.getCoach(), rePermission.isTutor()));
+			change.setNextStatus(CurriculumRoles.participant, changeTo(option.getParticipant(), rePermission.isParticipant()));
 			if(option.getMasterCoach() != null) {
-				change.setChangBy(CurriculumRoles.mastercoach, changeTo(option.getMasterCoach(), rePermission.isMasterCoach()));
+				change.setNextStatus(CurriculumRoles.mastercoach, changeTo(option.getMasterCoach(), rePermission.isMasterCoach()));
 			}
 			if(option.getElementOwner() != null) {
-				change.setChangBy(CurriculumRoles.curriculumelementowner, changeTo(option.getElementOwner(), rePermission.isCurriculumElementOwner()));
+				change.setNextStatus(CurriculumRoles.curriculumelementowner, changeTo(option.getElementOwner(), rePermission.isCurriculumElementOwner()));
 			}
 			
 			if(!change.isEmpty()) {

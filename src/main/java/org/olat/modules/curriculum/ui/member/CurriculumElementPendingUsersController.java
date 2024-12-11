@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -90,10 +91,10 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	private FormLink acceptAllButton;
 	private FormLink addParticipantsButton;
 
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private StepsMainRunController addMemberCtrl;
-	
-	private ToolsController toolsCtrl;
+	private AcceptDeclineMembershipsController acceptCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	private boolean memberChanged;
@@ -259,6 +260,15 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 			} else if(event == Event.CHANGED_EVENT) {
 				memberChanged = true;
 			}
+		} else if(acceptCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel(true);
+				cmc.deactivate();
+				cleanUp();
+			} else if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if(toolsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				calloutCtrl.deactivate();
@@ -277,9 +287,11 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		super.cleanUp();
 		removeAsListenerAndDispose(addMemberCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(acceptCtrl);
 		removeAsListenerAndDispose(cmc);
 		addMemberCtrl = null;
 		calloutCtrl = null;
+		acceptCtrl = null;
 		cmc = null;
 	}
 
@@ -299,18 +311,56 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	}
 	
 	private void doAcceptAll(UserRequest ureq) {
-		// TODO curriculum
-		getWindowControl().setWarning("Not implemented");
+		List<ResourceReservation> reservations = new ArrayList<>();
+		List<MemberRow> rows = tableModel.getObjects();
+		for(MemberRow row:rows) {
+			List<ResourceReservation> rowReservations = row.getReservations();
+			if(rowReservations != null) {
+				reservations.addAll(rowReservations);
+			}
+		}
+		doAccept(ureq, reservations);
 	}
 	
 	private void doAccept(UserRequest ureq, MemberRow member) {
-		// TODO curriculum
-		getWindowControl().setWarning("Not implemented");
+		List<ResourceReservation> reservations = member.getReservations();
+		doAccept(ureq, reservations);
+	}
+	
+	private void doAccept(UserRequest ureq, List<ResourceReservation> reservations) {
+		List<CurriculumElement> curriculumElements = getAllCurriculumElements();
+		acceptCtrl = new AcceptDeclineMembershipsController(ureq, getWindowControl(),
+				curriculum, curriculumElement, curriculumElements,
+				reservations, GroupMembershipStatus.active);
+		listenTo(acceptCtrl);
+		
+		String title = translate("accept.memberships");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), acceptCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doDecline(UserRequest ureq, MemberRow member) {
-		// TODO curriculum
-		getWindowControl().setWarning("Not implemented");
+		List<ResourceReservation> reservations = member.getReservations();
+		List<CurriculumElement> curriculumElements = getAllCurriculumElements();
+		acceptCtrl = new AcceptDeclineMembershipsController(ureq, getWindowControl(),
+				curriculum, curriculumElement, curriculumElements,
+				reservations, GroupMembershipStatus.declined);
+		listenTo(acceptCtrl);
+		
+		String title = translate("decline.memberships");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), acceptCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private List<CurriculumElement> getAllCurriculumElements() {
+		List<CurriculumElement> curriculumElements = new ArrayList<>();
+		curriculumElements.add(curriculumElement);
+		if(descendants != null) {
+			curriculumElements.addAll(descendants);
+		}
+		return curriculumElements;
 	}
 
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {

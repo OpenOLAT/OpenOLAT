@@ -68,6 +68,7 @@ implements FlexiTableFooterModel {
 			CurriculumElement element = detailsRow.getCurriculumElement();
 			return switch(COLS[col]) {
 				case key -> element.getKey();
+				case modifications -> detailsRow.hasModifications();
 				case displayName -> element.getDisplayName();
 				case externalRef -> element.getIdentifier();
 				case externalId -> element.getExternalId();
@@ -80,6 +81,19 @@ implements FlexiTableFooterModel {
 			CurriculumRoles role = ROLES[roleCol];
 			return getStatus(role, detailsRow);	
 		}
+		
+		int byCol = col - MemberRolesDetailsController.CONFIRMATION_BY_OFFSET;
+		if(byCol >= 0 && byCol < ROLES.length) {
+			CurriculumRoles role = ROLES[byCol];
+			return detailsRow.getConfirmationBy(role);	
+		}
+		
+		int untilCol = col - MemberRolesDetailsController.CONFIRMATION_UNTIL_OFFSET;
+		if(untilCol >= 0 && untilCol < ROLES.length) {
+			CurriculumRoles role = ROLES[untilCol];
+			return detailsRow.getConfirmationUntil(role);	
+		}
+		
 		return "ERROR";
 	}
 	
@@ -119,6 +133,7 @@ implements FlexiTableFooterModel {
 
 	public enum MemberDetailsCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
+		modifications("table.header.modification"),
 		displayName("table.header.displayName"),
 		externalRef("table.header.external.ref"),
 		externalId("table.header.external.id");

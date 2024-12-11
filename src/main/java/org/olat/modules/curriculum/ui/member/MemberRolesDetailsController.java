@@ -55,6 +55,7 @@ import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
+import org.olat.modules.curriculum.ui.component.ConfirmationByCellRenderer;
 import org.olat.modules.curriculum.ui.component.GroupMembershipHistoryComparator;
 import org.olat.modules.curriculum.ui.component.GroupMembershipStatusRenderer;
 import org.olat.modules.curriculum.ui.member.MemberRolesDetailsTableModel.MemberDetailsCols;
@@ -72,6 +73,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MemberRolesDetailsController extends FormBasicController {
 	
 	protected static final int ROLES_OFFSET = 500;
+	protected static final int CONFIRMATION_BY_OFFSET = 1000;
+	protected static final int CONFIRMATION_UNTIL_OFFSET = 1500;
 	
 	private FlexiTableElement tableEl;
 	private FlexiTableColumnModel columnsModel;
@@ -79,8 +82,8 @@ public class MemberRolesDetailsController extends FormBasicController {
 	
 	private final Identity member;
 	private final Curriculum curriculum;
+	private final MemberDetailsConfig config;
 	private final List<CurriculumElement> elements;
-	private final CurriculumRoles alwaysVisibleRole;
 	private final CurriculumElement selectedCurriculumElement;
 
 	@Autowired
@@ -90,14 +93,14 @@ public class MemberRolesDetailsController extends FormBasicController {
 	
 	public MemberRolesDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			Curriculum curriculum, CurriculumElement selectedCurriculumElement, List<CurriculumElement> elements,
-			Identity member, CurriculumRoles alwaysVisibleRole) {
+			Identity member, MemberDetailsConfig config) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "member_details_roles", rootForm);
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale()));
 		this.selectedCurriculumElement = selectedCurriculumElement;
-		this.alwaysVisibleRole = alwaysVisibleRole;
 		this.elements = new ArrayList<>(elements);
 		this.curriculum = curriculum;
 		this.member = member;
+		this.config = config;
 		
 		initForm(ureq);
 		loadModel();
@@ -132,6 +135,10 @@ public class MemberRolesDetailsController extends FormBasicController {
 		
 		columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberDetailsCols.key));
+		if(config.withActivityColumns()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberDetailsCols.modifications,
+				new ModificationCellRenderer(getTranslator())));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberDetailsCols.displayName,
 				new TreeNodeFlexiCellRenderer(false)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberDetailsCols.externalRef));
@@ -144,6 +151,19 @@ public class MemberRolesDetailsController extends FormBasicController {
 			col.setDefaultVisible(true);
 			col.setAlwaysVisible(false);
 			columnsModel.addFlexiColumnModel(col);
+			
+			if(role == CurriculumRoles.participant) {
+				DefaultFlexiColumnModel byCol = new DefaultFlexiColumnModel("table.header.confirmation.by", role.ordinal() + CONFIRMATION_BY_OFFSET, false, null,
+						new ConfirmationByCellRenderer(getTranslator()));
+				byCol.setDefaultVisible(true);
+				byCol.setAlwaysVisible(false);
+				columnsModel.addFlexiColumnModel(byCol);
+				
+				DefaultFlexiColumnModel untilCol = new DefaultFlexiColumnModel("table.header.confirmation.until", role.ordinal() + CONFIRMATION_UNTIL_OFFSET, false, null);
+				untilCol.setDefaultVisible(true);
+				untilCol.setAlwaysVisible(false);
+				columnsModel.addFlexiColumnModel(untilCol);
+			}
 		}
 
 		tableModel = new MemberRolesDetailsTableModel(columnsModel);
@@ -222,8 +242,8 @@ public class MemberRolesDetailsController extends FormBasicController {
 	}
 	
 	private void updateRolesColumnsVisibility(EnumMap<CurriculumRoles,Boolean> usedRoles) {
-		if(alwaysVisibleRole != null) {
-			usedRoles.put(alwaysVisibleRole, Boolean.TRUE);
+		if(config.alwaysVisibleRole() != null) {
+			usedRoles.put(config.alwaysVisibleRole() , Boolean.TRUE);
 		}
 		
 		// Update columns visibility
@@ -247,6 +267,9 @@ public class MemberRolesDetailsController extends FormBasicController {
 				row.addStatus(role, GroupMembershipStatus.active);
 			} else if(reservation != null) {
 				row.addStatus(role, GroupMembershipStatus.reservation);
+				row.addConfirmationBy(role, Boolean.FALSE.equals(reservation.getUserConfirmable())
+						? ConfirmationByEnum.ADMINISTRATIVE_ROLE : ConfirmationByEnum.PARTICIPANT);
+				row.addConfirmationUntil(role, reservation.getExpirationDate());
 			} else {
 				GroupMembershipHistory lastHistory = lastHistoryPoint(role, history);
 				if(lastHistory != null) {

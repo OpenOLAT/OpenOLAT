@@ -87,7 +87,7 @@ public class CurriculumElementMembershipChange extends Event {
 		return modifications.get(role);
 	}
 	
-	public void setChangBy(CurriculumRoles role, GroupMembershipStatus nextStatus) {
+	public void setNextStatus(CurriculumRoles role, GroupMembershipStatus nextStatus) {
 		if(nextStatus == null) {
 			modifications.remove(role);
 		} else {

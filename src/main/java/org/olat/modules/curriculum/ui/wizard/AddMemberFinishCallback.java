@@ -120,7 +120,7 @@ public class AddMemberFinishCallback implements StepRunnerCallback {
 		final CurriculumElement curriculumElement = modification.curriculumElement();
 			
 		CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(member, curriculumElement);
-		change.setChangBy(role, nextStatus);
+		change.setNextStatus(role, nextStatus);
 			
 		if(nextStatus == GroupMembershipStatus.reservation) {
 			change.setConfirmation(modification.confirmation());

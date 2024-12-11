@@ -59,6 +59,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.member.AbstractMembersController;
+import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.modules.curriculum.ui.wizard.UsersOverviewTableModel.UserOverviewCols;
 import org.olat.user.UserAvatarMapper;
@@ -92,7 +93,7 @@ public class UsersOverviewController extends StepFormBasicController implements 
 	@Autowired
 	private UserInfoService userInfoService;
 	@Autowired
-	protected BaseSecurityModule securityModule;
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -280,9 +281,9 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		Curriculum curriculum = membersContext.getCurriculum();
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, membersContext.getRoleToModify(), false, false, false, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
-				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), profileConfig,
-				membersContext.getRoleToModify(), false, false, false);
+				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), config);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

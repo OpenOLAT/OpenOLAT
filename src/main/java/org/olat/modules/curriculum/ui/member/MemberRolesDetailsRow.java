@@ -19,8 +19,10 @@
  */
 package org.olat.modules.curriculum.ui.member;
 
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -35,8 +37,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 public class MemberRolesDetailsRow extends AbstractCurriculumElementRow {
 	
 	private final List<CurriculumRoles> roles;
-	private final EnumMap<CurriculumRoles,GroupMembershipStatus> rolesStatus = new EnumMap<>(CurriculumRoles.class);
-	private final EnumMap<CurriculumRoles,MembershipModification> modifications = new EnumMap<>(CurriculumRoles.class);
+	private final EnumMap<CurriculumRoles,RoleDetails> details = new EnumMap<>(CurriculumRoles.class);
 	
 	private MemberRolesDetailsRow parent;
 	
@@ -49,21 +50,53 @@ public class MemberRolesDetailsRow extends AbstractCurriculumElementRow {
 		return roles;
 	}
 	
+	public GroupMembershipStatus getStatus(CurriculumRoles role) {
+		RoleDetails d = details.get(role);
+		return d == null ? null : d.getRolesStatus();
+	}
+		
 	public void addStatus(CurriculumRoles role, GroupMembershipStatus status) {
-		rolesStatus.put(role, status);
+		computeIfAbsent(role).setRolesStatus(status);
 	}
 	
-	public GroupMembershipStatus getStatus(CurriculumRoles role) {
-		return rolesStatus.get(role);
+	public ConfirmationByEnum getConfirmationBy(CurriculumRoles role) {
+		RoleDetails d = details.get(role);
+		return d == null ? null : d.getConfirmationBy();
+	}
+	
+	public void addConfirmationBy(CurriculumRoles role, ConfirmationByEnum by) {
+		computeIfAbsent(role).setConfirmationBy(by);
+	}
+	
+	public Date getConfirmationUntil(CurriculumRoles role) {
+		RoleDetails d = details.get(role);
+		return d == null ? null : d.getConfirmationUntil();
+	}
+	
+	public void addConfirmationUntil(CurriculumRoles role, Date date) {
+		computeIfAbsent(role).setConfirmationUntil(date);
+	}
+	
+	public boolean hasModifications() {
+		for(Map.Entry<CurriculumRoles,RoleDetails> entry:details.entrySet()) {
+			if(entry.getValue().getModification() != null) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public GroupMembershipStatus getModificationStatus(CurriculumRoles role) {
-		MembershipModification modification = modifications.get(role);
-		return modification == null ? null : modification.nextStatus();
+		RoleDetails d = details.get(role);
+		return d == null || d.getModification() == null ? null : d.getModification().nextStatus();
 	}
 	
 	public void addModification(CurriculumRoles role, MembershipModification modification) {
-		modifications.put(role, modification);
+		computeIfAbsent(role).setModification(modification);
+	}
+	
+	public RoleDetails computeIfAbsent(CurriculumRoles role) {
+		return details.computeIfAbsent(role, r -> new RoleDetails());
 	}
 	
 	@Override
@@ -89,5 +122,49 @@ public class MemberRolesDetailsRow extends AbstractCurriculumElementRow {
 			return getKey().equals(detailsRow.getKey());
 		}
 		return false;
+	}
+	
+	private static final class RoleDetails {
+		
+		private GroupMembershipStatus rolesStatus;
+		private MembershipModification modification;
+		private ConfirmationByEnum confirmationBy;
+		private Date confirmationUntil;
+		
+		public RoleDetails() {
+			//
+		}
+
+		public GroupMembershipStatus getRolesStatus() {
+			return rolesStatus;
+		}
+
+		public void setRolesStatus(GroupMembershipStatus rolesStatus) {
+			this.rolesStatus = rolesStatus;
+		}
+
+		public MembershipModification getModification() {
+			return modification;
+		}
+
+		public void setModification(MembershipModification modification) {
+			this.modification = modification;
+		}
+
+		public ConfirmationByEnum getConfirmationBy() {
+			return confirmationBy;
+		}
+
+		public void setConfirmationBy(ConfirmationByEnum confirmationBy) {
+			this.confirmationBy = confirmationBy;
+		}
+
+		public Date getConfirmationUntil() {
+			return confirmationUntil;
+		}
+
+		public void setConfirmationUntil(Date confirmationUntil) {
+			this.confirmationUntil = confirmationUntil;
+		}
 	}
 }

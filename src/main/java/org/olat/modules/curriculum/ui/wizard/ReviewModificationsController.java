@@ -57,6 +57,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.member.AbstractMembersController;
+import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.modules.curriculum.ui.member.MemberRolesDetailsRow;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
@@ -255,9 +256,9 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		Curriculum curriculum = membersContext.getCurriculum();
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, membersContext.getRoleToModify(), false, false, false, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
-				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), profileConfig,
-				membersContext.getRoleToModify(), false, false, false);
+				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), config);
 		
 		// Add relevant modifications to the details view
 		List<MemberRolesDetailsRow> currentDetailsRows = detailsCtrl.getRolesDetailsRows();
