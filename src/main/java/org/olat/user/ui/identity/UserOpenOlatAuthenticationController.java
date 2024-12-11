@@ -138,15 +138,18 @@ public class UserOpenOlatAuthenticationController extends BasicController {
 				&& getAuthenticationbyProvider(authentications, OLATWebAuthnManager.PASSKEY) != null;
 		passkeyListCtrl.getInitialComponent().setVisible(passKeyAvailable);
 		
+		boolean isUser = ureq.getUserSession() != null && ureq.getUserSession().getRoles() != null
+				&& !ureq.getUserSession().getRoles().isGuestOnly()
+				&& !ureq.getUserSession().getRoles().isInviteeOnly();
 		recoveryKeyCtrl = new UserRecoveryKeysController(ureq, getWindowControl());
 		listenTo(recoveryKeyCtrl);
 		mainVC.put("recoverykeys", recoveryKeyCtrl.getInitialComponent());
-		recoveryKeyCtrl.getInitialComponent().setVisible(passKeyAvailable);
+		recoveryKeyCtrl.getInitialComponent().setVisible(isUser && passKeyAvailable);
 		
 		restApiKeyListCtrl = new RestApiKeyListController(ureq, getWindowControl());
 		listenTo(restApiKeyListCtrl);
 		mainVC.put("restApiKeys", restApiKeyListCtrl.getInitialComponent());
-		restApiKeyListCtrl.getInitialComponent().setVisible(withApiKey);
+		restApiKeyListCtrl.getInitialComponent().setVisible(isUser && withApiKey);
 		
 		putInitialPanel(mainVC);
 	}
