@@ -206,6 +206,7 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 			if (courseEntry != null && courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 				//
 			} else if (!badgeCriteria.isAwardAutomatically()) {
+				// manual
 				ICourse course = CourseFactory.loadCourse(createContext.getCourseResourcableId());
 				course.getCourseConfig().getNodeAccessType();
 				String rootIdent = course.getRunStructure().getRootNode().getIdent();
@@ -218,12 +219,13 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 					rows.add(row);
 				}
 			} else {
+				// automatic
 				ICourse course = CourseFactory.loadCourse(createContext.getCourseResourcableId());
 				NodeAccessType nodeAccessType  = course.getCourseConfig().getNodeAccessType();
 				boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType());
 				openBadgesManager.getParticipantsWithAssessmentEntries(courseEntry, getIdentity(), secCallback,
 						(participant, assessmentEntries) -> {
-							if (badgeCriteria.allCourseConditionsMet(participant, learningPath, assessmentEntries)) {
+							if (badgeCriteria.allConditionsMet(courseEntry, participant, learningPath, true, assessmentEntries)) {
 								BadgeEarnerRow row = new BadgeEarnerRow(participant, userPropertyHandlers, getLocale());
 								rows.add(row);
 								earners.add(participant);
@@ -266,8 +268,9 @@ public class CreateBadge06RecipientsStep extends BasicStep {
 
 				for (OpenBadgesManager.ParticipantAndAssessmentEntries participantAndAssessmentEntries : participantsAndAssessmentEntries.values()) {
 					Identity assessedIdentity = participantAndAssessmentEntries.participant();
-					List<AssessmentEntry> assessmentEntries = participantAndAssessmentEntries.assessmentEntries();
-					if (badgeCriteria.allGlobalBadgeConditionsMet(assessedIdentity, assessmentEntries)) {
+					List<AssessmentEntry> rootAssessmentEntries = participantAndAssessmentEntries.assessmentEntries();
+					if (badgeCriteria.allConditionsMet(null, assessedIdentity, false, 
+							false, rootAssessmentEntries)) {
 						BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
 						rows.add(row);
 						earners.add(assessedIdentity);

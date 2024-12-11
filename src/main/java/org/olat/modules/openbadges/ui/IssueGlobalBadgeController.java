@@ -19,7 +19,6 @@
  */
 package org.olat.modules.openbadges.ui;
 
-import java.util.Date;
 import java.util.UUID;
 
 import org.olat.admin.user.UserSearchController;
@@ -129,7 +128,7 @@ public class IssueGlobalBadgeController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String badgeClassUuid = badgeClassDropdown.getSelectedKey();
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassUuid);
-		openBadgesManager.createBadgeAssertion(uuidEl.getValue(),  badgeClass, new Date(), recipient, getIdentity());
+		openBadgesManager.issueBadgeManually(uuidEl.getValue(),  badgeClass, recipient, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
