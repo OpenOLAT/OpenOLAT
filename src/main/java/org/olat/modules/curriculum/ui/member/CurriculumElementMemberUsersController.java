@@ -105,7 +105,6 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	private StepsMainRunController addMemberCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
-	private boolean memberChanged;
 	private final boolean membersManaged;
 	private final Map<CurriculumRoles,FlexiFiltersTab> rolesToTab = new EnumMap<>(CurriculumRoles.class);
 	
@@ -297,13 +296,8 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		} else if(editSingleMemberCtrl == source) {
 			if(event == Event.BACK_EVENT) {
 				toolbarPanel.popController(editSingleMemberCtrl);
-				if(memberChanged) {
-					reloadMember(ureq, editSingleMemberCtrl.getMember());
-					memberChanged = false;
-				}
+				reloadMember(ureq, editSingleMemberCtrl.getMember());
 				cleanUp();
-			} else if(event == Event.CHANGED_EVENT) {
-				memberChanged = true;
 			}
 		} else if(toolsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -312,6 +306,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			}
 		} else if(event instanceof EditMemberEvent ede) {
 			doEditMember(ureq, ede.getMember());
+			return;
 		} else if(cmc == source || calloutCtrl == source) {
 			cleanUp();
 		}

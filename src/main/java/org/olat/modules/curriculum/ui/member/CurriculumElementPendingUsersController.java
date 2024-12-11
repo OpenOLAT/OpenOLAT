@@ -97,7 +97,6 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	private AcceptDeclineMembershipsController acceptCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
-	private boolean memberChanged;
 	private final boolean membersManaged;
 
 	@Autowired
@@ -252,13 +251,8 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		} else if(editSingleMemberCtrl == source) {
 			if(event == Event.BACK_EVENT) {
 				toolbarPanel.popController(editSingleMemberCtrl);
-				if(memberChanged) {
-					reloadMember(ureq, editSingleMemberCtrl.getMember());
-					memberChanged = false;
-				}
+				reloadMember(ureq, editSingleMemberCtrl.getMember());
 				cleanUp();
-			} else if(event == Event.CHANGED_EVENT) {
-				memberChanged = true;
 			}
 		} else if(acceptCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -276,6 +270,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 			}
 		} else if(event instanceof EditMemberEvent ede) {
 			doEditMember(ureq, ede.getMember());
+			return;
 		} else if(cmc == source || calloutCtrl == source) {
 			cleanUp();
 		}
