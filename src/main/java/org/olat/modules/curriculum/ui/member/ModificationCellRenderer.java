@@ -49,6 +49,7 @@ public class ModificationCellRenderer implements FlexiCellRenderer {
 			switch(modification) {
 				case MODIFICATION: renderModification(target, "has.modification", "o_membership_modify", "o_icon_retry"); break;
 				case ADD: renderModification(target, "has.add", "o_membership_add", "o_icon_plus"); break;
+				case REMOVE: renderModification(target, "has.remove", "o_membership_remove", "o_icon_minus"); break;
 				default: break;
 			}
 		}

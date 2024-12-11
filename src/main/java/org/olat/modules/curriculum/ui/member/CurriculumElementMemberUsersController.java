@@ -59,8 +59,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -95,14 +93,14 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		};
 	protected static final String FILTER_ROLE = "Role";
 	
+	private FormLink removeBatchButton;
 	private FormLink addParticipantButton;
-	private FormLink removeMembershipButton;
 	
 	private CloseableModalController cmc;
-	private DialogBoxController confirmRemoveCtrl;
 	
 	private ToolsController toolsCtrl;
 	private StepsMainRunController addMemberCtrl;
+	private RemoveMembershipsController removeCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	private final boolean membersManaged;
@@ -138,7 +136,15 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 				addDropdown.addElement(addMemberButton);
 			}
 		
-			removeMembershipButton = uifactory.addFormLink("remove.memberships", formLayout, Link.BUTTON);
+			removeBatchButton = uifactory.addFormLink("remove.memberships", formLayout, Link.BUTTON);
+		}
+	}
+	
+	@Override
+	protected void initTableForm(FormItemContainer formLayout) {
+		super.initTableForm(formLayout);
+		if(removeBatchButton != null) {
+			tableEl.addBatchButton(removeBatchButton);
 		}
 	}
 	
@@ -278,12 +284,12 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(confirmRemoveCtrl == source) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				@SuppressWarnings("unchecked")
-				List<MemberRow> rows = (List<MemberRow>)confirmRemoveCtrl.getUserObject();
-				doRemove(rows);
+		if(removeCtrl == source) {
+			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				loadModel(true);
 			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == addMemberCtrl) {
 			if (event == Event.CANCELLED_EVENT) {
 				getWindowControl().pop();
@@ -316,13 +322,13 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	@Override
 	protected void cleanUp() {
 		super.cleanUp();
-		removeAsListenerAndDispose(confirmRemoveCtrl);
 		removeAsListenerAndDispose(addMemberCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(removeCtrl);
 		removeAsListenerAndDispose(cmc);
-		confirmRemoveCtrl = null;
 		addMemberCtrl = null;
 		calloutCtrl = null;
+		removeCtrl = null;
 		cmc = null;
 	}
 
@@ -335,8 +341,8 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addParticipantButton == source) {
 			doAddMemberWizard(ureq, CurriculumRoles.participant);
-		} else if(removeMembershipButton == source) {
-			doConfirmRemoveAllMemberships(ureq);
+		} else if(removeBatchButton == source) {
+			doRemoveMemberships(ureq);
 		} else if(source instanceof FormLink link && CMD_ADD_MEMBER.equals(link.getCmd())
 				&& link.getUserObject() instanceof CurriculumRoles role) {
 			doAddMemberWizard(ureq, role);
@@ -344,7 +350,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doConfirmRemoveAllMemberships(UserRequest ureq) {
+	private void doRemoveMemberships(UserRequest ureq) {
 		Set<Integer> selectedRows = tableEl.getMultiSelectedIndex();
 		List<MemberRow> rows = new ArrayList<>(selectedRows.size());
 		for(Integer selectedRow:selectedRows) {
@@ -353,36 +359,23 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 				rows.add(row);
 			}
 		}
-		doConfirmRemoveAllMemberships(ureq, rows);
+		doRemoveMemberships(ureq, rows);
 	}
-	
-	private void doConfirmRemoveAllMemberships(UserRequest ureq, MemberRow member) {
-		List<MemberRow> rows = new ArrayList<>();
-		if(member.getInheritanceMode() == GroupMembershipInheritance.root || member.getInheritanceMode() == GroupMembershipInheritance.none) {
-			rows.add(member);
-		}
-		doConfirmRemoveAllMemberships(ureq, rows);
-	}	
 
-	private void doConfirmRemoveAllMemberships(UserRequest ureq, List<MemberRow> rows) {
-		if(rows.isEmpty()) {
-			showWarning("warning.atleastone.member");
-		} else {
-			String title = translate("confirm.remove.member.title");
-			confirmRemoveCtrl = activateYesNoDialog(ureq, title, translate("confirm.remove.member.text", ""), confirmRemoveCtrl);
-			confirmRemoveCtrl.setUserObject(rows);
-		}
-	}
-	
-	private void doRemove(List<MemberRow> membersToRemove) {
-		for(MemberRow memberToRemove:membersToRemove) {
-			List<CurriculumRoles> roles = memberToRemove.getRoles();
-			for(CurriculumRoles role:roles) {
-				Identity member = securityManager.loadIdentityByKey(memberToRemove.getIdentityKey());
-				curriculumService.removeMember(curriculumElement, member, role, GroupMembershipStatus.removed, getIdentity(), null);
-			}
-		}
-		loadModel(true);
+	private void doRemoveMemberships(UserRequest ureq, List<MemberRow> rows) {
+		List<CurriculumElement> curriculumElements = getAllCurriculumElements();
+		List<Identity> identities = rows.stream()
+				.map(MemberRow::getIdentity)
+				.toList();
+		removeCtrl = new RemoveMembershipsController(ureq, getWindowControl(),
+				curriculum, curriculumElement, curriculumElements,
+				identities, GroupMembershipStatus.removed);
+		listenTo(removeCtrl);
+		
+		String title = translate("remove.memberships.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), removeCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
@@ -455,7 +448,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			} else if(editMemberLink == source) {
 				doEditMember(ureq, member);
 			} else if(removeMembershipsLink == source) {
-				doConfirmRemoveAllMemberships(ureq, member);
+				doRemoveMemberships(ureq, List.of(member));
 			}
 		}
 	}

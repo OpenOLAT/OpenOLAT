@@ -29,6 +29,7 @@ public enum ModificationStatus {
 	
 	NONE,
 	MODIFICATION,
-	ADD;
+	ADD,
+	REMOVE;
 
 }

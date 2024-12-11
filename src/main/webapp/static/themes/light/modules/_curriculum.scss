@@ -706,7 +706,14 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	border: $o-curriculum-activity-modify-border;
 }
 
-.o_membership_modify, .o_membership_add {
+.o_membership_remove {
+	border: $o-curriculum-activity-remove-border;
+	>i {
+		color: $o-curriculum-activity-remove-color;
+	}
+}
+
+.o_membership_modify, .o_membership_add, .o_membership_remove {
 	border-radius: $o-curriculum-activity-border-radius;
 	width: 20px;
 	height: 20px;
@@ -830,8 +837,12 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	    color: $o-curriculum-status-finished-color !important;
 	}
 	
-	&.o_gmembership_status_resourcedeleted,
 	&.o_gmembership_status_removed {
+		border-color: $o-curriculum-status-removed-color;
+	    color: $o-curriculum-status-removed-color !important;
+	}
+	
+	&.o_gmembership_status_resourcedeleted {
 		border-color: $o-curriculum-status-deleted-color;
 	    color: $o-curriculum-status-deleted-color !important;
 	}

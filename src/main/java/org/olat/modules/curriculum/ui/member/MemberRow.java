@@ -45,6 +45,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class MemberRow extends UserPropertiesRow {
 	
 	private Date registration;
+	private Identity identity;
 	private List<ResourceReservation> reservations;
 	private final GroupMembershipInheritance inheritanceMode;
 
@@ -60,12 +61,18 @@ public class MemberRow extends UserPropertiesRow {
 	public MemberRow(Identity member, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(member, userPropertyHandlers, locale);
 		inheritanceMode = GroupMembershipInheritance.none;
+		this.identity = member;
 	}
 	
 	public MemberRow(CurriculumMember member, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(member.getIdentity(), userPropertyHandlers, locale);
 		inheritanceMode = member.getInheritanceMode();
 		registration = member.getCreationDate();
+		this.identity = member.getIdentity();
+	}
+	
+	public Identity getIdentity() {
+		return identity;
 	}
 	
 	public GroupMembershipInheritance getInheritanceMode() {

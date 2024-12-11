@@ -30,18 +30,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 
 /**
  * 
- * Initial date: 10 déc. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 11 déc. 2024<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class AcceptDeclineMembershipsTableModel extends DefaultFlexiTableDataModel<AcceptDeclineMembershipRow>
-implements SortableFlexiTableDataModel<AcceptDeclineMembershipRow> {
+public class RemoveMembershipsTableModel extends DefaultFlexiTableDataModel<RemoveMembershipRow>
+implements SortableFlexiTableDataModel<RemoveMembershipRow> {
 	
-	private static final AcceptDeclineCols[] COLS = AcceptDeclineCols.values();
+	private static final RemoveMembershipCols[] COLS = RemoveMembershipCols.values();
 	
 	private final Locale locale;
 	
-	public AcceptDeclineMembershipsTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public RemoveMembershipsTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
 	}
@@ -49,24 +49,23 @@ implements SortableFlexiTableDataModel<AcceptDeclineMembershipRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			SortableFlexiTableModelDelegate<AcceptDeclineMembershipRow> sort = new SortableFlexiTableModelDelegate<>(orderBy, this, locale);
+			SortableFlexiTableModelDelegate<RemoveMembershipRow> sort = new SortableFlexiTableModelDelegate<>(orderBy, this, locale);
 			super.setObjects(sort.sort());
 		}
 	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {
-		AcceptDeclineMembershipRow acceptRow = getObject(row);
-		return getValueAt(acceptRow, col);
+		RemoveMembershipRow removeRow = getObject(row);
+		return getValueAt(removeRow, col);
 	}
 
 	@Override
-	public Object getValueAt(AcceptDeclineMembershipRow row, int col) {
+	public Object getValueAt(RemoveMembershipRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			return switch(COLS[col]) {
-				case modifications -> row.getReservations().isEmpty()
-					? ModificationStatus.NONE : ModificationStatus.MODIFICATION;
-				case accepted, declined -> getNumOfModifications(row);
+				case modifications -> getModificationStatus(row);
+				case removed -> getNumOfRemoval(row);
 				default -> "ERROR";
 			};	
 		}
@@ -75,19 +74,28 @@ implements SortableFlexiTableDataModel<AcceptDeclineMembershipRow> {
 		return row.getIdentityProp(propPos);
 	}
 	
-	private String getNumOfModifications(AcceptDeclineMembershipRow row) {
-		int numOfReservations = row.getReservations().size();
-		return numOfReservations + "/" + numOfReservations;
+	private ModificationStatus getModificationStatus(RemoveMembershipRow row) {
+		if(!row.getMemberships().isEmpty()) {
+			return ModificationStatus.REMOVE;
+		}
+		if(!row.getReservations().isEmpty()) {
+			return ModificationStatus.MODIFICATION;
+		}
+		return ModificationStatus.NONE;
 	}
 	
-	public enum AcceptDeclineCols implements FlexiSortableColumnDef {
+	private String getNumOfRemoval(RemoveMembershipRow row) {
+		int totalRemoved = row.getReservations().size() + row.getMemberships().size();
+		return totalRemoved + "/" + totalRemoved;
+	}
+	
+	public enum RemoveMembershipCols implements FlexiSortableColumnDef {
 		modifications("table.header.modification"),
-		accepted("table.header.accepted"),
-		declined("table.header.declined");
+		removed("table.header.removed");
 		
 		private final String i18nKey;
 		
-		private AcceptDeclineCols(String i18nKey) {
+		private RemoveMembershipCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 		

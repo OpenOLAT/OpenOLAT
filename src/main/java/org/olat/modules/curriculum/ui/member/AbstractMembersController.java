@@ -321,6 +321,15 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		row.setChatLink(chatLink);
 	}
 	
+	protected List<CurriculumElement> getAllCurriculumElements() {
+		List<CurriculumElement> elements = new ArrayList<>();
+		elements.add(curriculumElement);
+		if(descendants != null) {
+			elements.addAll(descendants);
+		}
+		return elements;
+	}
+	
 	protected final void forgeOnlineStatus(MemberRow row, List<Long> loadStatus) {
 		if(chatEnabled) {
 			Long identityKey = row.getIdentityKey();

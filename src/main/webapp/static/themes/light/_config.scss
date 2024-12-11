@@ -727,10 +727,13 @@ $o-curriculum-status-active-color				: $o-repo-published-color !default;
 $o-curriculum-status-finished-color				: $o-repo-published-color !default;
 $o-curriculum-status-cancelled-color			: $o-repo-trash-color !default;
 $o-curriculum-status-deleted-color				: $o-repo-trash-color !default;
+$o-curriculum-status-removed-color				: $brand-danger !default;
 
 $o-curriculum-activity-add-border				: 1px solid $brand-success !default;
 $o-curriculum-activity-modify-border			: 1px solid $brand-warning !default;
+$o-curriculum-activity-remove-border			: 1px solid $brand-danger !default;
 $o-curriculum-activity-border-radius			: 4px !default;
+$o-curriculum-activity-remove-color				: $brand-danger !default;
 
 /* Curriculum overview */
 $o-curriculum-widget-border						: 1px solid #e7e7e7 !default;

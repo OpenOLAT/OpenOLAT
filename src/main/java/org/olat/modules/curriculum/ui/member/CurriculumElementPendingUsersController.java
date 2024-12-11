@@ -348,15 +348,6 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
-	private List<CurriculumElement> getAllCurriculumElements() {
-		List<CurriculumElement> curriculumElements = new ArrayList<>();
-		curriculumElements.add(curriculumElement);
-		if(descendants != null) {
-			curriculumElements.addAll(descendants);
-		}
-		return curriculumElements;
-	}
 
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
 		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants);
