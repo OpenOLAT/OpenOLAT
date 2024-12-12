@@ -23,6 +23,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -34,10 +38,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -209,6 +209,28 @@ public class VFSRevisionDAO {
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("deleted", Boolean.TRUE)
 				.getResultList();
+	}
+	
+	public Long getRevisionsSize(VFSMetadata parentMetadata, Boolean deleted) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select sum(rev.size)");
+		sb.append("  from vfsrevision rev");
+		sb.and().append(" rev.metadata.key in (");
+		sb.append(" select metadata.key");
+		sb.append("  from filemetadata metadatay");
+		sb.append(" where metadata.key != :parentKey");
+		sb.append(" and metadata.relativePath like :relativePath");
+		if (deleted != null) {
+			sb.and().append("metadata.deleted = ").append(deleted);
+		}
+		sb.append(")");
+
+		List<Long> resultList = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("parentKey", parentMetadata.getKey())
+			.setParameter("relativePath", parentMetadata.getRelativePath() + "/" + parentMetadata.getFilename() + "%")
+			.getResultList();
+		return resultList != null && !resultList.isEmpty() && resultList.get(0) != null? resultList.get(0): Long.valueOf(0);
 	}
 
 	public long calculateRevisionsSize() {

@@ -1415,6 +1415,10 @@ div.o_reminder_custom_email {
 	display: inherit;
 	background: transparent;
 }
+dialog#o_ajax_busy {
+	outline: none;
+	box-shadow: none;
+}
 
 #o_ajax_progress {
 	display: none;

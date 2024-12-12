@@ -3331,6 +3331,8 @@ public class FolderController extends FormBasicController implements Activateabl
 			quota = inheritingContainer.getLocalSecurityCallback().getQuota();
 			if (quota != null && Quota.UNLIMITED != quota.getQuotaKB()) {
 				if (VFSStatus.YES == inheritingContainer.canDescendants()) {
+					// The size based on the metadata may differ slightly from the real value, as
+					// invisible files such as thumbnails are not taken into account.
 					actualUsage = vfsRepositoryService.getDescendantsSize(inheritingContainer.getMetaInfo(), null) / 1024;
 					log.debug("Folder: quota calculated (metadata) in {} millis", Duration.between(start, Instant.now()).toMillis());
 				} else {
