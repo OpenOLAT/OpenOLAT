@@ -336,9 +336,7 @@ public class BadgeDetailsController extends FormBasicController {
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
 			BadgeClass updatedBadgeClass = openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
-			if (createBadgeClassContext.isCourseBadge()) {
-				openBadgesManager.issueBadgeManually(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
-			}
+			openBadgesManager.issueBadgeManually(updatedBadgeClass, createBadgeClassContext.getEarners(), getIdentity());
 			loadData();
 			return StepsMainRunController.DONE_MODIFIED;
 		};

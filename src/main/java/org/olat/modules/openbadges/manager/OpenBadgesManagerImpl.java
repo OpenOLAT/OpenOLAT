@@ -1195,6 +1195,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void issueBadgeManually(BadgeClass badgeClass, List<Identity> recipients, Identity awardedBy) {
+		if (recipients == null) {
+			return;
+		}
 		for (Identity recipient : recipients) {
 			String uuid = OpenBadgesFactory.createIdentifier();
 			issueBadgeManually(uuid, badgeClass, recipient, awardedBy);

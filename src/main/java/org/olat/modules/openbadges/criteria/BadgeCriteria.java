@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
@@ -157,7 +158,7 @@ public class BadgeCriteria {
 		if (assessmentEntries != null) {
 			assessmentEntries = assessmentEntries.stream()
 					.filter(ae -> ae.getIdentity().equals(recipient))
-					.filter(ae -> courseEntry == null || ae.getRepositoryEntry().equals(courseEntry))
+					.filter(ae -> courseEntry == null || Objects.equals(courseEntry.getKey(), ae.getRepositoryEntry().getKey()))
 					.toList();
 		} else {
 			assessmentEntries = new ArrayList<>();
