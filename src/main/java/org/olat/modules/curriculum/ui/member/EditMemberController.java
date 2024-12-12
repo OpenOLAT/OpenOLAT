@@ -21,7 +21,7 @@ package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,11 +94,13 @@ public class EditMemberController extends FormBasicController {
 
 	private static final String CMD_ADD = "add";
 	private static final String CMD_CHANGE = "change";
+	private static final String CMD_ADD_ROLE = "add.role";
 	
 	private FormLink backButton;
 	private FormLink resetButton;
 	private FormLink applyCustomNotificationButton;
 	private FormLink applyWithoutNotificationButton;
+	private DropdownItem addRolesEl;
 	private FlexiTableElement tableEl;
 	private FlexiTableColumnModel columnsModel;
 	private EditMemberCurriculumElementTableModel tableModel;
@@ -107,6 +109,7 @@ public class EditMemberController extends FormBasicController {
 	private final Curriculum curriculum;
 	private final UserInfoProfileConfig profileConfig;
 	private final List<CurriculumElement> curriculumElements;
+	private final EnumSet<CurriculumRoles> usedRoles = EnumSet.noneOf(CurriculumRoles.class);
 
 	private CloseableCalloutWindowController calloutCtrl;
 	private AddMembershipCalloutController addMembershipCtrl;
@@ -141,6 +144,13 @@ public class EditMemberController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		backButton = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
+		addRolesEl = uifactory.addDropdownMenu("assign.additional.roles", "assign.additional.roles", null, formLayout, getTranslator());
+		for(CurriculumRoles role:CurriculumRoles.curriculumElementsRoles()) {
+			String name = "role.".concat(role.name());
+			FormLink addRoleButton = uifactory.addFormLink(name, CMD_ADD_ROLE, name, null, formLayout, Link.LINK);
+			addRoleButton.setUserObject(role);
+			addRolesEl.addElement(addRoleButton);
+		}
 
 		// Profile
 		UserInfoProfile memberConfig = userInfoService.createProfile(member);
@@ -212,7 +222,6 @@ public class EditMemberController extends FormBasicController {
 		
 		List<EditMemberCurriculumElementRow> rows = new ArrayList<>();
 		Map<Long, EditMemberCurriculumElementRow> rowsMap = new HashMap<>();
-		EnumMap<CurriculumRoles,Boolean> usedRoles = new EnumMap<>(CurriculumRoles.class);
 		for(CurriculumElement element:curriculumElements) {
 			EditMemberCurriculumElementRow row = new EditMemberCurriculumElementRow(element);
 			rows.add(row);
@@ -229,13 +238,7 @@ public class EditMemberController extends FormBasicController {
 			}
 		}
 		
-		// Update columns visibility
-		for(CurriculumRoles role:ROLES) {
-			FlexiColumnModel col = columnsModel.getColumnModelByIndex(role.ordinal() + ROLES_OFFSET);
-			if(col instanceof DefaultFlexiColumnModel) {
-				tableEl.setColumnModelVisible(col, usedRoles.containsKey(role));
-			}
-		}
+		updateRolesColumnsVisibility();
 		
 		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 		tableModel.setObjects(rows);
@@ -243,7 +246,7 @@ public class EditMemberController extends FormBasicController {
 	}
 	
 	private void forgeLinks(EditMemberCurriculumElementRow row, CurriculumElementMembership membership, CurriculumElementMembershipHistory history,
-			Map<ResourceToRoleKey,ResourceReservation> reservationsMap, EnumMap<CurriculumRoles,Boolean> usedRoles) {
+			Map<ResourceToRoleKey,ResourceReservation> reservationsMap, EnumSet<CurriculumRoles> usedRoles) {
 		
 		OLATResource resource = row.getCurriculumElement().getResource();
 		List<CurriculumRoles> memberships = membership == null ? List.of() : membership.getRoles();
@@ -257,15 +260,15 @@ public class EditMemberController extends FormBasicController {
 			if(reservation != null) {
 				row.addReservation(role, reservation);
 				status = GroupMembershipStatus.reservation;
-				usedRoles.put(role, Boolean.TRUE);
+				usedRoles.add(role);
 			} else if(memberships.contains(role)) {
 				status = GroupMembershipStatus.active;
-				usedRoles.put(role, Boolean.TRUE);
+				usedRoles.add(role);
 			} else  {
 				GroupMembershipHistory lastHistory = lastHistoryPoint(role, history);
 				if(lastHistory != null) {
 					status = lastHistory.getStatus();
-					usedRoles.put(role, Boolean.TRUE);
+					usedRoles.add(role);
 				}
 			}
 			row.setStatus(role, status);
@@ -335,6 +338,22 @@ public class EditMemberController extends FormBasicController {
 			default -> null;
 		};
 	}
+	
+	private void updateRolesColumnsVisibility() {
+		// Update columns visibility
+		for(CurriculumRoles role:ROLES) {
+			FlexiColumnModel col = columnsModel.getColumnModelByIndex(role.ordinal() + ROLES_OFFSET);
+			if(col instanceof DefaultFlexiColumnModel) {
+				tableEl.setColumnModelVisible(col, usedRoles.contains(role));
+			}
+		}
+		
+		for(FormItem item:addRolesEl.getFormItems()) {
+			if(item instanceof FormLink link && link.getUserObject() instanceof CurriculumRoles role) {
+				item.setVisible(!usedRoles.contains(role));
+			}
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -386,7 +405,9 @@ public class EditMemberController extends FormBasicController {
 		} else if(resetButton == source) {
 			doReset();
 		} else if(source instanceof FormLink link) {
-			if(CMD_ADD.equals(link.getCmd()) && link.getUserObject() instanceof RoleCell cell) {
+			if(CMD_ADD_ROLE.equals(link.getCmd()) && link.getUserObject() instanceof CurriculumRoles role)  {
+				doAddRole(role);
+			} else if(CMD_ADD.equals(link.getCmd()) && link.getUserObject() instanceof RoleCell cell) {
 				doAddMembership(ureq, link, cell.role(), cell.row());
 			} else if(CMD_CHANGE.equals(link.getCmd()) && link.getUserObject() instanceof RoleCell cell) {
 				doMembership(ureq, link, cell.role(), cell.row(), cell.status());
@@ -561,6 +582,11 @@ public class EditMemberController extends FormBasicController {
 				changeMembershipCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
+	}
+	
+	private void doAddRole(CurriculumRoles role) {
+		usedRoles.add(role);
+		updateRolesColumnsVisibility();
 	}
 	
 	private record RoleCell(CurriculumRoles role, EditMemberCurriculumElementRow row, GroupMembershipStatus status) {

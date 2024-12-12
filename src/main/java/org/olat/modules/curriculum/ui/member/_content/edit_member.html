@@ -4,6 +4,11 @@
 $r.render("profil")
 <fieldset class="o_block">
 	<legend>$r.translate("membership")</legend>
+	#if($r.available("assign.additional.roles"))
+		<div class="o_button_group o_button_group_right">
+			$r.render("assign.additional.roles")	
+		</div>
+	#end
 	$r.render("editRolesTable")
 	<div class="o_button_group o_button_group_left">
 		<div class="btn-group">

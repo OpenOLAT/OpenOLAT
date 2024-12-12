@@ -80,7 +80,6 @@ public class EditMembershipsController extends StepFormBasicController {
 	private FlexiTableElement tableEl;
 	private FlexiTableColumnModel columnsModel;
 	private EditMembershipsTableModel tableModel;
-	private final List<FormItem> addRoleButtonList = new ArrayList<>();
 	
 	private int counter = 0;
 	private EditMembersContext membersContext;
@@ -112,7 +111,6 @@ public class EditMembershipsController extends StepFormBasicController {
 			String name = "role.".concat(role.name());
 			FormLink addRoleButton = uifactory.addFormLink(name, CMD_ADD_ROLE, name, null, formLayout, Link.LINK);
 			addRoleButton.setUserObject(role);
-			addRoleButtonList.add(addRoleButton);
 			addRolesEl.addElement(addRoleButton);
 		}
 		
