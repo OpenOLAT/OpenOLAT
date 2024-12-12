@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
+import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.WebappHelper;
 
@@ -35,8 +36,11 @@ import org.olat.core.util.WebappHelper;
  */
 public class RegistrationSupportFormStep03Controller extends StepFormBasicController {
 
+	private final StepsRunContext runContext;
+
 	public RegistrationSupportFormStep03Controller(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
+		this.runContext = runContext;
 		initForm(ureq);
 	}
 
@@ -48,7 +52,8 @@ public class RegistrationSupportFormStep03Controller extends StepFormBasicContro
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		runContext.put(RegWizardConstants.RECURRINGDETAILS, "done");
+		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 
 

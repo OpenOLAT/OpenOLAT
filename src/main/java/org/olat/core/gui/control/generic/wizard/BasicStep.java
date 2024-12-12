@@ -54,7 +54,7 @@ public abstract class BasicStep implements Step {
 	private String[] i18nArguments;
 	private StepCollection stepCollection;
 
-	public BasicStep(UserRequest ureq){
+	public BasicStep(UserRequest ureq) {
 		this.locale = ureq.getLocale();
 		this.identity = ureq.getIdentity();
 		this.translator = Util.createPackageTranslator(this.getClass(), locale);

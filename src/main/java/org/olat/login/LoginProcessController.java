@@ -21,6 +21,7 @@ package org.olat.login;
 
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Invitation;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -36,10 +37,13 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.WebappHelper;
+import org.olat.registration.RegWizardConstants;
 import org.olat.registration.RegisterFinishCallback;
 import org.olat.registration.RegistrationAdditionalPersonalDataController;
 import org.olat.registration.RegistrationLangStep00;
+import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
+import org.olat.registration.TemporaryKey;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -118,6 +122,11 @@ public class LoginProcessController extends BasicController {
 	private static class CancelCallback implements StepRunnerCallback {
 		@Override
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			TemporaryKey temporaryKey = (TemporaryKey) runContext.get(RegWizardConstants.TEMPORARYKEY);
+			// remove temporaryKey entry, if process gets canceled
+			if (temporaryKey != null) {
+				CoreSpringFactory.getImpl(RegistrationManager.class).deleteTemporaryKey(temporaryKey);
+			}
 			return Step.NOSTEP;
 		}
 	}
