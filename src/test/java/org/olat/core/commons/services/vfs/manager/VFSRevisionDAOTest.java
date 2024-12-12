@@ -178,6 +178,56 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testGetRevisionsSize() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		String uuid1 = UUID.randomUUID().toString();
+		String uuid2 = UUID.randomUUID().toString();
+		String parentPath = "/bcroot/course/" + uuid1;
+		String relativePath = parentPath + "/hello";
+		String relativePathTwo = parentPath + "/helloWorld";
+		String fileName1 = uuid1 + ".mp4";
+		String fileName21 = uuid2 + ".mp21";
+		String fileName22 = uuid2 + ".mp22";
+		String fileName23 = uuid2 + ".mp23";
+		
+		String uri1 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName1;
+		String uri21 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName21;
+		String uri22 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName22;
+		String uri23 = "file:///Users/frentix/Documents/bcroot/course/test/" + fileName23;
+		
+		List<VFSMetadata> allItemsBeforeTests = vfsMetadataDao.getMetadatas(relativePath);
+		for (VFSMetadata item : allItemsBeforeTests) {
+			vfsMetadataDao.removeMetadata(item);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		VFSMetadata container = vfsMetadataDao.createMetadata(uuid1, "/bcroot/course", uuid1, new Date(), 0L, true, uri1, "file", null);
+		VFSMetadata container1 = vfsMetadataDao.createMetadata(uuid1, parentPath, "hello", new Date(), 0L, true, uri1, "file", container);
+		VFSMetadata container2 = vfsMetadataDao.createMetadata(uuid1, parentPath, "helloWorld", new Date(), 0L, true, uri1, "file", container);
+		VFSMetadata metadata1 = vfsMetadataDao.createMetadata(uuid1, relativePath, fileName1, new Date(), 0L, false, uri1, "file", container1);
+		revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 100l, new Date(), "A comment", metadata1);
+		VFSMetadataImpl fileMetadata21Deleted = (VFSMetadataImpl)vfsMetadataDao.createMetadata(uuid1, relativePathTwo, fileName21, new Date(), 0L, false, uri21, "file", container2);
+		fileMetadata21Deleted.setDeleted(true);
+		vfsMetadataDao.updateMetadata(fileMetadata21Deleted);
+		revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 80l, new Date(), "A comment", fileMetadata21Deleted);
+		revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 30l, new Date(), "A comment", fileMetadata21Deleted);
+		VFSMetadata metadata22 = vfsMetadataDao.createMetadata(uuid1, relativePathTwo, fileName22, new Date(), 0L, false, uri22, "file", container2);
+		revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 100l, new Date(), "A comment", metadata22);
+		VFSMetadata metadata23 = vfsMetadataDao.createMetadata(uuid1, relativePathTwo, fileName23, new Date(), 0L, false, uri23, "file", container2);
+		revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 50l, new Date(), "A comment", metadata23);
+		dbInstance.commitAndCloseSession();
+		
+		Long size = revisionDao.getRevisionsSize(container, null);
+		Assert.assertEquals(Long.valueOf(360), size);
+		
+		size = revisionDao.getRevisionsSize(container, Boolean.TRUE);
+		Assert.assertEquals(Long.valueOf(110), size);
+		
+		size = revisionDao.getRevisionsSize(container, Boolean.FALSE);
+		Assert.assertEquals(Long.valueOf(250), size);
+	}
+	
+	@Test
 	public void calculateRevisionsSize() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
