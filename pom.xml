@@ -66,11 +66,11 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.2.0</org.springframework.version>
+		<org.springframework.version>6.2.1</org.springframework.version>
 		<org.hibernate.version>6.5.3.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.1.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
-		<apache.cxf>4.0.5</apache.cxf>
+		<apache.cxf>4.0.6</apache.cxf>
 		<apache.pdfbox>3.0.3</apache.pdfbox>
 		<apache.poi>5.3.0</apache.poi>
 		<apache.log4j>2.24.2</apache.log4j>
