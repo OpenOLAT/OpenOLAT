@@ -152,7 +152,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 			col.setAlwaysVisible(false);
 			columnsModel.addFlexiColumnModel(col);
 			
-			if(role == CurriculumRoles.participant) {
+			if(role == CurriculumRoles.participant && config.withConfirmationColumns()) {
 				DefaultFlexiColumnModel byCol = new DefaultFlexiColumnModel("table.header.confirmation.by", role.ordinal() + CONFIRMATION_BY_OFFSET, false, null,
 						new ConfirmationByCellRenderer(getTranslator()));
 				byCol.setDefaultVisible(true);

@@ -87,6 +87,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditMemberController extends FormBasicController {
 
+	private static final CurriculumRoles[] ROLES = CurriculumRoles.curriculumElementsRoles();
 	public static final int ROLES_OFFSET = 500;
 
 	private static final String CMD_ADD = "add";
@@ -173,7 +174,7 @@ public class EditMemberController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberElementsCols.externalId));
 
 		GroupMembershipStatusRenderer statusRenderer = new GroupMembershipStatusRenderer(getLocale());
-		for(CurriculumRoles role:CurriculumRoles.values()) {
+		for(CurriculumRoles role:ROLES) {
 			String i18nLabel = "role.".concat(role.name());
 			DefaultFlexiColumnModel col = new DefaultFlexiColumnModel(i18nLabel, role.ordinal() + ROLES_OFFSET, null, false, null, statusRenderer);
 			col.setDefaultVisible(true);
@@ -229,7 +230,7 @@ public class EditMemberController extends FormBasicController {
 		}
 		
 		// Update columns visibility
-		for(CurriculumRoles role:CurriculumRoles.values()) {
+		for(CurriculumRoles role:ROLES) {
 			FlexiColumnModel col = columnsModel.getColumnModelByIndex(role.ordinal() + ROLES_OFFSET);
 			if(col instanceof DefaultFlexiColumnModel) {
 				tableEl.setColumnModelVisible(col, usedRoles.containsKey(role));
@@ -246,7 +247,7 @@ public class EditMemberController extends FormBasicController {
 		
 		OLATResource resource = row.getCurriculumElement().getResource();
 		List<CurriculumRoles> memberships = membership == null ? List.of() : membership.getRoles();
-		for(CurriculumRoles role:CurriculumRoles.values()) {
+		for(CurriculumRoles role:ROLES) {
 			ResourceReservation reservation = reservationsMap.get(new ResourceToRoleKey(role, resource));
 			
 			String id = "model-" + role + "-" + row.getKey();

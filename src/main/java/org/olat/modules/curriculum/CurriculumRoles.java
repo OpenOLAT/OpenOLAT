@@ -41,6 +41,12 @@ public enum CurriculumRoles {
 	coach, //same as GroupRoles
 	participant; //same as GroupRoles
 	
+	public static final CurriculumRoles[] curriculumElementsRoles() {
+		return new CurriculumRoles[] {
+				CurriculumRoles.curriculumelementowner, CurriculumRoles.owner, CurriculumRoles.mastercoach,
+				CurriculumRoles.coach, CurriculumRoles.participant
+			};
+	}
 	
 	public static List<String> toList(String... roles) {
 		if(roles != null && roles.length > 0 && !(roles.length == 1 && roles[0] == null)) {

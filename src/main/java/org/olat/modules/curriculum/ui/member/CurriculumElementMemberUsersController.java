@@ -75,6 +75,9 @@ import org.olat.modules.curriculum.ui.event.EditMemberEvent;
 import org.olat.modules.curriculum.ui.member.MemberManagementTableModel.MemberCols;
 import org.olat.modules.curriculum.ui.wizard.AddMember1SearchStep;
 import org.olat.modules.curriculum.ui.wizard.AddMemberFinishCallback;
+import org.olat.modules.curriculum.ui.wizard.EditMember1MembershipStep;
+import org.olat.modules.curriculum.ui.wizard.EditMemberFinishCallback;
+import org.olat.modules.curriculum.ui.wizard.EditMembersContext;
 import org.olat.modules.curriculum.ui.wizard.MembersContext;
 import org.olat.user.UserAvatarMapper;
 
@@ -92,7 +95,8 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			CurriculumRoles.owner, CurriculumRoles.curriculumelementowner
 		};
 	protected static final String FILTER_ROLE = "Role";
-	
+
+	private FormLink editBatchButton;
 	private FormLink removeBatchButton;
 	private FormLink addParticipantButton;
 	
@@ -100,6 +104,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	
 	private ToolsController toolsCtrl;
 	private StepsMainRunController addMemberCtrl;
+	private StepsMainRunController editMemberCtrl;
 	private RemoveMembershipsController removeCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
@@ -137,6 +142,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			}
 		
 			removeBatchButton = uifactory.addFormLink("remove.memberships", formLayout, Link.BUTTON);
+			editBatchButton = uifactory.addFormLink("edit.member", formLayout, Link.BUTTON);
 		}
 	}
 	
@@ -145,6 +151,9 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		super.initTableForm(formLayout);
 		if(removeBatchButton != null) {
 			tableEl.addBatchButton(removeBatchButton);
+		}
+		if(editBatchButton != null) {
+			tableEl.addBatchButton(editBatchButton);
 		}
 	}
 	
@@ -290,7 +299,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(source == addMemberCtrl) {
+		} else if(source == addMemberCtrl || source == editMemberCtrl) {
 			if (event == Event.CANCELLED_EVENT) {
 				getWindowControl().pop();
 				cleanUp();
@@ -343,6 +352,8 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			doAddMemberWizard(ureq, CurriculumRoles.participant);
 		} else if(removeBatchButton == source) {
 			doRemoveMemberships(ureq);
+		} else if(editBatchButton == source) {
+			doEditMemberWizard(ureq);
 		} else if(source instanceof FormLink link && CMD_ADD_MEMBER.equals(link.getCmd())
 				&& link.getUserObject() instanceof CurriculumRoles role) {
 			doAddMemberWizard(ureq, role);
@@ -388,6 +399,33 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		addMemberCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, title, "");
 		listenTo(addMemberCtrl);
 		getWindowControl().pushAsModalDialog(addMemberCtrl.getInitialComponent());
+	}
+
+	private void doEditMemberWizard(UserRequest ureq) {
+		List<Identity> identities = getSelectedIdentities();
+		List<CurriculumRoles> baseRoles = List.of(CurriculumRoles.participant);
+		EditMembersContext membersContex = new EditMembersContext(identities, baseRoles, curriculum, curriculumElement, descendants);
+		
+		EditMember1MembershipStep step = new EditMember1MembershipStep(ureq, membersContex);
+		EditMemberFinishCallback finish = new EditMemberFinishCallback(membersContex);
+		
+		removeAsListenerAndDispose(editMemberCtrl);
+		String title = translate("wizard.edit.members");
+		editMemberCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, title, "");
+		listenTo(editMemberCtrl);
+		getWindowControl().pushAsModalDialog(editMemberCtrl.getInitialComponent());
+	}
+	
+	private List<Identity> getSelectedIdentities() {
+		List<Identity> identities = new ArrayList<>();
+		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
+		for(Integer index:selectedIndexes) {
+			MemberRow row = tableModel.getObject(index.intValue());
+			if(row != null) {
+				identities.add(row.getIdentity());
+			}
+		}
+		return identities;
 	}
 	
 	@Override
