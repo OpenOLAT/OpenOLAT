@@ -509,7 +509,9 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 	@Override
 	public Long getDescendantsSize(VFSMetadata parentMetadata, Boolean deleted) {
-		return metadataDao.getDescendantsSize(parentMetadata, deleted);
+		Long descendantSize = metadataDao.getDescendantsSize(parentMetadata, deleted);
+		Long revisionsSize = revisionDao.getRevisionsSize(parentMetadata, deleted);
+		return descendantSize + revisionsSize;
 	}
 
 	@Override
