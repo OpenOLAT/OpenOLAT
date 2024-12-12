@@ -1206,19 +1206,21 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry) {
-		if (courseEntry != null && courseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
+		RepositoryEntry reloadedCourseEntry = repositoryEntryDao.loadByKey(courseEntry.getKey());
+
+		if (reloadedCourseEntry != null && reloadedCourseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 			return;
 		}
 		if (!isEnabled()) {
 			return;
 		}
 
-		BadgeIssuingContext badgeIssuingContext = createBadgeIssuingContext(courseEntry);
+		BadgeIssuingContext badgeIssuingContext = createBadgeIssuingContext(reloadedCourseEntry);
 		if (badgeIssuingContext.badgeClassesAndCriteria.isEmpty()) {
 			return;
 		}
 
-		List<AssessmentEntry> assessmentEntries = courseEntry != null ? assessmentEntryDAO.loadAssessmentEntriesByAssessedIdentity(recipient, courseEntry) : null;
+		List<AssessmentEntry> assessmentEntries = reloadedCourseEntry != null ? assessmentEntryDAO.loadAssessmentEntriesByAssessedIdentity(recipient, reloadedCourseEntry) : null;
 		issueAllBadges(recipient, awardedBy, badgeIssuingContext.badgeClassesAndCriteria, assessmentEntries);
 	}
 	
