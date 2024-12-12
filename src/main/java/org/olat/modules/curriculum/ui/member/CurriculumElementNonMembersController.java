@@ -202,7 +202,7 @@ public class CurriculumElementNonMembersController extends AbstractMembersContro
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
 			if(contactLink == source) {
-				doOpenContact(ureq, List.of(member));
+				doOpenContact(ureq, member);
 			}
 		}
 	}

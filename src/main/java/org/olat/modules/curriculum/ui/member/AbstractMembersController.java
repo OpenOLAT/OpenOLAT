@@ -22,7 +22,7 @@ package org.olat.modules.curriculum.ui.member;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -149,6 +150,8 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		this.curriculum = curriculumElement.getCurriculum();
 		
 		this.toolbarPanel = toolbarPanel;
+		toolbarPanel.addListener(this);
+		
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
@@ -160,6 +163,12 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
 	}
 	
+	@Override
+	protected void doDispose() {
+		toolbarPanel.removeListener(this);
+		super.doDispose();
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initButtonsForm(formLayout);
@@ -357,6 +366,8 @@ public abstract class AbstractMembersController extends FormBasicController impl
 			}
 		}
 	}
+	
+	
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -373,6 +384,15 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		removeAsListenerAndDispose(contactCtrl);
 		editSingleMemberCtrl = null;
 		contactCtrl = null;
+	}
+	
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(toolbarPanel == source && event instanceof PopEvent pe && pe.getController() == contactCtrl) {
+			tableEl.deselectAll();
+		}
+		super.event(ureq, source, event);
 	}
 	
 	@Override
@@ -485,17 +505,22 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		listenTo(editSingleMemberCtrl);
 		toolbarPanel.pushController(fullname, editSingleMemberCtrl);
 	}
+
+	protected void doOpenContact(UserRequest ureq) {
+		List<Identity> identities = getSelectedIdentities();
+		doOpenContact(ureq, identities);
+	}
 	
-	protected void doOpenContact(UserRequest ureq, List<MemberRow> members) {
+	protected void doOpenContact(UserRequest ureq, MemberRow member) {
+		doOpenContact(ureq, List.of(member.getIdentity()));
+	}
+	
+	protected void doOpenContact(UserRequest ureq, List<Identity> members) {
 		removeAsListenerAndDispose(contactCtrl);
-		
-		List<Identity> choosenIdentities = members.stream()
-				.map(MemberRow::getIdentity)
-				.collect(Collectors.toList());
 		
 		ContactMessage cmsg = new ContactMessage(getIdentity());
 		ContactList emailList = new ContactList(curriculumElement.getDisplayName());
-		emailList.addAllIdentites(choosenIdentities);
+		emailList.addAllIdentites(members);
 		cmsg.addEmailTo(emailList);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableType("Contact");
@@ -504,6 +529,18 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		listenTo(contactCtrl);
 		
 		toolbarPanel.pushController(translate("contact.title"), contactCtrl);
+	}
+	
+	protected List<Identity> getSelectedIdentities() {
+		List<Identity> identities = new ArrayList<>();
+		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
+		for(Integer index:selectedIndexes) {
+			MemberRow row = tableModel.getObject(index.intValue());
+			if(row != null) {
+				identities.add(row.getIdentity());
+			}
+		}
+		return identities;
 	}
 	
 	protected final UserInfoProfileConfig createProfilConfig() {

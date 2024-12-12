@@ -453,7 +453,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
 			if(contactLink == source) {
-				doOpenContact(ureq, List.of(member));
+				doOpenContact(ureq, member);
 			} else if(editMemberLink == source) {
 				doEditMember(ureq, member);
 			} else if(acceptLink == source) {

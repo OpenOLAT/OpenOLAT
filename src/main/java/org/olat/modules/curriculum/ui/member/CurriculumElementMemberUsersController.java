@@ -98,6 +98,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 
 	private FormLink editBatchButton;
 	private FormLink removeBatchButton;
+	private FormLink contactBatchButton;
 	private FormLink addParticipantButton;
 	
 	private CloseableModalController cmc;
@@ -125,6 +126,8 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	protected void initButtonsForm(FormItemContainer formLayout) {
 		super.initButtonsForm(formLayout);
 		
+		contactBatchButton = uifactory.addFormLink("contact", formLayout, Link.BUTTON);
+		
 		// Add/remove buttons
 		if(!membersManaged && secCallback.canManagerCurriculumElementUsers(curriculumElement)) {
 			addParticipantButton = uifactory.addFormLink("add.participants", "add.participants", null, formLayout, Link.BUTTON);
@@ -149,11 +152,12 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	@Override
 	protected void initTableForm(FormItemContainer formLayout) {
 		super.initTableForm(formLayout);
-		if(removeBatchButton != null) {
-			tableEl.addBatchButton(removeBatchButton);
-		}
+		tableEl.addBatchButton(contactBatchButton);
 		if(editBatchButton != null) {
 			tableEl.addBatchButton(editBatchButton);
+		}
+		if(removeBatchButton != null) {
+			tableEl.addBatchButton(removeBatchButton);
 		}
 	}
 	
@@ -340,6 +344,8 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			doRemoveMemberships(ureq);
 		} else if(editBatchButton == source) {
 			doEditMemberWizard(ureq);
+		} else if(contactBatchButton == source) {
+			doOpenContact(ureq);
 		} else if(source instanceof FormLink link && CMD_ADD_MEMBER.equals(link.getCmd())
 				&& link.getUserObject() instanceof CurriculumRoles role) {
 			doAddMemberWizard(ureq, role);
@@ -402,18 +408,6 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		getWindowControl().pushAsModalDialog(editMemberCtrl.getInitialComponent());
 	}
 	
-	private List<Identity> getSelectedIdentities() {
-		List<Identity> identities = new ArrayList<>();
-		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
-		for(Integer index:selectedIndexes) {
-			MemberRow row = tableModel.getObject(index.intValue());
-			if(row != null) {
-				identities.add(row.getIdentity());
-			}
-		}
-		return identities;
-	}
-	
 	@Override
 	protected void doOpenMemberDetails(UserRequest ureq, MemberRow row) {
 		super.doOpenMemberDetails(ureq, row, true, true);
@@ -468,7 +462,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
 			if(contactLink == source) {
-				doOpenContact(ureq, List.of(member));
+				doOpenContact(ureq, member);
 			} else if(editMemberLink == source) {
 				doEditMember(ureq, member);
 			} else if(removeMembershipsLink == source) {
