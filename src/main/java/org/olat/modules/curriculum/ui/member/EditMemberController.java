@@ -66,6 +66,7 @@ import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearc
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
+import org.olat.modules.curriculum.ui.CurriculumUIFactory;
 import org.olat.modules.curriculum.ui.component.GroupMembershipHistoryComparator;
 import org.olat.modules.curriculum.ui.component.GroupMembershipStatusRenderer;
 import org.olat.modules.curriculum.ui.event.AcceptMembershipEvent;
@@ -88,11 +89,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EditMemberController extends FormBasicController {
 
 	private static final CurriculumRoles[] ROLES = CurriculumRoles.curriculumElementsRoles();
+	private static final GroupMembershipStatus[] MODIFIABLE_STATUS = GroupMembershipStatus.statusWithNextStep();
 	public static final int ROLES_OFFSET = 500;
 
 	private static final String CMD_ADD = "add";
-	private static final String CMD_ACTIVE = "active";
-	private static final String CMD_PENDING = "pending";
 	private static final String CMD_CHANGE = "change";
 	
 	private FormLink backButton;
@@ -268,16 +268,19 @@ public class EditMemberController extends FormBasicController {
 					usedRoles.put(role, Boolean.TRUE);
 				}
 			}
+			row.setStatus(role, status);
 			
 			FormLink link = null;
-			if(status != null) {
-				link = forgeLink(id, status);
+			if(status == null || hasGroupMembershipStatus(status, MODIFIABLE_STATUS)) {
+				if(status != null) {
+					link = forgeLink(id, status);
+				}
+				if(link == null) {
+					link = forgeAddLink(id);
+				}
+				link.setUserObject(new RoleCell(role, row, status));
+				row.addButton(role, link);
 			}
-			if(link == null) {
-				link = forgeAddLink(id);
-			}
-			link.setUserObject(new RoleCell(role, row));
-			row.addButton(role, link);
 		}
 	}
 	
@@ -297,35 +300,12 @@ public class EditMemberController extends FormBasicController {
 	}
 
 	private FormLink forgeLink(String id, GroupMembershipStatus status) {
-		FormLink link;
-		if(status == GroupMembershipStatus.reservation) {
-			link = forgeLink(id, CMD_PENDING, "membership.pending",
-					"o_gmembership_status_reservation", "o_membership_status_pending");
-		} else if(status == GroupMembershipStatus.active) {
-			link = forgeLink(id, CMD_ACTIVE, "membership.active",
-					"o_gmembership_status_active", "o_membership_status_active");
-		} else if(status == GroupMembershipStatus.cancel) {
-			link = forgeLink(id, CMD_CHANGE, "membership.cancel",
-					"o_gmembership_status_cancel", "o_membership_status_cancel");
-		} else if(status == GroupMembershipStatus.cancelWithFee) {
-			link = forgeLink(id, CMD_CHANGE, "membership.cancelWithFee",
-					"o_gmembership_status_cancelwithfee", "o_membership_status_cancelwithfee");
-		} else if(status == GroupMembershipStatus.declined) {
-			link = forgeLink(id, CMD_CHANGE, "membership.declined",
-					"o_gmembership_status_declined", "o_membership_status_declined");
-		} else if(status == GroupMembershipStatus.resourceDeleted) {
-			link = forgeLink(id, CMD_CHANGE, "membership.resourceDeleted",
-					"o_gmembership_status_resourcedeleted", "o_membership_status_resourcedeleted");
-		} else if(status == GroupMembershipStatus.finished) {
-			link = forgeLink(id, CMD_CHANGE, "membership.finished",
-					"o_gmembership_status_finished", "o_membership_status_finished");
-		} else if(status == GroupMembershipStatus.removed) {
-			link = forgeLink(id, CMD_CHANGE, "membership.removed",
-					"o_gmembership_status_removed", "o_membership_status_removed");
-		} else {
-			link = null;
-		}
-		return link;
+		if(status == null) return null;
+		
+		String labelCssClass = CurriculumUIFactory.getMembershipLabelCssClass(status);
+		String iconCssClass = CurriculumUIFactory.getMembershipIconCssClass(status);
+		String i18nKey = getMembershipI18nKey(status);
+		return forgeLink(id, CMD_CHANGE, i18nKey, labelCssClass, iconCssClass);
 	}
 
 	private FormLink forgeLink(String id, String cmd, String i18n, String boxCssClass, String iconCssClass) {
@@ -340,6 +320,20 @@ public class EditMemberController extends FormBasicController {
 		FormLink addLink = uifactory.addFormLink(id, CMD_ADD, "add", null, flc, Link.LINK);
 		addLink.setIconLeftCSS("o_icon o_icon-fw o_icon_plus");
 		return addLink;
+	}
+	
+	public static final String getMembershipI18nKey(GroupMembershipStatus status) {
+		return switch(status) {
+			case reservation -> "membership.pending";
+			case active -> "membership.active";
+			case cancel -> "membership.cancel";
+			case cancelWithFee -> "membership.cancelWithFee";
+			case declined -> "membership.declined";
+			case resourceDeleted -> "membership.resourceDeleted";
+			case finished -> "membership.finished";
+			case removed -> "membership.removed";
+			default -> null;
+		};
 	}
 
 	@Override
@@ -359,7 +353,7 @@ public class EditMemberController extends FormBasicController {
 		} else if(confirmMembershipCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT
 					|| event instanceof AcceptMembershipEvent || event instanceof DeclineMembershipEvent) {
-				setModification(confirmMembershipCtrl.getModification());
+				setConfirmReservation(confirmMembershipCtrl.getModification());
 			}
 			calloutCtrl.deactivate();
 			cleanUp();
@@ -392,14 +386,10 @@ public class EditMemberController extends FormBasicController {
 		} else if(resetButton == source) {
 			doReset();
 		} else if(source instanceof FormLink link) {
-			if(CMD_ACTIVE.equals(link.getCmd()) && link.getUserObject() instanceof RoleCell cell) {
-				doChangeMembership(ureq, link, cell.role(), cell.row());
-			} else if(CMD_ADD.equals(link.getCmd()) && link.getUserObject() instanceof RoleCell cell) {
+			if(CMD_ADD.equals(link.getCmd()) && link.getUserObject() instanceof RoleCell cell) {
 				doAddMembership(ureq, link, cell.role(), cell.row());
-			} else if(CMD_PENDING.equals(link.getCmd()) && link.getUserObject() instanceof RoleCell cell) {
-				doConfirmMembership(ureq, link, cell.role(), cell.row());
 			} else if(CMD_CHANGE.equals(link.getCmd()) && link.getUserObject() instanceof RoleCell cell) {
-				doChangeMembership(ureq, link, cell.role(), cell.row());
+				doMembership(ureq, link, cell.role(), cell.row(), cell.status());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -459,6 +449,30 @@ public class EditMemberController extends FormBasicController {
 		}
 		return change;
 	}
+	
+	/**
+	 * This modification can only be applied on current reservations.
+	 * 
+	 * @param modification The modification
+	 */
+	private void setConfirmReservation(MembershipModification modification) {
+		EditMemberCurriculumElementRow row = tableModel.getObject(modification.curriculumElement());
+		row.addModification(modification.role(), modification);
+		
+		if(modification.toDescendants()) {
+			int index = tableModel.getIndexOf(row);
+			int numOfRows = tableModel.getRowCount();
+			for(int i=index+1; i<numOfRows; i++) {
+				EditMemberCurriculumElementRow obj = tableModel.getObject(i);
+				GroupMembershipStatus currentStatus = obj.getStatus(modification.role());
+				if(tableModel.isParentOf(row, obj) && currentStatus == GroupMembershipStatus.reservation) {
+					obj.addModification(modification.role(), modification);
+				}
+			}
+		}
+		
+		tableEl.reset(false, false, true);
+	}
 
 	private void setModification(MembershipModification modification) {
 		EditMemberCurriculumElementRow row = tableModel.getObject(modification.curriculumElement());
@@ -469,13 +483,40 @@ public class EditMemberController extends FormBasicController {
 			int numOfRows = tableModel.getRowCount();
 			for(int i=index+1; i<numOfRows; i++) {
 				EditMemberCurriculumElementRow obj = tableModel.getObject(i);
-				if(tableModel.isParentOf(row, obj)) {
+				GroupMembershipStatus currentStatus = obj.getStatus(modification.role());
+				if(tableModel.isParentOf(row, obj)
+						&& GroupMembershipStatus.allowedAsNextStep(currentStatus, modification.nextStatus())) {
 					obj.addModification(modification.role(), modification);
 				}
 			}
 		}
 		
 		tableEl.reset(false, false, true);
+	}
+	
+	private void doMembership(UserRequest ureq, FormLink link, CurriculumRoles role, EditMemberCurriculumElementRow row, GroupMembershipStatus status) {
+		GroupMembershipStatus[] nextPossibleStatus = GroupMembershipStatus.possibleNextStatus(status);
+		// Reservation -> confirm
+		if(status == GroupMembershipStatus.reservation) {
+			doConfirmMembership(ureq, link, role, row);
+		// Possible steps active or reservation -> add membership callout (with or without confirmation)
+		} else if(hasGroupMembershipStatus(GroupMembershipStatus.active, nextPossibleStatus)
+				|| hasGroupMembershipStatus(GroupMembershipStatus.reservation, nextPossibleStatus)) {
+			doAddMembership(ureq, link, role, row);
+		} else if(nextPossibleStatus != null && nextPossibleStatus.length > 0) {
+			doChangeMembership(ureq, link, role, row, nextPossibleStatus);
+		}
+	}
+	
+	private boolean hasGroupMembershipStatus(GroupMembershipStatus status, GroupMembershipStatus[] statusArr) {
+		if(status != null && statusArr != null && statusArr.length > 0) {
+			for(GroupMembershipStatus next:statusArr) {
+				if(next == status) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private void doAddMembership(UserRequest ureq, FormLink link, CurriculumRoles role, EditMemberCurriculumElementRow row) {
@@ -494,7 +535,8 @@ public class EditMemberController extends FormBasicController {
 		CurriculumElement curriculumElement = row.getCurriculumElement();
 		ResourceReservation reservation = row.getReservation(role);
 		if(reservation == null) {
-			doChangeMembership(ureq, link, role, row);
+			// Something wrong
+			loadModel();
 		} else {
 			confirmMembershipCtrl = new ConfirmMembershipCalloutController(ureq, getWindowControl(), member, role,
 					curriculumElement, reservation);
@@ -508,9 +550,10 @@ public class EditMemberController extends FormBasicController {
 		}
 	}
 	
-	private void doChangeMembership(UserRequest ureq, FormLink link, CurriculumRoles role, EditMemberCurriculumElementRow row) {
+	private void doChangeMembership(UserRequest ureq, FormLink link, CurriculumRoles role,
+			EditMemberCurriculumElementRow row, GroupMembershipStatus[] possibleStatus) {
 		CurriculumElement curriculumElement = row.getCurriculumElement();
-		changeMembershipCtrl = new ChangeMembershipCalloutController(ureq, getWindowControl(), member, role, curriculumElement);
+		changeMembershipCtrl = new ChangeMembershipCalloutController(ureq, getWindowControl(), member, role, curriculumElement, possibleStatus);
 		listenTo(changeMembershipCtrl);
 		
 		String title = translate("change.membership");
@@ -520,7 +563,7 @@ public class EditMemberController extends FormBasicController {
 		calloutCtrl.activate();
 	}
 	
-	private record RoleCell(CurriculumRoles role, EditMemberCurriculumElementRow row) {
+	private record RoleCell(CurriculumRoles role, EditMemberCurriculumElementRow row, GroupMembershipStatus status) {
 		//
 	}
 }

@@ -222,20 +222,6 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		rolesToTab.put(CurriculumRoles.curriculumelementowner, curriculumElementOwnersTab);
 	}
 	
-	private void reloadMember(UserRequest ureq, Identity member) {
-		boolean openDetails = false;
-		MemberRow row = tableModel.getObject(member);
-		if(row != null && row.getDetailsController() != null) {
-			doCloseMemberDetails(row);
-			openDetails = true;
-		}
-		loadModel(false);
-		if(openDetails) {
-			MemberRow reloadedRow = tableModel.getObject(member);
-			doOpenMemberDetails(ureq, reloadedRow);
-		}
-	}
-	
 	@Override
 	protected void loadModel(boolean reset) {
 		SearchMemberParameters params = getSearchParameters();
@@ -430,7 +416,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	
 	@Override
 	protected void doOpenMemberDetails(UserRequest ureq, MemberRow row) {
-		super.doOpenMemberDetails(ureq, row, true, false);
+		super.doOpenMemberDetails(ureq, row, true, true);
 	}
 
 	@Override
@@ -482,7 +468,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
 			if(contactLink == source) {
-				doOpenContact(ureq, member);
+				doOpenContact(ureq, List.of(member));
 			} else if(editMemberLink == source) {
 				doEditMember(ureq, member);
 			} else if(removeMembershipsLink == source) {

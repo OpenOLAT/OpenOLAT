@@ -136,13 +136,14 @@ public class MemberDetailsController extends FormBasicController {
 		editMemberShipButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		editMemberShipButton.setVisible(config.withEdit());
 		
+		boolean showAcceptDeclineButtons = config.withAcceptDecline() && rolesDetailsCtrl.hasReservations();
 		acceptButton = uifactory.addFormLink("accept", formLayout, Link.BUTTON);
 		acceptButton.setIconLeftCSS("o_icon o_icon-fw o_icon_check");
-		acceptButton.setVisible(config.withAcceptDecline());
+		acceptButton.setVisible(showAcceptDeclineButtons);
 		
 		declineButton = uifactory.addFormLink("decline", formLayout, Link.BUTTON);
 		declineButton.setIconLeftCSS("o_icon o_icon-fw o_icon_decline");
-		declineButton.setVisible(config.withAcceptDecline());
+		declineButton.setVisible(showAcceptDeclineButtons);
 	
 		formLayout.add("roles", rolesDetailsCtrl.getInitialFormItem());
 		if(historyDetailsCtrl != null) {

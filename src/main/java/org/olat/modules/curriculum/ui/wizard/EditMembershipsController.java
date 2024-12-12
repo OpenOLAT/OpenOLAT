@@ -71,6 +71,7 @@ import org.olat.modules.curriculum.ui.wizard.EditMembershipsTableModel.Membershi
 public class EditMembershipsController extends StepFormBasicController {
 	
 	private static final CurriculumRoles[] ROLES = CurriculumRoles.curriculumElementsRoles();
+	private static final GroupMembershipStatus[] MODIFIABLE =  GroupMembershipStatus.statusWithNextStep();
 	private static final String CMD_SELECT = "select.status";
 	private static final String CMD_ADD_ROLE = "add.role";
 	public static final int ROLES_OFFSET = 500;
@@ -296,7 +297,7 @@ public class EditMembershipsController extends StepFormBasicController {
 	private void doOpenCallout(UserRequest ureq, FormLink link, CurriculumElementAndRole cell) {
 		CurriculumRoles role = cell.role();
 		CurriculumElement curriculumElement = cell.curriculumElement();
-		changeMembershipCtrl = new ChangeMembershipCalloutController(ureq, getWindowControl(), null, role, curriculumElement);
+		changeMembershipCtrl = new ChangeMembershipCalloutController(ureq, getWindowControl(), null, role, curriculumElement, MODIFIABLE);
 		listenTo(changeMembershipCtrl);
 		
 		String title = translate("change.membership");

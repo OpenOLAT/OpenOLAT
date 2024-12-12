@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -40,6 +41,7 @@ public class EditMemberCurriculumElementRow extends AbstractCurriculumElementRow
 	private final EnumMap<CurriculumRoles,FormLink> rolesModelLinks = new EnumMap<>(CurriculumRoles.class);
 	private final EnumMap<CurriculumRoles,MembershipModification> modifications = new EnumMap<>(CurriculumRoles.class);
 	private final EnumMap<CurriculumRoles,ResourceReservation> rolesReservation = new EnumMap<>(CurriculumRoles.class);
+	private final EnumMap<CurriculumRoles,GroupMembershipStatus> rolesStatus = new EnumMap<>(CurriculumRoles.class);
 	
 	public EditMemberCurriculumElementRow(CurriculumElement curriculumElement) {
 		super(curriculumElement);
@@ -60,6 +62,18 @@ public class EditMemberCurriculumElementRow extends AbstractCurriculumElementRow
 
 	public void addReservation(CurriculumRoles role, ResourceReservation reservation) {
 		rolesReservation.put(role, reservation);
+	}
+	
+	public GroupMembershipStatus getStatus(CurriculumRoles role) {
+		return rolesStatus.get(role);
+	}
+	
+	public void setStatus(CurriculumRoles role, GroupMembershipStatus status) {
+		if(status == null) {
+			rolesStatus.remove(role);
+		} else {
+			rolesStatus.put(role, status);
+		}
 	}
 
 	public void addButton(CurriculumRoles role, FormLink button) {

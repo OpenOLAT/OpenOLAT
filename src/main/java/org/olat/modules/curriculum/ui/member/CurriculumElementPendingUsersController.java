@@ -190,20 +190,6 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		tabs.add(withConfirmationDateTab);
 	}
 	
-	private void reloadMember(UserRequest ureq, Identity member) {
-		boolean openDetails = false;
-		MemberRow row = tableModel.getObject(member);
-		if(row != null && row.getDetailsController() != null) {
-			doCloseMemberDetails(row);
-			openDetails = true;
-		}
-		loadModel(false);
-		if(openDetails) {
-			MemberRow reloadedRow = tableModel.getObject(member);
-			doOpenMemberDetails(ureq, reloadedRow);
-		}
-	}
-	
 	@Override
 	protected void loadModel(boolean reset) {
 		// Reservations
@@ -430,9 +416,9 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	
 	private class ToolsController extends BasicController {
 		
+		private Link acceptLink;
+		private Link declineLink;
 		private final Link contactLink;
-		private final Link acceptLink;
-		private final Link declineLink;
 		private final Link editMemberLink;
 		private final VelocityContainer mainVC;
 		
@@ -446,8 +432,10 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 			mainVC = createVelocityContainer("tools");
 
 			contactLink = addLink("contact", "contact", "o_icon o_icon-fw o_icon_mail");
-			acceptLink = addLink("accept", "accept", "o_icon o_icon-fw o_icon_check");
-			declineLink = addLink("decline", "decline", "o_icon o_icon-fw o_icon_decline");
+			if(member.getNumOfReservations() > 0) {
+				acceptLink = addLink("accept", "accept", "o_icon o_icon-fw o_icon_check");
+				declineLink = addLink("decline", "decline", "o_icon o_icon-fw o_icon_decline");
+			}
 			editMemberLink = addLink("edit.member", "edit.member", "o_icon o_icon-fw o_icon_edit");
 			
 			putInitialPanel(mainVC);
@@ -465,7 +453,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
 			if(contactLink == source) {
-				doOpenContact(ureq, member);
+				doOpenContact(ureq, List.of(member));
 			} else if(editMemberLink == source) {
 				doEditMember(ureq, member);
 			} else if(acceptLink == source) {

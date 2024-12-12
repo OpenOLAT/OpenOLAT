@@ -86,6 +86,15 @@ public class MemberRolesDetailsRow extends AbstractCurriculumElementRow {
 		return false;
 	}
 	
+	public boolean hasReservations() {
+		for(Map.Entry<CurriculumRoles,RoleDetails> entry:details.entrySet()) {
+			if(GroupMembershipStatus.reservation.equals(entry.getValue().getRolesStatus())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public GroupMembershipStatus getModificationStatus(CurriculumRoles role) {
 		RoleDetails d = details.get(role);
 		return d == null || d.getModification() == null ? null : d.getModification().nextStatus();

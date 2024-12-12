@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.member;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
@@ -260,6 +261,20 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		return components;
 	}
 	
+	protected void reloadMember(UserRequest ureq, Identity member) {
+		boolean openDetails = false;
+		MemberRow row = tableModel.getObject(member);
+		if(row != null && row.getDetailsController() != null) {
+			doCloseMemberDetails(row);
+			openDetails = true;
+		}
+		loadModel(false);
+		if(openDetails) {
+			MemberRow reloadedRow = tableModel.getObject(member);
+			doOpenMemberDetails(ureq, reloadedRow);
+		}
+	}
+	
 	protected abstract void loadModel(boolean reset);
 	
 	protected void loadImStatus(List<Long> loadStatus, Map<Long,MemberRow> keyToMemberMap) {
@@ -345,11 +360,11 @@ public abstract class AbstractMembersController extends FormBasicController impl
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source instanceof MemberDetailsController detailsCtrl) {
-			if(detailsCtrl.getUserObject() instanceof MemberRow row) {
-				doCloseMemberDetails(row);
+		if(source instanceof MemberDetailsController detailsCtrl
+				&& detailsCtrl.getUserObject() instanceof MemberRow row) {
+			if(event == Event.CHANGED_EVENT) {
+				reloadMember(ureq, row.getIdentity());
 			}
-			loadModel(false);
 		}
 	}
 	
@@ -471,15 +486,16 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		toolbarPanel.pushController(fullname, editSingleMemberCtrl);
 	}
 	
-	protected void doOpenContact(UserRequest ureq, MemberRow member) {
+	protected void doOpenContact(UserRequest ureq, List<MemberRow> members) {
 		removeAsListenerAndDispose(contactCtrl);
 		
-		Identity choosenIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
-		String fullname = userManager.getUserDisplayName(choosenIdentity);
+		List<Identity> choosenIdentities = members.stream()
+				.map(MemberRow::getIdentity)
+				.collect(Collectors.toList());
 		
-		ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
-		ContactList emailList = new ContactList(fullname);
-		emailList.add(choosenIdentity);
+		ContactMessage cmsg = new ContactMessage(getIdentity());
+		ContactList emailList = new ContactList(curriculumElement.getDisplayName());
+		emailList.addAllIdentites(choosenIdentities);
 		cmsg.addEmailTo(emailList);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableType("Contact");
@@ -487,7 +503,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		contactCtrl = new ContactFormController(ureq, bwControl, true, false, false, cmsg);
 		listenTo(contactCtrl);
 		
-		toolbarPanel.pushController(fullname, contactCtrl);
+		toolbarPanel.pushController(translate("contact.title"), contactCtrl);
 	}
 	
 	protected final UserInfoProfileConfig createProfilConfig() {

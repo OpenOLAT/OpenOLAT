@@ -44,6 +44,11 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
  */
 public class ChangeMembershipCalloutController extends FormBasicController {
 	
+	private static final GroupMembershipStatus[] DEFAULT_STATUS = {
+			GroupMembershipStatus.active, GroupMembershipStatus.cancel,
+			GroupMembershipStatus.declined, GroupMembershipStatus.removed
+	};
+	
 	private TextElement adminNoteEl;
 	private SingleSelection nextStatusEl;
 	private SingleSelection applyToEl;
@@ -51,14 +56,17 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 	private final Identity member;
 	private final CurriculumRoles role;
 	private final CurriculumElement curriculumElement;
+	private final GroupMembershipStatus[] possibleStatus;
 	private MembershipModification modification;
 
 	public ChangeMembershipCalloutController(UserRequest ureq, WindowControl wControl,
-			Identity member, CurriculumRoles role, CurriculumElement curriculumElement) {
+			Identity member, CurriculumRoles role, CurriculumElement curriculumElement,
+			GroupMembershipStatus[] possibleStatus) {
 		super(ureq, wControl, LAYOUT_VERTICAL, Util
 				.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 		this.role = role;
 		this.member = member;
+		this.possibleStatus = possibleStatus == null ? DEFAULT_STATUS : possibleStatus;
 		this.curriculumElement = curriculumElement;
 		initForm(ureq);
 	}
@@ -70,10 +78,9 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		SelectionValues nextStatusPK = new SelectionValues();
-		nextStatusPK.add(SelectionValues.entry(GroupMembershipStatus.active.name(), translate("membership." + GroupMembershipStatus.active.name())));
-		nextStatusPK.add(SelectionValues.entry(GroupMembershipStatus.cancel.name(), translate("membership." + GroupMembershipStatus.cancel.name())));
-		nextStatusPK.add(SelectionValues.entry(GroupMembershipStatus.declined.name(), translate("membership." + GroupMembershipStatus.declined.name())));
-		nextStatusPK.add(SelectionValues.entry(GroupMembershipStatus.removed.name(), translate("membership." + GroupMembershipStatus.removed.name())));
+		for(GroupMembershipStatus status:possibleStatus) {
+			nextStatusPK.add(SelectionValues.entry(status.name(), translate("membership." + status.name())));
+		}
 		nextStatusEl = uifactory.addDropdownSingleselect("change.membership.to", formLayout, nextStatusPK.keys(), nextStatusPK.values());
 
 		SelectionValues applyToPK = new SelectionValues();

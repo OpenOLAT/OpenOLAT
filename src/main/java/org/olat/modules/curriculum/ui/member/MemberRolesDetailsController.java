@@ -128,6 +128,16 @@ public class MemberRolesDetailsController extends FormBasicController {
 		updateRolesColumnsVisibility(usedRoles);
 		tableEl.reset(false, false, true);
 	}
+	
+	public boolean hasReservations() {
+		List<MemberRolesDetailsRow> rows = tableModel.getObjects();
+		for(MemberRolesDetailsRow row:rows) {
+			if(row.hasReservations()) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
