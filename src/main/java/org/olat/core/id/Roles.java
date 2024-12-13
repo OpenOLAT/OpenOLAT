@@ -284,6 +284,10 @@ public class Roles implements Serializable {
 	public boolean isLineManager() {
 		return hasRole(OrganisationRoles.linemanager);
 	}
+
+	public boolean isEducationManager() {
+		return hasRole(OrganisationRoles.educationmanager);
+	}
 	
 	public boolean isManager() {
 		return isCurriculumManager()
@@ -291,6 +295,7 @@ public class Roles implements Serializable {
 				|| isLearnResourceManager()
 				|| isLectureManager()
 				|| isLineManager()
+				|| isEducationManager()
 				|| isPoolManager()
 				|| isProjectManager()
 				|| isQualityManager()

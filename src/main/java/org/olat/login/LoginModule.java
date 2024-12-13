@@ -71,7 +71,7 @@ public class LoginModule extends AbstractSpringModule {
 		OrganisationRoles.rolesmanager, OrganisationRoles.usermanager,
 		OrganisationRoles.learnresourcemanager, OrganisationRoles.groupmanager,
 		OrganisationRoles.lecturemanager, OrganisationRoles.projectmanager, OrganisationRoles.qualitymanager,
-		OrganisationRoles.poolmanager, OrganisationRoles.linemanager	
+		OrganisationRoles.poolmanager, OrganisationRoles.linemanager, OrganisationRoles.educationmanager	
 	};
 	
 	public static final String DISABLED = "disabled";
@@ -103,6 +103,7 @@ public class LoginModule extends AbstractSpringModule {
 	private static final String MAX_AGE_POOLMANAGER = "password.max.age.poolmanager";
 	private static final String MAX_AGE_CURRICULUMMANAGER = "password.max.age.curriculummanager";
 	private static final String MAX_AGE_LINEMANAGER = "password.max.age.linemanager";
+	private static final String MAX_AGE_EDUCATIONMANAGER = "password.max.age.educationmanager";
 	private static final String MAX_AGE_PROJECTMANAGER = "password.max.age.projectmanager";
 	private static final String MAX_AGE_QUALITYMANAGER = "password.max.age.qualitymanager";
 	private static final String MAX_AGE_LECTUREMANAGER = "password.max.age.lecturemanager";
@@ -188,6 +189,8 @@ public class LoginModule extends AbstractSpringModule {
 	private int passwordMaxAgeCurriculumManager;
 	@Value("${password.max.age.linemanager}")
 	private int passwordMaxAgeLineManager;
+	@Value("${password.max.age.educationmanager}")
+	private int passwordMaxAgeEducationManager;
 	@Value("${password.max.age.projectmanager}")
 	private int passwordMaxAgeProjectManager;
 	@Value("${password.max.age.qualitymanager}")
@@ -258,6 +261,8 @@ public class LoginModule extends AbstractSpringModule {
 	private String passkeyLevelProjectManager;
 	@Value("${olatprovider.passkey.level.linemanager:level2}")
 	private String passkeyLevelLineManager;
+	@Value("${olatprovider.passkey.level.educationmanager:level2}")
+	private String passkeyLevelEducationManager;
 	@Value("${olatprovider.passkey.level.principal:level2}")
 	private String passkeyLevelPrincipal;
 	@Value("${olatprovider.passkey.level.author:level2}")
@@ -485,6 +490,7 @@ public class LoginModule extends AbstractSpringModule {
 		passwordMaxAgeProjectManager = getAgeValue(MAX_AGE_PROJECTMANAGER, passwordMaxAgeProjectManager);
 		passwordMaxAgeQualityManager = getAgeValue(MAX_AGE_QUALITYMANAGER, passwordMaxAgeQualityManager);
 		passwordMaxAgeLineManager = getAgeValue(MAX_AGE_LINEMANAGER, passwordMaxAgeLineManager);
+		passwordMaxAgeEducationManager = getAgeValue(MAX_AGE_EDUCATIONMANAGER, passwordMaxAgeEducationManager);
 		passwordMaxAgePrincipal = getAgeValue(MAX_AGE_PRINCIPAL, passwordMaxAgePrincipal);
 		passwordMaxAgeAdministrator = getAgeValue(MAX_AGE_ADMINISTRATOR, passwordMaxAgeAdministrator);
 		passwordMaxAgeSysAdmin = getAgeValue(MAX_AGE_SYSADMIN, passwordMaxAgeSysAdmin);
@@ -520,6 +526,7 @@ public class LoginModule extends AbstractSpringModule {
 		passkeyLevelQualityManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.qualitymanager, passkeyLevelQualityManager);
 		passkeyLevelProjectManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.projectmanager, passkeyLevelProjectManager);
 		passkeyLevelLineManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.linemanager, passkeyLevelLineManager);
+		passkeyLevelEducationManager = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.educationmanager, passkeyLevelEducationManager);
 		passkeyLevelPrincipal = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.principal, passkeyLevelPrincipal);
 		passkeyLevelAuthor = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.author, passkeyLevelAuthor);
 		passkeyLevelUser = getStringPropertyValue(PASSKEY_LEVEL_PREFIX + OrganisationRoles.user, passkeyLevelUser);
@@ -876,7 +883,8 @@ public class LoginModule extends AbstractSpringModule {
 				|| passwordMaxAgeGroupManager > 0 || passwordMaxAgePoolManager > 0
 				|| passwordMaxAgeUserManager > 0  || passwordMaxAgeRolesManager > 0 
 				|| passwordMaxAgeLearnResourceManager > 0 || passwordMaxAgeLectureManager > 0
-				|| passwordMaxAgeProjectManager > 0 || passwordMaxAgeQualityManager > 0 || passwordMaxAgeLineManager > 0
+				|| passwordMaxAgeProjectManager > 0 || passwordMaxAgeQualityManager > 0 
+				|| passwordMaxAgeLineManager > 0 || passwordMaxAgeEducationManager > 0
 				|| passwordMaxAgeCurriculumManager > 0 || passwordMaxAgePrincipal > 0
 				|| passwordMaxAgeAdministrator > 0 || passwordMaxAgeSysAdmin > 0;
 	}
@@ -943,6 +951,7 @@ public class LoginModule extends AbstractSpringModule {
 			case projectmanager: return passwordMaxAgeProjectManager;
 			case qualitymanager: return passwordMaxAgeQualityManager;
 			case linemanager: return passwordMaxAgeLineManager;
+			case educationmanager: return passwordMaxAgeEducationManager;
 			case principal: return passwordMaxAgePrincipal;
 			case administrator: return passwordMaxAgeAdministrator;
 			case sysadmin: return passwordMaxAgeSysAdmin;
@@ -987,6 +996,9 @@ public class LoginModule extends AbstractSpringModule {
 				break;
 			case linemanager:
 				passwordMaxAgeLineManager = setPasswordMaxAge(MAX_AGE_LINEMANAGER, maxAge);
+				break;
+			case educationmanager:
+				passwordMaxAgeEducationManager = setPasswordMaxAge(MAX_AGE_EDUCATIONMANAGER, maxAge);
 				break;
 			case principal:
 				passwordMaxAgePrincipal = setPasswordMaxAge(MAX_AGE_PRINCIPAL, maxAge);
@@ -1102,6 +1114,7 @@ public class LoginModule extends AbstractSpringModule {
 			case qualitymanager: level = passkeyLevelQualityManager; break;
 			case projectmanager: level = passkeyLevelProjectManager; break;
 			case linemanager: level = passkeyLevelLineManager; break;
+			case educationmanager: level = passkeyLevelEducationManager; break;
 			case principal: level = passkeyLevelPrincipal; break;
 			case author: level = passkeyLevelAuthor; break;
 			case user, invitee: level = passkeyLevelUser; break;
@@ -1124,6 +1137,7 @@ public class LoginModule extends AbstractSpringModule {
 			case qualitymanager: passkeyLevelQualityManager = setPasskeyLevelByRole(role, level); break;
 			case projectmanager: passkeyLevelProjectManager = setPasskeyLevelByRole(role, level); break;
 			case linemanager: passkeyLevelLineManager = setPasskeyLevelByRole(role, level); break;
+			case educationmanager: passkeyLevelEducationManager = setPasskeyLevelByRole(role, level); break;
 			case principal: passkeyLevelPrincipal = setPasskeyLevelByRole(role, level); break;
 			case author: passkeyLevelAuthor = setPasskeyLevelByRole(role, level); break;
 			case user: passkeyLevelUser = setPasskeyLevelByRole(role, level); break;

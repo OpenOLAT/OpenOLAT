@@ -71,6 +71,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private static final String USERSEARCH_ADMINPROPS_PROJECTMANAGERS = "userSearchAdminPropsForProjectmanagers";
 	private static final String USERSEARCH_ADMINPROPS_QUALITYMANAGERS = "userSearchAdminPropsForQualitymanagers";
 	private static final String USERSEARCH_ADMINPROPS_LINEMANAGERS = "userSearchAdminPropsForLinemanagers";
+	private static final String USERSEARCH_ADMINPROPS_EDUCATIONMANAGERS = "userSearchAdminPropsForEducationmanagers";
 	private static final String USERSEARCH_ADMINPROPS_PRINCIPALS = "userSearchAdminPropsForPrincipals";
 	private static final String USERSEARCH_ADMINPROPS_ADMINISTRATORS = "userSearchAdminPropsForAdministrators";
 	private static final String USERSEARCH_ADMINPROPS_SYSTEMADMINS = "userSearchAdminPropsForSystemAdmins";
@@ -87,6 +88,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private static final String USER_LASTLOGIN_VISIBLE_PROJECTMANAGERS = "userLastLoginVisibleForProjectmanagers";
 	private static final String USER_LASTLOGIN_VISIBLE_QUALITYMANAGERS = "userLastLoginVisibleForQualitymanagers";
 	private static final String USER_LASTLOGIN_VISIBLE_LINEMANAGERS = "userLastLoginVisibleForLinemanagers";
+	private static final String USER_LASTLOGIN_VISIBLE_EDUCATIONMANAGERS = "userLastLoginVisibleForEducationmanagers";
 	private static final String USER_LASTLOGIN_VISIBLE_PRINCIPALS = "userLastLoginVisibleForPrincipals";
 	private static final String USER_LASTLOGIN_VISIBLE_ADMINISTRATORS = "userLastLoginVisibleForAdministrators";
 	private static final String USER_LASTLOGIN_VISIBLE_SYSTEMADMINS = "userSearchAdminPropsForSystemAdmins";
@@ -103,6 +105,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private static final String USERSEARCHAUTOCOMPLETE_PROJECTMANAGERS = "userSearchAutocompleteForProjectmanagers";
 	private static final String USERSEARCHAUTOCOMPLETE_QUALITYMANAGERS = "userSearchAutocompleteForQualitymanagers";
 	private static final String USERSEARCHAUTOCOMPLETE_LINEMANAGERS = "userSearchAutocompleteForLinemanagers";
+	private static final String USERSEARCHAUTOCOMPLETE_EDUCATIONMANAGERS = "userSearchAutocompleteForEducationmanagers";
 	private static final String USERSEARCHAUTOCOMPLETE_PRINCIPALS = "userSearchAutocompleteForPrincipals";
 	private static final String USERSEARCHAUTOCOMPLETE_ADMINISTRATORS = "userSearchAutocompleteForAdministrators";
 	private static final String USERSEARCHAUTOCOMPLETE_SYSTEMADMINS = "userSearchAdminPropsForSystemAdmins";
@@ -120,6 +123,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private static final String USERSEARCHBULK_PROJECTMANAGERS = "userSearchBulkForProjectmanagers";
 	private static final String USERSEARCHBULK_QUALITYMANAGERS = "userSearchBulkForQualitymanagers";
 	private static final String USERSEARCHBULK_LINEMANAGERS = "userSearchBulkForLinemanagers";
+	private static final String USERSEARCHBULK_EDUCATIONMANAGERS = "userSearchBulkForEducationmanagers";
 	private static final String USERSEARCHBULK_PRINCIPALS = "userSearchBulkForPrincipals";
 	private static final String USERSEARCHBULK_ADMINISTRATORS = "userSearchBulkForAdministrators";
 	private static final String USERSEARCHBULK_SYSTEMADMINS = "userSearchAdminPropsForSystemAdmins";
@@ -169,6 +173,8 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private String userSearchAdminPropsForQualitymanagers;
 	@Value("${usersearch.adminProps.linemanagers:enabled}")
 	private String userSearchAdminPropsForLinemanagers;
+	@Value("${usersearch.adminProps.educationmanagers:enabled}")
+	private String userSearchAdminPropsForEducationmanagers;
 	@Value("${usersearch.adminProps.principals:enabled}")
 	private String userSearchAdminPropsForPrincipals;
 	@Value("${usersearch.adminProps.administrators:enabled}")
@@ -200,6 +206,8 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private String userLastLoginVisibleForQualitymanagers;
 	@Value("${user.lastlogin.visible.linemanagers:enabled}")
 	private String userLastLoginVisibleForLinemanagers;
+	@Value("${user.lastlogin.visible.educationmanagers:enabled}")
+	private String userLastLoginVisibleForEducationmanagers;
 	@Value("${user.lastlogin.visible.principals:enabled}")
 	private String userLastLoginVisibleForPrincipals;
 	@Value("${user.lastlogin.visible.administrators:enabled}")
@@ -234,6 +242,8 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private String userSearchAutocompleteForQualitymanagers;
 	@Value("${usersearch.autocomplete.linemanagers:enabled}")
 	private String userSearchAutocompleteForLinemanagers;
+	@Value("${usersearch.autocomplete.educationmanagers:enabled}")
+	private String userSearchAutocompleteForEducationmanagers;
 	@Value("${usersearch.autocomplete.principals:enabled}")
 	private String userSearchAutocompleteForPrincipals;
 	@Value("${usersearch.autocomplete.administrators:enabled}")
@@ -265,6 +275,8 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private String userSearchBulkForQualitymanagers;
 	@Value("${usersearch.bulk.linemanagers:enabled}")
 	private String userSearchBulkForLinemanagers;
+	@Value("${usersearch.bulk.educationmanagers:enabled}")
+	private String userSearchBulkForEducationmanagers;
 	@Value("${usersearch.bulk.principals:enabled}")
 	private String userSearchBulkForPrincipals;
 	@Value("${usersearch.bulk.administrators:enabled}")
@@ -325,6 +337,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		userSearchAdminPropsForLecturemanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_LECTUREMANAGERS, userSearchAdminPropsForLecturemanagers);
 		userSearchAdminPropsForQualitymanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_QUALITYMANAGERS, userSearchAdminPropsForQualitymanagers);
 		userSearchAdminPropsForLinemanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_LINEMANAGERS, userSearchAdminPropsForLinemanagers);
+		userSearchAdminPropsForEducationmanagers = getStringPropertyValue(USERSEARCH_ADMINPROPS_EDUCATIONMANAGERS, userSearchAdminPropsForEducationmanagers);
 		userSearchAdminPropsForPrincipals = getStringPropertyValue(USERSEARCH_ADMINPROPS_PRINCIPALS, userSearchAdminPropsForPrincipals);
 		userSearchAdminPropsForAdministrators = getStringPropertyValue(USERSEARCH_ADMINPROPS_ADMINISTRATORS, userSearchAdminPropsForAdministrators);
 		userSearchAdminPropsForSystemAdmins = getStringPropertyValue(USERSEARCH_ADMINPROPS_SYSTEMADMINS, userSearchAdminPropsForSystemAdmins);
@@ -341,6 +354,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		userLastLoginVisibleForLecturemanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_LECTUREMANAGERS, userLastLoginVisibleForLecturemanagers);
 		userLastLoginVisibleForQualitymanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_QUALITYMANAGERS, userLastLoginVisibleForQualitymanagers);
 		userLastLoginVisibleForLinemanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_LINEMANAGERS, userLastLoginVisibleForLinemanagers);
+		userLastLoginVisibleForEducationmanagers = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_EDUCATIONMANAGERS, userLastLoginVisibleForEducationmanagers);
 		userLastLoginVisibleForAdministrators = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_ADMINISTRATORS, userLastLoginVisibleForAdministrators);
 		userLastLoginVisibleForPrincipals = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_PRINCIPALS, userLastLoginVisibleForPrincipals);
 		userLastLoginVisibleForSystemAdmins = getStringPropertyValue(USER_LASTLOGIN_VISIBLE_SYSTEMADMINS, userLastLoginVisibleForSystemAdmins);
@@ -358,6 +372,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		userSearchAutocompleteForProjectmanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_PROJECTMANAGERS, userSearchAutocompleteForProjectmanagers);
 		userSearchAutocompleteForQualitymanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_QUALITYMANAGERS, userSearchAutocompleteForQualitymanagers);
 		userSearchAutocompleteForLinemanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_LINEMANAGERS, userSearchAutocompleteForLinemanagers);
+		userSearchAutocompleteForEducationmanagers = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_EDUCATIONMANAGERS, userSearchAutocompleteForEducationmanagers);
 		userSearchAutocompleteForPrincipals = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_PRINCIPALS, userSearchAutocompleteForPrincipals);
 		userSearchAutocompleteForAdministrators = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, userSearchAutocompleteForAdministrators);
 		userSearchAutocompleteForSystemAdmins = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_SYSTEMADMINS, userSearchAutocompleteForSystemAdmins);
@@ -375,6 +390,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		userSearchBulkForProjectmanagers = getStringPropertyValue(USERSEARCHBULK_PROJECTMANAGERS, userSearchBulkForProjectmanagers);
 		userSearchBulkForQualitymanagers = getStringPropertyValue(USERSEARCHBULK_QUALITYMANAGERS, userSearchBulkForQualitymanagers);
 		userSearchBulkForLinemanagers = getStringPropertyValue(USERSEARCHBULK_LINEMANAGERS, userSearchBulkForLinemanagers);
+		userSearchBulkForEducationmanagers = getStringPropertyValue(USERSEARCHBULK_EDUCATIONMANAGERS, userSearchBulkForEducationmanagers);
 		userSearchBulkForPrincipals = getStringPropertyValue(USERSEARCHBULK_PRINCIPALS, userSearchBulkForPrincipals);
 		userSearchBulkForAdministrators = getStringPropertyValue(USERSEARCHBULK_ADMINISTRATORS, userSearchBulkForAdministrators);
 		userSearchBulkForSystemAdmins = getStringPropertyValue(USERSEARCHBULK_SYSTEMADMINS, userSearchBulkForSystemAdmins);
@@ -437,6 +453,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 			case projectmanager: return userSearchAdminPropsForProjectmanagers;
 			case qualitymanager: return userSearchAdminPropsForQualitymanagers;
 			case linemanager: return userSearchAdminPropsForLinemanagers;
+			case educationmanager: return userSearchAdminPropsForEducationmanagers;
 			case principal: return userSearchAdminPropsForPrincipals;
 			case administrator: return userSearchAdminPropsForAdministrators;
 			case sysadmin: return userSearchAdminPropsForSystemAdmins;
@@ -481,6 +498,9 @@ public class BaseSecurityModule extends AbstractSpringModule {
 			case linemanager:
 				userSearchAdminPropsForLinemanagers = setStringProperty(USERSEARCH_ADMINPROPS_LINEMANAGERS, enable, true);
 				break;
+			case educationmanager:
+				userSearchAdminPropsForEducationmanagers = setStringProperty(USERSEARCH_ADMINPROPS_EDUCATIONMANAGERS, enable, true);
+				break;
 			case principal:
 				userSearchAdminPropsForPrincipals = setStringProperty(USERSEARCH_ADMINPROPS_PRINCIPALS, enable, true);
 				break;
@@ -521,6 +541,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 			case projectmanager: return userLastLoginVisibleForProjectmanagers;
 			case qualitymanager: return userLastLoginVisibleForQualitymanagers;
 			case linemanager: return userLastLoginVisibleForLinemanagers;
+			case educationmanager: return userLastLoginVisibleForEducationmanagers;
 			case principal: return userLastLoginVisibleForPrincipals;
 			case administrator: return userLastLoginVisibleForAdministrators;
 			case sysadmin: return userLastLoginVisibleForSystemAdmins;
@@ -566,6 +587,9 @@ public class BaseSecurityModule extends AbstractSpringModule {
 			case linemanager:
 				userLastLoginVisibleForLinemanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_LINEMANAGERS, enable, true);
 				break;
+			case educationmanager:
+				userLastLoginVisibleForEducationmanagers = setStringProperty(USER_LASTLOGIN_VISIBLE_EDUCATIONMANAGERS, enable, true);
+				break;
 			case principal:
 				userLastLoginVisibleForPrincipals = setStringProperty(USER_LASTLOGIN_VISIBLE_PRINCIPALS, enable, true);
 				break;
@@ -606,6 +630,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 			case projectmanager: return userSearchAutocompleteForProjectmanagers;
 			case qualitymanager: return userSearchAutocompleteForQualitymanagers;
 			case linemanager: return userSearchAutocompleteForLinemanagers;
+			case educationmanager: return userSearchAutocompleteForEducationmanagers;
 			case principal: return userSearchAutocompleteForPrincipals;
 			case administrator: return userSearchAutocompleteForAdministrators;
 			case sysadmin: return userSearchAutocompleteForSystemAdmins;
@@ -640,6 +665,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 			case projectmanager: return userSearchBulkForProjectmanagers;
 			case qualitymanager: return userSearchBulkForQualitymanagers;
 			case linemanager: return userSearchBulkForLinemanagers;
+			case educationmanager: return userSearchBulkForEducationmanagers;
 			case principal: return userSearchBulkForPrincipals;
 			case administrator: return userSearchBulkForAdministrators;
 			case sysadmin: return userSearchBulkForSystemAdmins;

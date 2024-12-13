@@ -211,6 +211,10 @@
 	<bean id="restrictToLectureManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
 		<property name="limitToRole" value="lecturemanager,principal,administrator,sysadmin"/>
 	</bean>
+
+	<bean id="restrictToEducationManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="educationmanager,administrator,sysadmin"/>
+	</bean>
 	
 	<!-- Alternative controllers -->
 	<bean id="courseSiteForbiddenAlt" class="org.olat.core.gui.control.navigation.SiteAlternativeControllerCreator">

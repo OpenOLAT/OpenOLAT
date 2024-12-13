@@ -48,6 +48,6 @@ public class ManagersSecurityCallback implements SiteSecurityCallback {
 				|| roles.isUserManager() || roles.isRolesManager()
 				|| roles.isPoolManager() || roles.isQualityManager()
 				|| roles.isCurriculumManager() || roles.isLectureManager()
-				|| roles.isLineManager() || roles.isPrincipal();
+				|| roles.isLineManager() || roles.isEducationManager() || roles.isPrincipal();
 	}
 }
