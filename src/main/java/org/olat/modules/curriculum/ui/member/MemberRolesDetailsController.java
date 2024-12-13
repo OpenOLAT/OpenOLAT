@@ -176,7 +176,8 @@ public class MemberRolesDetailsController extends FormBasicController {
 			}
 		}
 
-		tableModel = new MemberRolesDetailsTableModel(columnsModel);
+		String footerHeader = translate("table.footer.roles");
+		tableModel = new MemberRolesDetailsTableModel(columnsModel, footerHeader);
 		tableEl = uifactory.addTableElement(getWindowControl(), "rolesTable", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setCustomizeColumns(true);

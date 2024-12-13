@@ -42,8 +42,11 @@ implements FlexiTableFooterModel {
 	private static final MemberDetailsCols[] COLS = MemberDetailsCols.values();
 	private static final CurriculumRoles[] ROLES = CurriculumRoles.values();
 	
-	public MemberRolesDetailsTableModel(FlexiTableColumnModel columnModel) {
+	private final String footerHeader;
+	
+	public MemberRolesDetailsTableModel(FlexiTableColumnModel columnModel, String footerHeader) {
 		super(columnModel);
+		this.footerHeader = footerHeader;
 	}
 	
 	@Override
@@ -107,7 +110,7 @@ implements FlexiTableFooterModel {
 
 	@Override
 	public String getFooterHeader() {
-		return "";
+		return footerHeader;
 	}
 
 	@Override

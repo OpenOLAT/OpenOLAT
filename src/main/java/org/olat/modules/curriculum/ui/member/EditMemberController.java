@@ -192,7 +192,8 @@ public class EditMemberController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(col);
 		}
 		
-		tableModel = new EditMemberCurriculumElementTableModel(columnsModel);
+		String footerHeader = translate("table.footer.roles");
+		tableModel = new EditMemberCurriculumElementTableModel(columnsModel, footerHeader);
 		tableEl = uifactory.addTableElement(getWindowControl(), "editRolesTable", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setCustomizeColumns(true);
