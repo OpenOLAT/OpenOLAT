@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
  * 
@@ -66,7 +67,8 @@ implements SortableFlexiTableDataModel<AcceptDeclineMembershipRow> {
 			return switch(COLS[col]) {
 				case modifications -> row.getReservations().isEmpty()
 					? ModificationStatus.NONE : ModificationStatus.MODIFICATION;
-				case accepted, declined -> getNumOfModifications(row);
+				case accepted -> getNumOfModificationsToAccept(row);
+				case declined -> getNumOfModificationsToDecline(row);
 				default -> "ERROR";
 			};	
 		}
@@ -75,9 +77,21 @@ implements SortableFlexiTableDataModel<AcceptDeclineMembershipRow> {
 		return row.getIdentityProp(propPos);
 	}
 	
-	private String getNumOfModifications(AcceptDeclineMembershipRow row) {
+	private DualNumber getNumOfModificationsToAccept(AcceptDeclineMembershipRow row) {
+		int countConfirmationByAdmin = 0;
+		for(ResourceReservation reservation:row.getReservations()) {
+			if(Boolean.FALSE.equals(reservation.getUserConfirmable())) {
+				countConfirmationByAdmin++;
+			}
+		}
 		int numOfReservations = row.getReservations().size();
-		return numOfReservations + "/" + numOfReservations;
+		boolean warning = numOfReservations > 0 && countConfirmationByAdmin != numOfReservations;
+		return new DualNumber(countConfirmationByAdmin, numOfReservations, warning);
+	}
+	
+	private DualNumber getNumOfModificationsToDecline(AcceptDeclineMembershipRow row) {
+		int numOfReservations = row.getReservations().size();
+		return new DualNumber(numOfReservations, numOfReservations, false);
 	}
 	
 	public enum AcceptDeclineCols implements FlexiSortableColumnDef {

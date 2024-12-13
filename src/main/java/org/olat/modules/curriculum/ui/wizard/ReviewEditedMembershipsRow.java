@@ -19,9 +19,12 @@
  */
 package org.olat.modules.curriculum.ui.wizard;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
@@ -41,6 +44,7 @@ public class ReviewEditedMembershipsRow extends UserPropertiesRow {
 	private final Identity identity;
 	private List<MembershipModification> modifications;
 	private ModificationStatus summaryModificationStatus;
+	private Map<RoleByElement,GroupMembershipStatus> statusByRoles = new HashMap<>();
 	
 	private MemberDetailsController detailsCtrl;
 	
@@ -80,6 +84,18 @@ public class ReviewEditedMembershipsRow extends UserPropertiesRow {
 	public void setModifications(List<MembershipModification> modifications) {
 		this.modifications = modifications;
 	}
+	
+	public Map<RoleByElement,GroupMembershipStatus> getStatusByRoles() {
+		return statusByRoles;
+	}
+	
+	public GroupMembershipStatus getStatusBy(Long curriculumElementKey, CurriculumRoles role) {
+		return statusByRoles.get(new RoleByElement(curriculumElementKey, role));
+	}
+	
+	public void addStatus(Long curriculumElementKey, CurriculumRoles role, GroupMembershipStatus status) {
+		statusByRoles.put(new RoleByElement(curriculumElementKey, role), status);
+	}
 
 	public boolean isDetailsControllerAvailable() {
 		if(detailsCtrl != null) {
@@ -102,5 +118,24 @@ public class ReviewEditedMembershipsRow extends UserPropertiesRow {
 	public void setDetailsController(MemberDetailsController detailsCtrl) {
 		this.detailsCtrl = detailsCtrl;
 	}
-
+	
+	public record RoleByElement(Long curriculumElementKey, CurriculumRoles role) {
+		
+		@Override
+		public int hashCode() {
+			return curriculumElementKey.hashCode() + role.hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof RoleByElement rbe) {
+				return curriculumElementKey.equals(rbe.curriculumElementKey)
+						&& role.equals(rbe.role);
+			}
+			return false;
+		}
+	}
 }

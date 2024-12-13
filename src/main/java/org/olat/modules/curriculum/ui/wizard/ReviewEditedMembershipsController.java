@@ -21,8 +21,11 @@ package org.olat.modules.curriculum.ui.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.GroupMembershipHistory;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -49,15 +52,24 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
+import org.olat.modules.curriculum.ui.component.DualNumberCellRenderer;
 import org.olat.modules.curriculum.ui.member.AbstractMembersController;
 import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.member.ModificationCellRenderer;
 import org.olat.modules.curriculum.ui.member.ModificationStatus;
+import org.olat.modules.curriculum.ui.member.ResourceToRoleKey;
 import org.olat.modules.curriculum.ui.wizard.ReviewEditedMembershipsTableModel.ReviewEditedMembershipsCols;
+import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoService;
@@ -91,11 +103,15 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
 	
 	@Autowired
+	private ACService acService;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private UserInfoService userInfoService;
 	@Autowired
 	protected BaseSecurityModule securityModule;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	public ReviewEditedMembershipsController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
 			EditMembersContext membersContext) {
@@ -137,7 +153,8 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		
 		for(CurriculumRoles role:ROLES) {
 			String i18nLabel = "table.header.num.of.".concat(role.name());
-			DefaultFlexiColumnModel col = new DefaultFlexiColumnModel(i18nLabel, role.ordinal() + ROLES_OFFSET);
+			DefaultFlexiColumnModel col = new DefaultFlexiColumnModel(i18nLabel, role.ordinal() + ROLES_OFFSET,
+					new DualNumberCellRenderer(getTranslator()));
 			columnsModel.addFlexiColumnModel(col);
 		}
 		
@@ -179,6 +196,8 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		List<ReviewEditedMembershipsRow> rows = identities == null ? List.of() : identities.stream()
 				.map(id -> new ReviewEditedMembershipsRow(id, userPropertyHandlers, getLocale()))
 				.toList();
+		Map<Long,ReviewEditedMembershipsRow> identityKeyToRows = rows.stream()
+				.collect(Collectors.toMap(ReviewEditedMembershipsRow::getIdentityKey, r -> r, (u, v) -> u));
 		
 		List<MembershipModification> modifications = membersContext.getModifications();
 		for(ReviewEditedMembershipsRow row:rows) {
@@ -187,11 +206,72 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 			row.setSummaryModificationStatus(summaryStatus);
 		}
 		
+		// History
+		loadStatusFromHistory(identities, identityKeyToRows);
+		// Reservations
+		loadStatusFromReservations(identityKeyToRows);
+		// Memberships
+		loadStatusFromMemberships(identities, identityKeyToRows);
+		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
-	public ModificationStatus evaluateSummaryModificationStatus(List<MembershipModification> modifications) {
+	private void loadStatusFromHistory(List<Identity> identities, Map<Long,ReviewEditedMembershipsRow> identityKeyToRows) {
+		List<CurriculumRoles> roles = membersContext.getRoles();
+		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
+
+		CurriculumElementMembershipHistorySearchParameters searchParams = new CurriculumElementMembershipHistorySearchParameters();
+		searchParams.setElements(curriculumElements);
+		searchParams.setIdentities(identities);
+		List<CurriculumElementMembershipHistory> membershipsHistory = curriculumService
+				.getCurriculumElementMembershipsHistory(searchParams);
+		for(CurriculumElementMembershipHistory membershipHistory:membershipsHistory) {
+			Long curriculumElementKey = membershipHistory.getCurriculumElementKey();
+			ReviewEditedMembershipsRow row = identityKeyToRows.get(membershipHistory.getIdentityKey());
+			if(row != null) {
+				for(CurriculumRoles role:roles) {
+					List<GroupMembershipHistory> roleHistory = membershipHistory.getHistory(role);
+					if(!roleHistory.isEmpty()) {
+						GroupMembershipHistory step = roleHistory.get(0);
+						row.addStatus(curriculumElementKey, role, step.getStatus());
+					}
+				}
+			}
+		}
+	}
+	
+	private void loadStatusFromReservations(Map<Long,ReviewEditedMembershipsRow> identityKeyToRows) {
+		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
+		Map<OLATResource,CurriculumElement> resourceToCurriculumElements = curriculumElements.stream()
+				.collect(Collectors.toMap(CurriculumElement::getResource, c -> c, (u, v) -> u));
+		List<OLATResource> resources = membersContext.getAllCurriculumElementsResources();
+		List<ResourceReservation> reservations = acService.getReservations(resources);
+		for(ResourceReservation reservation:reservations) {
+			CurriculumElement curriculumElement = resourceToCurriculumElements.get(reservation.getResource());
+			ReviewEditedMembershipsRow row = identityKeyToRows.get(reservation.getIdentity().getKey());
+			CurriculumRoles role = ResourceToRoleKey.reservationToRole(reservation.getType());
+			if(row != null && role != null && curriculumElement != null) {
+				row.addStatus(curriculumElement.getKey(), role, GroupMembershipStatus.reservation);
+			}
+		}
+	}
+	
+	private void loadStatusFromMemberships(List<Identity> identities, Map<Long,ReviewEditedMembershipsRow> identityKeyToRows) {
+		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
+		List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(curriculumElements, identities);
+		for(CurriculumElementMembership membership:memberships) {
+			ReviewEditedMembershipsRow row = identityKeyToRows.get(membership.getIdentityKey());
+			if(row != null) {
+				Long curriculumElementKey = membership.getCurriculumElementKey();
+				for(CurriculumRoles role:membership.getRoles()) {
+					row.addStatus(curriculumElementKey, role, GroupMembershipStatus.active);
+				}
+			}
+		}
+	}
+	
+	private ModificationStatus evaluateSummaryModificationStatus(List<MembershipModification> modifications) {
 		MembershipModification modification = null;
 		MembershipModification removal = null;
 		MembershipModification addition = null;

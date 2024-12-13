@@ -19,8 +19,10 @@
  */
 package org.olat.modules.curriculum.ui.wizard;
 
+import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -28,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.wizard.UsersOverviewTableModel.UserOverviewCols;
 
 /**
@@ -81,10 +84,25 @@ implements SortableFlexiTableDataModel<ReviewEditedMembershipsRow> {
 			int roleCol = col - ReviewEditedMembershipsController.ROLES_OFFSET;
 			if(roleCol >= 0 && roleCol < ROLES.length) {
 				CurriculumRoles role = ROLES[roleCol];
-				return "+" + row.getNumOfModifications(role);
+				return getNumOfModifications(row, role);
 			}
 		}
 		return "ERROR";
+	}
+	
+	private SingleNumber getNumOfModifications(ReviewEditedMembershipsRow row, CurriculumRoles role) {
+		int found = row.getNumOfModifications(role);
+		int applicableModification = 0; 
+		List<MembershipModification> modifications = row.getModifications();
+		for(MembershipModification modification:modifications) {
+			GroupMembershipStatus currentStatus = row.getStatusBy(modification.curriculumElement().getKey(), modification.role());
+			GroupMembershipStatus nextStatus = modification.nextStatus();
+			if(GroupMembershipStatus.allowedAsNextStep(currentStatus, nextStatus)) {
+				applicableModification++;
+			}
+		}
+		boolean warning = applicableModification != found;
+		return new SingleNumber(applicableModification, true, warning);
 	}
 
 	public enum ReviewEditedMembershipsCols implements FlexiSortableColumnDef {

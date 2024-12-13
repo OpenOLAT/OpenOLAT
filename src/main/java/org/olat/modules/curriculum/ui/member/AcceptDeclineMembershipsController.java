@@ -63,6 +63,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
+import org.olat.modules.curriculum.ui.component.DualNumberCellRenderer;
 import org.olat.modules.curriculum.ui.member.AcceptDeclineMembershipsTableModel.AcceptDeclineCols;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
@@ -157,9 +158,11 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		}
 		
 		if(nextStatus == GroupMembershipStatus.active) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AcceptDeclineCols.accepted));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AcceptDeclineCols.accepted,
+					new DualNumberCellRenderer(getTranslator())));
 		} else {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AcceptDeclineCols.declined));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AcceptDeclineCols.declined,
+					new DualNumberCellRenderer(getTranslator())));
 		}
 		
 		tableModel = new AcceptDeclineMembershipsTableModel(columnsModel, getLocale());

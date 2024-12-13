@@ -27,6 +27,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -79,6 +80,17 @@ public class EditMembersContext {
 		elements.add(curriculumElement);
 		if(descendants != null && !descendants.isEmpty()) {
 			elements.addAll(descendants);
+		}
+		return elements;
+	}
+	
+	public List<OLATResource> getAllCurriculumElementsResources() {
+		List<OLATResource> elements = new ArrayList<>();
+		elements.add(curriculumElement.getResource());
+		if(descendants != null && !descendants.isEmpty()) {
+			for(CurriculumElement descendant:descendants) {
+				elements.add(descendant.getResource());
+			}
 		}
 		return elements;
 	}
