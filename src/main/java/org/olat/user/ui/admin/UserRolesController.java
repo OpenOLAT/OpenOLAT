@@ -211,6 +211,9 @@ public class UserRolesController extends FormBasicController {
 
 		roleKeys.add(OrganisationRoles.learnresourcemanager.name());
 		roleValues.add(translate("role.".concat(OrganisationRoles.learnresourcemanager.name())));
+		
+		roleKeys.add(OrganisationRoles.educationmanager.name());
+		roleValues.add(translate("role.".concat(OrganisationRoles.educationmanager.name())));
 
 		roleKeys.add(OrganisationRoles.principal.name());
 		roleValues.add(translate("role.".concat(OrganisationRoles.principal.name())));
@@ -264,6 +267,7 @@ public class UserRolesController extends FormBasicController {
 			enabled.add(OrganisationRoles.qualitymanager.name());
 			enabled.add(OrganisationRoles.rolesmanager.name());
 			enabled.add(OrganisationRoles.usermanager.name());
+			enabled.add(OrganisationRoles.educationmanager.name());
 			rolesEl.setEnabled(enabled, true);
 			Set<String> disabled = new HashSet<>(roleKeys);
 			disabled.removeAll(enabled);
@@ -500,6 +504,7 @@ public class UserRolesController extends FormBasicController {
 			wrapper.commit(OrganisationRoles.usermanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.rolesmanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.learnresourcemanager, rolesToAdd, rolesToRemove);
+			wrapper.commit(OrganisationRoles.educationmanager, rolesToAdd, rolesToRemove);
 		}
 
 		// administration roles, only allowed by administrator

@@ -38,6 +38,7 @@ public enum RoleToRule {
 	LECTURE_MGR(OrganisationRoles.lecturemanager),
 	QUALITY_MGR(OrganisationRoles.qualitymanager),
 	LINE_MGR(OrganisationRoles.linemanager),
+	EDUCATION_MGR(OrganisationRoles.educationmanager),
 	PRINCIPAL(OrganisationRoles.principal),
 	ADMIN("olatAdmin", OrganisationRoles.administrator),
 	SYS_ADMIN( OrganisationRoles.sysadmin);

@@ -688,6 +688,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			}
 			buildTreeNodeRole(accessNode, OrganisationRoles.learnresourcemanager);
 			buildTreeNodeRole(accessNode, OrganisationRoles.linemanager);
+			buildTreeNodeRole(accessNode, OrganisationRoles.educationmanager);
 			buildTreeNodeRole(accessNode, OrganisationRoles.principal);
 			buildTreeNodeRole(accessNode, OrganisationRoles.administrator);
 			buildTreeNodeRole(accessNode, OrganisationRoles.sysadmin);
