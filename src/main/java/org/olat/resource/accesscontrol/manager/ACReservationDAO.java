@@ -87,7 +87,7 @@ public class ACReservationDAO {
 		
 		if(searchParams.getConfirmationByUser() != null) {
 			if(searchParams.getConfirmationByUser().booleanValue()) {
-				sb.and().append("reservation.userConfirmable is null or reservation.userConfirmable = true");
+				sb.and().append("(reservation.userConfirmable is null or reservation.userConfirmable = true)");
 			} else {
 				sb.and().append("reservation.userConfirmable = false");
 			}

@@ -79,6 +79,7 @@ public class MemberUserDetailsController extends UserInfoController {
 			
 			String value = userPropertyHandler.getUserProperty(user, getLocale());
 			if(StringHelper.containsNonWhitespace(value)) {
+				value = StringHelper.escapeHtml(value);
 				String i18nLabel = userPropertyHandler.i18nFormElementLabelKey();
 				uifactory.addStaticTextElement(name, i18nLabel, value, itemsCont);
 			}

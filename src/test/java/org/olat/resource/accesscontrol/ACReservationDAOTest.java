@@ -23,7 +23,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.quartz.JobKey;
@@ -110,7 +113,54 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	}
 	
 	@Test
-	public void testLoadOldReservation() throws Exception {
+	public void loadReservationsWithParams() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-1-");
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		dbInstance.commitAndCloseSession();
+
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", null, Boolean.TRUE, resource);
+		dbInstance.commitAndCloseSession();
+		
+		// Load
+		SearchReservationParameters searchParams = new SearchReservationParameters(List.of(resource));
+		List<ResourceReservation> loadedReservations = acReservationDao.loadReservations(searchParams);
+		
+		Assertions.assertThat(loadedReservations)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(reservation);
+	}
+	
+	@Test
+	public void loadReservationsWithAllParams() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-1-");
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		dbInstance.commitAndCloseSession();
+
+		Date confirmationDate = DateUtils.addDays(new Date(), 3);
+		ResourceReservation reservation = acReservationDao.createReservation(id, "test", confirmationDate, Boolean.TRUE, resource);
+		dbInstance.commitAndCloseSession();
+		
+		// Positive check
+		SearchReservationParameters searchParams = new SearchReservationParameters(List.of(resource));
+		searchParams.setConfirmationByUser(Boolean.TRUE);
+		searchParams.setWithConfirmationDate(true);
+		
+		List<ResourceReservation> loadedReservations = acReservationDao.loadReservations(searchParams);
+		Assertions.assertThat(loadedReservations)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(reservation);
+		
+		// Negative check
+		SearchReservationParameters searchByAdminParams = new SearchReservationParameters(List.of(resource));
+		searchByAdminParams.setConfirmationByUser(Boolean.FALSE);
+		searchByAdminParams.setWithConfirmationDate(true);
+		List<ResourceReservation> loadedReservationsByAdmins = acReservationDao.loadReservations(searchByAdminParams);
+		Assertions.assertThat(loadedReservationsByAdmins)
+			.hasSize(0);
+	}
+	
+	@Test
+	public void testLoadOldReservation() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-1-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
@@ -131,7 +181,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	}
 	
 	@Test
-	public void testLoadExpiredReservation() throws Exception {
+	public void testLoadExpiredReservation() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reserv-1-");
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();

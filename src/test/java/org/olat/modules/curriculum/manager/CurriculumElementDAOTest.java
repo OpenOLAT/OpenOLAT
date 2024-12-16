@@ -31,6 +31,8 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupMembershipHistory;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -51,6 +53,8 @@ import org.olat.modules.curriculum.TaughtBy;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
@@ -548,6 +552,49 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertNotNull(secondChildren);
 		Assert.assertEquals(1, secondChildren.size());
 		Assert.assertTrue(secondChildren.contains(element2_1));
+	}
+	
+	@Test
+	public void countChildren() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-33", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-33", "33. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-33-1", "33 Element",
+				CurriculumElementStatus.active, null, null, parentElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-33-2", "33 Element",
+				CurriculumElementStatus.active, null, null, parentElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// Count parent children
+		int numOfChildren = curriculumElementDao.countChildren(parentElement);
+		Assert.assertEquals(2, numOfChildren);
+		
+		// check more
+		int numOfGreatChildren1 = curriculumElementDao.countChildren(element1);
+		Assert.assertEquals(0, numOfGreatChildren1);
+		int numOfGreatChildren2 = curriculumElementDao.countChildren(element2);
+		Assert.assertEquals(0, numOfGreatChildren2);
+	}
+	
+	@Test
+	public void hasChildren() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-32", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-32", "32. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-32-1", "32 Element",
+				CurriculumElementStatus.active, null, null, parentElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		
+		// Check
+		boolean hasChildren = curriculumElementDao.hasChildren(parentElement);
+		Assert.assertTrue(hasChildren);
+		boolean hasNoChildren = curriculumElementDao.hasChildren(element);
+		Assert.assertFalse(hasNoChildren);
 	}
 	
 	@Test
@@ -1215,6 +1262,36 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasCurriculumElementRole() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-30");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-30", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-30", "4. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, coach, CurriculumRoles.coach, actor);
+		dbInstance.commitAndCloseSession();
+		
+		boolean isCoach = curriculumElementDao.hasCurriculumElementRole(coach, CurriculumRoles.coach.name());
+		Assert.assertTrue(isCoach);
+	}
+	
+	@Test
+	public void hasNotCurriculumElementRole() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-31");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-31", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-31", "32. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, coach, CurriculumRoles.owner, actor);
+		dbInstance.commitAndCloseSession();
+		
+		boolean isNotCoach = curriculumElementDao.hasCurriculumElementRole(coach, CurriculumRoles.coach.name());
+		Assert.assertFalse(isNotCoach);
+	}
+	
+	@Test
 	public void getMemberKeys() {
 		Identity actor = JunitTestHelper.getDefaultActor();
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
@@ -1293,5 +1370,36 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertFalse(members.get(0).isRepositoryEntryOwner());
 		Assert.assertFalse(members.get(0).isCoach());
 		Assert.assertFalse(members.get(0).isParticipant());
+	}
+	
+	@Test
+	public void getMembershipInfosAndHistory_elements() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-6");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-6", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-6", "6. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculumelementowner, actor);
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElementMembershipHistorySearchParameters params = new CurriculumElementMembershipHistorySearchParameters();
+		params.setElements(List.of(element));
+		List<CurriculumElementMembershipHistory> memberships = curriculumElementDao.getMembershipInfosAndHistory(params);
+		Assert.assertNotNull(memberships);
+		Assert.assertEquals(1, memberships.size());
+
+		CurriculumElementMembershipHistory membership = memberships.get(0);
+		Assert.assertEquals(element.getKey(), membership.getCurriculumElementKey());
+		Assert.assertEquals(supervisor.getKey(), membership.getIdentityKey());
+		
+		Assert.assertEquals(1, membership.getHistory().size());
+		GroupMembershipHistory historyPoint = membership.getHistory().get(0);
+		Assert.assertEquals(CurriculumRoles.curriculumelementowner.name(), historyPoint.getRole());
+		Assert.assertEquals(GroupMembershipStatus.active, historyPoint.getStatus());
+		
+		Assert.assertEquals(supervisor, historyPoint.getIdentity());
+		Assert.assertEquals(actor, historyPoint.getCreator());
+		Assert.assertEquals(element.getGroup(), historyPoint.getGroup());
 	}
 }

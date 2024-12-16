@@ -129,7 +129,6 @@ public class CurriculumElementDAO {
 		}
 		element.setMaterializedPathKeys(getMaterializedPathKeys(parent, element));
 		createResource(element);
-		element.setResource(null);
 		dbInstance.getCurrentEntityManager().merge(element);
 		return element;
 	}
@@ -923,26 +922,6 @@ public class CurriculumElementDAO {
 				.getResultList();
 		return firstChild != null && !firstChild.isEmpty()
 				&& firstChild.get(0) != null && firstChild.get(0).longValue() > 0;
-	}
-	
-	/**
-	 * The method returns all the children, inclusive the marked as deleted.
-	 * 
-	 * @param curriculumElement The parent element
-	 * @return A list of curriculum elements
-	 */
-	public List<CurriculumElement> getChildren(CurriculumRef curriculum) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select el from curriculumelement el")
-		  .append(" inner join fetch el.curriculum curriculum")
-		  .append(" inner join fetch el.group bGroup")
-		  .append(" left join fetch curriculum.organisation org")
-		  .append(" where el.curriculumParent.key=:curriculumKey")
-		  .append(" order by el.posCurriculum");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CurriculumElement.class)
-				.setParameter("curriculumKey", curriculum.getKey())
-				.getResultList();
 	}
 	
 	public CurriculumElementNode getDescendantTree(CurriculumElement rootElement) {

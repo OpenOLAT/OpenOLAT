@@ -110,9 +110,9 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 				CurriculumElementRow elementRow = tableModel.getObject(row);
 				if(activeElement != null && activeElement.equals(elementRow.getCurriculumElement())) {
 					target.append("<i class='o_icon o_icon-fw o_icon_selected_dot' title=\"").append(translate("element.active"))
-						  .append("\"> </i> <strong>").append(str).append("</strong>");
+						  .append("\"> </i> <strong>").appendHtmlEscaped(str).append("</strong>");
 				} else {
-					target.append(str);
+					target.appendHtmlEscaped(str);
 				}
 			}
 		}

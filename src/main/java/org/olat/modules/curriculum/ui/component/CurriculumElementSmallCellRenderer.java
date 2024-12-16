@@ -38,7 +38,7 @@ public class CurriculumElementSmallCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof String string) {
-			target.append("<small class='mute'> \u00B7 ").append(string).append("</small>");
+			target.append("<small class='mute'> \u00B7 ").appendHtmlEscaped(string).append("</small>");
 		}
 	}
 }

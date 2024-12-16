@@ -151,7 +151,7 @@ public class RightsController extends StepFormBasicController {
 		String applyContainedI18n = membersContext.getDescendants().size() <= 1
 				? "apply.membership.to.contained.element" : "apply.membership.to.contained.elements";
 		String applyContained = translate(applyContainedI18n,
-				membersContext.getCurriculumElement().getDisplayName(), Integer.toString(membersContext.getDescendants().size()));
+				StringHelper.escapeHtml(membersContext.getCurriculumElement().getDisplayName()), Integer.toString(membersContext.getDescendants().size()));
 		applyToPK.add(SelectionValues.entry(ChangeApplyToEnum.CONTAINED.name(), applyContained));
 		applyToPK.add(SelectionValues.entry(ChangeApplyToEnum.CURRENT.name(), translate("apply.membership.to.individual.elements")));
 		applyToEl = uifactory.addRadiosVertical("apply.membership.to", "apply.membership.to", formLayout, applyToPK.keys(), applyToPK.values());
