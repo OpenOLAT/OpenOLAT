@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -114,12 +115,14 @@ public class EditMemberController extends FormBasicController {
 	private final UserInfoProfileConfig profileConfig;
 	private final List<CurriculumElement> curriculumElements;
 	private final EnumSet<CurriculumRoles> usedRoles = EnumSet.noneOf(CurriculumRoles.class);
-
+	
+	private CloseableModalController cmc;
 	private NoteCalloutController noteCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private AddMembershipCalloutController addMembershipCtrl;
 	private ChangeMembershipCalloutController changeMembershipCtrl;
 	private ConfirmMembershipCalloutController confirmMembershipCtrl;
+	private CustomizeNotificationController customizeNotificationsCtrl;
 	
 	@Autowired
 	private ACService acService;
@@ -408,21 +411,33 @@ public class EditMemberController extends FormBasicController {
 			}
 			calloutCtrl.deactivate();
 			cleanUp();
-		} else if(calloutCtrl == source) {
+		} else if(customizeNotificationsCtrl == source) {
+			MailTemplate customTemplate = customizeNotificationsCtrl.getMailTemplate();
+			cmc.deactivate();
+			cleanUp();
+			
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				doApplyWithCustomNotifications(ureq, customTemplate);
+			}
+		} else if(calloutCtrl == source || cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(customizeNotificationsCtrl);
 		removeAsListenerAndDispose(confirmMembershipCtrl);
 		removeAsListenerAndDispose(changeMembershipCtrl);
 		removeAsListenerAndDispose(addMembershipCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(cmc);
+		customizeNotificationsCtrl = null;
 		confirmMembershipCtrl = null;
 		changeMembershipCtrl = null;
 		addMembershipCtrl = null;
 		calloutCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -432,8 +447,7 @@ public class EditMemberController extends FormBasicController {
 		} else if(applyWithoutNotificationButton == source) {
 			doApply(ureq, new MailPackage(false));
 		} else if(applyCustomNotificationButton == source) {
-			//TODO curriculum custom notification
-			doApplyWithNotifications(ureq);
+			doCustomizeNotifications(ureq);
 		} else if(resetButton == source) {
 			doReset();
 		} else if(source instanceof FormLink link) {
@@ -453,6 +467,23 @@ public class EditMemberController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		doApplyWithNotifications(ureq);
+	}
+	
+	private void doCustomizeNotifications(UserRequest ureq) {
+		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		customizeNotificationsCtrl = new CustomizeNotificationController(ureq, getWindowControl(), template);
+		listenTo(customizeNotificationsCtrl);
+		
+		String title = translate("customize.notifications.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), customizeNotificationsCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doApplyWithCustomNotifications(UserRequest ureq, MailTemplate template) {
+		MailerResult result = new MailerResult();
+		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
+		doApply(ureq, mailing);
 	}
 	
 	private void doReset() {
@@ -486,6 +517,7 @@ public class EditMemberController extends FormBasicController {
 		
 		loadModel();
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, Event.CLOSE_EVENT);
 	}
 	
 	private CurriculumElementMembershipChange getModification(MembershipModification modification) {

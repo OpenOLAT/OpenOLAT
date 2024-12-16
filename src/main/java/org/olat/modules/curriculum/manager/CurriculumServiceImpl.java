@@ -866,21 +866,21 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	private void sendMembershipNotificationsEmail(Identity doer, List<CurriculumElementMembershipChange> changes, MailPackage mailing) {
-		Map<Identity,CurriculumElementMembershipChange> additionsToNotifiy = new HashMap<>();
+		Map<Identity,CurriculumElementMembershipChange> changesToNotifiy = new HashMap<>();
 		for(CurriculumElementMembershipChange change:changes) {
-			if(change.addRole()) {
-				if(!additionsToNotifiy.containsKey(change.getMember())) {
-					additionsToNotifiy.put(change.getMember(), change);
+			if(change.addRole() || change.removeRole()) {
+				if(!changesToNotifiy.containsKey(change.getMember())) {
+					changesToNotifiy.put(change.getMember(), change);
 				} else {
-					CurriculumElementMembershipChange currentChange = additionsToNotifiy.get(change.getMember());
+					CurriculumElementMembershipChange currentChange = changesToNotifiy.get(change.getMember());
 					if(change.numOfSegments() < currentChange.numOfSegments()) {
-						additionsToNotifiy.put(change.getMember(), change);
+						changesToNotifiy.put(change.getMember(), change);
 					}
 				}
 			}
 		}
 		
-		for(CurriculumElementMembershipChange additionToNotifiy:additionsToNotifiy.values()) {
+		for(CurriculumElementMembershipChange additionToNotifiy:changesToNotifiy.values()) {
 			CurriculumElement curriculumElement = additionToNotifiy.getCurriculumElement();
 			Curriculum curriculum = curriculumElement.getCurriculum();
 			CurriculumMailing.sendEmail(doer, additionToNotifiy.getMember(), curriculum, curriculumElement, mailing);

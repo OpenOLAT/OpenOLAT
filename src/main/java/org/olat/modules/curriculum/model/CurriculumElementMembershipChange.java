@@ -152,6 +152,15 @@ public class CurriculumElementMembershipChange extends Event {
 		return false;
 	}
 	
+	public boolean removeRole() {
+		for(Map.Entry<CurriculumRoles, GroupMembershipStatus> roleEntry:modifications.entrySet()) {
+			if(roleEntry.getValue() == GroupMembershipStatus.removed) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public int numOfSegments() {
 		String path = curriculumElement.getMaterializedPathKeys();
 		int count = 0;

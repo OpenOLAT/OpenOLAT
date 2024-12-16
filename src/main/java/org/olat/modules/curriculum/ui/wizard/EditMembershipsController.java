@@ -46,10 +46,13 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -60,6 +63,7 @@ import org.olat.modules.curriculum.ui.component.GroupMembershipStatusRenderer;
 import org.olat.modules.curriculum.ui.member.ChangeMembershipCalloutController;
 import org.olat.modules.curriculum.ui.member.EditMemberCurriculumElementRow;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
+import org.olat.modules.curriculum.ui.member.NoteCalloutController;
 import org.olat.modules.curriculum.ui.wizard.EditMembershipsTableModel.MembershipsCols;
 
 /**
@@ -72,9 +76,11 @@ public class EditMembershipsController extends StepFormBasicController {
 	
 	private static final CurriculumRoles[] ROLES = CurriculumRoles.curriculumElementsRoles();
 	private static final GroupMembershipStatus[] MODIFIABLE =  GroupMembershipStatus.statusWithNextStep();
-	private static final String CMD_SELECT = "select.status";
+	private static final String CMD_NOTE = "note";
 	private static final String CMD_ADD_ROLE = "add.role";
+	private static final String CMD_SELECT = "select.status";
 	public static final int ROLES_OFFSET = 500;
+	public static final int NOTES_OFFSET = 1000;
 	
 	private DropdownItem addRolesEl;
 	private FlexiTableElement tableEl;
@@ -87,6 +93,7 @@ public class EditMembershipsController extends StepFormBasicController {
 	private final CurriculumElement selectedCurriculumElement;
 	private final EnumSet<CurriculumRoles> usedRoles = EnumSet.noneOf(CurriculumRoles.class);
 	
+	private NoteCalloutController noteCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ChangeMembershipCalloutController changeMembershipCtrl;
 			
@@ -128,6 +135,13 @@ public class EditMembershipsController extends StepFormBasicController {
 			col.setDefaultVisible(true);
 			col.setAlwaysVisible(false);
 			columnsModel.addFlexiColumnModel(col);
+			
+			DefaultFlexiColumnModel noteCol = new DefaultFlexiColumnModel(null, role.ordinal() + NOTES_OFFSET);
+			noteCol.setDefaultVisible(true);
+			noteCol.setAlwaysVisible(false);
+			noteCol.setIconHeader("o_icon o_icon-fw");// Dummy icon
+			noteCol.setHeaderLabel(i18nLabel);
+			columnsModel.addFlexiColumnModel(noteCol);
 		}
 		
 		tableModel = new EditMembershipsTableModel(columnsModel);
@@ -147,9 +161,11 @@ public class EditMembershipsController extends StepFormBasicController {
 			rowsMap.put(row.getKey(), row);
 			
 			for(CurriculumRoles role:ROLES) {
-				CurriculumElementAndRole cell = new CurriculumElementAndRole(element, role);
+				CurriculumElementAndRole cell = new CurriculumElementAndRole(element, role, row);
 				FormLink selectLink = forgeLink(cell);
 				row.addButton(role, selectLink);
+				FormLink noteLink = forgeNoteLink(cell);
+				row.addNoteButton(role, noteLink);
 			}
 		}
 		
@@ -172,6 +188,16 @@ public class EditMembershipsController extends StepFormBasicController {
 		link.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
 		link.setUserObject(cell);
 		return link;
+	}
+	
+	private FormLink forgeNoteLink(CurriculumElementAndRole cell) {
+		FormLink noteLink = uifactory.addFormLink("note_" + (++counter), CMD_NOTE, "", null, flc, Link.LINK | Link.NONTRANSLATED);
+		noteLink.setDomReplacementWrapperRequired(false);
+		noteLink.setIconLeftCSS("o_icon o_icon_notes");
+		noteLink.setTitle(translate("note"));
+		noteLink.setVisible(false);
+		noteLink.setUserObject(cell);
+		return noteLink;
 	}
 
 	@Override
@@ -197,9 +223,13 @@ public class EditMembershipsController extends StepFormBasicController {
 		if(source instanceof FormLink link && CMD_ADD_ROLE.equals(link.getCmd())
 				&& link.getUserObject() instanceof CurriculumRoles role)  {
 			doAddRole(role);
-		} else if(source instanceof FormLink link && CMD_SELECT.equals(link.getCmd())
+		} else if(source instanceof FormLink link
 				&& link.getUserObject() instanceof CurriculumElementAndRole cell)  {
-			doOpenCallout(ureq, link, cell);
+			if(CMD_SELECT.equals(link.getCmd())) {
+				doOpenCallout(ureq, link, cell);
+			} else if(CMD_NOTE.equals(link.getCmd())) {
+				doOpenNote(ureq, link, cell);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -276,6 +306,8 @@ public class EditMembershipsController extends StepFormBasicController {
 		String i18nKey = getMembershipI18nKey(modification.nextStatus());
 		i18nKey = i18nKey == null ? "select.next.status" : i18nKey;
 		link.setI18nKey(i18nKey);
+		
+		row.getNoteButton(modification.role()).setVisible(StringHelper.containsNonWhitespace(modification.adminNote()));
 	}
 	
 	public static final String getMembershipI18nKey(GroupMembershipStatus status) {
@@ -305,7 +337,27 @@ public class EditMembershipsController extends StepFormBasicController {
 		calloutCtrl.activate();
 	}
 	
-	public record CurriculumElementAndRole(CurriculumElement curriculumElement, CurriculumRoles role) {
+	private void doOpenNote(UserRequest ureq, FormLink link, CurriculumElementAndRole cell) {
+		String adminNote = cell.row().getAdminNote();
+		MembershipModification modification = cell.row().getModification(cell.role());		
+		if(modification != null && StringHelper.containsNonWhitespace(modification.adminNote())) {
+			adminNote = modification.adminNote();
+		}
+		
+		StringBuilder sb = Formatter.stripTabsAndReturns(adminNote);
+		String note = sb == null ? "" : sb.toString();
+		noteCtrl = new NoteCalloutController(ureq, getWindowControl(), note);
+		listenTo(noteCtrl);
+		
+		String title = translate("note");
+		CalloutSettings settings = new CalloutSettings(title);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				noteCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "", settings);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
+	}
+	
+	public record CurriculumElementAndRole(CurriculumElement curriculumElement, CurriculumRoles role, EditMemberCurriculumElementRow row) {
 		//
 	}
 	

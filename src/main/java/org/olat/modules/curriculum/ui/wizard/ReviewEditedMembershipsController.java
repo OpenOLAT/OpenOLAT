@@ -232,7 +232,7 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 			if(row != null) {
 				for(CurriculumRoles role:roles) {
 					List<GroupMembershipHistory> roleHistory = membershipHistory.getHistory(role);
-					if(!roleHistory.isEmpty()) {
+					if(roleHistory != null && !roleHistory.isEmpty()) {
 						GroupMembershipHistory step = roleHistory.get(0);
 						row.addStatus(curriculumElementKey, role, step.getStatus());
 					}

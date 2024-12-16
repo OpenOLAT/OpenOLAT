@@ -61,11 +61,12 @@ public class ACReservationDAO {
 	}
 	
 	public ResourceReservation loadReservation(IdentityRef identity, OLATResource resource) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select reservation from resourcereservation as reservation ")
-		  .append(" where reservation.resource.key=:resourceKey and reservation.identity.key=:identityKey");
+		String query = """
+				select reservation from resourcereservation as reservation
+				inner join fetch reservation.resource rsrc
+				where rsrc.key=:resourceKey and reservation.identity.key=:identityKey""";
 		
-		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), ResourceReservation.class)
+		List<ResourceReservation> reservations = dbInstance.getCurrentEntityManager().createQuery(query, ResourceReservation.class)
 				.setParameter("resourceKey", resource.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
@@ -76,9 +77,12 @@ public class ACReservationDAO {
 	public List<ResourceReservation> loadReservations(SearchReservationParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select reservation from resourcereservation as reservation ");
-		
+
 		if(searchParams.getResources() != null && !searchParams.getResources().isEmpty()) {
-			sb.and().append("reservation.resource.key in (:resourceKey)");
+			sb.append(" inner join fetch reservation.resource rsrc")
+			  .and().append("rsrc.key in (:resourceKey)");
+		} else {
+			sb.append(" left join fetch reservation.resource rsrc");
 		}
 		
 		if(searchParams.getConfirmationByUser() != null) {

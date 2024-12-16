@@ -49,6 +49,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
@@ -99,6 +100,9 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	private final CurriculumElement selectedCurriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	
+	private CloseableModalController cmc;
+	private CustomizeNotificationController customizeNotificationsCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -217,15 +221,37 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		tableEl.reset(true, true, true);
 	}
 	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(customizeNotificationsCtrl == source) {
+			MailTemplate customTemplate = customizeNotificationsCtrl.getMailTemplate();
+			cmc.deactivate();
+			cleanUp();
+			
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				doApplyWithCustomNotifications(ureq, customTemplate);
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+		} else if(cmc == source) {
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(customizeNotificationsCtrl);
+		removeAsListenerAndDispose(cmc);
+		customizeNotificationsCtrl = null;
+		cmc = null;
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(applyWithoutNotificationButton == source) {
 			doApply(ureq, new MailPackage(false));
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(applyCustomNotificationButton == source) {
-			//TODO curriculum custom notifications
-			doApplyWithNotification(ureq);
-			fireEvent(ureq, Event.DONE_EVENT);
+			doCustomizeNotifications(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
@@ -262,9 +288,26 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
+	private void doCustomizeNotifications(UserRequest ureq) {
+		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		customizeNotificationsCtrl = new CustomizeNotificationController(ureq, getWindowControl(), template);
+		listenTo(customizeNotificationsCtrl);
+		
+		String title = translate("customize.notifications.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), customizeNotificationsCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doApplyWithNotification(UserRequest ureq) {
 		MailerResult result = new MailerResult();
 		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
+		doApply(ureq, mailing);
+	}
+	
+	private void doApplyWithCustomNotifications(UserRequest ureq, MailTemplate template) {
+		MailerResult result = new MailerResult();
 		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
 		doApply(ureq, mailing);
 	}

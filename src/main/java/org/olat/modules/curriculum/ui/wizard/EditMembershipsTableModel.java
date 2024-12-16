@@ -110,6 +110,12 @@ implements FlexiTableFooterModel {
 			CurriculumRoles role = ROLES[roleCol];
 			return detailsRow.getButton(role);
 		}
+		
+		int noteCol = col - EditMembershipsController.NOTES_OFFSET;
+		if(noteCol >= 0 && noteCol < ROLES.length) {
+			CurriculumRoles role = ROLES[noteCol];
+			return detailsRow.getNoteButton(role);
+		}
 		return "ERROR";
 	}
 

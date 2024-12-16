@@ -253,7 +253,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 				cleanUp();
 			}
 		} else if(editSingleMemberCtrl == source) {
-			if(event == Event.BACK_EVENT) {
+			if(event == Event.BACK_EVENT || event == Event.CLOSE_EVENT) {
 				toolbarPanel.popController(editSingleMemberCtrl);
 				reloadMember(ureq, editSingleMemberCtrl.getMember());
 				cleanUp();
