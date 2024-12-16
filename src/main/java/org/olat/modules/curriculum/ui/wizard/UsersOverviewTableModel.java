@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui.wizard;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -28,6 +29,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.curriculum.ui.member.AbstractMembersController;
+import org.olat.modules.curriculum.ui.member.DualNumber;
+import org.olat.modules.curriculum.ui.member.MembershipModification;
 
 /**
  * 
@@ -67,6 +70,7 @@ implements SortableFlexiTableDataModel<UserRow> {
 			return switch(COLS[col]) {
 				case modifications -> row.getModificationStatus();
 				case role -> row.getRoles();
+				case numOfModifications -> getNumOfModifications(row);
 				default -> "ERROR";
 			};
 		}
@@ -74,10 +78,17 @@ implements SortableFlexiTableDataModel<UserRow> {
 		int propPos = col - AbstractMembersController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
+	
+	private DualNumber getNumOfModifications(UserRow row) {
+		List<MembershipModification> modifications = row.getModifications();	
+		int found = modifications == null ? 0 : modifications.size();
+		return new DualNumber(found, row.getNumOfElements(), false);
+	}
 
 	public enum UserOverviewCols implements FlexiSortableColumnDef {
 		modifications("table.header.activity"),
-		role("table.header.current.roles");
+		role("table.header.current.roles"),
+		numOfModifications("table.header.activity");
 		
 		private final String i18nKey;
 		

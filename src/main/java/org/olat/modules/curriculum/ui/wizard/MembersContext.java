@@ -109,6 +109,10 @@ public class MembersContext {
 		}
 		return resources;
 	}
+	
+	public boolean hasModifications() {
+		return modifications != null && !modifications.isEmpty();
+	}
 
 	public List<MembershipModification> getModifications() {
 		return modifications;

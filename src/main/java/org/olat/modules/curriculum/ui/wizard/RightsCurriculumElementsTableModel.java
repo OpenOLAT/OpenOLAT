@@ -88,6 +88,17 @@ implements FlexiTableFooterModel {
 		}
 		return null;
 	}
+	
+	public boolean hasModifications() {
+		List<RightsCurriculumElementRow> rows = getObjects();
+		for(RightsCurriculumElementRow row:rows) {
+			if(row.getModification() != null) {
+				return true;
+			}
+		}
+		return false;
+		
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {

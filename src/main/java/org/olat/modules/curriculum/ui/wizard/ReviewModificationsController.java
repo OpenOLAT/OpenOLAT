@@ -56,6 +56,7 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
+import org.olat.modules.curriculum.ui.component.DualNumberCellRenderer;
 import org.olat.modules.curriculum.ui.member.AbstractMembersController;
 import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
@@ -143,6 +144,11 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			colIndex++;
 		}
 		
+		// Counts
+		DefaultFlexiColumnModel numCol = new DefaultFlexiColumnModel(UserOverviewCols.numOfModifications,
+				new DualNumberCellRenderer(getTranslator()));
+		columnsModel.addFlexiColumnModel(numCol);
+		
 		tableModel = new UsersOverviewTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
@@ -177,6 +183,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			UserRow row = new UserRow(identity, userPropertyHandlers, getLocale());
 			row.setModifications(modifications);
 			row.setModificationStatus(ModificationStatus.ADD);
+			row.setNumOfElements(curriculumElements.size());
 			
 			CurriculumElementMembership membership = membershipsMap.get(identity.getKey());
 			ResourceReservation reservation = reservationsMap.get(identity.getKey());

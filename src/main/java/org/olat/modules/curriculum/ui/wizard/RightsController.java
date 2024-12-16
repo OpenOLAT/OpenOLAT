@@ -311,6 +311,13 @@ public class RightsController extends StepFormBasicController {
 			allOk &= false;
 		}
 		
+		tableEl.clearError();
+		if(applyToEl.isOneSelected() && ChangeApplyToEnum.CURRENT.name().equals(applyToEl.getSelectedKey())
+				&& !membersContext.hasModifications() && !tableModel.hasModifications()) {
+			tableEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 
