@@ -158,7 +158,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 	}
 	
 	private void loadModel() {
-		List<Identity> identities = membersContext.getSearchedIdentities();
+		List<Identity> identities = membersContext.getSelectedIdentities();
 		List<MembershipModification> modifications = membersContext.getModifications();
 		
 		// Memberships, per user on at least an element of the tree of elements

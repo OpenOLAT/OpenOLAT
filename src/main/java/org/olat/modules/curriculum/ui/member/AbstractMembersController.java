@@ -463,6 +463,8 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	protected abstract void doOpenMemberDetails(UserRequest ureq, MemberRow row);
 	
 	protected final void doOpenMemberDetails(UserRequest ureq, MemberRow row, boolean withEdit, boolean withAcceptDecline) {
+		if(row == null) return;
+		
 		if(row.getDetailsController() != null) {
 			removeAsListenerAndDispose(row.getDetailsController());
 			flc.remove(row.getDetailsController().getInitialFormItem());
