@@ -213,7 +213,7 @@
 	</bean>
 
 	<bean id="restrictToEducationManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="educationmanager,administrator,sysadmin"/>
+		<property name="limitToRole" value="educationmanager,principal,administrator,sysadmin"/>
 	</bean>
 	
 	<!-- Alternative controllers -->

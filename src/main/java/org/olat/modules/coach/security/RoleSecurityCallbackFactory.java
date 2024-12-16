@@ -94,6 +94,7 @@ public class RoleSecurityCallbackFactory {
 			return roleRights.contains(ViewEfficiencyStatementRightProvider.RELATION_RIGHT);
 		}
 
+		@Override
 		public boolean canShowBadges() {
 			return roleRights.contains(ShowBadgesRightProvider.RELATION_RIGHT);
 		}

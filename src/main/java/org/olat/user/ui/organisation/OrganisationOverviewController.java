@@ -52,7 +52,8 @@ public class OrganisationOverviewController extends BasicController {
 	private final Link metadataLink;
 	private final Link resourcesLink;
 	private final Link userManagementLink;
-	private final Link roleConfigLink;
+	private final Link lineManagersLink;
+	private final Link educationManagersLink;
 	private final Link billingAddressesLink;
 	private final Link emailDomainsLink;
 	private final VelocityContainer mainVC;
@@ -61,7 +62,8 @@ public class OrganisationOverviewController extends BasicController {
 	private EditOrganisationController metadataCtrl;
 	private OrganisationResourceListController resourcesCtrl;
 	private OrganisationUserManagementController userMgmtCtrl;
-	private OrganisationRoleEditController roleConfigCtrl;
+	private OrganisationRoleEditController lineManagerConfigCtrl;
+	private OrganisationRoleEditController educationManagerConfigCtrl;
 	private BillingAddressListController billingAddressesCtrl;
 	private OrganisationEmailDomainAdminController emailDomainsCtrl;
 	
@@ -87,9 +89,11 @@ public class OrganisationOverviewController extends BasicController {
 		segmentView.addSegment(userManagementLink, false);
 		resourcesLink = LinkFactory.createLink("organisation.resources", mainVC, this);
 		segmentView.addSegment(resourcesLink, false);
-		roleConfigLink = LinkFactory.createLink("admin.props.linemanagers", mainVC, this);
+		lineManagersLink = LinkFactory.createLink("admin.props.linemanagers", mainVC, this);
+		educationManagersLink = LinkFactory.createLink("admin.props.educationmanagers", mainVC, this);
 		if (organisation.isDefault() || organisation.getParent() == null) {
-			segmentView.addSegment(roleConfigLink, false);
+			segmentView.addSegment(lineManagersLink, false);
+			segmentView.addSegment(educationManagersLink, false);
 		}
 		billingAddressesLink = LinkFactory.createLink("organisation.billing.addresses", mainVC, this);
 		if (acModule.isInvoiceEnabled()) {
@@ -130,8 +134,10 @@ public class OrganisationOverviewController extends BasicController {
 					doOpenUsermanagement(ureq);
 				} else if(clickedLink == resourcesLink) {
 					doOpenResources(ureq);
-				} else if (clickedLink == roleConfigLink) {
-					doOpenRoleConfig(ureq);
+				} else if (clickedLink == lineManagersLink) {
+					doOpenLineManagers(ureq);
+				} else if (clickedLink == educationManagersLink) {
+					doOpenEducationManagers(ureq);
 				} else if(clickedLink == billingAddressesLink) {
 					doOpenBillingAddresses(ureq);
 				} else if(clickedLink == emailDomainsLink) {
@@ -175,15 +181,26 @@ public class OrganisationOverviewController extends BasicController {
 		
 	}
 
-	private void doOpenRoleConfig(UserRequest ureq) {
-		if (roleConfigCtrl == null) {
-			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("RoleConfig"), null);
-			roleConfigCtrl = new OrganisationRoleEditController(ureq, bwControl, organisation, OrganisationRoles.linemanager);
-			listenTo(roleConfigCtrl);
+	private void doOpenLineManagers(UserRequest ureq) {
+		if (lineManagerConfigCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("LineManagers"), null);
+			lineManagerConfigCtrl = new OrganisationRoleEditController(ureq, bwControl, organisation, OrganisationRoles.linemanager);
+			listenTo(lineManagerConfigCtrl);
 		}
 
-		addToHistory(ureq, roleConfigCtrl);
-		mainVC.put("segmentCmp", roleConfigCtrl.getInitialComponent());
+		addToHistory(ureq, lineManagerConfigCtrl);
+		mainVC.put("segmentCmp", lineManagerConfigCtrl.getInitialComponent());
+	}
+
+	private void doOpenEducationManagers(UserRequest ureq) {
+		if (educationManagerConfigCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("EducationManagers"), null);
+			educationManagerConfigCtrl = new OrganisationRoleEditController(ureq, bwControl, organisation, OrganisationRoles.educationmanager);
+			listenTo(educationManagerConfigCtrl);
+		}
+
+		addToHistory(ureq, educationManagerConfigCtrl);
+		mainVC.put("segmentCmp", educationManagerConfigCtrl.getInitialComponent());
 	}
 
 	private void doOpenBillingAddresses(UserRequest ureq) {

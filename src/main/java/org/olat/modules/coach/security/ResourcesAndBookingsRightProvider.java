@@ -53,12 +53,12 @@ public class ResourcesAndBookingsRightProvider implements RightProvider {
 
 	@Override
 	public int getUserRelationsPosition() {
-		return UserRelationRightsOrder.ResourceAndBookinsRight.ordinal();
+		return UserRelationRightsOrder.ResourceAndBookingsRight.ordinal();
 	}
 
 	@Override
 	public int getOrganisationPosition() {
-		return OrganisationRightsOrder.ResourceAndBookinsRight.ordinal();
+		return OrganisationRightsOrder.ResourceAndBookingsRight.ordinal();
 	}
 
 	@Override

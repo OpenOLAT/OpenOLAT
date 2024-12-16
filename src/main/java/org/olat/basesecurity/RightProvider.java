@@ -19,8 +19,8 @@
  */
 package org.olat.basesecurity;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
 
 /**
@@ -31,7 +31,7 @@ import java.util.Locale;
  */
 public interface RightProvider {
 
-	Collection<OrganisationRoles> defaultRoles = Collections.singletonList(OrganisationRoles.linemanager);
+	Collection<OrganisationRoles> defaultRoles = Arrays.asList(OrganisationRoles.linemanager, OrganisationRoles.educationmanager);
 
 	String getRight();
 	RightProvider getParent();
@@ -55,9 +55,15 @@ public interface RightProvider {
 		CertificateUploadExternalRight,
 		ShowBadgesRight,
 		ViewCourseCalendarRight,
-		ResourceAndBookinsRight,
-		ViewGroupMemebershipsRight,
+		ResourceAndBookingsRight,
+		PendingCourseBookingsRight,
+		InvoicesReportRight,
+		CreateBookingOnBehalfOfRight,
+		ViewGroupMembershipsRight,
 		ViewAndEditProfileRight,
+		CreateAccountsRight,
+		PendingAccountActivationRight,
+		DeactivateAccountsRight,
 		ResetPasswordRight,
 		ContactFormRight,
 		QualityReportAccessRight,
@@ -73,9 +79,15 @@ public interface RightProvider {
 		CertificateUploadExternalRight,
 		ShowBadgesRight,
 		ViewCourseCalendarRight,
-		ResourceAndBookinsRight,
-		ViewGroupMemebershipsRight,
+		ResourceAndBookingsRight,
+		PendingCourseBookingsRight,
+		InvoicesReportRight,
+		CreateBookingOnBehalfOfRight,
+		ViewGroupMembershipsRight,
 		ViewAndEditProfileRight,
+		CreateAccountsRight,
+		PendingAccountActivationRight,
+		DeactivateAccountsRight,
 		ResetPasswordRight,
 		ContactFormRight,
 		AdministrativePropertiesRight

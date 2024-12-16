@@ -19,22 +19,33 @@
  */
 package org.olat.modules.coach.security;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.ui.CoachMainController;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/* 
- * Initial date: 24 Jun 2020<br>
- * @author aboeckle, alexander.boeckle@frentix.com
+/**
+ * Initial date: 2024-12-16<br>
+ *
+ * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 @Component
-public class ViewGroupMembershipsRightProvider implements RightProvider {
+public class InvoicesReportRightProvider implements RightProvider {
 
-	public static final String RELATION_RIGHT = "showGroupMemberships";
+	@Autowired
+	private ResourcesAndBookingsRightProvider parentRight;
+
+	public static final String RELATION_RIGHT = "invoicesReport";
+
+	private static final Collection<OrganisationRoles> educationManagerRole = Collections.singleton(OrganisationRoles.educationmanager);
+
 
 	@Override
 	public String getRight() {
@@ -43,7 +54,7 @@ public class ViewGroupMembershipsRightProvider implements RightProvider {
 
 	@Override
 	public RightProvider getParent() {
-		return null;
+		return parentRight;
 	}
 
 	@Override
@@ -53,17 +64,22 @@ public class ViewGroupMembershipsRightProvider implements RightProvider {
 
 	@Override
 	public int getUserRelationsPosition() {
-		return UserRelationRightsOrder.ViewGroupMembershipsRight.ordinal();
+		return UserRelationRightsOrder.InvoicesReportRight.ordinal();
 	}
 
 	@Override
 	public int getOrganisationPosition() {
-		return OrganisationRightsOrder.ViewGroupMembershipsRight.ordinal();
+		return OrganisationRightsOrder.InvoicesReportRight.ordinal();
 	}
 
 	@Override
 	public String getTranslatedName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(CoachMainController.class, locale);
-		return translator.translate("relation.right.show.group.memberships");
+		return translator.translate("relation.right.invoices.report");
+	}
+
+	@Override
+	public Collection<OrganisationRoles> getOrganisationRoles() {
+		return educationManagerRole;
 	}
 }
