@@ -33,6 +33,7 @@ import org.olat.modules.curriculum.ui.member.MembershipModification;
 public class RightsCurriculumElementRow extends AbstractCurriculumElementRow {
 
 	private FormLink addButton;
+	private FormLink noteButton;
 	private RightsCurriculumElementRow parent;
 	private MembershipModification modification;
 	
@@ -57,6 +58,14 @@ public class RightsCurriculumElementRow extends AbstractCurriculumElementRow {
 		this.addButton = button;
 	}
 	
+	public FormLink getNoteButton() {
+		return noteButton;
+	}
+
+	public void setNoteButton(FormLink noteButton) {
+		this.noteButton = noteButton;
+	}
+
 	public MembershipModification getModification() {
 		return modification;
 	}

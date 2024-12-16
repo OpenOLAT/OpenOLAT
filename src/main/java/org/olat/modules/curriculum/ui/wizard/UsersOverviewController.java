@@ -173,7 +173,7 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		for(UserRow row:rows) {
 			Set<CurriculumRoles> rolesSet = identityToRoles.get(row.getIdentityKey());
 			String roles;
-			if(rolesSet.isEmpty()) {
+			if(rolesSet == null || rolesSet.isEmpty()) {
 				roles = null;
 			} else if(rolesSet.size() == 1) {
 				roles = toString(rolesSet);

@@ -49,10 +49,13 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -63,6 +66,7 @@ import org.olat.modules.curriculum.ui.member.ChangeApplyToEnum;
 import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
 import org.olat.modules.curriculum.ui.member.ConfirmationMembershipEnum;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
+import org.olat.modules.curriculum.ui.member.NoteCalloutController;
 import org.olat.modules.curriculum.ui.wizard.RightsCurriculumElementsTableModel.RightsElementsCols;
 
 /**
@@ -74,6 +78,7 @@ import org.olat.modules.curriculum.ui.wizard.RightsCurriculumElementsTableModel.
 public class RightsController extends StepFormBasicController {
 
 	private static final String CMD_ADD = "add";
+	private static final String CMD_NOTE = "note";
 	
 	private TextElement adminNoteEl;
 	private SingleSelection applyToEl;
@@ -89,6 +94,7 @@ public class RightsController extends StepFormBasicController {
 	private final CurriculumElement curriculumElement;
 	private final List<CurriculumElement> curriculumElements;
 
+	private NoteCalloutController noteCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private AddMembershipCalloutController addMembershipCtrl;
 
@@ -170,6 +176,13 @@ public class RightsController extends StepFormBasicController {
 		col.setDefaultVisible(true);
 		col.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(col);
+		
+		DefaultFlexiColumnModel noteCol = new DefaultFlexiColumnModel(RightsElementsCols.note);
+		noteCol.setDefaultVisible(true);
+		noteCol.setAlwaysVisible(false);
+		noteCol.setIconHeader("o_icon o_icon-fw");// Dummy icon
+		noteCol.setHeaderLabel(i18nLabel);
+		columnsModel.addFlexiColumnModel(noteCol);
 
 		tableModel = new RightsCurriculumElementsTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "editRolesTable", tableModel, 25, false, getTranslator(), formLayout);
@@ -230,10 +243,17 @@ public class RightsController extends StepFormBasicController {
 		String id = "model-" + roleToModify + "-" + row.getKey();
 		flc.remove(id);
 		
-		FormLink addLink = uifactory.addFormLink(id, CMD_ADD, "add", tableEl, Link.LINK);
+		FormLink addLink = uifactory.addFormLink("add.".concat(id), CMD_ADD, "add", tableEl, Link.LINK);
 		addLink.setIconLeftCSS("o_icon o_icon-fw o_icon_plus");
 		addLink.setUserObject(row);
 		row.setAddButton(addLink);
+		
+		FormLink noteLink = uifactory.addFormLink("note.".concat(id), CMD_NOTE, "", tableEl, Link.LINK | Link.NONTRANSLATED);
+		noteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_notes");
+		noteLink.setTitle(translate("note"));
+		noteLink.setUserObject(row);
+		noteLink.setVisible(false);
+		row.setNoteButton(noteLink);
 	}
 	
 	@Override
@@ -258,9 +278,13 @@ public class RightsController extends StepFormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(confirmationTypeEl == source || applyToEl == source) {
 			updateUI();
-		} else if(source instanceof FormLink link && CMD_ADD.equals(link.getCmd())
+		} else if(source instanceof FormLink link
 				&& link.getUserObject() instanceof RightsCurriculumElementRow row) {
-			doAddMembership(ureq, link, row);
+			if(CMD_ADD.equals(link.getCmd())) {
+				doAddMembership(ureq, link, row);
+			} else if(CMD_NOTE.equals(link.getCmd())) {
+				doOpenNote(ureq, link, row);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -347,8 +371,8 @@ public class RightsController extends StepFormBasicController {
 	}
 	
 	private void doAddMembership(UserRequest ureq, FormLink link, RightsCurriculumElementRow row) {
-		CurriculumElement curriculumElement = row.getCurriculumElement();
-		addMembershipCtrl = new AddMembershipCalloutController(ureq, getWindowControl(), roleToModify, curriculumElement);
+		addMembershipCtrl = new AddMembershipCalloutController(ureq, getWindowControl(),
+				roleToModify, row.getCurriculumElement());
 		listenTo(addMembershipCtrl);
 		
 		String title = translate("add.membership");
@@ -364,7 +388,7 @@ public class RightsController extends StepFormBasicController {
 				null, null, null, mod.toDescendants(), mod.adminNote());
 
 		RightsCurriculumElementRow row = tableModel.getObject(modification.curriculumElement());
-		row.setModification(modification);
+		setModification(row, modification);
 		
 		if(modification.toDescendants()) {
 			int index = tableModel.getIndexOf(row);
@@ -372,12 +396,37 @@ public class RightsController extends StepFormBasicController {
 			for(int i=index+1; i<numOfRows; i++) {
 				RightsCurriculumElementRow obj = tableModel.getObject(i);
 				if(tableModel.isParentOf(row, obj)) {
-					obj.setModification(modification);
+					setModification(obj, modification);
 				}
 			}
 		}
 		
 		tableEl.reset(false, false, true);
+	}
+	
+	private void setModification(RightsCurriculumElementRow obj, MembershipModification modification) {
+		obj.getNoteButton().setVisible(StringHelper.containsNonWhitespace(modification.adminNote()));
+		obj.setModification(modification);
+	}
+	
+	private void doOpenNote(UserRequest ureq, FormLink link, RightsCurriculumElementRow row) {
+		String adminNote = null;
+		MembershipModification modification = row.getModification();		
+		if(modification != null && StringHelper.containsNonWhitespace(modification.adminNote())) {
+			adminNote = modification.adminNote();
+		}
+		
+		StringBuilder sb = Formatter.stripTabsAndReturns(adminNote);
+		String note = sb == null ? "" : sb.toString();
+		noteCtrl = new NoteCalloutController(ureq, getWindowControl(), note);
+		listenTo(noteCtrl);
+		
+		String title = translate("note");
+		CalloutSettings settings = new CalloutSettings(title);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				noteCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "", settings);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private class SelectedCurriculumElementCssDelegate extends DefaultFlexiTableCssDelegate {

@@ -100,6 +100,7 @@ implements FlexiTableFooterModel {
 			case externalRef -> element.getIdentifier();
 			case externalId -> element.getExternalId();
 			case roleToModify -> getAction(detailsRow);
+			case note -> detailsRow.getNoteButton();
 			default -> "ERROR";
 		};
 	}
@@ -139,7 +140,8 @@ implements FlexiTableFooterModel {
 		displayName("table.header.displayName"),
 		externalRef("table.header.external.ref"),
 		externalId("table.header.external.id"),
-		roleToModify("table.header.external.id");
+		roleToModify("table.header.external.id"),
+		note("table.header.external.id");
 		
 		private final String i18nKey;
 		

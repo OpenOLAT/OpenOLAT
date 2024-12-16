@@ -47,8 +47,10 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailContext;
@@ -91,8 +93,10 @@ public class EditMemberController extends FormBasicController {
 	private static final CurriculumRoles[] ROLES = CurriculumRoles.curriculumElementsRoles();
 	private static final GroupMembershipStatus[] MODIFIABLE_STATUS = GroupMembershipStatus.statusWithNextStep();
 	public static final int ROLES_OFFSET = 500;
+	public static final int NOTES_OFFSET = 1000;
 
 	private static final String CMD_ADD = "add";
+	private static final String CMD_NOTE = "note";
 	private static final String CMD_CHANGE = "change";
 	private static final String CMD_ADD_ROLE = "add.role";
 	
@@ -111,6 +115,7 @@ public class EditMemberController extends FormBasicController {
 	private final List<CurriculumElement> curriculumElements;
 	private final EnumSet<CurriculumRoles> usedRoles = EnumSet.noneOf(CurriculumRoles.class);
 
+	private NoteCalloutController noteCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private AddMembershipCalloutController addMembershipCtrl;
 	private ChangeMembershipCalloutController changeMembershipCtrl;
@@ -190,6 +195,13 @@ public class EditMemberController extends FormBasicController {
 			col.setDefaultVisible(true);
 			col.setAlwaysVisible(false);
 			columnsModel.addFlexiColumnModel(col);
+			
+			DefaultFlexiColumnModel noteCol = new DefaultFlexiColumnModel(null, role.ordinal() + NOTES_OFFSET);
+			noteCol.setDefaultVisible(true);
+			noteCol.setAlwaysVisible(false);
+			noteCol.setIconHeader("o_icon o_icon-fw");// Dummy icon
+			noteCol.setHeaderLabel(i18nLabel);
+			columnsModel.addFlexiColumnModel(noteCol);
 		}
 		
 		String footerHeader = translate("table.footer.roles");
@@ -258,6 +270,7 @@ public class EditMemberController extends FormBasicController {
 			flc.remove(id);
 			
 			GroupMembershipStatus status = null;
+			GroupMembershipHistory lastHistory = lastHistoryPoint(role, history);
 			if(reservation != null) {
 				row.addReservation(role, reservation);
 				status = GroupMembershipStatus.reservation;
@@ -265,12 +278,9 @@ public class EditMemberController extends FormBasicController {
 			} else if(memberships.contains(role)) {
 				status = GroupMembershipStatus.active;
 				usedRoles.add(role);
-			} else  {
-				GroupMembershipHistory lastHistory = lastHistoryPoint(role, history);
-				if(lastHistory != null) {
-					status = lastHistory.getStatus();
-					usedRoles.add(role);
-				}
+			} else if(lastHistory != null) {
+				status = lastHistory.getStatus();
+				usedRoles.add(role);
 			}
 			row.setStatus(role, status);
 			
@@ -285,6 +295,13 @@ public class EditMemberController extends FormBasicController {
 				link.setUserObject(new RoleCell(role, row, status));
 				row.addButton(role, link);
 			}
+			if(lastHistory != null && status == lastHistory.getStatus() && StringHelper.containsNonWhitespace(lastHistory.getAdminNote())) {
+				FormLink noteButton = forgeNoteLink(id);
+				row.addNoteButton(role, noteButton);
+				row.setAdminNote(lastHistory.getAdminNote());
+				noteButton.setUserObject(new RoleCell(role, row, status));
+			}
+			
 		}
 	}
 	
@@ -314,14 +331,24 @@ public class EditMemberController extends FormBasicController {
 
 	private FormLink forgeLink(String id, String cmd, String i18n, String boxCssClass, String iconCssClass) {
 		FormLink link = uifactory.addFormLink(id, cmd, i18n, null, flc, Link.BUTTON_XSMALL);
+		link.setDomReplacementWrapperRequired(false);
 		link.setCustomEnabledLinkCSS("o_labeled_light " + boxCssClass);
 		link.setIconLeftCSS("o_icon o_icon-fw " + iconCssClass);
 		link.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
 		return link;
 	}
 	
+	private FormLink forgeNoteLink(String id) {
+		FormLink noteLink = uifactory.addFormLink("note_" + id, CMD_NOTE, "", null, flc, Link.LINK | Link.NONTRANSLATED);
+		noteLink.setDomReplacementWrapperRequired(false);
+		noteLink.setIconLeftCSS("o_icon o_icon_notes");
+		noteLink.setTitle(translate("note"));
+		return noteLink;
+	}
+	
 	private FormLink forgeAddLink(String id) {
 		FormLink addLink = uifactory.addFormLink(id, CMD_ADD, "add", null, flc, Link.LINK);
+		addLink.setDomReplacementWrapperRequired(false);
 		addLink.setIconLeftCSS("o_icon o_icon-fw o_icon_plus");
 		return addLink;
 	}
@@ -346,6 +373,10 @@ public class EditMemberController extends FormBasicController {
 			FlexiColumnModel col = columnsModel.getColumnModelByIndex(role.ordinal() + ROLES_OFFSET);
 			if(col instanceof DefaultFlexiColumnModel) {
 				tableEl.setColumnModelVisible(col, usedRoles.contains(role));
+			}
+			FlexiColumnModel noteCol = columnsModel.getColumnModelByIndex(role.ordinal() + NOTES_OFFSET);
+			if(noteCol instanceof DefaultFlexiColumnModel) {
+				tableEl.setColumnModelVisible(noteCol, usedRoles.contains(role));
 			}
 		}
 		
@@ -412,6 +443,8 @@ public class EditMemberController extends FormBasicController {
 				doAddMembership(ureq, link, cell.role(), cell.row());
 			} else if(CMD_CHANGE.equals(link.getCmd()) && link.getUserObject() instanceof RoleCell cell) {
 				doMembership(ureq, link, cell.role(), cell.row(), cell.status());
+			} else if(CMD_NOTE.equals(link.getCmd()) && link.getUserObject() instanceof RoleCell cell) {
+				doOpenNote(ureq, link, cell);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -479,7 +512,7 @@ public class EditMemberController extends FormBasicController {
 	 */
 	private void setConfirmReservation(MembershipModification modification) {
 		EditMemberCurriculumElementRow row = tableModel.getObject(modification.curriculumElement());
-		row.addModification(modification.role(), modification);
+		setModification(modification, row);
 		
 		if(modification.toDescendants()) {
 			int index = tableModel.getIndexOf(row);
@@ -488,7 +521,7 @@ public class EditMemberController extends FormBasicController {
 				EditMemberCurriculumElementRow obj = tableModel.getObject(i);
 				GroupMembershipStatus currentStatus = obj.getStatus(modification.role());
 				if(tableModel.isParentOf(row, obj) && currentStatus == GroupMembershipStatus.reservation) {
-					obj.addModification(modification.role(), modification);
+					setModification(modification, obj);
 				}
 			}
 		}
@@ -498,7 +531,7 @@ public class EditMemberController extends FormBasicController {
 
 	private void setModification(MembershipModification modification) {
 		EditMemberCurriculumElementRow row = tableModel.getObject(modification.curriculumElement());
-		row.addModification(modification.role(), modification);
+		setModification(modification, row);
 		
 		if(modification.toDescendants()) {
 			int index = tableModel.getIndexOf(row);
@@ -509,11 +542,25 @@ public class EditMemberController extends FormBasicController {
 				if(tableModel.isParentOf(row, obj)
 						&& GroupMembershipStatus.allowedAsNextStep(currentStatus, modification.nextStatus())) {
 					obj.addModification(modification.role(), modification);
+					setModification(modification, obj);
 				}
 			}
 		}
 		
 		tableEl.reset(false, false, true);
+	}
+	
+	private void setModification(MembershipModification modification, EditMemberCurriculumElementRow row) {
+		final CurriculumRoles role = modification.role();
+		row.addModification(role, modification);
+
+		final String adminNote = modification.adminNote();
+		if(StringHelper.containsNonWhitespace(adminNote) && row.getNoteButton(role) == null) {
+			String id = "model-" + role + "-" + row.getKey();
+			FormLink noteButton = forgeNoteLink(id);
+			row.addNoteButton(role, noteButton);
+			noteButton.setUserObject(new RoleCell(role, row, modification.nextStatus()));
+		}
 	}
 	
 	private void doMembership(UserRequest ureq, FormLink link, CurriculumRoles role, EditMemberCurriculumElementRow row, GroupMembershipStatus status) {
@@ -588,6 +635,26 @@ public class EditMemberController extends FormBasicController {
 	private void doAddRole(CurriculumRoles role) {
 		usedRoles.add(role);
 		updateRolesColumnsVisibility();
+	}
+	
+	private void doOpenNote(UserRequest ureq, FormLink link, RoleCell cell) {
+		String adminNote = cell.row().getAdminNote();
+		MembershipModification modification = cell.row().getModification(cell.role());		
+		if(modification != null && StringHelper.containsNonWhitespace(modification.adminNote())) {
+			adminNote = modification.adminNote();
+		}
+		
+		StringBuilder sb = Formatter.stripTabsAndReturns(adminNote);
+		String note = sb == null ? "" : sb.toString();
+		noteCtrl = new NoteCalloutController(ureq, getWindowControl(), note);
+		listenTo(noteCtrl);
+		
+		String title = translate("note");
+		CalloutSettings settings = new CalloutSettings(title);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				noteCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "", settings);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private record RoleCell(CurriculumRoles role, EditMemberCurriculumElementRow row, GroupMembershipStatus status) {

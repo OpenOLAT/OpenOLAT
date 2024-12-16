@@ -265,6 +265,7 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		
 		if(StringHelper.containsNonWhitespace(point.getAdminNote())) {
 			FormLink noteLink = uifactory.addFormLink("note_" + (++counter), "note", "", null, flc, Link.LINK | Link.NONTRANSLATED);
+			noteLink.setDomReplacementWrapperRequired(false);
 			noteLink.setIconLeftCSS("o_icon o_icon_notes");
 			noteLink.setTitle(translate("note"));
 			noteLink.setUserObject(row);

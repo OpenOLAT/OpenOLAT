@@ -114,6 +114,11 @@ implements FlexiTableFooterModel {
 			MembershipModification mod = detailsRow.getModification(role);
 			return mod == null ? detailsRow.getButton(role) : mod.nextStatus();
 		}
+		int notesCol = col - EditMemberController.NOTES_OFFSET;
+		if(notesCol >= 0 && notesCol < ROLES.length) {
+			CurriculumRoles role = ROLES[notesCol];
+			return detailsRow.getNoteButton(role);
+		}
 		return "ERROR";
 	}
 

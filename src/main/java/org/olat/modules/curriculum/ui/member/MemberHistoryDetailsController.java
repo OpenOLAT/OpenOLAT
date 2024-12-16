@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -41,6 +42,8 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
  */
 public class MemberHistoryDetailsController extends AbstractHistoryController {
 
+	private EmptyPanelItem emptyHistoryEl;
+	
 	private final Identity member;
 	
 	public MemberHistoryDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
@@ -57,6 +60,12 @@ public class MemberHistoryDetailsController extends AbstractHistoryController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("details.history.title", new String[] { StringHelper.escapeHtml(curriculumElement.getDisplayName()) });
+		
+		emptyHistoryEl = uifactory.addEmptyPanel("empty.history", null, formLayout);
+		emptyHistoryEl.setElementCssClass("o_sel_empty_history");
+		emptyHistoryEl.setTitle(translate("membership.no.history.title"));
+		emptyHistoryEl.setIconCssClass("o_icon o_icon-lg o_icon_user");
+		emptyHistoryEl.setVisible(false);
 
 		initTable(formLayout, false, false);
 		initFilters();
@@ -69,5 +78,14 @@ public class MemberHistoryDetailsController extends AbstractHistoryController {
 		searchParams.setElements(List.of(curriculumElement));
 		searchParams.setIdentities(List.of(member));
 		return searchParams;
+	}
+	
+	@Override
+	protected void loadModel(boolean reset) {
+		super.loadModel(reset);
+		
+		boolean empty = tableModel.getRowCount() <= 0;
+		emptyHistoryEl.setVisible(empty);
+		tableEl.setVisible(!empty);
 	}
 }

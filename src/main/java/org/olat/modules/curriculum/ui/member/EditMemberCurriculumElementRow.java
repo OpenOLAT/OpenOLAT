@@ -37,7 +37,10 @@ import org.olat.resource.accesscontrol.ResourceReservation;
  */
 public class EditMemberCurriculumElementRow extends AbstractCurriculumElementRow {
 	
+	private String adminNote;
+	
 	private EditMemberCurriculumElementRow parent;
+	private final EnumMap<CurriculumRoles,FormLink> notesLinks = new EnumMap<>(CurriculumRoles.class);
 	private final EnumMap<CurriculumRoles,FormLink> rolesModelLinks = new EnumMap<>(CurriculumRoles.class);
 	private final EnumMap<CurriculumRoles,MembershipModification> modifications = new EnumMap<>(CurriculumRoles.class);
 	private final EnumMap<CurriculumRoles,ResourceReservation> rolesReservation = new EnumMap<>(CurriculumRoles.class);
@@ -82,6 +85,22 @@ public class EditMemberCurriculumElementRow extends AbstractCurriculumElementRow
 	
 	public FormLink getButton(CurriculumRoles role) {
 		return rolesModelLinks.get(role);
+	}
+	
+	public String getAdminNote() {
+		return adminNote;
+	}
+
+	public void setAdminNote(String adminNote) {
+		this.adminNote = adminNote;
+	}
+
+	public void addNoteButton(CurriculumRoles role, FormLink button) {
+		notesLinks.put(role, button);
+	}
+	
+	public FormLink getNoteButton(CurriculumRoles role) {
+		return notesLinks.get(role);
 	}
 	
 	public void addModification(CurriculumRoles role, MembershipModification modification) {

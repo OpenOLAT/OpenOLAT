@@ -292,7 +292,6 @@ public class EditLectureBlockController extends FormBasicController {
 		EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("teacher.empty", "lecture.teacher", formLayout);
 		emptyTeachersList.setTitle(translate("lecture.no.teacher.title"));
 		emptyTeachersList.setInformations(translate("lecture.no.teacher"));
-		emptyTeachersList.setInformations(translate("lecture.no.teacher"));
 		emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_icon_user");
 		emptyTeachersList.setVisible(teachersPK.isEmpty());
 		
