@@ -731,42 +731,42 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	&.o_curriculum_status_preparation {
 		font-weight: normal;
 	    background-color: #fff;
-	    border-color: $o-curriculum-status-preparation-color;
+	    border-color: $o-curriculum-status-preparation-border-color;
 	    color: $o-curriculum-status-preparation-color;
 	}
 	
 	&.o_curriculum_status_provisional {
 		font-weight: normal;
 	    background-color: #fff;
-	    border-color: $o-curriculum-status-provisional-color;
+	    border-color: $o-curriculum-status-provisional-border-color;
 	    color: $o-curriculum-status-provisional-color;
 	}
 	
 	&.o_curriculum_status_confirmed {
 		font-weight: normal;
 	    background-color: #fff;
-	    border-color: $o-curriculum-status-confirmed-color;
+	    border-color: $o-curriculum-status-confirmed-border-color;
 	    color: $o-curriculum-status-confirmed-color;
 	}
 
 	&.o_curriculum_status_active {
 		font-weight: normal;
 	    background-color: #fff;
-	    border-color: $o-curriculum-status-active-color;
+	    border-color: $o-curriculum-status-active-border-color;
 	    color: $o-curriculum-status-active-color;
 	}
 	
 	&.o_curriculum_status_cancelled {
 		font-weight: normal;
 	    background-color: #fff;
-	    border-color: $o-curriculum-status-cancelled-color;
+	    border-color: $o-curriculum-status-cancelled-border-color;
 	    color: $o-curriculum-status-cancelled-color;
 	}
 	
 	&.o_curriculum_status_finished {
 		font-weight: normal;
 	    background-color: #fff;
-	    border-color: $o-curriculum-status-finished-color;
+	    border-color: $o-curriculum-status-finished-border-color;
 	    color: $o-curriculum-status-finished-color;
 	}
 	
@@ -774,7 +774,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	&.o_curriculum_status_inactive {
 		font-weight: normal;
 	    background-color: #fff;
-	    border-color: $o-curriculum-status-deleted-color;
+	    border-color: $o-curriculum-status-deleted-border-color;
 	    color: $o-curriculum-status-deleted-color;
 	}
 }
@@ -813,7 +813,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	&.o_gmembership_status_reservation, {
 		font-weight: normal;
 	    background-color: #fff;
-	    border-color: $o-curriculum-status-reservation-color;
+	    border-color: $o-curriculum-status-reservation-border-color;
 	    color: $o-curriculum-status-reservation-color !important;
 	}
 	
@@ -821,36 +821,36 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	&.o_gmembership_status_parentbooking  {
 		font-weight: normal;
 	    background-color: #fff;
-	    border-color: $o-curriculum-status-active-color;
+	    border-color: $o-curriculum-status-active-border-color;
 	    color: $o-curriculum-status-active-color !important;
 	}
 	
 	&.o_gmembership_status_declined,
 	&.o_gmembership_status_cancelwithfee,
 	&.o_gmembership_status_cancel {
-	    border-color: $o-curriculum-status-cancelled-color;
+	    border-color: $o-curriculum-status-cancelled-border-color;
 	    color: $o-curriculum-status-cancelled-color !important;
 	}
 	
 	&.o_gmembership_status_finished {
-		border-color: $o-curriculum-status-finished-color;
+		border-color: $o-curriculum-status-finished-border-color;
 	    color: $o-curriculum-status-finished-color !important;
 	}
 	
 	&.o_gmembership_status_select {
 		font-weight: normal;
 	    background-color: #fff;
-		border-color: $o-curriculum-status-select-color;
+		border-color: $o-curriculum-status-select-border-color;
 	    color: $o-curriculum-status-select-color !important;
 	}
 	
 	&.o_gmembership_status_removed {
-		border-color: $o-curriculum-status-removed-color;
+		border-color: $o-curriculum-status-removed-border-color;
 	    color: $o-curriculum-status-removed-color !important;
 	}
 	
 	&.o_gmembership_status_resourcedeleted {
-		border-color: $o-curriculum-status-deleted-color;
+		border-color: $o-curriculum-status-deleted-border-color;
 	    color: $o-curriculum-status-deleted-color !important;
 	}
 }

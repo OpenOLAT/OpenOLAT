@@ -943,8 +943,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_membership_status_parentbooking { @include o-add-icon('arrow-up');}
 .o_membership_status_transfer { @include o-add-icon('arrow-right');}
 .o_membership_status_reservation { @include o-add-icon('clock');}
-.o_membership_status_pending { @include o-add-icon('hourglass-half'); color: $brand-warning;}
-.o_membership_status_active { @include o-add-icon('circle-check'); color: $brand-success;}
+.o_membership_status_pending { @include o-add-icon('hourglass-half'); color: #522D00;}
+.o_membership_status_active { @include o-add-icon('circle-check'); color: #1B652C;}
 .o_membership_status_declined { @include o-add-icon('circle-xmark', true); }
 .o_membership_status_cancel { @include o-add-icon('circle-xmark', true);}
 .o_membership_status_cancelwithfee { @include o-add-icon('circle-xmark', true)}

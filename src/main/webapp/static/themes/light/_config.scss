@@ -719,15 +719,25 @@ $o-curriculum-avatar-color						: #fff !default;
 $o-curriculum-avatar-bg-color					: $brand-primary !default;
 $o-curriculum-avatar-border-radius				: 6px !default;
 
+$o-curriculum-status-preparation-border-color	: $o-repo-preparation-color !default;
 $o-curriculum-status-preparation-color			: $o-repo-preparation-color !default;
+$o-curriculum-status-provisional-border-color	: $o-repo-preparation-color !default;
 $o-curriculum-status-provisional-color			: $o-repo-preparation-color !default;
+$o-curriculum-status-confirmed-border-color		: $o-repo-coachpublished-color !default;
 $o-curriculum-status-confirmed-color			: $o-repo-coachpublished-color !default;
-$o-curriculum-status-reservation-color			: #FF9900 !default;
-$o-curriculum-status-active-color				: #009E0F !default;
+$o-curriculum-status-reservation-border-color	: #ff8c00 !default;
+$o-curriculum-status-reservation-color			: #522D00 !default;
+$o-curriculum-status-active-border-color		: #0D591B !default;
+$o-curriculum-status-active-color				: #1B652C !default;
+$o-curriculum-status-finished-border-color		: $o-repo-published-color !default;
 $o-curriculum-status-finished-color				: $o-repo-published-color !default;
+$o-curriculum-status-cancelled-border-color		: #666666 !default;
 $o-curriculum-status-cancelled-color			: #666666 !default;
+$o-curriculum-status-deleted-border-color		: $o-repo-trash-color !default;
 $o-curriculum-status-deleted-color				: $o-repo-trash-color !default;
+$o-curriculum-status-removed-border-color		: $brand-danger !default;
 $o-curriculum-status-removed-color				: $brand-danger !default;
+$o-curriculum-status-select-border-color		: #707070 !default;
 $o-curriculum-status-select-color				: #707070 !default;
 
 $o-curriculum-activity-add-border				: 1px solid $brand-success !default;
