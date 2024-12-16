@@ -75,7 +75,7 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 		periodEl.setSecondDate(true);
 		periodEl.setSeparator("to.separator");
 		periodEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates));
-		if (element == null) {
+		if (element != null) {
 			periodEl.setDate(element.getBeginDate());
 			periodEl.setSecondDate(element.getEndDate());
 		}
@@ -166,7 +166,7 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 	protected void formOK(UserRequest ureq) {
 		element = curriculumService.getCurriculumElement(element);
 		element.setBeginDate(periodEl.getDate());
-		element.setBeginDate(periodEl.getSecondDate());
+		element.setEndDate(periodEl.getSecondDate());
 		element.setLocation(locationEl.getValue());
 		
 		if (minParticipantsEl != null) {
