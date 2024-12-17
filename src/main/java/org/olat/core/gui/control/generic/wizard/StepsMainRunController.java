@@ -226,7 +226,9 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		} else if (source == prevButton) {
 			lastEvent = StepsEvent.ACTIVATE_PREVIOUS;
 			doAfterDispatch = true;
-		} else if (source instanceof SelectboxSelectionImpl selectboxSelection && selectboxSelection.getSelectedKey() != null) {
+		} else if (source instanceof SelectboxSelectionImpl selectboxSelection
+				&& selectboxSelection.isOneSelected()
+				&& selectboxSelection.getSelectedKey() != null) {
 			Locale localeOrDefault = I18nManager.getInstance().getLocaleOrDefault(selectboxSelection.getSelectedKey());
 			ureq.getUserSession().setLocale(localeOrDefault);
 			fireEvent(ureq, LoginProcessEvent.REGISTER_EVENT);
