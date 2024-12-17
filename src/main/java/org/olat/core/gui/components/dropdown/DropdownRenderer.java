@@ -62,6 +62,9 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
 			sb.append(" ").append(dropdown.getElementCssClass());
 		}
+		if(StringHelper.containsNonWhitespace(dropdown.getToggleCSS())) {
+			sb.append(" ").append(dropdown.getToggleCSS());
+		}
 		if (dropdown.isGhost()) {
 			sb.append(" btn o_button_ghost");
 		}

@@ -298,9 +298,6 @@
 				margin-right: floor($o-toolbar-size-icon-md * -1.1);
 				font-size: $o-toolbar-size-caret-md;
 			}
-			&.o_empty {
-				pointer-events: none;
-			}
 			@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
 				i {
 					font-size: $o-toolbar-size-icon-sm;
@@ -380,23 +377,6 @@
 				}
 			}				
 			
-		}
-		/* dropdown element in toolbar */
-		.dropdown-toggle.o_with_labeled {
-			.o_inner_wrapper.o_labeled  + .o_label + .o_icon_caret {
-				color: $o-repo-status-color-bright !important;
-			}
-		}
-		.dropdown-menu.o_with_labeled {
-			padding: 0;
-			margin: 0;
-			.o_labeled {
-				text-align: left;
-			}
-			& >li>a {
-				padding: 5px 5px;
-				margin: 1px;
-			}
 		}
 	}	
 	

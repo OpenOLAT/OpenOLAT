@@ -65,6 +65,7 @@ import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -96,6 +97,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private int offersTab;
 	private int metadataTab;
 
+	private Dropdown statusDropdown;
 	private Link nextButton;
 	private Link deleteButton;
 	private Link previousButton;
@@ -114,6 +116,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CurriculumElementResourceListController resourcesCtrl;
 	private LectureBlocksWidgetController lectureBlocksWidgetCtrl;
+	private CurriculumElementStatusChangeController statusChangeCtrl;
 	private CurriculumElementUserManagementController userManagementCtrl;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
 	private ConfirmCurriculumElementDeleteController deleteCurriculumElementCtrl;
@@ -164,7 +167,6 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	public CurriculumElement getCurriculumElement() {
 		return curriculumElement;
 	}
-	
 
 	private void initStructure() {
 		structureButton = LinkFactory.createCustomLink("structure", "structure", "structure.goto", Link.BUTTON, mainVC, this);
@@ -233,6 +235,13 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	}
 	
 	private void initMetadata() {
+		statusDropdown = new Dropdown("status", null, false, getTranslator());
+		statusDropdown.setOrientation(DropdownOrientation.right);
+		statusDropdown.setEmbbeded(true);
+		statusDropdown.setLabeled(true, true);
+		mainVC.put("status", statusDropdown);
+		updateStatusDropdown();
+		
 		if(secCallback.canEditCurriculumElement(curriculumElement)
 				&& !CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.delete)) {
 			Dropdown commandsDropdown = DropdownUIFactory.createMoreDropdown("more", getTranslator());
@@ -277,6 +286,50 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			dates.append(formatter.formatDate(curriculumElement.getEndDate()));
 		}
 		mainVC.contextPut("dates", dates.toString());
+	}
+	
+	private void updateStatusDropdown() {
+		if (statusDropdown == null || curriculumElement == null) {
+			return;
+		}
+		
+		boolean canChangeStatus = CurriculumElementStatus.deleted != curriculumElement.getElementStatus()
+				&& secCallback.canEditCurriculumElement(curriculumElement)
+				&& !CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.status);
+		
+		CurriculumElementStatus currentStatus = curriculumElement.getElementStatus();
+		statusDropdown.setIconCSS("o_icon o_icon_curriculum_status_" + currentStatus);
+		statusDropdown.setInnerText(translate("status." + currentStatus));
+		statusDropdown.setToggleCSS("o_labeled o_curriculum_status_" + currentStatus);
+		statusDropdown.removeAllComponents();
+		
+		if (!canChangeStatus) {
+			return;
+		}
+		
+		for (CurriculumElementStatus elementStatus : CurriculumElementStatus.selectableAdmin()) {
+			if (isSelecteable(elementStatus)) {
+				Link statusLink = LinkFactory.createCustomLink("status." + elementStatus, "status", "status." + elementStatus, Link.LINK, mainVC, this);
+				statusLink.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_status_" + elementStatus);
+				statusLink.setElementCssClass("o_labeled o_curriculum_status_" + elementStatus);
+				statusLink.setUserObject(elementStatus);
+				statusDropdown.addComponent(statusLink);
+			}
+		}
+	}
+	
+	private boolean isSelecteable(CurriculumElementStatus status) {
+		if (curriculumElement.getElementStatus() == status) {
+			return false;
+		}
+		if (curriculumElement.getParent() == null && CurriculumElementStatus.active == status) {
+			return false;
+		}
+		if (curriculumElement.getParent() != null && (CurriculumElementStatus.provisional == status || CurriculumElementStatus.confirmed == status)) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	private String getLevel() {
@@ -434,10 +487,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private void cleanUp() {
 		removeAsListenerAndDispose(curriculumStructureCalloutCtrl);
 		removeAsListenerAndDispose(deleteCurriculumElementCtrl);
+		removeAsListenerAndDispose(statusChangeCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		curriculumStructureCalloutCtrl = null;
 		deleteCurriculumElementCtrl = null;
+		statusChangeCtrl = null;
 		toolsCalloutCtrl = null;
 		cmc = null;
 	}
@@ -452,6 +507,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
 		} else if(nextButton == source && nextButton.getUserObject() instanceof CurriculumElement el) {
 			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
+		} else if (source instanceof Link link) {
+			if ("status".equals(link.getCommand())) {
+				if (link.getUserObject() instanceof CurriculumElementStatus status) {
+					doChangeStatus(ureq, status);
+				}
+			}
 		} else if(tabPane == source) {
 			if(event instanceof TabbedPaneChangedEvent tpce) {
 				if(overviewCtrl != null && tpce.getNewComponent() == overviewCtrl.getInitialComponent()) {
@@ -462,7 +523,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			}
 		}
 	}
-	
+
 	private void updateOverviewDashboard(UserRequest ureq) {
 		if(coursesWidgetCtrl != null) {
 			coursesWidgetCtrl.loadModel();
@@ -481,6 +542,14 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			} else if(event instanceof CurriculumElementEvent) {
 				fireEvent(ureq, event);
 			}
+		} else if(statusChangeCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				curriculumElement = statusChangeCtrl.getCurriculumElement();
+				updateStatusDropdown();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(deleteCurriculumElementCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				toolbarPanel.popController(this);
@@ -521,6 +590,24 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			rootElement = parentLine.get(0);
 		}
 		return rootElement;
+	}
+	
+	private void doChangeStatus(UserRequest ureq, CurriculumElementStatus newStatus) {
+		curriculumElement = curriculumService.getCurriculumElement(curriculumElement);
+		if (curriculumElement == null) {
+			
+		} else if (curriculumElement.getElementStatus() == newStatus) {
+			updateStatusDropdown();
+			return;
+		}
+		
+		statusChangeCtrl = new CurriculumElementStatusChangeController(ureq, getWindowControl(), curriculumElement, newStatus);
+		listenTo(statusChangeCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				statusChangeCtrl.getInitialComponent(), true, translate("change.status.title"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doConfirmDeleteCurriculumElement(UserRequest ureq) {

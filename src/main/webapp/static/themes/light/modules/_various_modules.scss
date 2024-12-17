@@ -1623,9 +1623,53 @@ ul.o_assessment_docs>li:last-child {
 }
 
 /* label */
+
+// inspired by button-variant
+@mixin labeled-variant($color, $background, $border) {
+	color: $color;
+	background-color: $background;
+	border-color: $border;
+	
+	// .o_empty is a drop down button without a menu
+	&:is(a):not(.o_empty):hover {
+		color: $color;
+		background-color: darken($background, 10%);
+		border-color: darken($border, 12%);
+	}
+}
+
+%o_labeled_green { @include labeled-variant($o-labeled-green-color, $o-labeled-green-bg-color, $o-labeled-green-border-color); }
+%o_labeled_light_green { @include labeled-variant($o-labeled-green-light-color, $o-labeled-green-light-bg-color,$o-labeled-green-light-border-color); }
+%o_labeled_mega_green { @include labeled-variant($o-labeled-green-mega-color, $o-labeled-green-mega-bg-color,$o-labeled-green-mega-border-color); }
+%o_labeled_yellow { @include labeled-variant($o-labeled-yellow-color, $o-labeled-yellow-bg-color, $o-labeled-yellow-border-color); }
+%o_labeled_light_yellow { @include labeled-variant($o-labeled-yellow-light-color, $o-labeled-yellow-light-bg-color,$o-labeled-yellow-light-border-color); }
+%o_labeled_mega_yellow { @include labeled-variant($o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color,$o-labeled-yellow-mega-border-color); }
+%o_labeled_blue { @include labeled-variant($o-labeled-blue-color, $o-labeled-blue-bg-color, $o-labeled-blue-border-color); }
+%o_labeled_light_blue { @include labeled-variant($o-labeled-blue-light-color, $o-labeled-blue-light-bg-color,$o-labeled-blue-light-border-color); }
+%o_labeled_mega_blue { @include labeled-variant($o-labeled-blue-mega-color, $o-labeled-blue-mega-bg-color,$o-labeled-blue-mega-border-color); }
+%o_labeled_orange { @include labeled-variant($o-labeled-orange-color, $o-labeled-orange-bg-color, $o-labeled-orange-border-color); }
+%o_labeled_light_orange { @include labeled-variant($o-labeled-orange-light-color, $o-labeled-orange-light-bg-color,$o-labeled-orange-light-border-color); }
+%o_labeled_mega_orange { @include labeled-variant($o-labeled-orange-mega-color, $o-labeled-orange-mega-bg-color,$o-labeled-orange-mega-border-color); }
+%o_labeled_red { @include labeled-variant($o-labeled-red-color, $o-labeled-red-bg-color, $o-labeled-red-border-color); }
+%o_labeled_light_red { @include labeled-variant($o-labeled-red-light-color, $o-labeled-red-light-bg-color,$o-labeled-red-light-border-color); }
+%o_labeled_mega_red { @include labeled-variant($o-labeled-red-mega-color, $o-labeled-red-mega-bg-color,$o-labeled-red-mega-border-color); }
+%o_labeled_brown { @include labeled-variant($o-labeled-brown-color, $o-labeled-brown-bg-color, $o-labeled-brown-border-color); }
+%o_labeled_light_brown { @include labeled-variant($o-labeled-brown-light-color, $o-labeled-brown-light-bg-color,$o-labeled-brown-light-border-color); }
+%o_labeled_mega_brown { @include labeled-variant($o-labeled-brown-mega-color, $o-labeled-brown-mega-bg-color,$o-labeled-brown-mega-border-color); }
+%o_labeled_grey { @include labeled-variant($o-labeled-grey-color, $o-labeled-grey-bg-color, $o-labeled-grey-border-color); }
+%o_labeled_light_grey { @include labeled-variant($o-labeled-grey-light-color, $o-labeled-grey-light-bg-color,$o-labeled-grey-light-border-color); }
+%o_labeled_mega_grey { @include labeled-variant($o-labeled-grey-mega-color, $o-labeled-grey-mega-bg-color,$o-labeled-grey-mega-border-color); }
+%o_labeled_yellow { @include labeled-variant($o-labeled-yellow-color, $o-labeled-yellow-bg-color, $o-labeled-yellow-border-color); }
+%o_labeled_light_yellow { @include labeled-variant($o-labeled-yellow-light-color, $o-labeled-yellow-light-bg-color,$o-labeled-yellow-light-border-color); }
+%o_labeled_mega_yellow { @include labeled-variant($o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color,$o-labeled-yellow-mega-border-color); }
+%o_labeled_yellow { @include labeled-variant($o-labeled-yellow-color, $o-labeled-yellow-bg-color, $o-labeled-yellow-border-color); }
+%o_labeled_light_yellow { @include labeled-variant($o-labeled-yellow-light-color, $o-labeled-yellow-light-bg-color,$o-labeled-yellow-light-border-color); }
+%o_labeled_mega_yellow { @include labeled-variant($o-labeled-yellow-mega-color, $o-labeled-yellow-mega-bg-color,$o-labeled-yellow-mega-border-color); }
+
 %o_labeled,
 .o_labeled,
 a.o_labeled {
+	@extend %o_labeled_grey;
 	display: inline-block;
 	text-align: center;
 	text-decoration: none;
@@ -1636,32 +1680,41 @@ a.o_labeled {
 	border: 1px solid;
 	border-radius: $border-radius-small;
 	padding: 3px 5px;
-	background-color: $o-labeled_bg-color;
-	color: $o-labeled_color;
 	position: relative;
 }
 %o_labeled_light,
 .o_labeled_light,
 a.o_labeled_light {
 	@extend %o_labeled;
+	@extend %o_labeled_light_grey;
 	padding: 2px 5px;
 	font-size: 85%;
-	background-color: 	$o-labeled-light-bg-color;
  }
  .o_table_flexi {
  	.o_labeled_light {
  		margin-top: -2px;
  	}
  }
-%o_labeled_yellow {
-	color: $o-labeled-yellow-color;
-	background-color: $o-labeled-yellow-bg-color;
-	border-color: $o-labeled-yellow-border-color;
+/* labeled dropdown element */
+.dropdown-toggle.o_with_labeled {
+	.o_inner_wrapper.o_labeled  + .o_label + .o_icon_caret {
+		color: $o-repo-status-color-bright !important;
+	}
+	
+	&.o_empty {
+		pointer-events: none;
+	}
 }
-%o_labeled_light_yellow {
-	color: $o-labeled-yellow-color;
-	background-color: $o-labeled-yellow-light-bg-color;
-	border-color: $o-labeled-yellow-border-color;
+.dropdown-menu.o_with_labeled {
+	padding: 0;
+	margin: 0;
+	.o_labeled {
+		text-align: left;
+	}
+	& >li>a {
+		padding: 5px 5px;
+		margin: 1px;
+	}
 }
  
  /* Multiselect dropdown element */

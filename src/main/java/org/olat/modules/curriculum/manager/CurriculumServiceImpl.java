@@ -608,6 +608,36 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
+	public CurriculumElement updateCurriculumElementStatus(Identity doer, CurriculumElementRef elementRef,
+			CurriculumElementStatus newStatus, MailPackage mailing) {
+		
+		CurriculumElement element = getCurriculumElement(elementRef);
+		if (element.getElementStatus() == newStatus) {
+			return element;
+		}
+		
+		element.setElementStatus(newStatus);
+		element = updateCurriculumElement(element);
+		dbInstance.commitAndCloseSession();
+		
+		if(mailing != null && mailing.isSendEmail()) {
+			List<Identity> identities = getMembersIdentity(element, CurriculumRoles.participant);
+			element = getCurriculumElement(element);
+			sendStatusChangeNotificationsEmail(doer, identities, mailing, element);
+		}
+		
+		return element;
+	}
+	
+	private void sendStatusChangeNotificationsEmail(Identity doer, List<Identity> identities, MailPackage mailing,
+			CurriculumElement curriculumElement) {
+		for (Identity identity : identities) {
+			Curriculum curriculum = curriculumElement.getCurriculum();
+			CurriculumMailing.sendEmail(doer, identity, curriculum, curriculumElement, mailing);
+		}
+	}
+	
+	@Override
 	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent,
 			CurriculumElement siblingBefore, Curriculum targetCurriculum) {
 		Curriculum reloadedTargetCurriculum = curriculumDao.loadByKey(targetCurriculum.getKey());

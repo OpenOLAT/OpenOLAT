@@ -55,6 +55,18 @@ import org.olat.user.UserManager;
  *
  */
 public class CurriculumMailing {
+	
+	public static MailTemplate getStatusConfirmedMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.status.confirmed.subject";
+		String bodyKey = "notification.mail.status.confirmed.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	public static MailTemplate getStatusCancelledMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.status.cancelled.subject";
+		String bodyKey = "notification.mail.status.cancelled.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
 
 	/**
 	 * The mail template when adding owner to a course.
@@ -86,15 +98,18 @@ public class CurriculumMailing {
 		final String curriculumElementName;
 		final String curriculumElementDescription;
 		final String curriculumElementIdentifier;
+		final String curriculumTypeName;
 		if(curriculumElement == null) {
 			curriculumElementName = "";
 			curriculumElementDescription = "";
 			curriculumElementIdentifier = "";
+			curriculumTypeName = "";
 		} else {
 			curriculumElementName = curriculumElement.getDisplayName();
 			curriculumElementDescription = (StringHelper.containsNonWhitespace(curriculumElement.getDescription())
 					? FilterFactory.getHtmlTagAndDescapingFilter().filter(curriculumElement.getDescription()) : ""); 
 			curriculumElementIdentifier = curriculumElement.getIdentifier();
+			curriculumTypeName = curriculumElement.getType().getDisplayName();
 		}
 		
 		// get some data about the actor and fetch the translated subject / body via i18n module
@@ -121,6 +136,7 @@ public class CurriculumMailing {
 			private static final String CURRICULUM_ELEMENT_NAME = "curriculumElementName";
 			private static final String CURRICULUM_ELEMENT_DESCRIPTION = "curriculumElementDescription";
 			private static final String CURRICULUM_ELEMENT_IDENTIFIER = "curriculumElementIdentifier";
+			private static final String CURRICULUM_TYPE_NAME = "curriculumTypeName";
 			
 			@Override
 			public Collection<String> getVariableNames() {
@@ -133,6 +149,7 @@ public class CurriculumMailing {
 				variableNames.add(CURRICULUM_ELEMENT_NAME);
 				variableNames.add(CURRICULUM_ELEMENT_DESCRIPTION);
 				variableNames.add(CURRICULUM_ELEMENT_IDENTIFIER);
+				variableNames.add(CURRICULUM_TYPE_NAME);
 				return variableNames;
 			}
 
@@ -145,19 +162,15 @@ public class CurriculumMailing {
 					context.put(LOGIN, UserManager.getInstance().getUserDisplayEmail(user, locale));
 				}
 				// Put variables from greater context
-				context.put(CURRICULUM_NAME, curriculumName);
-				context.put("curriculumname", curriculumName);
-				context.put(CURRICULUM_DESCRIPTION, curriculumDescription);
-				context.put("curriculumdescription", curriculumDescription);
-				context.put(CURRICULUM_URL, curriculumUrl);
-				context.put("curriculumurl", curriculumUrl);
+				putVariablesInMailContext(context, CURRICULUM_NAME, curriculumName);
+				putVariablesInMailContext(context, CURRICULUM_DESCRIPTION, curriculumDescription);
+				putVariablesInMailContext(context, CURRICULUM_URL, curriculumUrl);
 				
-				context.put(CURRICULUM_ELEMENT_NAME, curriculumElementName);
-				context.put("curriculumelementname", curriculumElementName);
-				context.put(CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);
-				context.put("curriculumelementdescription", curriculumElementDescription);
-				context.put(CURRICULUM_ELEMENT_IDENTIFIER, curriculumElementIdentifier);
-				context.put("curriculumelementidentifier", curriculumElementIdentifier);
+				putVariablesInMailContext(context, CURRICULUM_ELEMENT_NAME, curriculumElementName);
+				putVariablesInMailContext(context, CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);
+				putVariablesInMailContext(context, CURRICULUM_ELEMENT_IDENTIFIER, curriculumElementIdentifier);
+				
+				putVariablesInMailContext(context, CURRICULUM_TYPE_NAME, curriculumTypeName);
 			}
 		};
 	}

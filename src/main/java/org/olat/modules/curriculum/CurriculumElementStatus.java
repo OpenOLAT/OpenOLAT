@@ -73,6 +73,13 @@ public enum CurriculumElementStatus {
 				CurriculumElementStatus.finished, CurriculumElementStatus.deleted };
 	}
 	
+	public static CurriculumElementStatus[] selectableAdmin() {
+		return new CurriculumElementStatus[] { CurriculumElementStatus.preparation,
+				CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,
+				CurriculumElementStatus.active, CurriculumElementStatus.cancelled,
+				CurriculumElementStatus.finished };
+	}
+	
 	public static CurriculumElementStatus[] notDeleted() {
 		return new CurriculumElementStatus[] { CurriculumElementStatus.preparation,
 				CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed,

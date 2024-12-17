@@ -387,6 +387,9 @@ public interface CurriculumService {
 	
 	public CurriculumElement updateCurriculumElement(CurriculumElement element);
 	
+	public CurriculumElement updateCurriculumElementStatus(Identity doer, CurriculumElementRef element,
+			CurriculumElementStatus newStatus, MailPackage mailing);
+	
 	/**
 	 * 
 	 * @param elementToMove The element to move

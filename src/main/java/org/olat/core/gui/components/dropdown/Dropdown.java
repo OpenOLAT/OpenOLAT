@@ -61,6 +61,7 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	private DropdownOrientation orientation = DropdownOrientation.normal;
 	private String iconCSS;
 	private String carretIconCSS;
+	private String toggleCSS;
 	private String innerText;
 	private String innerCSS;
 	private String ariaLabel;
@@ -279,7 +280,15 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	public FormItem getFormItem() {
 		return item;
 	}
-	
+
+	public String getToggleCSS() {
+		return toggleCSS;
+	}
+
+	public void setToggleCSS(String toggleCSS) {
+		this.toggleCSS = toggleCSS;
+	}
+
 	/**
 	 * 
 	 * @return The text displayed as part of the button or NULL if not used

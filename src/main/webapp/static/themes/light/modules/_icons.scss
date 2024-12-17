@@ -136,11 +136,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_correct_response { @include o-add-icon('check-circle', false); color: $brand-success;}
 .o_icon_correction { @include o-add-icon('highlighter');}
 .o_icon_crosshairs { @include o-add-icon('crosshairs');}
-.o_icon_curriculum { @include o-add-icon('cubes');}
-.o_icon_curriculum_element { @include o-add-icon('cube');}
-.o_icon_curriculum_implementation_avatar { @include o-add-icon('circle-play');}
-.o_icon_curriculum_implementations { @include o-add-icon('square-share-nodes');}
-.o_icon_curriculum_structure { @include o-add-icon('sitemap');}
 .o_icon_customize { @include o-add-icon('gear');}
 .o_icon_database { @include o-add-icon('database');}
 .o_icon_deactivate { @include o-add-icon('ban');}
@@ -937,6 +932,20 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_order_status_error_icon { @include o-add-icon('times'); color: $brand-danger;}
 .o_ac_order_status_warning_icon { @include o-add-icon('exclamation'); color: $brand-warning;}
 .o_ac_order_status_pending_icon { @include o-add-icon('clock', false);}
+
+/* Curriculum */
+.o_icon_curriculum { @include o-add-icon('cubes');}
+.o_icon_curriculum_element { @include o-add-icon('cube');}
+.o_icon_curriculum_implementation_avatar { @include o-add-icon('circle-play');}
+.o_icon_curriculum_implementations { @include o-add-icon('square-share-nodes');}
+.o_icon_curriculum_structure { @include o-add-icon('sitemap');}
+.o_icon_curriculum_status_preparation { @include o-add-icon('pen');}
+.o_icon_curriculum_status_provisional { @include o-add-icon('hourglass');}
+.o_icon_curriculum_status_confirmed { @include o-add-icon('check');}
+.o_icon_curriculum_status_active { @include o-add-icon('check');}
+.o_icon_curriculum_status_cancelled { @include o-add-icon('circle-xmark');}
+.o_icon_curriculum_status_finished { @include o-add-icon('ban');}
+.o_icon_curriculum_status_transition { @include o-add-icon('chevron-right');}
 
 /* Membership status (and pseudo status) */
 .o_membership_status_booking { @include o-add-icon('clock', false); color: $brand-primary; }
