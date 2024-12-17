@@ -43,7 +43,7 @@ public class RegistrationMailStep03 extends BasicStep {
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, true, false);
+		return new PrevNextFinishConfig(true, true, false);
 	}
 
 	@Override

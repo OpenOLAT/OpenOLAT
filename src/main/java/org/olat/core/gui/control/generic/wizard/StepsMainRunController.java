@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
@@ -41,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -50,6 +52,8 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.login.LoginProcessEvent;
 
 /**
  * @author patrickb
@@ -222,6 +226,10 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		} else if (source == prevButton) {
 			lastEvent = StepsEvent.ACTIVATE_PREVIOUS;
 			doAfterDispatch = true;
+		} else if (source instanceof SelectboxSelectionImpl selectboxSelection && selectboxSelection.getSelectedKey() != null) {
+			Locale localeOrDefault = I18nManager.getInstance().getLocaleOrDefault(selectboxSelection.getSelectedKey());
+			ureq.getUserSession().setLocale(localeOrDefault);
+			fireEvent(ureq, LoginProcessEvent.REGISTER_EVENT);
 		} else {
 			int whichTitleClickedIndex = stepTitleLinks.indexOf(source);
 			if (whichTitleClickedIndex < 0) {

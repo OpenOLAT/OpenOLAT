@@ -45,6 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.dispatcher.LocaleNegotiator;
 
 /**
  * Description:<br>
@@ -78,7 +79,7 @@ public class LanguageChooserController extends FormBasicController {
 			Locale loc = I18nManager.getInstance().getLocaleOrDefault(langKey);
 			MultiUserEvent mue = new LanguageChangedEvent(loc, ureq);
 			ureq.getUserSession().setLocale(loc);
-			ureq.getUserSession().putEntry("negotiated-locale", loc);
+			ureq.getUserSession().putEntry(LocaleNegotiator.NEGOTIATED_LOCALE, loc);
 			I18nManager.updateLocaleInfoToThread(ureq.getUserSession());
 			OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(mue, wrappedLocale);

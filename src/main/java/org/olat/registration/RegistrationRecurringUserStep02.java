@@ -58,12 +58,11 @@ public class RegistrationRecurringUserStep02 extends BasicStep {
 		} else {
 			setNextStep(new RegistrationPersonalDataStep04(ureq, invitation, isAdditionalRegistrationFormEnabled));
 		}
-
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, true, false);
+		return new PrevNextFinishConfig(true, true, false);
 	}
 
 	@Override

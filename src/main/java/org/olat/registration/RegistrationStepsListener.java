@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
+@FunctionalInterface
 public interface RegistrationStepsListener {
 
 	/**

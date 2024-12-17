@@ -59,8 +59,13 @@ public class RegistrationLangStep00Controller extends StepFormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void formNext(UserRequest ureq) {
 		runContext.put(RegWizardConstants.CHOSEN_LANG, languageChooserForm.getSelectedLanguage());
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 }

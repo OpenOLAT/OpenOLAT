@@ -81,6 +81,8 @@ public class LoginProcessController extends BasicController {
 		if (source == registrationWizardCtrl) {
 			if (stackPanel instanceof BreadcrumbedStackedPanel breadcrumbedStackedPanel) {
 				breadcrumbedStackedPanel.popController(registrationWizardCtrl);
+			} else if (event == LoginProcessEvent.REGISTER_EVENT) {
+				fireEvent(ureq, event);
 			} else {
 				stackPanel.popContent();
 			}

@@ -98,7 +98,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	private CloseableModalController cmc;
 	private PwChangeController pwChangeCtrl;
-
+	private LoginProcessController loginProcessCtrl;
 
 	@Autowired
 	private HelpModule helpModule;
@@ -186,8 +186,9 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	}
 
 	private void doOpenRegistration(UserRequest ureq) {
-		LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, invitation);
-		loginProcessEventCtrl.doOpenRegistration(ureq);
+		loginProcessCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, invitation);
+		listenTo(loginProcessCtrl);
+		loginProcessCtrl.doOpenRegistration(ureq);
 	}
 
 	private VelocityContainer initLoginContent(UserRequest ureq) {
@@ -401,7 +402,11 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				cmc.deactivate();
 			}
 			cleanUp();
-		} else if(cmc == source) {
+		} else if (event instanceof LoginProcessEvent) {
+			dmzPanel.popContent();
+			cleanUp();
+			doOpenRegistration(ureq);
+		} else if (cmc == source) {
 			cleanUp();
 		} else if (event instanceof AuthenticationEvent authEvent) {
 			doAuthentication(ureq, authEvent);
@@ -413,8 +418,10 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(loginProcessCtrl);
 		removeAsListenerAndDispose(pwChangeCtrl);
 		removeAsListenerAndDispose(cmc);
+		loginProcessCtrl = null;
 		pwChangeCtrl = null;
 		cmc = null;
 	}

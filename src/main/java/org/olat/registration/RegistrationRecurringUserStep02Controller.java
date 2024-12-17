@@ -68,9 +68,17 @@ public class RegistrationRecurringUserStep02Controller extends StepFormBasicCont
 	}
 
 	@Override
+	public void back() {
+		removeAsListenerAndDispose(this);
+	}
+
+	@Override
 	protected void formNext(UserRequest ureq) {
 		if (recurringUserSelection.isKeySelected("yes.not.first.time")) {
 			registrationStepsListener.onStepsChanged(ureq, true);
+			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
+		} else {
+			registrationStepsListener.onStepsChanged(ureq, false);
 			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

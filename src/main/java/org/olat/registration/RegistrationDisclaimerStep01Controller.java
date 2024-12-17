@@ -61,6 +61,11 @@ public class RegistrationDisclaimerStep01Controller extends StepFormBasicControl
 	}
 
 	@Override
+	public void back() {
+		removeAsListenerAndDispose(disclaimerForm);
+	}
+
+	@Override
 	protected void formNext(UserRequest ureq) {
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

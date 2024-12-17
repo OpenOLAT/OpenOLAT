@@ -64,6 +64,11 @@ public class RegistrationMailStep03Controller extends StepFormBasicController {
 	}
 
 	@Override
+	public void back() {
+		removeAsListenerAndDispose(emailForm);
+	}
+
+	@Override
 	protected void formNext(UserRequest ureq) {
 		runContext.put(RegWizardConstants.EMAIL, emailForm.getEmailAddress());
 		runContext.put(RegWizardConstants.TEMPORARYKEY, emailForm.getTemporaryKey());
