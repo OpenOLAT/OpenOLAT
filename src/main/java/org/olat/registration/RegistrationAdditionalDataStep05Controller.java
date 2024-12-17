@@ -58,6 +58,11 @@ public class RegistrationAdditionalDataStep05Controller extends StepFormBasicCon
 	}
 
 	@Override
+	public void back() {
+		removeAsListenerAndDispose(registrationAdditionalPersonalDataCtrl);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		runContext.put(RegWizardConstants.ADDITIONALPROPFORMITEMS, registrationAdditionalPersonalDataCtrl.getPropFormItems());
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);

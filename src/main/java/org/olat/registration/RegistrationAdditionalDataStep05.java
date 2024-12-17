@@ -44,7 +44,7 @@ public class RegistrationAdditionalDataStep05 extends BasicStep {
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, false, true);
+		return new PrevNextFinishConfig(true, false, true);
 	}
 
 	@Override
