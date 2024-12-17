@@ -203,8 +203,7 @@ public class GroupPage {
 	public String getGroupURL() {
 		By urlBy = By.cssSelector("p.o_sel_group_url input");
 		WebElement urlEl = browser.findElement(urlBy);
-		String url = urlEl.getAttribute("value");
-		return url;
+		return urlEl.getDomAttribute("value");
 	}
 	
 	public void close() {

@@ -768,7 +768,7 @@ public class UserTest extends Deployments {
 		List<WebElement> portlets = browser.findElements(By.className("o_portlet"));
 		Assert.assertFalse(portlets.isEmpty());	
 		WebElement notesPortlet = portlets.get(0);
-		String cssClass = notesPortlet.getAttribute("class");
+		String cssClass = notesPortlet.getDomAttribute("class");
 		Assert.assertNotNull(cssClass);
 		Assert.assertTrue(cssClass.contains("o_portlet_notes"));
 	}

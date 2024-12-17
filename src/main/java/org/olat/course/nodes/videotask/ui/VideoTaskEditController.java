@@ -164,8 +164,8 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_VIDEOCONFIG), configurationVC);
-		assessmentTab = tabbedPane.addTab(translate(PANE_TAB_ASSESSMENT), assessmentCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_VIDEOCONFIG), "o_sel_video_configuration", configurationVC);
+		assessmentTab = tabbedPane.addTab(translate(PANE_TAB_ASSESSMENT), "o_sel_video_assessment_configuration", assessmentCtrl.getInitialComponent());
 		updateTabs();
 	}
 

@@ -231,7 +231,7 @@ public class AssessmentToolPage {
 			By progressBarBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[text()[contains(.,'" + user.getFirstName() + "')]]]/td/div/div[@class='progress']/div[@class='progress-bar']");
 			List<WebElement> progressBarEls = browser.findElements(progressBarBy);
 			for(WebElement progressBarEl:progressBarEls) {
-				log.error("Progress title _{}_", progressBarEl.getAttribute("title"));
+				log.error("Progress title _{}_", progressBarEl.getDomAttribute("title"));
 			}
 			OOGraphene.waitElementWithScrollTableRight(tableBy, progressBy, Duration.ofSeconds(5), Duration.ofMillis(200), browser);
 		}

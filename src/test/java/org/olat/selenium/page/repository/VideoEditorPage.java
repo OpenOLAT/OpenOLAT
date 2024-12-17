@@ -80,6 +80,18 @@ public class VideoEditorPage {
 			By endBy = By.cssSelector(".o_video_segment_end .o_video_apply_position_timestamp input[type='text']");
 			browser.findElement(endBy).clear();
 			browser.findElement(endBy).sendKeys(end);
+			OOGraphene.waitingALittleBit();
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Edit segment", browser);
+			throw e;
+		}
+		return this;
+	}
+	
+	public VideoEditorPage assertOnVideoSegments(int numOfSegments) {
+		try {
+			By segmentsBy = By.xpath("//div[@class='olatFlashMovieViewer']//div[@class='o_videotask_layer']//div[@id='o_videotask_segments'][count(div[contains(@class,'o_vt_marker')])=" + numOfSegments + "]");
+			OOGraphene.waitElement(segmentsBy, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Edit segment", browser);
 			throw e;
@@ -92,8 +104,6 @@ public class VideoEditorPage {
 			By saveBy = By.cssSelector(".o_video_segment_buttons>button.btn.btn-primary");
 			browser.findElement(saveBy).click();
 			OOGraphene.waitBusy(browser);
-			By dirtySaveBy = By.xpath("//div[contains(@class,'o_video_segment_buttons')]/button[contains(@class,'btn-primary') and not(contains(@class,'o_button_dirty'))]");
-			OOGraphene.waitElement(dirtySaveBy, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Save segment", browser);
 			throw e;

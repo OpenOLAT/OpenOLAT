@@ -123,7 +123,7 @@ public class BigBlueButtonPage {
 	public String getExternalUrl() {
 		By externalUrlBy = By.id("externalusersmeetingurl");
 		WebElement externalUrlEl = browser.findElement(externalUrlBy);
-		return externalUrlEl.getAttribute("value");
+		return externalUrlEl.getDomAttribute("value");
 	}
 	
 	public BigBlueButtonPage saveMeeting() {

@@ -207,7 +207,7 @@ public class QTI21Page {
 		By areaBy = By.xpath("//div[contains(@class,'hotspotInteraction')]//map/area[@shape='" + shape + "']");
 		List<WebElement> areaEls = browser.findElements(areaBy);
 		Assert.assertEquals("Hotspot of shape " + shape, 1, areaEls.size());
-		String coords = areaEls.get(0).getAttribute("coords");
+		String coords = areaEls.get(0).getDomAttribute("coords");
 		WebElement element = browser.findElement(hotspotBy);
 		Dimension dim = element.getSize();
 		Position pos = Position.valueOf(coords, dim);
@@ -245,7 +245,7 @@ public class QTI21Page {
 		By areaBy = By.xpath("//div[contains(@class,'graphicOrderInteraction')]//map/area[@data-qti-id='" + id + "']");
 		WebElement areaEl = browser.findElement(areaBy);
 		if(browser instanceof FirefoxDriver) {
-			String coords = areaEl.getAttribute("coords");
+			String coords = areaEl.getDomAttribute("coords");
 			By imgBy = By.xpath("//div[contains(@class,'graphicOrderInteraction')]/div/img");
 			WebElement element = browser.findElement(imgBy);
 			Dimension dim = element.getSize();
@@ -420,7 +420,7 @@ public class QTI21Page {
 		By areaBy = By.xpath("//div[contains(@class,'graphicAssociateInteraction')]//map/area[@data-qti-id='" + id + "']");
 		WebElement areaEl = browser.findElement(areaBy);
 		if(browser instanceof FirefoxDriver) {
-			String coords = areaEl.getAttribute("coords");
+			String coords = areaEl.getDomAttribute("coords");
 			By imgBy = By.xpath("//div[contains(@class,'graphicAssociateInteraction')]/div/div/img");
 			WebElement element = browser.findElement(imgBy);
 			Dimension dim = element.getSize();
@@ -537,7 +537,7 @@ public class QTI21Page {
 		browser.findElement(sourceBy).click();
 		By areaBy = By.xpath("//div[@class='graphicGapMatchInteraction']//map/area[@data-qti-id='" + gap + "']");
 		WebElement areaEl = browser.findElement(areaBy);
-		String coords = areaEl.getAttribute("coords");
+		String coords = areaEl.getDomAttribute("coords");
 		By canvasBy = By.xpath("//div[contains(@class,'graphicGapMatchInteraction')]/div/div/canvas");
 		OOGraphene.waitElement(canvasBy, browser);
 		WebElement element = browser.findElement(canvasBy);

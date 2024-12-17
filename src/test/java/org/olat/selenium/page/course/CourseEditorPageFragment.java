@@ -272,7 +272,7 @@ public class CourseEditorPageFragment {
 		String url = null;
 		List<WebElement> urlEls = browser.findElements(urlBy);
 		for(WebElement urlEl:urlEls) {
-			String text = urlEl.getAttribute("value");
+			String text = urlEl.getDomAttribute("value");
 			if(text.contains("http")) {
 				url = text.trim();
 				break;
