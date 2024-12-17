@@ -49,7 +49,7 @@ public class QuestionPoolAdminPage {
 		
 		By reviewBy = By.cssSelector(".o_sel_qpool_configuration .o_sel_qpool_review_process input[type='checkbox']");
 		WebElement reviewEl = browser.findElement(reviewBy);
-		String checked = reviewEl.getAttribute("checked");
+		String checked = reviewEl.getDomAttribute("checked");
 		if(checked == null) {
 			OOGraphene.check(reviewEl, Boolean.TRUE);
 			OOGraphene.waitModalDialog(browser);

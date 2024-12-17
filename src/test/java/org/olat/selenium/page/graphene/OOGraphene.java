@@ -495,7 +495,7 @@ public class OOGraphene {
 		
 		By tinyIdBy = By.cssSelector(containerCssSelector + " div.o_richtext_mce");
 		WebElement tinyIdEl = browser.findElement(tinyIdBy);
-		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
+		String tinyId = tinyIdEl.getDomAttribute("id").replace("_diw", "");
 		waitTinymceById(tinyId, browser);
 		((JavascriptExecutor)browser).executeScript("tinymce.activeEditor.editorManager.get('" + tinyId + "').setContent('" + content + "')");
 	}
@@ -512,7 +512,7 @@ public class OOGraphene {
 		
 		By tinyIdBy = By.cssSelector(containerCssSelector + " div.o_richtext_mce");
 		WebElement tinyIdEl = browser.findElement(tinyIdBy);
-		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
+		String tinyId = tinyIdEl.getDomAttribute("id").replace("_diw", "");
 		waitTinymceById(tinyId, browser);
 		((JavascriptExecutor)browser).executeScript("tinymce.activeEditor.editorManager.get('" + tinyId + "').insertContent('" + content + "')");
 	}
@@ -577,7 +577,7 @@ public class OOGraphene {
 		
 		int activeIndex = 0;
 		for(int i=0; i<count;i++) {
-			String cssClass = tabLinks.get(i).getAttribute("class");
+			String cssClass = tabLinks.get(i).getDomAttribute("class");
 			if(cssClass != null && cssClass.contains("active")) {
 				activeIndex = i;
 			}
@@ -602,7 +602,7 @@ public class OOGraphene {
 		for(int i=start; i<end; i++) {
 			By tabLinkBy = By.xpath("//ul[contains(@class,'" + ulClass + "')]/li[" + (i+1) + "]/a");
 			WebElement tabEl = browser.findElement(tabLinkBy);
-			String tabClass = tabEl.getAttribute("onclick");
+			String tabClass = tabEl.getDomAttribute("onclick");
 			if(StringHelper.containsNonWhitespace(tabClass)) {
 				tabEl.click();
 				By activatedTabLinkBy = By.xpath("//ul[contains(@class,'" + ulClass + "')]/li[" + (i+1) + "][contains(@class,'active')]/a");
@@ -634,7 +634,7 @@ public class OOGraphene {
 		if(val == null) return false;
 		
 		boolean valueChanged = false;
-		String checked = checkboxEl.getAttribute("checked");
+		String checked = checkboxEl.getDomAttribute("checked");
 		if(Boolean.TRUE.equals(val)) {
 			if(checked == null) {
 				checkboxEl.click();
@@ -675,7 +675,7 @@ public class OOGraphene {
 	}
 	
 	public static final void textarea(WebElement textareaEl, String content, WebDriver browser) {
-		String id = textareaEl.getAttribute("id");
+		String id = textareaEl.getDomAttribute("id");
 		((JavascriptExecutor)browser).executeScript("document.getElementById('" + id + "').value = '" + content + "'");
 	}
 	
@@ -774,7 +774,7 @@ public class OOGraphene {
 	}
 	
 	public static final Locale getLocale(WebDriver browser) {
-		String cssLanguage = browser.findElement(By.id("o_body")).getAttribute("class");
+		String cssLanguage = browser.findElement(By.id("o_body")).getDomAttribute("class");
 		if(cssLanguage.contains("o_lang_de")) {
 			return Locale.GERMAN;
 		}

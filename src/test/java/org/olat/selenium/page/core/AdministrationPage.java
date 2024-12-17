@@ -125,7 +125,7 @@ public class AdministrationPage {
 		By securityBy = By.cssSelector(".o_sel_secadmin span.o_tree_level_label_leaf>a");
 		OOGraphene.waitElement(securityBy, browser);
 		WebElement linkEl = browser.findElement(By.cssSelector("li.o_sel_secadmin"));
-		if(!linkEl.getAttribute("class").contains("active")) {
+		if(!linkEl.getDomAttribute("class").contains("active")) {
 			browser.findElement(securityBy).click();
 			By securityActiveBy = By.cssSelector(".o_sel_secadmin.active span.o_tree_level_label_leaf>a");
 			OOGraphene.waitElement(securityActiveBy, browser);

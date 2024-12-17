@@ -61,7 +61,7 @@ public class GradeConfigurationPage {
 		By optionBy = By.xpath("//div[@id='o_cograde_system_SELBOX']//select/option[text()[contains(.,'" + typeGerman + "') or (contains(.,'" + typeEnglish+ "'))]]");
 		WebElement optionEl = browser.findElement(optionBy);
 		
-		new Select(systemEl).selectByValue(optionEl.getAttribute("value"));
+		new Select(systemEl).selectByValue(optionEl.getDomAttribute("value"));
 
 		By chooseBy = By.cssSelector("fieldset.o_sel_grade_select_system button.btn.btn-primary");
 		browser.findElement(chooseBy).click();

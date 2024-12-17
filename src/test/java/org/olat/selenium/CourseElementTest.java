@@ -85,6 +85,8 @@ import org.olat.selenium.page.course.TUConfigurationPage;
 import org.olat.selenium.page.course.TUPage;
 import org.olat.selenium.page.course.TeamsPage;
 import org.olat.selenium.page.course.VideoConfigurationPage;
+import org.olat.selenium.page.course.VideoTaskConfigurationPage;
+import org.olat.selenium.page.course.VideoTaskPage;
 import org.olat.selenium.page.course.ZoomConfigurationPage;
 import org.olat.selenium.page.course.ZoomPage;
 import org.olat.selenium.page.forum.ForumPage;
@@ -366,9 +368,11 @@ public class CourseElementTest extends Deployments {
 			.addSegment()
 			.editSegment("00:00:01", "00:00:15")
 			.save()
+			.assertOnVideoSegments(1)
 			.addSegment()
 			.editSegment("00:00:20", "00:00:45")
-			.save();
+			.save()
+			.assertOnVideoSegments(2);
 		// Back
 		videoEditorPage
 			.toolbarBack()
@@ -403,6 +407,129 @@ public class CourseElementTest extends Deployments {
 			.play()
 			.assetOnSegment()
 			.assetOnSegmentTooltip(15);
+	}
+	
+	
+	/**
+	 * An author create a video with a segment. After it creates a course with a video task element,
+	 * add the video, check the video task use the segments and publishes the course.<br>
+	 * A participant looks at the video, click the segment after 2 seconds and the course element must
+	 * be green (done).
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithVideoTask()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword());
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		
+		//Upload a video
+		URL videoUrl = JunitTestHelper.class.getResource("file_resources/big_buck_bunny.mp4");
+		File videoFile = new File(videoUrl.toURI());
+		
+		String videoTitle = "Big Buck " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(videoTitle, videoFile)
+			.clickToolbarRootCrumb();
+		
+		VideoPage videoPage = new VideoPage(browser);
+		VideoEditorPage videoEditorPage = videoPage
+			.assertOnVideo()
+			.edit()
+			.assertOnVideoEditor();
+		
+		videoEditorPage
+			.selectSegments()
+			.addSegment()
+			.editSegment("00:00:01", "00:00:45")
+			.save();
+		// Back
+		videoEditorPage
+			.toolbarBack()
+			.assertOnVideo();
+		
+		String courseTitle = "Video task - " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+
+		//Create a course element of type video
+		String videoNodeTitle = "Video task 1.0";
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("videotask")
+			.nodeTitle(videoNodeTitle);
+		new VideoTaskConfigurationPage(browser)
+			.selectVideoTaskConfiguration()
+			.selectVideoResource(videoTitle)
+			.assertSegmentsOption()
+			.save();
+
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		course = courseEditor
+			.clickToolbarBack()
+			.assertOnLearnPathLastNode(videoNodeTitle);
+		new VideoTaskPage(browser)
+			.assertOnAssessedIdentities();
+		
+		//go to members management
+		MembersPage members = course
+			.members();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		// Participant login
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		VideoTaskPage videoTask = new VideoTaskPage(browser);
+		videoTask
+			.assertOnStartTask()
+			.startTask()
+			.assertOnVideo()
+			.play();
+		
+		// Segment starts after 1 second
+		OOGraphene.waitingLong();
+		
+		videoTask
+			.selectFirstSegment()
+			.assertOnSegmentCorrect()
+			.reduceVideoWindow()
+			.submitTask();
+		// Return to start
+		videoTask
+			.assertOnStartTask();
+		
+		CoursePageFragment participantCourse = new CoursePageFragment(browser);
+		participantCourse
+			.assertOnLearnPathNodeDone(videoNodeTitle);
 	}
 	
 	

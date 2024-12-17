@@ -114,6 +114,7 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 		initModes(modesCont);
 		
 		FormLayoutContainer optionsCont = uifactory.addDefaultFormLayout("options", null, formLayout);
+		optionsCont.setElementCssClass("o_sel_video_configuration_form");
 		optionsCont.setFormTitle(translate("video.options"));
 		initOptions(optionsCont);
 	}
