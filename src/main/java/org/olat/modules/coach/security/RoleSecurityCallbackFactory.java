@@ -140,8 +140,38 @@ public class RoleSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canManagePendingCourseBookings() {
+			return roleRights.contains(PendingAccountActivationRightProvider.RELATION_RIGHT);
+		}
+
+		@Override
+		public boolean canViewInvoicesReport() {
+			return roleRights.contains(InvoicesReportRightProvider.RELATION_RIGHT);
+		}
+
+		@Override
+		public boolean canCreateBookingOnBehalfOf() {
+			return roleRights.contains(CreateBookingOnBehalfOfRightProvider.RELATION_RIGHT);
+		}
+
+		@Override
 		public boolean canViewAndEditProfile() {
 			return roleRights.contains(ViewAndEditProfileRightProvider.RELATION_RIGHT);
+		}
+
+		@Override
+		public boolean canCreateAccounts() {
+			return roleRights.contains(CreateAccountsRightProvider.RELATION_RIGHT);
+		}
+
+		@Override
+		public boolean canManagePendingAccountActivation() {
+			return roleRights.contains(PendingAccountActivationRightProvider.RELATION_RIGHT);
+		}
+
+		@Override
+		public boolean canDeactivateAccounts() {
+			return roleRights.contains(DeactivateAccountsRightProvider.RELATION_RIGHT);
 		}
 
 		@Override

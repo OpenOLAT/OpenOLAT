@@ -101,6 +101,21 @@ public interface RoleSecurityCallback {
 	 * @return
 	 */
 	public boolean canViewResourcesAndBookings();
+
+	/**
+	 * Is this role allowed to manage pending course bookings?
+	 */
+	public boolean canManagePendingCourseBookings();
+
+	/**
+	 * Is this role allowed to view an invoices report?
+	 */
+	public boolean canViewInvoicesReport();
+
+	/**
+	 * Is this role allowed to create bookings on behalf of the learners it manages?
+	 */
+	public boolean canCreateBookingOnBehalfOf();
 	
 	/**
 	 * Is this role allowed to view and edit a profile?
@@ -108,6 +123,21 @@ public interface RoleSecurityCallback {
 	 * @return
 	 */
 	public boolean canViewAndEditProfile();
+
+	/**
+	 * Is this role allowed to create accounts?
+	 */
+	public boolean canCreateAccounts();
+
+	/**
+	 * Can this role manage a pending account activation?
+	 */
+	public boolean canManagePendingAccountActivation();
+
+	/**
+	 * Can this role deactivate accounts?
+	 */
+	public boolean canDeactivateAccounts();
 	
 	/**
 	 * Is this role allowed to list a user's group memberships?
