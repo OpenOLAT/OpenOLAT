@@ -47,6 +47,14 @@ public enum CurriculumElementStatus {
 		return this == finished || this == inactive || this == deleted;
 	}
 	
+	/**
+	 * @return true if cancelled, finished, inactive or deleted
+	 */
+	public boolean isCancelledOrClosed() {
+		return this == cancelled || this == finished || this == inactive || this == deleted;
+	}
+	
+	
 	public static boolean isValueOf(String val) {
 		boolean ok = false;
 		if(StringHelper.containsNonWhitespace(val)) {

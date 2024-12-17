@@ -609,7 +609,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	
 	@Override
 	public CurriculumElement updateCurriculumElementStatus(Identity doer, CurriculumElementRef elementRef,
-			CurriculumElementStatus newStatus, MailPackage mailing) {
+			CurriculumElementStatus newStatus, boolean updateChildren, MailPackage mailing) {
 		
 		CurriculumElement element = getCurriculumElement(elementRef);
 		if (element.getElementStatus() == newStatus) {
@@ -618,6 +618,16 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		element.setElementStatus(newStatus);
 		element = updateCurriculumElement(element);
+		
+		if (updateChildren) {
+			getCurriculumElementsDescendants(element).stream()
+				.filter(childElement -> !childElement.getElementStatus().isCancelledOrClosed())
+				.filter(childElement -> childElement.getElementStatus() != newStatus)
+				.forEach(childElement -> { 
+					childElement.setElementStatus(newStatus);
+					updateCurriculumElement(childElement); });
+		}
+		
 		dbInstance.commitAndCloseSession();
 		
 		if(mailing != null && mailing.isSendEmail()) {

@@ -27,15 +27,18 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
@@ -53,7 +56,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CurriculumElementStatusChangeController extends FormBasicController {
+	
+	private final static String CHANGE_FOR_ALL = "all";
+	private final static String CHANGE_FOR_CURRENT = "current";
 
+	private SingleSelection changeForEl;
 	private FormLink applyCustomNotificationButton;
 	private FormLink applyWithoutNotificationButton;
 	
@@ -89,6 +96,29 @@ public class CurriculumElementStatusChangeController extends FormBasicController
 		statusCont.contextPut("statusOld", curriculumElement.getElementStatus());
 		statusCont.contextPut("statusNew", newStatus);
 		
+		if (!curriculumElement.getElementStatus().isCancelledOrClosed()) {
+			long numChildren = curriculumService.getCurriculumElementsDescendants(curriculumElement).stream()
+					.filter(element -> !element.getElementStatus().isCancelledOrClosed())
+					.count();
+			if (numChildren > 0) {
+				SelectionValues changeForSV = new SelectionValues();
+				String allI18nKey;
+				if (CurriculumElementStatus.active == newStatus &&
+						(CurriculumElementStatus.provisional == curriculumElement.getElementStatus()
+							|| CurriculumElementStatus.confirmed == curriculumElement.getElementStatus())
+						) {
+					allI18nKey = "change.status.for.all.active";
+				} else {
+					allI18nKey = "change.status.for.all";
+				}
+				changeForSV.add(SelectionValues.entry(CHANGE_FOR_ALL, translate(allI18nKey,
+						StringHelper.escapeHtml(curriculumElement.getDisplayName()), String.valueOf(numChildren))));
+				changeForSV.add(SelectionValues.entry(CHANGE_FOR_CURRENT, translate("change.status.for.current")));
+				
+				changeForEl = uifactory.addRadiosVertical("change.status.for", formLayout, changeForSV.keys(), changeForSV.values());
+				changeForEl.select(CHANGE_FOR_ALL, true);
+			}
+		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createCustomFormLayout("buttons", getTranslator(), velocity_root + "/status_change_buttons.html");
 		buttonsCont.setRootForm(mainForm);
@@ -113,8 +143,7 @@ public class CurriculumElementStatusChangeController extends FormBasicController
 		Date end = curriculumElement.getEndDate();
 		Date todayStart = DateUtils.getStartOfDay(new Date());
 		Date todayEnd = DateUtils.getEndOfDay(todayStart);
-		if (newStatus == CurriculumElementStatus.preparation || newStatus == CurriculumElementStatus.provisional
-				|| newStatus == CurriculumElementStatus.confirmed || newStatus == CurriculumElementStatus.active) {
+		if (!newStatus.isCancelledOrClosed()) {
 			if(end != null && todayEnd.after(end)) {
 				setFormWarning("warning.execution.period.already.ended");
 			} else if(begin != null && todayStart.after(begin)) {
@@ -196,7 +225,8 @@ public class CurriculumElementStatusChangeController extends FormBasicController
 	}
 
 	private void doApply(UserRequest ureq, MailPackage mailPackage) {
-		curriculumElement = curriculumService.updateCurriculumElementStatus(getIdentity(), curriculumElement, newStatus, mailPackage);
+		boolean updateChildren = changeForEl != null && changeForEl.isOneSelected() && changeForEl.isKeySelected(CHANGE_FOR_ALL);
+		curriculumElement = curriculumService.updateCurriculumElementStatus(getIdentity(), curriculumElement, newStatus, updateChildren, mailPackage);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
