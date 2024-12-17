@@ -104,7 +104,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 	
 	public CurriculumUserManagementController(UserRequest ureq, WindowControl wControl,
 			Curriculum curriculum, CurriculumSecurityCallback secCallback) {
-		super(ureq, wControl, "curriculum_element_user_mgmt", Util
+		super(ureq, wControl, "curriculum_user_mgmt", Util
 				.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
@@ -143,7 +143,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-user-list-v2");
 		
 		if(!membersManaged && secCallback.canManagerCurriculumUsers()) {
-			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
+			addMemberButton = uifactory.addFormLink("add.members", formLayout, Link.BUTTON);
 			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
 		
@@ -221,7 +221,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addMemberButton == source) {
-			doRolleCallout(ureq);
+			doRoleCallout(ureq);
 		} else if(removeMembershipButton == source) {
 			doConfirmRemoveAllMemberships(ureq);
 		} else if(tableEl == source) {
@@ -254,11 +254,11 @@ public class CurriculumUserManagementController extends FormBasicController {
 		loadModel(true);
 	}
 	
-	private void doRolleCallout(UserRequest ureq) {
+	private void doRoleCallout(UserRequest ureq) {
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(roleListCtrl);
 		
-		String title = translate("add.member");
+		String title = translate("add.members");
 		roleListCtrl = new RoleListController(ureq, getWindowControl(), new CurriculumRoles[] { CurriculumRoles.curriculumowner });
 		listenTo(roleListCtrl);
 		
@@ -274,7 +274,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 		userSearchCtrl.setUserObject(role);
 		listenTo(userSearchCtrl);
 		
-		String title = translate("add.member.role", new String[] { translate("role.".concat(role.name())) });
+		String title = translate("add.member.role", translate("role.".concat(role.name())));
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
