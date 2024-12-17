@@ -29,6 +29,7 @@ import java.util.Set;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.commons.calendar.CalendarUtils;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -73,6 +74,14 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 					.orElse(null);
 		}
 		return null;
+	}
+	
+	public boolean ensureLoaded(int row, FlexiTableElement tableEl) {
+		if(isRowLoaded(row) ) {
+			return true;
+		}
+		tableEl.preloadPageOfObjectIndex(row);
+		return isRowLoaded(row);
 	}
 
 	@Override
