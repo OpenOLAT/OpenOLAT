@@ -19,15 +19,20 @@
  */
 package org.olat.registration;
 
+import java.util.Locale;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.i18n.I18nManager;
 
 /**
  * Initial date: Okt 25, 2024
@@ -56,6 +61,16 @@ public class RegistrationLangStep00Controller extends StepFormBasicController {
 	@Override
 	public FormItem getStepFormItem() {
 		return languageChooserForm.getInitialFormItem();
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source instanceof SingleSelection se && se.isOneSelected()) {
+			Locale localeOrDefault = I18nManager.getInstance().getLocaleOrDefault(se.getSelectedKey());
+			ureq.getUserSession().setLocale(localeOrDefault);
+			fireEvent(ureq, StepsEvent.RELOAD);
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

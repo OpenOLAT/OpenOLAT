@@ -39,6 +39,7 @@ public class StepsEvent extends Event {
 	public static final StepsEvent ACTIVATE_PREVIOUS = new StepsEvent("prev", PrevNextFinishConfig.NOOP);
 	public static final StepsEvent INFORM_FINISHED = new StepsEvent("finished", PrevNextFinishConfig.NOOP);
 	public static final StepsEvent STEPS_CHANGED = new StepsEvent("steps.changed", PrevNextFinishConfig.NOOP);
+	public static final StepsEvent RELOAD = new StepsEvent("RELOAD.WIZARD", PrevNextFinishConfig.NOOP);
 	
 	private PrevNextFinishConfig pnfConf;
 

@@ -33,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
@@ -81,7 +82,7 @@ public class LoginProcessController extends BasicController {
 		if (source == registrationWizardCtrl) {
 			if (stackPanel instanceof BreadcrumbedStackedPanel breadcrumbedStackedPanel) {
 				breadcrumbedStackedPanel.popController(registrationWizardCtrl);
-			} else if (event == LoginProcessEvent.REGISTER_EVENT) {
+			} else if (event == StepsEvent.RELOAD) {
 				fireEvent(ureq, event);
 			} else {
 				stackPanel.popContent();

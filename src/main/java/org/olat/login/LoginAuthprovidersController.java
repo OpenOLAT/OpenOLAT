@@ -53,6 +53,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -402,7 +403,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				cmc.deactivate();
 			}
 			cleanUp();
-		} else if (event instanceof LoginProcessEvent) {
+		} else if (event == StepsEvent.RELOAD) {
 			dmzPanel.popContent();
 			cleanUp();
 			doOpenRegistration(ureq);
