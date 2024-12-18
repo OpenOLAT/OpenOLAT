@@ -862,15 +862,15 @@ public class CurriculumElementDAO {
 	}
 	
 	public List<CurriculumElement> getDescendants(CurriculumElement curriculumElement) {
-		StringBuilder sb = new StringBuilder(384);
-		sb.append("select el from curriculumelement as el")
-		  .append(" inner join el.curriculum as curriculum")
-		  .append(" inner join el.group as baseGroup")
-		  .append(" left join fetch el.parent as parent")
-		  .append(" left join fetch el.type as type")
-		  .append(" left join fetch el.resource as resource")
-		  .append(" where el.curriculum.key=:curriculumKey")
-		  .append(" and el.key!=:elementKey and el.materializedPathKeys like :materializedPath");
+		String sb = """
+				select el from curriculumelement as el
+				inner join fetch el.curriculum as curriculum
+				inner join fetch el.group as baseGroup
+				left join fetch el.parent as parent
+				left join fetch el.type as type
+				left join fetch el.resource as resource
+				where el.curriculum.key=:curriculumKey
+				and el.key!=:elementKey and el.materializedPathKeys like :materializedPath""";
 		  
 		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), CurriculumElement.class)
