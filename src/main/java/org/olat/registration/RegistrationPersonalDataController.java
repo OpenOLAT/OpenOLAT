@@ -324,16 +324,20 @@ public class RegistrationPersonalDataController extends FormBasicController {
 			OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
 			// ensure to only get organisations with matching mailDomains
 			String mailDomain = MailHelper.getMailDomain(email);
-			searchParams.setDomains(Collections.singletonList(mailDomain));
 			List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
 
-			if (emailDomains != null && !emailDomains.isEmpty()) {
+			// retrieve matching domains with the given email and additionally the wildcard domain, if available
+			List<OrganisationEmailDomain> matchedDomains = emailDomains.stream()
+					.filter(domain -> "*".equals(domain.getDomain()) || mailDomain.equalsIgnoreCase(domain.getDomain()))
+					.toList();
+
+			if (!matchedDomains.isEmpty()) {
 				// Extract orgKey as keys
-				String[] orgKeys = emailDomains.stream()
+				String[] orgKeys = matchedDomains.stream()
 						.map(domain -> domain.getKey().toString())
 						.toArray(String[]::new);
 				// Extract concatenated displayName and Location as values
-				String[] orgValues = emailDomains.stream()
+				String[] orgValues = matchedDomains.stream()
 						.sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName())) // Sort by displayName
 						.map(domain -> {
 							String displayName = domain.getOrganisation().getDisplayName();
@@ -343,7 +347,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 						.toArray(String[]::new);
 
 				organisationSelection = uifactory.addDropdownSingleselect("user.organisation", formLayout, orgKeys, orgValues, null);
-				if (emailDomains.size() == 1) {
+				if (matchedDomains.size() == 1) {
 					organisationSelection.select(orgKeys[0], true);
 					organisationSelection.setEnabled(false);
 				} else {

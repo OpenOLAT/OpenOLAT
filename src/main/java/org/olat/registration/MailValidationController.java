@@ -44,6 +44,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -63,6 +64,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MailValidationController extends FormBasicController {
 
 	private static final String SEPARATOR = "____________________________________________________________________\n";
+	private final boolean isRegistrationProcess;
+	private final StepsRunContext runContext;
 
 	private FormLink validateMailLink;
 	private FormLink resendOtpLink;
@@ -87,16 +90,21 @@ public class MailValidationController extends FormBasicController {
 	@Autowired
 	private MailManager mailManager;
 	
-	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm) {
+	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm,
+									boolean isRegistrationProcess, StepsRunContext runContext) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
+		this.isRegistrationProcess = isRegistrationProcess;
+		this.runContext = runContext;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("reg.title");
-		setFormInfo("reg.desc");
-		formLayout.setElementCssClass("o_sel_registration_email_form");
+		if (isRegistrationProcess) {
+			setFormTitle("reg.title");
+			setFormInfo("reg.desc");
+			formLayout.setElementCssClass("o_sel_registration_email_form");
+		}
 
 		FormLayoutContainer mailCont = FormLayoutContainer.createDefaultFormLayout("mail_cont", getTranslator());
 		formLayout.add(mailCont);
@@ -146,8 +154,12 @@ public class MailValidationController extends FormBasicController {
 		mailEl.setEnabled(!validationCont.isVisible());
 	}
 
-	protected String getEmailAddress() {
+	public String getEmailAddress() {
 		return mailEl.getValue().toLowerCase().trim();
+	}
+
+	public boolean isOtpSuccessful() {
+		return otpEl.isSuccess();
 	}
 
 	public TemporaryKey getTemporaryKey() {
@@ -172,7 +184,8 @@ public class MailValidationController extends FormBasicController {
 	}
 
 	private boolean isEmailEligibleForRegistration(String email) {
-		return registrationManager.isRegistrationPending(email) || userManager.isEmailAllowed(email);
+		return (registrationManager.isRegistrationPending(email) || userManager.isEmailAllowed(email))
+				&& userManager.findUniqueIdentityByEmail(email) == null;
 	}
 
 	private void loadOrCreateTemporaryKey(UserRequest ureq, String email, String ip, String[] whereFromAttrs) {
@@ -196,9 +209,8 @@ public class MailValidationController extends FormBasicController {
 		};
 		String body = buildEmailBody(bodyAttrs, whereFromAttrs);
 
-		if (sendMessage(email, translate("reg.subject"), body)) {
-			showInfo("email.sent");
-		} else {
+		// nothing to do if it was successful. showInfo is not supported with wizards
+		if (!sendMessage(email, translate("reg.subject"), body)) {
 			showError("email.notsent");
 		}
 	}
@@ -218,7 +230,11 @@ public class MailValidationController extends FormBasicController {
 			String subject = translate("login.subject");
 			String username = resolveUsername(identity);
 			String body = translate("login.body", username) + SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
-			sendMessage(email, subject, body);
+
+			// nothing to do if it was successful. showInfo is not supported with wizards
+			if (!sendMessage(email, subject, body)) {
+				showError("email.notsent");
+			}
 		}
 	}
 
@@ -312,6 +328,9 @@ public class MailValidationController extends FormBasicController {
 			initValidation();
 			processEmail(ureq);
 			toggleFormVisibility();
+			if (runContext != null) {
+				runContext.put(RegWizardConstants.TEMPORARYKEY, getTemporaryKey());
+			}
 		} else if (source == otpEl) {
 			otpEl.clearSuccess();
 			otpEl.clearError();
@@ -320,6 +339,7 @@ public class MailValidationController extends FormBasicController {
 			} else {
 				otpEl.setErrorKey("reg.otp.invalid");
 			}
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == resendOtpLink) {
 			resendNewOtp(ureq);
 		} else if (source == changeMailLink) {

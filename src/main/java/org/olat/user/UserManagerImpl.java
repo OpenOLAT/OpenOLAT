@@ -315,7 +315,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		if(!changes.isEmpty() && identityRef != null) {
 			List<UserPropertyChangedEvent> events = changes.stream()
 					.map(change -> new UserPropertyChangedEvent(identityRef.getKey(), change.getPropertyName(), change.getOldState(), change.getState()))
-					.collect(Collectors.toList());
+					.toList();
 			sendDeferredEvents(identityRef, events);
 		}
 		return updatedUser;
