@@ -27,7 +27,6 @@ package org.olat.registration;
 
 import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
