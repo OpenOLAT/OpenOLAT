@@ -20,6 +20,7 @@
 package org.olat.modules.coach.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +90,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 
 	private final boolean userSearchAllowed;
 	private final boolean showLineManagerView;
+	private final boolean showEducationManagerView;
 	private final GradingSecurity gradingSec;
 	private final CoachingSecurity coachingSec;
 	private final boolean coachAssignmentsAvailable;
@@ -104,9 +106,11 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private LecturesCoachingController lecturesMasterCoachCtrl;
 
 	private Map<String, RelationRole> userRelationRolesMap;
-	private Map<String, Organisation> organisationMap;
-	private List<Organisation> organisations;
-
+	private Map<String, OrganisationWithRole> lineOrgMap;
+	private List<OrganisationWithRole> lineOrgs;
+	private Map<String, OrganisationWithRole> eduOrgMap;
+	private List<OrganisationWithRole> eduOrgs;
+	
 	@Autowired
 	private GradingModule gradingModule;
 	@Autowired
@@ -119,6 +123,43 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private OrganisationService organisationService;
 	@Autowired
 	private OrganisationModule organisationModule;
+	
+	private record OrganisationWithRole(Organisation organisation, OrganisationRoles role) {
+		String getKeyString() {
+			return role.name() + "_" + organisation.getKey().toString();
+		}
+		Long getKey() {
+			return organisation.getKey();
+		}
+		String getDisplayName() {
+			return organisation.getDisplayName();
+		}
+		String getTitleI18nKey() {
+			return "admin.props." + role.name() + "s";
+		}
+		String getUrlResourceName() {
+			return switch (role) {
+				case linemanager -> "LineManagerOrganisation";
+				case educationmanager -> "EducationManagerOrganisation";
+				default -> "Organisation";
+			};
+		}
+		static boolean containsParent(Collection<OrganisationWithRole> organisations, OrganisationWithRole organisationToCheck) {
+			if (organisationToCheck.organisation.getParent() == null) {
+				return false;
+			}
+			for (OrganisationWithRole organisation : organisations) {
+				if (organisationToCheck.organisation.getParent().equals(organisation.organisation)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public List<OrganisationWithRole> getChildren() {
+			return organisation.getChildren().stream().map(o -> new OrganisationWithRole(o, role)).collect(Collectors.toList());
+		}
+	}
 
 	public CoachMainController(UserRequest ureq, WindowControl control, CoachingSecurity coachingSec, GradingSecurity gradingSec) {
 		super(ureq, control);
@@ -132,8 +173,13 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		userSearchAllowed = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal();
 		showLineManagerView = organisationModule.isEnabled() && roles.isLineManager();
 		if (showLineManagerView) {
-			organisations = organisationService.getOrganisations(getIdentity(), OrganisationRoles.linemanager);
-			organisationMap = organisations.stream().collect(Collectors.toMap(org -> org.getKey().toString(), org -> org));
+			lineOrgs = organisationService.getOrganisations(getIdentity(), OrganisationRoles.linemanager).stream().map(o -> new OrganisationWithRole(o, OrganisationRoles.linemanager)).collect(Collectors.toList());
+			lineOrgMap = lineOrgs.stream().collect(Collectors.toMap(OrganisationWithRole::getKeyString, org -> org));
+		}
+		showEducationManagerView = organisationModule.isEnabled() && roles.isEducationManager();
+		if (showEducationManagerView) {
+			eduOrgs = organisationService.getOrganisations(getIdentity(), OrganisationRoles.educationmanager).stream().map(o -> new OrganisationWithRole(o, OrganisationRoles.educationmanager)).collect(Collectors.toList());
+			eduOrgMap = eduOrgs.stream().collect(Collectors.toMap(OrganisationWithRole::getKeyString, org -> org));
 		}
 		coachAssignmentsAvailable = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal() || roles.isAuthor();
 
@@ -169,13 +215,11 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				selectMenuItem(ureq, selTreeNode);
 			}
 		} else if (source == content) {
-			if (event instanceof PopEvent) {
-				PopEvent popEvent = (PopEvent) event;
-
+			if (event instanceof PopEvent popEvent) {
 				if (popEvent.getController() instanceof AbstactCoachListController) {
 					TreeNode selTreeNode = menu.getSelectedNode();
 					selectMenuItem(ureq, selTreeNode);
-					if (selTreeNode.getUserObject() instanceof Organisation) {
+					if (selTreeNode.getUserObject() instanceof OrganisationWithRole) {
 						selectMenuItem(ureq, selTreeNode);
 					} else if (selTreeNode.getUserObject() instanceof RelationRole) {
 						selectMenuItem(ureq, selTreeNode);
@@ -188,16 +232,13 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private Activateable2 selectMenuItem(UserRequest ureq, TreeNode treeNode) {
 		if (treeNode.getDelegate() != null) {
 			return selectMenuItem(ureq, treeNode.getDelegate());
-		} else if (treeNode.getUserObject() instanceof String) {
-			String cmd = (String) treeNode.getUserObject();
+		} else if (treeNode.getUserObject() instanceof String cmd) {
 			return selectMenuItem(ureq, cmd);
 		} else if (treeNode.getUserObject() instanceof Long) {
 			return selectMenuItem(ureq, treeNode.toString());
-		} else if (treeNode.getUserObject() instanceof Organisation) {
-			Organisation organisation = (Organisation) treeNode.getUserObject();
-			return selectMenuItem(ureq, organisation);
-		} else if (treeNode.getUserObject() instanceof RelationRole) {
-			RelationRole relationRole = (RelationRole) treeNode.getUserObject();
+		} else if (treeNode.getUserObject() instanceof OrganisationWithRole organisationWithRole) {
+			return selectMenuItem(ureq, organisationWithRole);
+		} else if (treeNode.getUserObject() instanceof RelationRole relationRole) {
 			return selectMenuItem(ureq, relationRole);
 		}
 
@@ -248,8 +289,12 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		}
 		
 		if (showLineManagerView) {
-			return organisationMap.keySet().stream().findFirst().get();
+			return lineOrgMap.keySet().stream().findFirst().get();
 		}
+		if (showEducationManagerView) {
+			return eduOrgMap.keySet().stream().findFirst().get();
+		}
+
 		return "Members";
 	}
 
@@ -353,19 +398,21 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		return (Activateable2)selectedCtrl;
 	}
 
-	private Activateable2 selectMenuItem(UserRequest ureq, Organisation organisation) {
+	private Activateable2 selectMenuItem(UserRequest ureq, OrganisationWithRole organisationWithRole) {
 		Controller selectedController = null;
 
 		if (organisationModule.isEnabled()) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Organisation", organisation.getKey());
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(organisationWithRole.getUrlResourceName(),
+					organisationWithRole.getKey());
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			AbstactCoachListController organisationListController = new OrganisationListController(ureq, bwControl, content, organisation, OrganisationRoles.linemanager);
+			AbstactCoachListController organisationListController = new OrganisationListController(ureq, bwControl, 
+					content, organisationWithRole.organisation, organisationWithRole.role);
 			listenTo(organisationListController);
 
-			String rootTitle = translate("admin.props.linemanagers");
+			String rootTitle = translate(organisationWithRole.getTitleI18nKey()); 
 			String title = "Organisation";
-			TreeNode selTreeNode = TreeHelper.findNodeByUserObject(organisation, menu.getTreeModel().getRootNode());
+			TreeNode selTreeNode = TreeHelper.findNodeByUserObject(organisationWithRole, menu.getTreeModel().getRootNode());
 			if (selTreeNode != null) {
 				title = selTreeNode.getTitle();
 				if (!selTreeNode.getIdent().equals(menu.getSelectedNodeId())) {
@@ -485,42 +532,8 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			}
 		}
 
-		// Add line manager view
-		// Add menu entry with sub entries
-		if (isLineManagerViewAvailable() == 2) {
-			GenericTreeNode organisationsNode = new GenericTreeNode();
-			organisationsNode.setUserObject("Organisations");
-			organisationsNode.setTitle(translate("line.manager.title"));
-			organisationsNode.setAltText(translate("line.manager.title"));
-
-			List<Organisation> topLevelOrganisations = new ArrayList<>();
-
-			for (Organisation organisation : organisations) {
-				if (organisation.getParent() == null && !topLevelOrganisations.contains(organisation)) {
-					topLevelOrganisations.add(organisation);
-				} else if (!organisations.contains(organisation.getParent())){
-					topLevelOrganisations.add(organisation);
-				}
-			}
-
-			if (!topLevelOrganisations.isEmpty()) {
-				for (Organisation topLevelOrganisation : topLevelOrganisations) {
-					addOrganisationToTree(topLevelOrganisation, organisationsNode);
-				}
-
-				setFirstChildAsDelegate(organisationsNode);
-				root.addChild(organisationsNode);
-			}
-		}
-		// Add only one main entry
-		else if (isLineManagerViewAvailable() == 1) {
-			GenericTreeNode organisationsNode = new GenericTreeNode();
-			organisationsNode.setUserObject(organisations.get(0));
-			organisationsNode.setTitle(organisations.get(0).getDisplayName());
-			organisationsNode.setAltText(organisations.get(0).getDisplayName());
-
-			root.addChild(organisationsNode);
-		}
+		buildLineManagerSubTree(root);
+		buildEducationManagerSubTree(root);
 
 		if (coachingSec.isCoach() || (gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager()))) {
 			GenericTreeNode ordersNode = new GenericTreeNode();
@@ -548,16 +561,84 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		return gtm;
 	}
 
-	private void addOrganisationToTree(Organisation organisation, GenericTreeNode parentNode) {
+	private void buildLineManagerSubTree(GenericTreeNode root) {
+		if (isLineManagerViewAvailable() == 2) {
+			GenericTreeNode organisationsNode = new GenericTreeNode();
+			organisationsNode.setUserObject("LineOrgs");
+			organisationsNode.setTitle(translate("line.manager.title"));
+			organisationsNode.setAltText(translate("line.manager.title"));
+
+			List<OrganisationWithRole> topLevelOrganisations = new ArrayList<>();
+			for (OrganisationWithRole lineOrg : lineOrgs) {
+				if (lineOrg.organisation.getParent() == null && !topLevelOrganisations.contains(lineOrg)) {
+					topLevelOrganisations.add(lineOrg);
+				} else if (!OrganisationWithRole.containsParent(lineOrgs, lineOrg)){
+					topLevelOrganisations.add(lineOrg);
+				}
+			}
+
+			if (!topLevelOrganisations.isEmpty()) {
+				for (OrganisationWithRole topLevelOrganisation : topLevelOrganisations) {
+					addOrganisationToTree(topLevelOrganisation, organisationsNode);
+				}
+
+				setFirstChildAsDelegate(organisationsNode);
+				root.addChild(organisationsNode);
+			}
+		}
+		// Add only one main entry
+		else if (isLineManagerViewAvailable() == 1) {
+			GenericTreeNode organisationsNode = new GenericTreeNode();
+			organisationsNode.setUserObject(lineOrgs.get(0));
+			organisationsNode.setTitle(lineOrgs.get(0).getDisplayName());
+			organisationsNode.setAltText(lineOrgs.get(0).getDisplayName());
+
+			root.addChild(organisationsNode);
+		}
+	}
+
+	private void buildEducationManagerSubTree(GenericTreeNode root) {
+		if (isEduManagerViewAvailable() == 2) {
+			GenericTreeNode organisationsNode = new GenericTreeNode();
+			organisationsNode.setUserObject("EduOrgs");
+			organisationsNode.setTitle(translate("education.manager.title"));
+			organisationsNode.setAltText(translate("education.manager.title"));
+
+			List<OrganisationWithRole> topLevelOrganisations = new ArrayList<>();
+			for (OrganisationWithRole eduOrg : eduOrgs) {
+				if (eduOrg.organisation.getParent() == null && !topLevelOrganisations.contains(eduOrg)) {
+					topLevelOrganisations.add(eduOrg);
+				} else if (!OrganisationWithRole.containsParent(eduOrgs, eduOrg)){
+					topLevelOrganisations.add(eduOrg);
+				}
+			}
+
+			if (!topLevelOrganisations.isEmpty()) {
+				for (OrganisationWithRole topLevelOrganisation : topLevelOrganisations) {
+					addOrganisationToTree(topLevelOrganisation, organisationsNode);
+				}
+
+				setFirstChildAsDelegate(organisationsNode);
+				root.addChild(organisationsNode);
+			}
+		} else if (isEduManagerViewAvailable() == 1) {
+			GenericTreeNode organisationsNode = new GenericTreeNode();
+			organisationsNode.setUserObject(eduOrgs.get(0));
+			organisationsNode.setTitle(eduOrgs.get(0).getDisplayName());
+			organisationsNode.setAltText(eduOrgs.get(0).getDisplayName());
+
+			root.addChild(organisationsNode);
+		}
+	}
+
+	private void addOrganisationToTree(OrganisationWithRole organisation, GenericTreeNode parentNode) {
 		GenericTreeNode organisationNode = new GenericTreeNode();
 		organisationNode.setUserObject(organisation);
 		organisationNode.setTitle(organisation.getDisplayName());
 		organisationNode.setAltText(organisation.getDisplayName());
 
-		if (!organisation.getChildren().isEmpty()) {
-			for (Organisation child : organisation.getChildren()) {
-				addOrganisationToTree(child, organisationNode);
-			}
+		for (OrganisationWithRole child : organisation.getChildren()) {
+			addOrganisationToTree(child, organisationNode);
 		}
 
 		parentNode.addChild(organisationNode);
@@ -586,17 +667,32 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	 * Returns 1 if exactly one organisation is available
 	 * Returns 2 if more than one organisation is available
 	 *
-	 * @return
+	 * @return 0, 1, or 2.
 	 */
 	private int isLineManagerViewAvailable() {
 		if (showLineManagerView) {
-			if (organisations.size() > 1) {
+			if (lineOrgs.size() > 1) {
 				return 2;
-			} else if (organisations.size() > 0) {
+			} else if (!lineOrgs.isEmpty()) {
 				return 1;
 			}
 		}
 
+		return 0;
+	}
+
+	/**
+	 * Same logic as the method above.
+	 */
+	private int isEduManagerViewAvailable() {
+		if (showEducationManagerView) {
+			if (eduOrgs.size() > 1) {
+				return 2;
+			} else if (!eduOrgs.isEmpty()) {
+				return 1;
+			}
+		}
+		
 		return 0;
 	}
 
