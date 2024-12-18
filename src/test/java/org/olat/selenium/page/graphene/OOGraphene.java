@@ -626,22 +626,27 @@ public class OOGraphene {
 	}
 	
 	/**
-	 * Make sure that the checkbox is in the correct state.
-	 * @param checkboxEl
-	 * @param val
+	 * Make sure that the checkbox is in the correct state. The method
+	 * search the attribute/property "checked".
+	 * 
+	 * @param checkboxEl The input element of the check box
+	 * @param val The value (true/false) (mandatory)
 	 */
 	public static final boolean check(WebElement checkboxEl, Boolean val) {
 		if(val == null) return false;
 		
 		boolean valueChanged = false;
-		String checked = checkboxEl.getDomAttribute("checked");
+		String checked = checkboxEl.getDomProperty("checked");
+		if(checked == null) {
+			checked = checkboxEl.getDomAttribute("checked");
+		}
 		if(Boolean.TRUE.equals(val)) {
-			if(checked == null) {
+			if(checked == null || "false".equalsIgnoreCase(checked)) {
 				checkboxEl.click();
 				valueChanged = true;
 			}
 		} else {
-			if(checked != null) {
+			if(checked != null && ("true".equalsIgnoreCase(checked) || "checked".equalsIgnoreCase(checked))) {
 				checkboxEl.click();
 				valueChanged = true;
 			}
