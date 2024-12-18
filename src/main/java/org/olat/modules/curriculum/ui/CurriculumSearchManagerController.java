@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -82,6 +83,7 @@ import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumElementSearchDataModel.SearchCols;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
+import org.olat.modules.curriculum.ui.event.CurriculumElementEvent;
 import org.olat.modules.curriculum.ui.event.SelectCurriculumElementRowEvent;
 import org.olat.modules.curriculum.ui.event.SelectLectureBlockEvent;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
@@ -116,6 +118,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private ReferencesController referencesCtrl;
+	private CurriculumDetailsController detailsCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
 	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
@@ -136,10 +139,19 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		this.toolbarPanel = toolbarPanel;
 		this.secCallback = secCallback;
 		this.lecturesSecCallback = lecturesSecCallback;
+		toolbarPanel.addListener(this);
 		initForm(ureq);
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			tableEl.quickSearch( ureq, searchString);
 		}
+	}
+
+	@Override
+	protected void doDispose() {
+		if(toolbarPanel != null) {
+			toolbarPanel.removeListener(this);
+		}
+		super.doDispose();
 	}
 
 	@Override
@@ -258,6 +270,29 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	}
 	
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(toolbarPanel == source) {
+			if(event instanceof PopEvent pe) {
+				doProcessPopEvent(ureq, pe);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void doProcessPopEvent(UserRequest ureq, PopEvent pe) {
+		if(pe.getUserObject() instanceof CurriculumElement || pe.getUserObject() instanceof Curriculum) {
+			Object uobject = toolbarPanel.getLastUserObject();
+			if(uobject instanceof CurriculumElement curriculumElement) {
+				toolbarPanel.popUpToController(this);
+				doOpenCurriculumElementDetails(ureq, curriculumElement, List.of(), true);
+			} else if(uobject instanceof Curriculum curriculum) {
+				toolbarPanel.popUpToController(this);
+				doOpenCurriculumDetails(ureq, curriculum, List.of());
+			}
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if( confirmDeleteCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -285,13 +320,16 @@ public class CurriculumSearchManagerController extends FormBasicController {
 				launch(ureq, sre.getEntry());
 			} else if(event instanceof SelectCurriculumElementRowEvent scee) {
 				List<ContextEntry> subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Structure:0]");
-				doOpenCurriculumElementDetails(ureq, scee.getCurriculumElement(), subEntries);
+				doOpenCurriculumElementDetails(ureq, scee.getCurriculumElement(), subEntries, true);
 			} else if(event instanceof SelectLectureBlockEvent slbe) {
 				List<ContextEntry> subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Lectures:0]");
-				doOpenCurriculumElementDetails(ureq, slbe.getCurriculumElement(), subEntries);
+				doOpenCurriculumElementDetails(ureq, slbe.getCurriculumElement(), subEntries, true);
 			}
 		} else if(toolsCalloutCtrl == source || cmc == source) {
 			cleanUp();
+		} else if(source instanceof CurriculumElementDetailsController && event instanceof CurriculumElementEvent cee) {
+			toolbarPanel.popUpToController(this);
+			doOpenCurriculumElementDetails(ureq, cee.getCurriculumElement(), List.of(), true);
 		}
 		super.event(ureq, source, event);
 	}
@@ -318,7 +356,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 				String cmd = se.getCommand();
 				if(CMD_SELECT.equals(cmd)) {
 					CurriculumElementSearchRow row = tableModel.getObject(se.getIndex());
-					doOpenCurriculumElementDetails(ureq, row.getCurriculumElement(), null);
+					doOpenCurriculumElementDetails(ureq, row.getCurriculumElement(), List.of(), false);
 				} else if(CMD_CURRICULUM.equals(cmd)) {
 					CurriculumElementSearchRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculum(ureq, row);
@@ -445,6 +483,28 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		return type != null && (!type.isSingleElement() || children > 0 || curriculumElement.getParent() != null);
 	}
 	
+	private void doOpenCurriculumDetails(UserRequest ureq, Curriculum row, List<ContextEntry> entries) {
+		removeAsListenerAndDispose(detailsCurriculumCtrl);
+		
+		Curriculum curriculum = curriculumService.getCurriculum(row);
+		if(curriculum == null) {
+			showWarning("warning.curriculum.deleted");
+		} else {
+			WindowControl subControl = addToHistory(ureq, OresHelper
+					.createOLATResourceableInstance(Curriculum.class, curriculum.getKey()), null);
+			detailsCurriculumCtrl = new CurriculumDetailsController(ureq, subControl, toolbarPanel, curriculum,
+					secCallback, lecturesSecCallback);
+			listenTo(detailsCurriculumCtrl);
+			
+			String crumb = row.getIdentifier();
+			if(!StringHelper.containsNonWhitespace(crumb)) {
+				crumb = row.getDisplayName();
+			}
+			toolbarPanel.pushController(crumb, detailsCurriculumCtrl);
+			detailsCurriculumCtrl.activate(ureq, entries, null);
+		}
+	}
+	
 	private void doOpenCurriculum(UserRequest ureq, CurriculumElementSearchRow row) {
 		String path = "[CurriculumAdmin:0][Curriculums:0][Curriculum:" + row.getCurriculumKey() + "]";
 		NewControllerFactory.getInstance().launch(path, ureq, getWindowControl());
@@ -456,10 +516,10 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			path += "[" + memberType + ":0]";
 		}
 		List<ContextEntry> overview = BusinessControlFactory.getInstance().createCEListFromString(path);
-		doOpenCurriculumElementDetails(ureq, row.getCurriculumElement(), overview);
+		doOpenCurriculumElementDetails(ureq, row.getCurriculumElement(), overview, false);
 	}
 	
-	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElement row, List<ContextEntry> entries) {
+	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElement row, List<ContextEntry> entries, boolean addIntermediatePath) {
 		CurriculumElement element = curriculumService.getCurriculumElement(row);
 		if(element == null) {
 			tableEl.reloadData();
@@ -470,8 +530,26 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel, curriculum, element,
 					secCallback, lecturesSecCallback);
 			listenTo(editCtrl);
+			if(addIntermediatePath) {
+				addIntermediatePath(element);
+			}
 			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
 			editCtrl.activate(ureq, entries, null);
+		}
+	}
+	
+	private void addIntermediatePath(CurriculumElement element) {
+		Curriculum curriculum = element.getCurriculum();
+		toolbarPanel.pushController(curriculum.getDisplayName(), "o_icon o_icon-fw o_icon_curriculum", curriculum);
+		
+		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
+		parentLine.remove(element);
+		for(CurriculumElement parent:parentLine) {
+			String iconCssClass = null;
+			if(parent.getParent() == null) {
+				iconCssClass = "o_icon o_icon-fw o_icon_curriculum_implementations";
+			}
+			toolbarPanel.pushController(parent.getDisplayName(), iconCssClass, parent);
 		}
 	}
 	

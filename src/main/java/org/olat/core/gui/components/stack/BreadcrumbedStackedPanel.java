@@ -318,6 +318,16 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 		return controller;
 	}
 	
+	public Object getLastUserObject() {
+		Object uobject = null;
+		if(!stack.isEmpty()) {
+			Link lastPath = stack.get(stack.size() - 1);
+			BreadCrumb crumb = (BreadCrumb)lastPath.getUserObject();
+			uobject = crumb.getUserObject();
+		}
+		return uobject;
+	}
+	
 	public boolean hasController(Controller controller) {
 		return getIndex(controller) >= 0;
 	}
