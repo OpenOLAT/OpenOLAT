@@ -442,6 +442,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 	private void initialize(UserRequest ureq) {
 		mainVc = createVelocityContainer("fullwebapplayout");
+		mainVc.setDomReplacementWrapperRequired(false);
 		mainVc.contextPut("screenMode", screenMode);
 
 		LayoutModule layoutModule = CoreSpringFactory.getImpl(LayoutModule.class);
