@@ -118,7 +118,7 @@ public class MediaAdminController extends FormBasicController {
 	private void initFormPermissions(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("admin.permissions.title"));
 		formLayout.setFormInfo(translate("admin.permissions.info"));
-		formLayout.setFormInfoHelp("https://jira.openolat.org/browse/OODOC-74");
+		formLayout.setFormInfoHelp("manual_user/basic_concepts/Media_Center_Concept/");
 		
 		SelectionValues rolesKV = new SelectionValues();
 		rolesKV.add(SelectionValues.entry(OrganisationRoles.author.name(), translate("role.author")));
