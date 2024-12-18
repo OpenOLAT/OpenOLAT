@@ -80,7 +80,8 @@ public class EditCurriculumElementOptionsController extends FormBasicController 
 		boolean canEdit = secCallback.canEditCurriculumElement(element);
 		
 		String[] configValues = new String[] {
-				translate("option.adopt", element.getType().getDisplayName()),
+				translate("option.adopt", element.getType().getDisplayName(), 
+						element.getType().getCalendars() == CurriculumCalendars.enabled? translate("on"): translate("off")),
 				translate("option.override")
 		};
 		calendarConfigEl = uifactory.addRadiosHorizontal("type.calendars.config", formLayout, CONFIG_KEYS, configValues);
@@ -96,6 +97,11 @@ public class EditCurriculumElementOptionsController extends FormBasicController 
 		calendarEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.calendars));
 		calendarEl.toggle(element.getCalendars() == CurriculumCalendars.enabled || element.getCalendars() == CurriculumCalendars.inherited);
 		
+		configValues = new String[] {
+				translate("option.adopt", element.getType().getDisplayName(), 
+						element.getType().getLectures() == CurriculumLectures.enabled? translate("on"): translate("off")),
+				translate("option.override")
+		};
 		lectureConfigEl = uifactory.addRadiosHorizontal("type.lectures.config", formLayout, CONFIG_KEYS, configValues);
 		lectureConfigEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.lectures));
 		lectureConfigEl.addActionListener(FormEvent.ONCHANGE);
@@ -109,6 +115,11 @@ public class EditCurriculumElementOptionsController extends FormBasicController 
 		lectureEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.lectures));
 		lectureEl.toggle(element.getLectures() == CurriculumLectures.enabled || element.getLectures() == CurriculumLectures.inherited);
 		
+		configValues = new String[] {
+				translate("option.adopt", element.getType().getDisplayName(), 
+						element.getType().getLearningProgress() == CurriculumLearningProgress.enabled? translate("on"): translate("off")),
+				translate("option.override")
+		};
 		learningProgressConfigEl = uifactory.addRadiosHorizontal("type.learning.progress.config", formLayout, CONFIG_KEYS, configValues);
 		learningProgressConfigEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.learningProgress));
 		learningProgressConfigEl.addActionListener(FormEvent.ONCHANGE);

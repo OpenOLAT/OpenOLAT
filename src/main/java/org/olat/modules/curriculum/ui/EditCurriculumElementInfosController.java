@@ -126,7 +126,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		imageEl.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		imageEl.setPreview(usess, true);
 		imageEl.addActionListener(FormEvent.ONCHANGE);
-		VFSLeaf imageLeaf = curriculumService.getCurriculumElemenFile(element, CurriculumElementFileType.teaserVideo);
+		VFSLeaf imageLeaf = curriculumService.getCurriculumElemenFile(element, CurriculumElementFileType.teaserImage);
 		if (imageLeaf instanceof LocalFileImpl imageFile) {
 			imageEl.setPreview(usess, true);
 			imageEl.setInitialFile(imageFile.getBasefile());
@@ -162,10 +162,12 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		expenditureOfWorkEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.expenditureOfWork));
 		
 		showOutlineEl = uifactory.addToggleButton("show.outline", "curriculum.element.show.outline", translate("on"), translate("off"), formLayout);
+		showOutlineEl.setHelpText(translate("curriculum.element.show.outline.help"));
 		showOutlineEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showOutline));
 		showOutlineEl.toggle(element == null || element.isShowOutline());
 		
 		showLecturesEl = uifactory.addToggleButton("show.lectures", "curriculum.element.show.lectures", translate("on"), translate("off"), formLayout);
+		showLecturesEl.setHelpText(translate("curriculum.element.show.lectures.help"));
 		showLecturesEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.showLectures));
 		showLecturesEl.toggle(element == null || element.isShowLectures());
 		
@@ -297,6 +299,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			curriculumService.deleteCurriculumElemenFile(element, CurriculumElementFileType.teaserVideo);
 		}
 		
+		element = curriculumService.getCurriculumElement(element);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

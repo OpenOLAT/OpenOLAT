@@ -83,7 +83,9 @@ public class EditCurriculumElementController extends BasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
-		this.element = element;
+		if (element != null) {
+			this.element = curriculumService.getCurriculumElement(element);
+		}
 		this.parentElement = parentElement;
 		this.curriculum = curriculum;
 		this.secCallback = secCallback;
@@ -114,19 +116,29 @@ public class EditCurriculumElementController extends BasicController {
 		doOpenMetadata(ureq);
 	}
 
+	public CurriculumElement getElement() {
+		return element;
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == metadataCtrl) {
 			if (Event.DONE_EVENT == event) {
 				element = metadataCtrl.getCurriculumElement();
 				exposeToVC();
+				fireEvent(ureq, event);
 			}
-		} else {
-			if (source == infoCtrl) {
-				if (Event.DONE_EVENT == event) {
-					element = infoCtrl.getCurriculumElement();
-					exposeToVC();
-				}
+		} else if (source == infoCtrl) {
+			if (Event.DONE_EVENT == event) {
+				element = infoCtrl.getCurriculumElement();
+				exposeToVC();
+				fireEvent(ureq, event);
+			}
+		} else if (source == executionCtrl) {
+			if (Event.DONE_EVENT == event) {
+				element = executionCtrl.getCurriculumElement();
+				exposeToVC();
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);
@@ -149,9 +161,6 @@ public class EditCurriculumElementController extends BasicController {
 		if (element == null) {
 			return;
 		}
-		
-		element = curriculumService.getCurriculumElement(element);
-		
 		
 		mainVC.contextPut("imageUrl", elementImageMapper.getImageUrl(mapperUrl, element, CurriculumElementFileType.teaserImage));
 		if (administrator) {

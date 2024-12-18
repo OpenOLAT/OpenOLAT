@@ -148,8 +148,10 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 				String key = element.getKey().toString();
 				uifactory.addStaticTextElement("curriculum.element.key", key, formLayout);
 			}
-			String externalId = element.getExternalId();
-			uifactory.addStaticTextElement("curriculum.element.external.id", externalId, formLayout);
+			if (CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.externalId)) {
+				String externalId = element.getExternalId();
+				uifactory.addStaticTextElement("curriculum.element.external.id", externalId, formLayout);
+			}
 		}
 		
 		boolean canEdit = element == null || secCallback.canEditCurriculumElement(element);
@@ -195,19 +197,21 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		}
 		
 		// Implementation format
-		SelectionValues educationalTypeKV = new SelectionValues();
-		repositoryManager.getAllEducationalTypes()
-				.forEach(type -> educationalTypeKV.add(SelectionValues.entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
-		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
-		educationalTypeEl = uifactory.addDropdownSingleselect("cif.educational.type", formLayout, educationalTypeKV.keys(), educationalTypeKV.values());
-		educationalTypeEl.enableNoneSelection();
-		if (element != null) {
-			RepositoryEntryEducationalType educationalType = element.getEducationalType();
-			if (educationalType != null && Arrays.asList(educationalTypeEl.getKeys()).contains(educationalType.getKey().toString())) {
-				educationalTypeEl.select(educationalType.getKey().toString(), true);
+		if (parentElement == null) {
+			SelectionValues educationalTypeKV = new SelectionValues();
+			repositoryManager.getAllEducationalTypes()
+					.forEach(type -> educationalTypeKV.add(SelectionValues.entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
+			educationalTypeKV.sort(SelectionValues.VALUE_ASC);
+			educationalTypeEl = uifactory.addDropdownSingleselect("cif.educational.type", formLayout, educationalTypeKV.keys(), educationalTypeKV.values());
+			educationalTypeEl.enableNoneSelection();
+			if (element != null) {
+				RepositoryEntryEducationalType educationalType = element.getEducationalType();
+				if (educationalType != null && Arrays.asList(educationalTypeEl.getKeys()).contains(educationalType.getKey().toString())) {
+					educationalTypeEl.select(educationalType.getKey().toString(), true);
+				}
 			}
+			educationalTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.educationalType));
 		}
-		educationalTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.educationalType));
 		
 		// Subjects
 		List<TaxonomyRef> taxonomyRefs = curriculumModule.getTaxonomyRefs();
@@ -326,6 +330,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		}
 		
 		dbInstance.commitAndCloseSession(); // need to relaod properly the tree
+		element = curriculumService.getCurriculumElement(element);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -339,7 +344,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 	}
 	
 	private RepositoryEntryEducationalType getEducationalType() {
-		if (educationalTypeEl.isOneSelected()) {
+		if (educationalTypeEl != null && educationalTypeEl.isOneSelected()) {
 			return repositoryManager.getEducationalType(Long.valueOf(educationalTypeEl.getSelectedKey()));
 		}
 		return null;

@@ -256,6 +256,10 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			mainVC.put(commandsDropdown.getComponentName(), commandsDropdown);
 		}
 		
+		updateMetadataUI();
+	}
+
+	private void updateMetadataUI() {
 		mainVC.contextPut("level", getLevel());
 		mainVC.contextPut("displayName", curriculumElement.getDisplayName());
 		if(StringHelper.containsNonWhitespace(curriculumElement.getIdentifier())) {
@@ -541,6 +545,11 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				activate(ureq, ae.getEntries(), null);
 			} else if(event instanceof CurriculumElementEvent) {
 				fireEvent(ureq, event);
+			}
+		} else if(editMetadataCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				curriculumElement = editMetadataCtrl.getElement();
+				updateMetadataUI();
 			}
 		} else if(statusChangeCtrl == source) {
 			if(event == Event.DONE_EVENT) {

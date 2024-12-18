@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -65,13 +66,18 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 		initForm(ureq);
 	}
 
+	public CurriculumElement getCurriculumElement() {
+		return element;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("curriculum.element.execution");
 		
 		boolean canEdit = element == null || secCallback.canEditCurriculumElement(element);
 		
-		periodEl = uifactory.addDateChooser("curriculum.element.period", "curriculum.element.period", null, formLayout);
+		periodEl = uifactory.addDateChooser("cif.dates", "cif.dates", null, formLayout);
+		periodEl.setHelpText(translate("curriculum.element.period.help"));
 		periodEl.setSecondDate(true);
 		periodEl.setSeparator("to.separator");
 		periodEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates));
@@ -181,6 +187,8 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 		}
 		
 		element = curriculumService.updateCurriculumElement(element);
+		element = curriculumService.getCurriculumElement(element);
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 }
