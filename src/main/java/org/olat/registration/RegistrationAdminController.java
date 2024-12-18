@@ -49,6 +49,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
@@ -181,7 +182,8 @@ public class RegistrationAdminController extends FormBasicController {
 		formLayout.add(settingsContainer);
 		
 		if (orgEmailDomainEnabled) {
-			settingsContainer.setFormWarning(translate("admin.registration.organisation.email.domain.settings"));
+			settingsContainer.setFormWarning(translate("admin.registration.organisation.email.domain.settings",
+					BusinessControlFactory.getInstance().getURLFromBusinessPathString("[AdminSite:0][organisations:0]")));
 		}
 		
 		registrationElement = uifactory.addCheckboxesHorizontal("enable.self.registration", "admin.enableRegistration", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
@@ -276,7 +278,8 @@ public class RegistrationAdminController extends FormBasicController {
 		formLayout.add(domainsContainer);
 		
 		if (orgEmailDomainEnabled) {
-			domainsContainer.setFormWarning(translate("admin.registration.organisation.email.domain"));
+			domainsContainer.setFormWarning(translate("admin.registration.organisation.email.domain",
+					BusinessControlFactory.getInstance().getURLFromBusinessPathString("[AdminSite:0][organisations:0]")));
 		}
 		
 		String domainsList = registrationModule.getDomainListRaw();
