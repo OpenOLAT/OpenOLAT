@@ -121,6 +121,9 @@ public class ProjMilestoneDAO {
 		if (searchParams.getIdentifiers() != null && !searchParams.getIdentifiers().isEmpty()) {
 			sb.and().append("milestone.identifier in :identifiers");
 		}
+		if (searchParams.getMilestoneStatus() != null && !searchParams.getMilestoneStatus().isEmpty()) {
+			sb.and().append("milestone.status in :milestoneStatus");
+		}
 		if (searchParams.getArtefactKeys() != null && !searchParams.getArtefactKeys().isEmpty()) {
 			sb.and().append("artefact.key in :artefactKeys");
 		}
@@ -144,6 +147,9 @@ public class ProjMilestoneDAO {
 		}
 		if (searchParams.getIdentifiers() != null && !searchParams.getIdentifiers().isEmpty()) {
 			query.setParameter("identifiers", searchParams.getIdentifiers());
+		}
+		if (searchParams.getMilestoneStatus() != null && !searchParams.getMilestoneStatus().isEmpty()) {
+			query.setParameter("milestoneStatus", searchParams.getMilestoneStatus());
 		}
 		if (searchParams.getArtefactKeys() != null && !searchParams.getArtefactKeys().isEmpty()) {
 			query.setParameter("artefactKeys", searchParams.getArtefactKeys());

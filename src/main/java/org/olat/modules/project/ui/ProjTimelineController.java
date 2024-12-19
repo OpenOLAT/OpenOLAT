@@ -83,6 +83,7 @@ import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneSearchParams;
+import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoSearchParams;
@@ -559,6 +560,7 @@ public class ProjTimelineController extends FormBasicController
 		ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
 		searchParams.setProject(project);
 		searchParams.setStatus(List.of(ProjectStatus.active));
+		searchParams.setMilestoneStatus(List.of(ProjMilestoneStatus.open));
 		searchParams.setDueDateNull(Boolean.FALSE);
 		List<ProjMilestone> milestones = projectService.getMilestones(searchParams);
 		for (ProjMilestone milestone : milestones) {

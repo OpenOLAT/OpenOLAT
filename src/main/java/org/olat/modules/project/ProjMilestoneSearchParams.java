@@ -34,6 +34,7 @@ public class ProjMilestoneSearchParams {
 	private ProjProjectRef project;
 	private Collection<Long> milestoneKeys;
 	private Collection<String> identifiers;
+	private Collection<ProjMilestoneStatus> milestoneStatus;
 	private Collection<Long> artefactKeys;
 	private Collection<ProjectStatus> status;
 	private Date createdAfter;
@@ -61,6 +62,14 @@ public class ProjMilestoneSearchParams {
 
 	public void setIdentifiers(Collection<String> identifiers) {
 		this.identifiers = identifiers;
+	}
+
+	public Collection<ProjMilestoneStatus> getMilestoneStatus() {
+		return milestoneStatus;
+	}
+
+	public void setMilestoneStatus(Collection<ProjMilestoneStatus> milestoneStatus) {
+		this.milestoneStatus = milestoneStatus;
 	}
 
 	public Collection<Long> getArtefactKeys() {
