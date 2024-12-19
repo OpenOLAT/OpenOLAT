@@ -280,7 +280,10 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	}
 	
 	private void doProcessPopEvent(UserRequest ureq, PopEvent pe) {
-		if(pe.getUserObject() instanceof CurriculumElement || pe.getUserObject() instanceof Curriculum) {
+		if(pe.getUserObject() instanceof CurriculumElement
+				|| pe.getUserObject() instanceof Curriculum
+				|| pe.getController() instanceof CurriculumElementDetailsController) {
+			
 			Object uobject = toolbarPanel.getLastUserObject();
 			if(uobject instanceof CurriculumElement curriculumElement) {
 				toolbarPanel.popUpToController(this);
@@ -540,7 +543,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	
 	private void addIntermediatePath(CurriculumElement element) {
 		Curriculum curriculum = element.getCurriculum();
-		toolbarPanel.pushController(curriculum.getDisplayName(), "o_icon o_icon-fw o_icon_curriculum", curriculum);
+		toolbarPanel.pushController(curriculum.getIdentifier(), "o_icon o_icon-fw o_icon_curriculum", curriculum);
 		
 		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
 		parentLine.remove(element);

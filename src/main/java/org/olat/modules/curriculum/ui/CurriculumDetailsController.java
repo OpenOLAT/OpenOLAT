@@ -33,6 +33,7 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.dropdown.DropdownUIFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -48,6 +49,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -108,9 +110,18 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		tabPane.addListener(this);
 		initTabPane(ureq);
 		initMetadata();
+		toolbarPanel.addListener(this);
 		
 		mainVC.put("tabs", tabPane);
 		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	protected void doDispose() {
+		if(toolbarPanel != null) {
+			toolbarPanel.removeListener(this);
+		}
+		super.doDispose();
 	}
 	
 	public Curriculum getCurriculum() {
@@ -257,6 +268,38 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(deleteButton == source) {
 			doConfirmDeleteCurriculum(ureq);
+		} else if(toolbarPanel == source) {
+			if(event instanceof PopEvent pe) {
+				doProcessPopEvent(ureq, pe);
+			}
+		}
+	}
+	
+	private void doProcessPopEvent(UserRequest ureq, PopEvent pe) {
+		if(pe.getUserObject() instanceof CurriculumElement || pe.getController() instanceof CurriculumElementDetailsController) {	
+			final Object uobject = toolbarPanel.getLastUserObject();
+			final Controller uctrl = toolbarPanel.getLastController();
+			
+			toolbarPanel.popUpToController(this);
+			if(uctrl == this) {
+				// Only pop up to this
+			} else {
+				CurriculumElement elementToOpen = null;
+				if(uobject instanceof CurriculumElement curriculumElement) {
+					elementToOpen = curriculumElement;
+				} else if(pe.getController() instanceof CurriculumElementDetailsController detailsCtrl) {
+					elementToOpen = detailsCtrl.getCurriculumElement();
+				}
+				
+				if(elementToOpen != null) {
+					tabPane.setSelectedPane(ureq, implementationsTab);
+					if(implementationsCtrl != null) {
+						List<ContextEntry> entries = BusinessControlFactory.getInstance()
+								.createCEListFromResourceable(elementToOpen, null);
+						implementationsCtrl.activate(ureq, entries, null);
+					}
+				}
+			}
 		}
 	}
 	

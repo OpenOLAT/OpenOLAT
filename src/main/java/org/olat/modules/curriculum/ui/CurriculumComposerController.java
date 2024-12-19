@@ -710,12 +710,31 @@ public class CurriculumComposerController extends FormBasicController implements
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(toolbarPanel == source) {
-			if(event instanceof PopEvent pe
-					&& pe.getController() instanceof CurriculumElementDetailsController elementCtrl) {
-				reloadElement(elementCtrl.getCurriculumElement());
+			if(event instanceof PopEvent pe) {
+				doProcessPopEvent(ureq, pe);
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doProcessPopEvent(UserRequest ureq, PopEvent pe) {
+		if(rootElement == null && curriculum == null) {
+			if(pe.getUserObject() instanceof CurriculumElement || pe.getController() instanceof CurriculumElementDetailsController) {
+				final Object uobject = toolbarPanel.getLastUserObject();
+				final Controller uctrl = toolbarPanel.getLastController();
+
+				toolbarPanel.popUpToController(this);
+				if(uctrl == this) {
+					// Do nothing, implementations level
+				} else if(uobject instanceof CurriculumElement curriculumElement) {
+					doOpenCurriculumElementDetails(ureq, curriculumElement, List.of());
+				}
+			} else if(pe.getController() instanceof CurriculumElementDetailsController detailsCtrl) {
+				reloadElement(detailsCtrl.getCurriculumElement());
+			}
+		} else if(pe.getController() instanceof CurriculumElementDetailsController detailsCtrl) {
+			reloadElement(detailsCtrl.getCurriculumElement());
+		}
 	}
 
 	@Override
@@ -915,8 +934,18 @@ public class CurriculumComposerController extends FormBasicController implements
 			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel,
 					element.getCurriculum(), element, secCallback, lecturesSecCallback);
 			listenTo(editCtrl);
+			addIntermediatePath(element);
 			toolbarPanel.pushController(element.getDisplayName(), editCtrl);
 			editCtrl.activate(ureq, entries, null);
+		}
+	}
+	
+	private void addIntermediatePath(CurriculumElement element) {
+		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
+		parentLine.remove(element);
+		
+		for(CurriculumElement parent:parentLine) {
+			toolbarPanel.pushController(parent.getDisplayName(), null, parent);
 		}
 	}
 	
