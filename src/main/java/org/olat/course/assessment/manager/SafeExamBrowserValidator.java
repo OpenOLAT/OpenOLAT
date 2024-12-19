@@ -77,17 +77,17 @@ public class SafeExamBrowserValidator {
 	 * @param configurationKey
 	 * @return
 	 */
-	public static boolean isSafelyAllowedJs(String safeExamHash, String url, String safeExamBrowserKeys, String configurationKey) {
+	public static boolean isSafelyAllowedJs(String safeExamHash, String browserExamHash, String url, String safeExamBrowserKeys, String configurationKey) {
 		boolean safe = false;
 
 		if(StringHelper.containsNonWhitespace(safeExamHash) && StringHelper.containsNonWhitespace(url)) {
 			if(StringHelper.containsNonWhitespace(safeExamBrowserKeys)) {
 				for(StringTokenizer tokenizer = new StringTokenizer(safeExamBrowserKeys); tokenizer.hasMoreTokens() && !safe; ) {
 					String safeExamBrowserKey = tokenizer.nextToken();
-					safe = isSafeExam(safeExamHash, safeExamBrowserKey, url);
+					safe = isSafeExam(safeExamHash, safeExamBrowserKey, url) || isSafeExam(browserExamHash, safeExamBrowserKey, url) ;
 				}
 			} else if(StringHelper.containsNonWhitespace(configurationKey)) {
-				safe = isSafeExam(safeExamHash, configurationKey, url);
+				safe = isSafeExam(safeExamHash, configurationKey, url) || isSafeExam(browserExamHash, configurationKey, url);
 			} else {
 				safe = true;
 			}

@@ -316,7 +316,7 @@ public class AssessmentInspectionGuardController extends FormBasicController imp
 		String browserExamKey = ureq.getParameter("browserExamKey");
 		getLogger().info("SEB requests parameters - configkey: {}, url: {}, browser exam key: {}", safeExamHash, url, browserExamKey);
 		return (useHeaders != null && useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey))
-				|| (useHeaders != null && !useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, url, safeExamBrowserKeys, configurationKey));
+				|| (useHeaders != null && !useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, browserExamKey, url, safeExamBrowserKeys, configurationKey));
 	}
 	
 	private String updateButtons(TransientAssessmentInspection inspection, Date now, FormLink start) {
