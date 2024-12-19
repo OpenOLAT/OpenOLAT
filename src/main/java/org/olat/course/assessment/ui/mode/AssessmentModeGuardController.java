@@ -295,7 +295,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		String browserExamKey = ureq.getParameter("browserExamKey");
 		getLogger().debug("SEB requests parameters - configkey: {}, url: {}, browser exam key: {}", safeExamHash, url, browserExamKey);
 		return (useHeaders != null && useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowed(ureq.getHttpReq(), safeExamBrowserKeys, configurationKey))
-				|| (useHeaders != null && !useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, url, safeExamBrowserKeys, configurationKey));
+				|| (useHeaders != null && !useHeaders.booleanValue() && SafeExamBrowserValidator.isSafelyAllowedJs(safeExamHash, browserExamKey, url, safeExamBrowserKeys, configurationKey));
 	}
 	
 	private static final Date addExtraTimeToDate(Date date, Integer extraTime) {
