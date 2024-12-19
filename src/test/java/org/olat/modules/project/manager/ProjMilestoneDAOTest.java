@@ -173,6 +173,23 @@ public class ProjMilestoneDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoad_filter_milestone_status() {
+		ProjMilestone milestone1 = createRandomMilestone();
+		ProjMilestone milestone2 = createRandomMilestone();
+		ProjMilestone milestone3 = createRandomMilestone();
+		milestone3.setStatus(ProjMilestoneStatus.achieved);
+		sut.save(milestone3);
+		dbInstance.commitAndCloseSession();
+		
+		ProjMilestoneSearchParams params = new ProjMilestoneSearchParams();
+		params.setMilestones(List.of(milestone1, milestone2, milestone3));
+		params.setMilestoneStatus(List.of(ProjMilestoneStatus.open));
+		List<ProjMilestone> milestones = sut.loadMilestones(params);
+		
+		assertThat(milestones).containsExactlyInAnyOrder(milestone1, milestone2);
+	}
+	
+	@Test
 	public void shouldLoad_filter_artefacts() {
 		ProjMilestone milestone1 = createRandomMilestone();
 		ProjMilestone milestone2 = createRandomMilestone();

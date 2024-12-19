@@ -19,12 +19,14 @@
  */
 package org.olat.resource.accesscontrol.manager;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.FlushModeType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -106,10 +108,27 @@ public class ACOfferToOrganisationDAO {
 		sb.and().append("offerToOrganisation.offer.key in :offerKeys");
 		
 		List<Long> offerKeys = offers.stream().map(OfferRef::getKey).collect(Collectors.toList());
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), OfferToOrganisation.class)
-				.setParameter("offerKeys", offerKeys)
-				.getResultList();
+		
+		int count = 0;
+		int batch = 5000;
+		
+		TypedQuery<OfferToOrganisation> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), OfferToOrganisation.class);
+		
+		List<OfferToOrganisation> offerToOrganisations = new ArrayList<>();
+		do {
+			int toIndex = Math.min(count + batch, offerKeys.size());
+			List<Long> toLoad = offerKeys.subList(count, toIndex);
+			List<OfferToOrganisation> subList = query
+					.setParameter("offerKeys", toLoad)
+					.setFlushMode(FlushModeType.COMMIT)
+					.getResultList();
+			offerToOrganisations.addAll(subList);
+			
+			count += batch;
+		} while(count < offerKeys.size());
+		
+		return offerToOrganisations;
 	}
 	
 	public Map<Long, List<Long>> getOfferKeyToOrganisations(Collection<? extends OfferRef> offers) {
