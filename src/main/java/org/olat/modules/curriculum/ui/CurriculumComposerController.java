@@ -383,15 +383,18 @@ public class CurriculumComposerController extends FormBasicController implements
 			List<Curriculum> curriculums = curriculumService.getCurriculums(searchParams);
 			if(!curriculums.isEmpty()) {
 				SelectionValues curriculumValues = new SelectionValues();
-				for(Curriculum curriculum:curriculums) {
-					curriculumValues.add(SelectionValues.entry(curriculum.getKey().toString(),
-							StringHelper.escapeHtml(curriculum.getDisplayName())));
+				for(Curriculum cur:curriculums) {
+					String key = cur.getKey().toString();
+					String value = StringHelper.escapeHtml(cur.getDisplayName());
+					if(StringHelper.containsNonWhitespace(cur.getIdentifier())) {
+						value += " <small class=\"mute\"> \u00B7 " + StringHelper.escapeHtml(cur.getIdentifier()) + "</small>";
+					}
+					curriculumValues.add(SelectionValues.entry(key, value));
 				}
 				
 				FlexiTableMultiSelectionFilter curriculumFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
 						FILTER_CURRICULUM, curriculumValues, true);
 				filters.add(curriculumFilter);
-				
 			}
 		}
 		

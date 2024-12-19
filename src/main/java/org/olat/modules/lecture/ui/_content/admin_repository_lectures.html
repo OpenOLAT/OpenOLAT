@@ -1,5 +1,10 @@
 <div class="o_lectures_list o_sel_repo_lectures_list">
-	<$titleSize><i class="o_icon o_icon-fw o_icon_events"> </i>  $r.translate("lectures.title")</$titleSize>
+	<div class="o_header_with_buttons">
+		<$titleSize><i class="o_icon o_icon-fw o_icon_events"> </i>  $r.translate("lectures.title")</$titleSize>
+		<div class="o_button_group o_button_group_right">
+			$r.contextHelpWithWrapper("manual_user/learningresources/Lectures_and_absences/")
+		</div>
+	</div>
 	<div class="o_flex_first_grow o_block">
 		<div class="btn-group">
 		#if($r.available("search.all.levels"))
@@ -7,7 +12,6 @@
 			$r.render("search.this.level")
 		#end
 		</div>
-		
 		#if($r.available("add.lecture"))
 			<div class="btn-group">
 			#if($r.available("add.lecture"))
@@ -18,7 +22,6 @@
 			#end
 			</div>
 		#end
-		$r.contextHelpWithWrapper("manual_user/learningresources/Lectures_and_absences/")
 		</div>
 	</div>
 	$r.render("table")

@@ -50,6 +50,7 @@ import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
+import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyModule;
@@ -73,12 +74,14 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 	
 	private TextElement displayNameEl;
 	private TextElement identifierEl;
+	private SingleSelection curriculumEl;
 	private SingleSelection curriculumElementTypeEl;
 	private SingleSelection educationalTypeEl;
 	private TaxonomyLevelSelection taxonomyLevelEl;
 
 	private Curriculum curriculum;
 	private CurriculumElement element;
+	private List<Curriculum> curriculums;
 	private CurriculumElement parentElement;
 	private final CurriculumElementType preSelectedType;
 	private final CurriculumSecurityCallback secCallback;
@@ -142,6 +145,22 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("curriculum.element.metadata");
+		
+		if(curriculum == null && (element == null || element.getKey() == null)) {
+			CurriculumSearchParameters params = new CurriculumSearchParameters();
+			params.setCurriculumAdmin(getIdentity());
+			curriculums = curriculumService.getCurriculums(params);
+			SelectionValues curriculumPK = new SelectionValues();
+			for(Curriculum cur:curriculums) {
+				curriculumPK.add(SelectionValues.entry(cur.getKey().toString(), cur.getDisplayName()));
+			}
+			curriculumPK.sort(SelectionValues.VALUE_ASC);
+			curriculumEl = uifactory.addDropdownSingleselect("curriculum.element.curriculum", formLayout,
+					curriculumPK.keys(), curriculumPK.values());
+			if(!curriculumPK.isEmpty()) {
+				curriculumEl.select(curriculumPK.keys()[0], true);
+			}
+		}
 		
 		if (element != null) {
 			if (ureq.getUserSession().getRoles().isAdministrator()) {
@@ -268,6 +287,14 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 			allOk &= false;
 		}
 		
+		if(curriculumEl != null) {
+			curriculumEl.clearError();
+			if(!curriculumEl.isOneSelected()) {
+				displayNameEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+		}
+		
 		return allOk;
 	}
 
@@ -278,6 +305,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		Curriculum selectedCurriculum = getCurriculum();
 		CurriculumElementType elementType = getSelectedType();
 		RepositoryEntryEducationalType educationalType = getEducationalType();
 		
@@ -285,7 +313,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		if(create) {
 			//create a new one
 			element = curriculumService.createCurriculumElement(identifierEl.getValue(), displayNameEl.getValue(),
-					null, null, null, parentElement, elementType, null, null, null, curriculum);
+					null, null, null, parentElement, elementType, null, null, null, selectedCurriculum);
 			if (educationalType != null) {
 				element.setEducationalType(educationalType);
 				element = curriculumService.updateCurriculumElement(element);
@@ -332,6 +360,22 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		dbInstance.commitAndCloseSession(); // need to relaod properly the tree
 		element = curriculumService.getCurriculumElement(element);
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private Curriculum getCurriculum() {
+		if(curriculum != null) {
+			return curriculum;
+		}
+		
+		if(curriculums != null && curriculumEl != null && curriculumEl.isOneSelected()) {
+			String key = curriculumEl.getSelectedKey();
+			for(Curriculum cur:curriculums) {
+				if(key.equals(cur.getKey().toString())) {
+					return cur;
+				}
+			}
+		}
+		return null;
 	}
 
 	private CurriculumElementType getSelectedType() {
