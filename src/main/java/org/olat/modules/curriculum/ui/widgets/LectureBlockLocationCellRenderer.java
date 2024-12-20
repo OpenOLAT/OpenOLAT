@@ -30,7 +30,7 @@ import org.olat.core.util.StringHelper;
 /**
  * 
  * Initial date: 22 oct. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class LectureBlockLocationCellRenderer implements FlexiCellRenderer {
@@ -39,7 +39,7 @@ public class LectureBlockLocationCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof String location && StringHelper.containsNonWhitespace(location)) {
-			target.append("<i class='o_icon o_icon_location'> </i> ").append(location);
+			target.append("<i class='o_icon o_icon_location'> </i> ").appendHtmlEscaped(location);
 		}
 	}
 }

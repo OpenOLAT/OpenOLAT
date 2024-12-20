@@ -93,7 +93,7 @@ public class CurriculumStructureCalloutController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status,
 				new CurriculumStatusCellRenderer(getTranslator())));
 
-		tableModel = new CurriculumComposerTableModel(columnsModel, getLocale());
+		tableModel = new CurriculumComposerTableModel(columnsModel, false, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 5000, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_curriculum_structure o_table_reduced");
 		tableEl.setCustomizeColumns(false);

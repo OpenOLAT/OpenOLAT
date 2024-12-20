@@ -49,7 +49,7 @@ public class IconDecoratorCellRenderer extends AbstractCSSIconFlexiCellRenderer 
 	@Override
 	protected String getCellValue(Object val) {
 		if(val instanceof String str) {
-			return str;
+			return StringHelper.escapeHtml(str);
 		}
 		if(val != null) {
 			return val.toString();

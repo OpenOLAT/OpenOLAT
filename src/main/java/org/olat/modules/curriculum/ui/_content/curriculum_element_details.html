@@ -23,7 +23,7 @@
 
 			<div class="o_curriculum_type_dates">
 				#if($r.isNotEmpty($typeDisplayName))
-					<span class="o_curriculum_type"><i class="o_icon o_icon_curriculum_implementations" title="$r.translate("curriculum.element.type")"> </i> $typeDisplayName</span>
+					<span class="o_curriculum_type"><i class="o_icon o_icon_curriculum_implementations" title="$r.translate("curriculum.element.type")"> </i> $r.escapeHtml($typeDisplayName)</span>
 				#end
 				#if($r.isNotEmpty($dates))
 					<span class="o_curriculum_dates"><i class="o_icon o_icon_calendar" title="$r.translate("curriculum.element.dates")"> </i> $dates</span>

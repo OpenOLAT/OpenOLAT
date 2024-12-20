@@ -51,10 +51,12 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 
 	private static final ElementCols[] COLS = ElementCols.values();
 	
+	private final boolean flat;
 	private final Locale locale;
 	
-	public CurriculumComposerTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public CurriculumComposerTableModel(FlexiTableColumnModel columnModel, boolean flat, Locale locale) {
 		super(columnModel);
+		this.flat = flat;
 		this.locale = locale;
 		setObjects(new ArrayList<>());
 	}
@@ -191,6 +193,11 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			};
 		}
 		return null;
+	}
+	
+	@Override
+	public boolean hasOpenCloseAll() {
+		return !flat;
 	}
 
 	@Override

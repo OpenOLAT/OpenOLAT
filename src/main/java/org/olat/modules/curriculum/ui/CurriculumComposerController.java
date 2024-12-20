@@ -343,7 +343,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 		}
 		
-		tableModel = new CurriculumComposerTableModel(columnsModel, getLocale());
+		tableModel = new CurriculumComposerTableModel(columnsModel, config.isFlat(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_curriculum_el_listing");		
