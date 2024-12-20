@@ -2705,7 +2705,7 @@ public class CourseElementTest extends Deployments {
 			.autoPublish();
 		
 		course
-			.clickTree()
+			.tree()
 			.assertWithTitleSelected(nodeTitle);
 		
 		String meetingName = "Teams meeting";
