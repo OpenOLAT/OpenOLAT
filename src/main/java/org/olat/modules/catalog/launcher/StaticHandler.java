@@ -34,19 +34,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntry;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
-import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.ui.CatalogEntryState;
 import org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController;
-import org.olat.modules.catalog.ui.CatalogRepositoryEntryState;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.admin.CatalogLauncherStaticEditController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,8 +58,6 @@ public class StaticHandler implements CatalogLauncherHandler {
 	public static final String TYPE = "static";
 	private static final String SEPARTOR = ",";
 	
-	@Autowired
-	private CatalogV2Service catalogService;
 	@Autowired
 	private RepositoryService repositoryService;
 
@@ -115,33 +109,29 @@ public class StaticHandler implements CatalogLauncherHandler {
 
 	@Override
 	public Controller createRunController(UserRequest ureq, WindowControl wControl, Translator translator,
-			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams) {
+			CatalogLauncher catalogLauncher, List<CatalogEntry> catalogEntries, boolean webPublish) {
+		Map<Long, CatalogEntry> keyToRe = catalogEntries.stream()
+				.filter(entry -> entry.getRepositoryEntryKey() != null)
+				.collect(Collectors.toMap(CatalogEntry::getRepositoryEntryKey, Function.identity()));
+
 		List<Long> reKeys = getRepositoryEntryKeys(catalogLauncher);
-		List<? extends RepositoryEntryRef> repositoryEntries = reKeys.stream()
-				.map(RepositoryEntryRefImpl::new)
-				.collect(Collectors.toList());
-		
-		CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
-		searchParams.setRepositoryEntries(repositoryEntries);
-		Map<Long, CatalogRepositoryEntry> keyToRe = catalogService.getRepositoryEntries(searchParams, 0, -1).stream()
-				.collect(Collectors.toMap(CatalogRepositoryEntry::getKey, Function.identity()));
 		
 		// Keep sort order
-		List<CatalogRepositoryEntry> entries = reKeys.stream()
+		List<CatalogEntry> launcherEntries = reKeys.stream()
 				.map(key -> keyToRe.get(key))
 				.filter(Objects::nonNull)
 				.limit(PREFERRED_NUMBER_CARDS)
 				.collect(Collectors.toList());
-		if (entries.isEmpty()) {
+		if (launcherEntries.isEmpty()) {
 			return null;
 		}
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
-		CatalogRepositoryEntryState state = new CatalogRepositoryEntryState();
+		CatalogEntryState state = new CatalogEntryState();
 		state.setSpecialFilterRepositoryEntryLabel(launcherName);
 		state.setSpecialFilterRepositoryEntryKeys(reKeys);
-		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, true,
-				defaultSearchParams.isWebPublish(), state);
+		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, launcherEntries, launcherName, true,
+				webPublish, state);
 	}
 
 	public List<RepositoryEntry> getRepositoryEntries(CatalogLauncher catalogLauncher) {

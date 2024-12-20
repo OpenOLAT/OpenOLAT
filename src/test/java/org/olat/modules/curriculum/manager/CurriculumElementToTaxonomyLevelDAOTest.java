@@ -23,6 +23,7 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -31,6 +32,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
@@ -132,6 +134,35 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 		Assert.assertNotNull(loadedElements);
 		Assert.assertEquals(1, loadedElements.size());
 		Assert.assertEquals(element, loadedElements.get(0));
+	}
+	
+	@Test
+	public void getCurriculumElementKeyToTaxonomyLevels() {
+		Curriculum curriculum = curriculumDao.createAndPersist(random(), random(), "Curriculum", false, null);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element3 = curriculumElementDao.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-305", "Leveled taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), random(), null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel(random(), random(), random(), random(), null, null, null, null, taxonomy);
+		curriculumElementToTaxonomyLevelDao.createRelation(element1, level1);
+		curriculumElementToTaxonomyLevelDao.createRelation(element1, level2);
+		curriculumElementToTaxonomyLevelDao.createRelation(element2, level1);
+		
+		List<? extends CurriculumElementRef> curriculumElements = List.of(element1, element2, element3);
+		Map<Long, List<TaxonomyLevel>> taxonomyLevels = curriculumElementToTaxonomyLevelDao.getCurriculumElementKeyToTaxonomyLevels(curriculumElements);
+		
+		Assert.assertEquals(2, taxonomyLevels.size());
+		Assert.assertEquals(2, taxonomyLevels.get(element1.getKey()).size());
+		Assert.assertEquals(1, taxonomyLevels.get(element2.getKey()).size());
+		Assert.assertNull(taxonomyLevels.get(element3.getKey()));
 	}
 	
 	@Test

@@ -22,23 +22,28 @@ package org.olat.modules.catalog.launcher;
 import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController.PREFERRED_NUMBER_CARDS;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.TemporalType;
+
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntry;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.OrderBy;
-import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.admin.CatalogLauncherPopularCoursesEditController;
@@ -71,7 +76,7 @@ public class PopularCoursesHandler implements CatalogLauncherHandler {
 	}
 	
 	@Autowired
-	private CatalogV2Service catalogService;
+	private DB dbInstance;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
@@ -137,23 +142,60 @@ public class PopularCoursesHandler implements CatalogLauncherHandler {
 
 	@Override
 	public Controller createRunController(UserRequest ureq, WindowControl wControl, Translator translator,
-			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams) {
-		CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
+			CatalogLauncher catalogLauncher, List<CatalogEntry> catalogEntries, boolean webPublish) {
+		Map<Long, CatalogEntry> keyToRe = catalogEntries.stream()
+				.filter(entry -> entry.getRepositoryEntryKey() != null)
+				.collect(Collectors.toMap(CatalogEntry::getRepositoryEntryKey, Function.identity()));
+		
 		Config config = fromXML(catalogLauncher.getConfig());
-		if (config.getEducationalTypeKeys() != null && !config.getEducationalTypeKeys().isEmpty()) {
-			searchParams.getIdentToEducationalTypeKeys().put(catalogLauncher.getKey().toString(), config.getEducationalTypeKeys());
-		}
-		searchParams.setStatus(Collections.singletonList(RepositoryEntryStatusEnum.published));
-		searchParams.setOrderBy(OrderBy.popularCourses);
-		searchParams.setOrderByAsc(false);
-		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, PREFERRED_NUMBER_CARDS);
-		if (entries.isEmpty()) {
+		Predicate<? super CatalogEntry> educationalTypeFilter = createEducationalTypeFilter(config);
+		
+		List<Long> repositoryEntryKeys = catalogEntries.stream()
+			.filter(entry -> entry.getStatus() != null && RepositoryEntryStatusEnum.published == entry.getStatus())
+			.filter(educationalTypeFilter)
+			.map(CatalogEntry::getRepositoryEntryKey)
+			.filter(Objects::nonNull)
+			.toList();
+		
+		// Keep popularity order
+		List<CatalogEntry> launcherEntries = getMostPopularRepositoryEntryKeys(repositoryEntryKeys).stream()
+				.map(key -> keyToRe.get(key))
+				.filter(Objects::nonNull)
+				.limit(PREFERRED_NUMBER_CARDS)
+				.collect(Collectors.toList());
+		if (launcherEntries.isEmpty()) {
 			return null;
 		}
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
-		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, false,
-				defaultSearchParams.isWebPublish(), null);
+		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, launcherEntries, launcherName, false,
+				webPublish, null);
+	}
+	
+	private Predicate<? super CatalogEntry> createEducationalTypeFilter(Config config) {
+		if (config.getEducationalTypeKeys() == null || config.getEducationalTypeKeys().isEmpty()) {
+			return entry -> true;
+		}
+		
+		return entry -> entry.getEducationalType() != null
+				&& config.getEducationalTypeKeys().contains(entry.getEducationalType().getKey());
+	}
+	
+	List<Long> getMostPopularRepositoryEntryKeys(Collection<Long> entryIds) {
+		String query = """
+		select stat.resId
+		  from dailystat as stat
+		 where stat.resId in :entryIds and stat.day > :statDay
+		 group by stat.resId
+		 order by sum(stat.value) desc
+		""";
+		
+	return dbInstance.getCurrentEntityManager()
+			.createQuery(query, Long.class)
+			.setParameter("entryIds", entryIds)
+			.setParameter("statDay", DateUtils.addDays(new Date(), -28), TemporalType.DATE)
+			.setMaxResults(PREFERRED_NUMBER_CARDS)
+			.getResultList();
 	}
 	
 	public Config fromXML(String xml) {

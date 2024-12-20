@@ -19,31 +19,24 @@
  */
 package org.olat.modules.catalog.filter;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
-import org.olat.core.gui.components.util.SelectionValuesSupplier;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
-import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.ui.CatalogEntryRow;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
-import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntryLifecycle;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.stereotype.Service;
 
 /**
@@ -56,9 +49,6 @@ import org.springframework.stereotype.Service;
 public class LifecyclePublicHandler implements CatalogFilterHandler {
 	
 	private static final String TYPE = "lifecycle.public";
-	
-	@Autowired
-	private CatalogV2Service catalogService;
 	
 	@Override
 	public String getType() {
@@ -104,72 +94,34 @@ public class LifecyclePublicHandler implements CatalogFilterHandler {
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogFilter catalogFilter) {
 		return new CatalogFilterBasicController(ureq, wControl, this, catalogFilter);
 	}
-
+	
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
-		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
+			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {
+		SelectionValues filterSV = new SelectionValues();
+		catalogEntries.stream()
+				.map(CatalogEntry::getLifecycle)
+				.filter(lifecycle -> lifecycle != null && !lifecycle.isPrivateCycle())
+				.distinct()
+				.sorted()
+				.forEach(lifecycle -> filterSV.add(new SelectionValue(
+						lifecycle.getSoftKey(),
+						StringHelper.escapeHtml(lifecycle.getLabel()))));
 		
-		List<RepositoryEntryLifecycle> publicLifecycles = catalogService.getPublicLifecycles(searchParams);
-		if (publicLifecycles == null || publicLifecycles.isEmpty()) {
+		if (filterSV.isEmpty()) {
 			return null;
 		}
 		
-		SelectionValues filterKV = new SelectionValues();
-		publicLifecycles.forEach(lifecycle -> filterKV.add(new SelectionValue(lifecycle.getKey().toString(), StringHelper.escapeHtml(lifecycle.getLabel()))));
-		filterKV.sort(SelectionValues.VALUE_ASC);
-		
-		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.public.dates"), TYPE, filterKV,
+		return new FlexiTableMultiSelectionFilter(translator.translate("cif.public.dates"), TYPE, filterSV,
 				catalogFilter.isDefaultVisible());
 	}
 
 	@Override
-	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
-		List<String> lifecycleKeyStr = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
-		Collection<Long> lifecycleKeys = lifecycleKeyStr != null && !lifecycleKeyStr.isEmpty()
-				? lifecycleKeyStr.stream().map(Long::valueOf).collect(Collectors.toList())
-				: null;
-		searchParams.setLifecyclesPublicKeys(lifecycleKeys);
-	}
-	
-	/**
-	 * We remove (but keep) the lady loading supplier until performance problems occur.
-	 */
-	@SuppressWarnings("unused")
-	private static final class LifecyclePublicSupplier implements SelectionValuesSupplier {
-		
-		private final CatalogRepositoryEntrySearchParams searchParams;
-		private SelectionValues selectionValues;
-		
-		private LifecyclePublicSupplier(CatalogRepositoryEntrySearchParams searchParams) {
-			this.searchParams = searchParams;
+	public void filter(FlexiTableFilter flexiTableFilter, List<CatalogEntryRow> rows) {
+		List<String> lifecycleSoftKeys = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
+		if (lifecycleSoftKeys != null && !lifecycleSoftKeys.isEmpty()) {
+			rows.removeIf(row -> row.getLifecycleSoftKey() == null || !lifecycleSoftKeys.contains(row.getLifecycleSoftKey()));
 		}
-
-		private SelectionValues getSelectionValues() {
-			if (selectionValues == null) {
-				selectionValues = new SelectionValues();
-				CoreSpringFactory.getImpl(CatalogV2Service.class)
-						.getPublicLifecycles(searchParams)
-						.forEach(lifecycle -> selectionValues.add(new SelectionValue(lifecycle.getKey().toString(), lifecycle.getLabel())));
-				selectionValues.sort(SelectionValues.VALUE_ASC);
-			}
-			return selectionValues;
-		}
-
-		@Override
-		public String getValue(String key) {
-			return getSelectionValues().getValue(key);
-		}
-
-		@Override
-		public String[] keys() {
-			return getSelectionValues().keys();
-		}
-
-		@Override
-		public String[] values() {
-			return getSelectionValues().values();
-		}
-		
 	}
 	
 }

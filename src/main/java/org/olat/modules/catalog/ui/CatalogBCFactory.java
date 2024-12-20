@@ -87,29 +87,21 @@ public class CatalogBCFactory {
 	public static boolean isSearchType(OLATResourceable ores) {
 		return ORES_TYPE_SEARCH.equalsIgnoreCase(ores.getResourceableTypeName());
 	}
-	
-	public String getInfosUrl(RepositoryEntryRef repositoryEntry) {
-		List<ContextEntry> ces = createInfosCes(repositoryEntry);
-		return getUrl(ces);
-	}
-	
-	private List<ContextEntry> createInfosCes(RepositoryEntryRef repositoryEntry) {
-		List<ContextEntry> ces = createBaseCes();
-		ces.add(CE_SEARCH);
-		ces.add(createInfosCe(repositoryEntry));
-		return ces;
-	}
 
-	private ContextEntry createInfosCe(RepositoryEntryRef repositoryEntry) {
-		return BusinessControlFactory.getInstance().createContextEntry(createInfosOres(repositoryEntry));
-	}
-
+	/*
+	 * Only for internal (and legacy) usage.
+	 */
 	public static OLATResourceable createInfosOres(RepositoryEntryRef repositoryEntry) {
 		return OresHelper.createOLATResourceableInstance(ORES_TYPE_INFOS, repositoryEntry.getKey());
 	}
 	
 	public static boolean isInfosType(OLATResourceable ores) {
 		return ORES_TYPE_INFOS.equalsIgnoreCase(ores.getResourceableTypeName());
+	}
+
+	public String getOfferBusinessPath(OLATResource resource) {
+		List<ContextEntry> ces = createOfferCes(resource);
+		return BusinessControlFactory.getInstance().getBusinessControlString(ces);
 	}
 	
 	public String getOfferUrl(OLATResource resource) {
@@ -174,5 +166,4 @@ public class CatalogBCFactory {
 		}
 		return BusinessControlFactory.getInstance().appendToURIString(retVal, ceList, true);
 	}
-
 }

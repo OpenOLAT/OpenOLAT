@@ -20,15 +20,18 @@
 package org.olat.modules.catalog.manager;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.robots.RobotsProvider;
 import org.olat.core.commons.services.robots.SitemapProvider;
 import org.olat.core.commons.services.robots.model.SitemapItem;
 import org.olat.core.helpers.Settings;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.CatalogEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.WebCatalogDispatcher;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,7 +48,9 @@ public class CatalogRobotsProvider implements RobotsProvider, SitemapProvider {
 	@Autowired
 	private CatalogV2Module catalogModule;
 	@Autowired
-	private CatalogRepositoryEntryQueries queries;
+	private CatalogQueries queries;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	
 	private boolean isEnabled() {
 		return catalogModule.isEnabled() && catalogModule.isWebPublishEnabled() && !catalogModule.isWebPublishTemporarilyDisabled();
@@ -69,19 +74,34 @@ public class CatalogRobotsProvider implements RobotsProvider, SitemapProvider {
 	
 	public List<SitemapItem> getSitemapItems() {
 		if (isEnabled()) {
-			CatalogRepositoryEntrySearchParams searchParams = new CatalogRepositoryEntrySearchParams();
+			CatalogEntrySearchParams searchParams = new CatalogEntrySearchParams();
 			searchParams.setWebPublish(true);
-			return queries.loadRepositoryEntries(searchParams, 0, -1)
+			List<SitemapItem> items = queries.loadRepositoryEntries(searchParams)
 					.stream()
 					.map(this::toSitemapItem)
-					.toList();
+					.collect(Collectors.toList());
+			
+			if (curriculumModule.isEnabled()) {
+				List<SitemapItem> ceItems = queries.loadCurriculumElements(searchParams)
+						.stream()
+						.map(this::toSitemapItem)
+						.collect(Collectors.toList());
+				items.addAll(ceItems);
+			}
+			
+			return items;
 		}
 		return null;
 	}
 	
 	private SitemapItem toSitemapItem(RepositoryEntry repositoryEntry) {
-		String url = CatalogBCFactory.get(true).getInfosUrl(repositoryEntry);
+		String url = CatalogBCFactory.get(true).getOfferUrl(repositoryEntry.getOlatResource());
 		return new SitemapItem(url, repositoryEntry.getLastModified(), SitemapItem.FREQ_WEEKLY);
+	}
+
+	private SitemapItem toSitemapItem(CurriculumElement curriculumelement) {
+		String url = CatalogBCFactory.get(true).getOfferUrl(curriculumelement.getResource());
+		return new SitemapItem(url, curriculumelement.getLastModified(), SitemapItem.FREQ_WEEKLY);
 	}
 
 }

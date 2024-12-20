@@ -21,7 +21,6 @@ package org.olat.modules.catalog.filter;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -32,10 +31,12 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.ui.CatalogEntryRow;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -103,46 +104,42 @@ public class ACMethodHandler implements CatalogFilterHandler {
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogFilter catalogFilter) {
 		return new CatalogFilterBasicController(ureq, wControl, this, catalogFilter);
 	}
-
+	
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
+			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {	
 		SelectionValues accessMethodKV = new SelectionValues();
-		acService.getAvailableMethods().stream()
+			acService.getAvailableMethods().stream()
 				.filter(AccessMethod::isVisibleInGui)
 				.forEach(method -> accessMethodKV
 				.add(entry(
 						method.getType(),
-						acModule.getAccessMethodHandler(method.getType()).getMethodName(translator.getLocale()))));
+						acModule.getAccessMethodHandler(method.getType()).getMethodName(translator.getLocale()),
+						null,
+						method.getMethodCssClass() + "_icon o_icon o_icon-fw",
+						null,
+						true)));
 		accessMethodKV.sort(SelectionValues.VALUE_ASC);
-		accessMethodKV.add(entry(OPEN_ACCESS, translator.translate("filter.acmethod.open.access")));
+		accessMethodKV.add(entry(OPEN_ACCESS, translator.translate("filter.acmethod.open.access"), null,
+				"o_ac_openaccess_icon o_icon o_icon-fw", null, true));
+		
 		return new FlexiTableMultiSelectionFilter(translator.translate("filter.acmethod.type"), TYPE, accessMethodKV,
-				catalogFilter.isDefaultVisible());
+			catalogFilter.isDefaultVisible());
 	}
 
 	@Override
-	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
-		List<String> filterValues = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
-		searchParams.setOpenAccess(null);
-		searchParams.setShowAccessMethods(null);
-		searchParams.setAccessMethods(null);
-		if (filterValues == null || filterValues.isEmpty()) {
-			return;
+	public void filter(FlexiTableFilter flexiTableFilter, List<CatalogEntryRow> rows) {
+		List<String> accessTypes = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
+		if (accessTypes != null && !accessTypes.isEmpty()) {
+			boolean openAccess = accessTypes.contains(OPEN_ACCESS);
+			rows.removeIf(row -> !isMatch(row, openAccess, accessTypes));
 		}
-		
-		List<String> values = new ArrayList<>(filterValues);
-		if (values.contains(OPEN_ACCESS)) {
-			searchParams.setOpenAccess(Boolean.TRUE);
-			searchParams.setShowAccessMethods(Boolean.FALSE);
-			values.remove(OPEN_ACCESS);
-		} else {
-			searchParams.setOpenAccess(Boolean.FALSE);
+	}
+
+	private boolean isMatch(CatalogEntryRow row, boolean openAccess, List<String> accessTypes) {
+		if (openAccess && row.isOpenAccess()) {
+			return true;
 		}
-		
-		if (!values.isEmpty()) {
-			List<AccessMethod> methods = acService.getAvailableMethods();
-			methods.removeIf(method -> !values.contains(method.getType()));
-			searchParams.setAccessMethods(methods);
-			searchParams.setShowAccessMethods(Boolean.TRUE);
-		}
+		return row.getAccessMethodTypes() != null && row.getAccessMethodTypes().stream().anyMatch(rowAccessType -> accessTypes.contains(rowAccessType));
 	}
 }

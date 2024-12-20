@@ -21,27 +21,22 @@ package org.olat.modules.catalog.filter;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
-import org.olat.core.gui.components.util.SelectionValuesSupplier;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
-import org.olat.core.util.filter.FilterFactory;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
-import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.ui.CatalogEntryRow;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
-import org.olat.repository.RepositoryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.stereotype.Service;
 
 /**
@@ -54,9 +49,6 @@ import org.springframework.stereotype.Service;
 public class LocationHandler implements CatalogFilterHandler {
 	
 	private static final String TYPE = "location";
-	
-	@Autowired
-	private CatalogV2Service catalogService;
 	
 	@Override
 	public String getType() {
@@ -102,72 +94,35 @@ public class LocationHandler implements CatalogFilterHandler {
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogFilter catalogFilter) {
 		return new CatalogFilterBasicController(ureq, wControl, this, catalogFilter);
 	}
-
+	
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
-		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
+			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {
+		SelectionValues filterSV = new SelectionValues();
+		catalogEntries.stream()
+				.map(CatalogEntry::getLocation)
+				.filter(StringHelper::containsNonWhitespace)
+				.map(StringHelper::escapeHtml)
+				.distinct()
+				.sorted()
+				.forEach(location -> filterSV.add(new SelectionValue(
+						location,
+						location)));
 		
-		List<String> locations = catalogService.getLocations(searchParams);
-		if (locations == null || locations.isEmpty()) {
+		if (filterSV.isEmpty()) {
 			return null;
 		}
 		
-		SelectionValues filterKV = new SelectionValues();
-		locations.forEach(location -> {
-			if(!StringHelper.isHtml(location) && StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(location))) {
-				filterKV.add(new SelectionValue(location, StringHelper.escapeHtml(location)));
-			}
-		});
-		filterKV.sort(SelectionValues.VALUE_ASC);
-		
-		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.location"), TYPE, filterKV,
+		return new FlexiTableMultiSelectionFilter(translator.translate("cif.location"), TYPE, filterSV,
 				catalogFilter.isDefaultVisible());
 	}
 
 	@Override
-	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
+	public void filter(FlexiTableFilter flexiTableFilter, List<CatalogEntryRow> rows) {
 		List<String> locations = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
-		searchParams.setLocations(locations);
+		if (locations != null && !locations.isEmpty()) {
+			rows.removeIf(row -> row.getLocation() == null || !locations.contains(row.getLocation()));
+		}
 	}
 	
-	/**
-	 * We remove (but keep) the lady loading supplier until performance problems occur.
-	 */
-	@SuppressWarnings("unused")
-	private static final class LocationSupplier implements SelectionValuesSupplier {
-		
-		private final CatalogRepositoryEntrySearchParams searchParams;
-		private SelectionValues selectionValues;
-		
-		private LocationSupplier(CatalogRepositoryEntrySearchParams searchParams) {
-			this.searchParams = searchParams;
-		}
-
-		private SelectionValues getSelectionValues() {
-			if (selectionValues == null) {
-				selectionValues = new SelectionValues();
-				CoreSpringFactory.getImpl(CatalogV2Service.class)
-						.getLocations(searchParams)
-						.forEach(location -> selectionValues.add(new SelectionValue(location, location)));
-				selectionValues.sort(SelectionValues.VALUE_ASC);
-			}
-			return selectionValues;
-		}
-
-		@Override
-		public String getValue(String key) {
-			return getSelectionValues().getValue(key);
-		}
-
-		@Override
-		public String[] keys() {
-			return getSelectionValues().keys();
-		}
-
-		@Override
-		public String[] values() {
-			return getSelectionValues().values();
-		}
-		
-	}
 }

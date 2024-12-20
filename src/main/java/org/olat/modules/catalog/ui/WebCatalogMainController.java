@@ -21,7 +21,7 @@ package org.olat.modules.catalog.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.CatalogEntrySearchParams;
 import org.olat.modules.catalog.CatalogSecurityCallback;
 import org.olat.modules.catalog.CatalogSecurityCallbackFactory;
 
@@ -44,8 +44,8 @@ public class WebCatalogMainController extends CatalogMainController {
 	}
 
 	@Override
-	protected CatalogRepositoryEntrySearchParams createDefaultSearchParams(UserRequest ureq) {
-		CatalogRepositoryEntrySearchParams searchParams = new CatalogRepositoryEntrySearchParams();
+	protected CatalogEntrySearchParams createDefaultSearchParams(UserRequest ureq) {
+		CatalogEntrySearchParams searchParams = new CatalogEntrySearchParams();
 		searchParams.setWebPublish(true);
 		searchParams.setMember(null);
 		searchParams.setGuestOnly(false);

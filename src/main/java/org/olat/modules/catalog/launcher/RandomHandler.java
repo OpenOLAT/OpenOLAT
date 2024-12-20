@@ -22,7 +22,9 @@ package org.olat.modules.catalog.launcher;
 import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController.PREFERRED_NUMBER_CARDS;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -32,12 +34,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntry;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.OrderBy;
-import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.admin.CatalogLauncherRandomEditController;
@@ -69,8 +68,6 @@ public class RandomHandler implements CatalogLauncherHandler {
 		configXstream.alias("config", Config.class);
 	}
 	
-	@Autowired
-	private CatalogV2Service catalogService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -153,24 +150,45 @@ public class RandomHandler implements CatalogLauncherHandler {
 
 	@Override
 	public Controller createRunController(UserRequest ureq, WindowControl wControl, Translator translator,
-			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams) {
-		CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
+			CatalogLauncher catalogLauncher, List<CatalogEntry> catalogEntries, boolean webPublish) {
 		Config config = fromXML(catalogLauncher.getConfig());
-		if (config.getEducationalTypeKeys() != null && !config.getEducationalTypeKeys().isEmpty()) {
-			searchParams.getIdentToEducationalTypeKeys().put(catalogLauncher.getKey().toString(), config.getEducationalTypeKeys());
-		}
-		if (config.getResourceTypes() != null && !config.getResourceTypes().isEmpty()) {
-			searchParams.getIdentToResourceTypes().put(catalogLauncher.getKey().toString(), config.getResourceTypes());
-		}
-		searchParams.setOrderBy(OrderBy.random);
-		List<CatalogRepositoryEntry> entries = catalogService.getRepositoryEntries(searchParams, 0, PREFERRED_NUMBER_CARDS);
-		if (entries.isEmpty()) {
+		Predicate<? super CatalogEntry> resourceTypeFilter = createResourceTypeFilter(config);
+		Predicate<? super CatalogEntry> educationalTypeFilter = createEducationalTypeFilter(config);
+		
+		List<CatalogEntry> launcherEntries = catalogEntries.stream()
+				.filter(entry -> entry.getRepositoryEntryKey() != null)
+				.collect(Collectors.toList());
+		
+		Collections.shuffle(launcherEntries);
+		launcherEntries = launcherEntries.stream()
+				.filter(resourceTypeFilter)
+				.filter(educationalTypeFilter)
+				.limit(PREFERRED_NUMBER_CARDS)
+				.toList();
+		if (launcherEntries.isEmpty()) {
 			return null;
 		}
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
-		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, entries, launcherName, false,
-				defaultSearchParams.isWebPublish(), null);
+		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, launcherEntries, launcherName, false,
+				webPublish, null);
+	}
+	
+	private Predicate<? super CatalogEntry> createResourceTypeFilter(Config config) {
+		if (config.getResourceTypes() == null || config.getResourceTypes().isEmpty()) {
+			return entry -> true;
+		}
+		
+		return entry -> config.getResourceTypes().contains(entry.getOlatResource().getResourceableTypeName());
+	}
+	
+	private Predicate<? super CatalogEntry> createEducationalTypeFilter(Config config) {
+		if (config.getEducationalTypeKeys() == null || config.getEducationalTypeKeys().isEmpty()) {
+			return entry -> true;
+		}
+		
+		return entry -> entry.getEducationalType() != null
+				&& config.getEducationalTypeKeys().contains(entry.getEducationalType().getKey());
 	}
 	
 	public Config fromXML(String xml) {

@@ -31,6 +31,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
@@ -51,6 +52,10 @@ public interface ACService {
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_OPEN = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_METHOD = new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.published };
 	public static final RepositoryEntryStatusEnum[] RESTATUS_ACTIVE_METHOD_PERIOD = RepositoryEntryStatusEnum.preparationToPublished();
+	public static final CurriculumElementStatus[] CESTATUS_ACTIVE_METHOD = new CurriculumElementStatus[] {
+			CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed, CurriculumElementStatus.active };
+	public static final CurriculumElementStatus[] CESTATUS_ACTIVE_METHOD_PERIOD = new CurriculumElementStatus[] {
+			CurriculumElementStatus.preparation, CurriculumElementStatus.provisional, CurriculumElementStatus.confirmed, CurriculumElementStatus.active };
 
 	/**
 	 *

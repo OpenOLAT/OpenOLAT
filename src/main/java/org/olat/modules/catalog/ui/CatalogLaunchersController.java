@@ -31,10 +31,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.modules.catalog.CatalogEntry;
+import org.olat.modules.catalog.CatalogEntrySearchParams;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
@@ -52,23 +53,24 @@ public class CatalogLaunchersController extends BasicController {
 	
 	private List<Controller> launcherCtrls;
 	
-	private final CatalogRepositoryEntrySearchParams defaultSearchParams;
+	private final CatalogEntrySearchParams defaultSearchParams;
+	private List<CatalogLauncher> launchers;
 	private final List<CatalogLauncher> taxonomyLevelCatalogLaunchers = new ArrayList<>(2);
 
 	@Autowired
 	private CatalogV2Service catalogService;
 
-	protected CatalogLaunchersController(UserRequest ureq, WindowControl wControl, CatalogRepositoryEntrySearchParams defaultSearchParams) {
+	protected CatalogLaunchersController(UserRequest ureq, WindowControl wControl, CatalogEntrySearchParams defaultSearchParams) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.defaultSearchParams = defaultSearchParams;
 		mainVC = createVelocityContainer("launchers");
 		
 		putInitialPanel(mainVC);
-		reload(ureq);
+		loadLaunchers();
 	}
-
-	private void reload(UserRequest ureq) {
+	
+	private void loadLaunchers() {
 		cleanUp();
 		
 		CatalogLauncherSearchParams searchParams = new CatalogLauncherSearchParams();
@@ -78,14 +80,23 @@ public class CatalogLaunchersController extends BasicController {
 			searchParams.setEnabled(Boolean.TRUE);
 			searchParams.setLauncherOrganisations(defaultSearchParams.getOfferOrganisations());
 		}
-		List<CatalogLauncher> launchers = catalogService.getCatalogLaunchers(searchParams);
+		launchers = catalogService.getCatalogLaunchers(searchParams);
 		Collections.sort(launchers);
 		launcherCtrls = new ArrayList<>(launchers.size());
+	}
+
+	public void update(UserRequest ureq, List<CatalogEntry> catalogEntries) {
+		if (launchers.isEmpty()) {
+			return;
+		}
+		
 		List<String> componentNames = new ArrayList<>(launchers.size());
+		mainVC.contextPut("componentNames", componentNames);
 		for (CatalogLauncher launcher : launchers) {
 			CatalogLauncherHandler handler = catalogService.getCatalogLauncherHandler(launcher.getType());
 			if (handler != null && handler.isEnabled()) {
-				Controller launcherCtrl = handler.createRunController(ureq, getWindowControl(), getTranslator(), launcher, defaultSearchParams);
+				Controller launcherCtrl = handler.createRunController(ureq, getWindowControl(), getTranslator(),
+						launcher, catalogEntries, defaultSearchParams.isWebPublish());
 				if (launcherCtrl != null) {
 					listenTo(launcherCtrl);
 					launcherCtrls.add(launcherCtrl);
@@ -98,7 +109,6 @@ public class CatalogLaunchersController extends BasicController {
 				}
 			}
 		}
-		mainVC.contextPut("componentNames", componentNames);
 	}
 
 	private void cleanUp() {

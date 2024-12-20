@@ -19,13 +19,14 @@
  */
 package org.olat.modules.catalog.filter;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
-import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -37,13 +38,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
-import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.ui.CatalogEntryRow;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
-import org.olat.repository.RepositoryService;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,8 +65,6 @@ public class LicenseHandler implements CatalogFilterHandler {
 	private LicenseService licenseService;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
-	@Autowired
-	private CatalogV2Service catalogService;
 
 	@Override
 	public String getType() {
@@ -112,41 +110,39 @@ public class LicenseHandler implements CatalogFilterHandler {
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogFilter catalogFilter) {
 		return new CatalogFilterBasicController(ureq, wControl, this, catalogFilter);
 	}
-
+	
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
-		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
-		
-		List<Long> licenseTypeKeys = catalogService.getLicenseTypeKeys(searchParams);
-		if (licenseTypeKeys == null || licenseTypeKeys.isEmpty()) {
-			return null;
-		}
-		
-		List<LicenseType> licenseTypes = licenseService.loadLicenseTypes().stream()
-				.filter(licenseType -> licenseTypeKeys.contains(licenseType.getKey()))
-				.collect(Collectors.toList());
-		if (licenseTypes == null || licenseTypes.isEmpty()) {
-			return null;
-		}
-		
-		SelectionValues filterKV = new SelectionValues();
-		licenseTypes.stream()
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
+			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {
+		SelectionValues filterSV = new SelectionValues();
+		catalogEntries.stream()
+				.map(CatalogEntry::getLicense)
+				.filter(Objects::nonNull)
+				.map(License::getLicenseType)
 				.filter(licenseType -> !licenseService.isNoLicense(licenseType))
-				.forEach(licenseType -> filterKV.add(new SelectionValue(
+				.distinct()
+				.sorted()
+				.forEach(licenseType -> filterSV.add(new SelectionValue(
 						licenseType.getKey().toString(),
 						StringHelper.escapeHtml(LicenseUIFactory.translate(licenseType, translator.getLocale())))));
-		filterKV.sort(SelectionValues.VALUE_ASC);
 		
-		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.license"), TYPE, filterKV,
+		if (filterSV.isEmpty()) {
+			return null;
+		}
+		
+		return new FlexiTableMultiSelectionFilter(translator.translate("cif.license"), TYPE, filterSV,
 				catalogFilter.isDefaultVisible());
 	}
 
 	@Override
-	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
+	public void filter(FlexiTableFilter flexiTableFilter, List<CatalogEntryRow> rows) {
 		List<String> licenseTypeKeyStr = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
-		Collection<Long> licenseTypeKeys = licenseTypeKeyStr != null && !licenseTypeKeyStr.isEmpty()
-				? licenseTypeKeyStr.stream().map(Long::valueOf).collect(Collectors.toList())
-				: null;
-		searchParams.setLicenseTypeKeys(licenseTypeKeys);
+		if (licenseTypeKeyStr != null && !licenseTypeKeyStr.isEmpty()) {
+			Set<Long> licenseTypeKeys = licenseTypeKeyStr.stream().map(Long::valueOf).collect(Collectors.toSet());
+			rows.removeIf(row -> row.getLicense() == null 
+					|| row.getLicense().getLicenseType() == null
+					|| !licenseTypeKeys.contains(row.getLicense().getLicenseType().getKey()));
+		}
 	}
+	
 }

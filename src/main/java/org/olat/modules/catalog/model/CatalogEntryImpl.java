@@ -19,10 +19,13 @@
  */
 package org.olat.modules.catalog.model;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.modules.catalog.CatalogRepositoryEntry;
+import org.olat.core.commons.services.license.License;
+import org.olat.modules.catalog.CatalogEntry;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -37,9 +40,10 @@ import org.olat.resource.accesscontrol.model.OLATResourceAccess;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
+public class CatalogEntryImpl implements CatalogEntry {
 	
-	private final Long key;
+	private final Long repositotyEntryKey;
+	private final Long curriculumElementKey;
 	private final String externalId;
 	private final String externalRef;
 	private final String displayname;
@@ -50,9 +54,14 @@ public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
 	private final String location;
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
+	
 	private final RepositoryEntryLifecycle lifecycle;
 	private final RepositoryEntryStatusEnum status;
+	private final Date publishedDate;
 	private final boolean publicVisible;
+	
+	private final Long curriculumKey;
+	private final String curriculumElementTypeName;
 	
 	private final OLATResource olatResource;
 	
@@ -61,9 +70,11 @@ public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
 	private boolean openAccess;
 	private boolean guestAccess;
 	private List<OLATResourceAccess> resourceAccess;
+	private License license;
 
-	public CatalogRepositoryEntryImpl(RepositoryEntry re) {
-		key = re.getKey();
+	public CatalogEntryImpl(RepositoryEntry re) {
+		repositotyEntryKey = re.getKey();
+		curriculumElementKey = null;
 		externalId = re.getExternalId();
 		externalRef = re.getExternalRef();
 		displayname = re.getDisplayname();
@@ -74,16 +85,50 @@ public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
 		location = re.getLocation();
 		educationalType = re.getEducationalType();
 		expenditureOfWork = re.getExpenditureOfWork();
+		
 		lifecycle = re.getLifecycle();
 		status = re.getEntryStatus();
+		publishedDate = re.getStatusPublishedDate();
 		publicVisible = re.isPublicVisible();
+		
+		curriculumKey = null;
+		curriculumElementTypeName = null;
 		
 		olatResource = re.getOlatResource();
 	}
+	
+	public CatalogEntryImpl(CurriculumElement element) {
+		repositotyEntryKey = null;
+		curriculumElementKey = element.getKey();
+		externalId = element.getExternalId();
+		externalRef = element.getIdentifier();
+		displayname = element.getDisplayName();
+		description = element.getDescription();
+		teaser = element.getTeaser();
+		authors = element.getAuthors();
+		mainLanguage = element.getMainLanguage();
+		location = element.getLocation();
+		educationalType = element.getEducationalType();
+		expenditureOfWork = element.getExpenditureOfWork();
+		lifecycle = null;
+		status = null;
+		publishedDate = null;
+		publicVisible = true;
+		
+		curriculumKey = element.getCurriculum().getKey();
+		curriculumElementTypeName = element.getType().getDisplayName();
+		
+		olatResource = element.getResource();
+	}
 
 	@Override
-	public Long getKey() {
-		return key;
+	public Long getRepositoryEntryKey() {
+		return repositotyEntryKey;
+	}
+
+	@Override
+	public Long getCurriculumElementKey() {
+		return curriculumElementKey;
 	}
 
 	@Override
@@ -147,8 +192,23 @@ public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
 	}
 
 	@Override
+	public Date getPublishedDate() {
+		return publishedDate;
+	}
+
+	@Override
 	public boolean isPublicVisible() {
 		return publicVisible;
+	}
+
+	@Override
+	public Long getCurriculumKey() {
+		return curriculumKey;
+	}
+
+	@Override
+	public String getCurriculumElementTypeName() {
+		return curriculumElementTypeName;
 	}
 
 	@Override
@@ -199,6 +259,15 @@ public class CatalogRepositoryEntryImpl implements CatalogRepositoryEntry {
 
 	public void setResourceAccess(List<OLATResourceAccess> resourceAccess) {
 		this.resourceAccess = resourceAccess;
+	}
+
+	@Override
+	public License getLicense() {
+		return license;
+	}
+
+	public void setLicense(License license) {
+		this.license = license;
 	}
 	
 }

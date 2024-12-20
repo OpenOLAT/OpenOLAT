@@ -23,20 +23,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.services.license.License;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.catalog.CatalogRepositoryEntry;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.repository.RepositoryEntryEducationalType;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -44,13 +43,15 @@ import org.olat.repository.ui.RepositoyUIFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
+public class CatalogEntryRow {
 	
-	private final Long key;
+	private final Long repositotyEntryKey;
+	private final Long curriculumElementKey;
 	private final String externalId;
 	private final String externalRef;
-	private final String name;
+	private final String title;
 	private final String authors;
+	private final String mainLanguage;
 	private final String location;
 	private final String teaser;
 	private final RepositoryEntryEducationalType educationalType;
@@ -58,18 +59,25 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 	private final RepositoryEntryStatusEnum status;
 	private final boolean publicVisible;
 	
+	private final RepositoryEntryLifecycle reLifecycle;
 	private String lifecycleLabel;
 	private String lifecycleSoftKey;
 	private Date lifecycleStart;
 	private Date lifecycleEnd;
 	
-	private final OLATResourceable olatResource;
+	private final Long curriculumKey;
+	private final String curriculumElementTypeName;
+	
+	private final OLATResource olatResource;
 	private final Set<TaxonomyLevel> taxonomyLevels;
 	private List<TaxonomyLevelNamePath> taxonomyLevelNamePaths;
 	private final boolean member;
 	private final boolean openAccess;
 	private final boolean guestAccess;
-	private List<PriceMethod> accessTypes;
+	private Set<String> accessMethodTypes;
+	private List<PriceMethod> accessPriceMethods;
+	private final License license;
+	
 	private String thumbnailRelPath;
 	private FormLink selectLink;
 	private FormItem startLink;
@@ -77,25 +85,28 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 	private FormLink detailsLink;
 	private FormLink detailsSmallLink;
 	
-	public CatalogRepositoryEntryRow(CatalogRepositoryEntry catalogRepositoryEntry) {
-		key = catalogRepositoryEntry.getKey();
-		externalId = catalogRepositoryEntry.getExternalId();
-		externalRef = catalogRepositoryEntry.getExternalRef();
-		name = catalogRepositoryEntry.getDisplayname();
-		teaser = catalogRepositoryEntry.getTeaser();
-		authors = catalogRepositoryEntry.getAuthors();
-		location = catalogRepositoryEntry.getLocation();
-		educationalType = catalogRepositoryEntry.getEducationalType();
-		expenditureOfWork = catalogRepositoryEntry.getExpenditureOfWork();
-		status = catalogRepositoryEntry.getStatus();
-		publicVisible = catalogRepositoryEntry.isPublicVisible();
-		olatResource = OresHelper.clone(catalogRepositoryEntry.getOlatResource());
-		taxonomyLevels = catalogRepositoryEntry.getTaxonomyLevels();
-		member = catalogRepositoryEntry.isMember();
-		openAccess = catalogRepositoryEntry.isOpenAccess();
-		guestAccess = catalogRepositoryEntry.isGuestAccess();
+	public CatalogEntryRow(CatalogEntry catalogEntry) {
+		repositotyEntryKey = catalogEntry.getRepositoryEntryKey();
+		curriculumElementKey = catalogEntry.getCurriculumElementKey();
+		externalId = catalogEntry.getExternalId();
+		externalRef = catalogEntry.getExternalRef();
+		title = catalogEntry.getDisplayname();
+		teaser = catalogEntry.getTeaser();
+		authors = catalogEntry.getAuthors();
+		mainLanguage = catalogEntry.getMainLanguage();
+		location = catalogEntry.getLocation();
+		educationalType = catalogEntry.getEducationalType();
+		expenditureOfWork = catalogEntry.getExpenditureOfWork();
+		status = catalogEntry.getStatus();
+		publicVisible = catalogEntry.isPublicVisible();
+		olatResource = catalogEntry.getOlatResource();
+		taxonomyLevels = catalogEntry.getTaxonomyLevels();
+		member = catalogEntry.isMember();
+		openAccess = catalogEntry.isOpenAccess();
+		guestAccess = catalogEntry.isGuestAccess();
+		license = catalogEntry.getLicense();
 		
-		RepositoryEntryLifecycle reLifecycle = catalogRepositoryEntry.getLifecycle();
+		reLifecycle = catalogEntry.getLifecycle();
 		if(reLifecycle != null) {
 			setLifecycleStart(reLifecycle.getValidFrom());
 			setLifecycleEnd(reLifecycle.getValidTo());
@@ -104,15 +115,21 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 				setLifecycleSoftKey(reLifecycle.getSoftKey());
 			}
 		}
+		
+		curriculumKey = catalogEntry.getCurriculumKey();
+		curriculumElementTypeName = catalogEntry.getCurriculumElementTypeName();
 	}
-	
-	@Override
-	public Long getKey() {
-		return key;
+
+	public Long getRepositotyEntryKey() {
+		return repositotyEntryKey;
+	}
+
+	public Long getCurriculumElementKey() {
+		return curriculumElementKey;
 	}
 
 	public boolean isClosed() {
-		return status.decommissioned();
+		return status != null && status.decommissioned();
 	}
 
 	public RepositoryEntryStatusEnum getStatus() {
@@ -131,8 +148,12 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 		return externalRef;
 	}
 
-	public String getDisplayName() {
-		return name;
+	public String getTitle() {
+		return title;
+	}
+
+	public RepositoryEntryLifecycle getReLifecycle() {
+		return reLifecycle;
 	}
 
 	public String getLifecycleSoftKey() {
@@ -166,21 +187,16 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 	public void setLifecycleEnd(Date lifecycleEnd) {
 		this.lifecycleEnd = lifecycleEnd;
 	}
-	
-	public boolean isActive() {
-		boolean isCurrent = true; 
-		if (lifecycleEnd != null || lifecycleStart != null) {
-			Date now = new Date();
-			if (lifecycleStart != null && lifecycleStart.after(now)) {
-				isCurrent = false;
-			} else if (lifecycleEnd != null && lifecycleEnd.before(now)) {
-				isCurrent = false;
-			}
-		}
-		return isCurrent;
+
+	public Long getCurriculumKey() {
+		return curriculumKey;
 	}
 
-	public OLATResourceable getOlatResource() {
+	public String getCurriculumElementTypeName() {
+		return curriculumElementTypeName;
+	}
+
+	public OLATResource getOlatResource() {
 		return olatResource;
 	}
 
@@ -196,18 +212,30 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 		return guestAccess;
 	}
 
-	public List<PriceMethod> getAccessTypes() {
-		return accessTypes;
+	public Set<String> getAccessMethodTypes() {
+		return accessMethodTypes;
 	}
 
-	public void setAccessTypes(List<PriceMethod> accessTypes) {
-		this.accessTypes = accessTypes;
+	public void setAccessMethodTypes(Set<String> accessMethodTypes) {
+		this.accessMethodTypes = accessMethodTypes;
+	}
+
+	public List<PriceMethod> getAccessPriceMethods() {
+		return accessPriceMethods;
+	}
+
+	public void setAccessPriceMethods(List<PriceMethod> accessPriceMethods) {
+		this.accessPriceMethods = accessPriceMethods;
 	}
 	
 	public String getAuthors() {
 		return authors;
 	}
 	
+	public String getMainLanguage() {
+		return mainLanguage;
+	}
+
 	public String getTeaser() {
 		return teaser;
 	}
@@ -242,6 +270,10 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 
 	public void setTaxonomyLevelNamePaths(List<TaxonomyLevelNamePath> taxonomyLevelNamePaths) {
 		this.taxonomyLevelNamePaths = taxonomyLevelNamePaths;
+	}
+
+	public License getLicense() {
+		return license;
 	}
 
 	public boolean isThumbnailAvailable() {
@@ -303,21 +335,5 @@ public class CatalogRepositoryEntryRow implements RepositoryEntryRef {
 	public void setDetailsSmallLink(FormLink detailsSmallLink) {
 		this.detailsSmallLink = detailsSmallLink;
 	}
-
-	@Override
-	public int hashCode() {
-		return key == null ? 161745452 : key.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) {
-			return true;
-		}
-		if(obj instanceof CatalogRepositoryEntryRow) {
-			CatalogRepositoryEntryRow row = (CatalogRepositoryEntryRow)obj;
-			return key != null && key.equals(row.getKey());
-		}
-		return false;
-	}
+	
 }

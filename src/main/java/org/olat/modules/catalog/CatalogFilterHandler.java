@@ -19,12 +19,16 @@
  */
 package org.olat.modules.catalog;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.catalog.ui.CatalogEntryRow;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -51,9 +55,10 @@ public interface CatalogFilterHandler {
 	public String getDetails(Translator translator, CatalogFilter catalogFilter);
 	
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogFilter catalogFilter);
-	
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter);
-	
-	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter);
+
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
+			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel);
+
+	public void filter(FlexiTableFilter flexiTableFilter, List<CatalogEntryRow> rows);
 
 }

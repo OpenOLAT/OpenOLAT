@@ -35,8 +35,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
-import org.olat.login.LoginProcessEvent;
 import org.olat.login.LoginProcessController;
+import org.olat.login.LoginProcessEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.accesscontrol.ACService;
@@ -149,7 +149,9 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 
 	private void doShowLogin(UserRequest ureq) {
 		if (guardModalController(authCtrl)) return;
-		authCtrl = new WebCatalogAuthController(ureq, getWindowControl(), getEntry());
+		
+		String offerBusinessPath = CatalogBCFactory.get(false).getOfferBusinessPath(getEntry().getOlatResource());
+		authCtrl = new WebCatalogAuthController(ureq, getWindowControl(), offerBusinessPath);
 		listenTo(authCtrl);
 
 		lightboxCtrl = new LightboxController(ureq, getWindowControl(), authCtrl);

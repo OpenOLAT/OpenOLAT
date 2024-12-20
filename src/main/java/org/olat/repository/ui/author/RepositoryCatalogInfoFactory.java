@@ -87,7 +87,7 @@ public class RepositoryCatalogInfoFactory {
 			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), true,
 					translator.translate("access.taxonomy.level"), details, false,
 					getStatusNotAvailable(translator, entry.getEntryStatus()), false, editBusinessPath,
-					translator.translate("access.open.metadata"), CatalogBCFactory.get(false).getInfosUrl(entry),
+					translator.translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()),
 					taxonomyLevels, showRQCode);
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);

@@ -46,7 +46,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
-import org.olat.modules.catalog.CatalogRepositoryEntry;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
@@ -75,8 +75,8 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 	private Link titleLink;
 	private Link showAllLink;
 	
-	private final List<CatalogRepositoryEntry> entries;
-	private final CatalogRepositoryEntryState state;
+	private final List<CatalogEntry> entries;
+	private final CatalogEntryState state;
 	private final MapperKey mapperThumbnailKey;
 
 	@Autowired
@@ -87,8 +87,8 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 	private MapperService mapperService;
 
 	public CatalogLauncherRepositoryEntriesController(UserRequest ureq, WindowControl wControl,
-			List<CatalogRepositoryEntry> entries, String title, boolean showMore, boolean webCatalog,
-			CatalogRepositoryEntryState state) {
+			List<CatalogEntry> entries, String title, boolean showMore, boolean webCatalog,
+			CatalogEntryState state) {
 		super(ureq, wControl);
 		this.entries = entries;
 		this.state = state;
@@ -109,12 +109,12 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		}
 		
 		List<LauncherItem> items = new ArrayList<>(entries.size());
-		for (CatalogRepositoryEntry entry : entries) {
+		for (CatalogEntry entry : entries) {
 			LauncherItem item = new LauncherItem();
 			
 			appendRepositoryEntryData(item, entry);
 			
-			VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
+			VFSLeaf image = repositoryManager.getImage(entry.getRepositoryEntryKey(), entry.getOlatResource());
 			if (image != null) {
 				item.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl() , image));
 			}
@@ -122,13 +122,13 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			String id = "o_dml_" + CodeHelper.getRAMUniqueID();
 			Link displayNameLink = LinkFactory.createLink(id, id, "open", null, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
 			displayNameLink.setCustomDisplayText(StringHelper.escapeHtml(entry.getDisplayname()));
-			displayNameLink.setUserObject(entry.getKey());
+			displayNameLink.setUserObject(entry.getRepositoryEntryKey());
 			String url;
-			if (canLaunch(entry.getKey())) {
-				List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString("[RepositoryEntry:" + entry.getKey() + "]");
+			if (canLaunch(entry.getRepositoryEntryKey())) {
+				List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString("[RepositoryEntry:" + entry.getRepositoryEntryKey() + "]");
 				url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
 			} else {
-				url = CatalogBCFactory.get(webCatalog).getInfosUrl(() -> entry.getKey());
+				url = CatalogBCFactory.get(webCatalog).getOfferUrl(entry.getOlatResource());
 			}
 			displayNameLink.setUrl(url);
 			item.setDisplayNameLink(displayNameLink);
@@ -152,8 +152,8 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		putInitialPanel(mainVC);
 	}
 
-	private void appendRepositoryEntryData(LauncherItem item, CatalogRepositoryEntry entry) {
-		item.setKey(entry.getKey());
+	private void appendRepositoryEntryData(LauncherItem item, CatalogEntry entry) {
+		item.setKey(entry.getRepositoryEntryKey());
 		item.setEducationalType(entry.getEducationalType());
 		if (catalogModule.getCardView().contains(CatalogCardView.externalRef)) {
 			item.setExternalRef(entry.getExternalRef());
@@ -237,7 +237,9 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 	}
 	
 	private boolean canLaunch(Long repositoryEntryKey) {
-		Optional<CatalogRepositoryEntry> found = entries.stream().filter(re -> re.getKey().equals(repositoryEntryKey)).findFirst();
+		Optional<CatalogEntry> found = entries.stream()
+				.filter(re -> re.getRepositoryEntryKey() != null && re.getRepositoryEntryKey().equals(repositoryEntryKey))
+				.findFirst();
 		if (found.isPresent() && found.get().isMember()) {
 			return true;
 		}

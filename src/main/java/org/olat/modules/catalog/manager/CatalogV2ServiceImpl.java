@@ -22,11 +22,10 @@ package org.olat.modules.catalog.manager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -35,11 +34,16 @@ import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
 
 import org.olat.basesecurity.OrganisationDataDeletable;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.resource.Resourceable;
+import org.olat.modules.catalog.CatalogEntry;
+import org.olat.modules.catalog.CatalogEntrySearchParams;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogFilterRef;
@@ -49,20 +53,19 @@ import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.CatalogLauncherRef;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.CatalogLauncherToOrganisation;
-import org.olat.modules.catalog.CatalogRepositoryEntry;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
-import org.olat.modules.catalog.CatalogSearchTerm;
 import org.olat.modules.catalog.CatalogV2Service;
-import org.olat.modules.catalog.model.CatalogRepositoryEntryImpl;
-import org.olat.modules.catalog.model.CatalogSearchTermImpl;
+import org.olat.modules.catalog.model.CatalogEntryImpl;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
-import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -87,7 +90,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	private Map<String, CatalogFilterHandler> typeToCatalogFilterHandler;
 	
 	@Autowired
-	private CatalogRepositoryEntryQueries queries;
+	private CatalogQueries queries;
 	@Autowired
 	private CatalogLauncherDAO catalogLauncherDao;
 	@Autowired
@@ -105,7 +108,15 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	@Autowired
 	private TaxonomyModule taxonomyModule;
 	@Autowired
-	private I18nManager i18nManager;
+	private LicenseModule licenseModule;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private RepositoryEntryLicenseHandler repositoryEntryLicenseHandler;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	@PostConstruct
 	public void initHandlers() {
@@ -114,21 +125,22 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		typeToCatalogFilterHandler = catalogFilterHandlers.stream()
 				.collect(Collectors.toMap(CatalogFilterHandler::getType, Function.identity()));
 	}
-
-	@Override
-	public Integer countRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams) {
-		return queries.countRepositoryEntries(searchParams);
-	}
 	
 	@Override
-	public void excludeLevelsWithoutOffers(List<TaxonomyLevel> taxonomyLevels, CatalogRepositoryEntrySearchParams searchParams) {
+	public void excludeLevelsWithoutEntries(List<TaxonomyLevel> taxonomyLevels, List<CatalogEntry> entries) {
 		if (taxonomyLevels == null) return;
 		
-		List<String> taxonomyLevelKeyPathsWithOffers = getTaxonomyLevelPathKeysWithOffers(searchParams);
+		Set<String> taxonomyLevelKeyPathsWithOffers = entries.stream()
+				.map(CatalogEntry::getTaxonomyLevels)
+				.filter(Objects::nonNull)
+				.flatMap(Set::stream)
+				.map(TaxonomyLevel::getMaterializedPathKeys)
+				.collect(Collectors.toSet());
+		
 		taxonomyLevels.removeIf(taxonomyLevel ->  hasNoOffer(taxonomyLevelKeyPathsWithOffers, taxonomyLevel));
 	}
 	
-	private boolean hasNoOffer(List<String> taxonomyLevelKeyPathsWithOffers, TaxonomyLevel taxonomyLevel) {
+	private boolean hasNoOffer(Collection<String> taxonomyLevelKeyPathsWithOffers, TaxonomyLevel taxonomyLevel) {
 		String materializedPathKeys = taxonomyLevel.getMaterializedPathKeys();
 		for (String keyPath : taxonomyLevelKeyPathsWithOffers) {
 			if (keyPath.indexOf(materializedPathKeys) > -1 ) {
@@ -139,45 +151,86 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	}
 
 	@Override
-	public List<CatalogRepositoryEntry> getRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults) {
-		// Load RepositoryEntry
-		List<RepositoryEntry> repositoryEntries = queries.loadRepositoryEntries(searchParams, firstResult, maxResults);
+	public List<CatalogEntry> getCatalogEntries(CatalogEntrySearchParams searchParams) {
+		// RepositoryEntries
+		List<RepositoryEntry> repositoryEntries = queries.loadRepositoryEntries(searchParams);
 		
-		// Load Taxonomy
 		Map<RepositoryEntryRef, List<TaxonomyLevel>> reToTaxonomyLevels = loadRepositoryEntryToTaxonomyLevels(repositoryEntries);
 		
-		// Load membership
 		List<Long> reMembershipKeys = loadRepositoryEntryMembershipKeys(repositoryEntries, searchParams.getMember());
 		
-		// Load open access
-		List<Long> reOpenAccessKeys = loadRepositoryEntryOpenAccessKeys(repositoryEntries, searchParams.isWebPublish(), searchParams.getOfferOrganisations());
-		
-		// Load guest access
-		List<Long> reGuestAccessKeys = loadRepositoryEntryGuestAccessKeys(repositoryEntries, searchParams.isWebPublish());
-		
-		// Load access methods
-		Map<RepositoryEntry, List<OLATResourceAccess>> reToResourceAccess = loadRepositoryEntryToResourceAccess(repositoryEntries, searchParams.getOfferOrganisations());
-		
-		
-		List<CatalogRepositoryEntry> views = new ArrayList<>(repositoryEntries.size());
-		for (RepositoryEntry repositoryEntry : repositoryEntries) {
-			CatalogRepositoryEntryImpl view = new CatalogRepositoryEntryImpl(repositoryEntry);
-			
-			List<TaxonomyLevel> levels = reToTaxonomyLevels.get(repositoryEntry);
-			view.setTaxonomyLevels(levels != null ? new HashSet<>(levels): null);
-			
-			view.setMember(reMembershipKeys.contains(view.getKey()));
-			
-			view.setOpenAccess(reOpenAccessKeys.contains(view.getKey()));
-			view.setGuestAccess(reGuestAccessKeys.contains(view.getKey()));
-			
-			List<OLATResourceAccess> resourceAccess = reToResourceAccess.get(repositoryEntry);
-			view.setResourceAccess(resourceAccess);
-			
-			views.add(view);
+		Map<Resourceable, ResourceLicense> licenses = null;
+		if (licenseModule.isEnabled(repositoryEntryLicenseHandler)) {
+			licenses = loadLicenses(repositoryEntries);
 		}
 		
-		return views;
+		List<CatalogEntry> catalogEntries = new ArrayList<>(repositoryEntries.size());
+		List<OLATResource> resourcesWithAC = new ArrayList<>(repositoryEntries.size());
+		for (RepositoryEntry repositoryEntry : repositoryEntries) {
+			CatalogEntryImpl catalogEntry = new CatalogEntryImpl(repositoryEntry);
+			
+			List<TaxonomyLevel> levels = reToTaxonomyLevels.get(repositoryEntry);
+			catalogEntry.setTaxonomyLevels(levels != null ? new HashSet<>(levels): null);
+			
+			catalogEntry.setMember(reMembershipKeys.contains(catalogEntry.getRepositoryEntryKey()));
+			
+			if (licenses != null && !licenses.isEmpty()) {
+				ResourceLicense license = licenses.get(new Resourceable(repositoryEntry.getOlatResource()));
+				catalogEntry.setLicense(license);
+			}
+			
+			catalogEntries.add(catalogEntry);
+			
+			if (repositoryEntry.isPublicVisible()) {
+				resourcesWithAC.add(repositoryEntry.getOlatResource());
+			}
+		}
+		
+		
+		// CurriculumElements
+		List<OLATResource> ceResourcesWithAC = List.of();
+		if (curriculumModule.isEnabled() && searchParams.getRepositoryEntryKeys() == null || searchParams.getRepositoryEntryKeys().isEmpty()) {
+			List<CurriculumElement> curriculumElements = queries.loadCurriculumElements(searchParams);
+			
+			ceResourcesWithAC = new ArrayList<>(curriculumElements.size());
+			
+			Map<Long, List<TaxonomyLevel>> ceKeyTaxonomyLevels = loadCurriculumElementToTaxonomyLevels(curriculumElements);
+			
+			Set<Long> myCurriculumKeys = loadMyCurriculumKeys(curriculumElements, searchParams.getMember());
+			
+			for (CurriculumElement curriculumElement : curriculumElements) {
+				CatalogEntryImpl catalogEntry = new CatalogEntryImpl(curriculumElement);
+				
+				List<TaxonomyLevel> levels = ceKeyTaxonomyLevels.get(curriculumElement.getKey());
+				catalogEntry.setTaxonomyLevels(levels != null ? new HashSet<>(levels): null);
+				
+				catalogEntry.setMember(myCurriculumKeys.contains(catalogEntry.getCurriculumKey()));
+				
+				catalogEntries.add(catalogEntry);
+				resourcesWithAC.add(curriculumElement.getResource());
+			}
+		}
+		
+		// Access (CurriculumElement has never open or guest access)
+		List<OLATResource> oresOpenAccess = loadResourceOpenAccess(resourcesWithAC, searchParams.isWebPublish(), searchParams.getOfferOrganisations());
+		List<OLATResource> oresGuestAccess = loadResourceGuestAccess(resourcesWithAC, searchParams.isWebPublish());
+		
+		resourcesWithAC.addAll(ceResourcesWithAC);
+		Map<OLATResource, List<OLATResourceAccess>> reToResourceAccess = loadResourceToResourceAccess(resourcesWithAC, searchParams.getOfferOrganisations());
+		
+		for (CatalogEntry entry : catalogEntries) {
+			if (entry instanceof CatalogEntryImpl catalogEntry) {
+				if (catalogEntry.getRepositoryEntryKey() != null) {
+					catalogEntry.setOpenAccess(oresOpenAccess.contains(catalogEntry.getOlatResource()));
+					catalogEntry.setGuestAccess(oresGuestAccess.contains(catalogEntry.getOlatResource()));
+				}
+				
+				List<OLATResourceAccess> resourceAccess = reToResourceAccess.getOrDefault(catalogEntry.getOlatResource(), List.of());
+				catalogEntry.setResourceAccess(resourceAccess);
+			}
+		}
+		
+		return catalogEntries;
 	}
 
 	private Map<RepositoryEntryRef, List<TaxonomyLevel>> loadRepositoryEntryToTaxonomyLevels(List<RepositoryEntry> repositoryEntries) {
@@ -185,136 +238,69 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		if (!repositoryEntries.isEmpty() && taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty()) {
 			reToTaxonomyLevels = repositoryService.getTaxonomy(repositoryEntries, false);
 		} else {
-			reToTaxonomyLevels = Collections.emptyMap();
+			reToTaxonomyLevels = Map.of();
 		}
 		return reToTaxonomyLevels;
 	}
 	
 	private List<Long> loadRepositoryEntryMembershipKeys(List<RepositoryEntry> repositoryEntries, Identity identity) {
-		if (identity == null) return Collections.emptyList();
+		if (identity == null) return List.of();
 		
 		List<Long> reMembershipKeys = repositoryEntries.stream().map(RepositoryEntry::getKey).collect(Collectors.toList());
 		repositoryService.filterMembership(identity, reMembershipKeys);
 		return reMembershipKeys;
 	}
+	
+	private Map<Long, List<TaxonomyLevel>> loadCurriculumElementToTaxonomyLevels(List<CurriculumElement> curriculumElements) {
+		if (!curriculumElements.isEmpty() && taxonomyModule.isEnabled()) {
+			return curriculumService.getCurriculumElementKeyToTaxonomyLevels(curriculumElements);
+		}
+		return Map.of();
+	}
 
-	private List<Long> loadRepositoryEntryOpenAccessKeys(List<RepositoryEntry> repositoryEntries,
+	private Set<Long> loadMyCurriculumKeys(List<CurriculumElement> curriculumElements, Identity member) {
+		if (!curriculumElements.isEmpty() && member != null) {
+			return curriculumService.getMyCurriculums(member).stream()
+					.map(Curriculum::getKey)
+					.collect(Collectors.toSet());
+		}
+		return Set.of();
+	}
+
+	private List<OLATResource> loadResourceOpenAccess(List<OLATResource> resourcesWithAC,
 			boolean webCatalog, List<? extends OrganisationRef> offerOrganisations) {
-		if (!acModule.isEnabled()) return Collections.emptyList();
+		if (!acModule.isEnabled()) return List.of();
 		
-		List<OLATResource> resourcesWithAC = repositoryEntries.stream()
-				.filter(RepositoryEntry::isPublicVisible)
-				.map(RepositoryEntry::getOlatResource)
-				.collect(Collectors.toList());
 		Boolean webPublish = webCatalog? Boolean.TRUE: null;
-		List<OLATResource> resourceWithOpenAccess = acService.filterResourceWithOpenAccess(resourcesWithAC, webPublish, offerOrganisations);
-		
-		return repositoryEntries.stream()
-				.filter(re -> resourceWithOpenAccess.contains(re.getOlatResource()))
-				.map(RepositoryEntry::getKey)
-				.collect(Collectors.toList());
+		return acService.filterResourceWithOpenAccess(resourcesWithAC, webPublish, offerOrganisations);
 	}
 	
-	private List<Long> loadRepositoryEntryGuestAccessKeys(List<RepositoryEntry> repositoryEntries, boolean webPublish) {
+	private List<OLATResource> loadResourceGuestAccess(List<OLATResource> resourcesWithAC, boolean webPublish) {
 		if (!acModule.isEnabled()) return List.of();
 		
 		if (webPublish) {
-			List<OLATResource> resourcesWithAC = repositoryEntries.stream()
-					.filter(RepositoryEntry::isPublicVisible)
-					.map(RepositoryEntry::getOlatResource)
-					.collect(Collectors.toList());
-			
-			List<OLATResource> resourcesWithGuestAccess = acService.filterResourceWithGuestAccess(resourcesWithAC);
-			return repositoryEntries.stream()
-					.filter(re -> resourcesWithGuestAccess.contains(re.getOlatResource()))
-					.map(RepositoryEntry::getKey)
-					.collect(Collectors.toList());
+			return acService.filterResourceWithGuestAccess(resourcesWithAC);
 		}
 		
 		// In internal catalog guest and other access are never displayed mixed.
 		return List.of();
 	}
 
-	private Map<RepositoryEntry, List<OLATResourceAccess>> loadRepositoryEntryToResourceAccess(
-			List<RepositoryEntry> repositoryEntries, List<? extends OrganisationRef> offerOrganisations) {
+	private Map<OLATResource, List<OLATResourceAccess>> loadResourceToResourceAccess(
+			List<OLATResource> resourcesWithAC, List<? extends OrganisationRef> offerOrganisations) {
 		if (!acModule.isEnabled()) return Collections.emptyMap();
 		
-		List<OLATResource> resourcesWithAC = repositoryEntries.stream()
-				.filter(RepositoryEntry::isPublicVisible)
-				.map(RepositoryEntry::getOlatResource)
-				.collect(Collectors.toList());
-		Map<OLATResource, List<OLATResourceAccess>> resourceToAccess = acService.filterResourceWithAC(resourcesWithAC, offerOrganisations).stream()
+		return acService.filterResourceWithAC(resourcesWithAC, offerOrganisations).stream()
 				.collect(Collectors.groupingBy(OLATResourceAccess::getResource));
-		
-		Map<RepositoryEntry, List<OLATResourceAccess>> reToResourceAccess = new HashMap<>(repositoryEntries.size());
-		for (RepositoryEntry repositoryEntry : repositoryEntries) {
-			List<OLATResourceAccess> resourceAccess = resourceToAccess.getOrDefault(repositoryEntry.getOlatResource(), Collections.emptyList());
-			reToResourceAccess.put(repositoryEntry, resourceAccess);
-		}
-		
-		return reToResourceAccess;
 	}
 	
-	@Override
-	public List<CatalogSearchTerm> getSearchTerms(String queryString, Locale locale) {
-		List<CatalogSearchTerm> searchTerms = null;
-		
-		if (StringHelper.containsNonWhitespace(queryString)) {
-			String[] queryParts = queryString.split(" ");
-			searchTerms = new ArrayList<>(queryParts.length);
-			for (String queryPart : queryParts) {
-				if (StringHelper.containsNonWhitespace(queryPart)) {
-					Set<String> taxonomyLevelI18nSuffix = null;
-					if (taxonomyModule.isEnabled()) {
-						taxonomyLevelI18nSuffix = i18nManager
-						.findI18nKeysByOverlayValue(queryPart, TaxonomyUIFactory.PREFIX_DISPLAY_NAME, locale,
-								TaxonomyUIFactory.BUNDLE_NAME, false)
-						.stream().map(key -> key.substring(TaxonomyUIFactory.PREFIX_DISPLAY_NAME.length()))
-						.collect(Collectors.toSet());
-					}
-					searchTerms.add(new CatalogSearchTermImpl(queryPart, taxonomyLevelI18nSuffix));
-				}
-			}
-		}
-		
-		return searchTerms;
+	private Map<Resourceable,ResourceLicense> loadLicenses(List<RepositoryEntry> repositoryEntries) {
+		Collection<? extends OLATResourceable> resources = repositoryEntries.stream().map(RepositoryEntry::getOlatResource).toList();
+		List<ResourceLicense> licenses = licenseService.loadLicenses(resources);
+		return licenses.stream().collect(Collectors
+				.toMap(license -> new Resourceable(license.getResName(), license.getResId()), license -> license, (u, v) -> v));
 	}
 	
-	@Override
-	public List<String> getMainLangauages(CatalogRepositoryEntrySearchParams searchParams) {
-		return queries.loadMainLangauages(searchParams);
-	}
-	
-	@Override
-	public List<String> getExpendituresOfWork(CatalogRepositoryEntrySearchParams searchParams) {
-		return queries.loadExpendituresOfWork(searchParams);
-	}
-	
-	@Override
-	public List<String> getLocations(CatalogRepositoryEntrySearchParams searchParams) {
-		return queries.loadLocations(searchParams);
-	}
-	
-	@Override
-	public List<Long> getLicenseTypeKeys(CatalogRepositoryEntrySearchParams searchParams) {
-		return queries.loadLicenseTypeKeys(searchParams);
-	}
-	
-	@Override
-	public List<RepositoryEntryLifecycle> getPublicLifecycles(CatalogRepositoryEntrySearchParams searchParams) {
-		return queries.loadPublicLifecycles(searchParams);
-	}
-	
-	@Override
-	public List<Long> getTaxonomyLevelsWithOffers(CatalogRepositoryEntrySearchParams searchParams) {
-		return queries.loadTaxonomyLevelKeysWithOffers(searchParams);
-	}
-	
-	@Override
-	public List<String> getTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams) {
-		return queries.loadTaxonomyLevelPathKeysWithOffers(searchParams);
-	}
-
 	@Override
 	public List<CatalogLauncherHandler> getCatalogLauncherHandlers() {
 		return catalogLauncherHandlers;

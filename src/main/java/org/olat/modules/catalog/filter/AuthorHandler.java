@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog.filter;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -26,12 +28,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.ui.CatalogEntryRow;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
-import org.olat.repository.RepositoryService;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.stereotype.Service;
 
 /**
@@ -89,15 +92,20 @@ public class AuthorHandler implements CatalogFilterHandler {
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogFilter catalogFilter) {
 		return new CatalogFilterBasicController(ureq, wControl, this, catalogFilter);
 	}
-
+	
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
-		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
-		return new FlexiTableTextFilter(repositoryTranslator.translate("cif.author.search"), TYPE, catalogFilter.isDefaultVisible());
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
+			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {
+		return new FlexiTableTextFilter(translator.translate("cif.author"), TYPE, catalogFilter.isDefaultVisible());
 	}
 
 	@Override
-	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
-		searchParams.setAuthor(flexiTableFilter.getValue());
+	public void filter(FlexiTableFilter flexiTableFilter, List<CatalogEntryRow> rows) {
+		String author = flexiTableFilter.getValue();
+		if (StringHelper.containsNonWhitespace(author)) {
+			String authorLowercase = author.toLowerCase();
+			rows.removeIf(row -> !StringHelper.containsNonWhitespace(row.getAuthors()) || row.getAuthors().toLowerCase().indexOf(authorLowercase) < 0);
+		}
 	}
+	
 }

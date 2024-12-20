@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.IdentityRef;
@@ -593,6 +594,8 @@ public interface CurriculumService {
 	 * @return A list of taxonomy levels
 	 */
 	public List<TaxonomyLevel> getTaxonomy(CurriculumElement element);
+	
+	public Map<Long, List<TaxonomyLevel>> getCurriculumElementKeyToTaxonomyLevels(List<? extends CurriculumElementRef> curriculumElements);
 	
 	public List<CurriculumElement> getCurriculumElements(TaxonomyLevelRef level);
 	

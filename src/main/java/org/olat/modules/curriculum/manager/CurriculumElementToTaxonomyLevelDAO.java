@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.manager;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
@@ -95,14 +96,19 @@ public class CurriculumElementToTaxonomyLevelDAO {
 		return count != null && !count.isEmpty() && count.get(0) != null ? count.get(0).longValue() : 0l;
 	}
 	
-	public List<CurriculumElementToTaxonomyLevel> getRelations(CurriculumElementRef curriculumElement) {
+	public Map<Long, List<TaxonomyLevel>> getCurriculumElementKeyToTaxonomyLevels(List<? extends CurriculumElementRef> curriculumElements) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rel from curriculumelementtotaxonomylevel rel")
-		  .append(" where rel.curriculumElement.key=:elementKey");
+		  .append(" inner join rel.taxonomyLevel level")
+		  .append(" where rel.curriculumElement.key in :elementKeys");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElementToTaxonomyLevel.class)
-				.setParameter("elementKey", curriculumElement.getKey())
-				.getResultList();
+				.setParameter("elementKeys", curriculumElements.stream().map(CurriculumElementRef::getKey).toList())
+				.getResultList()
+				.stream()
+				.collect(Collectors.groupingBy(
+						ceToTaxonomyLevel -> ceToTaxonomyLevel.getCurriculumElement().getKey(),
+						Collectors.mapping(CurriculumElementToTaxonomyLevel::getTaxonomyLevel, Collectors.toList())));
 	}
 	
 	public int replace(TaxonomyLevel source, TaxonomyLevel target) {

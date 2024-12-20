@@ -19,10 +19,7 @@
  */
 package org.olat.modules.catalog.ui;
 
-import static org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.KEY_LAUNCHER;
-
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -43,8 +40,9 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.catalog.CatalogEntry;
+import org.olat.modules.catalog.CatalogEntrySearchParams;
 import org.olat.modules.catalog.CatalogLauncher;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogSecurityCallback;
 import org.olat.modules.catalog.CatalogSecurityCallbackFactory;
 import org.olat.modules.catalog.CatalogV2Service;
@@ -70,11 +68,11 @@ public class CatalogMainController extends BasicController implements Activateab
 	private BreadcrumbedStackedPanel stackPanel;
 	private CatalogLaunchersController launchersCtrl;
 	private CatalogTaxonomyHeaderController headerTaxonomyCtrl;
-	private CatalogRepositoryEntryListController catalogRepositoryEntryListCtrl;
+	private CatalogEntryListController catalogRepositoryEntryListCtrl;
 	private CatalogTaxonomyEditController taxonomyAdminCtrl;
 
 	private final CatalogSecurityCallback secCallback;
-	private final CatalogRepositoryEntrySearchParams defaultSearchParams;
+	private final CatalogEntrySearchParams defaultSearchParams;
 	
 	@Autowired
 	private CatalogV2Service catalogService;
@@ -94,10 +92,11 @@ public class CatalogMainController extends BasicController implements Activateab
 		mainVC = createVelocityContainer("main");
 		putInitialPanel(mainVC);
 		
+		List<CatalogEntry> catalogEntries = catalogService.getCatalogEntries(defaultSearchParams);
+		
 		headerSearchCtrl = new CatalogSearchHeaderController(ureq, wControl, secCallback, defaultSearchParams.isWebPublish());
 		listenTo(headerSearchCtrl);
-		Integer totalRespositoryEntries = catalogService.countRepositoryEntries(defaultSearchParams);
-		headerSearchCtrl.setTotalRepositoryEntries(totalRespositoryEntries);
+		headerSearchCtrl.setTotalCatalogEntries(catalogEntries.size());
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
 		
 		stackPanel = new BreadcrumbedStackedPanel("catalogstack", getTranslator(), this);
@@ -107,6 +106,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		
 		launchersCtrl = new CatalogLaunchersController(ureq, getWindowControl(), defaultSearchParams.copy());
 		listenTo(launchersCtrl);
+		launchersCtrl.update(ureq, catalogEntries);
 		stackPanel.pushController(translate("overview"), launchersCtrl);
 	}
 
@@ -114,8 +114,8 @@ public class CatalogMainController extends BasicController implements Activateab
 		return CatalogSecurityCallbackFactory.create(ureq.getUserSession().getRoles());
 	}
 	
-	protected CatalogRepositoryEntrySearchParams createDefaultSearchParams(UserRequest ureq) {
-		CatalogRepositoryEntrySearchParams searchParams = new CatalogRepositoryEntrySearchParams();
+	protected CatalogEntrySearchParams createDefaultSearchParams(UserRequest ureq) {
+		CatalogEntrySearchParams searchParams = new CatalogEntrySearchParams();
 		searchParams.setMember(getIdentity());
 		searchParams.setGuestOnly(ureq.getUserSession().getRoles().isGuestOnly());
 		searchParams.setOfferOrganisations(acService.getOfferOrganisations(getIdentity()));
@@ -131,7 +131,7 @@ public class CatalogMainController extends BasicController implements Activateab
 			OLATResourceable ores = entries.get(0).getOLATResourceable();
 			if (CatalogBCFactory.isSearchType(ores)) {
 				headerSearchCtrl.setSearchString(null);
-				doSearch(ureq, null, true, null);
+				doSearch(ureq, null, null);
 				entries = entries.subList(1, entries.size());
 				catalogRepositoryEntryListCtrl.activate(ureq, entries, state);
 			} else if (CatalogBCFactory.isTaxonomyLevelType(ores)) {
@@ -147,22 +147,20 @@ public class CatalogMainController extends BasicController implements Activateab
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == headerSearchCtrl) {
-			if (event instanceof CatalogSearchEvent) {
-				CatalogSearchEvent cse = (CatalogSearchEvent)event;
+			if (event instanceof CatalogSearchEvent cse) {
 				headerSearchCtrl.setExploreLinkVisibile(false);
-				doSearch(ureq, cse.getSearchString(), false, null);
+				doSearch(ureq, cse.getSearchString(), null);
 			} else if (event == CatalogSearchHeaderController.OPEN_ADMIN_EVENT) {
 				doOpenAdmin(ureq);
 			} else if (event == CatalogSearchHeaderController.TAXONOMY_ADMIN_EVENT) {
 				doTaxonomyAdmin(ureq);
 			}
 		} else if (source == launchersCtrl) {
-			if (event instanceof OpenSearchEvent) {
-				OpenSearchEvent ose = (OpenSearchEvent)event;
+			if (event instanceof OpenSearchEvent ose) {
 				headerSearchCtrl.setSearchString(null);
 				String header = ose.getState() != null? ose.getState().getSpecialFilterRepositoryEntryLabel(): null;
 				headerSearchCtrl.setHeaderOnly(header);
-				doSearch(ureq, null, true, ose.getState());
+				doSearch(ureq, null, ose.getState());
 				List<ContextEntry> entries = null;
 				if (ose.getInfoRepositoryEntryKey() != null) {
 					entries = BusinessControlFactory.getInstance().createCEListFromString(CatalogBCFactory.createInfosOres(() -> ose.getInfoRepositoryEntryKey()));
@@ -172,7 +170,7 @@ public class CatalogMainController extends BasicController implements Activateab
 				OpenTaxonomyEvent ote = (OpenTaxonomyEvent)event;
 				doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
 			}
-		} else if (source instanceof CatalogRepositoryEntryListController) {
+		} else if (source instanceof CatalogEntryListController) {
 			OpenTaxonomyEvent ote = (OpenTaxonomyEvent)event;
 			doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
 		} else if (source == taxonomyAdminCtrl) {
@@ -192,9 +190,9 @@ public class CatalogMainController extends BasicController implements Activateab
 				if (stackPanel.getLastController() == stackPanel.getRootController()) {
 					// Clicked on root breadcrumb
 					doOpenSearchHeader();
-				} else if (stackPanel.getLastController() instanceof CatalogRepositoryEntryListController) {
+				} else if (stackPanel.getLastController() instanceof CatalogEntryListController) {
 					// Clicked on taxonomy level in breadcrumb
-					TaxonomyLevel taxonomyLevel = ((CatalogRepositoryEntryListController)stackPanel.getLastController()).getTaxonomyLevel();
+					TaxonomyLevel taxonomyLevel = ((CatalogEntryListController)stackPanel.getLastController()).getTaxonomyLevel();
 					if (taxonomyLevel != null) {
 						doOpenTaxonomyHeader(ureq, taxonomyLevel);
 					}
@@ -222,7 +220,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		getWindow().setTitle(windowTitle);
 	}
 
-	private void doSearch(UserRequest ureq, String searchString, boolean reset, CatalogRepositoryEntryState catalogRepositoryEntryState) {
+	private void doSearch(UserRequest ureq, String searchString, CatalogEntryState catalogEntryState) {
 		if (stackPanel.getLastController() != catalogRepositoryEntryListCtrl) {
 			if (stackPanel.hasController(catalogRepositoryEntryListCtrl)) {
 				// User is on Infos or Offers
@@ -234,21 +232,21 @@ public class CatalogMainController extends BasicController implements Activateab
 				stackPanel.popUpToRootController(ureq);
 				
 				WindowControl swControl = addToHistory(ureq, CatalogBCFactory.createSearchOres(), null);
-				CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
-				if (catalogRepositoryEntryState != null) {
-					searchParams.setRepositoryEntryKeys(catalogRepositoryEntryState.getSpecialFilterRepositoryEntryKeys());
+				CatalogEntrySearchParams searchParams = defaultSearchParams.copy();
+				if (catalogEntryState != null) {
+					searchParams.setRepositoryEntryKeys(catalogEntryState.getSpecialFilterRepositoryEntryKeys());
 				}
-				boolean withSearch = catalogRepositoryEntryState != null;
-				catalogRepositoryEntryListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, withSearch);
+				boolean withSearch = catalogEntryState != null;
+				catalogRepositoryEntryListCtrl = new CatalogEntryListController(ureq, swControl, stackPanel, searchParams, withSearch);
 				listenTo(catalogRepositoryEntryListCtrl);
-				String crumbName = catalogRepositoryEntryState != null
-						? catalogRepositoryEntryState.getSpecialFilterRepositoryEntryLabel()
+				String crumbName = catalogEntryState != null
+						? catalogEntryState.getSpecialFilterRepositoryEntryLabel()
 						: translate("search.results");
 				stackPanel.pushController(crumbName, catalogRepositoryEntryListCtrl);
 				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 			}
 		}
-		catalogRepositoryEntryListCtrl.search(ureq, searchString, reset);
+		catalogRepositoryEntryListCtrl.search(searchString);
 	}
 
 	private void doOpenTaxonomy(UserRequest ureq, Long taxonomyLevelKey, Collection<Long> eductaionalTypeKeys, Collection<String> resourceTypes) {
@@ -270,8 +268,9 @@ public class CatalogMainController extends BasicController implements Activateab
 	 * It takes the first launcher which contains the requested taxonomy level.
 	 */
 	private void doActivateTaxonomy(UserRequest ureq, Long key) {
+		List<CatalogEntry> catalogEntries = catalogService.getCatalogEntries(defaultSearchParams);
 		for (CatalogLauncher catalogLauncher : launchersCtrl.getTaxonomyLevelCatalogLaunchers()) {
-			Levels levels = taxonomyLevelLauncherHandler.getTaxonomyLevels(catalogLauncher, key, defaultSearchParams);
+			Levels levels = taxonomyLevelLauncherHandler.getTaxonomyLevels(catalogLauncher, key, catalogEntries);
 			if(levels != null) {
 				List<TaxonomyLevel> taxonomyLevels = levels.getTaxonomyLevels();
 				if (taxonomyLevels != null) {
@@ -284,7 +283,7 @@ public class CatalogMainController extends BasicController implements Activateab
 	}
 	
 	private void popUpToTaxonomyCtrl() {
-		if (!(stackPanel.getLastController() instanceof CatalogRepositoryEntryListController) && stackPanel.getLastController() != stackPanel.getRootController()) {
+		if (!(stackPanel.getLastController() instanceof CatalogEntryListController) && stackPanel.getLastController() != stackPanel.getRootController()) {
 			stackPanel.popController(stackPanel.getLastController());
 			popUpToTaxonomyCtrl();
 		}
@@ -298,20 +297,16 @@ public class CatalogMainController extends BasicController implements Activateab
 		mainVC.put("header", headerTaxonomyCtrl.getInitialComponent());
 	}
 	
-	private void doOpenTaxonomyList(UserRequest ureq, TaxonomyLevel taxonomyLevel, Collection<Long> eductaionalTypeKeys, Collection<String> resourceTypes) {
+	private void doOpenTaxonomyList(UserRequest ureq, TaxonomyLevel taxonomyLevel, Collection<Long> educationalTypeKeys, Collection<String> resourceTypes) {
 		removeAsListenerAndDispose(catalogRepositoryEntryListCtrl);
 		catalogRepositoryEntryListCtrl = null;
 
 		WindowControl swControl = addToHistory(ureq,CatalogBCFactory.createTaxonomyLevelOres(taxonomyLevel), null);
-		CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
-		searchParams.getIdentToTaxonomyLevels().put(KEY_LAUNCHER, Collections.singletonList(taxonomyLevel));
-		if (eductaionalTypeKeys != null && !eductaionalTypeKeys.isEmpty()) {
-			searchParams.getIdentToEducationalTypeKeys().put(KEY_LAUNCHER, eductaionalTypeKeys);
-		}
-		if (resourceTypes != null && !resourceTypes.isEmpty()) {
-			searchParams.getIdentToResourceTypes().put(KEY_LAUNCHER, resourceTypes);
-		}
-		CatalogRepositoryEntryListController taxonomyListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, true);
+		CatalogEntrySearchParams searchParams = defaultSearchParams.copy();
+		searchParams.setLauncherTaxonomyLevels(List.of(taxonomyLevel));
+		searchParams.setLauncherEducationalTypeKeys(educationalTypeKeys);
+		searchParams.setLauncherResourceTypes(resourceTypes);
+		CatalogEntryListController taxonomyListCtrl = new CatalogEntryListController(ureq, swControl, stackPanel, searchParams, true);
 		listenTo(taxonomyListCtrl);
 		stackPanel.pushController(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyListCtrl);
 	}

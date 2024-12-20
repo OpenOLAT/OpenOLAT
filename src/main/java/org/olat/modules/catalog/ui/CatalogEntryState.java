@@ -30,7 +30,7 @@ import org.olat.core.id.context.StateEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogRepositoryEntryState implements StateEntry {
+public class CatalogEntryState implements StateEntry {
 	
 	private static final long serialVersionUID = 6075616697161891923L;
 	
@@ -55,7 +55,7 @@ public class CatalogRepositoryEntryState implements StateEntry {
 
 	@Override
 	public StateEntry clone() {
-		CatalogRepositoryEntryState clone = new CatalogRepositoryEntryState();
+		CatalogEntryState clone = new CatalogEntryState();
 		
 		clone.specialFilterRepositoryEntryLabel = this.specialFilterRepositoryEntryLabel;
 		if (specialFilterRepositoryEntryKeys != null) {

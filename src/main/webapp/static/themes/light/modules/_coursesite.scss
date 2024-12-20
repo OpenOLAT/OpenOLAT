@@ -890,5 +890,10 @@
 			}
 		}
 	}
+	
+	.o_taxonomy_cell {
+		display: flex;
+		flex-wrap: wrap;
+	}
 }
 

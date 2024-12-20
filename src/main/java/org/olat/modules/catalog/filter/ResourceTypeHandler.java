@@ -20,8 +20,8 @@
 package org.olat.modules.catalog.filter;
 
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -32,15 +32,13 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.ui.CatalogEntryRow;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
-import org.olat.repository.RepositoryService;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.ui.RepositoyUIFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -53,9 +51,6 @@ import org.springframework.stereotype.Service;
 public class ResourceTypeHandler implements CatalogFilterHandler {
 	
 	private static final String TYPE = "resourcetype";
-	
-	@Autowired
-	private RepositoryHandlerFactory repositoryHandlerFactory;
 
 	@Override
 	public String getType() {
@@ -103,49 +98,37 @@ public class ResourceTypeHandler implements CatalogFilterHandler {
 	}
 
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
-		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
-		
-		Collection<String> launcherResourceTypes = searchParams.getIdentToResourceTypes().get(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER);
-		
-		// Only one resource type: Filter makes no sense.
-		if (launcherResourceTypes != null && launcherResourceTypes.size() == 1) {
-			return null;
-		}
-		
-		SelectionValues resourceTypeKV = new SelectionValues();
-		repositoryHandlerFactory.getOrderRepositoryHandlers().stream()
-				.map(handler -> handler.getHandler().getSupportedType())
-				.filter(resourceType -> filterByLauncherTypes(resourceType, launcherResourceTypes))
-				.forEach(type -> resourceTypeKV
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
+			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {
+		SelectionValues typesSV = new SelectionValues();
+		catalogEntries.stream()
+				.map(entry -> entry.getOlatResource().getResourceableTypeName())
+				.filter(Objects::nonNull)
+				.forEach(type -> typesSV
 				.add(new SelectionValue(
 						type,
-						repositoryTranslator.translate(type),
+						translator.translate(type),
 						null, 
 						"o_icon o_icon-fw ".concat(RepositoyUIFactory.getIconCssClass(type)),
 						null,
 						true)));
-		resourceTypeKV.sort(SelectionValues.VALUE_ASC);
-		FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.type"), TYPE,
-				resourceTypeKV, catalogFilter.isDefaultVisible());
-		filter.setUserObject(catalogFilter.getKey().toString());
-		return filter;
-	}
-
-	private boolean filterByLauncherTypes(String resourceType, Collection<String> launcherResourceTypes) {
-		return launcherResourceTypes == null || launcherResourceTypes.isEmpty()
-				? true
-				: launcherResourceTypes.contains(resourceType);
+		if (typesSV.isEmpty() || typesSV.size() == 1) {
+			return null;
+		}
+		
+		typesSV.sort(SelectionValues.VALUE_ASC);
+		
+		return new FlexiTableMultiSelectionFilter(translator.translate("cif.type"), TYPE, typesSV,
+				catalogFilter.isDefaultVisible());
 	}
 
 	@Override
-	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
+	public void filter(FlexiTableFilter flexiTableFilter, List<CatalogEntryRow> rows) {
 		List<String> resourceTypes = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
-		String ident = (String)flexiTableFilter.getUserObject();
 		if (resourceTypes != null && !resourceTypes.isEmpty()) {
-			searchParams.getIdentToResourceTypes().put(ident, resourceTypes);
-		} else {
-			searchParams.getIdentToResourceTypes().remove(ident);
+			rows.removeIf(row -> row.getOlatResource() == null
+					|| row.getOlatResource().getResourceableTypeName() == null
+					|| !resourceTypes.contains(row.getOlatResource().getResourceableTypeName()));
 		}
 	}
 	

@@ -59,7 +59,7 @@ public class CatalogSearchHeaderController extends FormBasicController {
 	private final CatalogSecurityCallback secCallback;
 	private final CatalogBCFactory bcFactory;
 	private String header;
-	private Integer totalRespositoryEntries;
+	private Integer totalCatalogEntries;
 
 	@Autowired
 	private CatalogV2Module catalogModule;
@@ -70,7 +70,7 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		bcFactory = CatalogBCFactory.get(webCatalog);
 		
 		initForm(ureq);
-		setTotalRepositoryEntries(Integer.valueOf(0));
+		setTotalCatalogEntries(Integer.valueOf(0));
 	}
 
 	@Override
@@ -119,10 +119,10 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		searchEl.setValue(searchString);
 	}
 	
-	public void setTotalRepositoryEntries(Integer totalRespositoryEntries) {
-		if (!Objects.equals(this.totalRespositoryEntries, totalRespositoryEntries)) {
-			this.totalRespositoryEntries = totalRespositoryEntries;
-			String explore = translate("search.explore", String.valueOf(totalRespositoryEntries));
+	public void setTotalCatalogEntries(Integer totalCatalogEntries) {
+		if (!Objects.equals(this.totalCatalogEntries, totalCatalogEntries)) {
+			this.totalCatalogEntries = totalCatalogEntries;
+			String explore = translate("search.explore.offers", String.valueOf(totalCatalogEntries));
 			exploreLink.setI18nKey(explore);
 		}
 	}

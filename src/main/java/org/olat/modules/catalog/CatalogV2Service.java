@@ -21,11 +21,9 @@ package org.olat.modules.catalog;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.id.Organisation;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
  * 
@@ -35,27 +33,9 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
  */
 public interface CatalogV2Service {
 
-	public Integer countRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams);
-	
-	public void excludeLevelsWithoutOffers(List<TaxonomyLevel> taxonomyLevels, CatalogRepositoryEntrySearchParams searchParams);
+	public void excludeLevelsWithoutEntries(List<TaxonomyLevel> taxonomyLevels, List<CatalogEntry> entries);
 
-	public List<CatalogRepositoryEntry> getRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults);
-	
-	public List<CatalogSearchTerm> getSearchTerms(String queryString, Locale locale);
-	
-	public List<String> getMainLangauages(CatalogRepositoryEntrySearchParams searchParams);
-	
-	public List<String> getExpendituresOfWork(CatalogRepositoryEntrySearchParams searchParams);
-	
-	public List<String> getLocations(CatalogRepositoryEntrySearchParams searchParams);
-	
-	public List<Long> getLicenseTypeKeys(CatalogRepositoryEntrySearchParams searchParams);
-
-	public List<Long> getTaxonomyLevelsWithOffers(CatalogRepositoryEntrySearchParams searchParams);
-	
-	public List<String> getTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams);
-	
-	public List<RepositoryEntryLifecycle> getPublicLifecycles(CatalogRepositoryEntrySearchParams searchParams);
+	public List<CatalogEntry> getCatalogEntries(CatalogEntrySearchParams searchParams);
 	
 	public List<CatalogLauncherHandler> getCatalogLauncherHandlers();
 

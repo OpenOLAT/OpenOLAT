@@ -33,9 +33,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogLauncherTaxonomyController;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
@@ -180,20 +180,21 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 
 	@Override
 	public Controller createRunController(UserRequest ureq, WindowControl wControl, Translator translator,
-			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams) {
+			CatalogLauncher catalogLauncher, List<CatalogEntry> catalogEntries, boolean webPublish) {
 		Config config = fromXML(catalogLauncher.getConfig());
 		
 		List<TaxonomyLevel> taxonomyLevels = getChildren(config);
-		catalogService.excludeLevelsWithoutOffers(taxonomyLevels, defaultSearchParams);
+		
+		catalogService.excludeLevelsWithoutEntries(taxonomyLevels, catalogEntries);
 		if (taxonomyLevels == null || taxonomyLevels.isEmpty()) {
 			return null;
 		}
 		
 		taxonomyLevels.sort(CatalogV2UIFactory.getTaxonomyLevelComparator(translator));
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
-		
-		return new CatalogLauncherTaxonomyController(ureq, wControl, launcherName, defaultSearchParams.isWebPublish(),
-				taxonomyLevels, config.getEducationalTypeKeys(), config.getResourceTypes());
+
+		return new CatalogLauncherTaxonomyController(ureq, wControl, launcherName, webPublish, taxonomyLevels,
+				config.getEducationalTypeKeys(), config.getResourceTypes());
 	}
 
 	private List<TaxonomyLevel> getChildren(Config config) {
@@ -214,7 +215,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 	 * @return the list of TaxonomyLevel from the second to most level to the TaxonomyLevel of the key (if found)
 	 *         and the belonging restrictions.
 	 */
-	public Levels getTaxonomyLevels(CatalogLauncher catalogLauncher, Long key, CatalogRepositoryEntrySearchParams searchParams) {
+	public Levels getTaxonomyLevels(CatalogLauncher catalogLauncher, Long key, List<CatalogEntry> catalogEntries) {
 		Config config = fromXML(catalogLauncher.getConfig());
 		TaxonomyLevel configTaxonomyLevel = null;
 		List<TaxonomyLevel> descendants = null;
@@ -227,7 +228,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 				descendants =  taxonomyLevelDao.getDescendants(configTaxonomyLevel, null);
 			}
 		}
-		catalogService.excludeLevelsWithoutOffers(descendants, searchParams);
+		catalogService.excludeLevelsWithoutEntries(descendants, catalogEntries);
 		if (descendants == null) return null;
 		
 		Optional<TaxonomyLevel> taxonomyLevel = descendants.stream()

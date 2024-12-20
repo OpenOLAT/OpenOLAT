@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -51,7 +53,7 @@ public interface CatalogLauncherHandler {
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogLauncher catalogLauncher);
 
 	public Controller createRunController(UserRequest ureq, WindowControl wControl, Translator translator,
-			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams);
+			CatalogLauncher catalogLauncher, List<CatalogEntry> catalogEntries, boolean webPublish);
 
 	/**
 	 * Delete the data of a catalog launcher.

@@ -20,6 +20,7 @@
 package org.olat.modules.catalog.filter;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -29,12 +30,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.ui.CatalogEntryRow;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
-import org.olat.repository.RepositoryService;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.stereotype.Service;
 
 /**
@@ -94,22 +95,25 @@ public class LifecyclePrivateHandler implements CatalogFilterHandler {
 	}
 
 	@Override
-	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
-		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
-		
-		return new FlexiTableDateRangeFilter(repositoryTranslator.translate("cif.dates"), TYPE,
+	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
+			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {
+		return new FlexiTableDateRangeFilter(translator.translate("cif.dates"), TYPE,
 				catalogFilter.isDefaultVisible(), false, translator.translate("filter.lifecycle.private.begin"),
 				translator.translate("filter.lifecycle.private.end"), translator.getLocale());
-		}
+	}
 
 	@Override
-	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
+	public void filter(FlexiTableFilter flexiTableFilter, List<CatalogEntryRow> rows) {
 		DateRange dateRange = ((FlexiTableDateRangeFilter)flexiTableFilter).getDateRange();
 		
 		Date lifecyclesPrivateFrom = dateRange != null? dateRange.getStart(): null;
-		searchParams.setLifecyclesPrivateFrom(lifecyclesPrivateFrom);
+		if (lifecyclesPrivateFrom != null) {
+			rows.removeIf(row -> row.getLifecycleStart() == null || row.getLifecycleStart().before(lifecyclesPrivateFrom));
+		}
 		
 		Date lifecyclesPrivateTo = dateRange != null? dateRange.getEnd(): null;
-		searchParams.setLifecyclesPrivateTo(lifecyclesPrivateTo);
+		if (lifecyclesPrivateTo != null) {
+			rows.removeIf(row -> row.getLifecycleEnd()== null || row.getLifecycleEnd().after(lifecyclesPrivateTo));
+		}
 	}
 }

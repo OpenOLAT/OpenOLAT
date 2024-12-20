@@ -19,9 +19,11 @@
  */
 package org.olat.modules.catalog;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.services.license.License;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -35,9 +37,11 @@ import org.olat.resource.accesscontrol.model.OLATResourceAccess;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface CatalogRepositoryEntry {
+public interface CatalogEntry {
+	
+	Long getRepositoryEntryKey();
 
-	Long getKey();
+	Long getCurriculumElementKey();
 
 	String getExternalId();
 
@@ -62,8 +66,14 @@ public interface CatalogRepositoryEntry {
 	RepositoryEntryLifecycle getLifecycle();
 
 	RepositoryEntryStatusEnum getStatus();
+	
+	Date getPublishedDate();
 
 	boolean isPublicVisible();
+	
+	public Long getCurriculumKey();
+	
+	public String getCurriculumElementTypeName();
 	
 	OLATResource getOlatResource();
 	
@@ -76,5 +86,7 @@ public interface CatalogRepositoryEntry {
 	boolean isGuestAccess();
 	
 	List<OLATResourceAccess> getResourceAccess();
+	
+	License getLicense();
 
 }

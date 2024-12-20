@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog.launcher;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -28,9 +30,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
-import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.ui.CatalogLauncherTextController;
 import org.olat.modules.catalog.ui.admin.CatalogLauncherTextEditController;
@@ -111,7 +113,7 @@ public class TextLauncherHandler implements CatalogLauncherHandler {
 
 	@Override
 	public Controller createRunController(UserRequest ureq, WindowControl wControl, Translator translator,
-			CatalogLauncher catalogLauncher, CatalogRepositoryEntrySearchParams defaultSearchParams) {
+			CatalogLauncher catalogLauncher, List<CatalogEntry> catalogEntries, boolean webPublish) {
 		Config config = fromXML(catalogLauncher.getConfig());
 		String text = translator.translate(I18N_PREFIX + config.i18nSuffix);
 		VFSContainer mediaContainer = getOrCreateLauncherContainer(config.getI18nSuffix());
