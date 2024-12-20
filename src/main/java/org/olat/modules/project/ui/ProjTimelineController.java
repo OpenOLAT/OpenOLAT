@@ -560,14 +560,13 @@ public class ProjTimelineController extends FormBasicController
 		ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
 		searchParams.setProject(project);
 		searchParams.setStatus(List.of(ProjectStatus.active));
-		searchParams.setMilestoneStatus(List.of(ProjMilestoneStatus.open));
 		searchParams.setDueDateNull(Boolean.FALSE);
 		List<ProjMilestone> milestones = projectService.getMilestones(searchParams);
 		for (ProjMilestone milestone : milestones) {
 			ProjTimelineRow row = createMilestoneRow(milestone);
 			if (milestone.getDueDate().after(laterDateRange.getFrom())) {
 				laterRows.add(row);
-			} else if (milestone.getDueDate().before(todayDateRange.getFrom())) {
+			} else if (milestone.getDueDate().before(todayDateRange.getFrom()) && ProjMilestoneStatus.open == milestone.getStatus()) {
 				row.setOverdue(true);
 				overdueRows.add(row);
 			} else {

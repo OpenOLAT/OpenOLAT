@@ -42,5 +42,16 @@ public class BadgesPage {
 		OOGraphene.waitElement(badgeBy, browser);
 		return this;
 	}
+	
+	public BadgesPage assertNotOnBadge(String badgeName) {
+		By badgeBy = By.xpath("//div[@class='o_badge_tool_row']//legend[text()[contains(.,'" + badgeName + "')]]");
+		OOGraphene.waitElementDisappears(badgeBy, 5, browser);
+		return this;
+	}
+	
+	public CoursePageFragment clickToolbarBack() {
+		OOGraphene.clickBreadcrumbBack(browser);
+		return new CoursePageFragment(browser);
+	}
 
 }

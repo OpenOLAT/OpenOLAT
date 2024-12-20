@@ -45,12 +45,40 @@ public class BadgeClassesPage {
 		return this;
 	}
 	
+	/**
+	 * Create a new badge if there isn't any in the course.
+	 * 
+	 * @return Itself
+	 */
 	public BadgeClassesPage createBadgeClass() {
 		By createClassBy = By.cssSelector("fieldset.o_badge_classes a.o_sel_badge_classes_create");
 		OOGraphene.waitElement(createClassBy, browser);
 		browser.findElement(createClassBy).click();
 		
 		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	/**
+	 * If new badge available, 
+	 * 
+	 * @return Itself
+	 */
+	public BadgeClassesPage startingWithNewBadgeClass() {
+		By startBy = By.xpath("//div[contains(@class,'o_badge_wiz_starting_point_step')]//input[@name='form.starting.point'][@value='form.create.from.scratch.title']");
+		OOGraphene.waitElement(startBy, browser);
+		browser.findElement(startBy).click();
+		
+		By tableBy = By.cssSelector(".o_badge_wiz_starting_point_step table td div.o_image");
+		OOGraphene.waitElementDisappears(tableBy, 5, browser);
+		return this;
+	}
+	
+	public BadgeClassesPage nextToClasses() {
+		OOGraphene.nextStep(browser);
+		
+		By templateBy = By.className("o_template_card");
+		OOGraphene.waitElement(templateBy, browser);
 		return this;
 	}
 	
@@ -140,13 +168,41 @@ public class BadgeClassesPage {
 		By selectBy = By.id("o_fioform_condition_0_SELBOX");
 		OOGraphene.waitElement(selectBy, browser);
 		OOGraphene.scrollBottom(selectBy, browser);
+		return this;
+	}
 		
+	public BadgeClassesPage criteraCoursePassedAsFirstRule() {
+		By selectBy = By.id("o_fioform_condition_0_SELBOX");
 		WebElement selectEl = browser.findElement(selectBy);
 		new Select(selectEl).selectByValue("coursePassed");
 		
 		By deleteBy = By.xpath("//div[contains(@class,'o_badge_wiz_criteria_step')]//a[i[contains(@class,'o_icon_delete_item')]]");
 		OOGraphene.waitElement(deleteBy, browser);
+		return this;
+	}
+	
+	public BadgeClassesPage criteriaPassedCourseElementAsFirstRule(String courseNode) {
+		By selectBy = By.id("o_fioform_condition_0_SELBOX");
+		WebElement selectEl = browser.findElement(selectBy);
+		new Select(selectEl).selectByValue("completionCriterionMet");
 		
+		By courseElementBy = By.id("o_fioform_condition_courseElements_0_SELBOX");
+		WebElement courseElementEl = browser.findElement(courseElementBy);
+		new Select(courseElementEl).selectByVisibleText(courseNode);
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public BadgeClassesPage criteriaPassedBadgeAsAdditionalRule(String badgeClass) {
+		By selectBy = By.id("o_fioform_condition_new_SELBOX");
+		WebElement selectEl = browser.findElement(selectBy);
+		new Select(selectEl).selectByValue("otherBadgeEarned");
+		
+		By badgeBy = By.id("o_fioform_condition_badges_1_SELBOX");
+		OOGraphene.waitElement(badgeBy, browser);
+		WebElement badgeEl = browser.findElement(badgeBy);
+		new Select(badgeEl).selectByVisibleText(badgeClass);
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

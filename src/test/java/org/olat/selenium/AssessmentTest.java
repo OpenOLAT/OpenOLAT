@@ -894,6 +894,7 @@ public class AssessmentTest extends Deployments {
 			.nextToCriteria()
 			.criteria(criteriaSummary)
 			.criteriaAuto()
+			.criteraCoursePassedAsFirstRule()
 			.nextToDetails()
 			.details(badgeDescription)
 			.nextToSummary()
@@ -928,6 +929,189 @@ public class AssessmentTest extends Deployments {
 			.myBadges()
 			.assertOnBadge(badgeClassName);
 	}
+	
+	
+	/**
+	 * An author create a course with an assessment element and a test.
+	 * It configures a first badge to be granted if the assessment is passed
+	 * and second one if the first one is passed and the test.<br>
+	 * It add a participant to the course and set the assessment as passed.<br>
+	 * A participant log in and happily find a first badge in its collection.
+	 * It solves successfully the test and gets its second badge.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void createBadgeAuto2Levels()
+			throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Jeremy");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/e4_test_qti21.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile);
+		
+		//create a course
+		String courseTitle = ("Badges " + UUID.randomUUID()).substring(0, 23);
+		CoursePageFragment course = navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		// Create an assessment course element
+		String assessmentNodeTitle = "Assessment for Badge";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit()
+			.createNode("ms")
+			.nodeTitle(assessmentNodeTitle);
+		
+		//configure assessment
+		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
+		assessmentConfig
+			.selectConfigurationWithRubric()
+			.setScore(0.1f, 10.0f, 5.0f)
+			.save();
+		
+		//Create a course element of type test with the QTI 2.1 test that we upload above
+		String testNodeTitle = "Badge QTI 2.1";
+		courseEditor
+			.createNode("iqtest")
+			.nodeTitle(testNodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle);
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		courseEditor
+			.clickToolbarBack();
+		
+		CourseSettingsPage courseSetting = course
+			.settings();
+		courseSetting
+			.certificates()
+			.enableBadges();
+		courseSetting
+			.clickToolbarBack();
+
+		String firstBadgeClassName = "Star on shield";
+		String badgeDescription = "You pass a selenium test.";
+		String criteriaSummary = "Pass selenium test";
+		
+		// Add a first badge base on the assessment node
+		BadgeClassesPage badges = course
+			.badgesAdministration()
+			.createBadgeClass()
+			.selectClass(firstBadgeClassName)
+			.nextToCustomization()
+			.customize("Selenium the assessment")
+			.nextToCriteria()
+			.criteria(criteriaSummary)
+			.criteriaAuto()
+			.criteriaPassedCourseElementAsFirstRule(assessmentNodeTitle)
+			.nextToDetails()
+			.details(badgeDescription)
+			.nextToSummary()
+			.assertOnSummary(firstBadgeClassName)
+			.assertOnSummary(badgeDescription)
+			.assertOnSummary(criteriaSummary)
+			.finish();
+		badges
+			.assertOnTable(firstBadgeClassName);
+		
+		// Add a second badge dependent of the first one and the QTI test
+		String secondBadgeClassName = "Cup on circle";
+		badges = course
+			.badgesAdministration()
+			.createBadgeClass()
+			.startingWithNewBadgeClass()
+			.nextToClasses()
+			.selectClass(secondBadgeClassName)
+			.nextToCustomization()
+			.nextToCriteria()
+			.criteria(criteriaSummary)
+			.criteriaAuto()
+			.criteriaPassedCourseElementAsFirstRule(testNodeTitle)
+			.criteriaPassedBadgeAsAdditionalRule(firstBadgeClassName)
+			.nextToDetails()
+			.details(badgeDescription)
+			.nextToSummary()
+			.assertOnSummary(secondBadgeClassName)
+			.assertOnSummary(badgeDescription)
+			.assertOnSummary(criteriaSummary)
+			.finish();
+		badges
+			.assertOnTable(secondBadgeClassName);
+		
+		// Add a participant
+		MembersPage members = course
+			.members();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		// Make it passed the assessment course element
+		members
+			.clickToolbarBack()
+			.assessmentTool()
+			.users()
+			.assertOnUsers(participant)
+			.selectUser(participant)
+			.selectUsersCourseNode(assessmentNodeTitle)
+			.setAssessmentScore(8.0f)
+			.closeAndPublishAssessment()
+			.assertUserPassedCourseNode(assessmentNodeTitle);
+		
+		// Participant login
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+
+		CoursePageFragment badgeCourse = new CoursePageFragment(browser);
+		badgeCourse
+			.assertOnLearnPathNodeDone(assessmentNodeTitle)
+			.myBadges()
+			.assertOnBadge(firstBadgeClassName)
+			.assertNotOnBadge(secondBadgeClassName)
+			.clickToolbarBack();
+		
+		badgeCourse
+			.tree()
+			.selectWithTitle(testNodeTitle);
+		
+		QTI21Page.getQTI21Page(browser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
+		
+		badgeCourse
+			.assertOnLearnPathNodeDone(testNodeTitle)
+			.myBadges()
+			.assertOnBadge(firstBadgeClassName)
+			.assertOnBadge(secondBadgeClassName);
+	}
+	
 	
 	/**
 	 * An author create a course with an assessment course element with

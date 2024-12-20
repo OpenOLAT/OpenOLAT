@@ -526,7 +526,7 @@ public class ProjActivityLogController extends ActivityLogController {
 					addRow(rows, activity, "activity.log.message.edit.description", before.getDescription(), after.getDescription());
 				}
 				if(before.getStatus() != after.getStatus()) {
-					addRow(rows, activity, "activity.log.message.status",
+					addRow(rows, activity, "activity.log.message.edit.status",
 							ProjectUIFactory.getDisplayName(getTranslator(), before.getStatus()),
 							ProjectUIFactory.getDisplayName(getTranslator(), after.getStatus()));
 				}
