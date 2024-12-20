@@ -351,14 +351,19 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 			curriculumService.updateTaxonomyLevels(element, addedLevels, removedLevels);
 		}
 		
-		if(create && element.getParent() != null) {
-			dbInstance.commit();
+		boolean recalculateNumbering = create && element.getParent() != null;
+		dbInstance.commitAndCloseSession(); // need to reload properly the tree
+		element = curriculumService.getCurriculumElement(element);
+		
+		if(recalculateNumbering) {
 			CurriculumElement rootElement = curriculumService.getImplementationOf(element);
-			curriculumService.numberRootCurriculumElement(rootElement);
+			if(curriculumService.numberRootCurriculumElement(rootElement)) {
+				// Reload the numbering
+				dbInstance.commitAndCloseSession();
+				element = curriculumService.getCurriculumElement(element);
+			}
 		}
 		
-		dbInstance.commitAndCloseSession(); // need to relaod properly the tree
-		element = curriculumService.getCurriculumElement(element);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

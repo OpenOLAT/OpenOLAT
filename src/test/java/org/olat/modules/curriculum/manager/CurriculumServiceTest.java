@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,6 +32,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -63,6 +65,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CurriculumServiceTest extends OlatTestCase {
+
+	private static final Logger log = Tracing.createLoggerFor(OlatTestCase.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -351,6 +355,68 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertEquals("2", element2.getNumberImpl());
 		element21 = curriculumService.getCurriculumElement(element21);
 		Assert.assertEquals("2.1", element21.getNumberImpl());
+	}
+	
+	
+	@Test
+	public void numberRootCurriculumElementWithDeletion() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-5", "Curriculum 5", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-to-num-1", "Element to number",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-num 1.1", "Element to number",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Element-to-num 1.2", "Element to number",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element3 = curriculumService.createCurriculumElement("Element-to-num 1.3", "Element to number",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		dbInstance.commit();
+
+		// Number this implementation tree
+		curriculumService.numberRootCurriculumElement(element);
+		dbInstance.commitAndCloseSession();
+		
+		element = curriculumService.getCurriculumElement(element);
+		Assert.assertNull(element.getNumberImpl());
+		
+		element1 = curriculumService.getCurriculumElement(element1);
+		Assert.assertEquals("1", element1.getNumberImpl());
+		element2 = curriculumService.getCurriculumElement(element2);
+		Assert.assertEquals("2", element2.getNumberImpl());
+		element3 = curriculumService.getCurriculumElement(element3);
+		Assert.assertEquals("3", element3.getNumberImpl());
+		
+		curriculumService.deleteCurriculumElement(element1);
+		dbInstance.commitAndCloseSession();
+		
+		element = curriculumService.getCurriculumElement(element);
+		
+		CurriculumElement element4 = curriculumService.createCurriculumElement("Element-to-num 1.4", "Element to number",
+				CurriculumElementStatus.active, null, null, element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// Number this implementation tree
+		element = curriculumService.getImplementationOf(element2);
+		curriculumService.numberRootCurriculumElement(element);
+		dbInstance.commitAndCloseSession();
+		
+		element1 = curriculumService.getCurriculumElement(element1);
+		Assert.assertNull(element1);
+		element2 = curriculumService.getCurriculumElement(element2);
+		element3 = curriculumService.getCurriculumElement(element3);
+		element4 = curriculumService.getCurriculumElement(element4);
+		
+		log.info("Sequence pos: {} - {} - {}", element2.getPos(), element3.getPos(), element4.getPos());
+		log.info("Numbering: {} - {} - {}", element2.getNumberImpl(), element3.getNumberImpl(), element4.getNumberImpl());
+		
+		Assert.assertEquals("1", element2.getNumberImpl());
+		Assert.assertEquals("2", element3.getNumberImpl());
+		Assert.assertEquals("3", element4.getNumberImpl());
 	}
 	
 	@Test

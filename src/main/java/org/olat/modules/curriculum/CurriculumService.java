@@ -627,7 +627,7 @@ public interface CurriculumService {
 	 * 
 	 * @param rootElement Need to be an implementation / root curriculum element.
 	 */
-	public void numberRootCurriculumElement(CurriculumElement rootElement);
+	public boolean numberRootCurriculumElement(CurriculumElement rootElement);
 
 	/**
 	 * Removes course-internal business groups relationships for 'courseEntry' of runtime type 'curricular'.

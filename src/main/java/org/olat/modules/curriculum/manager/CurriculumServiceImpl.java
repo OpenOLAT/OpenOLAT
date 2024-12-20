@@ -589,6 +589,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		groupMembershipHistoryDao.deleteMembershipHistory(reloadedElement.getGroup());
 
 		if(delete) {
+			if(reloadedElement.getParent() instanceof CurriculumElementImpl parentImpl) {
+				parentImpl.getChildren().remove(reloadedElement);
+				curriculumElementDao.update(parentImpl);
+			}
 			curriculumElementDao.deleteCurriculumElement(reloadedElement);
 		} else {
 			groupDao.removeMemberships(reloadedElement.getGroup());
@@ -1458,7 +1462,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public void numberRootCurriculumElement(CurriculumElement rootElement) {
+	public boolean numberRootCurriculumElement(CurriculumElement rootElement) {
 		if(rootElement.getParent() != null) {
 			log.warn("Try to number a curriculum element which is not an implementation: {}", rootElement);
 		}
@@ -1479,12 +1483,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	
 		// Sort the tree
 		Collections.sort(elements, new CurriculumElementTreeRowComparator(locale));
-		number(null, List.of(), 0, elements);
+		boolean changed = number(null, List.of(), 0, elements);
 		dbInstance.commit();
+		return changed;
 	}
 	
-	private void number(NumberingCurriculumElement parent, List<Long> numbering, int start, List<NumberingCurriculumElement> elements) {
+	private boolean number(NumberingCurriculumElement parent, List<Long> numbering, int start, List<NumberingCurriculumElement> elements) {
 		int count = 1;
+		boolean changed = false;
 		for(int i=start; i<elements.size(); i++) {
 			NumberingCurriculumElement element = elements.get(i);
 			if(Objects.equals(parent, element.getParent())) {
@@ -1493,10 +1499,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				String number = new Numbering(values).toString();
 				if(!number.equals(element.getCurriculumElement().getNumberImpl())) {
 					curriculumElementDao.updateNumber(element, number);
+					changed |= true;
 				}
-				number(element, values, i+1, elements);
+				changed |= number(element, values, i+1, elements);
 			}
 		}
+		return changed;
 	}
 	
 	private void sendDeferredEvents(List<CurriculumElementMembershipEvent> events) {
