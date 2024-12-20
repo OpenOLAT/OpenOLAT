@@ -53,6 +53,12 @@ public class SettingsController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.add("edit", editLectureCtrl.getInitialFormItem());
 	}
+	
+	@Override
+	public void back() {
+		removeAsListenerAndDispose(editLectureCtrl);
+		removeAsListenerAndDispose(this);
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

@@ -363,5 +363,9 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		addLectureCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, null, title, "");
 		listenTo(addLectureCtrl);
 		getWindowControl().pushAsModalDialog(addLectureCtrl.getInitialComponent());
+		
+		if(step.canJumpStep()) {
+			addLectureCtrl.next(ureq);
+		}
 	}
 }

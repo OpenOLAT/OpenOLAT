@@ -106,6 +106,14 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		loadEntriesModel();
 	}
 	
+	public int getNumOfCurriculumElements() {
+		return curriculumElementTableModel.getRowCount();
+	}
+	
+	public int getNumOfRepositoryEntries() {
+		return entriesTableModel.getRowCount();
+	}
+	
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		return List.of();

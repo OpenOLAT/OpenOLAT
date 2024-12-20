@@ -250,6 +250,10 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		}
 	}
 	
+	public void next(UserRequest ureq) {
+		flc.getRootForm().submitAndNext(ureq);
+	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// steps/wizard navigation .. as start most of buttons are disabled

@@ -36,6 +36,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 public class AddLectureBlock1ResourcesStep extends BasicStep {
 	
 	private final AddLectureContext addLecture;
+	private SelectCurriculumElementsAndResourcesController selectCtrl;
 	
 	public AddLectureBlock1ResourcesStep(UserRequest ureq, AddLectureContext addLecture) {
 		super(ureq);
@@ -53,6 +54,13 @@ public class AddLectureBlock1ResourcesStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new SelectCurriculumElementsAndResourcesController(ureq, wControl, form, addLecture, runContext);
+		selectCtrl = new SelectCurriculumElementsAndResourcesController(ureq, wControl, form, addLecture, runContext);
+		return selectCtrl;
+	}
+	
+	public boolean canJumpStep() {
+		return selectCtrl != null
+				&& selectCtrl.getNumOfCurriculumElements() == 1
+				&& selectCtrl.getNumOfRepositoryEntries() == 1;
 	}
 }

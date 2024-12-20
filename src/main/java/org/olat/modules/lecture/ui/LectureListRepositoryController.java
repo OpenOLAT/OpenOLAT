@@ -875,6 +875,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		addLectureWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, null, title, "");
 		listenTo(addLectureWizardCtrl);
 		getWindowControl().pushAsModalDialog(addLectureWizardCtrl.getInitialComponent());
+		
+		if(step.canJumpStep()) {
+			addLectureWizardCtrl.next(ureq);
+		}
 	}
 	
 	private void doImportLecturesBlock(UserRequest ureq) {
