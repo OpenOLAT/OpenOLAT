@@ -827,7 +827,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			doAddLectureBlockSimplified(ureq, entry);
 		} else if(curriculumElement != null) {
 			List<RepositoryEntry> entries = this.curriculumService.getRepositoryEntries(curriculumElement);
-			AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement, entries);
+			AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement);
 			addLecture.setCurriculumElement(curriculumElement);
 			
 			List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
@@ -837,7 +837,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				doAddLectureBlockWizard(ureq, addLecture);
 			}
 		} else {
-			AddLectureContext addLecture = new AddLectureContext(curriculum, null, List.of());
+			AddLectureContext addLecture = new AddLectureContext(curriculum, null);
 			doAddLectureBlockWizard(ureq, addLecture);
 		}
 	}

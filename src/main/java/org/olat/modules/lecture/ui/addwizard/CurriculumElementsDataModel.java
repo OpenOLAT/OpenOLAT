@@ -44,6 +44,11 @@ public class CurriculumElementsDataModel extends DefaultFlexiTreeTableDataModel<
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		//
 	}
+	
+	@Override
+	public boolean hasOpenCloseAll() {
+		return false;
+	}
 
 	@Override
 	public boolean hasChildren(int row) {

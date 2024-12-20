@@ -1,8 +1,11 @@
 #if($r.visible("elementsTable"))
+<fieldset>
+	<legend>$r.translate("referenced.elements")</legend>
 	$r.render("elementsTable")
+</fieldset>
 #end
 #if($r.visible("entriesTable"))
-<fieldset>
+<fieldset class="o_block">
 	<legend>$r.translate("referenced.courses")</legend>
 	<div class="o_lecture_courses_selection">
 		$r.render("entriesTable")

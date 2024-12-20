@@ -31,9 +31,11 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -41,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -48,8 +51,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -126,6 +132,7 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		entriesTableEl.setRendererType(FlexiTableRendererType.custom);
 		entriesTableEl.setNumOfRowsEnabled(false);
 		entriesTableEl.setCssDelegate(new EntriesDelegate());
+		entriesTableEl.setEmptyTableSettings("empty.course.list", null, "o_CourseModule_icon");
 		
 		VelocityContainer row = new VelocityContainer(null, "vc_row1", velocity_root + "/entry_1.html",
 				getTranslator(), this);
@@ -134,27 +141,30 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 	}
 
 	private void loadEntriesModel() {
-		List<RepositoryEntryRow> rows = new ArrayList<>();
-		if(addLecture.getPotentielEntries() != null && !addLecture.getPotentielEntries().isEmpty()) {
-			List<RepositoryEntry> entries = addLecture.getPotentielEntries();
-			for(RepositoryEntry entry:entries) {
-				rows.add(forgeRow(entry));
-			}
-		}
-		entriesTableModel.setObjects(rows);
-		entriesTableEl.reset(true, true, true);
-		entriesTableEl.setVisible(!rows.isEmpty());
-
-		if(addLecture.getEntry() != null) {
-			Set<Integer> index = new HashSet<>();
-			List<RepositoryEntryRow> objects = entriesTableModel.getObjects();
-			for(int i=objects.size(); i-->0; ) {
-				RepositoryEntryRow object = objects.get(i);
-				if(object.getKey().equals(addLecture.getEntry().getKey())) {
-					index.add(Integer.valueOf(i));
+		Set<Integer> selectedCurriculumElementIndex = curriculumElementTableEl.isVisible()
+				? curriculumElementTableEl.getMultiSelectedIndex() : Set.of();
+		if(selectedCurriculumElementIndex.size() == 1) {
+			int index = selectedCurriculumElementIndex.iterator().next().intValue();
+			CurriculumElementRow selectedRow = curriculumElementTableModel.getObject(index);
+			CurriculumElement curriculumElement = selectedRow.getCurriculumElement();
+			CurriculumElementType type = curriculumElement.getType();
+			if(type == null || type.getMaxRepositoryEntryRelations() != 0) {
+				List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(selectedRow.getCurriculumElement());
+				List<RepositoryEntryRow> rows = new ArrayList<>();
+				for(RepositoryEntry entry:entries) {
+					rows.add(forgeRow(entry));
 				}
+				entriesTableModel.setObjects(rows);
+				entriesTableEl.reset(true, true, true);
+				entriesTableEl.setVisible(true);
+				
+				if(!rows.isEmpty()) {
+					entriesTableEl.setMultiSelectedIndex(Set.of(Integer.valueOf(0)));
+				}
+			} else {
+				entriesTableEl.setVisible(false);
 			}
-			entriesTableEl.setMultiSelectedIndex(index);
+			flc.setDirty(true);
 		}
 	}
 	
@@ -236,6 +246,21 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		}
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(curriculumElementTableEl == source) {
+			if(event instanceof SelectionEvent) {
+				loadEntriesModel();
+			}
+		} else if(mainForm.getFormItemContainer() == source) {
+			if("ONCLICK".equals(event.getCommand()) && StringHelper.isLong(ureq.getParameter("entrychkbox"))) {
+				Set<Integer> selected = Set.of(Integer.valueOf(ureq.getParameter("entrychkbox")));
+				entriesTableEl.setMultiSelectedIndex(selected);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Set<Integer> selectedCurriculumElementIndex = curriculumElementTableEl.isVisible()

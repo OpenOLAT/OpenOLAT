@@ -1,4 +1,4 @@
-<div class="o_card o_lecture_card">
+<label class="o_card o_lecture_card" for="radio_$rowId">
 	<div class="o_thumbnail">
 		<div class="o_lecture_file_img">
 			#if($row.isThumbnailAvailable())
@@ -15,11 +15,11 @@
 					#if($r.isNotEmpty($row.externalRef))
 					<small>$r.escapeHtml($row.externalRef)</small>
 					#end
-					<label for="radio_$rowId">$r.escapeHtml(${row.getDisplayname()})</label></h4>
+					<span>$r.escapeHtml(${row.getDisplayname()})</span></h4>
 			</div>
 		</div>
 		<div class="o_card_radio_select">
-			<input id="radio_$rowId" type='radio' name='tb_ms' value='$rowId' #if($r.isTrue($rowSelected))checked='checked'#end onclick="o_ffTableToggleRowCheck('$rowId','o_row_selected'); $f.ffXHREvent("chkbox", "$rowIndex");">
+			<input id="radio_$rowId" type='radio' name='tb_ms_entry' value='$rowId' #if($r.isTrue($rowSelected))checked='checked'#end onclick="$f.ffXHREvent("entrychkbox", "$rowIndex");">
 		</div>	
 	</div>
-</div>
+</label>

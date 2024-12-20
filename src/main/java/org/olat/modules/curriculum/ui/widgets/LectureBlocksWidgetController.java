@@ -352,7 +352,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 			return;
 		}
 		
-		AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement, List.of());
+		AddLectureContext addLecture = new AddLectureContext(curriculum, curriculumElement);
 		addLecture.setCurriculumElement(curriculumElement);
 		
 		AddLectureBlock1ResourcesStep step = new AddLectureBlock1ResourcesStep(ureq, addLecture);

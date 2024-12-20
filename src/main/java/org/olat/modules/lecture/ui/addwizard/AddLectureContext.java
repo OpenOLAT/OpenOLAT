@@ -42,13 +42,10 @@ public class AddLectureContext {
 	
 	private final Curriculum curriculum;
 	private final CurriculumElement rootElement;
-	private final List<RepositoryEntry> potentielEntries;
 	
-	public AddLectureContext(Curriculum curriculum, CurriculumElement rootElement,
-			List<RepositoryEntry> potentielEntries) {
+	public AddLectureContext(Curriculum curriculum, CurriculumElement rootElement) {
 		this.curriculum = curriculum;
 		this.rootElement = rootElement;
-		this.potentielEntries = potentielEntries;
 	}
 	
 	public Curriculum getCurriculum() {
@@ -57,10 +54,6 @@ public class AddLectureContext {
 
 	public CurriculumElement getRootElement() {
 		return rootElement;
-	}
-	
-	public List<RepositoryEntry> getPotentielEntries() {
-		return potentielEntries;
 	}
 
 	public RepositoryEntry getEntry() {
