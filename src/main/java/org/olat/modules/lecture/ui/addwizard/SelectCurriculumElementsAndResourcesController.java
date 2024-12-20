@@ -38,9 +38,9 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -293,21 +293,10 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	
-	private static class EntriesDelegate implements FlexiTableCssDelegate {
-
-		@Override
-		public String getWrapperCssClass(FlexiTableRendererType type) {
-			return null;
-		}
-
+	private static class EntriesDelegate extends DefaultFlexiTableCssDelegate {
 		@Override
 		public String getTableCssClass(FlexiTableRendererType type) {
-			return "o_cards o_cards_4";
-		}
-
-		@Override
-		public String getRowCssClass(FlexiTableRendererType type, int pos) {
-			return null;
+			return "o_cards o_cards_5";
 		}
 	}
 }
