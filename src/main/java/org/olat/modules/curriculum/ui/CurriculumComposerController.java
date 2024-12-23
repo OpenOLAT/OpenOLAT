@@ -490,10 +490,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.reset(true, true, true);
 	}
 
-
 	private void filterModel() {
 		tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
-		tableEl.reset(false, true, true);// only reload
+		// Don't reload the data, only reset paging and number of rows
+		tableEl.reset(true, true, false);
 	}
 	
 	private CurriculumElementInfosSearchParams getSearchParams() {
