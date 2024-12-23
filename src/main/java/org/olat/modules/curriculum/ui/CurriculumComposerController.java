@@ -468,7 +468,7 @@ public class CurriculumComposerController extends FormBasicController implements
         super.doDispose();
 	}
 	
-	private void loadModel() {
+	void loadModel() {
 		CurriculumElementInfosSearchParams searchParams = getSearchParams();
 		
 		List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);

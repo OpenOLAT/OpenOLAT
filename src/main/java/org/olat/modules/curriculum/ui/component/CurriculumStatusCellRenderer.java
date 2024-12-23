@@ -54,7 +54,9 @@ public class CurriculumStatusCellRenderer implements FlexiCellRenderer {
 	
 	public static final void getStatus(StringOutput target, String type, Enum<?> status, Translator trans) {
 		target.append("<span class=\"").append(type).append(" o_curriculum_status_")
-		      .append(status.name()).append("\">").append(trans.translate("status.".concat(status.name())))
+		      .append(status.name()).append("\">")
+		      .append("<i class=\"o_icon o_icon-fw o_icon_curriculum_status_").append(status.name()).append("\"> </i> ")
+		      .append(trans.translate("status.".concat(status.name())))
 		      .append("</span>");
 	}
 }

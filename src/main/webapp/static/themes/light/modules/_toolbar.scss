@@ -330,7 +330,7 @@
 		.o_inner_wrapper.o_labeled_light {
 			line-height: ($o-toolbar-size-icon-md - 2px);
 			font-size: 14px;
-			padding: 0 18px 0 4px;
+			padding: 0 23px 0 4px;
 			&:is(.dropdown-toggle.o_empty *) {
 				padding: 0 4px 0 4px;
 			}
@@ -355,9 +355,9 @@
 					font-size: ($o-toolbar-size-icon-sm - 6px) !important;
 				}
 				+ .o_label + .o_icon_caret {
-					right: 5px;
+					right: -1px;
 					top: 2px;
-					margin-right: 0;
+					margin-right: 5px;
 					font-size: $o-toolbar-size-caret-sm;				
 				}
 			}

@@ -555,6 +555,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			if(event == Event.DONE_EVENT) {
 				curriculumElement = statusChangeCtrl.getCurriculumElement();
 				updateStatusDropdown();
+				if (structureCtrl != null) {
+					structureCtrl.loadModel();
+				}
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();

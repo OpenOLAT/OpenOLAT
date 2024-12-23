@@ -1700,6 +1700,9 @@ a.o_labeled_light {
 	.o_inner_wrapper.o_labeled  + .o_label + .o_icon_caret {
 		color: $o-repo-status-color-bright !important;
 	}
+	.o_icon_caret {
+		margin-left: 6px;
+	}
 	
 	&.o_empty {
 		pointer-events: none;
