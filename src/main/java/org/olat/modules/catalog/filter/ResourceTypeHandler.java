@@ -20,8 +20,9 @@
 package org.olat.modules.catalog.filter;
 
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -32,13 +33,16 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.ui.CatalogEntryRow;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -51,6 +55,11 @@ import org.springframework.stereotype.Service;
 public class ResourceTypeHandler implements CatalogFilterHandler {
 	
 	private static final String TYPE = "resourcetype";
+	private static final String RE_PREFIX = "re::";
+	private static final String CE_PREFIX = "ce::";
+	
+	@Autowired
+	private CurriculumModule curriculumModule;
 
 	@Override
 	public String getType() {
@@ -101,17 +110,34 @@ public class ResourceTypeHandler implements CatalogFilterHandler {
 	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
 			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {
 		SelectionValues typesSV = new SelectionValues();
-		catalogEntries.stream()
-				.map(entry -> entry.getOlatResource().getResourceableTypeName())
-				.filter(Objects::nonNull)
-				.forEach(type -> typesSV
-				.add(new SelectionValue(
-						type,
-						translator.translate(type),
-						null, 
-						"o_icon o_icon-fw ".concat(RepositoyUIFactory.getIconCssClass(type)),
-						null,
-						true)));
+		
+		for (CatalogEntry catalogEntry : catalogEntries) {
+			if (catalogEntry.getRepositoryEntryKey() != null) {
+				String type = catalogEntry.getOlatResource().getResourceableTypeName();
+				String filterType = RE_PREFIX + type;
+				if (!typesSV.containsKey(filterType)) {
+					typesSV.add(new SelectionValue(
+							filterType,
+							translator.translate(type),
+							null, 
+							"o_icon o_icon-fw ".concat(RepositoyUIFactory.getIconCssClass(type)),
+							null,
+							true));
+				}
+			} else if (curriculumModule.isEnabled() && StringHelper.containsNonWhitespace(catalogEntry.getCurriculumElementTypeName())) {
+				String filterType = CE_PREFIX + catalogEntry.getCurriculumElementTypeName();
+				if (!typesSV.containsKey(filterType)) {
+					typesSV.add(new SelectionValue(
+							filterType,
+							StringHelper.escapeHtml(catalogEntry.getCurriculumElementTypeName()),
+							null, 
+							"o_icon o_icon-fw o_icon_curriculum_element",
+							null,
+							true));
+				}
+			}
+		}
+		
 		if (typesSV.isEmpty() || typesSV.size() == 1) {
 			return null;
 		}
@@ -124,11 +150,25 @@ public class ResourceTypeHandler implements CatalogFilterHandler {
 
 	@Override
 	public void filter(FlexiTableFilter flexiTableFilter, List<CatalogEntryRow> rows) {
-		List<String> resourceTypes = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
-		if (resourceTypes != null && !resourceTypes.isEmpty()) {
-			rows.removeIf(row -> row.getOlatResource() == null
-					|| row.getOlatResource().getResourceableTypeName() == null
-					|| !resourceTypes.contains(row.getOlatResource().getResourceableTypeName()));
+		List<String> types = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
+		if (types != null && !types.isEmpty()) {
+			Set<String> reTypes = new HashSet<>(1);
+			Set<String> ceTypes = new HashSet<>(1);
+			for (String type: types) {
+				if (type.startsWith(RE_PREFIX)) {
+					reTypes.add(type.substring(4));
+				} else if (type.startsWith(CE_PREFIX)) {
+					ceTypes.add(type.substring(4));
+				}
+			}
+			rows.removeIf(row -> {
+				if (row.getRepositotyEntryKey() != null) {
+					return row.getOlatResource() == null
+						|| row.getOlatResource().getResourceableTypeName() == null
+						|| !reTypes.contains(row.getOlatResource().getResourceableTypeName());
+				}
+				return !ceTypes.contains(row.getCurriculumElementTypeName());
+			});
 		}
 	}
 	

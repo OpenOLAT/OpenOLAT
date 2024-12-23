@@ -134,7 +134,8 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 
 		@Override
 		public boolean sortable() {
-			return this != educationalType
+			return this != type
+					&& this != educationalType
 					&& this != taxonomyLevels
 					&& this != offers
 					&& this != details
