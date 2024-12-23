@@ -344,7 +344,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		
 		tableModel = new CurriculumComposerTableModel(columnsModel, config.isFlat(), getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_curriculum_el_listing");		
 		if(secCallback.canNewCurriculumElement()) {
@@ -353,7 +353,6 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.setEmptyTableSettings("table.curriculum.element.empty", null, "o_icon_curriculum_element");
 		}
 		tableEl.setExportEnabled(true);
-		tableEl.setPageSize(40);
 		tableEl.setSearchEnabled(true);
 		String tablePrefsId = getTablePrefsId();
 		tableEl.setAndLoadPersistedPreferences(ureq, tablePrefsId);

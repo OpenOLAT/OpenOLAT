@@ -102,7 +102,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 
 	@Override
 	public final void setObjects(List<U> objects) {
-		backupRows = objects;
+		backupRows = new ArrayList<>(objects);
 		List<U> rowList = objects.stream()
 				.filter(o -> openedRows.contains(o))
 				.collect(Collectors.toList());

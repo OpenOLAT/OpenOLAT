@@ -62,6 +62,14 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 	}
 	
 	@Override
+	public int getTotalNodesCount() {
+		if(flat) {
+			return super.getRowCount();
+		}
+		return super.getTotalNodesCount();
+	}
+
+	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
 			List<CurriculumElementRow> views = new CurriculumComposerTableSortDelegate(orderBy, this, locale).sort();
