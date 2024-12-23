@@ -3014,6 +3014,7 @@ create table o_qp_item (
    q_editor varchar(256),
    q_editor_version varchar(256),
    q_format varchar(32) not null,
+   q_max_score decimal default null,
    q_creator varchar(1024),
    creationdate timestamp not null,
    lastmodified timestamp not null,

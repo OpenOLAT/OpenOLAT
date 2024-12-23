@@ -333,6 +333,9 @@ public class QItemQueriesDAO {
 		if (StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.and().append(" item.format=:format");
 		}
+		if (params.getMaxScore() != null) {
+			sb.and().append(" item.maxScore=:maxScore");
+		}
 		
 		if(params.getTaxonomyLevel() != null) {
 			sb.and().append(" taxonomyLevel.key=:taxonomyLevelKey");
@@ -483,6 +486,9 @@ public class QItemQueriesDAO {
 
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			query.setParameter("format", params.getFormat());
+		}
+		if(params.getMaxScore() != null) {
+			query.setParameter("maxScore", params.getMaxScore());
 		}
 		if (params.getLikeTaxonomyLevel() != null) {
 			query.setParameter("pathKeys", params.getLikeTaxonomyLevel().getMaterializedPathKeys() + "%");

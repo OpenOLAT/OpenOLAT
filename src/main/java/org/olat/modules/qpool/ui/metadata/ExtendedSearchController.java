@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.ui.metadata;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -338,6 +339,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			//technical
 			attributes.add(new SearchAttribute("technical.editor", new StringQueryParameter(QItemDocument.EDITOR_FIELD)));
 			attributes.add(new SearchAttribute("technical.format", new FormatQueryParameter()));
+			attributes.add(new SearchAttribute("max.score", new StringQueryParameter(QItemDocument.MAX_SCORE)));
 			//rights
 			if (licenseModule.isEnabled(licenseHandler)) {
 				attributes.add(new SearchAttribute("rights.license", new LicenseQueryParameter()));	
@@ -371,8 +373,8 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 
 		@Override
 		public String getValue(FormItem item) {
-			if(item instanceof TextElement) {
-				return ((TextElement)item).getValue();
+			if(item instanceof TextElement textEl) {
+				return textEl.getValue();
 			}
 			return null;
 		}
@@ -385,6 +387,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		@Override
 		public boolean fillSearchParams(SearchQuestionItemParams searchParams, FormItem item) {
 			String val = getValue(item);
+			item.clearError();
 			if(StringHelper.containsNonWhitespace(val)) {
 				if(AbstractOlatDocument.TITLE_FIELD_NAME.equals(docAttribute)) {
 					searchParams.setTitle(val);
@@ -400,6 +403,13 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 					searchParams.setInformations(val);
 				} else if(QItemDocument.LANGUAGE_FIELD.equals(docAttribute)) {
 					searchParams.setLanguage(val);
+				} else if(QItemDocument.MAX_SCORE.equals(docAttribute)) {
+					try {
+						searchParams.setMaxScore(new BigDecimal(val));
+					} catch (Exception e) {
+						getLogger().debug("Cannot parse value: {}", val);
+						item.setErrorKey("form.error.nointeger");
+					}
 				}
 				return true;
 			}
@@ -579,6 +589,8 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			return searchParams.getQuestionStatus() != null;
 		}
 	}
+	
+
 	
 	public abstract class SingleChoiceQueryParameter implements QueryParameterFactory {
 		private final String docAttribute;

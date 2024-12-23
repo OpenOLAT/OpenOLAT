@@ -163,6 +163,15 @@ public class MetadatasController extends BasicController {
 		updateShares();
 	}
 	
+	public void updateMetadata(QuestionItem item) {
+		generalEditCtrl.updateItem(item);
+		questionEditCtrl.updateItem(item);
+		if(rightsEditCtrl != null) {
+			rightsEditCtrl.updateItem(item);
+		}
+		technicalEditCtrl.updateItem(item);
+	}
+	
 	private void saveOpenPanel(UserRequest ureq, String panelId) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {

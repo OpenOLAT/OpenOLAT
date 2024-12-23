@@ -149,6 +149,8 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 	
 	@Column(name="q_format", nullable=false, insertable=true, updatable=true)
 	private String format;
+	@Column(name="q_max_score", nullable=true, insertable=true, updatable=true)
+	private BigDecimal maxScore;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
@@ -387,6 +389,15 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 
 	public void setFormat(String format) {
 		this.format = format;
+	}
+
+	@Override
+	public BigDecimal getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(BigDecimal maxScore) {
+		this.maxScore = maxScore;
 	}
 
 	@Override

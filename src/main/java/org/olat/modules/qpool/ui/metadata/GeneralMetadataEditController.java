@@ -201,6 +201,10 @@ public class GeneralMetadataEditController extends FormBasicController {
 		}
 	}
 	
+	public void updateItem(QuestionItem item) {
+		this.item = item;
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (taxonomyLevelEl == source) {

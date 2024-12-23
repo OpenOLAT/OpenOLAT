@@ -225,6 +225,10 @@ public class RightsMetadataEditController extends FormBasicController {
 			setReadOnly();
 		}
 	}
+	
+	public void updateItem(QuestionItem item) {
+		this.item = item;
+	}
 
 	private void reloadAuthors() {
 		if(item.getKey() != null) {

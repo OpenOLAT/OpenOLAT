@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
@@ -58,6 +59,7 @@ import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.model.xml.QTI21Infos;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.repository.handlers.QTI21IMSManifestExplorerVisitor;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QPoolService;
@@ -289,6 +291,12 @@ public class QTI21ImportProcessor {
 			QItemType defType = convertType(assessmentItem);
 			poolItem.setType(defType);
 		}
+		
+		Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+		if(maxScore != null) {
+			poolItem.setMaxScore(BigDecimal.valueOf(maxScore.doubleValue()));
+		}
+		
 		questionItemDao.persist(owner, poolItem);
 		createLicense(poolItem, metadata);
 		return poolItem;
@@ -315,8 +323,9 @@ public class QTI21ImportProcessor {
 			default: return qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
 		}
 	}
+	
 	//additionalInformations, assessmentType
-	protected void processItemMetadata(QuestionItemImpl poolItem, AssessmentItemMetadata metadata) {
+	private final void processItemMetadata(QuestionItemImpl poolItem, AssessmentItemMetadata metadata) {
 		//non heuristic set of question type
 		String typeStr = null;	
 		QTI21QuestionType questionType = metadata.getQuestionType();

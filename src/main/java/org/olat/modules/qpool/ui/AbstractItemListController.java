@@ -175,6 +175,8 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		BigDecimalCellRenderer decimalRenderer = new BigDecimalCellRenderer();
+		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel markCol = new DefaultFlexiColumnModel(Cols.mark);
@@ -198,14 +200,15 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.coverage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.additionalInformations));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.language));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.language));
 		if (getSecurityCallback().canUseTaxonomy()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxonomyLevel));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxonomyPath));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.educationalContext));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.difficulty));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.stdevDifficulty));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.differentiation));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.difficulty, decimalRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.stdevDifficulty, decimalRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.differentiation, decimalRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.numOfAnswerAlternatives));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.usage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.correctionTime));
@@ -214,6 +217,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.rating));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.numberOfRatings));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.maxScore, decimalRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.itemVersion));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new QuestionStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.statusLastModified));	

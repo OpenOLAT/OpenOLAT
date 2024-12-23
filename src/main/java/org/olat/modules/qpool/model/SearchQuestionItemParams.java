@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.model;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -61,6 +62,8 @@ public class SearchQuestionItemParams implements Cloneable {
 	private QEducationalContext level;
 	private QuestionItemCollection collection;
 	private List<QItemType> excludedItemTypes;
+	
+	private BigDecimal maxScore;
 	
 	private QItemType itemType;
 	private TaxonomyLevel taxonomyLevel;
@@ -199,6 +202,14 @@ public class SearchQuestionItemParams implements Cloneable {
 		this.format = format;
 	}
 
+	public BigDecimal getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(BigDecimal maxScore) {
+		this.maxScore = maxScore;
+	}
+
 	public boolean isFavoritOnly() {
 		return favoritOnly;
 	}
@@ -332,6 +343,9 @@ public class SearchQuestionItemParams implements Cloneable {
 		}
 		if(StringHelper.containsNonWhitespace(format)) {
 			clone.format = format;
+		}
+		if(maxScore != null) {
+			clone.maxScore = maxScore;
 		}
 		if(StringHelper.containsNonWhitespace(title)) {
 			clone.title = title;

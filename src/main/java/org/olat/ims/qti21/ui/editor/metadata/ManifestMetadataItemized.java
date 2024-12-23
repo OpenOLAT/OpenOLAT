@@ -259,6 +259,11 @@ public class ManifestMetadataItemized implements QuestionItem, QuestionItemEdita
 	}
 
 	@Override
+	public BigDecimal getMaxScore() {
+		return null;
+	}
+
+	@Override
 	public Integer getCorrectionTime() {
 		return metadataBuilder.getOpenOLATMetadataCorrectionTime();
 	}

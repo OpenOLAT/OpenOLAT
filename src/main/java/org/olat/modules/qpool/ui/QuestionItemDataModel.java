@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 
 /**
  * 
@@ -93,9 +92,9 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case taxonomyLevel: return item.getTaxonomyLevelDisplayName();
 			case taxonomyPath: return item.getTaxonomicPath();
 			case educationalContext: return item.getEducationalContextLevel();
-			case difficulty: return MetaUIFactory.bigDToString(item.getDifficulty());
-			case stdevDifficulty: return MetaUIFactory.bigDToString(item.getStdevDifficulty());
-			case differentiation: return MetaUIFactory.bigDToString(item.getDifferentiation());
+			case difficulty: return item.getDifficulty();
+			case stdevDifficulty: return item.getStdevDifficulty();
+			case differentiation: return item.getDifferentiation();
 			case numOfAnswerAlternatives:
 				return item.getNumOfAnswerAlternatives() > 0 ? Integer.toString(item.getNumOfAnswerAlternatives()) : "";
 			case usage:
@@ -111,6 +110,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case educationalLearningTime: return item.getEducationalLearningTime();
 			case rating: return round(item.getRating());
 			case numberOfRatings: return item.getNumberOfRatings();
+			case maxScore: return item.getMaxScore();
 			case format: return item.getFormat();
 			case itemVersion: return item.getItemVersion();
 			case status: return item.getQuestionStatus();
@@ -159,7 +159,9 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		editable("editable"),
 		mark("mark"),
 		correctionTime("question.correctionTime"),
-		language("general.language");
+		language("general.language"),
+		maxScore("max.score")
+		;
 		
 		private final String i18nKey;
 	
