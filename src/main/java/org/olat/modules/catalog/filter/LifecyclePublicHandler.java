@@ -103,7 +103,6 @@ public class LifecyclePublicHandler implements CatalogFilterHandler {
 				.map(CatalogEntry::getLifecycle)
 				.filter(lifecycle -> lifecycle != null && !lifecycle.isPrivateCycle())
 				.distinct()
-				.sorted()
 				.forEach(lifecycle -> filterSV.add(new SelectionValue(
 						lifecycle.getSoftKey(),
 						StringHelper.escapeHtml(lifecycle.getLabel()))));
@@ -111,6 +110,8 @@ public class LifecyclePublicHandler implements CatalogFilterHandler {
 		if (filterSV.isEmpty()) {
 			return null;
 		}
+		
+		filterSV.sort(SelectionValues.VALUE_ASC);
 		
 		return new FlexiTableMultiSelectionFilter(translator.translate("cif.public.dates"), TYPE, filterSV,
 				catalogFilter.isDefaultVisible());

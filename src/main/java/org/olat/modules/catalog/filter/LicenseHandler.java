@@ -121,7 +121,6 @@ public class LicenseHandler implements CatalogFilterHandler {
 				.map(License::getLicenseType)
 				.filter(licenseType -> !licenseService.isNoLicense(licenseType))
 				.distinct()
-				.sorted()
 				.forEach(licenseType -> filterSV.add(new SelectionValue(
 						licenseType.getKey().toString(),
 						StringHelper.escapeHtml(LicenseUIFactory.translate(licenseType, translator.getLocale())))));
@@ -129,6 +128,8 @@ public class LicenseHandler implements CatalogFilterHandler {
 		if (filterSV.isEmpty()) {
 			return null;
 		}
+		
+		filterSV.sort(SelectionValues.VALUE_ASC);
 		
 		return new FlexiTableMultiSelectionFilter(translator.translate("cif.license"), TYPE, filterSV,
 				catalogFilter.isDefaultVisible());
