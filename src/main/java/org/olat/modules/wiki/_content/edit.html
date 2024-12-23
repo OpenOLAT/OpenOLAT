@@ -1,8 +1,8 @@
 <div class="clearfix">
 #if($isGuest)
-	<div class="o_warning">$r.translate("guest.no.edit")</div>
+	<div class="o_warning_with_icon">$r.translate("guest.no.edit")</div>
 #elseif(!$lockEntry.isSuccess())
-	<div class="o_warning">$r.translate("page.locked", [$page.getPageName(), $lockEntry.getOwner().getUser().getFirstName(), $lockEntry.getOwner().getUser().getLastName()])</div>
+	<div class="o_warning_with_icon">$r.translate("page.locked", [$page.getPageName(), $lockEntry.getOwner().getUser().getFirstName(), $lockEntry.getOwner().getUser().getLastName()])</div>
 #else
 	## normal edit workflow
 	#if ($r.available("versionDisplay"))

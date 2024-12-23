@@ -128,7 +128,7 @@
 			<div class="o_togglebox_content clearfix">	
 				#if($assignment.content && $assignment.content.length() > 0)
 				<h5>$r.translate("assignment.content")</h5>
-				<div class="o_desc">
+				<div class="o_info_with_icon">
 					#set($assignmentContent = $r.xssScan($assignment.content))
 					$r.formatLatexFormulas($assignmentContent)
 				</div>

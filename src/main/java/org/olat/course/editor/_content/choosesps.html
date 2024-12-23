@@ -1,5 +1,5 @@
 <div class="o_form form-horizontal clearfix">
-	<div class="o_desc">$off_desc</div>
+	<div class="o_info_with_icon">$off_desc</div>
 	#foreach($nodeSelection in $nodeSelections)
 		<div style="margin-left:${nodeSelection.getUserObject().getIndentation()}0px;">
 			$r.render($nodeSelection.getComponent().getComponentName())

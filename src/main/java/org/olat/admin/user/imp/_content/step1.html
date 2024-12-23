@@ -6,7 +6,7 @@
 #end
 
 #if($newusers=="true")
-	<p class="o_warning">$overview</p>
+	<p class="o_warning_with_icon">$overview</p>
 #else 
 	<div class="o_error o_block">$r.translate("step1.nonewusers")</div>
 #end
@@ -15,7 +15,7 @@
 	$r.render("update.user", "3_9", "form")
 #end
 #if($r.visible("update.password"))
-	<p class="o_desc">$r.translate("step1.passwordEmails")</p>
+	<p class="o_info_with_icon">$r.translate("step1.passwordEmails")</p>
 	$r.render("update.password", "3_9", "form")
 #end
 </fieldset>

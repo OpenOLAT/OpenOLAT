@@ -1,6 +1,6 @@
 <div class="o_gta_coach_selection">
 #if($multipleGroupsWarning && !$multipleGroupsWarning.isEmpty())
-	<div class="o_warning">$r.xssScan($multipleGroupsWarning)</div>
+	<div class="o_warning_with_icon">$r.xssScan($multipleGroupsWarning)</div>
 #end
 #if($r.available("selection"))
 	$r.render("selection")

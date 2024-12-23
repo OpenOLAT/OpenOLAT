@@ -48,7 +48,7 @@
 		</div>
 		#end
 		#if($r.isTrue($notRegistered))
-			<div class="o_warning">$r.translate("warning.not.registered.shared.documents")</div>
+			<div class="o_warning_with_icon">$r.translate("warning.not.registered.shared.documents")</div>
 		#end
 		$r.render("meetingContents")
 	</fieldset>

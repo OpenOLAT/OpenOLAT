@@ -4,7 +4,7 @@
 		<legend>$r.translate("qf.edit")</legend>
 		#end
 		#if($r.isNotNull($notEnoughPrivilege) && $notEnoughPrivilege)
-		<div class="o_warning">$r.translate("warning.qd.not.enough.privilege")</div>
+		<div class="o_warning_with_icon">$r.translate("warning.qd.not.enough.privilege")</div>
 		#end
 		$r.render("quotaform")
 	</fieldset>
@@ -12,7 +12,7 @@
 	<fieldset class="clearfix">
 		<legend>$r.translate("qf.new")</legend>
 		#if($r.isNotNull($notEnoughPrivilege) && $notEnoughPrivilege)
-		<div class="o_warning">$r.translate("warning.qd.not.enough.privilege")</div>
+		<div class="o_warning_with_icon">$r.translate("warning.qd.not.enough.privilege")</div>
 		#end
 		#if($r.available("qf.new"))
 			<div class="o_button_group o_button_group_right">$r.render("qf.new")</div>

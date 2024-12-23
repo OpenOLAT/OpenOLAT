@@ -73,8 +73,8 @@ import org.olat.modules.forms.ui.EvaluationFormEditorController;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.EvaluationFormRuntimeController;
 import org.olat.repository.ErrorList;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -283,7 +283,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 		if(restrictedEdit) {
 			Translator translator = Util.createPackageTranslator(EvaluationFormRuntimeController.class, ureq.getLocale());
 			toolbar.setMessage(translator.translate("evaluation.form.in.use"));
-			toolbar.setMessageCssClass("o_warning");
+			toolbar.setMessageCssClass("o_warning_with_icon");
 		}
 		return new EvaluationFormEditorController(ureq, control, toolbar, formFile, storage, restrictedEdit, restrictedEditWeight);
 	}

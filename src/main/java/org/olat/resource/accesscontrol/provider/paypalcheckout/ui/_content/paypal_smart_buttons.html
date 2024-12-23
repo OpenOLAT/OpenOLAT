@@ -1,7 +1,7 @@
 <div class="o_paypal">
 	<div class="o_ac_method_icon"><h3><i class="o_icon o_ac_paypal_icon"></i></h3></div>
 	<fieldset class=" o_form form-horizontal clearfix">
-		<div id="paypal_processing_${r.getCId()}" class="o_desc" style="display: none;"><i class="o_icon o_icon-lg o_icon_pending o_icon-spin"> </i>  $r.translate("paypal.process.transaction")</div>
+		<div id="paypal_processing_${r.getCId()}" class="o_info_with_icon" style="display: none;"><i class="o_icon o_icon-lg o_icon_pending o_icon-spin"> </i>  $r.translate("paypal.process.transaction")</div>
 		
 		<div id="paypal_wrapper_${r.getCId()}">
 
@@ -108,6 +108,6 @@
 		</div>
 	</fieldset>
 	<div id="paypal_reservation_${r.getCId()}" class="o_error" style="display: none;" role="alert">$r.translate("paypal.reservation.failed") </div>
-	<div id="paypal_cancel_${r.getCId()}" class="o_warning" style="display: none;" role="alert">$r.translate("paypal.cancelled.transaction")</div>
+	<div id="paypal_cancel_${r.getCId()}" class="o_warning_with_icon" style="display: none;" role="alert">$r.translate("paypal.cancelled.transaction")</div>
 	<div id="paypal_error_${r.getCId()}" class="o_error" style="display: none;" role="alert">$r.translate("paypal.error.transaction")</div>
 </div>

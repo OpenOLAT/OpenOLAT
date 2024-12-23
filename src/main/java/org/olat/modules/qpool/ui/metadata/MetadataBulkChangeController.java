@@ -150,7 +150,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 				layoutCont.contextPut("infosMsg", translate("bulk.change.description.plural",
 						new String[] { Integer.toString(items.size()) }));
 			}
-			layoutCont.contextPut("infosCss", items.size() > 20 ? "o_warning" :"o_hint");
+			layoutCont.contextPut("infosCss", items.size() > 20 ? "o_warning_with_icon" :"o_hint");
 		}
 		
 		initGeneralForm(formLayout);

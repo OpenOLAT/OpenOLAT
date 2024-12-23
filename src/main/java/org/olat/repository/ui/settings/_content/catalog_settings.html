@@ -3,7 +3,7 @@
 
 	#if($r.isTrue($hasContent))
 	<div class="o_hint">$r.translate("info.catalog.entries")</div>
-	<div class="o_warning">$r.render("infos")</div>
+	<div class="o_warning_with_icon">$r.render("infos")</div>
 	#end
 	#if($r.visible("details.catadd"))
 	<div class="o_button_group o_button_group_right">

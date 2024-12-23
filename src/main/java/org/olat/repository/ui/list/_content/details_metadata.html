@@ -1,7 +1,7 @@
 <div class="o_overview o_subcolumn">
 	<h4>$r.translate("details.overview")</h4>
 	#if($closed)
-		<div class="o_warning o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
+		<div class="o_warning_with_icon o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
 	#end
 	#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
 		<div title="$r.translateInAttribute("cif.dates")">

@@ -125,7 +125,7 @@ public class DialogBoxUIFactory {
 		okButton.add(trans.translate("ok"));
 		
 		DialogBoxController ctrl = new DialogBoxController(ureq, wControl, null, lockMsg, okButton);
-		ctrl.setCssClass("o_warning");
+		ctrl.setCssClass("o_warning_with_icon");
 		return ctrl;
 	}
 	

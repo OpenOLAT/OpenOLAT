@@ -1,7 +1,7 @@
 <div id="$r.getCId()">
 	<div class="o_catalog container-fluid">
 	#if ($isGuest)
-		<div class="o_warning">${r.translate("filtered.first")}${r.render("cat.login")}${r.translate("filtered.second")}</div>
+		<div class="o_warning_with_icon">${r.translate("filtered.first")}${r.render("cat.login")}${r.translate("filtered.second")}</div>
 	#end
 		
 	#if (!$isOrdering)

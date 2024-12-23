@@ -40,7 +40,7 @@
 		<li><a href="$mapperUri/slides/$r.encodeUrl($document.filename)" target="_blank"><i class="o_icon $r.getFiletypeIconCss($document.filename)"> </i> $r.escapeHtml($document.label)</a> #if($r.visible($document.deleteButton))$r.render($document.deleteButton)#end</li>
 	#end
 </ul>
-<div class="o_warning">$r.translate("warning.slides.meeting.running")</div>
+<div class="o_warning_with_icon">$r.translate("warning.slides.meeting.running")</div>
 #end
 #if($r.available("meeting.slides.upload"))
 	$r.render("meeting.slides.upload")
@@ -56,7 +56,7 @@
 #end
 
 #if($r.visible("meeting.acknowledge.recording"))
-<div class="o_warning">
+<div class="o_warning_with_icon">
 	<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>
 	<p>$r.translate("meeting.acknowledge.recording.explain")</p>
 	$r.render("meeting.acknowledge.recording","minimal")

@@ -33,7 +33,7 @@
 				<div class="o_topic">
 					<div class="o_row">
 						<div class="o_c2">
-							<div class="o_warning">
+							<div class="o_warning_with_icon">
 								$topic.getMessage()
 							</div>
 						</div>
@@ -118,7 +118,7 @@
 						<div class="o_row">
 							<div class="o_c2">
 								#if($topic.getAppointment().isRecordingEnabled())
-									<div class="o_warning o_bbb_warning">
+									<div class="o_warning_with_icon o_bbb_warning">
 										<h4>$r.translate("meeting.recording.title")</h4>
 										<p>$r.translate("meeting.recording.desc")</p>
 										$r.render($topic.getAcknowledgeOtherName(), "minimal")
@@ -146,7 +146,7 @@
 						<div class="o_row">
 							<div class="o_c2">
 								#if($r.visible($topic.getAcknowledgeName()))
-									<div class="o_warning o_bbb_warning">
+									<div class="o_warning_with_icon o_bbb_warning">
 										<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>
 										<p>$r.translate("meeting.acknowledge.recording.explain")</p>
 										$r.render($topic.getAcknowledgeName(), "minimal")
@@ -161,7 +161,7 @@
 									</div>
 								#end
 								#if($r.isNotNull($topic.getMeetingWarning()))
-									<div class="o_warning">
+									<div class="o_warning_with_icon">
 										$topic.getMeetingWarning()
 									</div>
 								#end

@@ -1,7 +1,7 @@
 #if($r.isTrue($overlappingErrorConfigs))
-	<div class="o_block"><div class="o_error" role="alert"><i class="o_icon o_icon_important"> </i> $r.translate("accesscontrol.overlap.error")</div></div>
+	<div class="o_block"><div class="o_error_with_icon" role="alert">$r.translate("accesscontrol.overlap.error")</div></div>
 #elseif($r.isTrue($overlappingConfigs))
-	<div class="o_block"><div class="o_warning"><i class="o_icon o_icon_important"> </i> $r.translate("accesscontrol.overlap.found")</div></div>
+	<div class="o_block"><div class="o_warning_with_icon">$r.translate("accesscontrol.overlap.found")</div></div>
 #end
 
 #if ($offers && $offers.size() > 0)

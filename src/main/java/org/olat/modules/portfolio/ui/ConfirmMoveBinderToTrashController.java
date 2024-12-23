@@ -94,7 +94,7 @@ public class ConfirmMoveBinderToTrashController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("msg", translate("delete.binder.warning", args));
-			layoutCont.contextPut("dangerCssClass", "o_warning");
+			layoutCont.contextPut("dangerCssClass", "o_warning_with_icon");
 		}
 		
 		String[] onValues = new String[]{ translate("trash.binder.acknowledge") };

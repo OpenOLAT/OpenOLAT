@@ -595,11 +595,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				// Highest priority
 			} else if(getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				toolbarPanel.setMessage(translate("course.closed"));
-				toolbarPanel.setMessageCssClass("o_warning");
+				toolbarPanel.setMessageCssClass("o_warning_with_icon");
 			} else if(getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.deleted
 					|| getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.trash) {
 				toolbarPanel.setMessage(translate("course.deleted"));
-				toolbarPanel.setMessageCssClass("o_warning");
+				toolbarPanel.setMessageCssClass("o_warning_with_icon");
 			} else if(!isAssessmentModeMessageSet()) {
 				toolbarPanel.setMessage(null);
 				toolbarPanel.setMessageComponent(null);

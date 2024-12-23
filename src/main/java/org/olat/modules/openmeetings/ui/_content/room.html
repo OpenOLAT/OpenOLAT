@@ -1,7 +1,7 @@
 #if($disabled)
- <div class="o_warning">$r.translate("openmeetings.disabled.error")</div>
+ <div class="o_warning_with_icon">$r.translate("openmeetings.disabled.error")</div>
 #elseif($noroom)
- <div class="o_warning">$r.translate("room.notfound.error")</div>
+ <div class="o_warning_with_icon">$r.translate("room.notfound.error")</div>
 #else
 	<h3><i class="o_icon o_openmeetings_icon"> </i> $r.escapeHtml($roomName)</h3>
 	#if($roomComment)

@@ -296,7 +296,7 @@ public class VideoTaskDisplayController extends BasicController {
 				
 				feedback(category, segmentId, correct);
 			} else {
-				segmentsCtrl.setMessage(translate("feedback.no.attempts.left"), "o_warning", false);
+				segmentsCtrl.setMessage(translate("feedback.no.attempts.left"), "o_warning_with_icon", false);
 			}
 		}
 	}

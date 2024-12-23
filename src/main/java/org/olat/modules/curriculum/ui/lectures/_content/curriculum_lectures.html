@@ -27,6 +27,6 @@
 	#if($r.isTrue($hasLectures) && $r.available("lectures"))
 		$r.render("lectures")
 	#else
-		<div class="o_warning">$r.translate("no.lectures")</div>
+		<div class="o_warning_with_icon">$r.translate("no.lectures")</div>
 	#end
 </fieldset>

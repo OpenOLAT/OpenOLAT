@@ -1,6 +1,6 @@
 <div class="o_sel_course_gta_group_assessment_form">
 	#if($duplicateWarning && !$duplicateWarning.isempty())
-		<div class="o_warning">$duplicateWarning</div>
+		<div class="o_warning_with_icon">$duplicateWarning</div>
 	#end
 	
 	$r.render("groupGrading")

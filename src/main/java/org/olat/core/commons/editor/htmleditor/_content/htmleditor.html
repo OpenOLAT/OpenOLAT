@@ -10,7 +10,7 @@
 #end
 
 #if($locked)
-	<p class="o_warning">$r.translate("error.pageeditedby", $lockOwner) #if($r.isTrue($lockOwnerSameUser))$r.translate("lock.same.user.different.window")#end</p>
+	<p class="o_warning_with_icon">$r.translate("error.pageeditedby", $lockOwner) #if($r.isTrue($lockOwnerSameUser))$r.translate("lock.same.user.different.window")#end</p>
 #elseif ($r.available("rtfElement"))
 	## script block must be before editor loads
 	<div class="o_editor clearfix">

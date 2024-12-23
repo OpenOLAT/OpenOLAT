@@ -15,7 +15,7 @@
 <div class="o_error" role="alert">$r.translate("error.no.group")</div>
 #end
 #if($groupWarning)
-<div class="o_warning" role="alert">$r.translate("warning.group.task")</div>
+<div class="o_warning_with_icon" role="alert">$r.translate("warning.group.task")</div>
 #end
 
 #if($r.available("open.group"))
@@ -58,10 +58,10 @@
 			#end
 			#if($r.available("availableTasks"))
 				#if($r.isTrue($assignmentOptional))
-					<div class="o_warning">$r.translate("run.assignment.optional")</div>
+					<div class="o_warning_with_icon">$r.translate("run.assignment.optional")</div>
 				#end
 				#if($groupWarning)
-					<div class="o_warning" role="alert">$r.translate("warning.group.pick.task", $r.escapeHtml($groupName))</div>
+					<div class="o_warning_with_icon" role="alert">$r.translate("warning.group.pick.task", $r.escapeHtml($groupName))</div>
 				#end
 				$r.render("availableTasks")
 			#elseif($r.available("myAssignedTask"))
@@ -76,7 +76,7 @@
 				$r.render("participant.reset.button")
 			</div>
 			#elseif($r.isTrue($assignmentOptional) && $r.isFalse($assignmentClosed))
-				<div class="o_warning">$r.translate("run.assignment.optional")</div>
+				<div class="o_warning_with_icon">$r.translate("run.assignment.optional")</div>
 				#if($r.visible("run.accept.optional"))
 				<div class="o_button_group">
 					$r.render("run.accept.optional")
@@ -131,7 +131,7 @@
 				<h5>$r.translate("submit.submit.title")</h5>
 				<p>$r.translate("submit.submit.desc")</p>
 				#if($groupWarning)
-					<div class="o_warning" role="alert">$r.translate("warning.group.submit", $r.escapeHtml($groupName))</div>
+					<div class="o_warning_with_icon" role="alert">$r.translate("warning.group.submit", $r.escapeHtml($groupName))</div>
 				#end
 				<div class="o_button_group">
 					$r.render("run.submit.button")

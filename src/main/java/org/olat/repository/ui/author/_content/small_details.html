@@ -1,7 +1,7 @@
 <div>
 	<h4><i class="o_icon $cssClass o_icon-lg"> </i> $r.escapeHtml($displayName)</h4>
 	#if($closed)
-		<div class="o_warning o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
+		<div class="o_warning_with_icon o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
 	#end
 	<table class="table"><tbody>
 		#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)

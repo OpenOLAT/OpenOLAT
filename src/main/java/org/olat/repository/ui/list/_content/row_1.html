@@ -38,7 +38,7 @@
 		</div>
 		
 		#if($row.closed)
-			<div class="o_warning o_closed">$r.translate("close.ressource.warning")</div>
+			<div class="o_warning_with_icon o_closed">$r.translate("close.ressource.warning")</div>
 		#else
 			#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd || ($row.location  && !${row.location.isEmpty()}))
 				<div class="o_lifecycle #if ($row.isActive()) o_active #end o_flex_block_one_line_left">

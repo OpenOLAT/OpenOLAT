@@ -62,7 +62,7 @@
 	#end
 	
 	#if($r.isTrue($testSessionDeleted))
-		<div class="o_warning">$r.translate("warning.reset.assessmenttest.data")</div>
+		<div class="o_warning_with_icon">$r.translate("warning.reset.assessmenttest.data")</div>
 	#end
 	
 	<div id="o_main" class="#if($r.visible("qtiResults") || !$r.visible("qtitree")) o_hide_main_left #end o_hide_main_right">

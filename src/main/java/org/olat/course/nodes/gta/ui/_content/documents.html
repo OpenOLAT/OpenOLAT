@@ -4,10 +4,10 @@
 #end
 
 #if($r.isNotEmpty($minDocsWarning))
-	<div class="o_warning">$minDocsWarning</div>
+	<div class="o_warning_with_icon">$minDocsWarning</div>
 #end
 #if($r.isNotEmpty($maxDocsWarning))
-	<div class="o_warning">$maxDocsWarning</div>
+	<div class="o_warning_with_icon">$maxDocsWarning</div>
 #end
 #if($hasDocuments)
 	$r.render("table")

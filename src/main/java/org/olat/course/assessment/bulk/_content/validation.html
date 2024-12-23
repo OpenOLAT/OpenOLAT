@@ -1,6 +1,6 @@
 <div class="o_sel_bulk_assessment_validation">
 #if ($hasNoItems) 
-	<p class="o_warning">
+	<p class="o_warning_with_icon">
 		$r.translate("validation.error")
 	</p>
 #else 
@@ -45,7 +45,7 @@
 	#if ($hasInvalidItems) 
 	<fieldset>
 		<legend>$r.translate("validation.nok.title")</legend>
-		<p class="o_warning">
+		<p class="o_warning_with_icon">
 			$r.translate("validation.nok.desc")
 		</p>
 		$r.render("notFoundList")

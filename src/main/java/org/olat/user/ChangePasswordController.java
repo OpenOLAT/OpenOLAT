@@ -99,7 +99,7 @@ public class ChangePasswordController extends BasicController implements Support
 		// if a user is not allowed to change his/her own password, say it here
 		if (!userModule.isPwdChangeAllowed(ureq.getIdentity())) {
 			String text = translate("notallowedtochangepwd", WebappHelper.getMailConfig("mailSupport"));
-			Controller simpleMsg = new SimpleMessageController(ureq, wControl, text, "o_warning");
+			Controller simpleMsg = new SimpleMessageController(ureq, wControl, text, "o_warning_with_icon");
 			listenTo(simpleMsg); //register controller to be disposed automatically on dispose of Change password controller
 			putInitialPanel(simpleMsg.getInitialComponent());	
 		} else {

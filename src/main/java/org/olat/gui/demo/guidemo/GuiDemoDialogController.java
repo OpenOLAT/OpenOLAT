@@ -83,6 +83,7 @@ public class GuiDemoDialogController extends BasicController {
 		mainP = putInitialPanel(vcMain);
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == yesNoButton) {
 			dialogBoxOne = activateYesNoDialog(ureq, "Hello World",

@@ -3,7 +3,7 @@
 	$r.render("header")
 #end
 #if($messageNotDone)
-	<div class="o_warning">$r.translate("evaluation.in.progress")</div>
+	<div class="o_warning_with_icon">$r.translate("evaluation.in.progress")</div>
 #elseif($noElements)
 	$r.render("empty.state")
 #else

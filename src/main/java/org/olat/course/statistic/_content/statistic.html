@@ -2,11 +2,11 @@
 <fieldset class="o_form form-horizontal">
 	<legend>
 		$r.translate("statistic.title")</legend>
-	<div class="o_desc">$r.translate("statistic.intro")</div>
+	<div class="o_info_with_icon">$r.translate("statistic.intro")</div>
 </fieldset>
 $r.render("statisticResult")
 #if($hasChart)
-	<div class="o_desc">$chartIntro</div>
+	<div class="o_info_with_icon">$chartIntro</div>
 	$r.render("chart")
 #end
 </div>
