@@ -144,6 +144,10 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 			setReadOnly(securityCallback);
 		}
 	}
+	
+	public void updateItem(QuestionItem item) {
+		this.item = item;
+	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {

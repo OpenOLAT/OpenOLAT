@@ -73,6 +73,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 	private TextElement numAnswerAltEl;
 	private TextElement usageEl;
 	private TextElement correctionTimeMinuteElement;
+	private StaticTextElement maxScoreEl;
 	private FormLayoutContainer buttonsCont;
 	
 	private QuestionItem item;
@@ -103,6 +104,12 @@ public class QuestionMetadataEditController extends FormBasicController {
 				translation = type.getType();
 			}
 			typeEl.setValue(translation);
+		}
+		
+		maxScoreEl = uifactory.addStaticTextElement("max.score", "", formLayout);
+		BigDecimal maxScore = item.getMaxScore();
+		if(maxScore != null) {
+			maxScoreEl.setValue(MetaUIFactory.bigDToString(maxScore));
 		}
 		
 		String page = velocity_root + "/learning_time.html";
@@ -200,6 +207,15 @@ public class QuestionMetadataEditController extends FormBasicController {
 			setReadOnly(securityCallback);
 		}
 	}
+	
+	public void updateItem(QuestionItem item) {
+		this.item = item;
+		if(item != null && item.getMaxScore() != null) {
+			maxScoreEl.setValue(MetaUIFactory.bigDToString(item.getMaxScore()));
+		} else {
+			maxScoreEl.setValue("");
+		}
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -220,8 +236,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(item instanceof QuestionItemEditable) {
-			QuestionItemEditable itemImpl = (QuestionItemEditable)item;
+		if(item instanceof QuestionItemEditable itemImpl) {
 			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
 					Action.UPDATE_QUESTION_ITEM_METADATA);
 			if(itemImpl instanceof QuestionItemImpl) {

@@ -550,7 +550,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 		} else if(source == cmc) {
 			cleanUp();
 		} else if(source == questionCtrl) {
-			if(event instanceof QItemEdited) {
+			if(event instanceof QItemEdited qie) {
+				reloadMetadata(qie.getItem());
 				questionEdited = true;
 				fireEvent(ureq, event);
 			}
@@ -679,6 +680,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 			reviewActionCtrl.setSecurityCallback(qItemSecurityCallback);
 			setQuestionController(ureq, reloadedItem, qItemSecurityCallback);
 		}
+	}
+	
+	private void reloadMetadata(QuestionItem item) {
+		QuestionItem reloadedItem = qpoolService.loadItemById(item.getKey());
+		metadatasCtrl.updateMetadata(reloadedItem);
 	}
 	
 	private void doConfirmCopy(UserRequest ureq, QuestionItemShort item) {

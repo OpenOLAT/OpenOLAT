@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.pool;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.net.URI;
 
 import org.olat.core.gui.UserRequest;
@@ -32,6 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.modules.qpool.QPoolItemEditorController;
@@ -101,8 +103,7 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == editorCtrl) {
-			if(event instanceof AssessmentItemEvent) {
-				AssessmentItemEvent aie = (AssessmentItemEvent)event;
+			if(event instanceof AssessmentItemEvent aie) {
 				AssessmentItem assessmentItem = aie.getAssessmentItem();
 				qtiService.persistAssessmentObject(resourceFile, assessmentItem);
 				updateQuestionItem(ureq, assessmentItem);
@@ -111,10 +112,15 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 	}
 
 	private void updateQuestionItem(UserRequest ureq, AssessmentItem assessmentItem) {
-		if(questionItem instanceof QuestionItemImpl) {
+		if(questionItem instanceof QuestionItemImpl itemImpl) {
 			String title = assessmentItem.getTitle();
-			QuestionItemImpl itemImpl = (QuestionItemImpl)questionItem;
 			itemImpl.setTitle(title);
+			Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+			if(maxScore != null) {
+				itemImpl.setMaxScore(BigDecimal.valueOf(maxScore.doubleValue()));
+			} else {
+				itemImpl.setMaxScore(null);
+			}
 			qpoolService.updateItem(itemImpl);
 			fireEvent(ureq, new QItemEdited(questionItem));
 		}

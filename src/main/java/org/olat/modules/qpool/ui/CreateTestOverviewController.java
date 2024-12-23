@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -119,7 +120,10 @@ public class CreateTestOverviewController extends FormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new QuestionStatusCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.maxScore,
+				new BigDecimalCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status,
+				new QuestionStatusCellRenderer(getTranslator())));
 		if(withLicenses) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license));
 		}
@@ -266,6 +270,10 @@ public class CreateTestOverviewController extends FormBasicController {
 			return question.getFormat();
 		}
 		
+		public BigDecimal getMaxScore() {
+			return question.getMaxScore();
+		}
+		
 		public ResourceLicense getLicense() {
 			return license;
 		}
@@ -326,6 +334,7 @@ public class CreateTestOverviewController extends FormBasicController {
 				case taxonomyLevel -> questionRow.getTaxonomyLevelName();
 				case taxonomyPath -> questionRow.getTaxonomyPath();
 				case format -> questionRow.getFormat();
+				case maxScore -> questionRow.getMaxScore();
 				case type -> questionRow.getItemType();
 				case status -> questionRow.getQuestionStatus();
 				case license -> shortenedLicense(questionRow);
@@ -370,7 +379,8 @@ public class CreateTestOverviewController extends FormBasicController {
 		format("technical.format"),
 		status("lifecycle.status"),
 		type("question.type"),
-		license("rights.license");
+		license("rights.license"),
+		maxScore("max.score");
 		
 		private final String i18nKey;
 		

@@ -71,6 +71,7 @@ public class ItemWrapper implements QuestionItemView {
 	private Date statusLastModified;
 
 	private String format;
+	private BigDecimal maxScore;
 	
 	private boolean isAuthor;
 	private boolean isTeacher;
@@ -281,6 +282,11 @@ public class ItemWrapper implements QuestionItemView {
 	}
 
 	@Override
+	public BigDecimal getMaxScore() {
+		return maxScore;
+	}
+
+	@Override
 	public QuestionStatus getQuestionStatus() {
 		if(StringHelper.containsNonWhitespace(status)) {
 			return QuestionStatus.valueOf(status);
@@ -374,6 +380,7 @@ public class ItemWrapper implements QuestionItemView {
 			itemWrapper.statusLastModified = item.getQuestionStatusLastModified();
 
 			itemWrapper.format = item.getFormat();
+			itemWrapper.maxScore = item.getMaxScore();
 		}
 
 		public ItemWrapperBuilder setAuthor(boolean isAuthor) {

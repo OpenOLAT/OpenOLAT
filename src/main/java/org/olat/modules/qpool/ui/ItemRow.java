@@ -243,6 +243,11 @@ public class ItemRow implements QuestionItemView {
 	public String getFormat() {
 		return delegate.getFormat();
 	}
+	
+	@Override
+	public BigDecimal getMaxScore() {
+		return delegate.getMaxScore();
+	}
 
 	@Override
 	public QuestionStatus getQuestionStatus() {

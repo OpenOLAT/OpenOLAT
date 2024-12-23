@@ -75,6 +75,8 @@ public interface QuestionItemShort extends OLATResourceable, CreateInfo, Modifie
 	public int getNumOfAnswerAlternatives();
 
 	public int getUsage();
+	
+	public BigDecimal getMaxScore();
 
 	//lifecycle
 	public QuestionStatus getQuestionStatus();
