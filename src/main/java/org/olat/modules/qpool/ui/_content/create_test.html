@@ -1,5 +1,5 @@
 #if($r.isTrue($licenseWarning))
-	<div class="o_warning"><h5>$r.translate("warning.different.licenses.title")</h5>
+	<div class="o_warning"><i class="o_icon o_icon_important"> </i> <strong>$r.translate("warning.different.licenses.title")</strong><br>
 	$r.translate("warning.different.licenses")</div>
 #end
 $r.render("shares")
@@ -7,6 +7,6 @@ $r.render("shares")
 	$r.render("group.by")
 #end
 <div class="o_button_group">
-	$r.render("cancel")
 	$r.render("create.test")
+	$r.render("cancel")
 </div>

@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -36,6 +37,8 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -46,6 +49,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -119,14 +124,17 @@ public class CreateTestOverviewController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license));
 		}
 		itemsModel = new QItemDataModel(columnsModel, format, getLocale());
-		uifactory.addTableElement(getWindowControl(), "shares", itemsModel, getTranslator(), formLayout);
+		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "shares", itemsModel, getTranslator(), formLayout);
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		options.setDefaultOrderBy(new SortKey(Cols.title.sortKey(), true));
+		tableEl.setSortSettings(options);
 		
 		String[] groupByValues = new String[] { translate("group.by.taxonomy.level") };
 		groupByEl = uifactory.addCheckboxesHorizontal("group.by", null, formLayout, groupByKeys, groupByValues);
 		groupByEl.setVisible(withTaxonomy);
 		
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("create.test", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
 	private void loadModel(List<QuestionItemShort> items) {
@@ -279,7 +287,11 @@ public class CreateTestOverviewController extends FormBasicController {
 		}
 	}
 
-	private static class QItemDataModel extends DefaultFlexiTableDataModel<QuestionRow> {
+	private static class QItemDataModel extends DefaultFlexiTableDataModel<QuestionRow> 
+	implements SortableFlexiTableDataModel<QuestionRow> {
+		
+		private static final Cols[] COLS = Cols.values();
+		
 		private final Locale locale;
 		private final ExportFormatOptions format;
 		private final QuestionPoolModule qpoolModule;
@@ -292,27 +304,42 @@ public class CreateTestOverviewController extends FormBasicController {
 		}
 
 		@Override
-		public Object getValueAt(int row, int col) {
-			QuestionRow share = getObject(row);
-			switch(Cols.values()[col]) {
-				case accept:{
-					String itemFormat = share.getFormat();
-					QPoolSPI itemProvider = qpoolModule.getQuestionPoolProvider(itemFormat);
-					if(itemProvider != null && itemProvider.getTestExportFormats().contains(format)) {
-						return Boolean.TRUE;
-					}
-					return Boolean.FALSE;	
-				} 
-				case title: return share.getTitle();
-				case topic: return share.getTopic();
-				case taxonomyLevel: return share.getTaxonomyLevelName();
-				case taxonomyPath: return share.getTaxonomyPath();
-				case format: return share.getFormat();
-				case type: return share.getItemType();
-				case status: return share.getQuestionStatus();
-				case license: return shortenedLicense(share);
-				default : return share;
+		public void sort(SortKey orderBy) {
+			if(orderBy != null) {
+				List<QuestionRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+				super.setObjects(rows);
 			}
+		}
+
+		@Override
+		public Object getValueAt(int row, int col) {
+			QuestionRow questionRow = getObject(row);
+			return getValueAt(questionRow, col);
+		}
+
+		@Override
+		public Object getValueAt(QuestionRow questionRow, int col) {
+			return switch(COLS[col]) {
+				case accept -> getAcceptStatus(questionRow);
+				case title -> questionRow.getTitle();
+				case topic -> questionRow.getTopic();
+				case taxonomyLevel -> questionRow.getTaxonomyLevelName();
+				case taxonomyPath -> questionRow.getTaxonomyPath();
+				case format -> questionRow.getFormat();
+				case type -> questionRow.getItemType();
+				case status -> questionRow.getQuestionStatus();
+				case license -> shortenedLicense(questionRow);
+				default -> questionRow;
+			};
+		}
+		
+		private Boolean getAcceptStatus(QuestionRow questionRow) {
+			String itemFormat = questionRow.getFormat();
+			QPoolSPI itemProvider = qpoolModule.getQuestionPoolProvider(itemFormat);
+			if(itemProvider != null && itemProvider.getTestExportFormats().contains(format)) {
+				return Boolean.TRUE;
+			}
+			return Boolean.FALSE;	
 		}
 		
 		private String shortenedLicense(QuestionRow share) {
@@ -358,7 +385,7 @@ public class CreateTestOverviewController extends FormBasicController {
 
 		@Override
 		public boolean sortable() {
-			return false;
+			return true;
 		}
 
 		@Override
