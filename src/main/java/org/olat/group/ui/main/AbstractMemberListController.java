@@ -517,11 +517,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				} else if(TABLE_ACTION_EDIT.equals(cmd)) {
 					openEdit(ureq, row);
 				}
-			} else if(event instanceof FlexiTableSearchEvent se) {
+			} else if(event instanceof FlexiTableSearchEvent) {
 				String cmd = event.getCommand();
 				if(FlexiTableReduceEvent.SEARCH.equals(cmd) || FlexiTableReduceEvent.QUICK_SEARCH.equals(cmd)) {
-					String search = se.getSearch();
-					doSearch(search);
+					reloadModel();
 				} else if(FormEvent.RESET.getCommand().equals(cmd)) {
 					doResetSearch();
 				} else if(FlexiTableReduceEvent.FILTER.equals(cmd)) {
@@ -750,13 +749,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		}
 	}
 	
-	protected void doSearch(String search) {
-		Map<String,String> propertiesSearch = new HashMap<>();
-		for(UserPropertyHandler handler:userPropertyHandlers) {
-			propertiesSearch.put(handler.getName(), search);
-		}
-		getSearchParams().setUserPropertiesSearch(propertiesSearch);
-		getSearchParams().setLogin(search);
+	protected void doSearch() {
 		reloadModel();
 	}
 	
@@ -1043,6 +1036,14 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		params.setPending(params.isRole(GroupRoles.waiting));
 		params.setOrigins(getOrigins());
 		params.setUserTypes(getUserTypes());
+		
+		String search = membersTable.getQuickSearchString();
+		Map<String,String> propertiesSearch = new HashMap<>();
+		for(UserPropertyHandler handler:userPropertyHandlers) {
+			propertiesSearch.put(handler.getName(), search);
+		}
+		getSearchParams().setUserPropertiesSearch(propertiesSearch);
+		getSearchParams().setLogin(search);
 
 		List<MemberView> memberViews;
 		if(repoEntry != null) {
