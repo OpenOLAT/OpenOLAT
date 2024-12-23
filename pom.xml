@@ -2169,7 +2169,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.17.3</version>
+			<version>1.18.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
@@ -2336,7 +2336,7 @@
    		<dependency>
 			<groupId>io.github.sashirestela</groupId>
 			<artifactId>simple-openai</artifactId>
-			<version>3.11.0</version>
+			<version>3.12.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>

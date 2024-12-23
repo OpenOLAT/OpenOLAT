@@ -177,6 +177,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 				emailAddress, ipAddress, RegistrationManager.REGISTRATION, 30
 		);
 		dbInstance.commitAndCloseSession();
+		sleep(100);
 
 		// Validate initial state
 		Assert.assertNotNull(originalKey);
