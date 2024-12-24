@@ -169,7 +169,7 @@ public class CoursePageFragment {
 	 * @return Itself
 	 */
 	public CoursePageFragment assertOnMessage() {
-		By messageBy = By.cssSelector("div.o_toolbar_message.o_warning");
+		By messageBy = By.cssSelector("div.o_toolbar_message.o_warning_with_icon");
 		OOGraphene.waitElement(messageBy, browser);
 		return this;
 	}
