@@ -109,7 +109,7 @@ public class QItemType implements CreateInfo, Persistable {
 
 	@Override
 	public int hashCode() {
-		return key == null ? 184325456 : key.hashCode();
+		return getKey() == null ? 184325456 : getKey().hashCode();
 	}
 
 	@Override
@@ -117,9 +117,8 @@ public class QItemType implements CreateInfo, Persistable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof QItemType) {
-			QItemType q = (QItemType)obj;
-			return key != null && key.equals(q.key);
+		if(obj instanceof QItemType q) {
+			return getKey() != null && getKey().equals(q.getKey());
 		}
 		return false;
 	}

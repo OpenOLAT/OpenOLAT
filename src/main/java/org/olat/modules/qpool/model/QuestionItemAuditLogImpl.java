@@ -160,7 +160,7 @@ public class QuestionItemAuditLogImpl implements QuestionItemAuditLog, Persistab
 
 	@Override
 	public int hashCode() {
-		return key == null ? 328435 : key.hashCode();
+		return getKey() == null ? 328435 : getKey().hashCode();
 	}
 
 	@Override
@@ -169,7 +169,7 @@ public class QuestionItemAuditLogImpl implements QuestionItemAuditLog, Persistab
 			return true;
 		}
 		if(obj instanceof QuestionItemAuditLogImpl auditLog) {
-			return key != null && key.equals(auditLog.getKey());
+			return getKey() != null && getKey().equals(auditLog.getKey());
 		}
 		return super.equals(obj);
 	}

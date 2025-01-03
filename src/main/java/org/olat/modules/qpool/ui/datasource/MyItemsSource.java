@@ -26,7 +26,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionStatus;
 
 /**
  * 
@@ -105,15 +104,4 @@ public class MyItemsSource extends DefaultItemsSource {
 	public boolean isStatusFilterEnabled() {
 		return false;
 	}
-
-	@Override
-	public QuestionStatus getStatusFilter() {
-		return null;
-	}
-	
-	@Override
-	public void setStatusFilter(QuestionStatus questionStatus) {
-		// not enabled
-	}
-
 }

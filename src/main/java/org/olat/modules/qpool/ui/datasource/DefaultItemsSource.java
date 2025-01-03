@@ -23,21 +23,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
-import org.olat.modules.qpool.ui.QuestionItemsSource;
-import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -45,22 +43,20 @@ import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class DefaultItemsSource implements QuestionItemsSource {
+public abstract class DefaultItemsSource extends AbstractItemsSource {
 
 	private boolean removeEnabled = false;
 	private final Identity identity;
 	private final String name;
-	protected final QPoolService qpoolService;
 	private final SearchQuestionItemParams defaultParams;
 	
 	private String searchString;
-	private QPoolSearchEvent extendedSearchParameters;
+	private List<FlexiTableFilter> filters;
 	
 	public DefaultItemsSource(Identity me, Roles roles, Locale locale, String name) {
 		this.name = name;
 		this.identity = me;
 		defaultParams = new SearchQuestionItemParams(me, roles, locale);
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
 	
 	public Identity getMe() {
@@ -73,11 +69,6 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 
 	public SearchQuestionItemParams getDefaultParams() {
 		return defaultParams;
-	}
-
-	@Override
-	public void setExtendedSearchParams(QPoolSearchEvent parameters) {
-		this.extendedSearchParameters = parameters;
 	}
 
 	@Override
@@ -105,27 +96,26 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public QuestionStatus getStatusFilter() {
-		return getDefaultParams().getQuestionStatus();
-	}
-	
-	@Override
-	public void setStatusFilter(QuestionStatus statusFilter) {
-		getDefaultParams().setQuestionStatus(statusFilter);
-	}
-
-	@Override
 	public void removeFromSource(List<QuestionItemShort> items) {
 		//
 	}
 
 	@Override
-	public final int getNumOfItems(boolean withExtendedSearchParams) {
+	public final int getNumOfItems(boolean withExtendedSearchParams, TaxonomyLevel taxonomyLevel, QuestionStatus status) {
+		SearchQuestionItemParams params;
 		if(withExtendedSearchParams) {
-			SearchQuestionItemParams params = getSearchParams();
-			return qpoolService.countItems(params);
+			params = getSearchParams(searchString, filters);
+		} else {
+			params = defaultParams.copy();
 		}
-		return qpoolService.countItems(defaultParams);
+		if(status != null) {
+			params.setQuestionStatus(status);
+		}
+		if(taxonomyLevel != null) {
+			params.setLikeTaxonomyLevelPath(taxonomyLevel.getMaterializedPathKeys());
+			params.setTaxonomyLevels(null);
+		}
+		return qpoolService.countItems(params);
 	}
 
 	@Override
@@ -142,10 +132,11 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public final ResultInfos<QuestionItemView> getItems(String query, int firstResult, int maxResults, SortKey... orderBy) {
+	public final ResultInfos<QuestionItemView> getItems(String query, List<FlexiTableFilter> filters, int firstResult, int maxResults, SortKey... orderBy) {
 		this.searchString = query;
+		this.filters = filters;
 		
-		SearchQuestionItemParams params = getSearchParams();
+		SearchQuestionItemParams params = getSearchParams(query, filters);
 		return doSearch(params, firstResult, maxResults, orderBy);
 	}
 	
@@ -153,12 +144,9 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 		return qpoolService.getItems(params, firstResult, maxResults, orderBy);
 	}
 	
-	private SearchQuestionItemParams getSearchParams() {
+	private SearchQuestionItemParams getSearchParams(String query, List<FlexiTableFilter> filters) {
 		SearchQuestionItemParams params = defaultParams.copy();
-		if(extendedSearchParameters != null && extendedSearchParameters.getSearchParams() != null) {
-			extendedSearchParameters.getSearchParams().enrich(params);
-		} 
-		params.setSearchString(searchString);
+		addFilters(params, query, filters);
 		return params;
 	}
 }

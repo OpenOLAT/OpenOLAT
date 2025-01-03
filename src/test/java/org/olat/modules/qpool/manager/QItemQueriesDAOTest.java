@@ -104,19 +104,18 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Autowired
 	private QPoolService qpoolService;
 	
-	private QItemType qItemType;
+
 	
 	@Before
 	public void setUp() {
 		List<QuestionItemFull> items = qpoolService.getAllItems(0, Integer.MAX_VALUE);
 		qpoolService.deleteItems(items);
-
-		qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 	}
 
 	@Test
 	public void getFavoritItems() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-item-" + UUID.randomUUID().toString());
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fav-item-");
 		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 253", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		QuestionItem item3 = questionDao.createAndPersist(id, "NGC 292", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
@@ -153,7 +152,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void getFavoritItems_orderBy() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-item-" + UUID.randomUUID().toString());
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fav-item-2");
 		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 253", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		markManager.setMark(item1, id, null, "[QuestionItem:" + item1 + "]");
@@ -178,7 +178,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsOfCollection() {
 		//create a collection with 2 items
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Coll-Onwer-3");
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
 		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 92", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 97", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
@@ -214,7 +215,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsOfCollection_orderBy() {
 		//create a collection with 2 items
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Coll-Onwer-4");
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
 		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		collectionDao.addItemToCollection(item, singletonList(coll));
@@ -242,7 +244,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsOfCollection_orderByColumns() {
 		//create a collection with 2 items
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3c-" + UUID.randomUUID().toString());
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Coll-Onwer-3c");
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3c", id);
 		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		collectionDao.addItemToCollection(item, singletonList(coll));
@@ -268,6 +271,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsByAuthor() {
 		//create an author with 2 items
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-2-");
 		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
@@ -305,6 +309,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsByAuthor_orderBy() {
 		//create an author with 2 items
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-2-");
 		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
@@ -330,6 +335,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsByOwner() {
 		//create an author with 2 items
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwner-and-only-2-");
 		QuestionItem item = questionDao.createAndPersist(id, "NGC 7837", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commitAndCloseSession();
@@ -348,6 +354,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsByOwner_negativeTest() {
 		//create an author with 2 items
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-29-");
 		QuestionItem item = questionDao.createAndPersist(id, "NGC 7838", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commitAndCloseSession();
@@ -365,6 +372,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsOfPool() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Poolman-");
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		//create a pool
 		String poolTitle = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, poolTitle, true);
@@ -387,6 +395,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 
 	@Test
 	public void getItemsOfPool_orderBy() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Poolman-");
 		//create a pool
 		String poolTitle = "NGC-" + UUID.randomUUID().toString();
@@ -413,7 +422,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getSharedItemByResource() {
 		//create a group to share 2 items
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QShare-2-");
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QShare-2");
 		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "gdao-1", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
 		BusinessGroup group2 = businessGroupDao.createAndPersist(id, "gdao-2", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
@@ -446,7 +456,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getSharedItemByResource_orderBy() {
 		//create a group to share 1 item
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QShare-2-" + UUID.randomUUID());
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QShare-2");
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao-3", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
 		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
@@ -476,7 +487,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getSharedItemByResource_subset() {
 		//create a group to share 2 items
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QShare-1-" + UUID.randomUUID());
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QShare-1");
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
 		QuestionItem item1 = questionDao.createAndPersist(id, "Share-Item-1", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
@@ -512,9 +524,10 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void shouldCountAllItemsWithFilter() {
 		Identity owner1 = createRandomIdentity();
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		questionDao.createAndPersist(owner1, "QPool 1", "IMS QTI 1.2", Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		questionDao.createAndPersist(owner1, "QPool 2", "IMS QTI 1.2", Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		createRandomItem(owner1);
+		createRandomItem(owner1, qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
@@ -526,14 +539,15 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetAllItems() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
-		QuestionItem item12 = createRandomItem(owner1);
-		QuestionItem item13 = createRandomItem(owner1);
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
+		QuestionItem item12 = createRandomItem(owner1, qItemType);
+		QuestionItem item13 = createRandomItem(owner1, qItemType);
 		Identity owner2 = createRandomIdentity();
-		QuestionItem item21 = createRandomItem(owner2);
-		QuestionItem item22 = createRandomItem(owner2);
-		QuestionItem item23 = createRandomItem(owner2);
+		QuestionItem item21 = createRandomItem(owner2, qItemType);
+		QuestionItem item22 = createRandomItem(owner2, qItemType);
+		QuestionItem item23 = createRandomItem(owner2, qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
@@ -546,14 +560,15 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetLimitedItems() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
-		QuestionItem item12 = createRandomItem(owner1);
-		QuestionItem item13 = createRandomItem(owner1);
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
+		QuestionItem item12 = createRandomItem(owner1, qItemType);
+		QuestionItem item13 = createRandomItem(owner1, qItemType);
 		Identity owner2 = createRandomIdentity();
-		QuestionItem item21 = createRandomItem(owner2);
-		QuestionItem item22 = createRandomItem(owner2);
-		QuestionItem item23 = createRandomItem(owner2);
+		QuestionItem item21 = createRandomItem(owner2, qItemType);
+		QuestionItem item22 = createRandomItem(owner2, qItemType);
+		QuestionItem item23 = createRandomItem(owner2, qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		List<Long> inKeys = Arrays.asList(item12.getKey(), item21.getKey());
@@ -570,9 +585,10 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void shouldGetAllItemsByFormat() {
 		Identity owner1 = createRandomIdentity();
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		QuestionItem item11 = questionDao.createAndPersist(owner1, "QPool 1", "IMS QTI 1.2", Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		QuestionItem item12 = questionDao.createAndPersist(owner1, "QPool 2", "IMS QTI 1.2", Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItem item13 = createRandomItem(owner1);
+		QuestionItem item13 = createRandomItem(owner1, qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
@@ -587,10 +603,11 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsIsAuthor() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
 		Identity owner2 = createRandomIdentity();
-		QuestionItem item21 = createRandomItem(owner2);
+		QuestionItem item21 = createRandomItem(owner2, qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(owner1, null, Locale.ENGLISH);
@@ -602,6 +619,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsIsTeacher() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
 		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
 		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
@@ -610,9 +628,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Identity teacher = createRandomIdentity();
 		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.teach, taxonomyLevel, teacher, null);
 		Identity noTeacher = createRandomIdentity();
-		QuestionItemImpl item11 = createRandomItem(ownerAndTeacher);
+		QuestionItemImpl item11 = createRandomItem(ownerAndTeacher, qItemType);
 		item11.setTaxonomyLevel(taxonomyLevel);
-		QuestionItemImpl item12 = createRandomItem(ownerAndTeacher);
+		QuestionItemImpl item12 = createRandomItem(ownerAndTeacher, qItemType);
 		item12.setTaxonomyLevel(taxonomySubLevel);
 		dbInstance.commitAndCloseSession();
 		
@@ -634,6 +652,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsIsManager() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
 		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
 		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
@@ -642,9 +661,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Identity manager = createRandomIdentity();
 		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, taxonomyLevel, manager, null);
 		Identity noManager = createRandomIdentity();
-		QuestionItemImpl item11 = createRandomItem(ownerAndManager);
+		QuestionItemImpl item11 = createRandomItem(ownerAndManager, qItemType);
 		item11.setTaxonomyLevel(taxonomyLevel);
-		QuestionItemImpl item12 = createRandomItem(ownerAndManager);
+		QuestionItemImpl item12 = createRandomItem(ownerAndManager, qItemType);
 		item12.setTaxonomyLevel(taxonomySubLevel);
 		dbInstance.commitAndCloseSession();
 		
@@ -666,9 +685,10 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsIsRater() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
-		QuestionItem item12 = createRandomItem(owner1);
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
+		QuestionItem item12 = createRandomItem(owner1, qItemType);
 		commentAndRatingService.createRating(owner1, item11, null, 2);
 		dbInstance.commitAndCloseSession();
 		
@@ -681,10 +701,11 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsIsEditableInAPool() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
-		QuestionItem item12 = createRandomItem(owner1);
-		QuestionItem item13 = createRandomItem(owner1);
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
+		QuestionItem item12 = createRandomItem(owner1, qItemType);
+		QuestionItem item13 = createRandomItem(owner1, qItemType);
 		Pool pool = poolDao.createPool(null, "Pool", true);
 		poolDao.addItemToPool(item11, Collections.singletonList(pool), true);
 		poolDao.addItemToPool(item12, Collections.singletonList(pool), false);
@@ -700,10 +721,11 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsIsEditableInAShare() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
-		QuestionItem item12 = createRandomItem(owner1);
-		QuestionItem item13 = createRandomItem(owner1);
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
+		QuestionItem item12 = createRandomItem(owner1, qItemType);
+		QuestionItem item13 = createRandomItem(owner1, qItemType);
 		BusinessGroup group = businessGroupDao.createAndPersist(owner1, "QPool", "QPool", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
 		List<OLATResource> groupResources = Arrays.asList(group.getResource());
@@ -721,9 +743,10 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsIsMarked() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
-		QuestionItem item12 = createRandomItem(owner1);
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
+		QuestionItem item12 = createRandomItem(owner1, qItemType);
 		markManager.setMark(item11, owner1, null, "[QuestionItem:" + item11 + "]");
 		dbInstance.commitAndCloseSession();
 		
@@ -736,8 +759,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsRating() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
 		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 2);
 		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 3);
 		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 4);
@@ -751,13 +775,14 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsNumberOfRating() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
 		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 2);
 		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 3);
 		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 4);
 		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 4);
-		QuestionItem item12 = createRandomItem(owner1);
+		QuestionItem item12 = createRandomItem(owner1, qItemType);
 		commentAndRatingService.createRating(createRandomIdentity(), item12, null, 4);
 		dbInstance.commitAndCloseSession();
 		
@@ -769,22 +794,23 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsFilteredByLikeTaxonomyLevel() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
 		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
 		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
 		TaxonomyLevel otherTaxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
-		QuestionItemImpl item11 = createRandomItem(createRandomIdentity());
+		QuestionItemImpl item11 = createRandomItem(createRandomIdentity(), qItemType);
 		item11.setTaxonomyLevel(taxonomyLevel);
-		QuestionItemImpl item12 = createRandomItem(createRandomIdentity());
+		QuestionItemImpl item12 = createRandomItem(createRandomIdentity(), qItemType);
 		item12.setTaxonomyLevel(taxonomySubLevel);
-		QuestionItemImpl item21 = createRandomItem(createRandomIdentity());
+		QuestionItemImpl item21 = createRandomItem(createRandomIdentity(), qItemType);
 		item21.setTaxonomyLevel(otherTaxonomyLevel);
-		QuestionItem item22 = createRandomItem(createRandomIdentity());
-		QuestionItem item23 = createRandomItem(createRandomIdentity());
+		QuestionItem item22 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item23 = createRandomItem(createRandomIdentity(), qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
-		params.setLikeTaxonomyLevel(taxonomyLevel);
+		params.setLikeTaxonomyLevelPath(taxonomyLevel.getMaterializedPathKeys());
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, 0, -1);
 		
 		assertThat(loadedItems).hasSize(2);
@@ -799,13 +825,14 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void shouldGetItemsFilteredByQuestionStatus() {
 		QuestionStatus status = QuestionStatus.revised;
-		QuestionItemImpl item11 = createRandomItem(createRandomIdentity());
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		QuestionItemImpl item11 = createRandomItem(createRandomIdentity(), qItemType);
 		item11.setQuestionStatus(status);
-		QuestionItemImpl item12 = createRandomItem(createRandomIdentity());
+		QuestionItemImpl item12 = createRandomItem(createRandomIdentity(), qItemType);
 		item12.setQuestionStatus(status);
-		QuestionItem item21 = createRandomItem(createRandomIdentity());
-		QuestionItem item22 = createRandomItem(createRandomIdentity());
-		QuestionItem item23 = createRandomItem(createRandomIdentity());
+		QuestionItem item21 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item22 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item23 = createRandomItem(createRandomIdentity(), qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
@@ -823,18 +850,19 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsFilteredByWithoutTaxonomyLevel() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.SC.name());
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
 		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
 		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
 		TaxonomyLevel otherTaxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", random(), "QPool", "QPool", null, null, null, null, taxonomy);
-		QuestionItemImpl item11 = createRandomItem(createRandomIdentity());
+		QuestionItemImpl item11 = createRandomItem(createRandomIdentity(), qItemType);
 		item11.setTaxonomyLevel(taxonomyLevel);
-		QuestionItemImpl item12 = createRandomItem(createRandomIdentity());
+		QuestionItemImpl item12 = createRandomItem(createRandomIdentity(), qItemType);
 		item12.setTaxonomyLevel(taxonomySubLevel);
-		QuestionItemImpl item21 = createRandomItem(createRandomIdentity());
+		QuestionItemImpl item21 = createRandomItem(createRandomIdentity(), qItemType);
 		item21.setTaxonomyLevel(otherTaxonomyLevel);
-		QuestionItem item22 = createRandomItem(createRandomIdentity());
-		QuestionItem item23 = createRandomItem(createRandomIdentity());
+		QuestionItem item22 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item23 = createRandomItem(createRandomIdentity(), qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
@@ -852,11 +880,12 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsFilteredByWithoutAuthor() {
-		QuestionItem item11 = createRandomItem(null);
-		QuestionItem item12 = createRandomItem(createRandomIdentity());
-		QuestionItem item21 = createRandomItem(null);
-		QuestionItem item22 = createRandomItem(createRandomIdentity());
-		QuestionItem item23 = createRandomItem(createRandomIdentity());
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		QuestionItem item11 = createRandomItem(null, qItemType);
+		QuestionItem item12 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item21 = createRandomItem(null, qItemType);
+		QuestionItem item22 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item23 = createRandomItem(createRandomIdentity(), qItemType);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -875,12 +904,13 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsFilteredByOnlyAuthor() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.DRAWING.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
-		QuestionItem item12 = createRandomItem(owner1);
-		QuestionItem item21 = createRandomItem(createRandomIdentity());
-		QuestionItem item22 = createRandomItem(createRandomIdentity());
-		QuestionItem item23 = createRandomItem(createRandomIdentity());
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
+		QuestionItem item12 = createRandomItem(owner1, qItemType);
+		QuestionItem item21 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item22 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item23 = createRandomItem(createRandomIdentity(), qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
@@ -898,12 +928,13 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsFilteredByExcludAuthor() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity owner1 = createRandomIdentity();
-		QuestionItem item11 = createRandomItem(owner1);
-		QuestionItem item12 = createRandomItem(owner1);
-		QuestionItem item21 = createRandomItem(createRandomIdentity());
-		QuestionItem item22 = createRandomItem(createRandomIdentity());
-		QuestionItem item23 = createRandomItem(createRandomIdentity());
+		QuestionItem item11 = createRandomItem(owner1, qItemType);
+		QuestionItem item12 = createRandomItem(owner1, qItemType);
+		QuestionItem item21 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item22 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item23 = createRandomItem(createRandomIdentity(), qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
@@ -921,11 +952,12 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void shouldGetItemsFilteredByExcludeRater() {
-		QuestionItem item11 = createRandomItem(createRandomIdentity());
-		QuestionItem item12 = createRandomItem(createRandomIdentity());
-		QuestionItem item21 = createRandomItem(createRandomIdentity());
-		QuestionItem item22 = createRandomItem(createRandomIdentity());
-		QuestionItem item23 = createRandomItem(createRandomIdentity());
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		QuestionItem item11 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item12 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item21 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item22 = createRandomItem(createRandomIdentity(), qItemType);
+		QuestionItem item23 = createRandomItem(createRandomIdentity(), qItemType);
 		Identity rater1 = createRandomIdentity();
 		commentAndRatingService.createRating(createRandomIdentity(), item21, null, 2);
 		commentAndRatingService.createRating(rater1, item21, null, 2);
@@ -949,6 +981,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItem() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Poolman-");
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		//create a pool
 		String poolTitle = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, poolTitle, false);
@@ -971,7 +1004,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		return JunitTestHelper.createAndPersistIdentityAsRndUser("qitems");
 	}
 
-	private QuestionItemImpl createRandomItem(Identity owner) {
+	private QuestionItemImpl createRandomItem(Identity owner, QItemType qItemType) {
 		String title = UUID.randomUUID().toString();
 		String format = QTI21Constants.QTI_21_FORMAT;
 		String language = Locale.ENGLISH.getLanguage();

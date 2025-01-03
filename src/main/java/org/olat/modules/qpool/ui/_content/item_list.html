@@ -1,27 +1,29 @@
-<div class="o_block_bottom o_qpool_source_status">
-#if($r.available("source.status.draft"))
-	$r.render("source.status.draft")
+#if($r.available("source.status.draft") || $r.available("source.status.review") || $r.available("source.status.revised") ||$r.available("source.status.finalVersion") || $r.available("source.status.endOfLife"))
+	<div class="o_block_bottom o_qpool_source_status">
+	#if($r.available("source.status.draft"))
+		$r.render("source.status.draft")
+	#end
+	#if($r.available("source.status.review"))
+		$r.render("source.status.review")
+	#end
+	#if($r.available("source.status.revised"))
+		$r.render("source.status.revised")
+	#end
+	#if($r.available("source.status.finalVersion"))
+		$r.render("source.status.finalVersion")
+	#end
+	#if($r.available("source.status.endOfLife"))
+		$r.render("source.status.endOfLife")
+	#end
+	</div>
 #end
-#if($r.available("source.status.review"))
-	$r.render("source.status.review")
-#end
-#if($r.available("source.status.revised"))
-	$r.render("source.status.revised")
-#end
-#if($r.available("source.status.finalVersion"))
-	$r.render("source.status.finalVersion")
-#end
-#if($r.available("source.status.endOfLife"))
-	$r.render("source.status.endOfLife")
-#end
-</div>
 #if($r.available("source.selector"))
     <div class="o_block_bottom o_qpool_filter_box clearfix">
         $r.render("source.selector", "label") $r.render("source.selector")
     </div>
 #end
 #if($r.available("new.item") || $r.available("import.item"))
-<div class="o_button_group o_button_group_right">
+<div class="o_button_group o_button_group_right o_button_group_top">
 	#if($r.available("new.item") && $r.available("import.item"))<div class="btn-group">#end
 	#if($r.available("new.item"))
 		$r.render("new.item")

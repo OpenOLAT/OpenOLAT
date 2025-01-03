@@ -53,7 +53,6 @@ import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBui
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.questionimport.AssessmentItemAndMetadata;
-import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemAuditLog.Action;
@@ -104,7 +103,7 @@ public class NewAiItemController extends FormBasicController {
 	@Autowired
 	private AiSPI aiSPI;
 	
-	public NewAiItemController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback qPoolSecurityCallback, boolean ignoreCompetences) {
+	public NewAiItemController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		Taxonomy taxonomy = qpoolService.getQPoolTaxonomy();
@@ -150,7 +149,7 @@ public class NewAiItemController extends FormBasicController {
 			List<QuestionItem> questionItems = new ArrayList<>();
 
 			for (AiMCQuestionData questionData : response.getQuestions()) {
-				QuestionItem item = doCreateMCItem(ureq, questionData);
+				QuestionItem item = doCreateMCItem(questionData);
 				if (item != null) {
 					questionItems.add(item);					
 				}				
@@ -173,7 +172,7 @@ public class NewAiItemController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	private QuestionItem doCreateMCItem(UserRequest ureq, AiMCQuestionData itemData) {
+	private QuestionItem doCreateMCItem(AiMCQuestionData itemData) {
 		// 1) Create basic item using the builder in RAM
 		String title = itemData.getTitle();
 		String question = itemData.getQuestion();
@@ -223,7 +222,7 @@ public class NewAiItemController extends FormBasicController {
 		if (subject != null) {
 			// Try mapping to a taxonomy
 			TaxonomyLevel finalTaxonomy = null;
-			Set<TaxonomyLevel> taxonomies = new HashSet<TaxonomyLevel>();
+			Set<TaxonomyLevel> taxonomies = new HashSet<>();
 			taxonomies.addAll(searchTaxonomyLevels(subject));
 			int currentLevel = 0;
 			for (TaxonomyLevel taxLevel : taxonomies) {

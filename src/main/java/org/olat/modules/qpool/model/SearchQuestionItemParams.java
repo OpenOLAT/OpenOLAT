@@ -19,18 +19,19 @@
  */
 package org.olat.modules.qpool.model;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.resource.OLATResource;
 
 /**
@@ -46,7 +47,7 @@ public class SearchQuestionItemParams implements Cloneable {
 	
 	private Long poolKey;
 	private String format;
-	private Identity author;
+	private IdentityRef author;
 	private String title;
 	private String topic;
 	private String owner;
@@ -55,20 +56,23 @@ public class SearchQuestionItemParams implements Cloneable {
 	private String informations;
 	private String language;
 	private String assessmentType;
+	private String editor;
 	private String searchString;
 	private boolean favoritOnly;
 	private OLATResource resource;
 	private LicenseType licenseType;
 	private QEducationalContext level;
 	private QuestionItemCollection collection;
+
+	private List<QItemType> itemTypes;
 	private List<QItemType> excludedItemTypes;
 	
-	private BigDecimal maxScore;
+	private Double maxScoreFrom;
+	private Double maxScoreTo;
 	
-	private QItemType itemType;
-	private TaxonomyLevel taxonomyLevel;
-	private TaxonomyLevel likeTaxonomyLevel;
-	private QuestionStatus questionStatus;
+	private List<TaxonomyLevelRef> taxonomyLevels;
+	private String likeTaxonomyLevelPath;
+	private List<QuestionStatus> questionStatus;
 	private Identity onlyAuthor;
 	private Identity excludeAuthor;
 	private Identity excludeRater;
@@ -122,12 +126,12 @@ public class SearchQuestionItemParams implements Cloneable {
 		this.resource = resource;
 	}
 
-	public QItemType getItemType() {
-		return itemType;
+	public List<QItemType> getItemTypes() {
+		return itemTypes;
 	}
 
-	public void setItemType(QItemType itemType) {
-		this.itemType = itemType;
+	public void setItemTypes(List<QItemType> itemTypes) {
+		this.itemTypes = itemTypes;
 	}
 
 	public List<QItemType> getExcludedItemTypes() {
@@ -202,12 +206,20 @@ public class SearchQuestionItemParams implements Cloneable {
 		this.format = format;
 	}
 
-	public BigDecimal getMaxScore() {
-		return maxScore;
+	public Double getMaxScoreFrom() {
+		return maxScoreFrom;
 	}
 
-	public void setMaxScore(BigDecimal maxScore) {
-		this.maxScore = maxScore;
+	public void setMaxScoreFrom(Double maxScoreFrom) {
+		this.maxScoreFrom = maxScoreFrom;
+	}
+
+	public Double getMaxScoreTo() {
+		return maxScoreTo;
+	}
+
+	public void setMaxScoreTo(Double maxScoreTo) {
+		this.maxScoreTo = maxScoreTo;
 	}
 
 	public boolean isFavoritOnly() {
@@ -218,28 +230,28 @@ public class SearchQuestionItemParams implements Cloneable {
 		this.favoritOnly = favoritOnly;
 	}
 
-	public Identity getAuthor() {
+	public IdentityRef getAuthor() {
 		return author;
 	}
 
-	public void setAuthor(Identity author) {
+	public void setAuthor(IdentityRef author) {
 		this.author = author;
 	}
 	
-	public TaxonomyLevel getLikeTaxonomyLevel() {
-		return likeTaxonomyLevel;
+	public String getLikeTaxonomyLevelPath() {
+		return likeTaxonomyLevelPath;
 	}
 
-	public void setLikeTaxonomyLevel(TaxonomyLevel likeTaxonomyLevel) {
-		this.likeTaxonomyLevel = likeTaxonomyLevel;
+	public void setLikeTaxonomyLevelPath(String likeTaxonomyLevelPath) {
+		this.likeTaxonomyLevelPath = likeTaxonomyLevelPath;
 	}
 
-	public TaxonomyLevel getTaxonomyLevel() {
-		return taxonomyLevel;
+	public List<TaxonomyLevelRef> getTaxonomyLevels() {
+		return taxonomyLevels;
 	}
 
-	public void setTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
-		this.taxonomyLevel = taxonomyLevel;
+	public void setTaxonomyLevels(List<TaxonomyLevelRef> taxonomyLevels) {
+		this.taxonomyLevels = taxonomyLevels;
 	}
 
 	public String getAssessmentType() {
@@ -250,12 +262,28 @@ public class SearchQuestionItemParams implements Cloneable {
 		this.assessmentType = assessmentType;
 	}
 
-	public QuestionStatus getQuestionStatus() {
+	public String getEditor() {
+		return editor;
+	}
+
+	public void setEditor(String editor) {
+		this.editor = editor;
+	}
+
+	public List<QuestionStatus> getQuestionStatus() {
 		return questionStatus;
 	}
 
-	public void setQuestionStatus(QuestionStatus questionStatus) {
-		this.questionStatus = questionStatus;
+	public void setQuestionStatus(QuestionStatus status) {
+		if(status == null) {
+			questionStatus = List.of();
+		} else {
+			questionStatus = List.of(status);
+		}
+	}
+	
+	public void setQuestionStatus(List<QuestionStatus> status) {
+		questionStatus = status;
 	}
 
 	public Identity getOnlyAuthor() {
@@ -344,8 +372,11 @@ public class SearchQuestionItemParams implements Cloneable {
 		if(StringHelper.containsNonWhitespace(format)) {
 			clone.format = format;
 		}
-		if(maxScore != null) {
-			clone.maxScore = maxScore;
+		if(maxScoreFrom != null) {
+			clone.maxScoreFrom = maxScoreFrom;
+		}
+		if(maxScoreTo != null) {
+			clone.maxScoreTo = maxScoreTo;
 		}
 		if(StringHelper.containsNonWhitespace(title)) {
 			clone.title = title;
@@ -377,17 +408,17 @@ public class SearchQuestionItemParams implements Cloneable {
 		if(author != null) {
 			clone.author = author;
 		}
-		if(itemType != null) {
-			clone.itemType = itemType;
+		if(itemTypes != null) {
+			clone.itemTypes = new ArrayList<>(itemTypes);
 		}
 		if(excludedItemTypes != null) {
-			clone.excludedItemTypes = excludedItemTypes;
+			clone.excludedItemTypes = new ArrayList<>(excludedItemTypes);
 		}
-		if(taxonomyLevel != null) {
-			clone.taxonomyLevel = taxonomyLevel;
+		if(taxonomyLevels != null) {
+			clone.taxonomyLevels = new ArrayList<>(taxonomyLevels);
 		}
-		if(likeTaxonomyLevel != null) {
-			clone.likeTaxonomyLevel = likeTaxonomyLevel;
+		if(likeTaxonomyLevelPath != null) {
+			clone.likeTaxonomyLevelPath = likeTaxonomyLevelPath;
 		}
 		if(questionStatus != null) {
 			clone.questionStatus = questionStatus;

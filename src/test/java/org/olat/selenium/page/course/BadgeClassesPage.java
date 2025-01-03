@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.course;
 
+import java.util.List;
+
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -162,8 +164,12 @@ public class BadgeClassesPage {
 	}
 	
 	public BadgeClassesPage criteriaAuto() {
-		By criteriaBy = By.cssSelector("#o_fioform_award_procedure_wr input[name='form.award.procedure'][value='automatic']");
-		browser.findElement(criteriaBy).click();
+		By automaticBy = By.cssSelector("#o_fioform_award_procedure_wr input[name='form.award.procedure'][value='automatic'][checked='checked']");
+		List<WebElement> automaticEls = browser.findElements(automaticBy);
+		if(automaticEls.isEmpty()) {
+			By criteriaBy = By.cssSelector("#o_fioform_award_procedure_wr input[name='form.award.procedure'][value='automatic']");
+			browser.findElement(criteriaBy).click();
+		}
 		
 		By selectBy = By.id("o_fioform_condition_0_SELBOX");
 		OOGraphene.waitElement(selectBy, browser);
@@ -187,6 +193,8 @@ public class BadgeClassesPage {
 		new Select(selectEl).selectByValue("completionCriterionMet");
 		
 		By courseElementBy = By.id("o_fioform_condition_courseElements_0_SELBOX");
+		OOGraphene.waitElement(courseElementBy, browser);
+		OOGraphene.scrollBottom(courseElementBy, browser);
 		WebElement courseElementEl = browser.findElement(courseElementBy);
 		new Select(courseElementEl).selectByVisibleText(courseNode);
 		OOGraphene.waitBusy(browser);

@@ -28,6 +28,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
+import org.olat.modules.qpool.ui.DefaultSearchSettings;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.WithoutAuthorItemSource;
@@ -64,11 +65,12 @@ public class WithoutAuthorTreeNode extends GenericTreeNode implements Controller
 		if(questionsCtrl == null) {
 			QuestionItemsSource source = new WithoutAuthorItemSource(
 					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
-					WITHOUT_AUTHOR); 
+					WITHOUT_AUTHOR);
+			DefaultSearchSettings searchSettings = DefaultSearchSettings.searchTaxonomyLevels(true);
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					WITHOUT_AUTHOR, true);
+					searchSettings, WITHOUT_AUTHOR);
 		} else {
 			questionsCtrl.updateSource();
 		}

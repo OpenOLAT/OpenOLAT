@@ -24,17 +24,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -42,8 +41,7 @@ import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
-import org.olat.modules.qpool.ui.QuestionItemsSource;
-import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -51,16 +49,15 @@ import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CollectionOfItemsSource implements QuestionItemsSource {
+public class CollectionOfItemsSource extends AbstractItemsSource {
 	
 	private final Roles roles;
 	private final Locale locale;
 	private final Identity identity;
-	private final QPoolService qpoolService;
 	private final QuestionItemCollection collection;
 	
 	private String searchString;
-	private QPoolSearchEvent extendedSearchParameters;
+	private List<FlexiTableFilter> filters;
 	
 	private String restrictToFormat;
 	private List<QItemType> excludedItemTypes;
@@ -70,7 +67,6 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 		this.locale = locale;
 		this.identity = identity;
 		this.collection = collection;
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
 
 	public String getRestrictToFormat() {
@@ -83,11 +79,6 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	
 	public void setExcludedItemTypes(List<QItemType> excludedItemTypes) {
 		this.excludedItemTypes = excludedItemTypes;
-	}
-	
-	@Override
-	public void setExtendedSearchParams(QPoolSearchEvent parameters) {
-		this.extendedSearchParameters = parameters;
 	}
 
 	@Override
@@ -155,16 +146,6 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public QuestionStatus getStatusFilter() {
-		return null;
-	}
-	
-	@Override
-	public void setStatusFilter(QuestionStatus questionStatus) {
-		// not enabled
-	}
-
-	@Override
 	public boolean askAddToSource() {
 		return true;
 	}
@@ -197,8 +178,15 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public int getNumOfItems(boolean withExtendedSearchParams) {
-		SearchQuestionItemParams params = getSearchParams(withExtendedSearchParams);
+	public int getNumOfItems(boolean withExtendedSearchParams, TaxonomyLevel taxonomyLevel, QuestionStatus status) {
+		SearchQuestionItemParams params = getSearchParams(searchString, filters, withExtendedSearchParams);
+		if(status != null) {
+			params.setQuestionStatus(status);
+		}
+		if(taxonomyLevel != null) {
+			params.setLikeTaxonomyLevelPath(taxonomyLevel.getMaterializedPathKeys());
+			params.setTaxonomyLevels(null);
+		}
 		return qpoolService.countItems(params);
 	}
 
@@ -221,20 +209,18 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public ResultInfos<QuestionItemView> getItems(String query, int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<QuestionItemView> getItems(String query, List<FlexiTableFilter> filters, int firstResult, int maxResults, SortKey... orderBy) {
 		this.searchString = query;
+		this.filters = filters;
 		
-		SearchQuestionItemParams params = getSearchParams(true);
+		SearchQuestionItemParams params = getSearchParams(query, filters, true);
 		return qpoolService.getItems(params, firstResult, maxResults, orderBy);
 	}
 	
-	private SearchQuestionItemParams getSearchParams(boolean withExtendedSearchParams) {
+	private SearchQuestionItemParams getSearchParams(String query, List<FlexiTableFilter> filter, boolean withExtendedSearchParams) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles, locale);
 		if(withExtendedSearchParams) {
-			params.setSearchString(searchString);
-			if(extendedSearchParameters != null && extendedSearchParameters.getSearchParams() != null) {
-				extendedSearchParameters.getSearchParams().enrich(params);
-			}
+			addFilters(params, query, filter);
 		}
 		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
 			params.setFormat(restrictToFormat);

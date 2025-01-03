@@ -30,6 +30,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.ui.DefaultSearchSettings;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.PoolItemsSource;
 
@@ -78,10 +79,11 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					pool);
 			source.setRemoveEnabled(isRemoveEnabled(ureq, pool));
+			DefaultSearchSettings searchSettings = DefaultSearchSettings.searchTaxonomyLevels(false);
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, pool, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					TABLE_PREFERENCE_PREFIX + pool.getKey(), false);
+					searchSettings, TABLE_PREFERENCE_PREFIX + pool.getKey());
 		} else {
 			questionsCtrl.updateSource();
 		}

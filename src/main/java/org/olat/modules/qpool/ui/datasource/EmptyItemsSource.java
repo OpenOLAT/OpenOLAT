@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -35,7 +36,7 @@ import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
-import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * An empty data source.
@@ -51,11 +52,6 @@ public class EmptyItemsSource implements QuestionItemsSource {
     public String getName() {
         return null;
     }
-
-    @Override
-	public void setExtendedSearchParams(QPoolSearchEvent parameters) {
-		//
-	}
 
 	@Override
     public Controller getSourceController(UserRequest ureq, WindowControl wControl) {
@@ -113,16 +109,6 @@ public class EmptyItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public QuestionStatus getStatusFilter() {
-		return null;
-	}
-	
-	@Override
-	public void setStatusFilter(QuestionStatus questionStatus) {
-		// not enabled
-	}
-
-	@Override
 	public boolean askAddToSource() {
 		return false;
 	}
@@ -153,7 +139,7 @@ public class EmptyItemsSource implements QuestionItemsSource {
     }
 
     @Override
-    public int getNumOfItems(boolean withExtendedSearchParams) {
+    public int getNumOfItems(boolean withExtendedSearchParams, TaxonomyLevel taxonomyLevel, QuestionStatus status) {
         return 0;
     }
 
@@ -168,7 +154,7 @@ public class EmptyItemsSource implements QuestionItemsSource {
     }
 
     @Override
-    public ResultInfos<QuestionItemView> getItems(String query, int firstResult, int maxResults, SortKey... orderBy) {
+    public ResultInfos<QuestionItemView> getItems(String query, List<FlexiTableFilter> filters, int firstResult, int maxResults, SortKey... orderBy) {
         return new DefaultResultInfos<>();
     }
 }

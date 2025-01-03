@@ -147,7 +147,7 @@ public class PoolImpl implements Pool, CreateInfo, ModifiedInfo, Persistable {
 
 	@Override
 	public int hashCode() {
-		return key == null ? 19456 : key.hashCode();
+		return getKey() == null ? 19456 : getKey().hashCode();
 	}
 
 	@Override
@@ -155,9 +155,8 @@ public class PoolImpl implements Pool, CreateInfo, ModifiedInfo, Persistable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof PoolImpl) {
-			PoolImpl q = (PoolImpl)obj;
-			return key != null && key.equals(q.key);
+		if(obj instanceof PoolImpl p) {
+			return getKey() != null && getKey().equals(p.getKey());
 		}
 		return false;
 	}

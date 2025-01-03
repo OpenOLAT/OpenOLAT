@@ -19,11 +19,13 @@
  */
 package org.olat.modules.qpool.ui.datasource;
 
+import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -34,10 +36,18 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  */
 public class MyTaxonomyLevelItemsSource extends TaxonomyLevelItemsSource {
 	
+	private final Identity me;
+	
 	public MyTaxonomyLevelItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel, String displayName) {
 		super(me, roles, locale, taxonomyLevel, displayName);
-		setStatusFilter(QuestionStatus.draft);
 		getDefaultParams().setOnlyAuthor(me);
+		this.me = me;
+	}
+	
+	@Override
+	public void addFilters(SearchQuestionItemParams params, String searchString, List<FlexiTableFilter> filters) {
+		super.addFilters(params, searchString, filters);
+		params.setOnlyAuthor(me);
 	}
 
 	@Override

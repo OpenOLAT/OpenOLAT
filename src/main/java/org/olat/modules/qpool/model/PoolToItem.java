@@ -123,7 +123,7 @@ public class PoolToItem implements CreateInfo, Persistable {
 
 	@Override
 	public int hashCode() {
-		return key == null ? 19456 : key.hashCode();
+		return getKey() == null ? 19456 : getKey().hashCode();
 	}
 
 	@Override
@@ -131,9 +131,8 @@ public class PoolToItem implements CreateInfo, Persistable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof PoolToItem) {
-			PoolToItem q = (PoolToItem)obj;
-			return key != null && key.equals(q.key);
+		if(obj instanceof PoolToItem q) {
+			return getKey() != null && getKey().equals(q.getKey());
 		}
 		return false;
 	}

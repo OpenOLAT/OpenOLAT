@@ -21,7 +21,6 @@ package org.olat.modules.qpool.manager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
 
@@ -35,11 +34,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionItemView.OrderBy;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.ItemWrapper;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -285,10 +286,9 @@ public class QItemQueriesDAO {
 			sb.append(")");
 		}
 
-		if(params.getItemType() != null) {
-			sb.and().append(" itemType.key=:itemTypeKey");
-		}
-		if(params.getExcludedItemTypes() != null && !params.getExcludedItemTypes().isEmpty()) {
+		if(params.getItemTypes() != null && !params.getItemTypes().isEmpty()) {
+			sb.and().append(" itemType.key in (:itemTypeKey)");
+		} else if(params.getExcludedItemTypes() != null && !params.getExcludedItemTypes().isEmpty()) {
 			sb.and().append(" itemType.key not in (:excludedItemTypeKeys)");
 		}
 		
@@ -333,14 +333,17 @@ public class QItemQueriesDAO {
 		if (StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.and().append(" item.format=:format");
 		}
-		if (params.getMaxScore() != null) {
-			sb.and().append(" item.maxScore=:maxScore");
+		if (params.getMaxScoreFrom() != null) {
+			sb.and().append(" item.maxScore>=:maxScoreFrom");
+		}
+		if (params.getMaxScoreTo() != null) {
+			sb.and().append(" item.maxScore<=:maxScoreTo");
 		}
 		
-		if(params.getTaxonomyLevel() != null) {
-			sb.and().append(" taxonomyLevel.key=:taxonomyLevelKey");
+		if(params.getTaxonomyLevels() != null && !params.getTaxonomyLevels().isEmpty()) {
+			sb.and().append(" taxonomyLevel.key in (:taxonomyLevelKeys)");
 		}
-		if(params.getLikeTaxonomyLevel() != null) {
+		if(StringHelper.containsNonWhitespace(params.getLikeTaxonomyLevelPath())) {
 			sb.and().append(" taxonomyLevel.materializedPathKeys like :pathKeys");
 		}
 		if (params.isWithoutTaxonomyLevelOnly()) {
@@ -361,8 +364,8 @@ public class QItemQueriesDAO {
 			sb.and().append(" item.educationalContext.key=:levelKey");
 		}
 		
-		if(params.getQuestionStatus() != null) {
-			sb.and().append(" item.status=:questionStatus");
+		if(params.getQuestionStatus() != null && !params.getQuestionStatus().isEmpty()) {
+			sb.and().append(" item.status in (:questionStatus)");
 		}
 		
 		if(params.getOnlyAuthor() != null) {
@@ -431,8 +434,10 @@ public class QItemQueriesDAO {
 			query.setParameter("searchString", fuzzySearch);
 		}
 		
-		if(params.getTaxonomyLevel() != null) {
-			query.setParameter("taxonomyLevelKey", params.getTaxonomyLevel().getKey());
+		if(params.getTaxonomyLevels() != null && !params.getTaxonomyLevels().isEmpty()) {
+			List<Long> levelsKeys = params.getTaxonomyLevels().stream()
+					.map(TaxonomyLevelRef::getKey).toList();
+			query.setParameter("taxonomyLevelKeys", levelsKeys);
 		}
 		
 		if(StringHelper.containsNonWhitespace(params.getTitle())) {
@@ -464,14 +469,20 @@ public class QItemQueriesDAO {
 			query.setParameter("language", fuzzySearch);
 		}
 		
-		if(params.getItemType() != null) {
-			query.setParameter("itemTypeKey", params.getItemType().getKey());
-		}
-		if(params.getExcludedItemTypes() != null && !params.getExcludedItemTypes().isEmpty()) {
+		if(params.getItemTypes() != null && !params.getItemTypes().isEmpty()) {
+			List<QItemType> types = params.getItemTypes();
+			if(params.getExcludedItemTypes() != null) {
+				types = new ArrayList<>(types);
+				types.removeAll(params.getExcludedItemTypes());
+			}
+			List<Long> itemTypeKeys = types.stream().map(QItemType::getKey).toList();
+			query.setParameter("itemTypeKey", itemTypeKeys);
+		} else if(params.getExcludedItemTypes() != null && !params.getExcludedItemTypes().isEmpty()) {
 			List<Long> excludedItemTypeKeys = params.getExcludedItemTypes()
-					.stream().map(QItemType::getKey).collect(Collectors.toList());
+					.stream().map(QItemType::getKey).toList();
 			query.setParameter("excludedItemTypeKeys", excludedItemTypeKeys);
 		}
+		
 		if(params.getLicenseType() != null) {
 			query.setParameter("licenseResName", "QuestionItem");
 			query.setParameter("licenseTypeKey", params.getLicenseType().getKey());
@@ -487,14 +498,20 @@ public class QItemQueriesDAO {
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			query.setParameter("format", params.getFormat());
 		}
-		if(params.getMaxScore() != null) {
-			query.setParameter("maxScore", params.getMaxScore());
+		if(params.getMaxScoreFrom() != null) {
+			query.setParameter("maxScoreFrom", params.getMaxScoreFrom());
 		}
-		if (params.getLikeTaxonomyLevel() != null) {
-			query.setParameter("pathKeys", params.getLikeTaxonomyLevel().getMaterializedPathKeys() + "%");
+		if(params.getMaxScoreTo() != null) {
+			query.setParameter("maxScoreTo", params.getMaxScoreTo());
 		}
-		if (params.getQuestionStatus() != null) {
-			query.setParameter("questionStatus", params.getQuestionStatus().toString());
+		
+		if (StringHelper.containsNonWhitespace(params.getLikeTaxonomyLevelPath())) {
+			query.setParameter("pathKeys", params.getLikeTaxonomyLevelPath() + "%");
+		}
+		if (params.getQuestionStatus() != null && !params.getQuestionStatus().isEmpty()) {
+			List<String> status = params.getQuestionStatus().stream()
+					.map(QuestionStatus::name).toList();
+			query.setParameter("questionStatus", status);
 		}
 		
 		if (params.getOnlyAuthor() != null) {

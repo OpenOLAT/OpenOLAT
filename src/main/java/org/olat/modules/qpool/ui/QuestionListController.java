@@ -183,9 +183,9 @@ public class QuestionListController extends AbstractItemListController implement
 	private QuestionPoolLicenseHandler licenseHandler;
 	
 	public QuestionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QuestionItemsSource source, QPoolSecurityCallback securityCallback, String key,
-			boolean searchAllTaxonomyLevels) {
-		super(ureq, wControl, securityCallback, source, key, searchAllTaxonomyLevels);
+			QuestionItemsSource source, QPoolSecurityCallback securityCallback,
+			DefaultSearchSettings searchSettings, String key) {
+		super(ureq, wControl, securityCallback, source, searchSettings, key);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 	}
@@ -193,7 +193,7 @@ public class QuestionListController extends AbstractItemListController implement
 	@Override
 	protected void initButtons(UserRequest ureq, FormItemContainer formLayout) {
 		if (getSource().isStatusFilterEnabled()) {
-			QuestionStatus statusFilter = getSource().getStatusFilter();
+			QuestionStatus statusFilter = searchSettings.getQuestionStatus();
 			statusDraftLink = uifactory.addFormLink("source.status.draft", "source.status.draft", null, formLayout, Link.BUTTON);
 			statusDraftLink.setUserObject(QuestionStatus.draft);
 			statusDraftLink.setElementCssClass("btn-arrow-right o_qpool_qitem_draft");
@@ -725,9 +725,8 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 
 	private void doSetSourceStatus(FormLink link) {
-		if (getSource().isStatusFilterEnabled()) {
-			QuestionStatus status = (QuestionStatus) link.getUserObject();
-			getSource().setStatusFilter(status);
+		if (getSource().isStatusFilterEnabled() && link.getUserObject() instanceof QuestionStatus status) {
+			getItemsTable().setFilterValue(statusFilter, status.name());
 			getItemsTable().reset(true, true, true);
 			removeSelectionCssClass(statusDraftLink);
 			removeSelectionCssClass(statusReviewLink);
@@ -749,21 +748,18 @@ public class QuestionListController extends AbstractItemListController implement
 
 	public void updateStatusFilter() {
 		if (getSource().isStatusFilterEnabled()) {
-			QuestionStatus actualStatus = getSource().getStatusFilter();
 			reloadStatusFilterTitle(statusDraftLink, "source.status.draft");
 			reloadStatusFilterTitle(statusReviewLink, "source.status.review");
 			reloadStatusFilterTitle(statusRevisedLink, "source.status.revised");
 			reloadStatusFilterTitle(statusFinalLink, "source.status.finalVersion");
 			reloadStatusFilterTitle(statusEndOfLifeLink, "source.status.endOfLife");
-			getSource().setStatusFilter(actualStatus);
 		}
 	}
 
 	private void reloadStatusFilterTitle(FormLink link, String i18n) {
 		QuestionStatus linkStatus = (QuestionStatus) link.getUserObject();
-		getSource().setStatusFilter(linkStatus);
-		int numItems = getSource().getNumOfItems(false);
-		link.setI18nKey(i18n, new String[] {Integer.toString(numItems)});
+		int numItems = getSource().getNumOfItems(false, searchSettings.getTaxonomyLevel(), linkStatus);
+		link.setI18nKey(i18n, Integer.toString(numItems));
 		link.getComponent().setDirty(true);
 	}
 
@@ -787,8 +783,7 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void doChooseNewItemType(UserRequest ureq) {
 		removeAsListenerAndDispose(newItemOptionsCtrl);
-		if (getSource() instanceof TaxonomyLevelItemsSource) {
-			TaxonomyLevelItemsSource tliSource = (TaxonomyLevelItemsSource) getSource();
+		if (getSource() instanceof TaxonomyLevelItemsSource tliSource) {
 			newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl(), getSecurityCallback(),
 					tliSource.getTaxonomyLevel(), getSource().isAdminItemSource());
 		} else {
@@ -806,7 +801,7 @@ public class QuestionListController extends AbstractItemListController implement
 
 	private void doChooseNewAiItem(UserRequest ureq) {
 		removeAsListenerAndDispose(newItemOptionsCtrl);
-		newAiItemCtrl = new NewAiItemController(ureq, getWindowControl(), getSecurityCallback(), getSource().isAdminItemSource());
+		newAiItemCtrl = new NewAiItemController(ureq, getWindowControl());
 		listenTo(newAiItemCtrl);
 		
 		removeAsListenerAndDispose(cmc);

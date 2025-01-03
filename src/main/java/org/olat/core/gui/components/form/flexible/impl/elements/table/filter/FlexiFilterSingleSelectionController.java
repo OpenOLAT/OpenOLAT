@@ -53,7 +53,7 @@ public class FlexiFilterSingleSelectionController extends FormBasicController {
 	
 	public FlexiFilterSingleSelectionController(UserRequest ureq, WindowControl wControl,
 			FlexiTableSingleSelectionFilter filter, String preselectedKey) {
-		super(ureq, wControl, "field_list", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
+		super(ureq, wControl, "field_list_unlimited", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
 		this.filter = filter;
 		this.preselectedKey = preselectedKey;
 		initForm(ureq);

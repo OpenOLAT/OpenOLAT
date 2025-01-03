@@ -293,7 +293,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			int colIndex = CheckListAssessmentDataModel.CHECKBOX_OFFSET + j++;
 			String colName = "checkbox_" + colIndex;
 			DefaultFlexiColumnModel column = new DefaultFlexiColumnModel(true, colName, colIndex, true, colName);
-			column.setHeaderLabel(StringHelper.escapeHtml(box.getTitle()));
+			column.setHeaderLabel(box.getTitle());
 			columnsModel.addFlexiColumnModel(column);
 		}
 

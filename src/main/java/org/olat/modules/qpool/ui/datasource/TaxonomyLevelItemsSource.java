@@ -22,11 +22,13 @@ package org.olat.modules.qpool.ui.datasource;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -42,11 +44,15 @@ public abstract class TaxonomyLevelItemsSource extends DefaultItemsSource {
 	public TaxonomyLevelItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel, String displayName) {
 		super(me, roles, locale, displayName);
 		this.taxonomyLevel = taxonomyLevel;
-		getDefaultParams().setLikeTaxonomyLevel(taxonomyLevel);
 	}
 
 	public TaxonomyLevel getTaxonomyLevel() {
 		return taxonomyLevel;
+	}
+	
+	@Override
+	public void addFilters(SearchQuestionItemParams params, String searchString, List<FlexiTableFilter> filters) {
+		super.addFilters(params, searchString, filters);
 	}
 
 	@Override
@@ -73,13 +79,11 @@ public abstract class TaxonomyLevelItemsSource extends DefaultItemsSource {
 	public int postImport(List<QuestionItem> items, boolean editable) {
 		if(items == null || items.isEmpty()) return 0;
 		for(QuestionItem item : items) {
-			if(item instanceof QuestionItemImpl) {
-				QuestionItemImpl itemImpl = (QuestionItemImpl) item;
+			if(item instanceof QuestionItemImpl itemImpl) {
 				itemImpl.setTaxonomyLevel(taxonomyLevel);
 			}
 		}
 		qpoolService.index(items);
 		return items.size();
 	}
-	
 }
