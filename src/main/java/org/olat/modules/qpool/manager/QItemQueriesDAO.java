@@ -472,6 +472,7 @@ public class QItemQueriesDAO {
 		if(params.getItemTypes() != null && !params.getItemTypes().isEmpty()) {
 			List<QItemType> types = params.getItemTypes();
 			if(params.getExcludedItemTypes() != null) {
+				types = new ArrayList<>(types);
 				types.removeAll(params.getExcludedItemTypes());
 			}
 			List<Long> itemTypeKeys = types.stream().map(QItemType::getKey).toList();
