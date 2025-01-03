@@ -543,16 +543,12 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	
 	private void addIntermediatePath(CurriculumElement element) {
 		Curriculum curriculum = element.getCurriculum();
-		toolbarPanel.pushController(curriculum.getIdentifier(), "o_icon o_icon-fw o_icon_curriculum", curriculum);
+		toolbarPanel.pushController(curriculum.getIdentifier(), null, curriculum);
 		
 		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
 		parentLine.remove(element);
 		for(CurriculumElement parent:parentLine) {
-			String iconCssClass = null;
-			if(parent.getParent() == null) {
-				iconCssClass = "o_icon o_icon-fw o_icon_curriculum_implementations";
-			}
-			toolbarPanel.pushController(parent.getDisplayName(), iconCssClass, parent);
+			toolbarPanel.pushController(parent.getDisplayName(), null, parent);
 		}
 	}
 	
