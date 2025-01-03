@@ -124,7 +124,7 @@ public class ResourceShareImpl implements CreateInfo, Persistable {
 
 	@Override
 	public int hashCode() {
-		return key == null ? -19387456 : key.hashCode();
+		return getKey() == null ? -19387456 : getKey().hashCode();
 	}
 
 	@Override
@@ -132,9 +132,8 @@ public class ResourceShareImpl implements CreateInfo, Persistable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof ResourceShareImpl) {
-			ResourceShareImpl q = (ResourceShareImpl)obj;
-			return key != null && key.equals(q.key);
+		if(obj instanceof ResourceShareImpl q) {
+			return getKey() != null && getKey().equals(q.getKey());
 		}
 		return false;
 	}

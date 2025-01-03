@@ -25,7 +25,6 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -42,7 +41,6 @@ public class FinalItemsSource extends TaxonomyLevelItemsSource {
 	
 	public FinalItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel, String displayName) {
 		super(me, roles, locale, taxonomyLevel, displayName);
-		setStatusFilter(QuestionStatus.finalVersion);
 		TaxonomyService taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
 		isManager = taxonomyService.hasCompetenceByLevel(taxonomyLevel, me, new Date(), TaxonomyCompetenceTypes.manage);
 	}

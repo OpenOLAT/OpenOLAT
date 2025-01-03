@@ -34,6 +34,8 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
+import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ui.DefaultSearchSettings;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.ReviewItemsSource;
@@ -83,8 +85,12 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 			String resName = REVIEW + "_" + taxonomyLevel.getIdentifier();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(resName, taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
+
+			DefaultSearchSettings searchSettings = DefaultSearchSettings.searchTaxonomyLevels(false);
+			searchSettings.setQuestionStatus(QuestionStatus.review);
+			searchSettings.setTaxonomyLevel(taxonomyLevel);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					REVIEW + taxonomyLevel.getKey(), false);
+					searchSettings, REVIEW + taxonomyLevel.getKey());
 		} else {
 			questionsCtrl.updateSource();
 		}
@@ -93,7 +99,7 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 	}
 	
 	public void reloadCount() {
-		int count = source.getNumOfItems(false);
+		int count = source.getNumOfItems(false, taxonomyLevel, QuestionStatus.review);
 		if (count > 0) {
 			setBadge(Integer.toString(count), Badge.Level.info);
 		} else {

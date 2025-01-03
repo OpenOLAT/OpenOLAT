@@ -28,6 +28,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
+import org.olat.modules.qpool.ui.DefaultSearchSettings;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.WithoutTaxonomyLevelItemSource;
@@ -67,8 +68,9 @@ public class WithoutTaxonomyLevelTreeNode extends GenericTreeNode implements Con
 					WITHOUT_TAXONOMY_LEVEL); 
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);
+			DefaultSearchSettings searchSettings = DefaultSearchSettings.searchTaxonomyLevels(true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					WITHOUT_TAXONOMY_LEVEL, true);
+					searchSettings, WITHOUT_TAXONOMY_LEVEL);
 		} else {
 			questionsCtrl.updateSource();
 		}

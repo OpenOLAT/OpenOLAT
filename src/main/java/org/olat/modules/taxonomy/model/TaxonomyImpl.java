@@ -205,7 +205,7 @@ public class TaxonomyImpl implements Persistable, Taxonomy {
 
 	@Override
 	public int hashCode() {
-		return key == null ? 816587 : key.hashCode();
+		return getKey() == null ? 816587 : getKey().hashCode();
 	}
 
 	@Override
@@ -213,8 +213,7 @@ public class TaxonomyImpl implements Persistable, Taxonomy {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof TaxonomyImpl) {
-			TaxonomyImpl taxonomy = (TaxonomyImpl)obj;
+		if(obj instanceof TaxonomyImpl taxonomy) {
 			return getKey() != null && getKey().equals(taxonomy.getKey());
 		}
 		return false;

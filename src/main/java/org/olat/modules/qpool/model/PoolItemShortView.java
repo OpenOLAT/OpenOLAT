@@ -138,8 +138,7 @@ public class PoolItemShortView implements QuestionItem2Pool {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof PoolItemShortView) {
-			PoolItemShortView q = (PoolItemShortView)obj;
+		if(obj instanceof PoolItemShortView q) {
 			return getKey() != null && getKey().equals(q.getKey());
 		}
 		return false;

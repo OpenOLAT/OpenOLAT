@@ -231,8 +231,7 @@ public class TaxonomyCompetenceImpl implements Persistable, ModifiedInfo, Taxono
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof TaxonomyCompetenceImpl) {
-			TaxonomyCompetenceImpl competence = (TaxonomyCompetenceImpl)obj;
+		if(obj instanceof TaxonomyCompetenceImpl competence) {
 			return getKey() != null && getKey().equals(competence.getKey());
 		}
 		return false;

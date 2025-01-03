@@ -29,6 +29,8 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
+import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ui.DefaultSearchSettings;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.MyTaxonomyLevelItemsSource;
@@ -77,10 +79,13 @@ public class MyTaxonomyLevelTreeNode extends GenericTreeNode implements Controll
 			QuestionItemsSource source = new MyTaxonomyLevelItemsSource(
 					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					taxonomyLevel, displayName);
+			DefaultSearchSettings searchSettings = DefaultSearchSettings.searchTaxonomyLevels(true);
+			searchSettings.setQuestionStatus(QuestionStatus.draft);
+			searchSettings.setTaxonomyLevel(taxonomyLevel);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(MY_TAX_LEVEL + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					MY_TAX_LEVEL + taxonomyLevel.getKey(), false);
+					searchSettings, MY_TAX_LEVEL + taxonomyLevel.getKey());
 		} else {
 			questionsCtrl.updateSource();
 		}

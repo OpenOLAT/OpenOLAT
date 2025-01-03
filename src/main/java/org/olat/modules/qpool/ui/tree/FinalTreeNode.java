@@ -29,6 +29,8 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
+import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ui.DefaultSearchSettings;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.FinalItemsSource;
@@ -81,11 +83,14 @@ public class FinalTreeNode extends GenericTreeNode implements ControllerTreeNode
 			QuestionItemsSource source = new FinalItemsSource(
 					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					taxonomyLevel, displayName);
+			DefaultSearchSettings searchSettings = DefaultSearchSettings.searchTaxonomyLevels(false);
+			searchSettings.setQuestionStatus(QuestionStatus.finalVersion);
+			searchSettings.setTaxonomyLevel(taxonomyLevel);
 			String resName = FINAL + "_" + taxonomyLevel.getIdentifier();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(resName, taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					FINAL + taxonomyLevel.getKey(), false);
+					searchSettings, FINAL + taxonomyLevel.getKey());
 		} else {
 			questionsCtrl.updateSource();
 		}

@@ -53,14 +53,13 @@ public class QuestionsController extends BasicController implements Activateable
 	private QuestionItemsSource dataSource;
 	
 	public QuestionsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QuestionItemsSource source, QPoolSecurityCallback securityCallback, String key,
-			boolean searchAllTaxonomyLevels) {
+			QuestionItemsSource source, QPoolSecurityCallback securityCallback, DefaultSearchSettings searchSettings, String key) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
 		this.dataSource = source;
 
-		listCtrl = new QuestionListController(ureq, wControl, stackPanel, source, securityCallback, key, searchAllTaxonomyLevels);
+		listCtrl = new QuestionListController(ureq, wControl, stackPanel, source, securityCallback, searchSettings, key);
 		listenTo(listCtrl);
 
 		putInitialPanel(listCtrl.getInitialComponent());

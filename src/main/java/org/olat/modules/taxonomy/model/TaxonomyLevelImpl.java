@@ -306,7 +306,7 @@ public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLev
 
 	@Override
 	public int hashCode() {
-		return key == null ? 1961331 : key.hashCode();
+		return getKey() == null ? 1961331 : getKey().hashCode();
 	}
 
 	@Override
@@ -314,8 +314,7 @@ public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLev
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof TaxonomyLevelImpl) {
-			TaxonomyLevelImpl level = (TaxonomyLevelImpl)obj;
+		if(obj instanceof TaxonomyLevelImpl level) {
 			return getKey() != null && getKey().equals(level.getKey());
 		}
 		return false;

@@ -59,10 +59,10 @@ public class ItemListMyCompetencesController extends AbstractItemListController 
     @Autowired
     private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 
-
 	public ItemListMyCompetencesController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback,
 			String restrictToFormat, List<QItemType> excludeTypes) {
-		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, excludeTypes, "qti-select");
+		super(ureq, wControl, secCallback, new EmptyItemsSource(),
+				DefaultSearchSettings.itemList(restrictToFormat, excludeTypes, false), "qti-select");
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 	}
 	
@@ -121,8 +121,9 @@ public class ItemListMyCompetencesController extends AbstractItemListController 
 		} else {
 			FinalItemsSource source = new FinalItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(),
 					level, TaxonomyUIFactory.translateDisplayName(getTranslator(), level));
-			source.getDefaultParams().setFormat(restrictToFormat);
-			source.getDefaultParams().setExcludedItemTypes(excludeTypes);
+			source.getDefaultParams().setFormat(searchSettings.getRestrictToFormat());
+			source.getDefaultParams().setExcludedItemTypes(searchSettings.getExcludeTypes());
+			getItemsTable().setFilterValue(taxonomyLevelPathFilter, level.getMaterializedPathKeys());
 			updateSource(source);
 		}
 	}

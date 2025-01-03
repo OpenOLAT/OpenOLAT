@@ -137,9 +137,8 @@ public class BusinessGroupToItemView implements QuestionItem2Resource {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof BusinessGroupToItemView) {
-			BusinessGroupToItemView q = (BusinessGroupToItemView)obj;
-			return getKey() != null && getKey().equals(q.getKey());
+		if(obj instanceof BusinessGroupToItemView b) {
+			return getKey() != null && getKey().equals(b.getKey());
 		}
 		return false;
 	}

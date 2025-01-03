@@ -106,7 +106,7 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 	
 	//question
 	@ManyToOne(targetEntity=QItemType.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_type", nullable=false, insertable=true, updatable=true)
+	@JoinColumn(name="fk_type", nullable=true, insertable=true, updatable=true)
 	private QItemType type;
 	@Column(name="q_difficulty", nullable=true, insertable=true, updatable=true)
 	private BigDecimal difficulty;
@@ -552,7 +552,7 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 
 	@Override
 	public int hashCode() {
-		return key == null ? 97489 : key.hashCode();
+		return getKey() == null ? 97489 : getKey().hashCode();
 	}
 
 	@Override
@@ -560,9 +560,8 @@ public class QuestionItemImpl implements QuestionItemFull, QuestionItemEditable,
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof QuestionItemImpl) {
-			QuestionItemImpl q = (QuestionItemImpl)obj;
-			return key != null && key.equals(q.key);
+		if(obj instanceof QuestionItemImpl q) {
+			return getKey() != null && getKey().equals(q.getKey());
 		}
 		return false;
 	}

@@ -146,7 +146,7 @@ public class FlexiTableSingleSelectionFilter extends FlexiTableFilter implements
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
-		String preselectedKey = preselectedValue instanceof String ? (String)preselectedValue : null;
+		String preselectedKey = preselectedValue instanceof String key ? key : null;
 		return new FlexiFilterSingleSelectionController(ureq, wControl, this, preselectedKey);
 	}
 }

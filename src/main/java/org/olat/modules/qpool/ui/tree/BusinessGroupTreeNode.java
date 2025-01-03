@@ -30,6 +30,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.qpool.QPoolSecurityCallback;
+import org.olat.modules.qpool.ui.DefaultSearchSettings;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.SharedItemsSource;
@@ -60,11 +61,11 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 		this.stackPanel = stackPanel;
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
-		this.setTitle(group.getName());
-		this.setIconCssClass(ICON_CSS_CLASS);
+		setTitle(group.getName());
+		setIconCssClass(ICON_CSS_CLASS);
 		
 		// The user object is used to findNodeByPersistableUserObject
-		this.setUserObject(group);
+		setUserObject(group);
 	}
 	
 	public BusinessGroup getBusinessGroup() {
@@ -79,10 +80,11 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 					group,
 					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					shareAdmin);
+			DefaultSearchSettings searchSettings = DefaultSearchSettings.searchTaxonomyLevels(false);
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, group, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					TABLE_PREFERENCE_PREFIX + group.getKey(), false);
+					searchSettings, TABLE_PREFERENCE_PREFIX + group.getKey());
 		} else {
 			questionsCtrl.updateSource();
 		}

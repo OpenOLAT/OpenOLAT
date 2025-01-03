@@ -116,6 +116,7 @@ public class ItemCollectionImpl implements QuestionItemCollection, Persistable {
 		this.lastModified = date;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -124,6 +125,7 @@ public class ItemCollectionImpl implements QuestionItemCollection, Persistable {
 		this.name = name;
 	}
 
+	@Override
 	public Identity getOwner() {
 		return owner;
 	}
@@ -134,7 +136,7 @@ public class ItemCollectionImpl implements QuestionItemCollection, Persistable {
 
 	@Override
 	public int hashCode() {
-		return key == null ? -784546 : key.hashCode();
+		return getKey() == null ? -784546 : getKey().hashCode();
 	}
 
 	@Override
@@ -142,9 +144,8 @@ public class ItemCollectionImpl implements QuestionItemCollection, Persistable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof ItemCollectionImpl) {
-			ItemCollectionImpl coll = (ItemCollectionImpl)obj;
-			return key != null && key.equals(coll.key);
+		if(obj instanceof ItemCollectionImpl coll) {
+			return getKey() != null && getKey().equals(coll.getKey());
 		}
 		return false;
 	}

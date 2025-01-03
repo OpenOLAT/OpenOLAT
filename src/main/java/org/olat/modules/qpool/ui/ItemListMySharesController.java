@@ -66,7 +66,8 @@ public class ItemListMySharesController extends AbstractItemListController {
 
 	public ItemListMySharesController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback,
 			String restrictToFormat, List<QItemType> excludeTypes) {
-		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, excludeTypes, "qti-select");
+		super(ureq, wControl, secCallback, new EmptyItemsSource(),
+				DefaultSearchSettings.itemList(restrictToFormat, excludeTypes, false), "qti-select");
 	}
 	
 	@Override
@@ -118,17 +119,9 @@ public class ItemListMySharesController extends AbstractItemListController {
 		} else {
 			myShareEl.select(myShareKeys[0], true);
 			if(!myPools.isEmpty()) {
-				Pool firstPool = myPools.get(0);
-				PoolItemsSource source = new PoolItemsSource(getIdentity(), roles, getLocale(), firstPool);
-				source.getDefaultParams().setFormat(restrictToFormat);
-				source.getDefaultParams().setExcludedItemTypes(excludeTypes);
-				updateSource(source);
+				doSelectPool(ureq, myPools.get(0));
 			} else if(!myGroups.isEmpty()) {
-				BusinessGroup firstGroup = myGroups.get(0);
-				SharedItemsSource source = new SharedItemsSource(firstGroup, getIdentity(), roles, getLocale(), false);
-				source.setRestrictToFormat(restrictToFormat);
-				source.setExcludedItemTypes(excludeTypes);
-				updateSource(source);
+				doSelectBusinessGroup(ureq, myGroups.get(0));
 			}
 		}
 	}
@@ -172,13 +165,17 @@ public class ItemListMySharesController extends AbstractItemListController {
 				myPool = pool;
 			}
 		}
+		doSelectPool(ureq, myPool);
+	}
+	
 
+	private void doSelectPool(UserRequest ureq, Pool myPool) {
 		if(myPool == null) {
 			updateSource(new EmptyItemsSource());
 		} else {
 			PoolItemsSource source = new PoolItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), myPool);
-			source.getDefaultParams().setFormat(restrictToFormat);
-			source.getDefaultParams().setExcludedItemTypes(excludeTypes);
+			source.getDefaultParams().setFormat(searchSettings.getRestrictToFormat());
+			source.getDefaultParams().setExcludedItemTypes(searchSettings.getExcludeTypes());
 			updateSource(source);
 		}
 	}
@@ -190,13 +187,16 @@ public class ItemListMySharesController extends AbstractItemListController {
 				myGroup = group;
 			}
 		}
-
+		doSelectBusinessGroup(ureq, myGroup);
+	}
+	
+	private void doSelectBusinessGroup(UserRequest ureq, BusinessGroup myGroup) {
 		if(myGroup == null) {
 			updateSource(new EmptyItemsSource());
 		} else {
 			SharedItemsSource source = new SharedItemsSource(myGroup, getIdentity(), ureq.getUserSession().getRoles(), getLocale(), false);
-			source.setRestrictToFormat(restrictToFormat);
-			source.setExcludedItemTypes(excludeTypes);
+			source.setRestrictToFormat(searchSettings.getRestrictToFormat());
+			source.setExcludedItemTypes(searchSettings.getExcludeTypes());
 			updateSource(source);
 		}
 	}

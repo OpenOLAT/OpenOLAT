@@ -22,13 +22,12 @@ package org.olat.modules.qpool.ui.datasource;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,13 +38,14 @@ import org.olat.modules.qpool.QuestionStatus;
 public class MarkedItemsSource extends DefaultItemsSource {
 	
 	private final Identity identity;
-	private final MarkManager markManager;
+	
+	@Autowired
+	private MarkManager markManager;
 	
 	public MarkedItemsSource(Identity me, Roles roles, Locale locale, String name) {
 		super(me, roles, locale, name);
 		identity = me;
 		getDefaultParams().setFavoritOnly(true);
-		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 	}
 
 	@Override
@@ -117,15 +117,4 @@ public class MarkedItemsSource extends DefaultItemsSource {
 	public boolean isStatusFilterEnabled() {
 		return false;
 	}
-
-	@Override
-	public QuestionStatus getStatusFilter() {
-		return null;
-	}
-	
-	@Override
-	public void setStatusFilter(QuestionStatus questionStatus) {
-		// not enabled
-	}
-
 }

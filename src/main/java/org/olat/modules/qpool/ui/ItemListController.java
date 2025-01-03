@@ -54,7 +54,7 @@ public class ItemListController extends AbstractItemListController {
 	
 	public ItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback, QuestionItemsSource source,
 			String restrictToFormat, List<QItemType> excludeTypes) {
-		super(ureq, wControl, secCallback, source, restrictToFormat, excludeTypes, "qti-select");
+		super(ureq, wControl, secCallback, source, DefaultSearchSettings.itemList(restrictToFormat, excludeTypes, false), "qti-select");
 		
 		initForm(ureq);
 	}

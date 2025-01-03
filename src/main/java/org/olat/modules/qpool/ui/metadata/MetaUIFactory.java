@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.logging.log4j.Level;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
@@ -41,6 +42,17 @@ import org.olat.modules.qpool.model.QItemType;
  *
  */
 public class MetaUIFactory {
+	
+	public static SelectionValues toSelectionValues(KeyValues keyValues) {
+		SelectionValues pk = new SelectionValues();
+		
+		String[] keys = keyValues.getKeys();
+		String[] values = keyValues.getValues();
+		for(int i=0; i<keys.length && i<values.length; i++) {
+			pk.add(SelectionValues.entry(keys[i], values[i]));
+		}
+		return pk;
+	}
 	
 	public static KeyValues getFormats() {
 		String[] formatKeys = new String[]{ QTI21Constants.QTI_21_FORMAT };
@@ -115,6 +127,13 @@ public class MetaUIFactory {
 		return types.stream()
 				.filter(type -> type.getType().equals(key))
 				.findFirst().orElse(null);
+	}
+	
+	public static List<QItemType> getQItemTypeByKey(List<String> keys, QPoolService qpoolService) {
+		List<QItemType> types = qpoolService.getAllItemTypes();
+		return types.stream()
+				.filter(type -> keys.contains(type.getType()))
+				.toList();
 	}
 	
 	public static boolean validateElementLogic(TextElement el, int maxLength, boolean mandatory, boolean enabled) {

@@ -61,6 +61,7 @@ public class QPoolTaxonomyTreeBuilder {
 	private List<TaxonomyLevel> selectableTaxonomyLevels;
 	private String[] selectableKeys;
 	private String[] selectableValues;
+	private String[] selectableEscapedValues;
 	private String[] taxonomicPaths;
 	private String[] taxonomicKeyPaths;
 	private List<TaxonomyLevel> treeTaxonomyLevels;
@@ -132,6 +133,7 @@ public class QPoolTaxonomyTreeBuilder {
 		selectableTaxonomyLevels = new ArrayList<>();
 		selectableKeys = new String[0];
 		selectableValues = new String[0];
+		selectableEscapedValues = new String[0];
 		taxonomicPaths = new String[0];
 		taxonomicKeyPaths = new String[0];
 		treeTaxonomyLevels = new ArrayList<>();
@@ -149,6 +151,10 @@ public class QPoolTaxonomyTreeBuilder {
 
 	public String[] getSelectableValues() {
 		return selectableValues;
+	}
+	
+	public String[] getSelectableEscapedValues() {
+		return selectableEscapedValues;
 	}
 	
 	public String[] getTaxonomicPaths() {
@@ -207,13 +213,16 @@ public class QPoolTaxonomyTreeBuilder {
 	private void prefillSelectableTaxonomyLevelsArrays() {
 		selectableKeys = new String[selectableTaxonomyLevels.size()];
 		selectableValues = new String[selectableTaxonomyLevels.size()];
+		selectableEscapedValues = new String[selectableTaxonomyLevels.size()];
 		taxonomicPaths = new String[selectableTaxonomyLevels.size()];
 		taxonomicKeyPaths = new String[selectableTaxonomyLevels.size()];
 		for(int i=selectableTaxonomyLevels.size(); i-->0; ) {
 			TaxonomyLevel level = selectableTaxonomyLevels.get(i);
 			selectableKeys[i] = Long.toString(level.getKey());
-			selectableValues[i] = computeIntendention(level, new StringBuilder())
-					.append(TaxonomyUIFactory.translateDisplayName(translator, level)).toString();
+			String value = TaxonomyUIFactory.translateDisplayName(translator, level);
+			selectableValues[i] = computeIntendention(level, new StringBuilder()).append(value).toString();
+			selectableEscapedValues[i] = computeIntendention(level, new StringBuilder())
+					.append(StringHelper.escapeHtml(value)).toString();
 			taxonomicPaths[i] = level.getMaterializedPathIdentifiers();
 			taxonomicKeyPaths[i] = level.getMaterializedPathKeys();
 		}
@@ -233,6 +242,7 @@ public class QPoolTaxonomyTreeBuilder {
 		if (addEmptyEntry) {
 			String[] movedKeys = new String[selectableKeys.length + 1];
 			String[] movedValues = new String[selectableValues.length + 1];
+			String[] movedEscapedValues = new String[selectableEscapedValues.length + 1];
 			String[] movedTaxonomicPaths = new String[taxonomicPaths.length + 1];
 			String[] movedTaxonomicKeyPaths = new String[taxonomicKeyPaths.length + 1];
 			movedKeys[0] = "-1";
@@ -242,11 +252,13 @@ public class QPoolTaxonomyTreeBuilder {
 			for (int i=selectableKeys.length; i-->0;) {
 				movedKeys[i+1] = selectableKeys[i];
 				movedValues[i+1] = selectableValues[i];
+				movedEscapedValues[i+1] = selectableEscapedValues[i];
 				movedTaxonomicPaths[i+1] = taxonomicPaths[i];
 				movedTaxonomicKeyPaths[i+1] = taxonomicKeyPaths[i];
 			}
 			selectableKeys = movedKeys;
 			selectableValues = movedValues;
+			selectableEscapedValues = movedEscapedValues;
 			taxonomicPaths = movedTaxonomicPaths;
 			taxonomicKeyPaths = movedTaxonomicKeyPaths;
 		}

@@ -59,7 +59,7 @@ public class ItemListMyListsController extends AbstractItemListController {
 
 	public ItemListMyListsController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback,
 			String restrictToFormat, List<QItemType> excludeTypes) {
-		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, excludeTypes, "qti-select");
+		super(ureq, wControl, secCallback, new EmptyItemsSource(), DefaultSearchSettings.itemList(restrictToFormat, excludeTypes, false), "qti-select");
 	}
 	
 	@Override
@@ -128,8 +128,9 @@ public class ItemListMyListsController extends AbstractItemListController {
 			updateSource(new EmptyItemsSource());
 		} else {
 			CollectionOfItemsSource source = new CollectionOfItemsSource(myCollection, getIdentity(), ureq.getUserSession().getRoles(), getLocale());
-			source.setRestrictToFormat(restrictToFormat);
-			source.setExcludedItemTypes(excludeTypes);
+			source.setRestrictToFormat(searchSettings.getRestrictToFormat());
+			source.setExcludedItemTypes(searchSettings.getExcludeTypes());
+			//TODO qpool filter
 			updateSource(source);
 		}
 	}

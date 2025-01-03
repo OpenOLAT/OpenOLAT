@@ -28,6 +28,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
+import org.olat.modules.qpool.ui.DefaultSearchSettings;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.AllItemsSource;
@@ -65,11 +66,12 @@ public class AllQuestionsTreeNode extends GenericTreeNode implements ControllerT
 		if(questionsCtrl == null) {
 			QuestionItemsSource source = new AllItemsSource(
 					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
-					ALL); 
+					ALL);
+			DefaultSearchSettings searchSettings = DefaultSearchSettings.searchTaxonomyLevels(true);
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					ALL, true);
+					searchSettings, ALL);
 		} else {
 			questionsCtrl.updateSource();
 		}
