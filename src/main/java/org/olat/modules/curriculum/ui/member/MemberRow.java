@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.ui.component.CurriculumRolesComparator;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -92,7 +94,11 @@ public class MemberRow extends UserPropertiesRow {
 	}
 	
 	public List<CurriculumRoles> getRoles() {
-		return new ArrayList<>(numOfRoles.keySet());
+		List<CurriculumRoles> roles = new ArrayList<>(numOfRoles.keySet());
+		if(roles.size() > 1) {
+			Collections.sort(roles, new CurriculumRolesComparator());
+		}
+		return roles;
 	}
 	
 	public int getNumOfRole(CurriculumRoles role) {

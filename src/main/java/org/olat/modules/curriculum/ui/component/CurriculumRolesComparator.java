@@ -17,34 +17,32 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui.member;
+package org.olat.modules.curriculum.ui.component;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.Translator;
+import java.util.Comparator;
+
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  * 
- * Initial date: 11 nov. 2024<br>
+ * Initial date: 3 janv. 2025<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class NumOfCellRenderer implements FlexiCellRenderer {
+public class CurriculumRolesComparator implements Comparator<CurriculumRoles> {
 
-	private final int numOfElements;
-	
-	public NumOfCellRenderer(int numOfElements) {
-		this.numOfElements = numOfElements;
-	}
-	
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof Number numOf) {
-			target.append(numOf.intValue()).append("/").append(numOfElements);
+	public int compare(CurriculumRoles o1, CurriculumRoles o2) {
+		int c;
+		if(o1 == null && o2 == null) {
+			c = 0;
+		} else if(o1 == null) {
+			c = -1;
+		} else if(o2 == null) {
+			c = 1;
+		} else {
+			c = -o1.compareTo(o2);
 		}
+		return c;
 	}
 }

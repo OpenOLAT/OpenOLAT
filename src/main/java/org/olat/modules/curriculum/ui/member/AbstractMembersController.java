@@ -231,8 +231,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
-		
-
+		initFilters(filters);
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
@@ -244,6 +243,8 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters("all", translate("filter.all"),
 				TabSelectionBehavior.nothing, List.of());
 		tabs.add(allTab);
+		
+		initFiltersPresets(tabs);
 
 		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tab("search", translate("search"), TabSelectionBehavior.clear);
 		searchTab.setLargeSearch(true);

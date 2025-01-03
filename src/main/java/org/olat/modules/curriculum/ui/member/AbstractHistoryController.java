@@ -126,11 +126,11 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		if(withMember) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.member));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.role,
-				new CurriculumMembershipCellRenderer(getTranslator(), ", ")));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.activity));
 		curriculumElementCol = new DefaultFlexiColumnModel(withCurriculumElement, MemberHistoryCols.curriculumElement);
 		columnsModel.addFlexiColumnModel(curriculumElementCol);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.activity));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.role,
+				new CurriculumMembershipCellRenderer(getTranslator(), ", ")));
 		GroupMembershipStatusRenderer memberStatusRenderer = new GroupMembershipStatusRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.previousStatus,
 				memberStatusRenderer));
@@ -280,6 +280,8 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		return switch(status) {
 			case active -> translate("activity.active");
 			case cancel -> translate("activity.cancelled");
+			case cancelWithFee -> translate("activity.cancelled.with.fee");
+			case reservation -> translate("activity.reservation");
 			default -> translate("membership.".concat(status.name()));
 		};
 	}
