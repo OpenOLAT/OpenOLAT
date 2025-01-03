@@ -72,7 +72,7 @@ public class ImportMemberMailController extends StepFormBasicController {
 		MailType defaultGroupType = BusinessGroupMailing.getDefaultTemplateType(e);
 		RepositoryMailing.Type defaultRepoType = RepositoryMailing.getDefaultTemplateType(e);
 
-		if(defaultGroupType != null && e.getGroups().size() == 1) {
+		if(defaultGroupType != null && e != null && e.getGroups().size() == 1) {
 			BusinessGroupShort group = e.getGroups().get(0);
 			mailTemplate = BusinessGroupMailing.getDefaultTemplate(defaultGroupType, group, getIdentity());
 		} else if(defaultRepoType != null) {
