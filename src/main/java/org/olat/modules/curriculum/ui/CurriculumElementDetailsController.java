@@ -156,10 +156,10 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		putInitialPanel(mainVC);
 	}
 	
-	private boolean canChildren(CurriculumElement curriculumElement) {
-		CurriculumElementType type = curriculumElement.getType();
+	private boolean canChildren(CurriculumElement element) {
+		CurriculumElementType type = element.getType();
 		if(type != null && type.isSingleElement()) {
-			return curriculumService.hasCurriculumElementChildren(curriculumElement);
+			return curriculumService.hasCurriculumElementChildren(element);
 		}
 		return true;
 	}

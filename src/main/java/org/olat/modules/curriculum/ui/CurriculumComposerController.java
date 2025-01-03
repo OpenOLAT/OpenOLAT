@@ -601,12 +601,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		} else if("Search".equalsIgnoreCase(type)) {
 			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
 			tableEl.quickSearch(ureq, elementKey.toString());
-		} else if("Zoom".equalsIgnoreCase(type)) {
-			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
-			CurriculumElementRow row = tableModel.getCurriculumElementRowByKey(elementKey);
-			if(row != null) {
-				tableEl.focus(row);
-			}
 		} else if(statusTabMap != null && statusTabMap.containsKey(type.toLowerCase())) {
 			FlexiFiltersTab statusTab = statusTabMap.get(type.toLowerCase());
 			tableEl.setSelectedFilterTab(ureq, statusTab);

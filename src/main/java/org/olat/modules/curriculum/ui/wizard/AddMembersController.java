@@ -104,6 +104,7 @@ public class AddMembersController extends StepFormBasicController {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else if(source == importController) {
 			if(event == StepsEvent.ACTIVATE_NEXT) {
+				membersContext.setSearchedIdentities(new ArrayList<>(importController.getContext().getIdentities()));
 				fireEvent(ureq, event);
 			}
 		} else {

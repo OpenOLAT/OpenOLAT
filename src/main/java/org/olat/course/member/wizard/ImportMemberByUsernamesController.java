@@ -92,6 +92,10 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		initForm (ureq);
 	}
+	
+	public MembersByNameContext getContext() {
+		return context;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
