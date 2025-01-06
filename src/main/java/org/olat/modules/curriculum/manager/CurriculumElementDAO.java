@@ -505,11 +505,11 @@ public class CurriculumElementDAO {
 	}
 	
 	public Long countElements(RepositoryEntryRef entry) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select count(*) from curriculumelement el")
-		  .append(" inner join el.group bGroup")
-		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
-		  .append(" where rel.entry.key=:entryKey");
+		String sb = """
+				select count(*) from curriculumelement el
+				inner join el.group bGroup
+				inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)
+				where rel.entry.key=:entryKey""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("entryKey", entry.getKey())
@@ -517,14 +517,14 @@ public class CurriculumElementDAO {
 	}
 	
 	public List<CurriculumElement> loadElements(RepositoryEntryRef entry) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select el from curriculumelement el")
-		  .append(" inner join fetch el.curriculum curriculum")
-		  .append(" inner join fetch el.group bGroup")
-		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
-		  .append(" left join fetch curriculum.organisation org")
-		  .append(" left join fetch el.parent parentEl")
-		  .append(" where rel.entry.key=:entryKey");
+		String sb = """
+				select el from curriculumelement el
+				inner join fetch el.curriculum curriculum
+				inner join fetch el.group bGroup
+				inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)
+				left join fetch curriculum.organisation org
+				left join fetch el.parent parentEl
+				where rel.entry.key=:entryKey""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElement.class)
 				.setParameter("entryKey", entry.getKey())
@@ -845,16 +845,16 @@ public class CurriculumElementDAO {
 	}
 	
 	public List<CurriculumElement> getParentLine(CurriculumElement curriculumElement) {
-		StringBuilder sb = new StringBuilder(384);
-		sb.append("select el from curriculumelement as el")
-		  .append(" inner join el.curriculum as curriculum")
-		  .append(" inner join el.group as baseGroup")
-		  .append(" left join fetch el.parent as parent")
-		  .append(" left join fetch el.type as type")
-		  .append(" where curriculum.key=:curriculumKey and locate(el.materializedPathKeys,:materializedPath) = 1");
+		String sb = """
+				select el from curriculumelement as el
+				inner join fetch el.curriculum as curriculum
+				inner join fetch el.group as baseGroup
+				left join fetch el.parent as parent
+				left join fetch el.type as type
+				where curriculum.key=:curriculumKey and locate(el.materializedPathKeys,:materializedPath) = 1""";
 		  
 		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), CurriculumElement.class)
+			.createQuery(sb, CurriculumElement.class)
 			.setParameter("curriculumKey", curriculumElement.getCurriculum().getKey())
 			.setParameter("materializedPath", curriculumElement.getMaterializedPathKeys() + "%")
 			.getResultList();
