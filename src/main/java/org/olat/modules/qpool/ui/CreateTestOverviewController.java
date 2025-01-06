@@ -83,6 +83,7 @@ public class CreateTestOverviewController extends FormBasicController {
 	private final ExportFormatOptions format;
 	
 	private QItemDataModel itemsModel;
+	private FlexiTableElement tableEl;
 	private MultipleSelectionElement groupByEl;
 	
 	@Autowired
@@ -128,7 +129,7 @@ public class CreateTestOverviewController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license));
 		}
 		itemsModel = new QItemDataModel(columnsModel, format, getLocale());
-		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "shares", itemsModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "shares", itemsModel, getTranslator(), formLayout);
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(Cols.title.sortKey(), true));
 		tableEl.setSortSettings(options);
@@ -150,7 +151,7 @@ public class CreateTestOverviewController extends FormBasicController {
 						item,
 						resourceLicensesMap.get(item.getKey()),
 						TaxonomyUIFactory.translateDisplayName(getTranslator(), item.getTaxonomyLevel())))
-				.collect(Collectors.toList());
+				.toList();
 		itemsModel.setObjects(rows);
 		if(withLicenses) {
 			Set<LicenseType> licenseTypes = resourceLicenses.stream()
@@ -160,6 +161,7 @@ public class CreateTestOverviewController extends FormBasicController {
 				flc.contextPut("licenseWarning", Boolean.TRUE);
 			}
 		}
+		tableEl.reset(true, true, true);
 	}
 	
 	public String getResourceTypeFormat() {
