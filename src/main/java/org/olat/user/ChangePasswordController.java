@@ -118,7 +118,8 @@ public class ChangePasswordController extends BasicController implements Support
 	@Override
 	public boolean isUserInteractionRequired(UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
-		if(usess.getRoles() == null || usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()) {
+		if(usess.getRoles() == null || usess.getRoles().isInvitee() || usess.getRoles().isGuestOnly()
+				|| "LDAPADMN".equalsIgnoreCase(usess.getSessionInfo().getAuthProvider())) {
 			return false;
 		}
 		if(usess.getRoles().isSystemAdmin()) {
