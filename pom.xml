@@ -2164,7 +2164,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.25.0</version>
+			<version>6.25.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
