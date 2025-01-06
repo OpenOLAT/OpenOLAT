@@ -31,6 +31,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Map;
 
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -38,7 +40,10 @@ import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.WorkThreadInformations;
+import org.olat.core.util.i18n.I18nManager;
 
 /**
  * Initial Date: 28.11.2003
@@ -282,6 +287,26 @@ public class DispatcherModule {
 			response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 		} catch (IOException e) {
 			log.error("Send 503 failed", e);
+		}
+	}
+	
+	public static void forwardToAuth(HttpServletRequest request, HttpServletResponse response) {
+		try {
+			WorkThreadInformations.unset();
+			ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
+			I18nManager.remove18nInfoFromThread();
+			Tracing.clearHttpRequest();
+			//let it at the end
+			DBFactory.getInstance().commitAndCloseSession();
+		} catch (Exception e) {
+			log.error("Clear request before forward", e);
+		}
+		
+		try {
+			RequestDispatcher dispatcher = request.getRequestDispatcher("/auth/");
+			dispatcher.forward(request, response);
+		} catch (ServletException | IOException e) {
+			log.error("Forward failed", e);
 		}
 	}
 

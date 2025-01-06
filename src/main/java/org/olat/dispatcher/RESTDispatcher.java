@@ -256,7 +256,7 @@ public class RESTDispatcher implements Dispatcher {
 					int loginStatus = AuthHelper.doAnonymousLogin(ureq, guestLoc);
 					if ( loginStatus == AuthHelper.LOGIN_OK) {
 						//logged in as anonymous user, continue
-						ServletUtil.serveResource(request, response, ureq.getDispatchResult().getResultingMediaResource());
+						DispatcherModule.forwardToAuth(request, response);
 					} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 						DispatcherModule.redirectToServiceNotAvailable(response);
 					} else {
