@@ -2356,7 +2356,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.26.3</version>
+			<version>3.27.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2452,7 +2452,7 @@
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.9.1.Final</version>
+				<version>1.9.2.Final</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
