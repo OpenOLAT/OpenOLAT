@@ -32,6 +32,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemFull;
+import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,6 +61,8 @@ public class OLATUpgrade_19_1_3 extends OLATUpgrade {
 	private QTI21Service qtiService;
 	@Autowired
 	private QPoolService qpoolService;
+	@Autowired
+	private QuestionItemDAO questionItemDao;
 
 	public OLATUpgrade_19_1_3() {
 		super();
@@ -134,42 +137,58 @@ public class OLATUpgrade_19_1_3 extends OLATUpgrade {
 	}
 	
 	private void updateQuestionItemMaxScore(QuestionItemFull questionItem) {
-		QuestionItemImpl item = (QuestionItemImpl)qpoolService.loadItemById(questionItem.getKey());
-		if(item == null || !QTI21Constants.QTI_21_FORMAT.equals(item.getFormat())) {
-			return;
-		}
-		
-		File resourceDirectory = qpoolService.getRootDirectory(questionItem);
-		File resourceFile = qpoolService.getRootFile(questionItem);
-		if(resourceFile == null) {
-			return;
-		}
-		
-		URI assessmentItemUri = resourceFile.toURI();
-		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
-				.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
-		if(resolvedAssessmentItem != null) {
-			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-			if(assessmentItem != null) {
-				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
-				if(maxScore != null) {
-					item.setMaxScore(BigDecimal.valueOf(maxScore.doubleValue()));
-					qpoolService.updateItem(item);
+		try {
+			QuestionItemImpl item = loadQuestionById(questionItem.getKey());
+			if(item == null || !QTI21Constants.QTI_21_FORMAT.equals(item.getFormat())) {
+				return;
+			}
+			
+			File resourceDirectory = qpoolService.getRootDirectory(questionItem);
+			File resourceFile = qpoolService.getRootFile(questionItem);
+			if(resourceFile == null) {
+				return;
+			}
+			
+			URI assessmentItemUri = resourceFile.toURI();
+			ResolvedAssessmentItem resolvedAssessmentItem = qtiService
+					.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
+			if(resolvedAssessmentItem != null) {
+				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+				if(assessmentItem != null) {
+					Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+					if(maxScore != null) {
+						item.setMaxScore(BigDecimal.valueOf(maxScore.doubleValue()));
+						questionItemDao.merge(item);
+						dbInstance.commit();
+					}
 				}
 			}
+		} catch (Exception e) {
+			log.error("Item cannot be updated: {}", questionItem.getKey());
+			dbInstance.rollbackAndCloseSession();
 		}
 	}
 	
 	private List<QuestionItemFull> getQuestionItems(int firstResult, int maxResults) {
-		String sb = """
-				select item from questionitem item
-				order by item.key asc""";
-		
+		String sb = "select item from questionitem item order by item.key asc";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItemFull.class)
+				.createQuery(sb, QuestionItemFull.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
-
+	
+	private QuestionItemImpl loadQuestionById(Long key) {
+		String sb = "select item from questionitem item where item.key=:key";
+		List<QuestionItemImpl> items = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemImpl.class)
+				.setParameter("key", key)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		if(items.isEmpty()) {
+			return null;
+		}
+		return items.get(0);
+	}
 }
