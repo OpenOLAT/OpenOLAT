@@ -935,8 +935,11 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private void addIntermediatePath(CurriculumElement element) {
 		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
-		parentLine.remove(element);
+		for(CurriculumElement parent:parentLine) {
+			toolbarPanel.popUserObject(parent);
+		}
 		
+		parentLine.remove(element);
 		for(CurriculumElement parent:parentLine) {
 			toolbarPanel.pushController(parent.getDisplayName(), null, parent);
 		}
