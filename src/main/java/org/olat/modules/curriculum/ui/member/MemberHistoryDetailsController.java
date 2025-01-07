@@ -59,7 +59,7 @@ public class MemberHistoryDetailsController extends AbstractHistoryController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("details.history.title", new String[] { StringHelper.escapeHtml(curriculumElement.getDisplayName()) });
+		setFormTitle("details.history.title", new String[] { "<span class='o_muted'>" + StringHelper.escapeHtml(curriculumElement.getDisplayName()) + "</span>" });
 		
 		emptyHistoryEl = uifactory.addEmptyPanel("empty.history", null, formLayout);
 		emptyHistoryEl.setElementCssClass("o_sel_empty_history");

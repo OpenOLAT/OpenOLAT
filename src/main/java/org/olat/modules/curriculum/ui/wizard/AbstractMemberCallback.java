@@ -55,7 +55,7 @@ public abstract class AbstractMemberCallback implements StepRunnerCallback {
 	@Autowired
 	protected CurriculumService curriculumService;
 	
-	public AbstractMemberCallback() {
+	AbstractMemberCallback() {
 		CoreSpringFactory.autowireObject(this);
 	}
 	

@@ -34,5 +34,8 @@ import org.olat.modules.curriculum.CurriculumRoles;
 public record MembershipModification(CurriculumRoles role, CurriculumElement curriculumElement, GroupMembershipStatus nextStatus,
 		ConfirmationMembershipEnum confirmation, ConfirmationByEnum confirmationBy, Date confirmUntil,
 		boolean toDescendants, String adminNote) {
-
+	
+	public MembershipModification copyFor(CurriculumElement element) {
+		return new MembershipModification(role, element, nextStatus, confirmation, confirmationBy, confirmUntil, toDescendants, adminNote);
+	}
 }

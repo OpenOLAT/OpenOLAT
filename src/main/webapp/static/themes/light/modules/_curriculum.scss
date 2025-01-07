@@ -873,7 +873,11 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	    color: $o-curriculum-status-active-color !important;
 	}
 	
-	&.o_gmembership_status_declined,
+	&.o_gmembership_status_declined {
+	    border-color: $o-curriculum-status-declined-border-color;
+	    color: $o-curriculum-status-declined-color !important;
+	}
+	
 	&.o_gmembership_status_cancelwithfee,
 	&.o_gmembership_status_cancel {
 	    border-color: $o-curriculum-status-cancelled-border-color;

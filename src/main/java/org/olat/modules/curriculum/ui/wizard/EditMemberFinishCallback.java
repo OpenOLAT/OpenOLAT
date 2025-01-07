@@ -54,6 +54,7 @@ public class EditMemberFinishCallback extends AbstractMemberCallback {
 		final List<Identity> identities = membersContext.getIdentities();
 		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
 		List<MembershipModification> modifications = membersContext.getModifications();
+		
 		List<CurriculumElementMembershipChange> changes = applyModification(identities, curriculumElements, modifications);
 		
 		if(!changes.isEmpty()) {

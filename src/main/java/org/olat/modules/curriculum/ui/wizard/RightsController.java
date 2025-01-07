@@ -375,6 +375,7 @@ public class RightsController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+		System.out.println();
 	}
 	
 	private void doAddMembership(UserRequest ureq, FormLink link, RightsCurriculumElementRow row) {
@@ -403,7 +404,8 @@ public class RightsController extends StepFormBasicController {
 			for(int i=index+1; i<numOfRows; i++) {
 				RightsCurriculumElementRow obj = tableModel.getObject(i);
 				if(tableModel.isParentOf(row, obj)) {
-					setModification(obj, modification);
+					MembershipModification objModification = modification.copyFor(obj.getCurriculumElement());
+					setModification(obj, objModification);
 				}
 			}
 		}

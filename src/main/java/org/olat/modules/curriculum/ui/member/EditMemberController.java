@@ -553,7 +553,8 @@ public class EditMemberController extends FormBasicController {
 				EditMemberCurriculumElementRow obj = tableModel.getObject(i);
 				GroupMembershipStatus currentStatus = obj.getStatus(modification.role());
 				if(tableModel.isParentOf(row, obj) && currentStatus == GroupMembershipStatus.reservation) {
-					setModification(modification, obj);
+					MembershipModification objModification = modification.copyFor(obj.getCurriculumElement());
+					setModification(objModification, obj);
 				}
 			}
 		}
@@ -573,8 +574,8 @@ public class EditMemberController extends FormBasicController {
 				GroupMembershipStatus currentStatus = obj.getStatus(modification.role());
 				if(tableModel.isParentOf(row, obj)
 						&& GroupMembershipStatus.allowedAsNextStep(currentStatus, modification.nextStatus())) {
-					obj.addModification(modification.role(), modification);
-					setModification(modification, obj);
+					MembershipModification objModification = modification.copyFor(obj.getCurriculumElement());
+					setModification(objModification, obj);
 				}
 			}
 		}
