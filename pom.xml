@@ -1597,7 +1597,7 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.17.1</version>
+			<version>1.17.2</version>
 		</dependency>
 		<dependency>
 			<!-- Used by at least commons-validator -->
@@ -2336,7 +2336,7 @@
    		<dependency>
 			<groupId>io.github.sashirestela</groupId>
 			<artifactId>simple-openai</artifactId>
-			<version>3.13.0</version>
+			<version>3.14.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
