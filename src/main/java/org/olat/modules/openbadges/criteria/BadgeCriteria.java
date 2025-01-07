@@ -322,18 +322,6 @@ public class BadgeCriteria {
 		return true;
 	}
 
-	public boolean hasGlobalBadgeConditions() {
-		for (BadgeCondition badgeCondition : getConditions()) {
-			if (badgeCondition instanceof CoursesPassedCondition) {
-				return true;
-			}
-			if (badgeCondition instanceof GlobalBadgesEarnedCondition) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	/**
 	 * Check if all global badge conditions for the BadgeCriteria a global badge are met. This is a check for one
 	 * potential badge recipient.
