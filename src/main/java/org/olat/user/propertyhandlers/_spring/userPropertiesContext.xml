@@ -2379,6 +2379,26 @@
 					</bean>
 				</entry>
 
+				<entry key="org.olat.modules.coach.ui.em.EducationManagerReportsController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Education manager report" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+
 				<!--
 					Default configuration in case nothing else matches.
 				-->
