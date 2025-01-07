@@ -381,6 +381,17 @@ public class CoursePageFragment {
 		return new BookingPage(browser);
 	}
 	
+	public CourseInfoPage infos() {
+		By infosBy = By.xpath("//div[@class='o_tools_container']//li[@class='o_tool']/a[contains(@onclick,'courseconfig')][i[contains(@class,'o_icon_details')]]");
+		OOGraphene.waitElement(infosBy, browser);
+		browser.findElement(infosBy).click();
+		
+		By detailsBy = By.cssSelector(".o_repo_details .o_repo_header .o_meta>h2");
+		OOGraphene.waitElement(detailsBy, browser);
+		
+		return new CourseInfoPage(browser);
+	}
+	
 	/**
 	 * Set the course status to published.
 	 * 
