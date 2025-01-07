@@ -40,10 +40,12 @@ public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> imple
 	static final FolderCols[] COLS = FolderCols.values();
 
 	private final Locale locale;
-	
-	public FolderDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	private final FileBrowserSelectionMode selectionMode;
+
+	public FolderDataModel(FlexiTableColumnModel columnsModel, Locale locale, FileBrowserSelectionMode selectionMode) {
 		super(columnsModel);
 		this.locale = locale;
+		this.selectionMode = selectionMode;
 	}
 
 	@Override
@@ -82,7 +84,7 @@ public class FolderDataModel extends DefaultFlexiTableDataModel<FolderRow> imple
 	@Override
 	public boolean isSelectable(int row) {
 		FolderRow file = getObject(row);
-		return !(file.getVfsItem() instanceof VFSContainer);
+		return !(file.getVfsItem() instanceof VFSContainer) || selectionMode.equals(FileBrowserSelectionMode.sourceMulti);
 	}
 	
 	public enum FolderCols implements FlexiSortableColumnDef {
