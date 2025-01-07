@@ -162,7 +162,7 @@ public class FolderSelectionController extends FormBasicController implements Fi
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FolderCols.path));
 		}
 		
-		dataModel = new FolderDataModel(columnsModel, getLocale(), selectionMode);
+		dataModel = new FolderDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), flc);
 		tableEl.setAndLoadPersistedPreferences(ureq, "folder.selection");
 		tableEl.setCssDelegate(this);

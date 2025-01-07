@@ -654,7 +654,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		}
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(FolderCols.tools));
 		
-		dataModel = new FolderDataModel(columnsModel, getLocale(), FileBrowserSelectionMode.sourceMulti);
+		dataModel = new FolderDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), flc);
 		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(FolderCols.title.name(), true)));
 		tableEl.setMultiSelect(true);
