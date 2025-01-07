@@ -203,7 +203,6 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.coverage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.additionalInformations));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.language));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.language));
 		if (getSecurityCallback().canUseTaxonomy()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxonomyLevel));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxonomyPath));
@@ -279,16 +278,20 @@ public abstract class AbstractItemListController extends FormBasicController
 		if (securityCallback.canUseTaxonomy()) {
 			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getTranslator(), getIdentity(), false, searchSettings.isSearchAllTaxonomyLevels());
 			String[] keys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
-			String[] keyPaths = qpoolTaxonomyTreeBuilder.getTaxonomicKeyPaths();
 			String[] values = qpoolTaxonomyTreeBuilder.getSelectableEscapedValues();
-			
+
 			SelectionValues taxonomyFieldKV = new SelectionValues();
 			for(int i=0; i<keys.length && i<values.length; i++) {
-				taxonomyFieldKV.add(SelectionValues.entry(keys[i], values[i]));
+				String value = values[i];
+				if(value != null) {
+					value = value.replace(QPoolTaxonomyTreeBuilder.INTENDING, "");
+				}
+				taxonomyFieldKV.add(SelectionValues.entry(keys[i], value));
 			}
 			filters.add(new FlexiTableMultiSelectionFilter(translate("classification.taxonomy.level"),
 					AbstractItemsSource.FILTER_TAXONOMYLEVEL_FIELD, taxonomyFieldKV, true));	
 			
+			String[] keyPaths = qpoolTaxonomyTreeBuilder.getTaxonomicKeyPaths();
 			SelectionValues taxonomyPathKV = new SelectionValues();
 			for(int i=0; i<keyPaths.length && i<values.length; i++) {
 				taxonomyPathKV.add(SelectionValues.entry(keyPaths[i], values[i]));

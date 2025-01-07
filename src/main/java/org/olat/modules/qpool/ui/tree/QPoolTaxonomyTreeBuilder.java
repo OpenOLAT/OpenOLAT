@@ -53,7 +53,7 @@ import org.springframework.stereotype.Component;
 @Scope("prototype")
 public class QPoolTaxonomyTreeBuilder {
 	
-	private static final String INTENDING = "\u00a0"; // &nbsp; non-breaking space
+	public static final String INTENDING = "\u00a0"; // &nbsp; non-breaking space
 
 	private Translator translator;
 	private boolean addEmptyEntry;
