@@ -306,11 +306,11 @@ public class ConditionRow {
 			case CoursePassedCondition.KEY -> new CoursePassedCondition();
 			case CourseScoreCondition.KEY -> new CourseScoreCondition(
 					Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
-					StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
+					safeDouble(valueEl.getValue())
 			);
 			case LearningPathProgressCondition.KEY -> new LearningPathProgressCondition(
 					Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
-					StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
+					safeDouble(valueEl.getValue())
 			);
 			case OtherBadgeEarnedCondition.KEY -> new OtherBadgeEarnedCondition(
 					badgesDropdown.isOneSelected() ? badgesDropdown.getSelectedKey() : badgesDropdown.getKeys()[0]
@@ -324,7 +324,7 @@ public class ConditionRow {
 			case CourseElementScoreCondition.KEY -> new CourseElementScoreCondition(
 					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedKey() : courseElementsDropdown.getKeys()[0],
 					Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
-					StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.parseDouble(valueEl.getValue()) : 0
+					safeDouble(valueEl.getValue())
 			);
 			case CoursesPassedCondition.KEY -> new CoursesPassedCondition(
 					coursesDropdown.getCourses().stream().map(RepositoryEntryRef::getKey).toList()
@@ -336,6 +336,17 @@ public class ConditionRow {
 		};
 	}
 	
+	private double safeDouble(String value) {
+		if (!StringHelper.containsNonWhitespace(value)) {
+			return 0;
+		}
+		try {
+			return Double.parseDouble(value);
+		} catch (NumberFormatException e) {
+			return 0;
+		}
+	}
+
 	public boolean validate() {
 		boolean allOk = true;
 		
@@ -376,6 +387,13 @@ public class ConditionRow {
 			if (!StringHelper.containsNonWhitespace(valueEl.getValue())) {
 				valueEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
+			} else {
+				try {
+					Double.parseDouble(valueEl.getValue());
+				} catch (NumberFormatException e) {
+					valueEl.setErrorKey("form.error.nointeger");
+					allOk &= false;
+				}
 			}
 		}
 		return allOk;
