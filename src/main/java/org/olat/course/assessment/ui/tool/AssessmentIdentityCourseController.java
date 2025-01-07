@@ -173,7 +173,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		}
 		
 		badgeConfig = openBadgesManager.getConfiguration(courseEntry);
-		if(badgeConfig.isAwardEnabled()) {
+		if(openBadgesManager.isEnabled() && badgeConfig.isAwardEnabled()) {
 			boolean readOnly = coachCourseEnv.isCourseReadOnly();
 			badgesAssertionsCtrl = new IdentityBadgesAssertionsController(ureq, getWindowControl(),
 					courseEntry, assessedIdentity, readOnly);
