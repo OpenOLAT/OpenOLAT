@@ -31,6 +31,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,7 +92,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -181,9 +181,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private VelocityEngine velocityEngine;
 	@Autowired
 	private BadgeOrganizationDAO badgeOrganizationDAO;
-
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
 
 	@Override
 	public void afterPropertiesSet() {
@@ -750,6 +747,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public List<BadgeClass> getBadgeClassesInCoOwnedCourseSet(RepositoryEntry entry) {
+		if (entry == null) {
+			return Collections.emptyList();
+		}
 		return badgeClassDAO.getBadgeClassesInCoOwnedCourseSet(entry);
 	}
 
@@ -1110,6 +1110,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void handleCourseReset(RepositoryEntry courseEntry, boolean learningPath, Identity doer) {
+		if (!isEnabled()) {
+			return;
+		}
+
 		// Direct course entry badge classes
 		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
 		if (badgeClasses == null || badgeClasses.isEmpty()) {
