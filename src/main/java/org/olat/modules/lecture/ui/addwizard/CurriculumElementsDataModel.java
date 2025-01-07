@@ -75,7 +75,7 @@ public class CurriculumElementsDataModel extends DefaultFlexiTreeTableDataModel<
 		identifier("table.header.identifier"),
 		beginDate("table.header.begin.date"),
 		endDate("table.header.end.date"),
-		references("table.header.resources");
+		references("table.header.num.of.courses");
 		
 		private final String i18nKey;
 		

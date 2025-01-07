@@ -221,8 +221,13 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 			List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			Map<Long,CurriculumElementRow> keyToRows = new HashMap<>();
 			for(CurriculumElementInfos element:elements) {
-				CurriculumElementRow row = new CurriculumElementRow(element.curriculumElement(),
-						element.numOfResources());
+				Long numOfCourses = null;
+				CurriculumElementType type = element.curriculumElement().getType();
+				if(type != null && type.getMaxRepositoryEntryRelations() != 0) {
+					numOfCourses = element.numOfResources();
+				}
+				
+				CurriculumElementRow row = new CurriculumElementRow(element.curriculumElement(), numOfCourses);
 				rows.add(row);
 				keyToRows.put(row.getKey(), row);
 			}
