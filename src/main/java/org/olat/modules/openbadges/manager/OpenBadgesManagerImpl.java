@@ -1220,6 +1220,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (!isEnabled()) {
 			return;
 		}
+		if (!getConfiguration(courseEntry).isAwardEnabled()) {
+			return;
+		}
 		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
 		if (badgeClasses == null || badgeClasses.isEmpty()) {
 			return;
