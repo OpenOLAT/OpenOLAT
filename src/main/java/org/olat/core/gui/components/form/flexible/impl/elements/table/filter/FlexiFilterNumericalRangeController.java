@@ -71,12 +71,14 @@ public class FlexiFilterNumericalRangeController extends FormBasicController {
 		datesCont.setRootForm(mainForm);
 		formLayout.add("dates", datesCont);
 		
-		String start = initialRange != null? FlexiTableNumericalRangeFilter.formatNumerical(initialRange.getStart()) : null;
+		String start = initialRange != null && initialRange.getStart() != null
+				? FlexiTableNumericalRangeFilter.formatNumerical(initialRange.getStart()) : null;
 		startEl = uifactory.addTextElement("start", 12, start, datesCont);
 		startEl.showLabel(true);
 		startEl.setLabel(startLabel, null, false);
 		
-		String end = initialRange != null? FlexiTableNumericalRangeFilter.formatNumerical(initialRange.getEnd()) : null;
+		String end = initialRange != null && initialRange.getEnd() != null
+				? FlexiTableNumericalRangeFilter.formatNumerical(initialRange.getEnd()) : null;
 		endEl = uifactory.addTextElement("end", 12, end, datesCont);
 		endEl.showLabel(true);
 		endEl.setLabel(endLabel, null, false);

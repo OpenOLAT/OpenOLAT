@@ -136,6 +136,7 @@ public class QuestionItemDAO {
 		copy.setCoverage(original.getCoverage());
 		copy.setAdditionalInformations(original.getAdditionalInformations());
 		copy.setLanguage(original.getLanguage());
+		copy.setMaxScore(original.getMaxScore());
 		
 		//classification
 		copy.setTaxonomyLevel(original.getTaxonomyLevel());

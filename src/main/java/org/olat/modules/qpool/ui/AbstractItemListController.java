@@ -304,7 +304,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		if (securityCallback.canUseEducationalContext()) {
 			SelectionValues contextsKV = MetaUIFactory
 					.toSelectionValues(MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService));
-			filters.add(new FlexiTableSingleSelectionFilter(translate("educational.context"),
+			filters.add(new FlexiTableMultiSelectionFilter(translate("educational.context"),
 					AbstractItemsSource.FILTER_EDU_CONTEXT, contextsKV, true));
 		}
 		
@@ -313,9 +313,11 @@ public abstract class AbstractItemListController extends FormBasicController
 		filters.add(new FlexiTableMultiSelectionFilter(translate("question.type"),
 				AbstractItemsSource.FILTER_TYPE, typesKV, true));
 		
-		SelectionValues assessmentTypesKV = MetaUIFactory
-				.toSelectionValues(MetaUIFactory.getAssessmentTypes(getTranslator()));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("question.assessmentType"),
+		SelectionValues assessmentTypesKV = new SelectionValues();
+		assessmentTypesKV.add(SelectionValues.entry("summative", translate("question.assessmentType.summative")));
+		assessmentTypesKV.add(SelectionValues.entry("formative", translate("question.assessmentType.formative")));
+		assessmentTypesKV.add(SelectionValues.entry("both", translate("question.assessmentType.both")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("question.assessmentType"),
 				AbstractItemsSource.FILTER_ASSESSMENT_TYPE, assessmentTypesKV, true));
 
 		SelectionValues statusKV = MetaUIFactory
@@ -342,7 +344,7 @@ public abstract class AbstractItemListController extends FormBasicController
 			for(int i=0; i<keys.length && i<values.length; i++) {
 				licensesKV.add(SelectionValues.entry(keys[i], StringHelper.escapeHtml(values[i])));
 			}
-			filters.add(new FlexiTableSingleSelectionFilter(translate("rights.license"),
+			filters.add(new FlexiTableMultiSelectionFilter(translate("rights.license"),
 					AbstractItemsSource.FILTER_LICENSE, licensesKV, false));
 		}
 	}
@@ -369,6 +371,16 @@ public abstract class AbstractItemListController extends FormBasicController
 	}
 	
 	protected abstract void initButtons(UserRequest ureq, FormItemContainer formLayout);
+	
+	protected void addBatchButtons(FormLink... buttons) {
+		if(buttons == null || buttons.length == 0) return;
+		
+		for(FormLink button:buttons) {
+			if(button != null) {
+				itemsTable.addBatchButton(button);
+			}
+		}
+	}
 
     @Override
 	public boolean isDetailsRow(int row, Object rowObject) {

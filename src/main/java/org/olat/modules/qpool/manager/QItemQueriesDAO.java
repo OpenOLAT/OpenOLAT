@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -36,6 +37,7 @@ import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionItemView.OrderBy;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.ItemWrapper;
+import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
@@ -350,18 +352,18 @@ public class QItemQueriesDAO {
 			sb.and().append(" taxonomyLevel is null");
 		}
 		
-		if(params.getLicenseType() != null) {
+		if(params.getLicenseTypes() != null && !params.getLicenseTypes().isEmpty()) {
 			sb.and().append(" exists (select license from license as license")
-			  .append(" where license.resName=:licenseResName and license.resId=item.key and license.licenseType.key=:licenseTypeKey")
+			  .append(" where license.resName=:licenseResName and license.resId=item.key and license.licenseType.key in (:licenseTypeKeys)")
 			  .append(" )");
 		}
 		
-		if(StringHelper.containsNonWhitespace(params.getAssessmentType())) {
-			sb.and().append(" item.assessmentType=:assessmentType");
+		if(params.getAssessmentTypes() != null && !params.getAssessmentTypes().isEmpty()) {
+			sb.and().append(" item.assessmentType in (:assessmentTypes)");
 		}
 
-		if(params.getLevel() != null) {
-			sb.and().append(" item.educationalContext.key=:levelKey");
+		if(params.getLevels() != null && !params.getLevels().isEmpty()) {
+			sb.and().append(" item.educationalContext.key in (:levelKeys)");
 		}
 		
 		if(params.getQuestionStatus() != null && !params.getQuestionStatus().isEmpty()) {
@@ -483,16 +485,20 @@ public class QItemQueriesDAO {
 			query.setParameter("excludedItemTypeKeys", excludedItemTypeKeys);
 		}
 		
-		if(params.getLicenseType() != null) {
+		if(params.getLicenseTypes() != null && !params.getLicenseTypes().isEmpty()) {
+			List<Long> licenceTypeKeys = params.getLicenseTypes()
+					.stream().map(LicenseType::getKey).toList();
 			query.setParameter("licenseResName", "QuestionItem");
-			query.setParameter("licenseTypeKey", params.getLicenseType().getKey());
+			query.setParameter("licenseTypeKeys", licenceTypeKeys);
 		}
-		if(params.getLevel() != null) {
-			query.setParameter("levelKey", params.getLevel().getKey());
+		if(params.getLevels() != null && !params.getLevels().isEmpty()) {
+			List<Long> levelsKeys = params.getLevels().stream()
+					.map(QEducationalContext::getKey).toList();
+			query.setParameter("levelKeys", levelsKeys);
 		}
 		
-		if(StringHelper.containsNonWhitespace(params.getAssessmentType())) {
-			query.setParameter("assessmentType", params.getAssessmentType());
+		if(params.getAssessmentTypes() != null && !params.getAssessmentTypes().isEmpty()) {
+			query.setParameter("assessmentTypes", params.getAssessmentTypes());
 		}
 
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {

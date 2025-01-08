@@ -69,7 +69,7 @@ public abstract class AbstractItemsSource implements QuestionItemsSource {
 	public static final String FILTER_EDITOR = "editor";
 	public static final String FILTER_FORMAT = "format";
 	public static final String FILTER_LICENSE = "license";
-	public static final String FILTER_MAX_SCORE = "license";
+	public static final String FILTER_MAX_SCORE = "maxScore";
 	
 	@Autowired
 	protected QPoolService qpoolService;
@@ -98,20 +98,20 @@ public abstract class AbstractItemsSource implements QuestionItemsSource {
 		String owner = getTextFilterValue(filters, FILTER_OWNER);
 		params.setOwner(owner);
 		
-		QEducationalContext eduContext = getContextFilterValue(filters, FILTER_EDU_CONTEXT);
-		params.setLevel(eduContext);
+		List<QEducationalContext> eduContext = getContextFilterValues(filters, FILTER_EDU_CONTEXT);
+		params.setLevels(eduContext);
 		List<QItemType> itemTypes = getItemTypesFilterValue(filters, FILTER_TYPE);
 		params.setItemTypes(itemTypes);
-		String assessmentType = getTextFilterValue(filters, FILTER_ASSESSMENT_TYPE);
-		params.setAssessmentType(assessmentType);
+		List<String> assessmentTypes = getTextFilterValues(filters, FILTER_ASSESSMENT_TYPE);
+		params.setAssessmentTypes(assessmentTypes);
 		List<QuestionStatus> status = getStatusFilterValue(filters, FILTER_STATUS);
 		params.setQuestionStatus(status);
 		String editor = getTextFilterValue(filters, FILTER_EDITOR);
 		params.setEditor(editor);
 		String format = getTextFilterValue(filters, FILTER_FORMAT);
 		params.setFormat(format);
-		LicenseType licenseType = getLicenseTypeFilterValue(filters, FILTER_LICENSE);
-		params.setLicenseType(licenseType);
+		List<LicenseType> licenseTypes = getLicenseTypeFilterValues(filters, FILTER_LICENSE);
+		params.setLicenseTypes(licenseTypes);
 		List<TaxonomyLevelRef> taxonomyLevels = getTaxonomyFieldFilterValue(filters, FILTER_TAXONOMYLEVEL_FIELD);
 		params.setTaxonomyLevels(taxonomyLevels);
 		String taxonomyLevelPath = getTextFilterValue(filters, FILTER_TAXONOMYLEVEL_PATH);
@@ -136,6 +136,15 @@ public abstract class AbstractItemsSource implements QuestionItemsSource {
 		return null;
 	}
 	
+	private List<String> getTextFilterValues(List<FlexiTableFilter> filters, String filterId) {
+		FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterId);
+		if (filter instanceof FlexiTableMultiSelectionFilter extendedFilter
+				&& StringHelper.containsNonWhitespace(extendedFilter.getValue())) {
+			return extendedFilter.getValues();
+		}
+		return null;
+	}
+	
 	private List<TaxonomyLevelRef> getTaxonomyFieldFilterValue(List<FlexiTableFilter> filters, String filterId) {
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterId);
 		if (filter instanceof FlexiTableMultiSelectionFilter extendedFilter) {
@@ -151,11 +160,13 @@ public abstract class AbstractItemsSource implements QuestionItemsSource {
 		return null;
 	}
 	
-	private QEducationalContext getContextFilterValue(List<FlexiTableFilter> filters, String filterId) {
+	private List<QEducationalContext> getContextFilterValues(List<FlexiTableFilter> filters, String filterId) {
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterId);
-		if (filter instanceof FlexiTableExtendedFilter extendedFilter
-				&& StringHelper.containsNonWhitespace(extendedFilter.getValue())) {
-			return MetaUIFactory.getContextByKey(extendedFilter.getValue(), qpoolService);
+		if (filter instanceof FlexiTableMultiSelectionFilter extendedFilter) {
+			List<String> values = extendedFilter.getValues();
+			if(values != null && !values.isEmpty()) {
+				return MetaUIFactory.getContextByKeys(values, qpoolService);
+			}
 		}
 		return null;
 	}
@@ -179,12 +190,17 @@ public abstract class AbstractItemsSource implements QuestionItemsSource {
 		return null;
 	}
 	
-	private LicenseType getLicenseTypeFilterValue(List<FlexiTableFilter> filters, String filterId) {
+	private List<LicenseType> getLicenseTypeFilterValues(List<FlexiTableFilter> filters, String filterId) {
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(filters, filterId);
-		if (filter instanceof FlexiTableExtendedFilter extendedFilter
-				&& StringHelper.containsNonWhitespace(extendedFilter.getValue())) {
-			LicenseSelectionConfig config = LicenseUIFactory.createLicenseSelectionConfig(licenseHandler);
-			return config.getLicenseType(extendedFilter.getValue());
+		if (filter instanceof FlexiTableMultiSelectionFilter extendedFilter) {
+			List<String> values = extendedFilter.getValues();
+			if(values != null && !values.isEmpty()) {
+				LicenseSelectionConfig config = LicenseUIFactory.createLicenseSelectionConfig(licenseHandler);
+				return values.stream()
+						.map(val -> config.getLicenseType(val))
+						.filter(type -> type != null)
+						.toList();
+			}
 		}
 		return null;
 	}

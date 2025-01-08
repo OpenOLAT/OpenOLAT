@@ -121,13 +121,29 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QuestionListController extends AbstractItemListController implements Activateable2 {
 
+	// New items
+	private FormLink newItem;
+	private FormLink newAiItem;
+	private FormLink importItem;
+	
+	// Status bar for review process
 	private FormLink statusDraftLink;
 	private FormLink statusReviewLink;
 	private FormLink statusRevisedLink;
 	private FormLink statusFinalLink;
 	private FormLink statusEndOfLifeLink;
+
+	// Batch actions
+	private FormLink list;
 	private FormLink createTest;
-	private FormLink list, exportItem, shareItem, removeItem, newItem, newAiItem, copyItem, convertItem, deleteItem, authorItem, importItem, bulkChange;
+	private FormLink exportItem;
+	private FormLink shareItem;
+	private FormLink removeItem;
+	private FormLink copyItem;
+	private FormLink convertItem;
+	private FormLink deleteItem;
+	private FormLink authorItem;
+	private FormLink bulkChange;
 
 	private final TooledStackedPanel stackPanel;
 	private RenameController renameCtrl;
@@ -271,6 +287,8 @@ public class QuestionListController extends AbstractItemListController implement
 				bulkChange = uifactory.addFormLink("bulk.change", formLayout, Link.BUTTON);
 			}
 		}
+		
+		addBatchButtons(createTest, list, exportItem, shareItem, removeItem, copyItem, convertItem, deleteItem, authorItem, bulkChange);
 	}
 	
 	@Override
