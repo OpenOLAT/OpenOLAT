@@ -43,8 +43,8 @@ public enum CurriculumRoles {
 	
 	public static final CurriculumRoles[] curriculumElementsRoles() {
 		return new CurriculumRoles[] {
-				CurriculumRoles.curriculumelementowner, CurriculumRoles.owner, CurriculumRoles.mastercoach,
-				CurriculumRoles.coach, CurriculumRoles.participant
+				CurriculumRoles.participant, CurriculumRoles.coach, CurriculumRoles.mastercoach,
+				CurriculumRoles.owner, CurriculumRoles.curriculumelementowner
 			};
 	}
 	

@@ -155,7 +155,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MemberDetailsCols.externalId));
 		
 		GroupMembershipStatusRenderer statusRenderer = new GroupMembershipStatusRenderer(getLocale());
-		for(CurriculumRoles role:CurriculumRoles.values()) {
+		for(CurriculumRoles role:CurriculumRoles.curriculumElementsRoles()) {
 			String i18nLabel = "role.".concat(role.name());
 			DefaultFlexiColumnModel col = new DefaultFlexiColumnModel(i18nLabel, role.ordinal() + ROLES_OFFSET, null, false, null, statusRenderer);
 			col.setDefaultVisible(true);
