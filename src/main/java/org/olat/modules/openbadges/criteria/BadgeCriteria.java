@@ -146,25 +146,32 @@ public class BadgeCriteria {
 	 * @return True if all conditions of this badge criteria object are satisfied.
 	 */
 	public boolean allCourseConditionsMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
-		if (!allCourseConditionsMet(recipient, assessmentEntries)) {
+		final boolean[] courseBadgeConditionChecked = { false };
+
+		if (!allCourseConditionsMet(recipient, assessmentEntries, courseBadgeConditionChecked)) {
 			return false;
 		}
-		if (!allCourseElementConditionsMet(recipient, assessmentEntries)) {
+		if (!allCourseElementConditionsMet(recipient, assessmentEntries, courseBadgeConditionChecked)) {
 			return false;
 		}
-		if (!learningPathCourseElementConditionsMet(recipient, learningPath, assessmentEntries)) {
+		if (!learningPathCourseElementConditionsMet(recipient, learningPath, assessmentEntries, courseBadgeConditionChecked)) {
 			return false;
 		}
-		if (!learningPathConditionMet(recipient, learningPath, assessmentEntries)) {
+		if (!learningPathConditionMet(recipient, learningPath, assessmentEntries, courseBadgeConditionChecked)) {
 			return false;
 		}
-		if (!allOtherBadgeConditionsMet(recipient)) {
+		if (!allOtherBadgeConditionsMet(recipient, courseBadgeConditionChecked)) {
 			return false;
 		}
+
+		if (!courseBadgeConditionChecked[0]) {
+			return false;
+		}
+
 		return true;
 	}
 
-	private boolean allCourseConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
+	private boolean allCourseConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
 		boolean passed = false;
 		float score = 0;
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {
@@ -186,16 +193,18 @@ public class BadgeCriteria {
 				if (!passed) {
 					return false;
 				}
+				courseBadgeConditionChecked[0] = true;
 			} else if (badgeCondition instanceof CourseScoreCondition courseScoreCondition) {
 				if (!courseScoreCondition.satisfiesCondition(score)) {
 					return false;
 				}
+				courseBadgeConditionChecked[0] = true;
 			}
 		}
 		return true;
 	}
 
-	private boolean allCourseElementConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
+	private boolean allCourseElementConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
 				for (AssessmentEntry assessmentEntry : assessmentEntries) {
@@ -204,10 +213,12 @@ public class BadgeCriteria {
 					}
 
 					if (courseElementPassedCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
-						return satisfiesPassedCondition(assessmentEntry);
+						if (!satisfiesPassedCondition(assessmentEntry)) {
+							return false;
+						}
 					}
 				}
-				return false;
+				courseBadgeConditionChecked[0] = true;
 			}
 
 			if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
@@ -217,10 +228,12 @@ public class BadgeCriteria {
 					}
 
 					if (courseElementScoreCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
-						return satisfiesScoreCondition(assessmentEntry, courseElementScoreCondition);
+						if (!satisfiesScoreCondition(assessmentEntry, courseElementScoreCondition)) {
+							return false;
+						}
 					}
 				}
-				return false;
+				courseBadgeConditionChecked[0] = true;
 			}
 		}
 		return true;
@@ -258,7 +271,7 @@ public class BadgeCriteria {
 		return scoreCondition.satisfiesCondition(assessmentEntry.getScore().floatValue());
 	}
 	
-	private boolean learningPathCourseElementConditionsMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
+	private boolean learningPathCourseElementConditionsMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
 		if (!learningPath) {
 			return true;
 		}
@@ -271,17 +284,19 @@ public class BadgeCriteria {
 					}
 
 					if (completionCriterionMetCondition.getSubIdent().equals(assessmentEntry.getSubIdent())) {
-						return assessmentEntry.getFullyAssessed() != null && assessmentEntry.getFullyAssessed();
+						if (assessmentEntry.getFullyAssessed() == null || !assessmentEntry.getFullyAssessed()) {
+							return false;
+						}
 					}
 				}
-				return false;
+				courseBadgeConditionChecked[0] = true;
 			}
 		}
 		
 		return true;
 	}
 
-	private boolean learningPathConditionMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries) {
+	private boolean learningPathConditionMet(Identity recipient, boolean learningPath, List<AssessmentEntry> assessmentEntries, boolean[] courseBadgeConditionChecked) {
 		if (!learningPath) {
 			return true;
 		}
@@ -300,14 +315,17 @@ public class BadgeCriteria {
 
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof LearningPathProgressCondition learningPathProgressCondition) {
-				return learningPathProgressCondition.satisfiesCondition(learningPathProgress);
+				if  (!learningPathProgressCondition.satisfiesCondition(learningPathProgress)) {
+					return false;
+				}
+				courseBadgeConditionChecked[0] = true;
 			}
 		}
 
 		return true;
 	}
 
-	private boolean allOtherBadgeConditionsMet(Identity recipient) {
+	private boolean allOtherBadgeConditionsMet(Identity recipient, boolean[] courseBadgeConditionChecked) {
 		OpenBadgesManager openBadgesManager = null;
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof OtherBadgeEarnedCondition otherBadgeCondition) {
@@ -317,6 +335,7 @@ public class BadgeCriteria {
 				if (!openBadgesManager.hasBadgeAssertion(recipient, otherBadgeCondition.getBadgeClassUuid())) {
 					return false;
 				}
+				courseBadgeConditionChecked[0] = true;
 			}
 		}
 		return true;
