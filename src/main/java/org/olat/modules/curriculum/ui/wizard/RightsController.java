@@ -90,6 +90,7 @@ public class RightsController extends StepFormBasicController {
 	private FlexiTableElement tableEl;
 	private RightsCurriculumElementsTableModel tableModel;
 	
+	private final boolean confirmationPossible;
 	private final CurriculumRoles roleToModify;
 	private final MembersContext membersContext;
 	private final CurriculumElement curriculumElement;
@@ -107,7 +108,8 @@ public class RightsController extends StepFormBasicController {
 		roleToModify = membersContext.getRoleToModify();
 		curriculumElement = membersContext.getCurriculumElement();
 		curriculumElements = membersContext.getAllCurriculumElements();
-
+		confirmationPossible = roleToModify == CurriculumRoles.participant;
+		
 		initForm(ureq);
 		loadModel();
 		updateUI();
@@ -121,15 +123,15 @@ public class RightsController extends StepFormBasicController {
 	
 	private void initSettingsForm(FormItemContainer formLayout) {
 		SelectionValues confirmationPK = new SelectionValues();
+		confirmationPK.add(SelectionValues.entry(ConfirmationMembershipEnum.WITHOUT.name(), translate("confirmation.membership.without"),
+				translate("confirmation.membership.without.desc"), "o_icon o_icon_check", null, true));
 		confirmationPK.add(SelectionValues.entry(ConfirmationMembershipEnum.WITH.name(), translate("confirmation.membership.with"),
 				translate("confirmation.membership.with.desc"), "o_icon o_icon_timelimit_end", null, true));
-		confirmationPK.add(SelectionValues.entry(ConfirmationMembershipEnum.WITHOUT.name(), translate("confirmation.membership.without"),
-				translate("confirmation.membership.without.desc"), "o_icon o_icon_activate", null, true));
 		confirmationTypeEl = uifactory.addCardSingleSelectHorizontal("confirmation.membership", formLayout,
 				confirmationPK.keys(), confirmationPK.values(), confirmationPK.descriptions(), confirmationPK.icons());
 		confirmationTypeEl.addActionListener(FormEvent.ONCLICK);
-		confirmationTypeEl.select(ConfirmationMembershipEnum.WITH.name(), true);
-		confirmationTypeEl.setVisible(roleToModify == CurriculumRoles.participant);
+		confirmationTypeEl.select(ConfirmationMembershipEnum.WITHOUT.name(), true);
+		confirmationTypeEl.setVisible(confirmationPossible);
 		
 		// confirmation by
 		SelectionValues confirmationByPK = new SelectionValues();
@@ -138,14 +140,14 @@ public class RightsController extends StepFormBasicController {
 		confirmationByEl = uifactory.addRadiosVertical("confirmation.membership.by", formLayout,
 				confirmationByPK.keys(), confirmationByPK.values());
 		confirmationByEl.select(ConfirmationByEnum.ADMINISTRATIVE_ROLE.name(), true);
-		confirmationByEl.setVisible(roleToModify == CurriculumRoles.participant);
+		confirmationByEl.setVisible(confirmationPossible);
 		
 		// confirmation until
 		confirmUntilEl = uifactory.addDateChooser("confirmation.until", "confirmation.until", null, formLayout);
 		confirmUntilEl.setVisible(roleToModify == CurriculumRoles.participant);
 		
 		SpacerElement spacerEl = uifactory.addSpacerElement("confirm_spacer", formLayout, false);
-		spacerEl.setVisible(roleToModify == CurriculumRoles.participant);
+		spacerEl.setVisible(confirmationPossible);
 		
 		// apply to
 		SelectionValues applyToPK = new SelectionValues();

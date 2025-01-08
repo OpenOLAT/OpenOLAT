@@ -48,6 +48,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
@@ -330,14 +331,22 @@ public class EditMembershipsController extends StepFormBasicController {
 	private void doOpenCallout(UserRequest ureq, FormLink link, CurriculumElementAndRole cell) {
 		CurriculumRoles role = cell.role();
 		CurriculumElement curriculumElement = cell.curriculumElement();
-		changeMembershipCtrl = new ChangeMembershipCalloutController(ureq, getWindowControl(), null, role, curriculumElement, MODIFIABLE);
+		boolean hasChildren = hasChildren(curriculumElement);
+		changeMembershipCtrl = new ChangeMembershipCalloutController(ureq, getWindowControl(),
+				null, role, curriculumElement, MODIFIABLE, hasChildren);
 		listenTo(changeMembershipCtrl);
 		
 		String title = translate("change.membership");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				changeMembershipCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "");
+				changeMembershipCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "",
+				new CalloutSettings(true, CalloutOrientation.bottomOrTop, false, title));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
+	}
+	
+	private boolean hasChildren(CurriculumElement row) {
+		return tableModel.getObjects().stream()
+				.filter(obj -> row.getKey().equals(obj.getParentKey())).count() > 0;
 	}
 	
 	private void doOpenNote(UserRequest ureq, FormLink link, CurriculumElementAndRole cell) {

@@ -62,13 +62,19 @@ public class AddMembershipCalloutController extends FormBasicController {
 	private final CurriculumRoles role;
 	private final CurriculumElement curriculumElement;
 	
+	private final boolean hasChildren;
+	private final boolean confirmationPossible;
+	
 	public AddMembershipCalloutController(UserRequest ureq, WindowControl wControl,
-			Identity member, CurriculumRoles role, CurriculumElement curriculumElement) {
+			Identity member, CurriculumRoles role, CurriculumElement curriculumElement,
+			boolean hasChildren) {
 		super(ureq, wControl, LAYOUT_VERTICAL, Util
 				.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 		this.role = role;
 		this.member = member;
 		this.curriculumElement = curriculumElement;
+		this.hasChildren = hasChildren;
+		confirmationPossible = role == CurriculumRoles.participant;
 		initForm(ureq);
 		updateUI();
 	}
@@ -85,12 +91,13 @@ public class AddMembershipCalloutController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String suffix = Long.toString(CodeHelper.getRAMUniqueID());
 		SelectionValues confirmationPK = new SelectionValues();
-		confirmationPK.add(SelectionValues.entry(ConfirmationMembershipEnum.WITH.name(), translate("confirmation.membership.with")));
 		confirmationPK.add(SelectionValues.entry(ConfirmationMembershipEnum.WITHOUT.name(), translate("confirmation.membership.without")));
+		confirmationPK.add(SelectionValues.entry(ConfirmationMembershipEnum.WITH.name(), translate("confirmation.membership.with")));
 		confirmationTypeEl = uifactory.addCardSingleSelectVertical("confirmation.membership", formLayout,
 				confirmationPK.keys(), confirmationPK.values(), null, null);
 		confirmationTypeEl.addActionListener(FormEvent.ONCLICK);
 		confirmationTypeEl.select(ConfirmationMembershipEnum.WITH.name(), true);
+		confirmationTypeEl.setVisible(confirmationPossible);
 		
 		// confirmation by
 		SelectionValues confirmationByPK = new SelectionValues();
@@ -99,9 +106,11 @@ public class AddMembershipCalloutController extends FormBasicController {
 		confirmationByEl = uifactory.addRadiosVertical("confirmation.membership.by", formLayout,
 				confirmationByPK.keys(), confirmationByPK.values());
 		confirmationByEl.select(ConfirmationByEnum.ADMINISTRATIVE_ROLE.name(), true);
+		confirmationByEl.setVisible(confirmationPossible);
 		
 		// confirmation until
 		confirmUntilEl = uifactory.addDateChooser("confirmation.until", "confirmation.until", null, formLayout);
+		confirmUntilEl.setVisible(confirmationPossible);
 		
 		// apply to
 		SelectionValues applyToPK = new SelectionValues();
@@ -109,6 +118,7 @@ public class AddMembershipCalloutController extends FormBasicController {
 		applyToPK.add(SelectionValues.entry(ChangeApplyToEnum.CURRENT.name(), translate("apply.membership.to.current")));
 		applyToEl = uifactory.addRadiosVertical("apply.membership.to." + suffix, "apply.membership.to", formLayout, applyToPK.keys(), applyToPK.values());
 		applyToEl.select(ChangeApplyToEnum.CONTAINED.name(), true);
+		applyToEl.setVisible(hasChildren);
 		
 		adminNoteEl = uifactory.addTextAreaElement("admin.note." + suffix, "admin.note", 2000, 4, 32, false, false, false, "", formLayout);
 		
@@ -118,7 +128,8 @@ public class AddMembershipCalloutController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		boolean withConfirmation = confirmationTypeEl.isOneSelected()
+		boolean withConfirmation = confirmationPossible
+				&& confirmationTypeEl.isVisible() && confirmationTypeEl.isOneSelected()
 				&& ConfirmationMembershipEnum.WITH.name().equals(confirmationTypeEl.getSelectedKey());
 		confirmationByEl.setVisible(withConfirmation);
 		confirmUntilEl.setVisible(withConfirmation);
@@ -135,11 +146,14 @@ public class AddMembershipCalloutController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String adminNote = adminNoteEl.getValue();
-		ConfirmationMembershipEnum confirmation = ConfirmationMembershipEnum.valueOf(confirmationTypeEl.getSelectedKey());
+		ConfirmationMembershipEnum confirmation = confirmationTypeEl.isVisible() && confirmationTypeEl.isOneSelected()
+				? ConfirmationMembershipEnum.valueOf(confirmationTypeEl.getSelectedKey())
+				: ConfirmationMembershipEnum.WITHOUT;
 		ConfirmationByEnum confirmationBy = confirmationByEl.isVisible()
 				? ConfirmationByEnum.valueOf(confirmationByEl.getSelectedKey()) : null;
 		Date confirmUntil = confirmUntilEl.isVisible() ? confirmUntilEl.getDate() : null;
-		boolean applyToDescendants = applyToEl.isOneSelected() && ChangeApplyToEnum.CONTAINED.name().equals(applyToEl.getSelectedKey());
+		boolean applyToDescendants = applyToEl.isVisible() && applyToEl.isOneSelected()
+				&& ChangeApplyToEnum.CONTAINED.name().equals(applyToEl.getSelectedKey());
 		GroupMembershipStatus nextStatus = (confirmation == ConfirmationMembershipEnum.WITH) ?
 				GroupMembershipStatus.reservation : GroupMembershipStatus.active;
 		

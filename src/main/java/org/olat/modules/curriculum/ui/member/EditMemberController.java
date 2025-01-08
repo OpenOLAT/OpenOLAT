@@ -623,7 +623,9 @@ public class EditMemberController extends FormBasicController {
 	
 	private void doAddMembership(UserRequest ureq, FormLink link, CurriculumRoles role, EditMemberCurriculumElementRow row) {
 		CurriculumElement curriculumElement = row.getCurriculumElement();
-		addMembershipCtrl = new AddMembershipCalloutController(ureq, getWindowControl(), member, role, curriculumElement);
+		boolean hasChildren = hasChildren(row);
+		addMembershipCtrl = new AddMembershipCalloutController(ureq, getWindowControl(),
+				member, role, curriculumElement, hasChildren);
 		listenTo(addMembershipCtrl);
 		
 		String title = translate("add.membership");
@@ -633,6 +635,11 @@ public class EditMemberController extends FormBasicController {
 		calloutCtrl.activate();
 	}
 	
+	private boolean hasChildren(EditMemberCurriculumElementRow row) {
+		return tableModel.getObjects().stream()
+				.filter(obj -> row.equals(obj.getParent())).count() > 0;
+	}
+	
 	private void doConfirmMembership(UserRequest ureq, FormLink link, CurriculumRoles role, EditMemberCurriculumElementRow row) {
 		CurriculumElement curriculumElement = row.getCurriculumElement();
 		ResourceReservation reservation = row.getReservation(role);
@@ -640,8 +647,8 @@ public class EditMemberController extends FormBasicController {
 			// Something wrong
 			loadModel();
 		} else {
-			confirmMembershipCtrl = new ConfirmMembershipCalloutController(ureq, getWindowControl(), member, role,
-					curriculumElement, reservation);
+			confirmMembershipCtrl = new ConfirmMembershipCalloutController(ureq, getWindowControl(),
+					member, role, curriculumElement, reservation);
 			listenTo(confirmMembershipCtrl);
 			
 			String title = translate("confirm.membership");
@@ -655,7 +662,9 @@ public class EditMemberController extends FormBasicController {
 	private void doChangeMembership(UserRequest ureq, FormLink link, CurriculumRoles role,
 			EditMemberCurriculumElementRow row, GroupMembershipStatus[] possibleStatus) {
 		CurriculumElement curriculumElement = row.getCurriculumElement();
-		changeMembershipCtrl = new ChangeMembershipCalloutController(ureq, getWindowControl(), member, role, curriculumElement, possibleStatus);
+		boolean hasChildren = hasChildren(row);
+		changeMembershipCtrl = new ChangeMembershipCalloutController(ureq, getWindowControl(),
+				member, role, curriculumElement, possibleStatus, hasChildren);
 		listenTo(changeMembershipCtrl);
 		
 		String title = translate("change.membership");

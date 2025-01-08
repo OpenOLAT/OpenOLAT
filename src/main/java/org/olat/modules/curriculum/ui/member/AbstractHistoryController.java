@@ -126,9 +126,9 @@ public abstract class AbstractHistoryController extends FormBasicController {
 		if(withMember) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.member));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.activity));
 		curriculumElementCol = new DefaultFlexiColumnModel(withCurriculumElement, MemberHistoryCols.curriculumElement);
 		columnsModel.addFlexiColumnModel(curriculumElementCol);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.activity));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberHistoryCols.role,
 				new CurriculumMembershipCellRenderer(getTranslator(), ", ")));
 		GroupMembershipStatusRenderer memberStatusRenderer = new GroupMembershipStatusRenderer(getLocale());
