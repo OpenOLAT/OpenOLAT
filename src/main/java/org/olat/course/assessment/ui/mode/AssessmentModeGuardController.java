@@ -126,6 +126,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		mainSEBQuitButton = LinkFactory.createExternalLink("quit-seb-main", translate("current.mode.seb.quit"), "");
 		mainSEBQuitButton.setElementCssClass("btn btn-default btn-primary o_sel_assessment_quit");
 		mainSEBQuitButton.setName(translate("current.mode.seb.quit"));
+		mainSEBQuitButton.setTarget("_self");
 		mainSEBQuitButton.setVisible(false);
 		mainVC.put("quit-main", mainSEBQuitButton);
 		
@@ -440,6 +441,7 @@ public class AssessmentModeGuardController extends BasicController implements Lo
 		quitSEBLink.setName(translate("current.mode.seb.quit"));
 		quitSEBLink.setTooltip(translate("current.mode.seb.quit"));
 		quitSEBLink.setElementCssClass("btn btn-default");
+		quitSEBLink.setTarget("_self");
 
 		String setUrl = Settings.createServerURI() + mapperUri + "/" + CodeHelper.getRAMUniqueID() + "/" + mode.getModeKey() + "/" + SafeExamBrowserConfigurationMediaResource.SEB_SETTINGS_FILENAME;
 		ExternalLink downloadSEBConfigurationButton = LinkFactory.createExternalLink("download-seb-config-" + id, "download.seb.config", setUrl);

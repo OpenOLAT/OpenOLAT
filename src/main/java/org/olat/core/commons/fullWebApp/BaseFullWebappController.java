@@ -1284,7 +1284,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	@Override
 	public void activate(UserRequest ureq, DTab dTab, List<ContextEntry> entries) {
 		UserSession userSession = ureq.getUserSession();
-		if((lockStatus != null || userSession.isInLockModeProcess())
+		if(dTab != null && (lockStatus != null || userSession.isInLockModeProcess())
 				&& (!userSession.matchLockResource(dTab.getOLATResourceable()))) {
 			return;
 		}
@@ -1294,19 +1294,17 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 		// init view (e.g. kurs in run mode, repo-detail-edit...)
 		// jump here via external link or just open a new tab from e.g. repository
-		if(dTab == null && contentCtrl instanceof Activateable2) {
-			((Activateable2)contentCtrl).activate(ureq, entries, null);
-		} else {
-			DTabImpl dtabi = (DTabImpl) dTab;
+		if(dTab == null && contentCtrl instanceof Activateable2 activateableCtrl) {
+			activateableCtrl.activate(ureq, entries, null);
+		} else if(dTab instanceof DTabImpl dtabi) {
 			Controller c = dtabi.getController();
 			if (c == null) {
 				throw new AssertException("no controller set yet! " + dTab);
 			}
 			doActivateDTab(dtabi);
 	
-			if(c instanceof Activateable2) {
-				final Activateable2 activateable = ((Activateable2) c);
-				activateable.activate(ureq, entries, null);
+			if(c instanceof Activateable2 activateableCtrl) {
+				activateableCtrl.activate(ureq, entries, null);
 			}
 			updateBusinessPath(ureq, dtabi);
 			//update the panels after activation

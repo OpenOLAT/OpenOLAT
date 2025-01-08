@@ -148,9 +148,14 @@ public class Deployments {
 		} else if("firefox".equals(browser)) {
 			FirefoxOptions options = new FirefoxOptions();
 			options.setLogLevel(FirefoxDriverLogLevel.TRACE);
+			options.enableBiDi();
+			options.setCapability("moz:debuggerAddress", false);
+		    options.addPreference("remote.active-protocols", 1);
+		    
 			FirefoxProfile profile = new FirefoxProfile();
 			profile.setPreference("fission.webContentIsolationStrategy", Integer.valueOf(0));
 			profile.setPreference("fission.bfcacheInParent", Boolean.FALSE);
+			
 			options.setProfile(profile);
 			driver = new FirefoxDriver(GeckoDriverService.createDefaultService(), options);
 		} else {
