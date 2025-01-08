@@ -338,7 +338,6 @@ public class RegistrationPersonalDataController extends FormBasicController {
 						.toArray(String[]::new);
 				// Extract concatenated displayName and Location as values
 				String[] orgValues = matchedDomains.stream()
-						.sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName())) // Sort by displayName
 						.map(domain -> {
 							String displayName = domain.getOrganisation().getDisplayName();
 							String location = domain.getOrganisation().getLocation();
