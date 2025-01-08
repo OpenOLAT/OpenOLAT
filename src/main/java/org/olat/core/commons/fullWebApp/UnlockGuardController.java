@@ -74,6 +74,7 @@ public class UnlockGuardController extends BasicController implements LockGuardC
 		mainSEBQuitButton = LinkFactory.createExternalLink("quit-seb-main", translate("unlock.seb.quit"), "");
 		mainSEBQuitButton.setElementCssClass("btn btn-default btn-primary o_sel_assessment_quit");
 		mainSEBQuitButton.setName(translate("unlock.seb.quit"));
+		mainSEBQuitButton.setTarget("_self");
 		mainSEBQuitButton.setVisible(false);
 		mainVC.put("quit-main", mainSEBQuitButton);
 		
