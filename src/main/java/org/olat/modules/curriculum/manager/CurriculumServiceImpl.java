@@ -912,14 +912,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private void sendMembershipNotificationsEmail(Identity doer, List<CurriculumElementMembershipChange> changes, MailPackage mailing) {
 		Map<Identity,CurriculumElementMembershipChange> changesToNotifiy = new HashMap<>();
 		for(CurriculumElementMembershipChange change:changes) {
-			if(change.addRole() || change.removeRole()) {
-				if(!changesToNotifiy.containsKey(change.getMember())) {
+			if(!changesToNotifiy.containsKey(change.getMember())) {
+				changesToNotifiy.put(change.getMember(), change);
+			} else {
+				CurriculumElementMembershipChange currentChange = changesToNotifiy.get(change.getMember());
+				if(change.numOfSegments() < currentChange.numOfSegments()) {
 					changesToNotifiy.put(change.getMember(), change);
-				} else {
-					CurriculumElementMembershipChange currentChange = changesToNotifiy.get(change.getMember());
-					if(change.numOfSegments() < currentChange.numOfSegments()) {
-						changesToNotifiy.put(change.getMember(), change);
-					}
 				}
 			}
 		}

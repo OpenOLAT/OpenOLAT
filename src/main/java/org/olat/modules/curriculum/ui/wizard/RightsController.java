@@ -50,6 +50,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -157,6 +158,7 @@ public class RightsController extends StepFormBasicController {
 		applyToEl = uifactory.addRadiosVertical("apply.membership.to", "apply.membership.to", formLayout, applyToPK.keys(), applyToPK.values());
 		applyToEl.addActionListener(FormEvent.ONCHANGE);
 		applyToEl.select(ChangeApplyToEnum.CONTAINED.name(), true);
+		applyToEl.setVisible(!membersContext.getDescendants().isEmpty());
 		
 		adminNoteEl = uifactory.addTextAreaElement("admin.note", "admin.note", 2000, 4, 32, false, false, false, "", formLayout);
 		adminNoteEl.setVisible(roleToModify == CurriculumRoles.participant);
@@ -200,7 +202,7 @@ public class RightsController extends StepFormBasicController {
 		confirmationByEl.setVisible(withConfirmation && participant);
 		confirmUntilEl.setVisible(withConfirmation && participant);
 		
-		boolean individualElements = applyToEl.isOneSelected()
+		boolean individualElements = applyToEl.isVisible() && applyToEl.isOneSelected()
 				&& ChangeApplyToEnum.valueOf(applyToEl.getSelectedKey()) == ChangeApplyToEnum.CURRENT;
 		adminNoteEl.setVisible(!individualElements);
 		tableEl.setVisible(individualElements);
@@ -306,13 +308,13 @@ public class RightsController extends StepFormBasicController {
 		}
 		
 		applyToEl.clearError();
-		if(!applyToEl.isOneSelected()) {
+		if(applyToEl.isVisible() && !applyToEl.isOneSelected()) {
 			applyToEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		tableEl.clearError();
-		if(applyToEl.isOneSelected() && ChangeApplyToEnum.CURRENT.name().equals(applyToEl.getSelectedKey())
+		if(applyToEl.isVisible() && applyToEl.isOneSelected() && ChangeApplyToEnum.CURRENT.name().equals(applyToEl.getSelectedKey())
 				&& !membersContext.hasModifications() && !tableModel.hasModifications()) {
 			tableEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
@@ -375,17 +377,20 @@ public class RightsController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
-		System.out.println();
 	}
 	
 	private void doAddMembership(UserRequest ureq, FormLink link, RightsCurriculumElementRow row) {
+		boolean hasChildren = tableModel.getObjects().stream()
+				.filter(obj -> row.equals(obj.getParent()))
+				.count() > 0;
 		addMembershipCtrl = new AddMembershipCalloutController(ureq, getWindowControl(),
-				roleToModify, row.getCurriculumElement());
+				roleToModify, row.getCurriculumElement(), hasChildren);
 		listenTo(addMembershipCtrl);
 		
 		String title = translate("add.membership");
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				addMembershipCtrl.getInitialComponent(), link.getFormDispatchId(), title, true, "");
+				addMembershipCtrl.getInitialComponent(), link.getFormDispatchId(),
+				title, true, "", new CalloutSettings(true, CalloutOrientation.bottomOrTop, false, title));
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

@@ -143,19 +143,13 @@ public class CurriculumElementMembershipChange extends Event {
 		return roles;
 	}
 
-	public boolean addRole() {
+	public boolean hasStatus(GroupMembershipStatus... status) {
 		for(Map.Entry<CurriculumRoles, GroupMembershipStatus> roleEntry:modifications.entrySet()) {
-			if(roleEntry.getValue() == GroupMembershipStatus.active) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	public boolean removeRole() {
-		for(Map.Entry<CurriculumRoles, GroupMembershipStatus> roleEntry:modifications.entrySet()) {
-			if(roleEntry.getValue() == GroupMembershipStatus.removed) {
-				return true;
+			GroupMembershipStatus entryStatus = roleEntry.getValue();
+			for(GroupMembershipStatus s:status) {
+				if(entryStatus == s) {
+					return true;
+				}
 			}
 		}
 		return false;

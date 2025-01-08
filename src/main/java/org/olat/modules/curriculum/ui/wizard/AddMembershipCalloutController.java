@@ -50,14 +50,16 @@ public class AddMembershipCalloutController extends FormBasicController {
 	
 	private MembershipModification modification;
 	
+	private final boolean hasChildren;
 	private final CurriculumRoles role;
 	private final CurriculumElement curriculumElement;
 	
 	public AddMembershipCalloutController(UserRequest ureq, WindowControl wControl,
-			CurriculumRoles role, CurriculumElement curriculumElement) {
+			CurriculumRoles role, CurriculumElement curriculumElement, boolean hasChildren) {
 		super(ureq, wControl, LAYOUT_VERTICAL, Util
 				.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 		this.role = role;
+		this.hasChildren = hasChildren;
 		this.curriculumElement = curriculumElement;
 		initForm(ureq);
 	}
@@ -75,6 +77,7 @@ public class AddMembershipCalloutController extends FormBasicController {
 		applyToPK.add(SelectionValues.entry(ChangeApplyToEnum.CURRENT.name(), translate("apply.membership.to.current")));
 		applyToEl = uifactory.addRadiosVertical("apply.membership.to." + suffix, "apply.membership.to", formLayout, applyToPK.keys(), applyToPK.values());
 		applyToEl.select(ChangeApplyToEnum.CONTAINED.name(), true);
+		applyToEl.setVisible(hasChildren);
 		
 		adminNoteEl = uifactory.addTextAreaElement("admin.note." + suffix, "admin.note", 2000, 4, 32, false, false, false, "", formLayout);
 		
@@ -86,7 +89,8 @@ public class AddMembershipCalloutController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String adminNote = adminNoteEl.getValue();
-		boolean applyToDescendants = applyToEl.isOneSelected() && ChangeApplyToEnum.CONTAINED.name().equals(applyToEl.getSelectedKey());
+		boolean applyToDescendants = applyToEl.isVisible() && applyToEl.isOneSelected()
+				&& ChangeApplyToEnum.CONTAINED.name().equals(applyToEl.getSelectedKey());
 
 		modification = new MembershipModification(role, curriculumElement, null,
 				null, null, null, applyToDescendants, adminNote);

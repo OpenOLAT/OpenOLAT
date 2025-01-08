@@ -95,11 +95,13 @@ public abstract class AbstractMemberCallback implements StepRunnerCallback {
 	
 	protected CurriculumElementMembershipChange applyModification(Identity member, MembershipModification modification) {
 		final CurriculumRoles role = modification.role();
+		final String adminNote = modification.adminNote();
 		final GroupMembershipStatus nextStatus = modification.nextStatus();
 		final CurriculumElement curriculumElement = modification.curriculumElement();
 			
 		CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(member, curriculumElement);
 		change.setNextStatus(role, nextStatus);
+		change.setAdminNote(role, adminNote);
 			
 		if(nextStatus == GroupMembershipStatus.reservation) {
 			change.setConfirmation(modification.confirmation());
