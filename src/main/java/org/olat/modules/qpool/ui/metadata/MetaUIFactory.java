@@ -102,6 +102,13 @@ public class MetaUIFactory {
 				.findFirst().orElse(null);
 	}
 	
+	public static List<QEducationalContext> getContextByKeys(List<String> keys, QPoolService qpoolService) {
+		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
+		return levels.stream()
+				.filter(level -> keys.contains(level.getKey().toString()))
+				.toList();
+	}
+	
 	public static KeyValues getQItemTypeKeyValues(Translator translator, List<QItemType> excludedItemTypes, QPoolService qpoolService) {
 		List<QItemType> types = qpoolService.getAllItemTypes();
 		List<String> typeKeys = new ArrayList<>(types.size());

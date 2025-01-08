@@ -51,6 +51,7 @@ import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CourseExamWizardPage;
+import org.olat.selenium.page.course.CourseInfoPage;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.CourseWizardPage;
@@ -164,6 +165,89 @@ public class CourseTest extends Deployments {
 		publishedCourse
 			.assertOnCoursePage()
 			.clickTree();
+	}
+	
+	/**
+	 * An author create a course, jump to it, open the editor
+	 * add an info messages course element, publish the course
+	 * and a guest use the URL to jump in the course.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseGuestAccess()
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "For guest " + UUID.randomUUID();
+		String nodeTitle = "More informations";
+		
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateCourseForm(title, false)
+			.assertOnInfos()
+			//from description editor, back to the course
+			.clickToolbarBack();
+		
+		//open course editor
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment editor = course
+			.edit();
+		
+		//create a course element of type info messages
+		PublisherPageFragment publisher = editor
+			.assertOnEditor()
+			.createNode("info")
+			.nodeTitle(nodeTitle)
+			.publish();
+		
+		//publish
+		publisher
+			.assertOnPublisher()
+			.nextSelectNodes()
+			.selectAccess(UserAccess.guest)
+			.nextAccess()
+			.selectCatalog(false)
+			.nextCatalog() // -> no problem found
+			.finish();
+		
+		//back to the course
+		CourseInfoPage infosCourse = editor
+			.clickToolbarBack()
+			.infos()
+			.assertOnTitle(title);
+		
+		String guestUrl = infosCourse.guestUrl();
+		Assert.assertNotNull(guestUrl);
+		
+		// Logout
+		new UserToolsPage(browser).logout();
+		
+		// Use the /url/ to jump in the course as guest
+		browser.navigate().to(guestUrl);
+		
+		CoursePageFragment guestCourse = CoursePageFragment.getCourse(browser);
+		guestCourse
+			.tree()
+			.assertWithTitleSelected(nodeTitle);
+		
+		// Check login button
+		By loginBy = By.xpath("//li[@id='o_navbar_login']/a[contains(@class,'btn')][i[contains(@class,'o_icon_login')]]");
+		OOGraphene.waitElement(loginBy, browser);
 	}
 	
 	/**

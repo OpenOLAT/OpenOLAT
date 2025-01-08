@@ -1120,6 +1120,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return;
 		}
 
+		// Direct course entry badge classes
+		List<BadgeClass> badgeClasses = getBadgeClasses(courseEntry);
+		if (badgeClasses == null || badgeClasses.isEmpty()) {
+			return;
+		}
 		BadgeIssuingContext badgeIssuingContext = createBadgeIssuingContext(courseEntry);
 		if (badgeIssuingContext.badgeClassesAndCriteria.isEmpty()) {
 			return;

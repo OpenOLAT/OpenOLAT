@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
@@ -50,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.control.Controller;
@@ -91,6 +91,8 @@ public class CreateTestOverviewController extends FormBasicController {
 	@Autowired
 	private LicenseService licenseService;
 	@Autowired
+	private QuestionPoolModule qpoolModule;
+	@Autowired
 	private QuestionPoolLicenseHandler licenseHandler;
 	
 	public CreateTestOverviewController(UserRequest ureq, WindowControl wControl, List<QuestionItemShort> items,
@@ -130,6 +132,7 @@ public class CreateTestOverviewController extends FormBasicController {
 		}
 		itemsModel = new QItemDataModel(columnsModel, format, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "shares", itemsModel, getTranslator(), formLayout);
+		tableEl.setFooter(true);
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(Cols.title.sortKey(), true));
 		tableEl.setSortSettings(options);
@@ -297,20 +300,18 @@ public class CreateTestOverviewController extends FormBasicController {
 		}
 	}
 
-	private static class QItemDataModel extends DefaultFlexiTableDataModel<QuestionRow> 
-	implements SortableFlexiTableDataModel<QuestionRow> {
+	private class QItemDataModel extends DefaultFlexiTableDataModel<QuestionRow> 
+	implements SortableFlexiTableDataModel<QuestionRow>, FlexiTableFooterModel {
 		
 		private static final Cols[] COLS = Cols.values();
 		
 		private final Locale locale;
 		private final ExportFormatOptions format;
-		private final QuestionPoolModule qpoolModule;
 
 		public QItemDataModel(FlexiTableColumnModel columnModel, ExportFormatOptions format, Locale locale) {
 			super(columnModel);
 			this.locale = locale;
 			this.format = format;
-			qpoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
 		}
 
 		@Override
@@ -369,6 +370,33 @@ public class CreateTestOverviewController extends FormBasicController {
 				text = Formatter.truncate(text, 32);
 			}
 			return text;
+		}
+
+		@Override
+		public String getFooterHeader() {
+			return translate("total.max.score");
+		}
+
+		@Override
+		public Object getFooterValueAt(int col) {
+			return switch(COLS[col]) {
+				case maxScore -> getMaxScore();
+				default -> null;
+			};
+		}
+		
+		private BigDecimal getMaxScore() {
+			List<QuestionRow> rows = getObjects();
+			
+			BigDecimal totalScore = BigDecimal.ZERO;
+			for(QuestionRow row:rows) {
+				BigDecimal maxScore = row.getMaxScore();
+				if(maxScore != null) {
+					totalScore = totalScore.add(maxScore);
+				}
+			}
+			
+			return totalScore;
 		}
 	}
 	

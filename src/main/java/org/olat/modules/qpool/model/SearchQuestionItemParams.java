@@ -55,13 +55,13 @@ public class SearchQuestionItemParams implements Cloneable {
 	private String coverage;
 	private String informations;
 	private String language;
-	private String assessmentType;
+	private List<String> assessmentTypes;
 	private String editor;
 	private String searchString;
 	private boolean favoritOnly;
 	private OLATResource resource;
-	private LicenseType licenseType;
-	private QEducationalContext level;
+	private List<LicenseType> licenseTypes;
+	private List<QEducationalContext> levels;
 	private QuestionItemCollection collection;
 
 	private List<QItemType> itemTypes;
@@ -254,12 +254,12 @@ public class SearchQuestionItemParams implements Cloneable {
 		this.taxonomyLevels = taxonomyLevels;
 	}
 
-	public String getAssessmentType() {
-		return assessmentType;
+	public List<String> getAssessmentTypes() {
+		return assessmentTypes;
 	}
 
-	public void setAssessmentType(String assessmentType) {
-		this.assessmentType = assessmentType;
+	public void setAssessmentTypes(List<String> assessmentTypes) {
+		this.assessmentTypes = assessmentTypes;
 	}
 
 	public String getEditor() {
@@ -333,23 +333,21 @@ public class SearchQuestionItemParams implements Cloneable {
 	public void setSearchString(String searchString) {
 		this.searchString = searchString;
 	}
-	
-	
 
-	public LicenseType getLicenseType() {
-		return licenseType;
+	public List<LicenseType> getLicenseTypes() {
+		return licenseTypes;
 	}
 
-	public void setLicenseType(LicenseType licenseType) {
-		this.licenseType = licenseType;
+	public void setLicenseTypes(List<LicenseType> licenseTypes) {
+		this.licenseTypes = licenseTypes;
 	}
 
-	public QEducationalContext getLevel() {
-		return level;
+	public List<QEducationalContext> getLevels() {
+		return levels;
 	}
 
-	public void setLevel(QEducationalContext level) {
-		this.level = level;
+	public void setLevels(List<QEducationalContext> levels) {
+		this.levels = levels;
 	}
 
 	public Identity getIdentity() {
@@ -438,14 +436,14 @@ public class SearchQuestionItemParams implements Cloneable {
 		if(withoutAuthorOnly) {
 			clone.withoutAuthorOnly = withoutAuthorOnly;
 		}
-		if(licenseType != null) {
-			clone.licenseType = licenseType;
+		if(licenseTypes != null) {
+			clone.licenseTypes = new ArrayList<>(licenseTypes);
 		}
-		if(level != null) {
-			clone.level = level;
+		if(levels != null) {
+			clone.levels = new ArrayList<>(levels);
 		}
-		if(assessmentType != null) {
-			clone.assessmentType = assessmentType;
+		if(assessmentTypes != null) {
+			clone.assessmentTypes = new ArrayList<>(assessmentTypes);
 		}
 		return clone;
 	}

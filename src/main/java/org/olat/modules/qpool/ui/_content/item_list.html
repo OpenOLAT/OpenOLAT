@@ -39,40 +39,10 @@
 #end
 $r.render("items")
 <div class="o_button_group">
-	#if($r.available("list"))
-		$r.render("list")
-	#end
-	#if($r.available("create.test"))
-		$r.render("create.test")
-	#end
-	#if($r.available("export.item"))
-		$r.render("export.item")
-	#end
-	#if($r.available("share.item"))
-		$r.render("share.item")
-	#end
-	#if($r.available("unshare.item"))
-		$r.render("unshare.item")
-	#end
-	#if($r.available("copy"))
-		$r.render("copy")
-	#end
-	#if($r.available("convert.item"))
-		$r.render("convert.item")
-	#end
-	#if($r.available("author.item"))
-		$r.render("author.item")
-	#end
-	#if($r.available("delete.item"))
-		$r.render("delete.item")
-	#end
 	#if($r.available("select"))
 		$r.render("select")
 	#end
 	#if($r.available("select-to-import"))
 		$r.render("select-to-import")
-	#end
-	#if($r.available("bulk.change"))
-		$r.render("bulk.change")
 	#end
 </div>
