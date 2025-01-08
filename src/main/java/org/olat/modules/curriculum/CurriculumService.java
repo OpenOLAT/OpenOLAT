@@ -55,6 +55,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
  * 
@@ -450,6 +451,10 @@ public interface CurriculumService {
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(List<CurriculumElement> elements, List<Identity> identities);
 	
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<? extends CurriculumElementRef> elements, Identity... identities);
+	
+	public void acceptPendingParticipation(ResourceReservation reservation, Identity identity, Identity actor);
+	
+	public void cancelPendingParticipation(ResourceReservation reservation, Identity identity, Identity actor);
 	
 	public void updateCurriculumElementMemberships(Identity doer, Roles roles, List<CurriculumElementMembershipChange> changes, MailPackage mailing);
 	

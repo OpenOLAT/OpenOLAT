@@ -61,6 +61,9 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.EnrollState;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -156,9 +159,13 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
+	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private CurriculumService curriculumService;
 
 	@Override
 	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean isGuest,
@@ -502,6 +509,9 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		if("BusinessGroup".equals(resource.getResourceableTypeName())) {
 			//it's a reservation for a group
 			businessGroupService.acceptPendingParticipation(identity, identity, resource);
+		} else if("CurriculumElement".equals(resource.getResourceableTypeName())) {
+			//it's a reservation for a curriculum
+			curriculumService.acceptPendingParticipation(reservation, identity, identity);
 		} else {
 			repositoryManager.acceptPendingParticipation(identity, identity, resource, reservation);
 		}
@@ -514,6 +524,9 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		if("BusinessGroup".equals(resource.getResourceableTypeName())) {
 			dbInstance.commit();//needed to have the right number of participants to calculate upgrade from waiting list
 			businessGroupService.cancelPendingParticipation(ureqIdentity, reservation);
+		} else if("CurriculumElement".equals(resource.getResourceableTypeName())) {
+			dbInstance.commit();//needed to have the right number of participants to calculate upgrade from waiting list
+			curriculumService.cancelPendingParticipation(reservation, ureqIdentity, ureqIdentity);
 		}
 	}
 
@@ -709,10 +722,13 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 		List<OLATResource> groupResources = new ArrayList<>(resources.size());
 		List<OLATResource> repositoryResources = new ArrayList<>(resources.size());
+		List<OLATResource> curriculumElementResources = new ArrayList<>(resources.size());
 		for(OLATResource resource:resources) {
 			String resourceType = resource.getResourceableTypeName();
 			if("BusinessGroup".equals(resourceType)) {
 				groupResources.add(resource);
+			} else if("CurriculumElement".equals(resourceType)) {
+				curriculumElementResources.add(resource);
 			} else {
 				repositoryResources.add(resource);
 			}
@@ -745,6 +761,17 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				resourceInfos.add(info);
 			}
 		}
+		if(!curriculumElementResources.isEmpty()) {
+			List<CurriculumElement> curriculumElements = curriculumElementDao.loadElementsByResources(curriculumElementResources);
+			for(CurriculumElement curriculumElement:curriculumElements) {
+				ACResourceInfoImpl info = new ACResourceInfoImpl();
+				info.setName(curriculumElement.getDisplayName());
+				info.setDescription(curriculumElement.getDescription());
+				info.setResource(curriculumElement.getResource());
+				resourceInfos.add(info);
+			}
+		}
+		
 		return resourceInfos;
 	}
 

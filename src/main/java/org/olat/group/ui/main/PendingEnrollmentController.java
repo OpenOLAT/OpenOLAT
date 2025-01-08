@@ -37,6 +37,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.login.SupportsAfterLoginInterceptor;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
@@ -58,6 +62,8 @@ public class PendingEnrollmentController extends FormBasicController implements 
 
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -82,23 +88,26 @@ public class PendingEnrollmentController extends FormBasicController implements 
 
 		if(!resourceReservations.isEmpty()) {
 			List<Long> groupKeys = new ArrayList<>();
+			List<CurriculumElementRef> curriculumElementKeys = new ArrayList<>();
 			List<OLATResource> resources = new ArrayList<>();
 			for(ResourceReservation reservation: resourceReservations) {
 				OLATResource resource = reservation.getResource();
 				if("BusinessGroup".equals(resource.getResourceableTypeName())) {
 					groupKeys.add(resource.getResourceableId());
+				} else if("CurriculumElement".equals(resource.getResourceableTypeName())) {
+					curriculumElementKeys.add(new CurriculumElementRefImpl(resource.getResourceableId()));
 				}
 				resources.add(resource);
 			}
 			
 			List<ACResourceInfo> resourceInfos = acService.getResourceInfos(resources);
 			List<BGRepositoryEntryRelation> relations = businessGroupService.findRelationToRepositoryEntries(groupKeys, 0, -1);
+			List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(curriculumElementKeys);
 			
 			for(ResourceReservation reservation: resourceReservations) {
 				OLATResource resource = reservation.getResource();
 				ReservationWrapper wrapper = new ReservationWrapper(reservation);
 				reservations.add(wrapper);
-				
 				
 				for(ACResourceInfo resourceInfo:resourceInfos) {
 					if(resource.equals(resourceInfo.getResource())) {
@@ -109,15 +118,14 @@ public class PendingEnrollmentController extends FormBasicController implements 
 	
 				if("BusinessGroup".equals(resource.getResourceableTypeName()) && !relations.isEmpty()) {
 					List<String> courseNames = new ArrayList<>();
-					
 					for(BGRepositoryEntryRelation relation:relations) {
-						String courseName = relation.getRepositoryEntryDisplayName();
-						courseNames.add(courseName);
+						courseNames.add(relation.getRepositoryEntryDisplayName());
 					}
-					
 					if(!courseNames.isEmpty()) {
 						wrapper.setCourses(courseNames);
 					}
+				} else if("CurriculumElement".equals(resource.getResourceableTypeName()) && !curriculumElements.isEmpty()) {
+					
 				}
 			}
 		}
@@ -154,13 +162,12 @@ public class PendingEnrollmentController extends FormBasicController implements 
 	
 	@Override
 	public boolean isUserInteractionRequired(UserRequest ureq) {
-		return reservations.size() > 0;
+		return !reservations.isEmpty();
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof ReservationWrapper) {
-			ReservationWrapper reservation = (ReservationWrapper)((FormLink)source).getUserObject();
+		if(source instanceof FormLink link && link.getUserObject() instanceof ReservationWrapper reservation) {
 			if(source.getName().startsWith("accept_")) {
 				reservation.setAccept(Boolean.TRUE);
 			} else if (source.getName().startsWith("reject_")) {
@@ -229,7 +236,8 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		}
 		
 		public boolean isCoach() {
-			return BusinessGroupService.GROUP_COACH.equals(reservation.getType()) || "repo_tutors".equals(reservation.getType());
+			return BusinessGroupService.GROUP_COACH.equals(reservation.getType())
+					|| "repo_tutors".equals(reservation.getType());
 		}
 
 		public String getName() {
@@ -256,6 +264,11 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		public boolean isRepositoryEntryReservation() {
 			// repo participants and coaches
 			return reservation.getType().startsWith("repo_");
+		}
+		
+		public boolean isCurriculumElementReservation() {
+			// curriculum participants
+			return reservation.getType().startsWith(CurriculumService.RESERVATION_PREFIX);
 		}
 		
 		public List<String> getCourses() {

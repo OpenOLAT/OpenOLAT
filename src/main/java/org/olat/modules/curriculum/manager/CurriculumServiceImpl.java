@@ -125,6 +125,7 @@ import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
+import org.olat.modules.curriculum.ui.member.ResourceToRoleKey;
 import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.manager.LectureBlockDAO;
@@ -889,6 +890,24 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			return new ArrayList<>();
 		}
 		return curriculumElementDao.getMembersIdentity(curriculumElementKeys, role.name());
+	}
+
+	@Override
+	public void acceptPendingParticipation(ResourceReservation reservation, Identity identity, Identity actor) {
+		CurriculumRoles roles = ResourceToRoleKey.reservationToRole(reservation.getType());
+		CurriculumElement curriculumElement = curriculumElementDao.loadElementByResource(reservation.getResource());
+		CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(identity, curriculumElement);
+		change.setNextStatus(roles, GroupMembershipStatus.active);
+		updateCurriculumElementMemberships(actor, null, List.of(change), null);
+	}
+
+	@Override
+	public void cancelPendingParticipation(ResourceReservation reservation, Identity identity, Identity actor) {
+		CurriculumRoles roles = ResourceToRoleKey.reservationToRole(reservation.getType());
+		CurriculumElement curriculumElement = curriculumElementDao.loadElementByResource(reservation.getResource());
+		CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(identity, curriculumElement);
+		change.setNextStatus(roles, GroupMembershipStatus.cancel);
+		updateCurriculumElementMemberships(actor, null, List.of(change), null);
 	}
 
 	@Override

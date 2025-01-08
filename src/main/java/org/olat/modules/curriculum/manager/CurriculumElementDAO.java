@@ -530,6 +530,42 @@ public class CurriculumElementDAO {
 				.setParameter("entryKey", entry.getKey())
 				.getResultList();
 	}
+	
+	public CurriculumElement loadElementByResource(OLATResource resource) {
+		String sb = """
+				select el from curriculumelement el
+				inner join fetch el.curriculum curriculum
+				inner join fetch el.resource resource
+				inner join fetch el.group bGroup
+				left join el.parent parentEl
+				where resource.key=:resourceKey""";
+	
+		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class)
+				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
+		return elements == null || elements.isEmpty() ? null : elements.get(0);
+	}
+	
+	public List<CurriculumElement> loadElementsByResources(Collection<OLATResource> resources) {
+		if (resources == null || resources.isEmpty()) return new ArrayList<>(0);
+		
+		String sb = """
+				select el from curriculumelement el
+				inner join fetch el.curriculum curriculum
+				inner join fetch el.resource resource
+				inner join fetch el.group bGroup
+				left join el.parent parentEl
+				where resource.key in :resourcesKeys""";
+		
+		List<Long> resourcesKeys = resources.stream()
+				.map(OLATResource::getKey).collect(toList());
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class)
+				.setParameter("resourcesKeys", resourcesKeys)
+				.getResultList();
+	}
 
 	public List<CurriculumElement> loadElementsByCurriculums(Collection<? extends CurriculumRef> curriculumRefs) {
 		if (curriculumRefs == null || curriculumRefs.isEmpty()) return new ArrayList<>(0);
