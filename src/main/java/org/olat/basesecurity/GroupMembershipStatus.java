@@ -76,8 +76,8 @@ public enum GroupMembershipStatus {
 		
 		return switch(status) {
 			case cancel, cancelWithFee, removed, declined -> new GroupMembershipStatus[] { reservation, active };
-			case reservation -> new GroupMembershipStatus[] { declined, active };
-			case active -> new GroupMembershipStatus[] { removed, cancel, cancelWithFee };
+			case reservation -> new GroupMembershipStatus[] { active, declined };
+			case active -> new GroupMembershipStatus[] { removed };// cancelled and cancelled with fee worked with a separate process
 			default -> null;
 		};
 	}

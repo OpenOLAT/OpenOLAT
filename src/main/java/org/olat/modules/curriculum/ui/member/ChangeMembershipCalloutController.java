@@ -45,8 +45,7 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
 public class ChangeMembershipCalloutController extends FormBasicController {
 	
 	private static final GroupMembershipStatus[] DEFAULT_STATUS = {
-			GroupMembershipStatus.active, GroupMembershipStatus.cancel,
-			GroupMembershipStatus.declined, GroupMembershipStatus.removed
+			GroupMembershipStatus.active, GroupMembershipStatus.declined, GroupMembershipStatus.removed
 	};
 	
 	private TextElement adminNoteEl;

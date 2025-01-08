@@ -127,7 +127,10 @@ implements FlexiTableFooterModel {
 	private int countRoles(CurriculumRoles role) {
 		int count = 0;
 		for(MemberRolesDetailsRow detailsRow:getObjects()) {
-			if(detailsRow.getStatus(role) != null) {
+			GroupMembershipStatus status = detailsRow.getStatus(role);
+			if(status != null
+					&& status != GroupMembershipStatus.declined
+					&& status != GroupMembershipStatus.removed) {
 				count++;
 			}
 		}

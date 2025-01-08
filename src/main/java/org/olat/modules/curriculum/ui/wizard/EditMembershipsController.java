@@ -75,7 +75,10 @@ import org.olat.modules.curriculum.ui.wizard.EditMembershipsTableModel.Membershi
 public class EditMembershipsController extends StepFormBasicController {
 	
 	private static final CurriculumRoles[] ROLES = CurriculumRoles.curriculumElementsRoles();
-	private static final GroupMembershipStatus[] MODIFIABLE =  GroupMembershipStatus.statusWithNextStep();
+	private static final GroupMembershipStatus[] MODIFIABLE = new GroupMembershipStatus[] {
+			GroupMembershipStatus.reservation, GroupMembershipStatus.active,
+			GroupMembershipStatus.declined, GroupMembershipStatus.removed
+		};
 	private static final String CMD_NOTE = "note";
 	private static final String CMD_ADD_ROLE = "add.role";
 	private static final String CMD_SELECT = "select.status";
