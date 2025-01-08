@@ -364,17 +364,23 @@ public class BadgeCriteria {
 	 * 		   (or if there are no global badge conditions to be met), false if at least one condition is not met.
 	 */
 	private boolean allGlobalBadgeConditionsMet(Identity recipient, List<AssessmentEntry> assessmentEntries) {
+		boolean globalBadgeConditionChecked = false;
 		for (BadgeCondition badgeCondition : getConditions()) {
 			if (badgeCondition instanceof GlobalBadgesEarnedCondition globalBadgesEarnedCondition) {
 				if (!globalBadgesEarnedConditionMet(recipient, globalBadgesEarnedCondition)) {
 					return false;
 				}
+				globalBadgeConditionChecked = true;
 			}
 			if (badgeCondition instanceof CoursesPassedCondition coursesPassedCondition) {
 				if (!coursesPassedConditionMet(recipient, assessmentEntries, coursesPassedCondition)) {
 					return false;
 				}
+				globalBadgeConditionChecked = true;
 			}
+		}
+		if (globalBadgeConditionChecked) {
+			return false;
 		}
 		return true;
 	}
