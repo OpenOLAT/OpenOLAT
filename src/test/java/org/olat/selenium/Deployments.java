@@ -43,6 +43,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
@@ -145,9 +146,15 @@ public class Deployments {
 			driver = new EdgeDriver(options);
 		} else if("firefox".equals(browser)) {
 			FirefoxOptions options = new FirefoxOptions();
+			options.setLogLevel(FirefoxDriverLogLevel.TRACE);
+			options.enableBiDi();
+			options.setCapability("moz:debuggerAddress", false);
+		    options.addPreference("remote.active-protocols", 1);
+		    
 			FirefoxProfile profile = new FirefoxProfile();
 			profile.setPreference("fission.webContentIsolationStrategy", Integer.valueOf(0));
 			profile.setPreference("fission.bfcacheInParent", Boolean.FALSE);
+			
 			options.setProfile(profile);
 			driver = new FirefoxDriver(GeckoDriverService.createDefaultService(), options);
 		} else {
