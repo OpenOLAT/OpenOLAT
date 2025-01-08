@@ -332,8 +332,9 @@ public class RegistrationPersonalDataController extends FormBasicController {
 
 			if (!matchedDomains.isEmpty()) {
 				// Extract orgKey as keys
+				matchedDomains = matchedDomains.stream().sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName())).toList();
 				String[] orgKeys = matchedDomains.stream()
-						.map(domain -> domain.getKey().toString())
+						.map(domain -> domain.getOrganisation().getKey().toString())
 						.toArray(String[]::new);
 				// Extract concatenated displayName and Location as values
 				String[] orgValues = matchedDomains.stream()
