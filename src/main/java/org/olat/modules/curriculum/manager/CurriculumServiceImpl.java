@@ -1181,6 +1181,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				status, null, null, actor, note);
 		dbInstance.commit();
 	}
+	
+	@Override
+	public boolean hasRepositoryEntries(CurriculumElementRef element) {
+		return curriculumRepositoryEntryRelationDao.hasRepositoryEntries(element);
+	}
 
 	@Override
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element) {

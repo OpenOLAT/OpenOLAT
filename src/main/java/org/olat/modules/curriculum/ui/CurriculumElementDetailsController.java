@@ -123,6 +123,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	
 	private Curriculum curriculum;
 	private final boolean canChildren;
+	private boolean canRepositoryEntries;
 	private CurriculumElement curriculumElement;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
@@ -144,6 +145,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		this.curriculumElement = curriculumElement;
 		this.lecturesSecCallback = lecturesSecCallback;
 		canChildren = canChildren(curriculumElement);
+		canRepositoryEntries = canRepositoryEntries(curriculumElement);
 		
 		mainVC = createVelocityContainer("curriculum_element_details");
 		tabPane = new TabbedPane("tabs", getLocale());
@@ -160,6 +162,14 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		CurriculumElementType type = element.getType();
 		if(type != null && type.isSingleElement()) {
 			return curriculumService.hasCurriculumElementChildren(element);
+		}
+		return true;
+	}
+	
+	private boolean canRepositoryEntries(CurriculumElement element) {
+		CurriculumElementType type = element.getType();
+		if(type != null && type.getMaxRepositoryEntryRelations() == 0) {
+			return curriculumService.hasRepositoryEntries(element);
 		}
 		return true;
 	}
@@ -292,6 +302,17 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		mainVC.contextPut("dates", dates.toString());
 	}
 	
+	private void updateRepositoryEntries() {
+		boolean updatedCanRepositoryEntries = canRepositoryEntries(curriculumElement);
+		if(canRepositoryEntries != updatedCanRepositoryEntries) {
+			tabPane.setVisible(resourcesTab, updatedCanRepositoryEntries);
+			if(coursesWidgetCtrl != null) {
+				coursesWidgetCtrl.getInitialComponent().setVisible(updatedCanRepositoryEntries);
+			}
+			canRepositoryEntries = updatedCanRepositoryEntries;
+		}
+	}
+	
 	private void updateStatusDropdown() {
 		if (statusDropdown == null || curriculumElement == null) {
 			return;
@@ -372,6 +393,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			listenTo(resourcesCtrl);
 			return resourcesCtrl.getInitialComponent();
 		});
+		tabPane.setVisible(resourcesTab, canRepositoryEntries);
 		
 		// Events / lectures blocks
 		if(lectureModule.isEnabled()) {
@@ -424,11 +446,10 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		overviewCtrl = new CurriculumDashboardController(ureq, subControl);
 		listenTo(overviewCtrl);
 		
-		if(curriculumElement.getParent() != null) {
-			coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
-			listenTo(coursesWidgetCtrl);
-			overviewCtrl.addWidget("courses", coursesWidgetCtrl);
-		}
+		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
+		listenTo(coursesWidgetCtrl);
+		overviewCtrl.addWidget("courses", coursesWidgetCtrl);
+		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
 		
 		if(lectureModule.isEnabled()) {
 			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
@@ -550,6 +571,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			if(event == Event.DONE_EVENT) {
 				curriculumElement = editMetadataCtrl.getElement();
 				updateMetadataUI();
+				updateRepositoryEntries();
 			}
 		} else if(statusChangeCtrl == source) {
 			if(event == Event.DONE_EVENT) {

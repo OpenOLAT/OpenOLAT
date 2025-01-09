@@ -1,5 +1,7 @@
 <div class="o_curriculum_overview">
-	#foreach($widget in $widgets)
+#foreach($widget in $widgets)
+	#if($r.visible($widget))
 		$r.render($widget)
 	#end
+#end
 </div>

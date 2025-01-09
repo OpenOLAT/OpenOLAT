@@ -83,6 +83,21 @@ public class CurriculumRepositoryEntryRelationDAO {
 		return count != null && !count.isEmpty() && count.get(0) != null ? count.get(0).longValue() : 0l;
 	}
 	
+	public boolean hasRepositoryEntries(CurriculumElementRef element) {
+		String query = """
+				select v.key from repositoryentry as v
+				inner join v.groups as rel
+				inner join curriculumelement as el on (el.group.key=rel.group.key)
+				where el.key=:elementKey""";
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager().createQuery(query, Long.class)
+				.setParameter("elementKey", element.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0l;
+	}
+	
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumRef curriculum, List<CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status,
 			boolean onlyWithLectures, IdentityRef identity, List<String> roles) {
 		if((elements == null || elements.isEmpty()) && curriculum == null) return new ArrayList<>();

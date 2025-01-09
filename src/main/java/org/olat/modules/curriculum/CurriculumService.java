@@ -509,6 +509,14 @@ public interface CurriculumService {
 	public void removeMembers(CurriculumElement element, List<Identity> members, boolean overrideManaged, Identity actor);
 	
 	/**
+	 * Check if the curriculum element has at least one entry.
+	 * 
+	 * @param element The curriculum element
+	 * @return true if the element has at least an entry.
+	 */
+	public boolean hasRepositoryEntries(CurriculumElementRef element);
+
+	/**
 	 * The all list of repository entries hold by the specified curriculum element.
 	 * 
 	 * @param element The curriculum element
