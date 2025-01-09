@@ -489,4 +489,15 @@ public class BadgeCriteria {
 		}
 		return uuids;
 	}
+
+	public void prepareForEntryReset(RepositoryEntry courseEntry) {
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
+				courseElementPassedCondition.prepareForEntryReset(courseEntry);
+			}
+			if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
+				courseElementScoreCondition.prepareForEntryReset(courseEntry);
+			}
+		}
+	}
 }

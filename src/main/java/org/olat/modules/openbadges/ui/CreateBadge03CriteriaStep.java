@@ -286,14 +286,22 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				return;
 			}
 			String key = newRule.getSelectedKey();
+			String nextSubIdentForPassedCondition = getNextSubIdentNotUsedInPassedConditions();
+			String nextSubIdentDisplayNameForPassedCondition = getSubIdentDisplayName(nextSubIdentForPassedCondition);
+			String nextSubIdentForScoreCondition = getNextSubIdentNotUsedInScoreConditions();
+			String nextSubIdentDisplayNameForScoreCondition = getSubIdentDisplayName(nextSubIdentForScoreCondition);
 			BadgeCondition newBadgeCondition = switch (key) {
 				case CoursePassedCondition.KEY -> new CoursePassedCondition();
 				case CourseScoreCondition.KEY -> new CourseScoreCondition(Symbol.greaterThan, 1);
 				case LearningPathProgressCondition.KEY -> new LearningPathProgressCondition(Symbol.greaterThan, 50);
 				case OtherBadgeEarnedCondition.KEY -> new OtherBadgeEarnedCondition(getUnusedBadgeKey());
 				case CompletionCriterionMetCondition.KEY -> new CompletionCriterionMetCondition(getSubIdentsNotUsedInCompletionCriterionMetCondition());
-				case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(getSubIdentsNotUsedInPassedCondition());
-				case CourseElementScoreCondition.KEY -> new CourseElementScoreCondition(getSubIdentsNotUsedInScoreCondition(), Symbol.greaterThan, 1);
+				case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(
+						nextSubIdentForPassedCondition, nextSubIdentDisplayNameForPassedCondition
+				);
+				case CourseElementScoreCondition.KEY -> new CourseElementScoreCondition(
+						nextSubIdentForScoreCondition, Symbol.greaterThan, 1, nextSubIdentDisplayNameForScoreCondition
+				);
 				case CoursesPassedCondition.KEY -> new CoursesPassedCondition();
 				case GlobalBadgesEarnedCondition.KEY -> new GlobalBadgesEarnedCondition();
 				default -> null;
@@ -305,6 +313,16 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				conditionRows.add(conditionRow);
 				setVelocityConditions();
 			}
+		}
+
+		private String getSubIdentDisplayName(String subIdent) {
+			if (!StringHelper.containsNonWhitespace(subIdent)) {
+				return "";
+			}
+			if (!conditionContext.courseElementsKV().containsKey(subIdent)) {
+				return "";
+			}
+			return conditionContext.courseElementsKV().getValue(subIdent);
 		}
 
 		private String getUnusedBadgeKey() {
@@ -327,7 +345,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			return unusedSubIdents.isEmpty() ? null : unusedSubIdents.iterator().next();
 		}
 
-		private String getSubIdentsNotUsedInPassedCondition() {
+		private String getNextSubIdentNotUsedInPassedConditions() {
 			Set<String> unusedSubIdents = new HashSet<>(Set.of(conditionContext.courseElementsKV().keys()));
 			for (ConditionRow condition : conditionRows) {
 				if (condition.asBadgeCondition() instanceof CourseElementPassedCondition courseElementPassedCondition) {
@@ -337,7 +355,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			return unusedSubIdents.isEmpty() ? null : unusedSubIdents.iterator().next();
 		}
 
-		private String getSubIdentsNotUsedInScoreCondition() {
+		private String getNextSubIdentNotUsedInScoreConditions() {
 			Set<String> unusedSubIdents = new HashSet<>(Set.of(conditionContext.courseElementsKV().keys()));
 			for (ConditionRow condition : conditionRows) {
 				if (condition.asBadgeCondition() instanceof CourseElementScoreCondition courseElementScoreCondition) {

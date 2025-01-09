@@ -19,7 +19,10 @@
  */
 package org.olat.modules.openbadges.criteria;
 
+import java.beans.Transient;
+
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.course.core.CourseElement;
 import org.olat.repository.RepositoryEntry;
 
@@ -34,11 +37,13 @@ public class CourseElementScoreCondition implements BadgeCondition {
 	private String subIdent;
 	private Symbol symbol;
 	private double value;
+	private String displayName;
 
-	public CourseElementScoreCondition(String subIdent, Symbol symbol, double value) {
+	public CourseElementScoreCondition(String subIdent, Symbol symbol, double value, String displayName) {
 		this.subIdent = subIdent;
 		this.symbol = symbol;
 		this.value = value;
+		this.displayName = displayName;
 	}
 
 	@Override
@@ -48,10 +53,30 @@ public class CourseElementScoreCondition implements BadgeCondition {
 
 	@Override
 	public String toString(Translator translator, RepositoryEntry courseEntry) {
-		CourseElement courseElement = BadgeCondition.loadCourseElement(courseEntry, subIdent);
 		return translator.translate("badgeCondition." + KEY,
-				courseElement != null ? courseElement.getShortTitle() : subIdent, getSymbol().getSymbolString(),
-				Double.toString(getValue()));
+				courseElementName(courseEntry), 
+				getSymbol().getSymbolString(),
+				Double.toString(getValue())
+		);
+	}
+
+	private String courseElementName(RepositoryEntry courseEntry) {
+		String currentCourseElementName = courseElementName(courseEntry, subIdent);
+		if (StringHelper.containsNonWhitespace(currentCourseElementName)) {
+			return currentCourseElementName;
+		}
+		if (StringHelper.containsNonWhitespace(getDisplayName())) {
+			return getDisplayName();
+		}
+		return subIdent;
+	}
+
+	private String courseElementName(RepositoryEntry courseEntry, String subIdent) {
+		CourseElement courseElement = BadgeCondition.loadCourseElement(courseEntry, subIdent);
+		if (courseElement != null) {
+			return courseElement.getShortTitle();
+		}
+		return "";
 	}
 
 	public boolean satisfiesCondition(double score) {
@@ -80,5 +105,21 @@ public class CourseElementScoreCondition implements BadgeCondition {
 
 	public void setValue(double value) {
 		this.value = value;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	@Transient
+	public void prepareForEntryReset(RepositoryEntry courseEntry) {
+		String currentCourseElementName = courseElementName(courseEntry, subIdent);
+		if (StringHelper.containsNonWhitespace(currentCourseElementName)) {
+			setDisplayName(currentCourseElementName);
+		}
 	}
 }
