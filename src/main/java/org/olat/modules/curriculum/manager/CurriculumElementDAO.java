@@ -112,7 +112,7 @@ public class CurriculumElementDAO {
 		element.setShowLectures(true);
 		element.setChildren(new ArrayList<>());
 		if(status == null) {
-			element.setStatus(CurriculumElementStatus.active.name());
+			element.setStatus(CurriculumElementStatus.preparation.name());
 		} else {
 			element.setStatus(status.name());
 		}

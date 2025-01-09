@@ -505,7 +505,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			displayName += " (Copy)";
 		}
 		
-		CurriculumElement clone = curriculumElementDao.createCurriculumElement(identifier, displayName, CurriculumElementStatus.active,
+		CurriculumElement clone = curriculumElementDao.createCurriculumElement(identifier, displayName, CurriculumElementStatus.preparation,
 				beginDate, endDate, parentElement, elementToClone.getType(), elementToClone.getCalendars(), elementToClone.getLectures(),
 				elementToClone.getLearningProgress(), curriculum);
 		
