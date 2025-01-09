@@ -25,12 +25,14 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
@@ -130,6 +132,8 @@ public class AccessConfigurationController extends FormBasicController {
 	private ACService acService;
 	@Autowired
 	private AccessControlModule acModule;
+	@Autowired
+	private OrganisationModule organisationModule;
 
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
@@ -868,14 +872,47 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 	
 	private void checkOverlap() {
+		Map<Long, List<AccessInfo>> organisationKeyToAccessInfo = new HashMap<>(1);
+		if (organisationModule.isEnabled()) {
+			for (AccessInfo accessInfo : accessInfos) {
+				if (accessInfo.getOfferOrganisations() != null && !accessInfo.getOfferOrganisations().isEmpty()) {
+					for (Organisation organisation : accessInfo.getOfferOrganisations()) {
+						organisationKeyToAccessInfo.computeIfAbsent(organisation.getKey(), key -> new ArrayList<>(2)).add(accessInfo);
+					}
+				} else {
+					organisationKeyToAccessInfo.computeIfAbsent(-1l, key -> new ArrayList<>(2)).add(accessInfo);
+				}
+			}
+		} else {
+			organisationKeyToAccessInfo.put(-1l, accessInfos);
+		}
+		
 		boolean overlap = false;
 		boolean overlapAllowed = true;
-
+		for (List<AccessInfo> accessInfosToCheck : organisationKeyToAccessInfo.values()) {
+			OverlapCheckResult checkResult = checkOverlap(accessInfosToCheck);
+			if (checkResult.overlap) {
+				overlap = checkResult.overlap;
+				overlapAllowed = checkResult.overlapAllowed;
+				break;
+			}
+		}
+		
+		// Display a warning
+		offersContainer.contextPut("overlappingConfigs", overlap);
+		offersContainer.contextPut("overlappingErrorConfigs", !overlapAllowed);
+		offersContainer.setDirty(true);
+	}
+	
+	private OverlapCheckResult checkOverlap(List<AccessInfo> accessInfosToCheck) {
+		boolean overlap = false;
+		boolean overlapAllowed = true;
+		
 		// Take a controller from the list
-		for (AccessInfo confControllerA : accessInfos) {
+		for (AccessInfo confControllerA : accessInfosToCheck) {
 			if (confControllerA.getLink() == null) continue;
 			// Compare it to every other from the list
-			for (AccessInfo confControllerB : accessInfos) {
+			for (AccessInfo confControllerB : accessInfosToCheck) {
 				if (confControllerB.getLink() == null) continue;
 				// Don't compare a confController with itself
 				if (!confControllerA.equals(confControllerB)) {
@@ -911,15 +948,14 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 			// If there is an overlap, don't go for extra checks
 			if (overlap) {
-				break;
+				return new OverlapCheckResult(overlap, overlapAllowed);
 			}
 		}
 		
-		// Display a warning
-		offersContainer.contextPut("overlappingConfigs", overlap);
-		offersContainer.contextPut("overlappingErrorConfigs", !overlapAllowed);
-		offersContainer.setDirty(true);
+		return new OverlapCheckResult(overlap, overlapAllowed);
 	}
+	
+	private record OverlapCheckResult(boolean overlap, boolean overlapAllowed) {}
 	
 	public interface OfferWithOrganisation {
 		
