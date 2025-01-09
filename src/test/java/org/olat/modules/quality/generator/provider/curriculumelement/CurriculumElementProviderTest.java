@@ -37,6 +37,7 @@ import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.quality.QualityDataCollection;
@@ -91,8 +92,8 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
 		Organisation curriculumOrganisation = createOrganisation(defaultOrganisation);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, curriculumOrganisation);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), null, null,
-				null, null, null, null, null, null, curriculum);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
 		curriculumElement.setBeginDate(startDate);
 		curriculumService.updateCurriculumElement(curriculumElement);
 		
@@ -354,8 +355,8 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
 		Organisation curriculumOrganisation = createOrganisation(defaultOrganisation);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), false, curriculumOrganisation);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(), null, null,
-				null, null, null, null, null, null, curriculum);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
 		curriculumElement.setBeginDate(startDate);
 		curriculumService.updateCurriculumElement(curriculumElement);
 		dbInstance.commitAndCloseSession();
