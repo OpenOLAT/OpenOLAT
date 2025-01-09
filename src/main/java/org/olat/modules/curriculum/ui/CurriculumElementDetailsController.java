@@ -555,6 +555,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			if(event == Event.DONE_EVENT) {
 				curriculumElement = statusChangeCtrl.getCurriculumElement();
 				updateStatusDropdown();
+				updateOffersView(curriculumElement.getElementStatus());
 				if (structureCtrl != null) {
 					structureCtrl.loadModel();
 				}
@@ -579,7 +580,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			cleanUp();
 		}
 	}
-	
+
 	private void doOpenStructure(UserRequest ureq, Link link) {
 		CurriculumElement rootElement = getRootElement();
 		curriculumStructureCalloutCtrl = new CurriculumStructureCalloutController(ureq, getWindowControl(),
@@ -607,7 +608,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private void doChangeStatus(UserRequest ureq, CurriculumElementStatus newStatus) {
 		curriculumElement = curriculumService.getCurriculumElement(curriculumElement);
 		if (curriculumElement == null) {
-			
+			showWarning("warning.curriculum.deleted");
+			return;
 		} else if (curriculumElement.getElementStatus() == newStatus) {
 			updateStatusDropdown();
 			return;
@@ -620,6 +622,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				statusChangeCtrl.getInitialComponent(), true, translate("change.status.title"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void updateOffersView(CurriculumElementStatus status) {
+		if (offersCtrl != null) {
+			offersCtrl.updateStatus(status);
+		}
 	}
 
 	private void doConfirmDeleteCurriculumElement(UserRequest ureq) {

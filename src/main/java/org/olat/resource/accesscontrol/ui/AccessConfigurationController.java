@@ -146,6 +146,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.defaultOfferOrganisations = defaultOfferOrganisations;
 		this.catalogInfo = catalogInfo;
+		this.notAvailableStatus = catalogInfo.getNotAvailableStatus();
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
 		this.helpUrl = helpUrl;
@@ -356,6 +357,7 @@ public class AccessConfigurationController extends FormBasicController {
 				Offer offer = openAccessOfferCtrl.getOffer();
 				List<Organisation> organisations = openAccessOfferCtrl.getOfferOrganisations();
 				addOpenAccessOffer(offer, organisations);
+				updateCatalogOverviewUI();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -364,6 +366,7 @@ public class AccessConfigurationController extends FormBasicController {
 			if(event.equals(Event.DONE_EVENT)) {
 				Offer offer = guestOfferCtrl.getOffer();
 				addGuestOffer(offer);
+				updateCatalogOverviewUI();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -373,6 +376,7 @@ public class AccessConfigurationController extends FormBasicController {
 				OfferAccess offerAccess = newMethodCtrl.getOfferAccess();
 				List<Organisation> organisations = newMethodCtrl.getOfferOrganisations();
 				addOffer(offerAccess, organisations);
+				updateCatalogOverviewUI();
 				checkOverlap();
 				offersContainer.setDirty(true);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -384,6 +388,7 @@ public class AccessConfigurationController extends FormBasicController {
 				OfferAccess newLink = editMethodCtrl.getOfferAccess();
 				List<Organisation> organisations = editMethodCtrl.getOfferOrganisations();
 				replace(newLink, organisations);
+				updateCatalogOverviewUI();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -822,6 +827,7 @@ public class AccessConfigurationController extends FormBasicController {
 			deletedOfferList.add(offer);
 		}
 		accessInfos.remove(infos);
+		updateCatalogOverviewUI();
 		updateAddUI();
 	}
 

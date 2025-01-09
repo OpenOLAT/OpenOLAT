@@ -84,11 +84,11 @@ public class RepositoryCatalogInfoFactory {
 			if (showBusinessPath) {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
 			}
-			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), true,
-					translator.translate("access.taxonomy.level"), details, false,
-					getStatusNotAvailable(translator, entry.getEntryStatus()), false, editBusinessPath,
-					translator.translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()),
-					taxonomyLevels, showRQCode);
+			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
+					translator.translate("offer.period.status"), true, translator.translate("access.taxonomy.level"),
+					details, false, getStatusNotAvailable(translator, entry.getEntryStatus()), false, editBusinessPath,
+					translator.translate("access.open.metadata"),
+					CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), taxonomyLevels, showRQCode);
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
@@ -117,9 +117,9 @@ public class RepositoryCatalogInfoFactory {
 			if (showBusinessPath) {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			}
-			return new CatalogInfo(true, false, true, translator.translate("access.info.catalog.entries"), details,
-					notAvailableEntry, null, false, editBusinessPath, translator.translate("access.open.catalog"), null,
-					null, showRQCode);
+			return new CatalogInfo(true, false, translator.translate("offer.period.status"), true,
+					translator.translate("access.info.catalog.entries"), details, notAvailableEntry, null, false,
+					editBusinessPath, translator.translate("access.open.catalog"), null, null, showRQCode);
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}

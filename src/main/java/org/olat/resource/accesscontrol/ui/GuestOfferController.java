@@ -68,14 +68,14 @@ public class GuestOfferController extends FormBasicController {
 		
 		SelectionValues catalogSV = new SelectionValues();
 		if (catalogModule.isEnabled() && catalogModule.isWebPublishEnabled()) {
-			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
+			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.publish.in.extern")));
 		}
 		catalogEl = uifactory.addCheckboxesVertical("offer.publish.in", formLayout, catalogSV.keys(), catalogSV.values(), 1);
 		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
 		catalogEl.select(CATALOG_WEB, offer != null && offer.isCatalogWebPublish());
 		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
 		
-		uifactory.addStaticTextElement("offer.period", translate("offer.period.status"), formLayout);
+		uifactory.addStaticTextElement("offer.period", catalogInfo.getPeriodStatusOption(), formLayout);
 		
 		uifactory.addSpacerElement("others", formLayout, false);
 		

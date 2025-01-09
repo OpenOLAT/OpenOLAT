@@ -25,10 +25,11 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 
 public class CatalogInfo {
 
-	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, null, null, true, null, false, null, null, null, null, true);
+	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, null, false, null, null, true, null, false, null, null, null, null, true);
 
 	private final boolean catalogSupported;
 	private final boolean webCatalogSupported;
+	private final String periodStatusOption;
 	private final boolean showDetails;
 	private final String detailsLabel;
 	private final String details;
@@ -41,11 +42,13 @@ public class CatalogInfo {
 	private final List<TaxonomyLevel> microsites;
 	private final boolean showQRCode;
 
-	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, boolean showDetails, String detailsLabel,
-			String details, boolean notAvailableEntry, String notAvailableStatus, boolean fullyBooked,
-			String editBusinessPath, String editLabel, String catalogBusinessPath, List<TaxonomyLevel> microsites, boolean showQRCode) {
+	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, String periodStatusOption,
+			boolean showDetails, String detailsLabel, String details, boolean notAvailableEntry,
+			String notAvailableStatus, boolean fullyBooked, String editBusinessPath, String editLabel,
+			String catalogBusinessPath, List<TaxonomyLevel> microsites, boolean showQRCode) {
 		this.catalogSupported = catalogSupported;
 		this.webCatalogSupported = webCatalogSupported;
+		this.periodStatusOption = periodStatusOption;
 		this.showDetails = showDetails;
 		this.detailsLabel = detailsLabel;
 		this.details = details;
@@ -65,6 +68,10 @@ public class CatalogInfo {
 
 	public boolean isWebCatalogSupported() {
 		return webCatalogSupported;
+	}
+
+	public String getPeriodStatusOption() {
+		return periodStatusOption;
 	}
 
 	public boolean isShowDetails() {

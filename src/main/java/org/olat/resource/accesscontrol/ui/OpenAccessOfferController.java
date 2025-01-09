@@ -90,7 +90,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		// Catalog
 		SelectionValues catalogSV = new SelectionValues();
 		if (catalogModule.isWebPublishEnabled()) {
-			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.catalog.web")));
+			catalogSV.add(SelectionValues.entry(CATALOG_WEB, translate("offer.publish.in.extern")));
 		}
 		catalogEl = uifactory.addCheckboxesVertical("offer.publish.in", formLayout, catalogSV.keys(), catalogSV.values(), 1);
 		catalogEl.setElementCssClass("o_sel_accesscontrol_catalog");
@@ -105,7 +105,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		}
 		
 		// Period
-		uifactory.addStaticTextElement("offer.period", translate("offer.period.status"), formLayout);
+		uifactory.addStaticTextElement("offer.period", catalogInfo.getPeriodStatusOption(), formLayout);
 		
 		uifactory.addSpacerElement("others", formLayout, false);
 		

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,7 @@ import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -44,6 +46,7 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.author.RepositoryCatalogInfoFactory;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +78,7 @@ public class CurriculumElementOffersController extends BasicController {
 		Translator translator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
 		translator = Util.createPackageTranslator(AccessConfigurationController.class, getLocale(), translator);
 		translator = Util.createPackageTranslator(RepositoryService.class, getLocale(), translator);
+		setTranslator(translator);
 		
 		List<TaxonomyLevel> taxonomyLevels = null;
 		List<TaxonomyLevelNamePath> taxonomyLevelPath = null;
@@ -88,17 +92,18 @@ public class CurriculumElementOffersController extends BasicController {
 		
 		String details;
 		if (taxonomyLevelPath == null || taxonomyLevelPath.isEmpty()) {
-			details = translator.translate("access.taxonomy.level.not.yet");
+			details = translate("access.taxonomy.level.not.yet");
 		} else {
 			details = RepositoryCatalogInfoFactory.wrapTaxonomyLevels(taxonomyLevelPath);
 		}
 		String editBusinessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + elementRef.getKey() + "][Matadata:0]";
 
 		boolean fullyBooked = false;
-		CatalogInfo catalogInfo = new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), true,
-				translator.translate("access.taxonomy.level"), details, false, null, fullyBooked, editBusinessPath,
-				translator.translate("access.open.metadata"),
-				CatalogBCFactory.get(false).getOfferUrl(element.getResource()), taxonomyLevels, true);
+		CatalogInfo catalogInfo = new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
+				translate("offer.period.status.curriculum.element"), true, translate("access.taxonomy.level"), details,
+				false, getStatusNotAvailable(translator, element.getElementStatus()), fullyBooked, editBusinessPath,
+				translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
+				taxonomyLevels, true);
 		
 		accessConfigCtrl = new AccessConfigurationController(ureq, wControl, element.getResource(),
 				element.getDisplayName(), true, false, false, true, defaultOfferOrganisations, catalogInfo,
@@ -106,6 +111,19 @@ public class CurriculumElementOffersController extends BasicController {
 		listenTo(accessConfigCtrl);
 		
 		putInitialPanel(accessConfigCtrl.getInitialComponent());
+	}
+
+	public void updateStatus(CurriculumElementStatus status) {
+		accessConfigCtrl.setNotAvailableStatus(getStatusNotAvailable(getTranslator(), status));
+	}
+	
+	private String getStatusNotAvailable(Translator translator, CurriculumElementStatus status) {
+		if (catalogV2Module.isEnabled()) {
+			if (!Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD).contains(status)) {
+				return translator.translate("status." + status.name());
+			}
+		}
+		return null;
 	}
 
 	@Override

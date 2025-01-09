@@ -125,7 +125,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		
 		// Period
 		SelectionValues periodSV = new SelectionValues();
-		periodSV.add(SelectionValues.entry(PERIOD_STATUS, translate("offer.period.status")));
+		periodSV.add(SelectionValues.entry(PERIOD_STATUS, catalogInfo.getPeriodStatusOption()));
 		periodSV.add(SelectionValues.entry(PERIOD_DATE, translate("offer.period.date")));
 		periodEl = uifactory.addRadiosVertical("offer.period", formLayout, periodSV.keys(), periodSV.values());
 		periodEl.addActionListener(FormEvent.ONCHANGE);

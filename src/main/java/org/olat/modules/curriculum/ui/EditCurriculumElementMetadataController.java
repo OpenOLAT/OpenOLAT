@@ -238,12 +238,13 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 			Set<TaxonomyLevel> allTaxonomieLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomyRefs));
 			List<TaxonomyLevel> taxonomyLevels = curriculumService.getTaxonomy(element);
 			
-			String labelI18nKey = catalogModule.isEnabled()? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
+			boolean isCatalogCandidate = catalogModule.isEnabled() && parentElement == null;
+			String labelI18nKey = isCatalogCandidate? "cif.taxonomy.levels.catalog": "cif.taxonomy.levels";
 			taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomyLevel", labelI18nKey, formLayout,
 					getWindowControl(), allTaxonomieLevels);
 			taxonomyLevelEl.setDisplayNameHeader(translate(labelI18nKey));
 			taxonomyLevelEl.setSelection(taxonomyLevels);
-			if (catalogModule.isEnabled()) {
+			if (isCatalogCandidate) {
 				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
 			}
 		}
