@@ -369,7 +369,7 @@ public class BadgeCriteria {
 				globalBadgeConditionChecked = true;
 			}
 		}
-		if (globalBadgeConditionChecked) {
+		if (!globalBadgeConditionChecked) {
 			return false;
 		}
 		return true;
