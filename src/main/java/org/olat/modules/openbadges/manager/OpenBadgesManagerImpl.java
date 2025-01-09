@@ -859,6 +859,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	public void removeCourseEntryFromCourseBadgeClasses(RepositoryEntry entry) {
 		List<BadgeClass> courseBadgeClasses = badgeClassDAO.getBadgeClasses(entry, false);
 		for (BadgeClass courseBadgeClass : courseBadgeClasses) {
+			courseBadgeClass.prepareForEntryReset(entry);
 			courseBadgeClass.setEntry(null);
 			updateBadgeClass(courseBadgeClass);
 		}

@@ -319,12 +319,14 @@ public class ConditionRow {
 					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedKey() : courseElementsDropdown.getKeys()[0]
 			);
 			case CourseElementPassedCondition.KEY -> new CourseElementPassedCondition(
-					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedKey() : courseElementsDropdown.getKeys()[0]
+					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedKey() : courseElementsDropdown.getKeys()[0],
+					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedValue() : courseElementsDropdown.getValues()[0]
 			);
 			case CourseElementScoreCondition.KEY -> new CourseElementScoreCondition(
 					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedKey() : courseElementsDropdown.getKeys()[0],
 					Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
-					safeDouble(valueEl.getValue())
+					safeDouble(valueEl.getValue()),
+					courseElementsDropdown.isOneSelected() ? courseElementsDropdown.getSelectedValue() : courseElementsDropdown.getValues()[0]
 			);
 			case CoursesPassedCondition.KEY -> new CoursesPassedCondition(
 					coursesDropdown.getCourses().stream().map(RepositoryEntryRef::getKey).toList()

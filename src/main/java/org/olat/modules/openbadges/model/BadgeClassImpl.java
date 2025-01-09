@@ -28,6 +28,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeOrganization;
+import org.olat.modules.openbadges.criteria.BadgeCriteria;
+import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 
@@ -349,6 +351,15 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Override
 	public void setBadgeOrganization(BadgeOrganization badgeOrganization) {
 		this.badgeOrganization = badgeOrganization;
+	}
+
+	@Override
+	public void prepareForEntryReset(RepositoryEntry entry) {
+		if (StringHelper.containsNonWhitespace(getCriteria())) {
+			BadgeCriteria criteria = BadgeCriteriaXStream.fromXml(getCriteria());
+			criteria.prepareForEntryReset(entry);
+			setCriteria(BadgeCriteriaXStream.toXml(criteria));
+		}
 	}
 
 	@Override

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.openbadges;
 
+import java.beans.Transient;
 import java.util.Date;
 
 import org.olat.repository.RepositoryEntry;
@@ -117,4 +118,7 @@ public interface BadgeClass {
 	RepositoryEntry getEntry();
 
 	void setEntry(RepositoryEntry entry);
+
+	@Transient
+	void prepareForEntryReset(RepositoryEntry entry);
 }

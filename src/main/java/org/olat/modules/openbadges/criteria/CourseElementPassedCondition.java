@@ -19,7 +19,10 @@
  */
 package org.olat.modules.openbadges.criteria;
 
+import java.beans.Transient;
+
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.course.core.CourseElement;
 import org.olat.repository.RepositoryEntry;
 
@@ -32,9 +35,11 @@ public class CourseElementPassedCondition implements BadgeCondition {
 	public static final String KEY = "courseElementPassed";
 
 	private String subIdent;
+	private String displayName;
 
-	public CourseElementPassedCondition(String subIdent) {
+	public CourseElementPassedCondition(String subIdent, String displayName) {
 		this.subIdent = subIdent;
+		this.displayName = displayName;
 	}
 
 	@Override
@@ -44,16 +49,49 @@ public class CourseElementPassedCondition implements BadgeCondition {
 
 	@Override
 	public String toString(Translator translator, RepositoryEntry courseEntry) {
-		CourseElement courseElement = BadgeCondition.loadCourseElement(courseEntry, subIdent);
-		return translator.translate("badgeCondition." + KEY,
-				courseElement != null ? courseElement.getShortTitle() : subIdent);
+		return translator.translate("badgeCondition." + KEY, courseElementName(courseEntry));
+	}
+	
+	private String courseElementName(RepositoryEntry courseEntry) {
+		String currentCourseElementName = courseElementName(courseEntry, subIdent);
+		if (StringHelper.containsNonWhitespace(currentCourseElementName)) {
+			return currentCourseElementName;
+		}
+		if (StringHelper.containsNonWhitespace(getDisplayName())) {
+			return getDisplayName();
+		}
+		return subIdent;
 	}
 
+	private String courseElementName(RepositoryEntry courseEntry, String subIdent) {
+		CourseElement courseElement = BadgeCondition.loadCourseElement(courseEntry, subIdent);
+		if (courseElement != null) {
+			return courseElement.getShortTitle();
+		}
+		return "";
+	}
+	
 	public String getSubIdent() {
 		return subIdent;
 	}
 
 	public void setSubIdent(String subIdent) {
 		this.subIdent = subIdent;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	@Transient
+	public void prepareForEntryReset(RepositoryEntry courseEntry) {
+		String currentCourseElementName = courseElementName(courseEntry, subIdent);
+		if (StringHelper.containsNonWhitespace(currentCourseElementName)) {
+			setDisplayName(currentCourseElementName);
+		}
 	}
 }

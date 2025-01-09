@@ -255,13 +255,16 @@ public class CreateBadgeClassWizardContext {
 			if (courseElement != null && courseElement.isAssesseable()) {
 				if (!AssessmentConfig.Mode.none.equals(courseElement.getPassedMode())) {
 					badgeCriteria.setAwardAutomatically(true);
-					badgeCriteria.getConditions().add(new CourseElementPassedCondition(this.courseNode.getIdent()));
+					badgeCriteria.getConditions().add(new CourseElementPassedCondition(
+							this.courseNode.getIdent(), courseElement.getShortTitle()
+					));
 					return;
 				}
 				if (!AssessmentConfig.Mode.none.equals(courseElement.getScoreMode())) {
 					badgeCriteria.setAwardAutomatically(true);
-					badgeCriteria.getConditions().add(new CourseElementScoreCondition(this.courseNode.getIdent(),
-							Symbol.greaterThan, 1));
+					badgeCriteria.getConditions().add(new CourseElementScoreCondition(
+							this.courseNode.getIdent(), Symbol.greaterThan, 1, courseElement.getShortTitle()
+					));
 					return;
 				}
 			}

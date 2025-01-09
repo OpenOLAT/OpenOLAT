@@ -230,7 +230,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		BadgeClassImpl badgeA = BadgeTestData.createTestBadgeClass("Badge A", "image.png", course);
 		BadgeCriteria badgeCriteriaA = new BadgeCriteria();
 		badgeCriteriaA.setAwardAutomatically(true);
-		BadgeCondition badgeConditionA = new CourseElementPassedCondition(courseNodeIdentA);
+		BadgeCondition badgeConditionA = new CourseElementPassedCondition(courseNodeIdentA, "Course node A");
 		badgeCriteriaA.getConditions().add(badgeConditionA);
 		badgeA.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteriaA));
 		badgeClassDAO.updateBadgeClass(badgeA);
@@ -244,7 +244,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		BadgeClassImpl badgeB = BadgeTestData.createTestBadgeClass("Badge B", "image.png", course);
 		BadgeCriteria badgeCriteriaB = new BadgeCriteria();
 		badgeCriteriaB.setAwardAutomatically(true);
-		BadgeCondition badgeConditionB1 = new CourseElementPassedCondition(courseNodeIdentB);
+		BadgeCondition badgeConditionB1 = new CourseElementPassedCondition(courseNodeIdentB, "Course node B");
 		BadgeCondition badgeConditionB2 = new OtherBadgeEarnedCondition(badgeA.getUuid());
 		badgeCriteriaB.getConditions().add(badgeConditionB1);
 		badgeCriteriaB.getConditions().add(badgeConditionB2);
@@ -260,7 +260,7 @@ public class OpenBadgesManagerImplTest extends OlatTestCase {
 		BadgeClassImpl badgeC = BadgeTestData.createTestBadgeClass("Badge C", "image.png", course);
 		BadgeCriteria badgeCriteriaC = new BadgeCriteria();
 		badgeCriteriaC.setAwardAutomatically(true);
-		BadgeCondition badgeConditionC = new CourseElementPassedCondition(courseNodeIdentC);
+		BadgeCondition badgeConditionC = new CourseElementPassedCondition(courseNodeIdentC, "Course node C");
 		badgeCriteriaC.getConditions().add(badgeConditionC);
 		badgeC.setCriteria(BadgeCriteriaXStream.toXml(badgeCriteriaC));
 		badgeClassDAO.updateBadgeClass(badgeC);

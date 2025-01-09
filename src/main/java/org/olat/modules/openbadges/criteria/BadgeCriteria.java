@@ -33,6 +33,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2023-06-21<br>
@@ -460,5 +461,16 @@ public class BadgeCriteria {
 			}
 		}
 		return uuids;
+	}
+
+	public void prepareForEntryReset(RepositoryEntry courseEntry) {
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CourseElementPassedCondition courseElementPassedCondition) {
+				courseElementPassedCondition.prepareForEntryReset(courseEntry);
+			}
+			if (badgeCondition instanceof CourseElementScoreCondition courseElementScoreCondition) {
+				courseElementScoreCondition.prepareForEntryReset(courseEntry);
+			}
+		}
 	}
 }
