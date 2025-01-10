@@ -167,7 +167,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 					curriculum, null, config, secCallback, lecturesSecCallback);
 			listenTo(implementationsCtrl);
 			
-			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
+			List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
 			implementationsCtrl.activate(uureq, all, null);
 			return implementationsCtrl.getInitialComponent();
 		});

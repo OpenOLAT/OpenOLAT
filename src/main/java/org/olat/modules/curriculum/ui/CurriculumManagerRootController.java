@@ -185,7 +185,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	
 	private void doOpenImplementationsAllFilter(UserRequest ureq) {
 		// Load "All" filter preset
-		List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
+		List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
 		doOpenImplementations(ureq).activate(ureq, all, null);
 	}
 	

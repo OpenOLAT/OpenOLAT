@@ -31,6 +31,7 @@ import java.util.Objects;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -40,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -354,9 +356,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
+		
 		String tablePrefsId = getTablePrefsId();
 		tableEl.setAndLoadPersistedPreferences(ureq, tablePrefsId);
-		
+
 		if(secCallback.canNewCurriculumElement()) {
 			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkDeleteButton);
@@ -366,12 +369,12 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private String getTablePrefsId() {
 		if(rootElement != null) {
-			return "curriculum-composer-v3";
+			return "curriculum-composer-v4";
 		}
 		if(curriculum != null) {
-			return "cur-implementations-v3";
+			return "cur-implementations-v4";
 		}
-		return "cur-otherlist-v3";
+		return "cur-otherlist-v4";
 	}
 	
 	private void initFilters() {
@@ -594,8 +597,11 @@ public class CurriculumComposerController extends FormBasicController implements
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("CurriculumElement".equalsIgnoreCase(type) || CONTEXT_ELEMENT.equalsIgnoreCase(type)) {
 			if(tableEl.getSelectedFilterTab() == null) {
-				tableEl.setSelectedFilterTab(ureq, statusTabMap.get(ALL_TAB_ID.toLowerCase()));
-				loadModel();
+				if(config.isFlat()) {
+					activateFilterTab(ureq, statusTabMap.get(RELEVANT_TAB_ID.toLowerCase()));
+				} else {
+					activateFilterTab(ureq, statusTabMap.get(ALL_TAB_ID.toLowerCase()));
+				}
 			}
 			activateElement(ureq, entries);
 		} else if("Search".equalsIgnoreCase(type)) {
@@ -603,9 +609,19 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.quickSearch(ureq, elementKey.toString());
 		} else if(statusTabMap != null && statusTabMap.containsKey(type.toLowerCase())) {
 			FlexiFiltersTab statusTab = statusTabMap.get(type.toLowerCase());
-			tableEl.setSelectedFilterTab(ureq, statusTab);
-			loadModel();
+			activateFilterTab(ureq, statusTab);
 		}
+	}
+	
+	private void activateFilterTab(UserRequest ureq, FlexiFiltersTab statusTab) {
+		tableEl.setSelectedFilterTab(ureq, statusTab);
+		if(RELEVANT_TAB_ID.equalsIgnoreCase(statusTab.getId()) && config.isFlat()) {
+			FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
+			sortOptions.setDefaultOrderBy(new SortKey(ElementCols.beginDate.name(), true));
+			sortOptions.setFromColumnModel(true);
+			tableEl.setSortSettings(sortOptions);
+		}
+		loadModel();
 	}
 	
 	private void activateElement(UserRequest ureq, List<ContextEntry> entries) {
