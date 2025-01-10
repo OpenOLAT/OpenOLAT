@@ -263,7 +263,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		Curriculum curriculum = membersContext.getCurriculum();
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, membersContext.getRoleToModify(), false, false, false, false, false);
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, membersContext.getRoleToModify(), false, false, false, true, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), config);
 		

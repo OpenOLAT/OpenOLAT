@@ -476,7 +476,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
 		Identity member = securityManager.loadIdentityByKey(row.getIdentityKey());
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, withEdit, withAcceptDecline, true, false, false);
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, withEdit, withAcceptDecline, true, false, true);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, curriculumElement, elements, member, config);
 		detailsCtrl.setUserObject(row);
