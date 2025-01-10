@@ -291,6 +291,27 @@ public class DispatcherModule {
 	}
 	
 	public static void forwardToAuth(HttpServletRequest request, HttpServletResponse response) {
+		clearRequest();
+		try {
+			RequestDispatcher dispatcher = request.getRequestDispatcher("/auth/");
+			dispatcher.forward(request, response);
+		} catch (ServletException | IOException e) {
+			log.error("Forward failed", e);
+		}
+	}
+	
+	public static void forwardToDefault(HttpServletRequest request, HttpServletResponse response) {
+		clearRequest();
+		try {
+			String defaultPath = getPathDefault();
+			RequestDispatcher dispatcher = request.getRequestDispatcher(defaultPath);
+			dispatcher.forward(request, response);
+		} catch (ServletException | IOException e) {
+			log.error("Forward failed", e);
+		}
+	}
+	
+	public static void clearRequest() {
 		try {
 			WorkThreadInformations.unset();
 			ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
@@ -300,13 +321,6 @@ public class DispatcherModule {
 			DBFactory.getInstance().commitAndCloseSession();
 		} catch (Exception e) {
 			log.error("Clear request before forward", e);
-		}
-		
-		try {
-			RequestDispatcher dispatcher = request.getRequestDispatcher("/auth/");
-			dispatcher.forward(request, response);
-		} catch (ServletException | IOException e) {
-			log.error("Forward failed", e);
 		}
 	}
 

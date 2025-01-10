@@ -161,7 +161,7 @@ public class AssessmentHtmlBuilder {
 		qtiSerializer.serializeJqtiObject(node, new StreamResult(sb), new SaxFiringOptions(), xsltSerializationOptions);
 	}
 	
-	private String cleanUpNamespaces(StringOutput sb) {
+	public static String cleanUpNamespaces(StringOutput sb) {
 		String content = sb.toString();
 		content = content.replace(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"", "");
 		content = content.replace("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"", "");
@@ -171,6 +171,7 @@ public class AssessmentHtmlBuilder {
 		content = content.replace("\n   xsi:schemaLocation=\"http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd\"", "");
 		content = content.replace(" xsi:schemaLocation=\"http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd\"", "");
 		content = content.replace("xsi:schemaLocation=\"http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd\"", "");
+		content = content.replace("  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://www.imsglobal.org/xsd/imsqti_v2p1\" xsi:schemaLocation=\"http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd\"", "");
 		return content.trim();
 	}
 	

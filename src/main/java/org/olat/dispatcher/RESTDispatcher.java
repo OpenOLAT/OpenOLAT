@@ -248,7 +248,7 @@ public class RESTDispatcher implements Dispatcher {
 			} else {
 				String guestAccess = ureq.getParameter(AuthenticatedDispatcher.GUEST);
 				if (guestAccess == null || !loginModule.isGuestLoginLinksEnabled()) {
-					DispatcherModule.redirectToDefaultDispatcher(response);
+					DispatcherModule.forwardToDefault(request, response);
 				} else if (guestAccess.equals(AuthenticatedDispatcher.TRUE)) {
 					// try to log in as anonymous
 					// use the language from the lang parameter if available, otherwise use the system default locale

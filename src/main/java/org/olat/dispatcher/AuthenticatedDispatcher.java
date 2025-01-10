@@ -143,7 +143,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				if(businessPath != null) {
 					usess.putEntryInNonClearedStore(AUTHDISPATCHER_BUSINESSPATH, businessPath);
 				}
-				redirectToDefaultDispatcher(request, response);
+				DispatcherModule.forwardToDefault(request, response);
 				return;
 			} else if (guestAccess.equals(TRUE)) {
 				// try to log in as anonymous
@@ -319,7 +319,8 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				return false;
 			}
 		} else {
-			return DispatcherModule.redirectToDefaultDispatcher(response);
+			DispatcherModule.forwardToDefault(request, response);
+			return true;
 		}
 	}
 	

@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -117,6 +118,13 @@ public class BadgeAssertionPublicController extends FormBasicController {
 		Profile issuer = new Profile(new JSONObject(badgeClass.getIssuer()));
 		flc.contextPut("issuer", issuer.getNameWithScan());
 		flc.contextPut("issuerUrl", issuer.getUrl());
+		if (StringHelper.containsNonWhitespace(issuer.getUrl())) {
+			if (badgeAssertion.getBadgeClass().getEntry() == null) {
+				if (issuer.getUrl().contains(Settings.getServerContextPathURI() + "/url/RepositoryEntry/")) {
+					flc.contextRemove("issuerUrl");
+				}
+			}
+		}
 
 		String issueDate = Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
 		flc.contextPut("issueDate", issueDate);
