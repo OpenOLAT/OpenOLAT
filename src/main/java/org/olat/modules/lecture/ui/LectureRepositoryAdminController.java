@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -75,6 +77,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 	private final boolean isAdministrativeUser;
 	private final boolean authorizedAbsenceEnabled;
 	private final LecturesSecurityCallback secCallback;
+	private final List<ContextEntry> allFilterPath = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -108,7 +111,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 		if(lectureModule.isAbsenceAppealEnabled()) {
 			segmentView.addSegment(appealsLink, false);
 		}
-		doOpenLectures(ureq);
+		doOpenLectures(ureq, allFilterPath);
 
 		putInitialPanel(mainVC);
 	}
@@ -130,7 +133,11 @@ public class LectureRepositoryAdminController extends BasicController implements
 		
 		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("LectureBlocks".equalsIgnoreCase(name)) {
-			doOpenLectures(ureq);
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			if(subEntries.isEmpty()) {
+				subEntries = new ArrayList<>(allFilterPath);
+			}
+			doOpenLectures(ureq, subEntries);
 			segmentView.select(lecturesLink);
 		} else if("Participants".equalsIgnoreCase(name)) {
 			doOpenParticipants(ureq);
@@ -146,12 +153,11 @@ public class LectureRepositoryAdminController extends BasicController implements
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == lecturesLink) {
-					doOpenLectures(ureq);
+					doOpenLectures(ureq, (lecturesCtrl == null ? allFilterPath : null));
 				} else if(clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				} else if(clickedLink == appealsLink) {
@@ -165,14 +171,16 @@ public class LectureRepositoryAdminController extends BasicController implements
 		}
 	}
 
-	private void doOpenLectures(UserRequest ureq) {
+	private void doOpenLectures(UserRequest ureq, List<ContextEntry> entries) {
 		if(lecturesCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("LectureBlocks");
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			lecturesCtrl = new LectureListRepositoryController(ureq, swControl, entry, secCallback);
 			listenTo(lecturesCtrl);
+			lecturesCtrl.activate(ureq, entries, null);
 		} else {
 			addToHistory(ureq, lecturesCtrl);
+			lecturesCtrl.activate(ureq, entries, null);
 		}
 		mainVC.put("segmentCmp", lecturesCtrl.getInitialComponent());
 	}

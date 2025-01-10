@@ -127,6 +127,8 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * Show the list of lecture blocks / events for a given context. The data are only
+ * loaded by the activate method and not on creation of the controller.
  * 
  * Initial date: 17 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -136,7 +138,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 
 	private static final String ALL_TAB_ID = "All";
 	private static final String PAST_TAB_ID = "Past";
-	private static final String RELEVANT_TAB_ID = "Current";
+	private static final String RELEVANT_TAB_ID = "Relevant";
 	private static final String TODAY_TAB_ID = "Today";
 	private static final String UPCOMING_TAB_ID = "Upcoming";
 	private static final String CLOSED_TAB_ID = "Closed";
@@ -212,8 +214,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
-		loadModel(ureq);
-		updateTeachersFilters();
 	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, LecturesSecurityCallback secCallback) {
@@ -227,8 +227,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
-		loadModel(ureq);
-		updateTeachersFilters();
 	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement, LecturesSecurityCallback secCallback) {
@@ -242,7 +240,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
-		loadModel(ureq);
 	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, Curriculum curriculum, LecturesSecurityCallback secCallback) {
@@ -256,7 +253,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
-		loadModel(ureq);
 	}
 
 	@Override
@@ -366,7 +362,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		
 		initFilters();
 		initFiltersPresets();
-		tableEl.setSelectedFilterTab(ureq, allTab);
 	}
 	
 	private void initFilters() {
@@ -385,7 +380,6 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			curriculumFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),
 					FILTER_CURRICULUM, curriculumValues, true);
 			filters.add(curriculumFilter);
-			
 		}
 		
 		SelectionValues rollCallStatusValues = new SelectionValues();
@@ -527,6 +521,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		if(deleteLecturesButton != null) {
 			deleteLecturesButton.setVisible(!rows.isEmpty());
 		}
+		
+		updateTeachersFilters();
 	}
 	
 	private void updateTeachersFilters() {
@@ -638,21 +634,35 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName().toLowerCase();
-		if("lecture".equals(type) || "lectureblock".equals(type)) {
-			activateLecture(ureq, entries.get(0).getOLATResourceable().getResourceableId());
-		} else if(tabsMap.containsKey(type)) {
-			tableEl.setSelectedFilterTab(ureq, tabsMap.get(type));
-			loadModel(ureq);
-			if(entries.size() > 1) {
-				String subType = entries.get(1).getOLATResourceable().getResourceableTypeName().toLowerCase();
-				if("lecture".equals(subType) || "lectureblock".equals(subType)) {
-					activateLecture(ureq, entries.get(1).getOLATResourceable().getResourceableId());
+		if(entries == null || entries.isEmpty()) {
+			activateFilterTab(ureq, allTab);
+		} else {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName().toLowerCase();
+			if("lecture".equals(type) || "lectureblock".equals(type)) {
+				activateFilterTab(ureq, allTab);
+				activateLecture(ureq, entries.get(0).getOLATResourceable().getResourceableId());
+			} else if(tabsMap.containsKey(type.toLowerCase())) {
+				activateFilterTab(ureq, tabsMap.get(type.toLowerCase()));
+				if(entries.size() > 1) {
+					String subType = entries.get(1).getOLATResourceable().getResourceableTypeName().toLowerCase();
+					if("lecture".equals(subType) || "lectureblock".equals(subType)) {
+						activateLecture(ureq, entries.get(1).getOLATResourceable().getResourceableId());
+					}
 				}
 			}
 		}
+	}
+	
+	private void activateFilterTab(UserRequest ureq, FlexiFiltersTab filterTab) {
+		tableEl.setSelectedFilterTab(ureq, filterTab);
+		if(filterTab == relevantTab) {
+			FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
+			sortOptions.setDefaultOrderBy(new SortKey(BlockCols.startTime.name(), true));
+			sortOptions.setFromColumnModel(true);
+			tableEl.setSortSettings(sortOptions);
+		}
+		loadModel(ureq);
+		updateTeachersFilters();
 	}
 	
 	private void activateLecture(UserRequest ureq, Long resourceId) {
@@ -842,10 +852,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 	}
 	
-	private void doAddLectureBlockSimplified(UserRequest ureq, RepositoryEntry entry) {
+	private void doAddLectureBlockSimplified(UserRequest ureq, RepositoryEntry repositoryEntry) {
 		removeAsListenerAndDispose(addLectureCtrl);
 		
-		addLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, null, false);
+		addLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), repositoryEntry, null, false);
 		listenTo(addLectureCtrl);
 
 		String title = translate("add.lecture");

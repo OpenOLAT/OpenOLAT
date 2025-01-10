@@ -66,7 +66,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private CurriculumComposerController implementationsCtrl;
 	private CurriculumListManagerController curriculumListCtrl;
 	private final CurriculumSearchHeaderController searchFieldCtrl;
-	private LectureBlocksWidgetController lectureBlocksWidgetCtrl; 
+	private LectureBlocksWidgetController lectureBlocksWidgetCtrl;
 
 	@Autowired
 	private LectureModule lectureModule;
@@ -132,6 +132,9 @@ public class CurriculumManagerRootController extends BasicController implements 
 			}
 		} else if("Lectures".equalsIgnoreCase(type) || "Events".equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			if(subEntries.isEmpty()) {
+				subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
+			}
 			doOpenLecturesBlocks(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
 	}
@@ -156,7 +159,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 		} else if (source == implementationsLink){
 			doOpenImplementationsAllFilter(ureq);
 		} else if (source == lecturesBlocksLink) {
-			doOpenLecturesBlocks(ureq);
+			List<ContextEntry> relevant = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
+			doOpenLecturesBlocks(ureq).activate(ureq, relevant, null);
 		}
 	}
 	
@@ -185,8 +189,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 	
 	private void doOpenImplementationsAllFilter(UserRequest ureq) {
 		// Load "All" filter preset
-		List<ContextEntry> all = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
-		doOpenImplementations(ureq).activate(ureq, all, null);
+		List<ContextEntry> relevant = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
+		doOpenImplementations(ureq).activate(ureq, relevant, null);
 	}
 	
 	private CurriculumComposerController doOpenImplementations(UserRequest ureq) {

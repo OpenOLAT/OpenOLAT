@@ -402,6 +402,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
 				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, curriculumElement, lecturesSecCallback);
 				listenTo(lectureBlocksCtrl);
+				
+				List<ContextEntry> relevantFilter = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
+				lectureBlocksCtrl.activate(uureq, relevantFilter, null);
 				return lectureBlocksCtrl.getInitialComponent();
 			});
 		}

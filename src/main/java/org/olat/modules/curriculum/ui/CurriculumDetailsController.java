@@ -179,6 +179,9 @@ public class CurriculumDetailsController extends BasicController implements Acti
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
 				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, curriculum, lecturesSecCallback);
 				listenTo(lectureBlocksCtrl);
+
+				List<ContextEntry> relevantFilter = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
+				lectureBlocksCtrl.activate(uureq, relevantFilter, null);
 				return lectureBlocksCtrl.getInitialComponent();
 			});
 		}
