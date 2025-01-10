@@ -22,15 +22,21 @@ package org.olat.modules.curriculum.ui.member;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.modules.curriculum.ui.CurriculumManagerRootController;
 import org.olat.user.UserInfoController;
 import org.olat.user.UserInfoProfile;
 import org.olat.user.UserInfoProfileConfig;
@@ -54,11 +60,16 @@ public class MemberUserDetailsController extends UserInfoController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 
 	public MemberUserDetailsController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			Identity member, UserInfoProfileConfig profileConfig, UserInfoProfile profile) {
 		super(ureq, wControl, mainForm, profileConfig, profile);
-		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(CurriculumManagerRootController.class, getLocale(),
+				userManager.getPropertyHandlerTranslator(getTranslator())));
 		this.member = member;
 		initForm(ureq);
 	}
@@ -66,6 +77,14 @@ public class MemberUserDetailsController extends UserInfoController {
 	@Override
 	protected void initFormItems(FormLayoutContainer itemsCont, Controller listener, UserRequest ureq) {
 		super.initFormItems(itemsCont, listener, ureq);
+		if(organisationModule.isEnabled()) {
+			List<Organisation> userOrganisations = organisationService.getOrganisations(member, OrganisationRoles.user);
+			List<String> userOrganisationsNamesList = userOrganisations
+					.stream().map(org -> StringHelper.escapeHtml(org.getDisplayName()))
+					.toList();
+			String userOrganisationsNames = String.join(", ", userOrganisationsNamesList);
+			uifactory.addStaticTextElement("member.home.base", "member.home.base", userOrganisationsNames, itemsCont);
+		}
 
 		User user = member.getUser();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());

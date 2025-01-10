@@ -283,7 +283,7 @@ public class LectureListDetailsController extends FormBasicController {
 		}
 		
 		String compulsory  = row.getLectureBlock().isCompulsory() ? translate("yes") : translate("no");
-		uifactory.addStaticTextElement("lecture.compulsory", "lecture.preparation", compulsory, formLayout);
+		uifactory.addStaticTextElement("lecture.compulsory", "lecture.compulsory", compulsory, formLayout);
 	}
 	
 	private void loadGroupsModel() {
