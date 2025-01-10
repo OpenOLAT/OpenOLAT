@@ -108,7 +108,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],figure[*],figcaption,img[*],iframe[*],map[*],area[*]";
 	private static final String MATHML_VALID_ELEMENTS = "math[*],mi[*],mn[*],mo[*],mtext[*],mspace[*],ms[*],mrow[*],mfrac[*],msqrt[*],mroot[*],merror[*],mpadded[*],mphantom[*],mfenced[*],mstyle[*],menclose[*],msub[*],msup[*],msubsup[*],munder[*],mover[*],munderover[*],mmultiscripts[*],mtable[*],mtr[*],mtd[*],maction[*]";
 	
-	private static final String SHORT_ENDED_ELEMENTS = "area base basefont br col frame hr img input isindex link"
+	private static final String VOID_ELEMENTS = "area base basefont br col frame hr img input isindex link"
 			+ " meta param embed source wbr track" // Copy from TinyMCE code
 			+ " textentryinteraction"; // Our own short ended tag
 	
@@ -949,8 +949,8 @@ public class RichTextConfiguration implements Disposable {
 	public void enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext, boolean inlineChoice) {
 		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext, inlineChoice);
 		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext,~inlinechoiceinteraction,~inlinechoice");
-		//TINYMCE6 void_elements
-		setQuotedConfigValue("void_elements", SHORT_ENDED_ELEMENTS);
+		setQuotedConfigValue("void_elements", VOID_ELEMENTS);
+		//setQuotedConfigValue("self_closing_elements", "colgroup dd dt li option p td tfoot th thead tr textentryinteraction");
 		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, "textentryinteraction[*],hottext[*],inlinechoiceinteraction[*],inlinechoice[*]");
 	}
 
