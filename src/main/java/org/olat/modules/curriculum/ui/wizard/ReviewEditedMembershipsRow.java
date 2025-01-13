@@ -29,7 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
-import org.olat.modules.curriculum.ui.member.ModificationStatus;
+import org.olat.modules.curriculum.ui.member.ModificationStatusSummary;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -43,7 +43,7 @@ public class ReviewEditedMembershipsRow extends UserPropertiesRow {
 	
 	private final Identity identity;
 	private List<MembershipModification> modifications;
-	private ModificationStatus summaryModificationStatus;
+	private ModificationStatusSummary modificationSummary;
 	private Map<RoleByElement,GroupMembershipStatus> statusByRoles = new HashMap<>();
 	
 	private MemberDetailsController detailsCtrl;
@@ -57,12 +57,12 @@ public class ReviewEditedMembershipsRow extends UserPropertiesRow {
 		return identity;
 	}
 	
-	public ModificationStatus getSummaryModificationStatus() {
-		return summaryModificationStatus;
+	public ModificationStatusSummary getModificationSummary() {
+		return modificationSummary;
 	}
 
-	public void setSummaryModificationStatus(ModificationStatus summaryModificationStatus) {
-		this.summaryModificationStatus = summaryModificationStatus;
+	public void setModificationSummary(ModificationStatusSummary modificationSummary) {
+		this.modificationSummary = modificationSummary;
 	}
 
 	public int getNumOfModifications(CurriculumRoles role) {
@@ -79,6 +79,18 @@ public class ReviewEditedMembershipsRow extends UserPropertiesRow {
 	
 	public List<MembershipModification> getModifications() {
 		return modifications;
+	}
+	
+	public GroupMembershipStatus getModification(Long curriculumElementKey, CurriculumRoles role) {
+		if(modifications != null) {
+			for(MembershipModification modification:modifications) {
+				if(curriculumElementKey.equals(modification.curriculumElement().getKey())
+						&& role.equals(modification.role())) {
+					return modification.nextStatus();
+				}
+			}
+		}
+		return null;
 	}
 
 	public void setModifications(List<MembershipModification> modifications) {

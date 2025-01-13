@@ -70,7 +70,7 @@ implements SortableFlexiTableDataModel<ReviewEditedMembershipsRow> {
 	public Object getValueAt(ReviewEditedMembershipsRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			return switch(COLS[col]) {
-				case modifications -> row.getSummaryModificationStatus();
+				case modifications -> row.getModificationSummary();
 				default -> "ERROR";
 			};
 		}

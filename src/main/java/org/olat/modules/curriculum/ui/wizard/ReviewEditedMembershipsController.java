@@ -64,7 +64,7 @@ import org.olat.modules.curriculum.ui.member.MemberDetailsConfig;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.member.ModificationCellRenderer;
-import org.olat.modules.curriculum.ui.member.ModificationStatus;
+import org.olat.modules.curriculum.ui.member.ModificationStatusSummary;
 import org.olat.modules.curriculum.ui.member.ResourceToRoleKey;
 import org.olat.modules.curriculum.ui.wizard.ReviewEditedMembershipsTableModel.ReviewEditedMembershipsCols;
 import org.olat.resource.OLATResource;
@@ -202,8 +202,6 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		List<MembershipModification> modifications = membersContext.getModifications();
 		for(ReviewEditedMembershipsRow row:rows) {
 			row.setModifications(modifications);
-			ModificationStatus summaryStatus = evaluateSummaryModificationStatus(modifications);
-			row.setSummaryModificationStatus(summaryStatus);
 		}
 		
 		// History
@@ -212,6 +210,11 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		loadStatusFromReservations(identityKeyToRows);
 		// Memberships
 		loadStatusFromMemberships(identities, identityKeyToRows);
+		
+		for(ReviewEditedMembershipsRow row:rows) {
+			ModificationStatusSummary summaryStatus = evaluateModificationSummary(row);
+			row.setModificationSummary(summaryStatus);
+		}
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -271,31 +274,51 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		}
 	}
 	
-	private ModificationStatus evaluateSummaryModificationStatus(List<MembershipModification> modifications) {
-		MembershipModification modification = null;
-		MembershipModification removal = null;
-		MembershipModification addition = null;
-		
-		for(MembershipModification m:modifications) {
-			GroupMembershipStatus status = m.nextStatus();
-			if(status == GroupMembershipStatus.removed || status == GroupMembershipStatus.resourceDeleted
-					|| status == GroupMembershipStatus.cancel || status == GroupMembershipStatus.cancelWithFee
-					|| status == GroupMembershipStatus.declined) {
-				removal = m;
-			} else if(status == GroupMembershipStatus.booking || status == GroupMembershipStatus.reservation) {
-				modification = m;
-			} else if(status == GroupMembershipStatus.active) {
-				addition = m;
+	private ModificationStatusSummary evaluateModificationSummary(ReviewEditedMembershipsRow row) {
+		boolean modification = false;
+		boolean removal = false;
+		boolean addition = false;
+
+		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
+		for(CurriculumElement curriculumElement:curriculumElements) {
+			int hasElementAccessBefore = 0;
+			int gainAccessAfter = 0;
+			int looseAccessAfter = 0;
+			
+			for(CurriculumRoles role:rolesToReview) {
+				GroupMembershipStatus currentStatus = row.getStatusBy(curriculumElement.getKey(), role);
+				if(currentStatus == GroupMembershipStatus.active || currentStatus == GroupMembershipStatus.reservation) {
+					++hasElementAccessBefore;
+				}
+			}
+
+			for(CurriculumRoles role:rolesToReview) {
+				GroupMembershipStatus currentStatus = row.getStatusBy(curriculumElement.getKey(), role);
+				GroupMembershipStatus modificationStatus = row.getModification(curriculumElement.getKey(), role);
+				if(currentStatus == GroupMembershipStatus.active || currentStatus == GroupMembershipStatus.reservation) {
+					if(modificationStatus != null && (modificationStatus == GroupMembershipStatus.removed
+							|| modificationStatus == GroupMembershipStatus.cancel
+							||  modificationStatus == GroupMembershipStatus.cancelWithFee)) {
+						looseAccessAfter++;
+					}
+				} else {
+					if(modificationStatus != null && (modificationStatus == GroupMembershipStatus.active
+							|| modificationStatus == GroupMembershipStatus.reservation)) {
+						gainAccessAfter++;
+					}
+				}
+			}
+			
+			if(hasElementAccessBefore == 0 && gainAccessAfter > 0) {
+				addition |= true;
+			} else if(hasElementAccessBefore == looseAccessAfter && gainAccessAfter == 0) {
+				removal |= true;
+			} else if(hasElementAccessBefore > 0 && (gainAccessAfter > 0 || looseAccessAfter > 0)) {
+				modification |= true;
 			}
 		}
-		
-		if(removal != null) {
-			return ModificationStatus.REMOVE;
-		}
-		if(addition != null) {
-			return ModificationStatus.ADD;
-		}
-		return modification == null ? null : ModificationStatus.MODIFICATION;
+
+		return new ModificationStatusSummary(modification, addition, removal);
 	}
 	
 	@Override
