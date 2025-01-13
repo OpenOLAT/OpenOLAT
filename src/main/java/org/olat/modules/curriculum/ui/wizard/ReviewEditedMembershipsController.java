@@ -376,6 +376,7 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		listenTo(detailsCtrl);
 		
 		detailsCtrl.setModifications(membersContext.getModifications());
+		detailsCtrl.setVisibleRoles(rolesToReview);
 		
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

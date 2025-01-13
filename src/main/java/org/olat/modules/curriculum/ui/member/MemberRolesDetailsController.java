@@ -124,7 +124,21 @@ public class MemberRolesDetailsController extends FormBasicController {
 				usedRoles.put(role, Boolean.TRUE);
 			}
 		}
+		
+		for(MemberRolesDetailsRow row:rows) {
+			ModificationStatusSummary modificationSummary = evaluateModificationSummary(row);
+			row.setModificationSummary(modificationSummary);
+		}
 
+		updateRolesColumnsVisibility(usedRoles);
+		tableEl.reset(false, false, true);
+	}
+	
+	public void setVisibleRoles(List<CurriculumRoles> roles) {
+		EnumMap<CurriculumRoles,Boolean> usedRoles = new EnumMap<>(CurriculumRoles.class);
+		for(CurriculumRoles role:roles) {
+			usedRoles.put(role, Boolean.TRUE);
+		}
 		updateRolesColumnsVisibility(usedRoles);
 		tableEl.reset(false, false, true);
 	}
@@ -177,7 +191,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 		}
 
 		String footerHeader = translate("table.footer.roles");
-		tableModel = new MemberRolesDetailsTableModel(columnsModel, footerHeader);
+		tableModel = new MemberRolesDetailsTableModel(columnsModel, config.withActivityColumns(), footerHeader);
 		tableEl = uifactory.addTableElement(getWindowControl(), "rolesTable", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setCustomizeColumns(true);
@@ -225,6 +239,9 @@ public class MemberRolesDetailsController extends FormBasicController {
 			if(row.getParentKey() != null) {
 				row.setParent(rowsMap.get(row.getParentKey()));
 			}
+			
+			ModificationStatusSummary modificationSummary = evaluateModificationSummary(row);
+			row.setModificationSummary(modificationSummary);
 		}
 		
 		// Update columns visibility
@@ -271,7 +288,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 		List<CurriculumRoles> membershipRoles = membership == null ? List.of() : membership.getRoles();
 		OLATResource resource = row.getCurriculumElement().getResource();
 		
-		for(CurriculumRoles role:CurriculumRoles.values()) {
+		for(CurriculumRoles role:CurriculumRoles.curriculumElementsRoles()) {
 			ResourceReservation reservation = reservationsMap.get(new ResourceToRoleKey(role, resource));
 			
 			if(membershipRoles.contains(role)) {
@@ -303,6 +320,48 @@ public class MemberRolesDetailsController extends FormBasicController {
 		
 		Collections.sort(roleHistory, new GroupMembershipHistoryComparator());
 		return roleHistory.get(0);
+	}
+	
+	private ModificationStatusSummary evaluateModificationSummary(MemberRolesDetailsRow row) {
+		int hasElementAccessBefore = 0;
+		int gainAccessAfter = 0;
+		int looseAccessAfter = 0;
+		
+		for(CurriculumRoles role:CurriculumRoles.curriculumElementsRoles()) {
+			GroupMembershipStatus currentStatus = row.getStatus(role);
+			if(currentStatus == GroupMembershipStatus.active || currentStatus == GroupMembershipStatus.reservation) {
+				++hasElementAccessBefore;
+			}
+		}
+
+		for(CurriculumRoles role:CurriculumRoles.curriculumElementsRoles()) {
+			GroupMembershipStatus currentStatus = row.getStatus(role);
+			GroupMembershipStatus modificationStatus = row.getModificationStatus(role);
+			if(currentStatus == GroupMembershipStatus.active || currentStatus == GroupMembershipStatus.reservation) {
+				if(modificationStatus != null && (modificationStatus == GroupMembershipStatus.removed
+						|| modificationStatus == GroupMembershipStatus.cancel
+						||  modificationStatus == GroupMembershipStatus.cancelWithFee)) {
+					looseAccessAfter++;
+				}
+			} else {
+				if(modificationStatus != null && (modificationStatus == GroupMembershipStatus.active
+						|| modificationStatus == GroupMembershipStatus.reservation)) {
+					gainAccessAfter++;
+				}
+			}
+		}
+		
+		boolean modification = false;
+		boolean removal = false;
+		boolean addition = false;
+		if(hasElementAccessBefore == 0 && gainAccessAfter > 0) {
+			addition |= true;
+		} else if(hasElementAccessBefore > 0 && hasElementAccessBefore == looseAccessAfter && gainAccessAfter == 0) {
+			removal |= true;
+		} else if(hasElementAccessBefore > 0 && (gainAccessAfter > 0 || looseAccessAfter > 0)) {
+			modification |= true;
+		}
+		return new ModificationStatusSummary(modification, addition, removal);
 	}
 
 	@Override

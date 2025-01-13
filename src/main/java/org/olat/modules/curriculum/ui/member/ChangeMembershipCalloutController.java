@@ -142,15 +142,15 @@ public class ChangeMembershipCalloutController extends FormBasicController {
 	private void updateUI() {
 		GroupMembershipStatus selectedStatus = getNextStatus();
 		boolean proposeConfirmation = selectedStatus == GroupMembershipStatus.reservation;
-		confirmationTypeEl.setVisible(proposeConfirmation);
+		confirmationTypeEl.setVisible(proposeConfirmation && confirmationPossible);
 		if(!confirmationTypeEl.isOneSelected()) {
 			confirmationTypeEl.select(ConfirmationMembershipEnum.WITHOUT.name(), true);
 		}
 		boolean withConfirmation = confirmationPossible
 				&& confirmationTypeEl.isVisible() && confirmationTypeEl.isOneSelected()
 				&& ConfirmationMembershipEnum.WITH.name().equals(confirmationTypeEl.getSelectedKey());
-		confirmationByEl.setVisible(withConfirmation);
-		confirmUntilEl.setVisible(withConfirmation);
+		confirmationByEl.setVisible(withConfirmation && confirmationPossible);
+		confirmUntilEl.setVisible(withConfirmation && confirmationPossible);
 	}
 	
 	public CurriculumRoles getRole() {

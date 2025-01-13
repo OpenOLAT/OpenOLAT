@@ -43,10 +43,12 @@ implements FlexiTableFooterModel {
 	private static final CurriculumRoles[] ROLES = CurriculumRoles.values();
 	
 	private final String footerHeader;
+	private final boolean showModifications;
 	
-	public MemberRolesDetailsTableModel(FlexiTableColumnModel columnModel, String footerHeader) {
+	public MemberRolesDetailsTableModel(FlexiTableColumnModel columnModel, boolean showModifications, String footerHeader) {
 		super(columnModel);
 		this.footerHeader = footerHeader;
+		this.showModifications = showModifications;
 	}
 	
 	@Override
@@ -71,7 +73,7 @@ implements FlexiTableFooterModel {
 			CurriculumElement element = detailsRow.getCurriculumElement();
 			return switch(COLS[col]) {
 				case key -> element.getKey();
-				case modifications -> detailsRow.hasModifications();
+				case modifications -> detailsRow.getModificationSummary();
 				case displayName -> element.getDisplayName();
 				case externalRef -> element.getIdentifier();
 				case externalId -> element.getExternalId();
@@ -82,7 +84,7 @@ implements FlexiTableFooterModel {
 		int roleCol = col - MemberRolesDetailsController.ROLES_OFFSET;
 		if(roleCol >= 0 && roleCol < ROLES.length) {
 			CurriculumRoles role = ROLES[roleCol];
-			return getStatus(role, detailsRow);	
+			return showModifications ? getModifications(role, detailsRow) : getStatus(role, detailsRow);	
 		}
 		
 		int byCol = col - MemberRolesDetailsController.CONFIRMATION_BY_OFFSET;
@@ -104,6 +106,18 @@ implements FlexiTableFooterModel {
 		GroupMembershipStatus status = detailsRow.getModificationStatus(role);
 		if(status == null) {
 			status = detailsRow.getStatus(role);
+		}
+		return status;
+	}
+	
+	private GroupMembershipStatus getModifications(CurriculumRoles role, MemberRolesDetailsRow detailsRow) {
+		GroupMembershipStatus modifiedStatus = detailsRow.getModificationStatus(role);
+		GroupMembershipStatus currentStatus = detailsRow.getStatus(role);
+		GroupMembershipStatus status = null;
+		if(modifiedStatus == null) {
+			status = detailsRow.getStatus(role);
+		} else if(GroupMembershipStatus.allowedAsNextStep(currentStatus, modifiedStatus)) {
+			status = modifiedStatus;
 		}
 		return status;
 	}

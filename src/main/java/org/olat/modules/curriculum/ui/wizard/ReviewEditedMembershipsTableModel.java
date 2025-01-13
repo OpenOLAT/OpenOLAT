@@ -95,10 +95,12 @@ implements SortableFlexiTableDataModel<ReviewEditedMembershipsRow> {
 		int applicableModification = 0; 
 		List<MembershipModification> modifications = row.getModifications();
 		for(MembershipModification modification:modifications) {
-			GroupMembershipStatus currentStatus = row.getStatusBy(modification.curriculumElement().getKey(), modification.role());
-			GroupMembershipStatus nextStatus = modification.nextStatus();
-			if(GroupMembershipStatus.allowedAsNextStep(currentStatus, nextStatus)) {
-				applicableModification++;
+			if(modification.role() == role) {
+				GroupMembershipStatus currentStatus = row.getStatusBy(modification.curriculumElement().getKey(), modification.role());
+				GroupMembershipStatus nextStatus = modification.nextStatus();
+				if(GroupMembershipStatus.allowedAsNextStep(currentStatus, nextStatus)) {
+					applicableModification++;
+				}
 			}
 		}
 		boolean warning = applicableModification != found;

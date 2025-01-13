@@ -36,6 +36,8 @@ import org.olat.modules.curriculum.CurriculumRoles;
  */
 public class MemberRolesDetailsRow extends AbstractCurriculumElementRow {
 	
+	private ModificationStatusSummary modificationSummary;
+	
 	private final List<CurriculumRoles> roles;
 	private final EnumMap<CurriculumRoles,RoleDetails> details = new EnumMap<>(CurriculumRoles.class);
 	
@@ -108,6 +110,14 @@ public class MemberRolesDetailsRow extends AbstractCurriculumElementRow {
 		return details.computeIfAbsent(role, r -> new RoleDetails());
 	}
 	
+	public ModificationStatusSummary getModificationSummary() {
+		return modificationSummary;
+	}
+
+	public void setModificationSummary(ModificationStatusSummary modificationSummary) {
+		this.modificationSummary = modificationSummary;
+	}
+
 	@Override
 	public MemberRolesDetailsRow getParent() {
 		return parent;
