@@ -280,6 +280,18 @@ public class MemberRolesDetailsController extends FormBasicController {
 			if(col instanceof DefaultFlexiColumnModel) {
 				tableEl.setColumnModelVisible(col, usedRoles.containsKey(role));
 			}
+			
+			if(role == CurriculumRoles.participant) {
+				FlexiColumnModel confirmationCol = columnsModel.getColumnModelByIndex(role.ordinal() + CONFIRMATION_BY_OFFSET);
+				if(confirmationCol instanceof DefaultFlexiColumnModel) {
+					tableEl.setColumnModelVisible(confirmationCol, usedRoles.containsKey(role));
+				}
+				
+				FlexiColumnModel confirmationUntilCol = columnsModel.getColumnModelByIndex(role.ordinal() + CONFIRMATION_UNTIL_OFFSET);
+				if(confirmationUntilCol instanceof DefaultFlexiColumnModel) {
+					tableEl.setColumnModelVisible(confirmationUntilCol, usedRoles.containsKey(role));
+				}
+			}
 		}
 	}
 	
@@ -289,7 +301,8 @@ public class MemberRolesDetailsController extends FormBasicController {
 		OLATResource resource = row.getCurriculumElement().getResource();
 		
 		for(CurriculumRoles role:CurriculumRoles.curriculumElementsRoles()) {
-			ResourceReservation reservation = reservationsMap.get(new ResourceToRoleKey(role, resource));
+			ResourceReservation reservation = resource == null
+					? null : reservationsMap.get(new ResourceToRoleKey(role, resource));
 			
 			if(membershipRoles.contains(role)) {
 				row.addStatus(role, GroupMembershipStatus.active);

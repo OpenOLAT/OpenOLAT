@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.wizard;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupMembershipStatus;
@@ -67,6 +68,7 @@ public abstract class AbstractMemberCallback implements StepRunnerCallback {
 		// Reservations
 		List<OLATResource> elementsResources = curriculumElements.stream()
 				.map(CurriculumElement::getResource)
+				.filter(Objects::nonNull)
 				.toList();
 		SearchReservationParameters searchParams = new SearchReservationParameters(elementsResources);
 		List<ResourceReservation> reservations = acService.getReservations(searchParams);

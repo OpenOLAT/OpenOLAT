@@ -101,10 +101,14 @@ public class MembersContext {
 	
 	public List<OLATResource> getAllCurriculumElementResources() {
 		List<OLATResource> resources = new ArrayList<>();
-		resources.add(curriculumElement.getResource());
+		if(curriculumElement.getResource() != null) {	
+			resources.add(curriculumElement.getResource());
+		}
 		if(descendants != null && !descendants.isEmpty()) {
 			for(CurriculumElement descendant:descendants) {
-				resources.add(descendant.getResource());
+				if(descendant.getResource() != null) {
+					resources.add(descendant.getResource());
+				}
 			}
 		}
 		return resources;

@@ -31,4 +31,9 @@
 		<div class="o_hint">$off_desc</div>
 	#end
 	$r.render("table")
+	#if($r.available("tools.select.entry"))
+	<div class="o_button_group">
+		$r.render("tools.select.entry")
+	</div>
+	#end
 </div>

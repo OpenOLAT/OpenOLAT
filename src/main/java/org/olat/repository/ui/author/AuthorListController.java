@@ -889,9 +889,13 @@ public class AuthorListController extends FormBasicController implements Activat
 			tableEl.addBatchButton(deletePermanentlyButton);
 		}
 		
-		if(configuration.isSelectRepositoryEntries() && configuration.isBatchSelect()) {
-			selectButton = uifactory.addFormLink("tools.select.entries", formLayout, Link.BUTTON);
-			tableEl.addBatchButton(selectButton);
+		if(configuration.isBatchSelect()) {
+			if(configuration.getSelectRepositoryEntries() == SelectionMode.multi) {
+				selectButton = uifactory.addFormLink("tools.select.entries", formLayout, Link.BUTTON);
+				tableEl.addBatchButton(selectButton);
+			} else if(configuration.getSelectRepositoryEntries() == SelectionMode.single) {
+				selectButton = uifactory.addFormLink("tools.select.entry", "tools.select.entry", null, formLayout, Link.BUTTON);
+			}
 		}
 	}
 	
@@ -928,6 +932,10 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	public FlexiFiltersTab getMyTab() {
 		return myTab;
+	}
+	
+	public FlexiFiltersTab getMyCoursesTab() {
+		return myCoursesTab;
 	}
 
 	@Override
@@ -1269,7 +1277,14 @@ public class AuthorListController extends FormBasicController implements Activat
 		} else if (importUrlLink == source) {
 			doImportUrl(ureq);
 		} else if (selectButton == source) {
-			fireEvent(ureq, new AuthoringEntryRowsListSelectionEvent(getMultiSelectedRows()));
+			List<AuthoringEntryRow> selectedRows = getMultiSelectedRows();
+			if(configuration != null && configuration.getSelectRepositoryEntries() == SelectionMode.single) {
+				if(selectedRows.size() == 1) {
+					fireEvent(ureq, new AuthoringEntryRowSelectionEvent(selectedRows.get(0)));
+				}
+			} else {
+				fireEvent(ureq, new AuthoringEntryRowsListSelectionEvent(selectedRows));
+			}
 		} else if(courseArchiveButton == source) {
 			fireEvent(ureq, new AuthoringEvent(AuthoringEvent.COURSE_ARCHIVE_LIST));
 		} else if (source instanceof FormLink link) {

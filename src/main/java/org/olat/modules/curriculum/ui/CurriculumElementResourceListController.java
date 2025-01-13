@@ -20,12 +20,10 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -50,7 +49,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
-import org.olat.course.CourseModule;
 import org.olat.login.LoginModule;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -59,14 +57,17 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.ReferencableEntriesSearchController;
-import org.olat.repository.controllers.RepositorySearchController.Can;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.RepositoryEntryACColumnDescriptor;
 import org.olat.repository.ui.RepositoryFlexiTableModel;
 import org.olat.repository.ui.RepositoryFlexiTableModel.RepoCols;
 import org.olat.repository.ui.author.AccessRenderer;
+import org.olat.repository.ui.author.AuthorListConfiguration;
+import org.olat.repository.ui.author.AuthorListController;
+import org.olat.repository.ui.author.AuthoringEntryRowSelectionEvent;
 import org.olat.repository.ui.author.GuestAccessRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,14 +80,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementResourceListController extends FormBasicController implements FlexiTableCssDelegate {
 
-	private FormLink addResourcesButton;
+	private FormLink addResourceButton;
 	private FormLink removeResourcesButton;
 	private FlexiTableElement tableEl;
 	private RepositoryFlexiTableModel tableModel;
 	
 	private CloseableModalController cmc;
+	private AuthorListController repoSearchCtr;
 	private DialogBoxController confirmRemoveCtrl;
-	private ReferencableEntriesSearchController repoSearchCtr;
 	
 	private final boolean resourcesManaged;
 	private final CurriculumElement curriculumElement;
@@ -97,6 +98,8 @@ public class CurriculumElementResourceListController extends FormBasicController
 	private LoginModule loginModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	public CurriculumElementResourceListController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
@@ -142,13 +145,13 @@ public class CurriculumElementResourceListController extends FormBasicController
 		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)
 				&& (curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 0)) {
 			// 1) add
-			addResourcesButton = uifactory.addFormLink("add.resources", formLayout, Link.BUTTON);
-			addResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");		
+			addResourceButton = uifactory.addFormLink("add.resource", formLayout, Link.BUTTON);
+			addResourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");		
 			// 2) remove
 			removeResourcesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(removeResourcesButton);
 			// empty behavior
-			tableEl.setEmptyTableSettings("table.resources.empty", "table.resources.empty.hint", "o_CourseModule_icon", "add.resources", "o_icon_add", true);
+			tableEl.setEmptyTableSettings("table.resources.empty", "table.resources.empty.hint", "o_CourseModule_icon", "add.resource", "o_icon_add", true);
 		} else {			
 			// default empty message with out create hint
 			tableEl.setEmptyTableSettings("table.resources.empty", null, "o_CourseModule_icon");
@@ -185,9 +188,9 @@ public class CurriculumElementResourceListController extends FormBasicController
 		tableEl.reset(true, true, true);
 		
 		int maxRelations = curriculumElementType == null ? -1 : curriculumElementType.getMaxRepositoryEntryRelations();
-		if(addResourcesButton != null) {
+		if(addResourceButton != null) {
 			boolean canAddResource = maxRelations < 0 || entries.size() < maxRelations ;
-			addResourcesButton.setEnabled(canAddResource);
+			addResourceButton.setEnabled(canAddResource);
 		}
 	}
 	
@@ -200,11 +203,8 @@ public class CurriculumElementResourceListController extends FormBasicController
 				doRemove(rows);
 			}
 		} else if(repoSearchCtr == source) {
-			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				doAddRepositoryEntry(repoSearchCtr.getSelectedEntry());
-				loadModel();
-			} else if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) {
-				doAddRepositoryEntry(repoSearchCtr.getSelectedEntries());
+			if(event instanceof AuthoringEntryRowSelectionEvent se) {
+				doAddRepositoryEntry(se.getRow());
 				loadModel();
 			}
 			cmc.deactivate();
@@ -224,7 +224,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addResourcesButton == source) {
+		if(addResourceButton == source) {
 			doChooseResources(ureq);
 		} else if(removeResourcesButton == source) {
 			doConfirmRemoveResources(ureq);
@@ -249,31 +249,29 @@ public class CurriculumElementResourceListController extends FormBasicController
 		if(guardModalController(repoSearchCtr)) return;
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean adminSearch = roles.hasRole(OrganisationRoles.administrator)
-				|| roles.hasRole(OrganisationRoles.learnresourcemanager)
-				|| roles.hasRole(OrganisationRoles.curriculummanager);
-		boolean orgSearch = secCallback.canEditCurriculumElement(curriculumElement) && !adminSearch;
-		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{ CourseModule.getCourseTypeName() }, null, null, translate("add.resources"),
-				false, false, true, orgSearch, adminSearch, false, Can.referenceable);
-		listenTo(repoSearchCtr);
+		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("curriculum-course-v1", "CourseModule");
+		tableConfig.setSelectRepositoryEntry(SelectionMode.single);
+		tableConfig.setBatchSelect(true);
+		tableConfig.setImportRessources(false);
+		tableConfig.setCreateRessources(false);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("add.resources"));
+		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
+		searchParams.addResourceTypes("CourseModule");
+		repoSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
+		listenTo(repoSearchCtr);
+		repoSearchCtr.selectFilterTab(ureq, repoSearchCtr.getMyCoursesTab());
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(),
+				true, translate("add.resource"));
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
-	private void doAddRepositoryEntry(RepositoryEntry entry) {
-		doAddRepositoryEntry(Collections.singletonList(entry));
-	}
-	
-	private void doAddRepositoryEntry(List<RepositoryEntry> entries) {
-		boolean moveLectureBlocks = false;
-		if(entries.size() == 1 && tableModel.getRowCount() == 0) {
-			moveLectureBlocks = true;
-		}
-		
-		for(RepositoryEntry entry:entries) {
+	private void doAddRepositoryEntry(RepositoryEntryRef entryRef) {
+		RepositoryEntry entry = repositoryService.loadBy(entryRef);
+		if(entry != null) {
+			boolean hasRepositoryEntries = curriculumService.hasRepositoryEntries(curriculumElement);
+			boolean moveLectureBlocks = !hasRepositoryEntries;
 			curriculumService.addRepositoryEntry(curriculumElement, entry, moveLectureBlocks);
 		}
 	}
