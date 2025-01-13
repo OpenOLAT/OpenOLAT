@@ -63,6 +63,13 @@ public class QTI21ConfigurationCEPage {
 		String val = showResults ? "false" : "no";
 		new Select(scoreEl).selectByValue(val);
 		OOGraphene.waitBusy(browser);
+		
+		By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='metadata']");
+		if(showResults) {
+			OOGraphene.waitElement(levelBy, browser);
+		} else {
+			OOGraphene.waitElementDisappears(levelBy, 5, browser);
+		}
 		return this;
 	}
 	

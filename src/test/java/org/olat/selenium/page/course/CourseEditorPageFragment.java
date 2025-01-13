@@ -443,15 +443,17 @@ public class CourseEditorPageFragment {
 	private CourseEditorPageFragment chooseResource(By chooseButton, String resourceTitle, By landingBy) {
 		browser.findElement(chooseButton).click();
 		OOGraphene.waitModalDialog(browser);
-		//popup
-		By referenceableEntriesBy = By.className("o_sel_search_referenceable_entries");
+	
+		By referenceableEntriesBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]");
 		OOGraphene.waitElement(referenceableEntriesBy, browser);
-		WebElement popup = browser.findElement(referenceableEntriesBy);
-		popup.findElement(By.cssSelector("a.o_sel_repo_popup_my_resources")).click();
-		OOGraphene.waitBusy(browser);
-		
+		By myReferenceableEntriesBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]/a[contains(@class,'o_sel_repo_popup_my_resources')][contains(@class,'btn-primary')]");
+		if(!browser.findElements(myReferenceableEntriesBy).isEmpty()) {
+			browser.findElement(By.cssSelector("a.o_sel_repo_popup_my_resources")).click();
+			OOGraphene.waitElement(myReferenceableEntriesBy, browser);
+		}
+
 		//find the row
-		By rowBy = By.xpath("//div[contains(@class,'')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + resourceTitle + "')]]");
+		By rowBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + resourceTitle + "')]]");
 		OOGraphene.waitElement(rowBy, browser);
 		browser.findElement(rowBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
