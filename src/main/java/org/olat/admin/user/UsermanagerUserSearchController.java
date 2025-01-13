@@ -53,6 +53,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.id.context.StateMapped;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.user.UserManager;
 import org.olat.user.ui.admin.UserSearchTableController;
@@ -298,7 +299,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	}
 	
 	private void doQuickSearch(UserRequest ureq) {
-		List<Identity> identities = quickSearchCtrl.getUserList();
+		final List<Identity> identities = quickSearchCtrl.getUserList();
+		final String searchValue = quickSearchCtrl.getSearchValue();
 
 		removeAsListenerAndDispose(tableCtr);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
@@ -309,7 +311,15 @@ public class UsermanagerUserSearchController extends BasicController implements 
 						showStatusFilters, showOrganisationsFilters, true));
 		listenTo(tableCtr);
 		
-		tableCtr.loadModel(identities);
+		if(StringHelper.containsNonWhitespace(searchValue)) {
+			if(identities.size() > 32000) {
+				showWarning("warning.too.much.results");
+			} else {
+				tableCtr.loadModel(identities);
+			}
+		} else {
+			tableCtr.loadAll();
+		}
 		stackedPanel.pushController("Results", tableCtr);
 	}
 
