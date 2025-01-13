@@ -1238,27 +1238,31 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public boolean addRepositoryEntry(CurriculumElement curriculumElement, RepositoryEntry entry, boolean moveLectureBlocks) {
+	public AddRepositoryEntry addRepositoryEntry(CurriculumElement curriculumElement, RepositoryEntry entry, boolean moveLectureBlocks) {
 		if(!hasRepositoryEntry(curriculumElement, entry)) {
+			boolean moved = false;
 			RepositoryEntry repoEntry = repositoryEntryDao.loadByKey(entry.getKey());
 			repositoryEntryRelationDao.createRelation(curriculumElement.getGroup(), repoEntry);
 			if(moveLectureBlocks) {
-				moveLectureBlocks(curriculumElement, entry);
+				moved = moveLectureBlocks(curriculumElement, entry);
 			}
 			fireRepositoryEntryAddedEvent(curriculumElement, entry);
-			return true;
+			return new AddRepositoryEntry(true, moved);
 		}
-		return false;
+		return new AddRepositoryEntry(false, false);
 	}
 	
-	private void moveLectureBlocks(CurriculumElement curriculumElement, RepositoryEntry entry) {
-		if(curriculumElement == null || entry == null) return;
+	private boolean moveLectureBlocks(CurriculumElement curriculumElement, RepositoryEntry entry) {
+		if(curriculumElement == null || entry == null) return false;
 		
+		boolean moved = false;
 		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks(curriculumElement);
 		for(LectureBlock lectureBlock:lectureBlocks) {
 			((LectureBlockImpl)lectureBlock).setEntry(entry);
 			lectureBlockDao.update(lectureBlock);
+			moved |= true;
 		}
+		return moved;
 	}
 
 	@Override

@@ -582,8 +582,11 @@ public interface CurriculumService {
 	 * @param entry The repository entry
 	 * @param master If the relation is the master one
 	 */
-	public boolean addRepositoryEntry(CurriculumElement element, RepositoryEntry entry, boolean moveLectureBlocks);
-
+	public AddRepositoryEntry addRepositoryEntry(CurriculumElement element, RepositoryEntry entry, boolean moveLectureBlocks);
+	
+	public record AddRepositoryEntry(boolean entryAdded, boolean lectureBlockMoved) {
+		//
+	}
 
 	/**
 	 * remove linked relation between curriculumElement and repositoryEntry

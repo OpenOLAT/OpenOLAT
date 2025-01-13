@@ -56,6 +56,7 @@ import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.CurriculumService.AddRepositoryEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -272,7 +273,12 @@ public class CurriculumElementResourceListController extends FormBasicController
 		if(entry != null) {
 			boolean hasRepositoryEntries = curriculumService.hasRepositoryEntries(curriculumElement);
 			boolean moveLectureBlocks = !hasRepositoryEntries;
-			curriculumService.addRepositoryEntry(curriculumElement, entry, moveLectureBlocks);
+			AddRepositoryEntry infos = curriculumService.addRepositoryEntry(curriculumElement, entry, moveLectureBlocks);
+			if(infos.lectureBlockMoved()) {
+				showInfo("info.repositoryentry.added.lectureblock.moved");
+			} else {
+				showInfo("info.repositoryentry.added");
+			}
 		}
 	}
 	
