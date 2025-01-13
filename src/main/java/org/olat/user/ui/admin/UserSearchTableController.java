@@ -408,6 +408,23 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		tableEl.reset(true, true, true);
 		bulkMovebutton.setVisible(false);
 	}
+	
+	public void loadAll() {
+		// Activate all filters
+		List<String> statusList = new ArrayList<>();
+		statusList.add(Identity.STATUS_ACTIV.toString());
+		statusList.add(Identity.STATUS_PERMANENT.toString());
+		statusList.add(Identity.STATUS_LOGIN_DENIED.toString());
+		statusList.add(Identity.STATUS_PENDING.toString());
+		statusList.add(Identity.STATUS_INACTIVE.toString());
+		tableEl.setSelectedFilterKeys(statusList);
+		
+		currentSearchParams = new SearchIdentityParams();
+		currentSearchParams.setOrganisations(manageableOrganisations);
+		tableModel.setSource(new UserSearchDataSource(currentSearchParams, userPropertyHandlers, getLocale()));
+		tableEl.reset(true, true, true);
+		bulkMovebutton.setVisible(false);
+	}
 
 	@Override
 	protected void doDispose() {
