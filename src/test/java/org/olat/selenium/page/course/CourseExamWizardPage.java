@@ -97,7 +97,15 @@ public class CourseExamWizardPage {
 	}
 	
 	public CourseExamWizardPage selectTest(String testTitle, String courseElementTitle) {
-		By rowBy = By.xpath("//div[contains(@class,'')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + testTitle + "')]]");
+		By referenceableEntriesBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]");
+		OOGraphene.waitElement(referenceableEntriesBy, browser);
+		By myReferenceableEntriesBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]/a[contains(@class,'o_sel_repo_popup_my_resources')][contains(@class,'btn-primary')]");
+		if(!browser.findElements(myReferenceableEntriesBy).isEmpty()) {
+			browser.findElement(By.cssSelector("a.o_sel_repo_popup_my_resources")).click();
+			OOGraphene.waitElement(myReferenceableEntriesBy, browser);
+		}
+
+		By rowBy = By.xpath("//div[contains(@class,'o_sel_search_referenceable_entries')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + testTitle + "')]]");
 		OOGraphene.waitElement(rowBy, browser);
 		browser.findElement(rowBy).click();
 		// Wait configuration

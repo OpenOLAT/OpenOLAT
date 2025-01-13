@@ -19,8 +19,11 @@
  */
 package org.olat.selenium.page.repository;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -30,6 +33,8 @@ import org.openqa.selenium.WebDriver;
  *
  */
 public class VideoEditorPage {
+	
+	private static final Logger log = Tracing.createLoggerFor(VideoEditorPage.class);
 	
 	private WebDriver browser;
 	
@@ -99,10 +104,21 @@ public class VideoEditorPage {
 		return this;
 	}
 	
+	/**
+	 * Save (but wait the dirty flag)
+	 * 
+	 * @return Itself
+	 */
 	public VideoEditorPage save() {
 		try {
-			By saveBy = By.cssSelector(".o_video_segment_buttons>button.btn.btn-primary");
-			browser.findElement(saveBy).click();
+			By saveBy = By.cssSelector(".o_video_segment_buttons>button.btn.btn-primary.o_button_dirty");
+			try {
+				browser.findElement(saveBy).click();
+			} catch (StaleElementReferenceException e) {
+				log.error("", e);
+				OOGraphene.waitingALittleBit();
+				browser.findElement(saveBy).click();
+			}
 			OOGraphene.waitBusy(browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Save segment", browser);
