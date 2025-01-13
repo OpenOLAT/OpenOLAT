@@ -237,7 +237,9 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 					List<GroupMembershipHistory> roleHistory = membershipHistory.getHistory(role);
 					if(roleHistory != null && !roleHistory.isEmpty()) {
 						GroupMembershipHistory step = roleHistory.get(0);
-						row.addStatus(curriculumElementKey, role, step.getStatus());
+						if(step.getStatus() != GroupMembershipStatus.active && step.getStatus() != GroupMembershipStatus.reservation) {
+							row.addStatus(curriculumElementKey, role, step.getStatus());
+						}
 					}
 				}
 			}
@@ -311,7 +313,7 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 			
 			if(hasElementAccessBefore == 0 && gainAccessAfter > 0) {
 				addition |= true;
-			} else if(hasElementAccessBefore == looseAccessAfter && gainAccessAfter == 0) {
+			} else if(hasElementAccessBefore > 0 && hasElementAccessBefore == looseAccessAfter && gainAccessAfter == 0) {
 				removal |= true;
 			} else if(hasElementAccessBefore > 0 && (gainAccessAfter > 0 || looseAccessAfter > 0)) {
 				modification |= true;
