@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui.wizard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,7 @@ import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.modules.curriculum.ui.member.MemberRolesDetailsRow;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.member.ModificationCellRenderer;
-import org.olat.modules.curriculum.ui.member.ModificationStatus;
+import org.olat.modules.curriculum.ui.member.ModificationStatusSummary;
 import org.olat.modules.curriculum.ui.wizard.UsersOverviewTableModel.UserOverviewCols;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -164,42 +165,71 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		// Memberships, per user on at least an element of the tree of elements
 		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
 		List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(curriculumElements, identities);
-		Map<Long, CurriculumElementMembership> membershipsMap = memberships.stream()
-				.filter(membership -> membership.getRoles().contains(membersContext.getRoleToModify()))
-				.collect(Collectors.toMap(CurriculumElementMembership::getIdentityKey, u -> u, (u, v) -> u));
-		
+		Map<Long, List<CurriculumElementMembership>> membershipsMap = new HashMap<>();
+		for(CurriculumElementMembership membership:memberships) {
+			if(membership.getRoles().contains(membersContext.getRoleToModify())) {
+				membershipsMap.computeIfAbsent(membership.getIdentityKey(), m -> new ArrayList<>())
+					.add(membership);
+			}
+		}
+
 		// Reservation, per user on at least a reservation on the tree of elements
 		final String roleKeyWord = CurriculumService.RESERVATION_PREFIX.concat(membersContext.getRoleToModify().name());
 		List<OLATResource> elementsResources = membersContext.getAllCurriculumElementResources();
 		SearchReservationParameters searchParams = new SearchReservationParameters(elementsResources);
 		List<ResourceReservation> reservations = acService.getReservations(searchParams);
-		Map<Long,ResourceReservation> reservationsMap = reservations.stream()
-				.filter(reservation -> StringHelper.containsNonWhitespace(reservation.getType()))
-				.filter(reservation -> reservation.getType().equals(roleKeyWord))
-				.collect(Collectors.toMap(reservation -> reservation.getIdentity().getKey(), r -> r, (u, v) -> u));
+		Map<Long, List<ResourceReservation>> reservationsMap = new HashMap<>();
+		for(ResourceReservation reservation:reservations) {
+			if(StringHelper.containsNonWhitespace(reservation.getType()) && reservation.getType().equals(roleKeyWord)) {
+				reservationsMap.computeIfAbsent(reservation.getIdentity().getKey(), r -> new ArrayList<>())
+					.add(reservation);
+			}
+		}
 
 		List<UserRow> rows = new ArrayList<>(identities.size());
 		for(Identity identity:identities) {
 			UserRow row = new UserRow(identity, userPropertyHandlers, getLocale());
 			row.setModifications(modifications);
-			row.setModificationStatus(ModificationStatus.ADD);
 			row.setNumOfElements(curriculumElements.size());
 			
-			CurriculumElementMembership membership = membershipsMap.get(identity.getKey());
-			ResourceReservation reservation = reservationsMap.get(identity.getKey());
-			if((membership != null && membership.getRoles().contains(membersContext.getRoleToModify()))
-					|| (reservation != null)) {
-				row.setModificationStatus(ModificationStatus.MODIFICATION);
-			}
-			if(membersContext.getModifications() != null) {
-				row.setModifications(membersContext.getModifications());
-			}
+			final List<CurriculumElementMembership> userMemberships = membershipsMap
+					.computeIfAbsent(identity.getKey(), m -> List.of());
+			final List<ResourceReservation> userReservations = reservationsMap
+					.computeIfAbsent(identity.getKey(), k -> List.of());
+			ModificationStatusSummary summary = calculateModificationStatus(userMemberships, userReservations,
+					membersContext.getModifications());
+			row.setModificationSummary(summary);
+			row.setModifications(membersContext.getModifications());
 			rows.add(row);
 		}
 		
 		tableModel.setObjects(rows);
 	}
 	
+	private ModificationStatusSummary calculateModificationStatus(List<CurriculumElementMembership> memberships,
+			List<ResourceReservation> reservations, List<MembershipModification> modifications) {
+		Map<Long,CurriculumElementMembership> membershipsMap = memberships.stream()
+				.collect(Collectors.toMap(CurriculumElementMembership::getCurriculumElementKey, c -> c, (u, v) -> u));
+		Map<OLATResource,ResourceReservation> reservationsMap = reservations.stream()
+				.collect(Collectors.toMap(ResourceReservation::getResource, r -> r, (u, v) -> u));
+		
+		boolean add = false;
+		boolean modify = false;
+		for(MembershipModification modification:modifications) {
+			GroupMembershipStatus memberStatus = modification.nextStatus();
+			CurriculumElement curriculumElement = modification.curriculumElement();
+			CurriculumElementMembership membership = membershipsMap.get(curriculumElement.getKey());
+			ResourceReservation reservation = reservationsMap.get(curriculumElement.getResource());
+			if((memberStatus == GroupMembershipStatus.active || memberStatus == GroupMembershipStatus.reservation)
+					&& membership == null && reservation == null) {
+				add = true;
+			} else if(memberStatus == GroupMembershipStatus.active && membership == null && reservation != null) {
+				modify = true;
+			}
+		}
+		return new ModificationStatusSummary(modify, add, false);
+	}
+
 	@Override
 	public boolean isDetailsRow(int row, Object rowObject) {
 		return true;

@@ -52,6 +52,19 @@ public class ModificationCellRenderer implements FlexiCellRenderer {
 				case REMOVE: renderModification(target, "has.remove", "o_membership_remove", "o_icon_minus"); break;
 				default: break;
 			}
+		} else if(cellValue instanceof ModificationStatusSummary summary) {
+			if(summary.addition()) {
+				renderModification(target, "has.add", "o_membership_add", "o_icon_plus");
+				target.append(" ");
+			}
+			if(summary.modification()) {
+				renderModification(target, "has.modification", "o_membership_modify", "o_icon_retry");
+				target.append(" ");
+			}
+			if(summary.removal()) {
+				renderModification(target, "has.remove", "o_membership_remove", "o_icon_minus");
+				target.append(" ");
+			}
 		}
 	}
 	

@@ -68,7 +68,7 @@ implements SortableFlexiTableDataModel<UserRow> {
 	public Object getValueAt(UserRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			return switch(COLS[col]) {
-				case modifications -> row.getModificationStatus();
+				case modifications -> row.getModificationSummary();
 				case role -> row.getRoles();
 				case numOfModifications -> getNumOfModifications(row);
 				default -> "ERROR";

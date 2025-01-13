@@ -26,6 +26,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.member.ModificationStatus;
+import org.olat.modules.curriculum.ui.member.ModificationStatusSummary;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -42,6 +43,7 @@ public class UserRow extends UserPropertiesRow {
 	private final Identity identity;
 	private ModificationStatus modificationStatus;
 	private List<MembershipModification> modifications;
+	private ModificationStatusSummary modificationSummary;
 	
 	private MemberDetailsController detailsCtrl;
 	
@@ -84,6 +86,14 @@ public class UserRow extends UserPropertiesRow {
 
 	public void setModificationStatus(ModificationStatus modificationStatus) {
 		this.modificationStatus = modificationStatus;
+	}
+
+	public ModificationStatusSummary getModificationSummary() {
+		return modificationSummary;
+	}
+
+	public void setModificationSummary(ModificationStatusSummary modificationSummary) {
+		this.modificationSummary = modificationSummary;
 	}
 
 	public boolean isDetailsControllerAvailable() {
