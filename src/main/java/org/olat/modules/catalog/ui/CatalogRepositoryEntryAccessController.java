@@ -70,11 +70,11 @@ public class CatalogRepositoryEntryAccessController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("access");
 		
-		headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, false);
+		headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, false, false);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
-		metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, headerCtrl.getTypes(), ureq.getUserSession().getRoles().isGuestOnly());
+		metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, headerCtrl.getTypes(), ureq.getUserSession().getRoles().isGuestOnly());
 		listenTo(metadataCtrl);
 		mainVC.put("metadata", metadataCtrl.getInitialComponent());
 		

@@ -90,6 +90,7 @@ import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.ACRenderer;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
+import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
@@ -537,6 +538,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 		if (source == infosCtrl) {
 			if (event instanceof BookedEvent bookedEvent) {
 				doBooked(ureq, bookedEvent.getRepositoryEntry());
+			} else if (event instanceof LeavingEvent) {
+				stackPanel.popUpToController(this);
+				loadModel(false);
 			}
 		} else if (authCtrl == source) {
 			lightboxCtrl.deactivate();

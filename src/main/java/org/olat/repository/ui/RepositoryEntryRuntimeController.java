@@ -96,7 +96,6 @@ import org.olat.repository.ui.author.ConfirmDeleteSoftlyController;
 import org.olat.repository.ui.author.ConfirmRestoreController;
 import org.olat.repository.ui.author.RepositoryMembersController;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
-import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
@@ -877,9 +876,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				processClosedUnclosedEvent(ureq);
 			}
 		} else if(detailsCtrl == source) {
-			if(event instanceof LeavingEvent) {
-				doClose(ureq);
-			} else if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT) {
 				popToRoot(ureq);
 				cleanUp();
 				if(getRuntimeController() == null) {
@@ -1114,9 +1111,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(security.canLaunch()) {
 				launchContent(ureq);
 			} else if (security.isMember() && acService.isAccessRefusedByStatus(re, getIdentity())) {
-				showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re, true));
+				showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re));
 			} else if (security.isMember() || security.isMasterCoach()) {
-				showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re, false));
+				showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re));
 			} else if(roles.isInviteeOnly()) {
 				showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 			} else if(re.isPublicVisible()) {
@@ -1311,9 +1308,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				userCourseInfoMgr.updateUserCourseInformations(re.getOlatResource(), getIdentity());
 			}
 		} else if (reSecurity.isMember() && acService.isAccessRefusedByStatus(re, getIdentity())) {
-			showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re, true));
+			showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re));
 		} else if (reSecurity.isMember() || reSecurity.isMasterCoach()) {
-			showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re, false));
+			showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), re));
 		} else if (!reSecurity.isMember()) {
 			showAccessDenied(AccessDeniedFactory.createNotMember(ureq, getWindowControl(), re));
 		} else if (roles.isGuestOnly()) {

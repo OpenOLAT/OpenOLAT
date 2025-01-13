@@ -61,8 +61,8 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 
 	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryDetailsController.class);
 	
-	private final RepositoryEntryDetailsHeaderController headerCtrl;
-	private final RepositoryEntryResourceInfoDetailsHeaderController resourceInfoHeaderCtrl;
+	private RepositoryEntryDetailsHeaderController headerCtrl;
+	private RepositoryEntryResourceInfoDetailsHeaderController resourceInfoHeaderCtrl;
 	private final RepositoryEntryDetailsDescriptionController accessListCtrl;
 	private final RepositoryEntryDetailsMetadataController metadataCtrl;
 	private final RepositoryEntryDetailsLinkController linkCtrl;
@@ -78,7 +78,8 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	@Autowired
 	private CourseModule courseModule;
 
-	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean isResourceInfoView) {
+	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+			boolean isResourceInfoView, boolean closeTabOnLeave) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
@@ -93,21 +94,19 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 
-		List<PriceMethod> types;
-		resourceInfoHeaderCtrl = new RepositoryEntryResourceInfoDetailsHeaderController(ureq, wControl, entry);
-		headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, true);
-
 		if (isResourceInfoView) {
+			resourceInfoHeaderCtrl = new RepositoryEntryResourceInfoDetailsHeaderController(ureq, wControl, entry);
 			listenTo(resourceInfoHeaderCtrl);
 			mainVC.put("header", resourceInfoHeaderCtrl.getInitialComponent());
-			types = resourceInfoHeaderCtrl.getTypes();
-			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, types, true);
+			List<PriceMethod> types = resourceInfoHeaderCtrl.getTypes();
+			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, types, true);
 		} else {
+			headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, true, closeTabOnLeave);
 			listenTo(headerCtrl);
 			mainVC.put("header", headerCtrl.getInitialComponent());
-			types = headerCtrl.getTypes();
+			List<PriceMethod> types = headerCtrl.getTypes();
 			boolean guestOnly = ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isGuestOnly();
-			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, types, guestOnly);
+			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, types, guestOnly);
 		}
 		
 		accessListCtrl = new RepositoryEntryDetailsDescriptionController(ureq, wControl, entry);
@@ -179,6 +178,8 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 				doStart(ureq);
 			} else if (event == RepositoryEntryDetailsHeaderController.BOOK_EVENT) {
 				doBook(ureq);
+			} else if (event instanceof LeavingEvent) {
+				fireEvent(ureq, event);
 			}
 		} else if (source == resourceInfoHeaderCtrl) {
 			if (event == RepositoryEntryResourceInfoDetailsHeaderController.START_EVENT) {

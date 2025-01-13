@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -38,15 +37,10 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
@@ -58,9 +52,7 @@ import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.CatalogEntry;
-import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
@@ -77,21 +69,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntryDetailsMetadataController extends FormBasicController {
 	
 	private FormLink markLink;
-	private FormLink leaveLink;
 	private RatingWithAverageFormItem ratingEl;
-
-	private DialogBoxController leaveDialogBox;
 	
 	private final RepositoryEntry entry;
 	private final boolean isMember;
-	private final boolean isParticipant;
 	private final boolean guestOnly;
 	private final List<PriceMethod> types;
 	
 	@Autowired
 	private RepositoryModule repositoryModule;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -108,13 +94,12 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	private MarkManager markManager;
 
 	public RepositoryEntryDetailsMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean isMember, boolean isParticipant, List<PriceMethod> types, boolean isGuestOnly) {
+			boolean isMember, List<PriceMethod> types, boolean isGuestOnly) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details_metadata.html");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.isMember = isMember;
-		this.isParticipant = isParticipant;
 		this.types = types;
 		this.guestOnly = isGuestOnly;
 		
@@ -169,12 +154,6 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 				ratingEl = new RatingWithAverageFormItem("rating", ratingValue, averageRatingValue, 5, numOfRatings);
 				ratingEl.setEnabled(!guestOnly);
 				layoutCont.add("rating", ratingEl);
-			}
-			
-			if (!guestOnly && isParticipant && repositoryService.isParticipantAllowedToLeave(entry)) {
-				leaveLink = uifactory.addFormLink("sign.out", "leave", translate("sign.out"), null, formLayout, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
-				leaveLink.setElementCssClass("o_sign_out btn-danger");
-				leaveLink.setIconLeftCSS("o_icon o_icon_sign_out");
 			}
 			
 			if (types != null && !types.isEmpty()) {
@@ -233,8 +212,6 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 			} else if ("group".equals(cmd)) {
 				Long groupKey = (Long)link.getUserObject();
 				doOpenGroup(ureq, groupKey);
-			} else if ("leave".equals(cmd)) {
-				doConfirmLeave(ureq);
 			}
 		} else if (ratingEl == source && event instanceof RatingFormEvent ratingEvent) {
 			doRating(ratingEvent.getRating());
@@ -243,47 +220,8 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(leaveDialogBox == source) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				doLeave();
-				fireEvent(ureq, new LeavingEvent());
-			}
-		}
-		super.event(ureq, source, event);
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
-	}
-	
-	protected void doConfirmLeave(UserRequest ureq) {
-		String reName = StringHelper.escapeHtml(entry.getDisplayname());
-		String title = translate("sign.out");
-		String text = "<div class='o_warning'>" + translate("sign.out.dialog.text", reName) + "</div>";
-		leaveDialogBox = activateYesNoDialog(ureq, title, text, leaveDialogBox);
-	}
-	
-	protected void doLeave() {
-		if(guestOnly) return;
-		
-		MailerResult result = new MailerResult();
-		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), true);
-		LeavingStatusList status = new LeavingStatusList();
-		//leave course
-		repositoryManager.leave(getIdentity(), entry, status, reMailing);
-		//leave groups
-		businessGroupService.leave(getIdentity(), entry, status, reMailing);
-		DBFactory.getInstance().commit();//make sur all changes are committed
-		
-		if(status.isWarningManagedGroup() || status.isWarningManagedCourse()) {
-			showWarning("sign.out.warning.managed");
-		} else if(status.isWarningGroupWithMultipleResources()) {
-			showWarning("sign.out.warning.mutiple.resources");
-		} else {
-			showInfo("sign.out.success", new String[]{ entry.getDisplayname() });
-		}
 	}
 	
 	protected boolean doMark() {

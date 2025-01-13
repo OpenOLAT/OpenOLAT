@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,16 +37,24 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.group.BusinessGroupService;
+import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.AccessDeniedFactory;
+import org.olat.repository.ui.AccessDeniedFactory.AccessDeniedMessage;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
@@ -71,11 +80,14 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 	public static final Event BOOK_EVENT = new Event("book");
 	
 	private FormLink startLink;
+	private FormLink leaveLink;
+	
+	private DialogBoxController leaveDialogBox;
 
 	private final RepositoryEntry entry;
 	private final boolean isMember;
-
 	private final boolean showStart;
+	private final boolean closeTabOnLeave;
 	private List<PriceMethod> types = new ArrayList<>(1);
 	
 	@Autowired
@@ -83,16 +95,20 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 	@Autowired
 	protected RepositoryService repositoryService;
 	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
 	protected ACService acService;
 
-	public RepositoryEntryDetailsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean isMember, boolean showStart) {
+	public RepositoryEntryDetailsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+			boolean isMember, boolean showStart, boolean closeTabOnLeave) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details_header.html");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.isMember = isMember;
 		this.showStart = showStart;
+		this.closeTabOnLeave = closeTabOnLeave;
 		
 		initForm(ureq);
 	}
@@ -143,15 +159,27 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 			boolean guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 			boolean inviteeOnly  = ureq.getUserSession().getRoles().isInviteeOnly();
 			
+			leaveLink = createLeaveLink(layoutCont, guestOnly, reSecurity.isParticipant());
+			
 			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) {
 				startLink = createStartLink(layoutCont);
 			} else {
 				if (reSecurity.canLaunch()) {
 					startLink = createStartLink(layoutCont);
 				} else if (isMember && acService.isAccessRefusedByStatus(entry, getIdentity())) {
-					showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), entry, true));
+					AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage(ureq, entry);
+					layoutCont.contextPut("warning", translate(accessDeniedMessage.messageI18nKey()));
+					layoutCont.contextPut("warningHint", translate(accessDeniedMessage.hintI18nKey(), accessDeniedMessage.hintArgs()));
+					
+					startLink = createStartLink(layoutCont);
+					startLink.setEnabled(false);
 				} else if (isMember || reSecurity.isMasterCoach()) {
-					showAccessDenied(AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, getWindowControl(), entry, false));
+					AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage(ureq, entry);
+					layoutCont.contextPut("warning", translate(accessDeniedMessage.messageI18nKey()));
+					layoutCont.contextPut("warningHint", translate(accessDeniedMessage.hintI18nKey(), accessDeniedMessage.hintArgs()));
+					
+					startLink = createStartLink(layoutCont);
+					startLink.setEnabled(false);
 				} else if(inviteeOnly) {
 					showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 				} else if (!isMember && entry.isPublicVisible()) {
@@ -176,6 +204,7 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 				startLink.setPrimary(true);
 				startLink.setFocus(true);
 				startLink.setVisible(showStart);
+				startLink.setElementCssClass(startLink.getElementCssClass() + " o_button_call_to_action");
 			}
 		}
 	}
@@ -208,7 +237,7 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 			String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 			startLink = uifactory.addFormLink("start", "book", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 			startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
-			startLink.setElementCssClass("o_book btn-block");
+			startLink.setElementCssClass("o_book");
 			startLink.setVisible(!guestOnly);
 		} else if (!getOffersNowNotInRange(entry, getIdentity()).isEmpty()) {
 			showAccessDenied(AccessDeniedFactory.createOfferNotNow(ureq, getWindowControl(), getOffersNowNotInRange(entry, getIdentity())));
@@ -220,8 +249,20 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 	private FormLink createStartLink(FormLayoutContainer layoutCont) {
 		String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 		FormLink link = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-		link.setElementCssClass("o_start btn-block");
+		link.setElementCssClass("o_start");
 		return link;
+	}
+	
+	private FormLink createLeaveLink(FormLayoutContainer layoutCont, boolean guestOnly, boolean isParticipant) {
+		if (!guestOnly && isParticipant && repositoryService.isParticipantAllowedToLeave(entry)) {
+			FormLink link = uifactory.addFormLink("leave", "leave", translate("sign.out"), null, layoutCont, Link.NONTRANSLATED);
+			link.setElementCssClass("o_sign_out");
+			link.setIconLeftCSS("o_icon o_icon_sign_out");
+			link.setGhost(true);
+			return link;
+		}
+		
+		return null;
 	}
 	
 	private void showAccessDenied(Controller ctrl) {	
@@ -233,10 +274,25 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 		List<? extends OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(identity);
 		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, null, offerOrganisations);
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(leaveDialogBox == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				doLeave(ureq);
+				if (!closeTabOnLeave) {
+					fireEvent(ureq, new LeavingEvent());
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink) {
+		if (source == leaveLink) {
+			doConfirmLeave(ureq);
+		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if ("start".equals(cmd)) {
@@ -251,6 +307,35 @@ public class RepositoryEntryDetailsHeaderController extends FormBasicController 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doConfirmLeave(UserRequest ureq) {
+		String reName = StringHelper.escapeHtml(entry.getDisplayname());
+		String title = translate("sign.out");
+		String text = "<div class='o_warning'>" + translate("sign.out.dialog.text", reName) + "</div>";
+		leaveDialogBox = activateYesNoDialog(ureq, title, text, leaveDialogBox);
+	}
+	
+	private void doLeave(UserRequest ureq) {
+		MailerResult result = new MailerResult();
+		MailPackage reMailing = new MailPackage(result, getWindowControl().getBusinessControl().getAsString(), true);
+		LeavingStatusList status = new LeavingStatusList();
+		//leave course
+		repositoryManager.leave(getIdentity(), entry, status, reMailing);
+		//leave groups
+		businessGroupService.leave(getIdentity(), entry, status, reMailing);
+		DBFactory.getInstance().commit();//make sure all changes are committed
+		
+		if(status.isWarningManagedGroup() || status.isWarningManagedCourse()) {
+			showWarning("sign.out.warning.managed");
+		} else if(status.isWarningGroupWithMultipleResources()) {
+			showWarning("sign.out.warning.mutiple.resources");
+		} else {
+			showInfo("sign.out.success", new String[]{ StringHelper.escapeHtml(entry.getDisplayname()) });
+			if (closeTabOnLeave) {
+				getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, entry.getOlatResource(), null);
+			}
+		}
 	}
 
 }

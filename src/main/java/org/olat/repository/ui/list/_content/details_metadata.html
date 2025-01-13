@@ -1,5 +1,5 @@
 <div class="o_overview o_subcolumn">
-	<h4>$r.translate("details.overview")</h4>
+	<h3>$r.translate("details.overview")</h3>
 	#if($closed)
 		<div class="o_warning_with_icon o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
 	#end
@@ -45,14 +45,6 @@
 			</li>
 		#end
 		</ul>
-	</div>
-#end	
-
-#if($r.available("rating") || $r.available("comments"))
-	<div class="o_subcolumn o_social">
-		<h4>$r.translate("ratings")</h4>
-		#if($r.available("rating")) $r.render("rating") #end
-		#if($r.available("comments")) $r.render("comments") #end
 	</div>
 #end
 #if($taxonomyLevels && !$taxonomyLevels.empty)
@@ -111,10 +103,12 @@
 			$r.render("mark")
 		</div>
 		#end
-		#if($r.available("sign.out"))
-		<div class="o_signout">	
-			$r.render("sign.out")
-		</div>
-		#end
+	</div>
+#end
+#if($r.available("rating") || $r.available("comments"))
+	<div class="o_subcolumn o_social">
+		<h4>$r.translate("ratings")</h4>
+		#if($r.available("rating")) $r.render("rating") #end
+		#if($r.available("comments")) $r.render("comments") #end
 	</div>
 #end

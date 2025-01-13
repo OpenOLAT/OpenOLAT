@@ -55,8 +55,11 @@
 	margin: $o-box-margin 0;
 }
 
-.o_info_with_icon h4:first-child {
-	margin-top: 1px;
+.o_info_with_icon,
+.o_warning_with_icon {
+	h4:first-child {
+		margin-top: 1px;
+	}
 }
 
 .o_info_with_icon {

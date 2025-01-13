@@ -33,6 +33,13 @@
 				</div>
 			#end
 			
+			#if($r.isNotEmpty($warning))
+				<div class="o_warning_with_icon">
+					<h4 class="o_multi_line">$warning</h4>
+					<div class="o_multi_line">$warningHint</div>
+				</div>
+			#end
+			
 			#if($r.available("start") || $r.available("start.guest"))
 				<div class="o_start_wrapper">
 					<div class="o_start_inner">
@@ -40,6 +47,9 @@
 							$r.render("start")
 						#else
 							$r.render("start.guest")
+						#end
+						#if($r.available("leave"))
+							$r.render("leave")
 						#end
 					</div>
 				</div>

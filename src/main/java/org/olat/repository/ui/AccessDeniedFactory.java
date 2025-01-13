@@ -41,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.resource.accesscontrol.Offer;
 
 /**
@@ -63,8 +64,8 @@ public class AccessDeniedFactory {
 		return new AccessDeniedController(ureq, wControl, "access.denied.closed", "access.denied.closed.hint", null);
 	}
 	
-	public static Controller createRepositoryEntryStatusNotPublished(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean orderMsg) {
-		String messaegI18nKey = orderMsg? "access.denied.not.published.order": "access.denied.not.published";
+	public static AccessDeniedMessage createRepositoryEntryStatusNotPublishedMessage(UserRequest ureq, RepositoryEntry entry) {
+		String messageI18nKey = "access.denied.not.published";
 		String hintI18nKey = null;
 		String[] hintArgs = null;
 		if (entry.getLifecycle() != null && !entry.getLifecycle().isPrivateCycle() && StringHelper.containsNonWhitespace(entry.getLifecycle().getLabel())) {
@@ -76,8 +77,12 @@ public class AccessDeniedFactory {
 		} else {
 			hintI18nKey = "access.denied.not.published.hint";
 		}
-		
-		return new AccessDeniedController(ureq, wControl, messaegI18nKey, hintI18nKey, hintArgs);
+		return new AccessDeniedMessage(messageI18nKey, hintI18nKey, hintArgs);
+	}
+	
+	public static Controller createRepositoryEntryStatusNotPublished(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+		// The controller (header) checks the conditions again.
+		return new RepositoryEntryInfosController(ureq, wControl, entry, true);
 	}
 
 	public static Controller createBookingPending(UserRequest ureq, WindowControl wControl) {
@@ -159,5 +164,7 @@ public class AccessDeniedFactory {
 	public static Controller createNoAccess(UserRequest ureq, WindowControl wControl) {
 		return new AccessDeniedController(ureq, wControl, "launch.noaccess", null, null);
 	}
+	
+	public record AccessDeniedMessage(String messageI18nKey, String hintI18nKey, String[] hintArgs) {}
 
 }

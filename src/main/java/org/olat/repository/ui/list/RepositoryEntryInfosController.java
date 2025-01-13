@@ -29,18 +29,20 @@ import org.olat.repository.RepositoryEntry;
 /**
  * 
  * Initial date: 5 Jun 2022<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class RepositoryEntryInfosController extends RepositoryEntryDetailsController {
 
 	private final boolean inRuntime;
-	
-	public RepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean inRuntime) {
-		super(ureq, wControl, entry, false);
+
+	public RepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+			boolean inRuntime) {
+		super(ureq, wControl, entry, false, true);
 		this.inRuntime = inRuntime;
 	}
-	
+
 	@Override
 	protected void doStart(UserRequest ureq) {
 		if (inRuntime) {

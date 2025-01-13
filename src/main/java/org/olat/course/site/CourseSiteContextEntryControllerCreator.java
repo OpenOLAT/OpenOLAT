@@ -119,9 +119,9 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			if(re.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 				return AccessDeniedFactory.createRepositoryStatusClosed(ureq, wControl);
 			} else if (reSecurity.isMember() && CoreSpringFactory.getImpl(ACService.class).isAccessRefusedByStatus(re, usess.getIdentity())) {
-				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, re, true);
+				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, re);
 			} else if (reSecurity.isMember() || reSecurity.isMasterCoach()) {
-				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, re, false);
+				return AccessDeniedFactory.createRepositoryEntryStatusNotPublished(ureq, wControl, re);
 			} else if (isPublicVisible(re, reSecurity, ureq.getIdentity(), roles)) {
 				reSecurity = rm.isAllowed(ureq, re);
 			} else if (roles.isGuestOnly()) {

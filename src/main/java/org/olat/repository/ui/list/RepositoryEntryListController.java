@@ -654,11 +654,6 @@ public class RepositoryEntryListController extends FormBasicController
 				cmc.deactivate();
 				cleanUp();
 			}
-		} else if(detailsCtrl == source) {
-			if(event instanceof LeavingEvent) {
-				stackPanel.popUpToController(this);
-				tableEl.reset();
-			}
 		}
 		super.event(ureq, source, event);
 	}

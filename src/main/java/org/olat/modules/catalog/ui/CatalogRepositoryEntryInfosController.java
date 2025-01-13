@@ -61,7 +61,7 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	protected ACService acService;
 
 	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, RepositoryEntry entry) {
-		super(ureq, wControl, entry, false);
+		super(ureq, wControl, entry, false, false);
 		this.stackPanel = stackPanel;
 	}
 
