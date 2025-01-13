@@ -2044,7 +2044,7 @@
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
-			<version>5.9</version>
+			<version>5.10</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2116,7 +2116,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20241224</version>
+			<version>20250107</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2180,7 +2180,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.14.2</version>
+			<version>1.15.0</version>
 		</dependency>
 		<!-- End Microsoft Graph -->
 		<!-- Lucene dependencies -->
