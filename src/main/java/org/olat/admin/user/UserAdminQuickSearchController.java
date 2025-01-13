@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
@@ -74,7 +73,7 @@ public class UserAdminQuickSearchController extends FormBasicController {
 	
 	private TextElement searchEl;
 	private FormLink searchLink;
-	private List<UserPropertyHandler> userSearchFormPropertyHandlers;
+	private final List<UserPropertyHandler> userSearchFormPropertyHandlers;
 
 	@Autowired
 	private UserManager userManager;
@@ -90,17 +89,14 @@ public class UserAdminQuickSearchController extends FormBasicController {
 	 */
 	public UserAdminQuickSearchController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_DEFAULT);	
-		init();
-		initForm(ureq);
-	}
-		
-	private void init() {
+
 		List<UserPropertyHandler> allSearchFormPropertyHandlers = userManager.getUserPropertyHandlersFor(UserAdminQuickSearchController.class.getCanonicalName(), true);
 		userSearchFormPropertyHandlers = allSearchFormPropertyHandlers.stream()
 				.filter(prop -> !UserConstants.NICKNAME.equals(prop.getName()))// admin. has the login search field
-				.collect(Collectors.toList());		
+				.toList();	
+		
+		initForm(ureq);
 	}
-
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -143,6 +139,14 @@ public class UserAdminQuickSearchController extends FormBasicController {
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
+	String getSearchValue() {
+		String searchElValue = searchEl.getValue();
+		if(searchElValue != null) {
+			searchElValue = searchElValue.trim().replace("*", "");
+		}
+		return searchElValue;
+	}
 		
 	/**
 	 * Can be called to get the list of users the user searched for
@@ -153,10 +157,8 @@ public class UserAdminQuickSearchController extends FormBasicController {
 		List<Identity> searchResult = new ArrayList<>();
 		List<Organisation> searchableOrganisations = organisationService.getOrganisations(getIdentity(), OrganisationRoles.usermanager, OrganisationRoles.rolesmanager,  OrganisationRoles.administrator);
 		
-		String searchElValue = searchEl.getValue();
+		String searchElValue = getSearchValue();
 		if(StringHelper.containsNonWhitespace(searchElValue)) {
-			searchElValue = searchElValue.trim();
-
 			// 1) Support multi-value search: perform a search for each search term separately
 			String[] searchValues = searchElValue.split(" ");
 			for (String searchValue : searchValues) {
