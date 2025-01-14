@@ -22,35 +22,97 @@ package org.olat.modules.coach.ui.em;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.course.certificate.model.CertificateIdentityConfig;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2024-12-23<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CertificatesController extends FormBasicController implements Activateable2 {
-	
-	public CertificatesController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		
+public class CertificatesController extends FormBasicController implements Activateable2, ExportableFlexiTableDataModel {
+
+	public static final int USER_PROPS_OFFSET = 100;
+
+	private final List<CertificateIdentityConfig> certificates;
+	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final String propsIdentifier;
+
+	private FlexiTableElement tableEl;
+	private CertificatesTableModel tableModel;
+
+	@Autowired
+	private UserManager userManager;
+
+	public CertificatesController(UserRequest ureq, WindowControl wControl, List<CertificateIdentityConfig> certificates, 
+								  List<UserPropertyHandler> userPropertyHandlers, String propsIdentifier) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.certificates = certificates;
+		this.userPropertyHandlers = userPropertyHandlers;
+		this.propsIdentifier = propsIdentifier;
+
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CertificatesTableModel.CertificateCols.id));
+		
+		int colIndex = USER_PROPS_OFFSET;
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
+			boolean visible = userManager.isMandatoryUserProperty(propsIdentifier, userPropertyHandler);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, 
+					userPropertyHandler.i18nColumnDescriptorLabelKey(),	colIndex++, "select", true,
+					userPropertyHandler.i18nColumnDescriptorLabelKey()));
+		}
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificatesTableModel.CertificateCols.path));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificatesTableModel.CertificateCols.course));
+		
+		tableModel = new CertificatesTableModel(columnsModel, this);
+		tableModel.setObjects(certificates);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, 
+				getTranslator(), formLayout);
+		tableEl.setExportEnabled(true);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		//
+	}
 
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == tableEl) {
+			if (event instanceof SelectionEvent selectionEvent) {
+				if ("select".equals(selectionEvent.getCommand())) {
+					CertificateIdentityConfig certificateIdentityConfig = tableModel.getObject(selectionEvent.getIndex());
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -58,7 +120,13 @@ public class CertificatesController extends FormBasicController implements Activ
 
 	}
 
-	public void reload() {
-		
+	public void reload(List<CertificateIdentityConfig> certificates) {
+		tableModel.setObjects(certificates);
+		tableEl.reloadData();
+	}
+
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		return new CertificatesExport(certificates, userPropertyHandlers, getTranslator());
 	}
 }

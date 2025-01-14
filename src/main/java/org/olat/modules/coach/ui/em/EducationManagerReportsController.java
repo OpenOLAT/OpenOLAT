@@ -21,6 +21,7 @@ package org.olat.modules.coach.ui.em;
 
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
@@ -38,6 +39,8 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateIdentityConfig;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
@@ -71,6 +74,8 @@ public class EducationManagerReportsController extends BasicController implement
 	private UserManager userManager;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private CertificatesManager certificatesManager;
 
 	public EducationManagerReportsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl);
@@ -118,7 +123,7 @@ public class EducationManagerReportsController extends BasicController implement
 
 	private void doOpenAttendanceReports(UserRequest ureq) {
 		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
-		List< LectureBlockIdentityStatistics> statistics = lectureService.getLecturesStatistics(params, userPropertyHandlers, getIdentity());
+		List<LectureBlockIdentityStatistics> statistics = lectureService.getLecturesStatistics(params, userPropertyHandlers, getIdentity());
 		if (lecturesListCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("AttendanceReports"), null);
 			lecturesListCtrl = new LecturesListController(ureq, swControl, statistics, userPropertyHandlers, 
@@ -132,12 +137,13 @@ public class EducationManagerReportsController extends BasicController implement
 	}
 
 	private Activateable2 doOpenCertificates(UserRequest ureq) {
+		List<CertificateIdentityConfig> certificates = certificatesManager.getCertificatesForOrganizations(getIdentity(), OrganisationRoles.educationmanager, userPropertyHandlers);
 		if (certificatesCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Certificates"), null);
-			certificatesCtrl = new CertificatesController(ureq, swControl);
+			certificatesCtrl = new CertificatesController(ureq, swControl, certificates, userPropertyHandlers, PROPS_IDENTIFIER);
 			listenTo(certificatesCtrl);
 		} else {
-			certificatesCtrl.reload();
+			certificatesCtrl.reload(certificates);
 		}
 		addToHistory(ureq, certificatesCtrl);
 		mainVC.put("segmentCmp", certificatesCtrl.getInitialComponent());

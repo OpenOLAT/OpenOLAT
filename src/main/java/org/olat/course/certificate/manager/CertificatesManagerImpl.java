@@ -117,6 +117,7 @@ import org.olat.course.certificate.EmailStatus;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.AbstractCertificate;
 import org.olat.course.certificate.model.CertificateConfig;
+import org.olat.course.certificate.model.CertificateIdentityConfig;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.model.CertificateStandalone;
@@ -680,6 +681,51 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				.createQuery(sb.toString(), CertificateLight.class)
 				.setParameter("resourceKeys", resourceKeys)
 				.getResultList();
+	}
+
+	@Override
+	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, OrganisationRoles organisationRole, List<UserPropertyHandler> userPropertyHandlers) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct cer, config ");
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
+		}
+		sb.append(" from organisation org");
+		sb.append(" inner join org.group orgGroup");
+		sb.append(" inner join orgGroup.members mgmtMembership");
+		sb.append(" inner join orgGroup.members userMembership");
+		sb.append(" inner join certificate cer on cer.identity = userMembership.identity");
+		sb.append(" inner join cer.identity.user user");
+		sb.append(" left join cer.olatResource res");
+		sb.append(" left join certificateentryconfig config on config.entry.olatResource = res");
+		sb.append(" where mgmtMembership.identity.key = :identityKey ");
+		sb.append(" and mgmtMembership.role = '").append(organisationRole.name()).append("'");
+		sb.append(" and userMembership.role = 'user'");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList().stream()
+				.map(objects -> mapToCertificateIdentityConfig(objects, userPropertyHandlers))
+				.toList();
+	}
+
+	private CertificateIdentityConfig mapToCertificateIdentityConfig(Object[] objects, List<UserPropertyHandler> userPropertyHandlers) {
+		CertificateIdentityConfig certificateIdentityConfig = new CertificateIdentityConfig();
+		int srcIdx = 0;
+		if (objects[srcIdx++] instanceof Certificate certificate) {
+			certificateIdentityConfig.setCertificate(certificate);
+		}
+		if (objects[srcIdx++] instanceof RepositoryEntryCertificateConfiguration config) {
+			certificateIdentityConfig.setConfig(config);
+		}
+		for (int dstIdx = 0; dstIdx < userPropertyHandlers.size() && srcIdx < objects.length; dstIdx++, srcIdx++) {
+			if (objects[srcIdx] instanceof String sourceString) {
+				certificateIdentityConfig.setIdentityProp(dstIdx, sourceString);
+			}
+		}
+
+		return certificateIdentityConfig;
 	}
 
 	@Override

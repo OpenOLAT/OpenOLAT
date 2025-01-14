@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
@@ -34,12 +35,14 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.certificate.model.CertificateConfig;
+import org.olat.course.certificate.model.CertificateIdentityConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -178,7 +181,9 @@ public interface CertificatesManager {
 	public Certificate getLastCertificate(IdentityRef identity, Long resourceKey);
 	
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource);
-	
+
+	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, OrganisationRoles organisationRole, List<UserPropertyHandler> userPropertyHandlers);
+
 	/**
 	 * Check if certification is allowed and check if a certificate was
 	 * already emitted and a new one can be generated.
