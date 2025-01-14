@@ -256,6 +256,13 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	
 	protected abstract void initFiltersPresets(List<FlexiFiltersTab> tabs);
 	
+	protected void updateUI() {
+		boolean canSubTypes = !descendants.isEmpty() || curriculumElement.getType() == null
+				|| !curriculumElement.getType().isSingleElement();
+		allLevelsButton.setVisible(canSubTypes);
+		thisLevelButton.setVisible(canSubTypes);
+	}
+	
 	@Override
 	public boolean isDetailsRow(int row, Object rowObject) {
 		return true;

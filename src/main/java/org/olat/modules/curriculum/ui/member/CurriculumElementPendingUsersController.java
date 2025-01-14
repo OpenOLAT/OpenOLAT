@@ -114,6 +114,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		membersManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.members);
 
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override

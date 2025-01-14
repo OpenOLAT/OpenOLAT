@@ -120,6 +120,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		membersManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.members);
 		
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override

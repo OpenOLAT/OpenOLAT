@@ -214,6 +214,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
+		updateUI();
 	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, LecturesSecurityCallback secCallback) {
@@ -227,6 +228,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
+		updateUI();
 	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement, LecturesSecurityCallback secCallback) {
@@ -240,6 +242,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
+		updateUI();
 	}
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, Curriculum curriculum, LecturesSecurityCallback secCallback) {
@@ -253,6 +256,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		detailsVC = createVelocityContainer("lecture_details");
 		
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -262,13 +266,11 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private  void initButtonsForm(FormItemContainer formLayout) {
-		if(curriculumElement != null) {
-			allLevelsButton = uifactory.addFormLink("search.all.levels", formLayout, Link.BUTTON);
-			allLevelsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
-			allLevelsButton.setPrimary(true);
-			thisLevelButton = uifactory.addFormLink("search.this.level", formLayout, Link.BUTTON);
-			thisLevelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_exact_location");
-		}
+		allLevelsButton = uifactory.addFormLink("search.all.levels", formLayout, Link.BUTTON);
+		allLevelsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
+		allLevelsButton.setPrimary(true);
+		thisLevelButton = uifactory.addFormLink("search.this.level", formLayout, Link.BUTTON);
+		thisLevelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_exact_location");
 	
 		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
 			if(entry != null || curriculum != null || curriculumElement != null) {
@@ -455,6 +457,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		
 		tableEl.setFilterTabs(true, tabs);
 		tabsMap = Map.copyOf(map);
+	}
+	
+	protected void updateUI() {
+		boolean canSubelements = curriculumElement != null
+				&& (curriculumElement.getType() == null || !curriculumElement.getType().isSingleElement());
+		allLevelsButton.setVisible(canSubelements);
+		thisLevelButton.setVisible(canSubelements);
 	}
 	
 	@Override

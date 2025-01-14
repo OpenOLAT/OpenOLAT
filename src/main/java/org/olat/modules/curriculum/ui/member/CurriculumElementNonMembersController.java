@@ -78,6 +78,7 @@ public class CurriculumElementNonMembersController extends AbstractMembersContro
 				curriculumElement, secCallback, avatarMapper, avatarMapperBaseURL);
 		
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
