@@ -250,7 +250,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(rootElement == null) {
 				allowedTypes = curriculumService.getAllowedCurriculumElementType(null, null);
 			} else {
-				allowedTypes = curriculumService.getAllowedCurriculumElementType(rootElement.getParent(), rootElement);
+				allowedTypes = curriculumService.getAllowedCurriculumElementType(rootElement, null);
 			}
 			
 			for(CurriculumElementType allowedType:allowedTypes) {
