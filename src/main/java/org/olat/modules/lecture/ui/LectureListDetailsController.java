@@ -295,7 +295,7 @@ public class LectureListDetailsController extends FormBasicController {
 			
 			Group defaultGroup = repositoryService.getDefaultGroup(repositoryEntry);
 			int participants = repositoryService.countMembers(repositoryEntry, GroupRoles.participant.name());
-			if(!curriculumType || selectedGroups.contains(defaultGroup)) {
+			if(!curriculumType || (selectedGroups.contains(defaultGroup) && participants > 0)) {
 				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(repositoryEntry, defaultGroup,
 					participants, !selectedGroups.contains(defaultGroup))));
 			}
