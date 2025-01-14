@@ -43,12 +43,16 @@ public class VideoEditorPage {
 	}
 	
 	public VideoEditorPage assertOnVideoEditor() {
-		// Wait a little to load the video
-		OOGraphene.waitingLong();
 		By videoBy = By.xpath("//div[@id='o_video_editor_video']//div[contains(@class,'o_video_run')]//mediaelementwrapper/video");
 		OOGraphene.waitElement(videoBy, 10, browser);
 		By videoControlsBy = By.cssSelector(".o_video_editor .o_video_run .mejs__controls .mejs__button.mejs__playpause-button.mejs__play");
 		OOGraphene.waitElement(videoControlsBy, 5, browser);
+		return this;
+	}
+	
+	public VideoEditorPage waitOnVideo() {
+		OOGraphene.waitingALittleLonger();
+		OOGraphene.waitSpinnerDisappears(browser);
 		return this;
 	}
 	
@@ -98,7 +102,7 @@ public class VideoEditorPage {
 			By segmentsBy = By.xpath("//div[@class='olatFlashMovieViewer']//div[@class='o_videotask_layer']//div[@id='o_videotask_segments'][count(div[contains(@class,'o_vt_marker')])=" + numOfSegments + "]");
 			OOGraphene.waitElement(segmentsBy, browser);
 		} catch (Exception e) {
-			OOGraphene.takeScreenshot("Edit segment", browser);
+			OOGraphene.takeScreenshot("Assert video segment " + numOfSegments, browser);
 			throw e;
 		}
 		return this;
