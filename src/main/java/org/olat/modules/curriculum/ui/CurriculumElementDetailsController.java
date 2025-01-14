@@ -448,18 +448,19 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				.createOLATResourceableType(CurriculumListManagerController.CONTEXT_OVERVIEW), null);
 		overviewCtrl = new CurriculumDashboardController(ureq, subControl);
 		listenTo(overviewCtrl);
-		
-		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
-		listenTo(coursesWidgetCtrl);
-		overviewCtrl.addWidget("courses", coursesWidgetCtrl);
-		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
-		
+
 		if(lectureModule.isEnabled()) {
 			lectureBlocksWidgetCtrl = new LectureBlocksWidgetController(ureq, getWindowControl(),
 					curriculumElement, lecturesSecCallback);
 			listenTo(lectureBlocksWidgetCtrl);
 			overviewCtrl.addWidget("lectures", lectureBlocksWidgetCtrl);
 		}
+		
+		coursesWidgetCtrl = new CoursesWidgetController(ureq, getWindowControl(), curriculumElement, secCallback);
+		listenTo(coursesWidgetCtrl);
+		overviewCtrl.addWidget("courses", coursesWidgetCtrl);
+		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
+		
 		return overviewCtrl;
 	}
 
