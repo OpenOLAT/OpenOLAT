@@ -39,18 +39,6 @@ public class InvoiceAccessController extends AbstractAccessController {
 	}
 
 	@Override
-	protected String getTitle() {
-		return getTranslator().translate("access.invoice.title");
-	}
-
-	@Override
-	protected String getMethodDescription(OfferAccess link) {
-		return link.getOffer().isConfirmationByManagerRequired()
-				? getTranslator().translate("access.invoice.desc.confirmation")
-				: getTranslator().translate("access.invoice.desc");
-	}
-
-	@Override
 	protected Controller createDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		return new InvoiceSubmitController(ureq, wControl, link);
 	}

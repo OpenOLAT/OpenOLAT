@@ -31,12 +31,10 @@ import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.OfferAccess;
-import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransactionStatus;
 import org.olat.resource.accesscontrol.ui.FormController;
-import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.paypal.svcs.types.ap.PayResponse;
@@ -87,10 +85,6 @@ public class PaypalSubmitController extends FormBasicController implements FormC
 				setFormWarning("paypal.error.transaction");
 			}
 		}
-		
-		Price price = link.getOffer().getPrice();
-		String priceStr = PriceFormat.fullFormat(price);
-		uifactory.addStaticTextElement("offer.price", priceStr, elementCont);
 			
 		uifactory.addFormSubmitButton("access.button", formLayout);
 	}

@@ -26,14 +26,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.OfferAccess;
-import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutManager;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutModule;
 import org.olat.resource.accesscontrol.ui.FormController;
-import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -71,19 +67,6 @@ public class PaypalSmartButtonPaymentController extends FormBasicController impl
 			
 			String preferedLocale = paypalCheckoutManager.getPreferredLocale(getLocale());
 			layoutCont.contextPut("plocale", preferedLocale);
-			
-			String description = link.getOffer().getDescription();
-			if(StringHelper.containsNonWhitespace(description)) {
-				if(!StringHelper.isHtml(description)) {
-					description = Formatter.escWithBR(description).toString();
-				}
-				description = StringHelper.xssScan(description);
-				layoutCont.contextPut("description", description);
-			}
-			
-			Price price = link.getOffer().getPrice();
-			String priceStr = PriceFormat.fullFormat(price);
-			layoutCont.contextPut("price", priceStr);
 			
 			String mapperUri = registerMapper(ureq, new PaypalSmartButtonMapper(getIdentity(), link, this));
 			layoutCont.contextPut("mapperUri", mapperUri);

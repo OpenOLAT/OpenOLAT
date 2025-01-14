@@ -119,7 +119,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append("<div id=\"").append(wrapperId).append("\" ")
 			.append(" class=\"form-inline ")
 			.append("o_radio_cards_wrapper ", source.getFormItem().isRenderAsCard())
-			.append("o_radio_cards_unwrapped ", source.getFormItem().isShowMoreCards())
+			.append("o_radio_cards_unwrapped ", source.getFormItem().isShowMoreCards() && source.getFormItem().getShowMoreCardsI18nKey() != null)
 			.append("o_radio_card_top_to_bottom ", source.getFormItem().isShowMoreCards())
 			.append("o_radio_buttons btn-group ", source.getFormItem().isRenderAsButtonGroup())
 			.append(css, css != null)
@@ -142,7 +142,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		
 		if (source.getFormItem().isRenderAsCard()) {
 			sb.append("</div>");
-			if (source.getFormItem().isShowMoreCards()) {
+			if (source.getFormItem().isShowMoreCards() && source.getFormItem().getShowMoreCardsI18nKey() != null) {
 				sb.append("<div class=\"o_show_more_radios\"><a ");
 				sb.append("href=\"javascript:;\" onclick=\"document.getElementById('").append(wrapperId).append("').classList.remove('o_radio_cards_unwrapped');return false;\"");
 				sb.append(">").append(translator.translate(source.getFormItem().getShowMoreCardsI18nKey())).append("</a></div>");

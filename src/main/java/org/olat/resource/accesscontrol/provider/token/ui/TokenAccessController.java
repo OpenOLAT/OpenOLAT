@@ -39,16 +39,6 @@ public class TokenAccessController extends AbstractAccessController {
 	}
 
 	@Override
-	protected String getTitle() {
-		return getTranslator().translate("access.token.title");
-	}
-
-	@Override
-	protected String getMethodDescription(OfferAccess link) {
-		return getTranslator().translate("access.token.desc");
-	}
-
-	@Override
 	protected Controller createDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		return new TokenSubmitController(ureq, wControl, link);
 	}

@@ -37,7 +37,7 @@ import org.olat.repository.ui.list.RepositoryEntryDetailsMetadataController;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
-import org.olat.resource.accesscontrol.ui.AccessListController;
+import org.olat.resource.accesscontrol.ui.OffersController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,7 +51,7 @@ public class CatalogRepositoryEntryAccessController extends BasicController {
 	private final RepositoryEntryDetailsHeaderController headerCtrl;
 	private final RepositoryEntryDetailsMetadataController metadataCtrl;
 	private final RepositoryEntryDetailsLinkController linkCtrl;
-	private AccessListController accessCtrl;
+	private OffersController accessCtrl;
 	
 	private final RepositoryEntry entry;
 	
@@ -90,7 +90,7 @@ public class CatalogRepositoryEntryAccessController extends BasicController {
 		if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
 			fireEvent(ureq, new BookedEvent(entry));
 		} else {
-			accessCtrl = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
+			accessCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
 			listenTo(accessCtrl);
 			mainVC.put("access", accessCtrl.getInitialComponent());
 		}

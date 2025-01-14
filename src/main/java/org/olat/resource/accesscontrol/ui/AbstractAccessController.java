@@ -19,7 +19,8 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -31,7 +32,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.Price;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -46,13 +50,14 @@ public abstract class AbstractAccessController extends BasicController {
 	private Controller detailsCtrl;
 	
 	private final OfferAccess link;
-	private final Formatter formatter;
+	
+	@Autowired
+	private AccessControlModule acModule;
 
 	protected AbstractAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AbstractAccessController.class, getLocale(), getTranslator()));
 		this.link = link;
-		this.formatter = Formatter.getInstance(getLocale());
 		this.velocity_root = Util.getPackageVelocityRoot(AbstractAccessController.class);
 		
 		mainVC = createVelocityContainer("access_method");
@@ -60,19 +65,18 @@ public abstract class AbstractAccessController extends BasicController {
 	}
 
 	protected void init(UserRequest ureq) {
-		mainVC.contextPut("title", getTitle());
-		
-		String period = null;
-		Date from = link.getOffer().getValidFrom();
-		Date to = link.getOffer().getValidTo();
-		if (from != null && to != null) {
-			period = translate("period.from.to", formatter.formatDate(from), formatter.formatDate(to));
-		} else if (from != null) {
-			period =  translate("period.from", formatter.formatDate(from));
-		} else if (to != null) {
-			period = translate("period.to", formatter.formatDate(to));
+		Price price = link.getOffer().getPrice();
+		if (price != null && !price.isEmpty()) {
+			String priceStr = "<span class=\"o_ac_method_price_ammount\">" + PriceFormat.fullFormat(price) + "</span>";
+			if(acModule.isVatEnabled()) {
+				BigDecimal vat = acModule.getVat();
+				String vatStr = vat == null ? "" : vat.setScale(3, RoundingMode.HALF_EVEN).toPlainString();
+				priceStr = translate("access.info.price.vat", new String[]{priceStr, vatStr});
+			} else {
+				priceStr = translate("access.info.price.noVat", new String[]{priceStr});
+			}
+			mainVC.contextPut("price", priceStr);
 		}
-		mainVC.contextPut("period", period);
 		
 		String description = link.getOffer().getDescription();
 		if(StringHelper.containsNonWhitespace(description)) {
@@ -82,16 +86,11 @@ public abstract class AbstractAccessController extends BasicController {
 			description = StringHelper.xssScan(description);
 			mainVC.contextPut("description", description);
 		}
-		mainVC.contextPut("methodDescription", getMethodDescription(link));
 		
 		detailsCtrl = createDetailsController(ureq, getWindowControl(), link);
 		listenTo(detailsCtrl);
 		mainVC.put("details", detailsCtrl.getInitialComponent());
 	}
-	
-	protected abstract String getTitle();
-	
-	protected abstract String getMethodDescription(OfferAccess link);
 	
 	protected abstract Controller createDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link);
 

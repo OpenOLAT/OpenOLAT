@@ -30,7 +30,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
-import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 
@@ -60,10 +59,6 @@ public class InvoiceSubmitController extends FormBasicController implements Cont
 		FormLayoutContainer elementCont = FormLayoutContainer.createVerticalFormLayout("elements", getTranslator());
 		elementCont.setRootForm(mainForm);
 		formLayout.add(elementCont);
-		
-		Price price = offer.getPrice();
-		String priceStr = PriceFormat.fullFormat(price);
-		uifactory.addStaticTextElement("price", priceStr, elementCont);
 		
 		if (offer.getCancellingFee() != null) {
 			String cancellingFee = PriceFormat.fullFormat(offer.getCancellingFee());

@@ -108,7 +108,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
-import org.olat.resource.accesscontrol.ui.AccessListController;
+import org.olat.resource.accesscontrol.ui.OffersController;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -424,7 +424,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				needActivation = false;
 			}  else if (businessGroup != null && !acResult.getAvailableMethods().isEmpty()
 					&& !roles.isGuestOnly() && !roles.isInviteeOnly()) {
-				accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), true);
+				accessController = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), true);
 				listenTo(accessController);
 				mainPanel.setContent(accessController.getInitialComponent());
 				bgTree.setTreeModel(new GenericTreeModel());

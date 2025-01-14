@@ -348,6 +348,9 @@ form .o_form, form.o_form {
 		  		font-size: 90%;
 		  		display: block;
 				word-wrap: anywhere;
+				.o_radio_desc_center {
+					text-align: center;
+				}
 		  	}
 		  	.o_radio_icon {
 		  		display: inline-block;
@@ -435,6 +438,14 @@ form .o_form, form.o_form {
 					top: initial;
 					bottom: 10px;
 					left: calc(50% - 6px);
+				}
+				&:is(.o_radios_invisible *) {
+					.o_radio_card {
+						padding: 10px 10px 10px 10px;
+					}
+					input {
+						visibility: hidden;
+					}
 				}
 			}
 		}

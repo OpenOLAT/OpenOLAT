@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,13 +14,11 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-
 package org.olat.resource.accesscontrol.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -34,44 +32,41 @@ import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
+import org.olat.resource.accesscontrol.ui.OfferSelectionController.OfferSelectedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Description:<br>
- * A simple step to choose the way to access a resource if
- * several methods are available
- * 
- * <P>
- * Initial Date:  27 avr. 2011 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: Jan 13, 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
+ *
  */
-public class AccessListController extends BasicController {
-	
+public class OffersController extends BasicController {
+
 	private final VelocityContainer mainVC;
-	private final List<Controller> accessCtrls = new ArrayList<>();
+	
+	private final OfferSelectionController offerSelectionCtrl;
+	private Controller accessCtrl;
 	
 	@Autowired
 	private AccessControlModule acModule;
 
-	public AccessListController(UserRequest ureq, WindowControl wControl, List<OfferAccess> links, boolean withTitle) {
+	public OffersController(UserRequest ureq, WindowControl wControl, List<OfferAccess> offers, boolean withTitle) {
 		super(ureq, wControl);
+		mainVC = createVelocityContainer("offers");
+		putInitialPanel(mainVC);
 		
-		mainVC = createVelocityContainer("access_method_list");
 		mainVC.contextPut("title", Boolean.valueOf(withTitle));
 		
-		for(OfferAccess link:links) {
-			AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
-			Controller accessCtrl = handler.createAccessController(ureq, getWindowControl(), link);
-			listenTo(accessCtrl);
-			accessCtrls.add(accessCtrl);
-			mainVC.put("ac_" + link.getKey(), accessCtrl.getInitialComponent());
-		}
-		mainVC.contextPut("links", links);
+		offerSelectionCtrl = new OfferSelectionController(ureq, wControl, offers);
+		listenTo(offerSelectionCtrl);
+		mainVC.put("offerSelection", offerSelectionCtrl.getInitialComponent());
 		
-		putInitialPanel(mainVC);
+		mainVC.contextPut("oneOfferOnly", offers.size() == 1);
+		
+		updateOfferUI(ureq, offers.get(0));
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
@@ -79,14 +74,17 @@ public class AccessListController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(accessCtrls.contains(source)) {
-			if(event instanceof AccessEvent) {
-				if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
+		if (source == offerSelectionCtrl) {
+			if (event instanceof OfferSelectedEvent osEvent) {
+				updateOfferUI(ureq, osEvent.getOffer());
+			}
+		} else if (source == accessCtrl) {
+			if (event instanceof AccessEvent aeEvent) {
+				if (event.equals(AccessEvent.ACCESS_OK_EVENT)) {
 					fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);
 				} else {
-					String msg = ((AccessEvent)event).getMessage();
-					if(StringHelper.containsNonWhitespace(msg)) {
-						getWindowControl().setError(msg);
+					if(StringHelper.containsNonWhitespace(aeEvent.getMessage())) {
+						getWindowControl().setError(aeEvent.getMessage());
 					} else {
 						showError("error.accesscontrol");
 					}
@@ -95,4 +93,14 @@ public class AccessListController extends BasicController {
 		}
 		super.event(ureq, source, event);
 	}
+
+	private void updateOfferUI(UserRequest ureq, OfferAccess offer) {
+		removeAsListenerAndDispose(accessCtrl);
+		
+		AccessMethodHandler handler = acModule.getAccessMethodHandler(offer.getMethod().getType());
+		accessCtrl = handler.createAccessController(ureq, getWindowControl(), offer);
+		listenTo(accessCtrl);
+		mainVC.put("offer", accessCtrl.getInitialComponent());
+	}
+
 }

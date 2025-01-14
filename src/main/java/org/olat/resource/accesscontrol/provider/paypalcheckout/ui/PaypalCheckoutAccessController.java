@@ -39,16 +39,6 @@ public class PaypalCheckoutAccessController extends AbstractAccessController {
 	}
 
 	@Override
-	protected String getTitle() {
-		return getTranslator().translate("access.paypal.title");
-	}
-
-	@Override
-	protected String getMethodDescription(OfferAccess link) {
-		return getTranslator().translate("access.paypal.desc");
-	}
-
-	@Override
 	protected Controller createDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
 		return new PaypalCheckoutSubmitController(ureq, wControl, link);
 	}

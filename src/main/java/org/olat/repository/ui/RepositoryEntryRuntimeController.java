@@ -105,7 +105,7 @@ import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
-import org.olat.resource.accesscontrol.ui.AccessListController;
+import org.olat.resource.accesscontrol.ui.OffersController;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -1136,7 +1136,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 						if(acResult.isAccessible()) {
 							launchContent(ureq);
 						} else {
-							accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods(), true);
+							accessController = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), true);
 							listenTo(accessController);
 							toolbarPanel.rootController(re.getDisplayname(), accessController);
 						}

@@ -1,0 +1,9 @@
+#if($title)
+	<h3>
+		<i class="o_icon o_icon-fw o_icon_booking"></i> $r.translate("access.title")
+	</h3>
+#end
+<div class="o_ac_offers #if($oneOfferOnly)o_ac_one_offer #end">
+	$r.render("offerSelection")
+	$r.render("offer")
+</div>

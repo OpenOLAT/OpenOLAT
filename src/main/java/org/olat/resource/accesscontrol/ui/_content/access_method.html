@@ -1,14 +1,11 @@
 <div class="o_ac_method">
 	<div class="o_ac_method_info">
-		<h3>$title</h3>
-		#if($period)
-			<h4>$r.translate("offer.period")</h4>
-			<div>$period</div>
+		#if($price)
+			<div class="o_ac_method_price">$price</div>
 		#end
-		<h4>$r.translate("description")</h4>
-		<div>$methodDescription</div>
 		#if($description)
-			<div class="o_block_top">$description</div>
+			<label>$r.translate("description")</label>
+			<div>$description</div>
 		#end
 	</div>
 	<div class="o_ac_method_details">

@@ -50,7 +50,6 @@ import org.olat.resource.accesscontrol.BillingAddressSearchParams;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
-import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.BillingAddressController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
@@ -89,10 +88,6 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		Offer offer = link.getOffer();
-		
-		Price price = offer.getPrice();
-		String priceStr = PriceFormat.fullFormat(price);
-		uifactory.addStaticTextElement("price", priceStr, formLayout);
 		
 		if (offer.getCancellingFee() != null) {
 			String cancellingFee = PriceFormat.fullFormat(offer.getCancellingFee());
