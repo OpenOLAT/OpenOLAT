@@ -479,19 +479,21 @@ public class EditLectureBlockController extends FormBasicController {
 		if(lectureBlock == null) {
 			beforeXml = null;
 			action = LectureBlockAuditLog.Action.createLectureBlock;
-			selectedGroups = new ArrayList<>();
-			if(entry != null) {
+			selectedGroups = new ArrayList<>();	
+			if(curriculumElement != null) {
+				RepositoryEntry singleEntry;
+				if(entry != null) {
+					singleEntry = entry;
+				} else {
+					List<RepositoryEntry> curriculumElementEntries = curriculumService.getRepositoryEntries(curriculumElement);
+					singleEntry = curriculumElementEntries.size() == 1 ? curriculumElementEntries.get(0) : null;
+				}
+				lectureBlock = lectureService.createLectureBlock(curriculumElement, singleEntry);
+				selectedGroups.add(curriculumElement.getGroup());
+			} else if(entry != null) {
 				lectureBlock = lectureService.createLectureBlock(entry);
 				Group defGroup = repositoryService.getDefaultGroup(entry);
 				selectedGroups.add(defGroup);
-			} else if(curriculumElement != null) {
-				List<RepositoryEntry> curriculumElementEntries = curriculumService.getRepositoryEntries(curriculumElement);
-				RepositoryEntry singleEntry = curriculumElementEntries.size() == 1 ? curriculumElementEntries.get(0) : null;
-				lectureBlock = lectureService.createLectureBlock(curriculumElement, singleEntry);
-				if(singleEntry != null) {
-					Group defGroup = repositoryService.getDefaultGroup(singleEntry);
-					selectedGroups.add(defGroup);
-				}
 			} else {
 				showWarning("error.no.entry.curriculum");
 				return;

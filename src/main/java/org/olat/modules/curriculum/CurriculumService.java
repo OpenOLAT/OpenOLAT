@@ -594,7 +594,11 @@ public interface CurriculumService {
 	 * @param element
 	 * @param entry
 	 */
-	void removeRepositoryEntry(CurriculumElement element, RepositoryEntry entry);
+	RemovedRepositoryEntry removeRepositoryEntry(CurriculumElement element, RepositoryEntry entry);
+	
+	public record RemovedRepositoryEntry(boolean entryRemoved, int lectureBlockMoved) {
+		//
+	}
 	
 	/**
 	 * Remove the repository entry from all the curriculum elements.

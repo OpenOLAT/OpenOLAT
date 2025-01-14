@@ -57,6 +57,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumService.AddRepositoryEntry;
+import org.olat.modules.curriculum.CurriculumService.RemovedRepositoryEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -298,10 +299,20 @@ public class CurriculumElementResourceListController extends FormBasicController
 	}
 	
 	private void doRemove(List<RepositoryEntry> resourcesToRemove) {
+		int lectureBlocksRemoved = 0;
 		for(RepositoryEntry resourceToRemove:resourcesToRemove) {
-			curriculumService.removeRepositoryEntry(curriculumElement, resourceToRemove);
+			RemovedRepositoryEntry infos = curriculumService.removeRepositoryEntry(curriculumElement, resourceToRemove);
+			lectureBlocksRemoved += infos.lectureBlockMoved();
 		}
 		loadModel();
+		
+		String i18nKey;
+		if(lectureBlocksRemoved == 0) {
+			i18nKey = resourcesToRemove.size() == 1 ? "info.repositoryentry.removed" : "info.repositoryentries.removed";
+		} else {
+			i18nKey = resourcesToRemove.size() == 1 ? "info.repositoryentry.removed.lectureblock.moved" : "info.repositoryentries.removed.lectureblock.moved";
+		}
+		showInfo(i18nKey, Integer.toString(resourcesToRemove.size()));
 	}
 	
 	private void doSelectRepositoryEntry(UserRequest ureq, RepositoryEntry entry) {

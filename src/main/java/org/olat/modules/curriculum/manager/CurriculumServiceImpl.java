@@ -1274,12 +1274,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public void removeRepositoryEntry(RepositoryEntry entry) {
 		List<CurriculumElement> elements = curriculumRepositoryEntryRelationDao.getCurriculumElements(entry);
 		for(CurriculumElement element:elements) {
-			repositoryEntryRelationDao.removeRelation(element.getGroup(), entry);
+			internalRemoveRepositoryEntry(element, entry);
 		}
 	}
 
 	@Override
-	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntry entry) {
+	public RemovedRepositoryEntry removeRepositoryEntry(CurriculumElement element, RepositoryEntry entry) {
 		// remove relation linked between infoMessages and curriculumElement
 		List<InfoMessage> infoMessages = infoMessageManager.loadInfoMessageByResource(entry.getOlatResource(),
 				InfoMessageFrontendManager.businessGroupResSubPath, null, null, null, 0, 0);
@@ -1293,8 +1293,24 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				}
 			}
 		}
-
+		int lectureBlocksMoved = internalRemoveRepositoryEntry(element, entry);
+		return new RemovedRepositoryEntry(true, lectureBlocksMoved);
+	}
+	
+	private int internalRemoveRepositoryEntry(CurriculumElement element, RepositoryEntry entry) {
+		int lectureBlocksMoved = 0;
+		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks(entry);
+		for(LectureBlock lectureBlock:lectureBlocks) {
+			if(lectureBlock.getCurriculumElement() == null) {
+				// Do nothing
+			} else if(element.equals(lectureBlock.getCurriculumElement())) {
+				((LectureBlockImpl)lectureBlock).setEntry(null);
+				lectureBlockDao.update(lectureBlock);
+				lectureBlocksMoved++;
+			}
+		}
 		repositoryEntryRelationDao.removeRelation(element.getGroup(), entry);
+		return lectureBlocksMoved;
 	}
 
 	@Override
