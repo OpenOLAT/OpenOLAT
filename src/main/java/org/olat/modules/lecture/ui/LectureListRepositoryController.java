@@ -111,6 +111,7 @@ import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
 import org.olat.modules.lecture.ui.addwizard.AddLectureBlock1ResourcesStep;
 import org.olat.modules.lecture.ui.addwizard.AddLectureBlockStepCallback;
 import org.olat.modules.lecture.ui.addwizard.AddLectureContext;
+import org.olat.modules.lecture.ui.addwizard.AssignNewRepositoryEntryController;
 import org.olat.modules.lecture.ui.blockimport.BlocksImport_1_InputStep;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlock;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
@@ -184,6 +185,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private StepsMainRunController addLectureWizardCtrl;
 	private IdentitySmallListController teacherSmallListCtrl; 
 	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private AssignNewRepositoryEntryController assignNewEntryCtrl;
 	private ConfirmDeleteLectureBlockController deleteLectureBlocksCtrl;
 
 	private final RepositoryEntry entry;
@@ -739,7 +741,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(addLectureCtrl == source || deleteLectureBlocksCtrl == source) {
+		if(addLectureCtrl == source || deleteLectureBlocksCtrl == source || assignNewEntryCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
 			}
@@ -787,6 +789,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private void cleanUp() {
 		removeAsListenerAndDispose(deleteLectureBlocksCtrl);
 		removeAsListenerAndDispose(addLectureWizardCtrl);
+		removeAsListenerAndDispose(assignNewEntryCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(editLectureCtrl);
 		removeAsListenerAndDispose(addLectureCtrl);
@@ -794,6 +797,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		removeAsListenerAndDispose(cmc);
 		deleteLectureBlocksCtrl = null;
 		addLectureWizardCtrl = null;
+		assignNewEntryCtrl = null;
 		toolsCalloutCtrl = null;
 		editLectureCtrl = null;
 		addLectureCtrl = null;
@@ -1057,6 +1061,20 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		fireEvent(ureq, new ActivateEvent(entries));
 	}
 	
+	private void doAssignNewEntry(UserRequest ureq, LectureBlockRow row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		RepositoryEntry currentEntry = lectureBlock.getEntry();
+		CurriculumElement element = lectureBlock.getCurriculumElement();
+		assignNewEntryCtrl = new AssignNewRepositoryEntryController(ureq, getWindowControl(),
+				lectureBlock, element, currentEntry);
+		listenTo(assignNewEntryCtrl);
+		
+		String title = translate("assign.new.entry");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), assignNewEntryCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doOpenTools(UserRequest ureq, LectureBlockRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -1077,6 +1095,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		private Link copyLink;
 		private Link logLink;
 		private Link reopenLink;
+		private Link assignNewEntry;
 		
 		private final LectureBlockRow row;
 		
@@ -1105,12 +1124,29 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			
 			logLink = LinkFactory.createLink("log", "log", getTranslator(), mainVC, this, Link.LINK);
 			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
-				
-			if(secCallback.canNewLectureBlock() && !LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) {
-				deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
-				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			
+			if(secCallback.canNewLectureBlock()) {
+				if(canAssignNewRepositoryEntry()) {
+					assignNewEntry = LinkFactory.createLink("assign.new.entry", "assign.new.entry", getTranslator(), mainVC, this, Link.LINK);
+					assignNewEntry.setIconLeftCSS("o_icon o_icon-fw o_icon_assign_new_item");
+				}
+				if(!LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) {
+					deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+					deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+				}
 			}
 			putInitialPanel(mainVC);
+		}
+		
+		private boolean canAssignNewRepositoryEntry() {
+			if(curriculumElement != null && row.getCurriculumElement() != null && row.getCurriculumElement().key() != null) {
+				List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
+				if(row.getEntry() == null || row.getEntry().key() == null) {
+					return !entries.isEmpty();
+				}
+				return entries.size() > 1;
+			}
+			return false;
 		}
 
 		@Override
@@ -1126,6 +1162,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 				doExportLog(ureq, row);
 			} else if(reopenLink == source) {
 				doReopen(ureq, row);
+			} else if(assignNewEntry == source) {
+				doAssignNewEntry(ureq, row);
 			}
 		}
 	}

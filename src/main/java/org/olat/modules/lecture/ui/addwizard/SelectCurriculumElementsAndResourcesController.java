@@ -139,7 +139,7 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		entriesTableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
 		entriesTableEl.setRendererType(FlexiTableRendererType.custom);
 		entriesTableEl.setNumOfRowsEnabled(false);
-		entriesTableEl.setCssDelegate(new EntriesDelegate());
+		entriesTableEl.setCssDelegate(new CSSEntriesDelegate());
 		entriesTableEl.setEmptyTableSettings("empty.course.list", null, "o_CourseModule_icon");
 		
 		VelocityContainer row = new VelocityContainer(null, "vc_row1", velocity_root + "/entry_1.html",
@@ -298,7 +298,7 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	
-	private static class EntriesDelegate extends DefaultFlexiTableCssDelegate {
+	public static class CSSEntriesDelegate extends DefaultFlexiTableCssDelegate {
 		@Override
 		public String getTableCssClass(FlexiTableRendererType type) {
 			return "o_cards o_cards_5";

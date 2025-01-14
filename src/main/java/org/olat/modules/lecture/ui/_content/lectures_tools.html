@@ -11,6 +11,10 @@
 #if($r.available("log"))
 	<li>$r.render("log")</li>
 #end
+#if($r.available("assign.new.entry"))
+	<li class="divider"></li>
+	<li>$r.render("assign.new.entry")</li>
+#end
 #if($r.available("delete"))
 	<li class="divider"></li>
 	<li>$r.render("delete")</li>

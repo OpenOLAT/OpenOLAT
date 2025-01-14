@@ -47,6 +47,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_add_search { @include o-add-icon('search-plus');}
 .o_icon_arrow_right { @include o-add-icon('arrow-right');}
 .o_icon_arrow_up_right_from_square { @include o-add-icon('arrow-up-right-from-square');}
+.o_icon_assign_new_item { @include o-add-icon('arrows-turn-to-dots'); }
 .o_icon_audio { @include o-add-icon('volume-up');}
 .o_icon_audio_record { @include o-add-icon('microphone');}
 .o_icon_back { @include o-add-icon('chevron-left');}
