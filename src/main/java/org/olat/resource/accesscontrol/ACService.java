@@ -245,7 +245,7 @@ public interface ACService {
 
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable);
 
-	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles);
+	public List<AccessMethod> getAvailableMethods(OLATResource resource, Identity identity, Roles roles);
 	
 	public List<AccessMethod> getAvailableMethods();
 

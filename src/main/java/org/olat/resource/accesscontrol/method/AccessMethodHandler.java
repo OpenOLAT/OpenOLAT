@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
@@ -66,7 +67,7 @@ public interface AccessMethodHandler {
 	
 	public String getDescription(Locale locale);
 	
-	public AccessMethodSecurityCallback getSecurityCallback(Identity identity, Roles roles);
+	public AccessMethodSecurityCallback getSecurityCallback(OLATResource resource, Identity identity, Roles roles);
 	
 	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link);
 	

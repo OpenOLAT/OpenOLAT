@@ -20,13 +20,20 @@
 package org.olat.resource.accesscontrol.model;
 
 /**
- * Access only by the System. No user can use in the GUI.
+ * Not available in the GUI.
  *
  * Initial date: 11.08.2017<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SystemACSecurityCallback implements AccessMethodSecurityCallback {
+public class NotAvailableACSecurityCallback implements AccessMethodSecurityCallback {
+	
+	private static final NotAvailableACSecurityCallback INSTANCE = new NotAvailableACSecurityCallback();
+	
+	public static final NotAvailableACSecurityCallback get() {
+		return INSTANCE;
+	}
 
 	@Override
 	public boolean canUse() {

@@ -786,19 +786,19 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles) {
+	public List<AccessMethod> getAvailableMethods(OLATResource resource, Identity identity, Roles roles) {
 		List<AccessMethod> methods = methodManager.getAvailableMethods();
 		
 		List<AccessMethod> allowedMethods = new ArrayList<>();
 		for(AccessMethod method:methods) {
 			AccessMethodHandler handler = accessModule.getAccessMethodHandler(method.getType());
-			AccessMethodSecurityCallback secCallback = handler.getSecurityCallback(identity, roles);
+			AccessMethodSecurityCallback secCallback = handler.getSecurityCallback(resource, identity, roles);
 			if(secCallback.canUse()) {
 				allowedMethods.add(method);
 			}
 		}
 		
-		return methods;
+		return allowedMethods;
 	}
 
 	@Override

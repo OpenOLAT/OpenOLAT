@@ -33,6 +33,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
@@ -41,6 +44,7 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethodSecurityCallback;
 import org.olat.resource.accesscontrol.model.DefaultACSecurityCallback;
+import org.olat.resource.accesscontrol.model.NotAvailableACSecurityCallback;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.invoice.ui.InvoiceAccessConfigurationController;
 import org.olat.resource.accesscontrol.provider.invoice.ui.InvoiceAccessController;
@@ -55,6 +59,7 @@ public class InvoiceAccessHandler implements AccessMethodHandler {
 	
 	public static final String METHOD_TYPE = "invoice.method";
 	public static final String METHOD_CSS_CLASS = "o_ac_invoice";
+	private static final String ORES_TYPE_CURRICULUM_ELEMENT = OresHelper.calculateTypeName(CurriculumElement.class);
 	
 	@Override
 	public boolean isPaymentMethod() {
@@ -84,8 +89,10 @@ public class InvoiceAccessHandler implements AccessMethodHandler {
 	}
 	
 	@Override
-	public AccessMethodSecurityCallback getSecurityCallback(Identity identity, Roles roles) {
-		return new DefaultACSecurityCallback(roles);
+	public AccessMethodSecurityCallback getSecurityCallback(OLATResource resource, Identity identity, Roles roles) {
+		return ORES_TYPE_CURRICULUM_ELEMENT.equals(resource.getResourceableTypeName())
+				? new DefaultACSecurityCallback(roles)
+				: NotAvailableACSecurityCallback.get();
 	}
 
 	@Override

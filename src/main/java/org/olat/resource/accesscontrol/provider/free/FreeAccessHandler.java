@@ -34,6 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
@@ -91,7 +92,7 @@ public class FreeAccessHandler implements AccessMethodHandler {
 	}
 	
 	@Override
-	public AccessMethodSecurityCallback getSecurityCallback(Identity identity, Roles roles) {
+	public AccessMethodSecurityCallback getSecurityCallback(OLATResource resource, Identity identity, Roles roles) {
 		return new DefaultACSecurityCallback(roles);
 	}
 

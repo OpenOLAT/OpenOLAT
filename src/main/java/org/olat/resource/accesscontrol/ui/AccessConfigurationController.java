@@ -185,7 +185,7 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 	
 	private void initMethods(Roles roles) {
-		methods = acService.getAvailableMethods(getIdentity(), roles).stream()
+		methods = acService.getAvailableMethods(resource, getIdentity(), roles).stream()
 				.filter(this::isAddable)
 				.collect(Collectors.toList());
 	}

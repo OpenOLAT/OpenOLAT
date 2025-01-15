@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
@@ -37,8 +38,8 @@ import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethodSecurityCallback;
+import org.olat.resource.accesscontrol.model.NotAvailableACSecurityCallback;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
-import org.olat.resource.accesscontrol.model.SystemACSecurityCallback;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
 
@@ -54,8 +55,6 @@ import org.olat.resource.accesscontrol.ui.FormController;
  *
  */
 public abstract class AutoAccessHandler implements AccessMethodHandler {
-
-	private static final SystemACSecurityCallback SYSTEM_AC_SECURITY_CALLBACK = new SystemACSecurityCallback();
 
 	@Override
 	public boolean isPaymentMethod() {
@@ -73,8 +72,8 @@ public abstract class AutoAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public AccessMethodSecurityCallback getSecurityCallback(Identity identity, Roles roles) {
-		return SYSTEM_AC_SECURITY_CALLBACK;
+	public AccessMethodSecurityCallback getSecurityCallback(OLATResource resource, Identity identity, Roles roles) {
+		return NotAvailableACSecurityCallback.get();
 	}
 
 	@Override
