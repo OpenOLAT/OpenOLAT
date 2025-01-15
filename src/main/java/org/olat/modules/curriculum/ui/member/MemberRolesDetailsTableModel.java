@@ -117,7 +117,7 @@ implements FlexiTableFooterModel {
 		GroupMembershipStatus status = null;
 		if(modifiedStatus == null) {
 			status = detailsRow.getStatus(role);
-		} else if(GroupMembershipStatus.allowedAsNextStep(currentStatus, modifiedStatus)) {
+		} else if(GroupMembershipStatus.allowedAsNextStep(currentStatus, modifiedStatus, role)) {
 			status = modifiedStatus;
 		}
 		return status;
@@ -130,7 +130,7 @@ implements FlexiTableFooterModel {
 			GroupMembershipStatus currentStatus = detailsRow.getStatus(role);
 			if(modifiedStatus == null) {
 				confirmationBy = detailsRow.getConfirmationBy(role);
-			} else if(GroupMembershipStatus.allowedAsNextStep(currentStatus, modifiedStatus)
+			} else if(GroupMembershipStatus.allowedAsNextStep(currentStatus, modifiedStatus, role)
 					&& modifiedStatus == GroupMembershipStatus.reservation) {
 				confirmationBy = detailsRow.getModificationConfirmationBy(role);
 			}
@@ -145,7 +145,7 @@ implements FlexiTableFooterModel {
 			GroupMembershipStatus currentStatus = detailsRow.getStatus(role);
 			if(modifiedStatus == null) {
 				confirmationUntil = detailsRow.getConfirmationUntil(role);
-			} else if(GroupMembershipStatus.allowedAsNextStep(currentStatus, modifiedStatus)
+			} else if(GroupMembershipStatus.allowedAsNextStep(currentStatus, modifiedStatus, role)
 					&& modifiedStatus == GroupMembershipStatus.reservation) {
 				confirmationUntil = detailsRow.getModificationConfirmationUntil(role);
 			}

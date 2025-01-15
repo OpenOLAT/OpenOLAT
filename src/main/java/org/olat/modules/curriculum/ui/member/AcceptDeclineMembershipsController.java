@@ -342,7 +342,8 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		}
 
 		UserInfoProfileConfig profileConfig = createProfilConfig();
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, false, false, false, true, true);
+		List<CurriculumRoles> rolesToSee = List.of(CurriculumRoles.participant);
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToSee, false, false, false, true, true);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, selectedCurriculumElement, curriculumElements, row.getIdentity(), config);
 		listenTo(detailsCtrl);

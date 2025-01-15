@@ -76,10 +76,15 @@ import org.olat.modules.curriculum.ui.wizard.EditMembershipsTableModel.Membershi
 public class EditMembershipsController extends StepFormBasicController {
 	
 	private static final CurriculumRoles[] ROLES = CurriculumRoles.curriculumElementsRoles();
-	private static final GroupMembershipStatus[] MODIFIABLE = new GroupMembershipStatus[] {
+	private static final GroupMembershipStatus[] MODIFIABLE_PARTICIPANTS = new GroupMembershipStatus[] {
 			GroupMembershipStatus.reservation, GroupMembershipStatus.active,
 			GroupMembershipStatus.declined, GroupMembershipStatus.removed
 		};
+	private static final GroupMembershipStatus[] MODIFIABLE_OTHERS = new GroupMembershipStatus[] {
+			GroupMembershipStatus.active, GroupMembershipStatus.declined,
+			GroupMembershipStatus.removed
+		};
+	
 	private static final String CMD_NOTE = "note";
 	private static final String CMD_ADD_ROLE = "add.role";
 	private static final String CMD_SELECT = "select.status";
@@ -332,8 +337,10 @@ public class EditMembershipsController extends StepFormBasicController {
 		CurriculumRoles role = cell.role();
 		CurriculumElement curriculumElement = cell.curriculumElement();
 		boolean hasChildren = hasChildren(curriculumElement);
+		GroupMembershipStatus[] possibleStatus = role == CurriculumRoles.participant
+				? MODIFIABLE_PARTICIPANTS : MODIFIABLE_OTHERS;
 		changeMembershipCtrl = new ChangeMembershipCalloutController(ureq, getWindowControl(),
-				null, role, curriculumElement, MODIFIABLE, hasChildren);
+				null, role, curriculumElement, possibleStatus, hasChildren);
 		listenTo(changeMembershipCtrl);
 		
 		String title = translate("change.membership");

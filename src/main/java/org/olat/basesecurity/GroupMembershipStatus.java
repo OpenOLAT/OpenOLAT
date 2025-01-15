@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity;
 
+import org.olat.modules.curriculum.CurriculumRoles;
+
 /**
  * 
  * Initial date: 1 nov. 2024<br>
@@ -43,22 +45,21 @@ public enum GroupMembershipStatus {
 		return new GroupMembershipStatus[] { cancel, cancelWithFee, removed, declined, active, reservation };
 	}
 	
-	public static final boolean allowedAsNextStep(GroupMembershipStatus current, GroupMembershipStatus next) {
+	public static final boolean allowedAsNextStep(GroupMembershipStatus current, GroupMembershipStatus next, CurriculumRoles roles) {
 		if(current == next) {
 			return false; // Move forward
 		}
 		// Steps allowed to start the process
-		if((current == null || current == cancel || current == cancelWithFee || current == removed || current == declined)
-				&& (next == reservation || next == active)) {
-			return true;
+		if((current == null || current == cancel || current == cancelWithFee || current == removed || current == declined)) {
+			return (next == reservation && roles == CurriculumRoles.participant) || (next == active);
 		}
 		// Reservation can be accepted or declined
-		if(current == reservation && (next == declined || next == active)) {
-			return true;
+		if(current == reservation) {
+			return (next == declined || next == active);
 		}
-		// A membership can b canceled or removed
-		if(current == active && (next == cancel || next == cancelWithFee || next == removed)) {
-			return true;
+		// A membership can be canceled or removed
+		if(current == active) {
+			return (next == cancel || next == cancelWithFee || next == removed);
 		}
 		return false;
 	}
@@ -69,13 +70,17 @@ public enum GroupMembershipStatus {
 	 * @param status The status (can be null) to evaluate
 	 * @return A status or null
 	 */
-	public static final GroupMembershipStatus[] possibleNextStatus(GroupMembershipStatus status) {
+	public static final GroupMembershipStatus[] possibleNextStatus(GroupMembershipStatus status, CurriculumRoles roles) {
 		if(status == null) {
-			return new GroupMembershipStatus[] { reservation, active };
+			return roles == CurriculumRoles.participant
+					? new GroupMembershipStatus[] { reservation, active }
+					: new GroupMembershipStatus[] { active };
 		}
 		
 		return switch(status) {
-			case cancel, cancelWithFee, removed, declined -> new GroupMembershipStatus[] { reservation, active };
+			case cancel, cancelWithFee, removed, declined -> roles == CurriculumRoles.participant
+					? new GroupMembershipStatus[] { reservation, active }
+					: new GroupMembershipStatus[] { reservation };
 			case reservation -> new GroupMembershipStatus[] { active, declined };
 			case active -> new GroupMembershipStatus[] { removed };// cancelled and cancelled with fee worked with a separate process
 			default -> null;

@@ -573,7 +573,7 @@ public class EditMemberController extends FormBasicController {
 				EditMemberCurriculumElementRow obj = tableModel.getObject(i);
 				GroupMembershipStatus currentStatus = obj.getStatus(modification.role());
 				if(tableModel.isParentOf(row, obj)
-						&& GroupMembershipStatus.allowedAsNextStep(currentStatus, modification.nextStatus())) {
+						&& GroupMembershipStatus.allowedAsNextStep(currentStatus, modification.nextStatus(), modification.role())) {
 					MembershipModification objModification = modification.copyFor(obj.getCurriculumElement());
 					setModification(objModification, obj);
 				}
@@ -597,7 +597,7 @@ public class EditMemberController extends FormBasicController {
 	}
 	
 	private void doMembership(UserRequest ureq, FormLink link, CurriculumRoles role, EditMemberCurriculumElementRow row, GroupMembershipStatus status) {
-		GroupMembershipStatus[] nextPossibleStatus = GroupMembershipStatus.possibleNextStatus(status);
+		GroupMembershipStatus[] nextPossibleStatus = GroupMembershipStatus.possibleNextStatus(status, role);
 		// Reservation -> confirm
 		if(status == GroupMembershipStatus.reservation) {
 			doConfirmMembership(ureq, link, role, row);
