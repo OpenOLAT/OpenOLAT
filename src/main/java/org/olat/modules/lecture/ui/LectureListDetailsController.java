@@ -109,6 +109,8 @@ public class LectureListDetailsController extends FormBasicController {
 	private final UserInfoProfileConfig profileConfig;
 	private final boolean allowRepositoryEntry;
 	private final RepositoryEntry repositoryEntry;
+	private final boolean lectureManagementManaged;
+	private final LecturesSecurityCallback secCallback;
 	
 	private ToolsController toolsCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -131,9 +133,12 @@ public class LectureListDetailsController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 	
 	public LectureListDetailsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row,
-			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, Form rootForm) {
+			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, Form rootForm,
+			LecturesSecurityCallback secCallback, boolean lectureManagementManaged) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "lecture_details_view", rootForm);
 		this.row = row;
+		this.secCallback = secCallback;
+		this.lectureManagementManaged = lectureManagementManaged;
 		profileConfig = userInfoService.createProfileConfig();
 		profileConfig.setChatEnabled(true);
 		profileConfig.setAvatarMapper(avatarMapper);
@@ -158,15 +163,17 @@ public class LectureListDetailsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
+			editButton = uifactory.addFormLink("edit", "edit", "edit", formLayout, Link.BUTTON);
+			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+		}
+		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("title", row.getLectureBlock().getTitle());
 			layoutCont.contextPut("externalRef", row.getLectureBlock().getExternalRef());
 			
 			String badge = LectureBlockStatusCellRenderer.getStatusBadge(row.getLectureBlock(), getTranslator());
 			layoutCont.contextPut("statusBadge", badge);
-			
-			editButton = uifactory.addFormLink("edit", "edit", "edit", formLayout, Link.BUTTON);
-			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			
 			if(allowRepositoryEntry) {
 				initFormReferencedCourses(layoutCont);

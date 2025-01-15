@@ -83,15 +83,19 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		if (source.isEnabled()) {
 			renderDateChooser(sb, jsdcc, receiverId, receiverId, null, jsdcc.getValue(), "o_first_date", maxlength, translator);
 		} else{
-			renderTextElementReadonly(sb, jsdcc, maxlength, translator);
+			renderDateChooserDisabled(sb, jsdcc, jsdcc.getValue(), "o_first_date", maxlength);
 		}
 		sb.append("</div><div class='o_time'><label for=\"").append(receiverId).append("_time_bloc\">")
 		  .append(translator.translate("time"))
 		  .append("</label><div id=\"").append(receiverId).append("_time_bloc\">");
 		
 		String timeOnlyCss = jsdcc.isTimeOnlyEnabled() ? " o_time_only" : "";
-		renderTime(sb, jsdcc.getHour(), jsdcc.getMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
-				receiverId, jsdcc, "o_first_ms".concat(timeOnlyCss));
+		if (source.isEnabled()) {
+			renderTime(sb, jsdcc.getHour(), jsdcc.getMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
+					receiverId, jsdcc, "o_first_ms".concat(timeOnlyCss));
+		} else {
+			renderTimeDisabled(sb, jsdcc.getDate(), receiverId, "o_first_ms".concat(timeOnlyCss));
+		}
 
 		String separator;
 		if(jsdcc.getSeparator() != null) {
@@ -100,8 +104,12 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			separator = " - ";
 		}
 		renderSeparator(sb, receiverId + "_sep", separator);
-		renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
-				receiverId.concat("_snd"), jsdcc, "o_second_ms".concat(timeOnlyCss));
+		if (source.isEnabled()) {
+			renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
+					receiverId.concat("_snd"), jsdcc, "o_second_ms".concat(timeOnlyCss));
+		} else {
+			renderTimeDisabled(sb, jsdcc.getSecondDate(), receiverId.concat("_snd"), "o_second_ms".concat(timeOnlyCss));
+		}
 		
 		sb.append("</div></div>");
 		

@@ -1,7 +1,7 @@
 <div class="o_header_with_buttons">
 	<h3>$r.escapeHtml($title)#if($r.isNotEmpty($externalRef)) <small>$r.translate("lecture.separator") $r.escapeHtml($externalRef)</small>#end</h3>
 	<div class="o_button_group o_button_group_right">
-		<div class="o_lecture_badge">$statusBadge</div> $r.render("edit") 
+		<div class="o_lecture_badge">$statusBadge</div> #if($r.available("edit")) $r.render("edit") #end
 	</div>
 </div>
 
@@ -22,19 +22,19 @@
 </div>
 
 <div class="o_lecture_resources">
-	<label>$r.translate("contact.teachers.list.name")</label>
+	<label class="o_lecture_teachers">$r.translate("contact.teachers.list.name")</label>
 	#if($r.isNotEmpty($profilesIds))
 		#foreach($profileId in $profilesIds)
 			<div class="o_lecture_resource">$r.render($profileId)</div>
 		#end
 	#end
 	#if($r.available("course.empty") || $r.available("entry.open"))
-		<label>$r.translate("referenced.courses")</label>
+		<label class="o_lecture_course">$r.translate("referenced.courses")</label>
 		<div class="o_lecture_resource">	
 		#if($r.visible("course.empty"))
 			$r.render("course.empty")
 		#elseif($r.available("entry.open")) 
-			<div class=" o_lecture_course_card">
+			<div class="o_lecture_course_card">
 				<div class="o_thumbnail">
 					<div class="o_thumbnail_file_img">
 						<a href="$entryUrl" onclick="${f.ffXHREvent("select_entry","${entryKey}")}; return false;" title="$r.escapeForHtmlAttribute(${row.displayName()})">
@@ -58,9 +58,7 @@
 	#end
 </div>
 
-<div class="o_block_bottom">
 $r.render("participantsGroupTable")
-</div>
 #if($r.available("lecture.desc"))
 	$r.render("lecture.desc","vertical")
 #end

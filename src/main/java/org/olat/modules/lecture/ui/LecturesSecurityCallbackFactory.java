@@ -32,7 +32,7 @@ import org.olat.modules.lecture.LectureModule;
 public class LecturesSecurityCallbackFactory {
 	
 	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole,
-			CourseReadOnlyDetails readOnly) {
+			CourseReadOnlyDetails readOnly, boolean readOnlyManaged) {
 		LectureRoles viewAs;
 		if(adminRole) {
 			viewAs = LectureRoles.lecturemanager;
@@ -46,7 +46,7 @@ public class LecturesSecurityCallbackFactory {
 		boolean readOnlyByStatus = readOnly.getByStatus() != null && readOnly.getByStatus().booleanValue();
 		boolean readOnlyByRole = readOnly.getByRole() != null && readOnly.getByRole().booleanValue();
 		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole,
-				viewAs, readOnlyByStatus, readOnlyByRole);
+				viewAs, readOnlyByStatus, readOnlyByRole, readOnlyManaged);
 	}
 	
 	/**
@@ -59,7 +59,7 @@ public class LecturesSecurityCallbackFactory {
 	 */
 	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole,
 			LectureRoles viewAs) {
-		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs, false, false);
+		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs, false, false, false);
 	}
 	
 	private static class LecturesSecurityCallbackImpl implements LecturesSecurityCallback {
@@ -69,23 +69,25 @@ public class LecturesSecurityCallbackFactory {
 		private final boolean teacherRole;
 		private final boolean courseReadOnlyByStatus;
 		private final boolean courseReadOnlyByRole;
+		private final boolean courseReadOnlyManaged;
 		
 		private final LectureRoles viewAs;
 		private LectureModule lectureModule;
 		
 		public LecturesSecurityCallbackImpl(boolean adminRole, boolean masterCoachRole, boolean teacherRole, LectureRoles viewAs,
-				boolean readOnlyByStatus, boolean readOnlyByRole) {
+				boolean readOnlyByStatus, boolean readOnlyByRole, boolean readOnlyManaged) {
 			this.adminRole = adminRole;
 			this.masterCoachRole = masterCoachRole;
 			this.teacherRole = teacherRole;
 			this.viewAs = viewAs;
 			this.courseReadOnlyByStatus = readOnlyByStatus;
 			this.courseReadOnlyByRole = readOnlyByRole;
+			this.courseReadOnlyManaged = readOnlyManaged;
 			lectureModule = CoreSpringFactory.getImpl(LectureModule.class);
 		}
 		
 		public boolean isReadOnly()  {
-			return courseReadOnlyByStatus || courseReadOnlyByRole;
+			return courseReadOnlyByStatus || courseReadOnlyByRole || courseReadOnlyManaged;
 		}
 
 		@Override
@@ -228,7 +230,7 @@ public class LecturesSecurityCallbackFactory {
 		
 		@Override
 		public boolean needToInformTeacher() {
-			if(adminRole || this.masterCoachRole) {
+			if(adminRole || masterCoachRole) {
 				return false;
 			}
 			return viewAs == LectureRoles.participant;

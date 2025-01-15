@@ -156,6 +156,7 @@ import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.preview.PreviewConfigController;
 import org.olat.course.run.tools.CourseTool;
 import org.olat.course.run.tools.OpenCourseToolEvent;
+import org.olat.course.run.userview.CourseReadOnlyDetails;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticCourseNodesController;
@@ -800,7 +801,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 			
 			if(lectureModule.isEnabled() && (courseAuthorRight || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) 
-					&& isLectureEnabled() && !isCourseManagedByCurriculum()) {
+					&& isLectureEnabled()) {
 				lecturesAdminLink = LinkFactory.createToolLink("lectures.admin.cmd", translate("command.options.lectures.admin"), this, "o_icon_lecture");
 				lecturesAdminLink.setUrl(BusinessControlFactory.getInstance()
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[LecturesAdmin:0][LectureBlocks:0]"));
@@ -2326,9 +2327,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 				OLATResourceable ores = OresHelper.createOLATResourceableType("LecturesAdmin");
 				WindowControl swControl = addToHistory(ureq, ores, null);
+				CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
+				boolean readOnlyManaged = isCourseManagedByCurriculum();
 				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
 						.getSecurityCallback(reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR), reSecurity.isMasterCoach(), false,
-								getUserCourseEnvironment().getCourseReadOnlyDetails());
+								readOnlyDetails, readOnlyManaged);
 				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, getRepositoryEntry(), secCallback);
 				listenTo(ctrl);
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);

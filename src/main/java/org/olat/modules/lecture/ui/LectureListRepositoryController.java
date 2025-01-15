@@ -338,13 +338,14 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		compulsoryColumn.setIconHeader("o_icon o_icon_compulsory o_icon-lg");
 		columnsModel.addFlexiColumnModel(compulsoryColumn);
 
-		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
-		editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
-		editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
-		editColumn.setExportable(false);
-		editColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(editColumn);
-		
+		if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
+			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
+			editColumn.setCellRenderer(new StaticFlexiCellRenderer(null, "edit", null, "o_icon o_icon-lg o_icon_edit", translate("edit")));
+			editColumn.setIconHeader("o_icon o_icon-lg o_icon_edit");
+			editColumn.setExportable(false);
+			editColumn.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(editColumn);
+		}
 		columnsModel.addFlexiColumnModel(new ActionsColumnModel(BlockCols.tools));
 		
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
@@ -1029,7 +1030,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 		
 		LectureListDetailsController detailsCtrl = new LectureListDetailsController(ureq, getWindowControl(), row,
-				avatarMapper, avatarMapperBaseURL, mainForm);
+				avatarMapper, avatarMapperBaseURL, mainForm, secCallback, lectureManagementManaged);
 		listenTo(detailsCtrl);
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());
@@ -1107,8 +1108,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			
 			LectureBlock lectureBlock = row.getLectureBlock();
 			
-			editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
-			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			if(!lectureManagementManaged && secCallback.canNewLectureBlock()) {
+				editLink = LinkFactory.createLink("edit", "edit", getTranslator(), mainVC, this, Link.LINK);
+				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			}
 
 			if(secCallback.canReopenLectureBlock() && (lectureBlock.getStatus() == LectureBlockStatus.cancelled
 					|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.closed
@@ -1139,8 +1142,10 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		}
 		
 		private boolean canAssignNewRepositoryEntry() {
-			if(curriculumElement != null && row.getCurriculumElement() != null && row.getCurriculumElement().key() != null) {
-				List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
+			if((curriculum != null || curriculumElement != null)
+					&& row.getCurriculumElement() != null && row.getCurriculumElement().key() != null) {
+				List<RepositoryEntry> entries = curriculumService
+						.getRepositoryEntries(new CurriculumElementRefImpl(row.getCurriculumElement().key()));
 				if(row.getEntry() == null || row.getEntry().key() == null) {
 					return !entries.isEmpty();
 				}

@@ -236,6 +236,10 @@
 		border: $o-user-info-border;
 	}
 	
+	label.o_lecture_course {
+		margin-top: 15px;
+	}
+	
 	.o_lecture_course_card {
 		display: grid;
 		grid-template-columns: 112px 1fr auto;
