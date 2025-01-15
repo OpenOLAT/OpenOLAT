@@ -194,6 +194,13 @@ public class OOGraphene {
 			.until(new BusyPredicate());
 	}
 	
+	public static void waitSpinnerDisappears(WebDriver browser) {
+		By modalBy = By.xpath("//dialog[@id='o_ajax_busy']");
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(poolingSlow)
+			.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
+	}
+	
 	/**
 	 * 
 	 * @param element

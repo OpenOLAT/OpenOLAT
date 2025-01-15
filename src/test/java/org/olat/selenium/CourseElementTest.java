@@ -365,6 +365,7 @@ public class CourseElementTest extends Deployments {
 		
 		videoEditorPage
 			.selectSegments()
+			.waitOnVideo()
 			.addSegment()
 			.editSegment("00:00:01", "00:00:15")
 			.save()
@@ -449,6 +450,7 @@ public class CourseElementTest extends Deployments {
 		
 		videoEditorPage
 			.selectSegments()
+			.waitOnVideo()
 			.addSegment()
 			.editSegment("00:00:01", "00:00:45")
 			.save();
