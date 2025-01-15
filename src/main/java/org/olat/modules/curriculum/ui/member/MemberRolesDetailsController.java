@@ -112,9 +112,10 @@ public class MemberRolesDetailsController extends FormBasicController {
 	
 	public void setModifications(List<MembershipModification> modifications) {
 		List<MemberRolesDetailsRow> rows = tableModel.getObjects();
+		EnumMap<CurriculumRoles,Boolean> usedRoles = updateRolesColumnsVisibility(getRolesDetailsRows());
+		
 		Map<Long,MemberRolesDetailsRow> rowsMap = rows.stream()
 				.collect(Collectors.toMap(MemberRolesDetailsRow::getKey, r -> r, (u, v) -> u));
-		EnumMap<CurriculumRoles,Boolean> usedRoles = new EnumMap<>(CurriculumRoles.class);
 		for(MembershipModification modification:modifications) {
 			CurriculumElement element = modification.curriculumElement();
 			MemberRolesDetailsRow row = rowsMap.get(element.getKey());
@@ -130,15 +131,6 @@ public class MemberRolesDetailsController extends FormBasicController {
 			row.setModificationSummary(modificationSummary);
 		}
 
-		updateRolesColumnsVisibility(usedRoles);
-		tableEl.reset(false, false, true);
-	}
-	
-	public void setVisibleRoles(List<CurriculumRoles> roles) {
-		EnumMap<CurriculumRoles,Boolean> usedRoles = new EnumMap<>(CurriculumRoles.class);
-		for(CurriculumRoles role:roles) {
-			usedRoles.put(role, Boolean.TRUE);
-		}
 		updateRolesColumnsVisibility(usedRoles);
 		tableEl.reset(false, false, true);
 	}
@@ -270,8 +262,10 @@ public class MemberRolesDetailsController extends FormBasicController {
 	}
 	
 	private void updateRolesColumnsVisibility(EnumMap<CurriculumRoles,Boolean> usedRoles) {
-		if(config.alwaysVisibleRole() != null) {
-			usedRoles.put(config.alwaysVisibleRole() , Boolean.TRUE);
+		if(config.alwaysVisibleRoles() != null && config.alwaysVisibleRoles().isEmpty()) {
+			for(CurriculumRoles role:config.alwaysVisibleRoles()) {
+				usedRoles.put(role, Boolean.TRUE);
+			}
 		}
 		
 		// Update columns visibility
@@ -374,7 +368,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 		} else if(hasElementAccessBefore > 0 && (gainAccessAfter > 0 || looseAccessAfter > 0)) {
 			modification |= true;
 		}
-		return new ModificationStatusSummary(modification, addition, removal);
+		return new ModificationStatusSummary(modification, addition, removal, gainAccessAfter + looseAccessAfter);
 	}
 
 	@Override

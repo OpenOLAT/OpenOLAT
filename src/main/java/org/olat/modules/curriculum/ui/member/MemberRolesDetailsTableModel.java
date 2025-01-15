@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui.member;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.GroupMembershipStatus;
@@ -84,19 +85,19 @@ implements FlexiTableFooterModel {
 		int roleCol = col - MemberRolesDetailsController.ROLES_OFFSET;
 		if(roleCol >= 0 && roleCol < ROLES.length) {
 			CurriculumRoles role = ROLES[roleCol];
-			return showModifications ? getModifications(role, detailsRow) : getStatus(role, detailsRow);	
+			return showModifications ? getStatusModification(role, detailsRow) : getStatus(role, detailsRow);	
 		}
 		
 		int byCol = col - MemberRolesDetailsController.CONFIRMATION_BY_OFFSET;
 		if(byCol >= 0 && byCol < ROLES.length) {
 			CurriculumRoles role = ROLES[byCol];
-			return detailsRow.getConfirmationBy(role);	
+			return showModifications ? getConfirmationByModifications(role, detailsRow) : detailsRow.getConfirmationBy(role);	
 		}
 		
 		int untilCol = col - MemberRolesDetailsController.CONFIRMATION_UNTIL_OFFSET;
 		if(untilCol >= 0 && untilCol < ROLES.length) {
 			CurriculumRoles role = ROLES[untilCol];
-			return detailsRow.getConfirmationUntil(role);	
+			return showModifications ? getConfirmationUntilModifications(role, detailsRow) : detailsRow.getConfirmationUntil(role);	
 		}
 		
 		return "ERROR";
@@ -110,7 +111,7 @@ implements FlexiTableFooterModel {
 		return status;
 	}
 	
-	private GroupMembershipStatus getModifications(CurriculumRoles role, MemberRolesDetailsRow detailsRow) {
+	private GroupMembershipStatus getStatusModification(CurriculumRoles role, MemberRolesDetailsRow detailsRow) {
 		GroupMembershipStatus modifiedStatus = detailsRow.getModificationStatus(role);
 		GroupMembershipStatus currentStatus = detailsRow.getStatus(role);
 		GroupMembershipStatus status = null;
@@ -120,6 +121,36 @@ implements FlexiTableFooterModel {
 			status = modifiedStatus;
 		}
 		return status;
+	}
+	
+	private ConfirmationByEnum getConfirmationByModifications(CurriculumRoles role, MemberRolesDetailsRow detailsRow) {
+		ConfirmationByEnum confirmationBy = null;
+		if(role == CurriculumRoles.participant) {
+			GroupMembershipStatus modifiedStatus = detailsRow.getModificationStatus(role);
+			GroupMembershipStatus currentStatus = detailsRow.getStatus(role);
+			if(modifiedStatus == null) {
+				confirmationBy = detailsRow.getConfirmationBy(role);
+			} else if(GroupMembershipStatus.allowedAsNextStep(currentStatus, modifiedStatus)
+					&& modifiedStatus == GroupMembershipStatus.reservation) {
+				confirmationBy = detailsRow.getModificationConfirmationBy(role);
+			}
+		}
+		return confirmationBy;
+	}
+	
+	private Date getConfirmationUntilModifications(CurriculumRoles role, MemberRolesDetailsRow detailsRow) {
+		Date confirmationUntil = null;
+		if(role == CurriculumRoles.participant) {
+			GroupMembershipStatus modifiedStatus = detailsRow.getModificationStatus(role);
+			GroupMembershipStatus currentStatus = detailsRow.getStatus(role);
+			if(modifiedStatus == null) {
+				confirmationUntil = detailsRow.getConfirmationUntil(role);
+			} else if(GroupMembershipStatus.allowedAsNextStep(currentStatus, modifiedStatus)
+					&& modifiedStatus == GroupMembershipStatus.reservation) {
+				confirmationUntil = detailsRow.getModificationConfirmationUntil(role);
+			}
+		}
+		return confirmationUntil;
 	}
 
 	@Override
@@ -141,10 +172,8 @@ implements FlexiTableFooterModel {
 	private int countRoles(CurriculumRoles role) {
 		int count = 0;
 		for(MemberRolesDetailsRow detailsRow:getObjects()) {
-			GroupMembershipStatus status = detailsRow.getStatus(role);
-			if(status != null
-					&& status != GroupMembershipStatus.declined
-					&& status != GroupMembershipStatus.removed) {
+			if((detailsRow.getStatus(role) == GroupMembershipStatus.active)
+					|| (detailsRow.getModificationStatus(role) == GroupMembershipStatus.active)) {
 				count++;
 			}
 		}

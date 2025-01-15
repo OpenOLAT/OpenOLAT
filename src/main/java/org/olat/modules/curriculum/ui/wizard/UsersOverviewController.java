@@ -281,7 +281,9 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		Curriculum curriculum = membersContext.getCurriculum();
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, membersContext.getRoleToModify(), false, false, false, false, false);
+		List<CurriculumRoles> rolesToSee = membersContext.getRoleToModify() == null
+				? List.of() : List.of(membersContext.getRoleToModify());
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToSee, false, false, false, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), config);
 		listenTo(detailsCtrl);

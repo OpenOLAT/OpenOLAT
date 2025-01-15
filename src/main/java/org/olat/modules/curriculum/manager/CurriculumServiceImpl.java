@@ -1164,7 +1164,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		OLATResource resource = element.getResource();
 		ResourceReservation reservation = reservationDao.loadReservation(member, resource);
 		if(reservation == null) {
-			Date expiration = DateUtils.addMonth(new Date(), 6);
+			Date expiration = expirationDate == null
+					? DateUtils.addMonth(DateUtils.getStartOfDay(new Date()), 6)
+					: expirationDate;
 			Group group = element.getGroup();
 			reservationDao.createReservation(member, "curriculum_" + role, expiration, confirmBy, resource);
 			groupMembershipHistoryDao.createMembershipHistory(group, member, role.name(),

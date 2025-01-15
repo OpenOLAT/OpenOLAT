@@ -190,7 +190,6 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		for(Identity identity:identities) {
 			UserRow row = new UserRow(identity, userPropertyHandlers, getLocale());
 			row.setModifications(modifications);
-			row.setNumOfElements(curriculumElements.size());
 			
 			final List<CurriculumElementMembership> userMemberships = membershipsMap
 					.computeIfAbsent(identity.getKey(), m -> List.of());
@@ -215,6 +214,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		
 		boolean add = false;
 		boolean modify = false;
+		int numOfModifications = 0;
 		for(MembershipModification modification:modifications) {
 			GroupMembershipStatus memberStatus = modification.nextStatus();
 			CurriculumElement curriculumElement = modification.curriculumElement();
@@ -223,11 +223,13 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			if((memberStatus == GroupMembershipStatus.active || memberStatus == GroupMembershipStatus.reservation)
 					&& membership == null && reservation == null) {
 				add = true;
+				numOfModifications++;
 			} else if(memberStatus == GroupMembershipStatus.active && membership == null && reservation != null) {
 				modify = true;
+				numOfModifications++;
 			}
 		}
-		return new ModificationStatusSummary(modify, add, false);
+		return new ModificationStatusSummary(modify, add, false, numOfModifications);
 	}
 
 	@Override
@@ -293,7 +295,8 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		Curriculum curriculum = membersContext.getCurriculum();
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, membersContext.getRoleToModify(), false, false, false, true, false);
+		List<CurriculumRoles> rolesToModify = List.of(membersContext.getRoleToModify());
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToModify, false, false, false, true, true);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), config);
 		

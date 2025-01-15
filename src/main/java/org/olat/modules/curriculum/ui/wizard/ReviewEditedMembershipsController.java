@@ -280,6 +280,7 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		boolean modification = false;
 		boolean removal = false;
 		boolean addition = false;
+		int numOfModifications = 0;
 
 		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
 		for(CurriculumElement curriculumElement:curriculumElements) {
@@ -318,9 +319,11 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 			} else if(hasElementAccessBefore > 0 && (gainAccessAfter > 0 || looseAccessAfter > 0)) {
 				modification |= true;
 			}
+			numOfModifications += gainAccessAfter;
+			numOfModifications += looseAccessAfter;
 		}
 
-		return new ModificationStatusSummary(modification, addition, removal);
+		return new ModificationStatusSummary(modification, addition, removal, numOfModifications);
 	}
 	
 	@Override
@@ -370,13 +373,12 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 		Curriculum curriculum = membersContext.getCurriculum();
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, false, false, false, true, false);
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToReview, false, false, false, true, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, membersContext.getCurriculumElement(), elements, row.getIdentity(), config);
 		listenTo(detailsCtrl);
 		
 		detailsCtrl.setModifications(membersContext.getModifications());
-		detailsCtrl.setVisibleRoles(rolesToReview);
 		
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

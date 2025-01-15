@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.ui.member;
 
+import java.util.List;
+
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.user.UserInfoProfileConfig;
 
@@ -28,7 +30,7 @@ import org.olat.user.UserInfoProfileConfig;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MemberDetailsConfig(UserInfoProfileConfig profileConfig, CurriculumRoles alwaysVisibleRole,
+public record MemberDetailsConfig(UserInfoProfileConfig profileConfig, List<CurriculumRoles> alwaysVisibleRoles,
 		boolean withEdit, boolean withAcceptDecline, boolean withHistory, boolean withActivityColumns,
 		boolean withConfirmationColumns) {
 	//

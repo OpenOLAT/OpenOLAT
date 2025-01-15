@@ -25,6 +25,6 @@ package org.olat.modules.curriculum.ui.member;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record ModificationStatusSummary(boolean modification, boolean addition, boolean removal) {
+public record ModificationStatusSummary(boolean modification, boolean addition, boolean removal, int numOfModifications) {
 	//
 }

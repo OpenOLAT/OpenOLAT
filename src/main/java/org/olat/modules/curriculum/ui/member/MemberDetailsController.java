@@ -41,7 +41,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.event.EditMemberEvent;
 import org.olat.resource.OLATResource;
@@ -112,10 +111,6 @@ public class MemberDetailsController extends FormBasicController {
 	
 	public void setModifications(List<MembershipModification> modifications) {
 		rolesDetailsCtrl.setModifications(modifications);
-	}
-
-	public void setVisibleRoles(List<CurriculumRoles> roles) {
-		rolesDetailsCtrl.setVisibleRoles(roles);
 	}
 
 	public Object getUserObject() {

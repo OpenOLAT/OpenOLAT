@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.modules.curriculum.ui.member.AbstractMembersController;
 import org.olat.modules.curriculum.ui.member.DualNumber;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
+import org.olat.modules.curriculum.ui.member.ModificationStatusSummary;
 
 /**
  * 
@@ -81,8 +82,10 @@ implements SortableFlexiTableDataModel<UserRow> {
 	
 	private DualNumber getNumOfModifications(UserRow row) {
 		List<MembershipModification> modifications = row.getModifications();	
-		int found = modifications == null ? 0 : modifications.size();
-		return new DualNumber(found, row.getNumOfElements(), false);
+		int numOfModifications = modifications == null ? 0 : modifications.size();
+		ModificationStatusSummary modificationSummary = row.getModificationSummary();
+		int numOfRelevantModifications = modificationSummary == null ? 0 : modificationSummary.numOfModifications();
+		return new DualNumber(numOfRelevantModifications, numOfModifications, false);
 	}
 
 	public enum UserOverviewCols implements FlexiSortableColumnDef {

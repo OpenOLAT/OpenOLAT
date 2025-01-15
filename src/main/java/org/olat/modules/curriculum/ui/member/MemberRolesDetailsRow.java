@@ -102,6 +102,16 @@ public class MemberRolesDetailsRow extends AbstractCurriculumElementRow {
 		return d == null || d.getModification() == null ? null : d.getModification().nextStatus();
 	}
 	
+	public ConfirmationByEnum getModificationConfirmationBy(CurriculumRoles role) {
+		RoleDetails d = details.get(role);
+		return d == null || d.getModification() == null ? null : d.getModification().confirmationBy();
+	}
+	
+	public Date getModificationConfirmationUntil(CurriculumRoles role) {
+		RoleDetails d = details.get(role);
+		return d == null || d.getModification() == null ? null : d.getModification().confirmUntil();
+	}
+	
 	public void addModification(CurriculumRoles role, MembershipModification modification) {
 		computeIfAbsent(role).setModification(modification);
 	}
