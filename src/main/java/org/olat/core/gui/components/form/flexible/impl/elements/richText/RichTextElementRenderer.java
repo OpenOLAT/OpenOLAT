@@ -245,7 +245,8 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("    script_url: '").append(baseUrl).append("',\n")
 		  .append("    icons_url: '").append(iconsUrl).append("',\n")
 		  .append("    image_uploadtab: false,\n")
-		  .append("    icons: 'openolat',\n");
+		  .append("    icons: 'openolat',\n")
+		  .append("    promotion: false,\n");
 		if(uploadUrl != null) {
 			sb.append("    images_upload_url: '").append(uploadUrl).append("',\n")
 			  .append("    automatic_uploads: true,\n");
