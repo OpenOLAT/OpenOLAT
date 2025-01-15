@@ -332,11 +332,12 @@ public class MemberRolesDetailsController extends FormBasicController {
 	private ModificationStatusSummary evaluateModificationSummary(MemberRolesDetailsRow row) {
 		int hasElementAccessBefore = 0;
 		int gainAccessAfter = 0;
+		int gainAccessAfterReservation = 0;
 		int looseAccessAfter = 0;
 		
 		for(CurriculumRoles role:CurriculumRoles.curriculumElementsRoles()) {
 			GroupMembershipStatus currentStatus = row.getStatus(role);
-			if(currentStatus == GroupMembershipStatus.active || currentStatus == GroupMembershipStatus.reservation) {
+			if(currentStatus == GroupMembershipStatus.active) {
 				++hasElementAccessBefore;
 			}
 		}
@@ -344,7 +345,9 @@ public class MemberRolesDetailsController extends FormBasicController {
 		for(CurriculumRoles role:CurriculumRoles.curriculumElementsRoles()) {
 			GroupMembershipStatus currentStatus = row.getStatus(role);
 			GroupMembershipStatus modificationStatus = row.getModificationStatus(role);
-			if(currentStatus == GroupMembershipStatus.active || currentStatus == GroupMembershipStatus.reservation) {
+			if(currentStatus == GroupMembershipStatus.reservation && modificationStatus == GroupMembershipStatus.active) {
+				gainAccessAfterReservation++;
+			} else if(currentStatus == GroupMembershipStatus.active || currentStatus == GroupMembershipStatus.reservation) {
 				if(modificationStatus != null && (modificationStatus == GroupMembershipStatus.removed
 						|| modificationStatus == GroupMembershipStatus.cancel
 						||  modificationStatus == GroupMembershipStatus.cancelWithFee)) {
@@ -361,12 +364,18 @@ public class MemberRolesDetailsController extends FormBasicController {
 		boolean modification = false;
 		boolean removal = false;
 		boolean addition = false;
-		if(hasElementAccessBefore == 0 && gainAccessAfter > 0) {
-			addition |= true;
-		} else if(hasElementAccessBefore > 0 && hasElementAccessBefore == looseAccessAfter && gainAccessAfter == 0) {
-			removal |= true;
-		} else if(hasElementAccessBefore > 0 && (gainAccessAfter > 0 || looseAccessAfter > 0)) {
-			modification |= true;
+		if(hasElementAccessBefore == 0) {
+			if(gainAccessAfter > 0) {
+				addition |= true;
+			} else if(gainAccessAfterReservation > 0) {
+				modification |= true;
+			}
+		} else if(hasElementAccessBefore > 0) {
+			if(hasElementAccessBefore == looseAccessAfter && gainAccessAfter == 0 && gainAccessAfterReservation == 0) {
+				removal |= true;
+			} else if(gainAccessAfter > 0 || looseAccessAfter > 0 || gainAccessAfterReservation > 0) {
+				modification |= true;
+			}
 		}
 		return new ModificationStatusSummary(modification, addition, removal, gainAccessAfter + looseAccessAfter);
 	}
