@@ -91,7 +91,7 @@ implements SortableFlexiTableDataModel<UserRow> {
 	public enum UserOverviewCols implements FlexiSortableColumnDef {
 		modifications("table.header.activity"),
 		role("table.header.current.roles"),
-		numOfModifications("table.header.activity");
+		numOfModifications("table.header.add.access");
 		
 		private final String i18nKey;
 		

@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui.member;
 
 import java.util.List;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -141,7 +142,9 @@ implements FlexiTableFooterModel {
 	private int countRoles(CurriculumRoles role) {
 		int count = 0;
 		for(EditMemberCurriculumElementRow detailsRow:getObjects()) {
-			if(detailsRow.getButton(role) != null) {
+			MembershipModification modification = detailsRow.getModification(role);
+			if((modification == null && detailsRow.getStatus(role) == GroupMembershipStatus.active)
+					|| (modification != null && modification.nextStatus() == GroupMembershipStatus.active)) {
 				count++;
 			}
 		}
