@@ -42,6 +42,7 @@ public class TabbedPaneChangedEvent extends Event {
 	 */
 	public static final String TAB_CHANGED = "tabChanged";
 
+	private boolean created;
 	private Component oldComponent;
 	private Component newComponent;
 	private Controller newController;
@@ -50,11 +51,16 @@ public class TabbedPaneChangedEvent extends Event {
 	 * @param oldComponent
 	 * @param newComponent
 	 */
-	public TabbedPaneChangedEvent(Component oldComponent, Component newComponent, Controller newController) {
+	public TabbedPaneChangedEvent(Component oldComponent, Component newComponent, Controller newController, boolean created) {
 		super(TAB_CHANGED);
 		this.oldComponent = oldComponent;
 		this.newComponent = newComponent;
 		this.newController = newController;
+		this.created = created;
+	}
+	
+	public boolean isCreated() {
+		return created;
 	}
 
 	/**

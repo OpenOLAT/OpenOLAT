@@ -203,11 +203,13 @@ public class CurriculumElementResourceListController extends FormBasicController
 				@SuppressWarnings("unchecked")
 				List<RepositoryEntry> rows = (List<RepositoryEntry>)confirmRemoveCtrl.getUserObject();
 				doRemove(rows);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(repoSearchCtr == source) {
 			if(event instanceof AuthoringEntryRowSelectionEvent se) {
 				doAddRepositoryEntry(se.getRow());
 				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();

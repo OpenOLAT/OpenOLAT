@@ -102,6 +102,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private Link deleteButton;
 	private Link previousButton;
 	private Link structureButton;
+	private Link nextImplementationButton;
+	private Link previousImplementationButton;
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
@@ -181,7 +183,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private void initStructure() {
 		structureButton = LinkFactory.createCustomLink("structure", "structure", "structure.goto", Link.BUTTON, mainVC, this);
 		structureButton.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_structure");
-		
+
 		previousButton = LinkFactory.createCustomLink("structure.previous", "previous", "", Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
 		previousButton.setIconLeftCSS("o_icon o_icon-fw o_icon_slide_up");
 		previousButton.setTitle(translate("structure.previous"));
@@ -190,10 +192,70 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		nextButton.setIconLeftCSS("o_icon o_icon-fw o_icon_slide_down");
 		nextButton.setTitle(translate("structure.next"));
 		
+		previousImplementationButton = LinkFactory.createCustomLink("structure.implementation.previous", "previous-impl", "", Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
+		previousImplementationButton.setIconLeftCSS("o_icon o_icon-fw o_icon_slide_backward");
+		previousImplementationButton.setTitle(translate("structure.implementation.previous"));
+		
+		nextImplementationButton = LinkFactory.createCustomLink("structure.implementation.next", "next-impl", "", Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
+		nextImplementationButton.setIconLeftCSS("o_icon o_icon-fw o_icon_slide_forward");
+		nextImplementationButton.setTitle(translate("structure.implementation.next"));
+		
+		CurriculumElement rootElement = getRootElement();
+		NextPrevious nextPrevious = nextPreviousCurriculumElements(rootElement);
+		nextButton.setEnabled(nextPrevious.next() != null);
+		nextButton.setUserObject(nextPrevious.next());
+		previousButton.setEnabled(nextPrevious.previous() != null);
+		previousButton.setUserObject(nextPrevious.previous());
+		
+		NextPrevious nextPreviousImplementations = nextPreviousImplementations(rootElement);
+		nextImplementationButton.setEnabled(nextPreviousImplementations.next() != null);
+		nextImplementationButton.setUserObject(nextPreviousImplementations.next());
+		previousImplementationButton.setEnabled(nextPreviousImplementations.previous() != null);
+		previousImplementationButton.setUserObject(nextPreviousImplementations.previous());
+	}
+	
+	private record NextPrevious(CurriculumElement next, CurriculumElement previous) {
+		//
+	}
+	
+	private NextPrevious nextPreviousImplementations(CurriculumElement rootElement) {
+		CurriculumElement next = null;
+		CurriculumElement previous = null;
+		
+		List<CurriculumElement> implementations = curriculumService.getImplementations(curriculum);
+		List<CurriculumElementRow> rows = new ArrayList<>(implementations.size());
+		for(CurriculumElement element:implementations) {
+			CurriculumElementRow row = new CurriculumElementRow(element);
+			rows.add(row);
+		}
+		
+		if(rows.size() > 1) {
+			Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
+			
+			int index = 0;
+			for(int i=0; i<rows.size(); i++) {
+				if(rootElement.getKey().equals(rows.get(i).getKey())) {
+					index = i;
+					break;
+				}
+			}
+			
+			if(index - 1 >= 0) {
+				previous = rows.get(index - 1).getCurriculumElement();
+			}
+			if(index + 1 < rows.size()) {
+				next = rows.get(index + 1).getCurriculumElement();
+			}
+		}
+		
+		return new NextPrevious(next, previous);
+	}
+	
+	private NextPrevious nextPreviousCurriculumElements(CurriculumElement rootElement) {
 		CurriculumElement next = null;
 		CurriculumElement previous = null;
 		// Load and evaluate implementation tree
-		List<CurriculumElementRow> elements = buildCurriculumPartialTree();
+		List<CurriculumElementRow> elements = buildCurriculumPartialTree(rootElement);
 		if(elements.size() > 1) {
 			int index = 0;
 			for(int i=0; i<elements.size(); i++) {
@@ -210,15 +272,10 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				next = elements.get(index + 1).getCurriculumElement();
 			}
 		}
-		
-		nextButton.setEnabled(next != null);
-		nextButton.setUserObject(next);
-		previousButton.setEnabled(previous != null);
-		previousButton.setUserObject(previous);
+		return new NextPrevious(next, previous);
 	}
 	
-	private List<CurriculumElementRow> buildCurriculumPartialTree() {
-		CurriculumElement rootElement = getRootElement();
+	private List<CurriculumElementRow> buildCurriculumPartialTree(CurriculumElement rootElement) {
 		List<CurriculumElement> elements = curriculumService.getCurriculumElementsDescendants(rootElement);
 		if(rootElement != null && !elements.contains(rootElement)) {
 			elements.add(rootElement);
@@ -534,7 +591,11 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			doOpenStructure( ureq, structureButton);
 		} else if(previousButton == source && previousButton.getUserObject() instanceof CurriculumElement el) {
 			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
+		} else if(previousImplementationButton == source && previousImplementationButton.getUserObject() instanceof CurriculumElement el) {
+			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
 		} else if(nextButton == source && nextButton.getUserObject() instanceof CurriculumElement el) {
+			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
+		} else if(nextImplementationButton == source && nextImplementationButton.getUserObject() instanceof CurriculumElement el) {
 			fireEvent(ureq, new CurriculumElementEvent(el, List.of()));
 		} else if (source instanceof Link link) {
 			if ("status".equals(link.getCommand())) {
@@ -548,6 +609,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 					updateOverviewDashboard(ureq);
 				} else if(resourcesCtrl != null && tpce.getNewComponent() == resourcesCtrl.getInitialComponent()) {
 					resourcesCtrl.loadModel();
+				} else if(lectureBlocksCtrl != null && tpce.getNewComponent() == lectureBlocksCtrl.getInitialComponent() && !tpce.isCreated()) {
+					lectureBlocksCtrl.loadModel(ureq);
 				}
 			}
 		}

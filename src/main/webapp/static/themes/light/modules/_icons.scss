@@ -481,7 +481,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_shrink { @include o-add-icon('search-minus');}
 .o_icon_shuffle { @include o-add-icon('random');}
 .o_icon_sign_out { @include o-add-icon('sign-out');}
+.o_icon_slide_backward { @include o-add-icon('backward-step');}
 .o_icon_slide_down { @include o-add-icon('chevron-down');}
+.o_icon_slide_forward { @include o-add-icon('forward-step');}
 .o_icon_slide_up { @include o-add-icon('chevron-up');}
 .o_icon_spacer { @include o-add-icon('arrows-h');}
 .o_icon_radar_chart { @include o-add-icon('chart-line');}

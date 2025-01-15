@@ -1492,6 +1492,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
+	public List<CurriculumElement> getImplementations(Curriculum curriculum) {
+		return this.curriculumElementDao.getImplementations(curriculum);
+	}
+
+	@Override
 	public VFSContainer getMediaContainer(CurriculumElement curriculumElement) {
 		VFSContainer mediaContainer = curriculumStorage.getMediaContainer(curriculumElement);
 		mediaContainer = new NamedContainerImpl(curriculumElement.getDisplayName(), mediaContainer);

@@ -87,6 +87,8 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 	private AdditionalReferencesController addReferencesCtrl;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private CurriculumService curriculumService;
 	
 	public ConfirmCurriculumElementDeleteController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
@@ -198,7 +200,11 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 	}
 	
 	private void doDelete() {
+		CurriculumElement rootElement = curriculumService.getImplementationOf(curriculumElement);
 		curriculumService.deleteCurriculumElement(curriculumElement);
+		dbInstance.commitAndCloseSession();
+		curriculumService.numberRootCurriculumElement(rootElement);
+		dbInstance.commitAndCloseSession();
 	}
 	
 	private void doDownload(UserRequest ureq) {

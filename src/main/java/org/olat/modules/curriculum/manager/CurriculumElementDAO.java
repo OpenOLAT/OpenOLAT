@@ -898,6 +898,23 @@ public class CurriculumElementDAO {
 		return elements;
 	}
 	
+	public List<CurriculumElement> getImplementations(Curriculum curriculum) {
+		String sb = """
+				select el from curriculumelement as el
+				inner join fetch el.curriculum as curriculum
+				inner join fetch el.group as baseGroup
+				left join fetch el.parent as parent
+				left join fetch el.type as type
+				where curriculum.key=:curriculumKey and el.parent.key is null""";
+		  
+		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
+			.createQuery(sb, CurriculumElement.class)
+			.setParameter("curriculumKey", curriculum.getKey())
+			.getResultList();
+		Collections.sort(elements, new PathMaterializedPathLengthComparator());
+		return elements;
+	}
+	
 	public List<CurriculumElement> getDescendants(CurriculumElement curriculumElement) {
 		String sb = """
 				select el from curriculumelement as el

@@ -126,9 +126,9 @@ public class TabbedPane extends Container implements Activateable2 {
 	private void dispatchRequest(UserRequest ureq, int newTaid) {
 		if (isEnabled(newTaid) && newTaid >= 0 && newTaid < getTabCount()) {
 			TabPane pane = getTabPaneAt(selectedPane);	
-			setSelectedPane(ureq, newTaid);
+			boolean created = setSelectedPane(ureq, newTaid);
 			TabPane newPane = getTabPaneAt(selectedPane);
-			fireEvent(ureq, new TabbedPaneChangedEvent(pane.getComponent(), newPane.getComponent(), newPane.getController()));
+			fireEvent(ureq, new TabbedPaneChangedEvent(pane.getComponent(), newPane.getComponent(), newPane.getController(), created));
 			// set focus to content area
 			panelFocus.setTrue(true);
 		}
@@ -139,7 +139,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	 * 
 	 * @param selectedPane The selectedPane to set
 	 */
-	public void setSelectedPane(UserRequest ureq, int newSelectedPane) {
+	public boolean setSelectedPane(UserRequest ureq, int newSelectedPane) {
 		// get old selected component and remove it from render tree
 		TabPane oldSelectedTab = getTabPaneAt(selectedPane);
 		if(oldSelectedTab.getComponent() != null) {
@@ -152,12 +152,15 @@ public class TabbedPane extends Container implements Activateable2 {
 		
 		// activate new
 		selectedPane = newSelectedPane;
+		boolean created = false;
 		TabPane newSelectedTab = getTabPaneAt(newSelectedPane);
 		Component component = newSelectedTab.getComponent();
 		if(component == null && newSelectedTab.hasTabCreator()) {
 			component = newSelectedTab.createComponent(ureq);
+			created = true;
 		}
-		super.put("atp", component); 
+		super.put("atp", component);
+		return created;
 	}
 	
 	public OLATResourceable getTabResource() {

@@ -1095,10 +1095,20 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void doDeleteCurriculumElements(ToDelete toDelete) {
-		for(CurriculumElementRow element:toDelete.elements()) {
-			CurriculumElement elementToDelete = curriculumService.getCurriculumElement(element);
-			if(elementToDelete != null) {
-				curriculumService.deleteCurriculumElement(element);
+		List<CurriculumElementRow> rowsToDelete = toDelete.elements();
+		if(rowsToDelete.isEmpty()) {
+			CurriculumElement implementationElement = curriculumService.getImplementationOf(rowsToDelete.get(0).getCurriculumElement());
+			
+			for(CurriculumElementRow element:rowsToDelete) {
+				CurriculumElement elementToDelete = curriculumService.getCurriculumElement(element);
+				if(elementToDelete != null) {
+					curriculumService.deleteCurriculumElement(element);
+					dbInstance.commitAndCloseSession();
+				}
+			}
+			
+			if(implementationElement != null) {
+				curriculumService.numberRootCurriculumElement(implementationElement);
 				dbInstance.commitAndCloseSession();
 			}
 		}

@@ -484,7 +484,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		return components;
 	}
 
-	private void loadModel(UserRequest ureq) {
+	public void loadModel(UserRequest ureq) {
 		String displayname = null;
 		String externalRef = null;
 		if(curriculumElement != null) {

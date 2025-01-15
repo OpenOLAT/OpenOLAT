@@ -20,8 +20,10 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DB;
@@ -670,10 +672,24 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	}
 	
 	private void doDeleteCurriculumElements(ToDelete toDelete) {
+		Set<CurriculumElement> implementations = new HashSet<>();
+		
 		for(CurriculumElementSearchRow element:toDelete.elements()) {
 			CurriculumElement elementToDelete = curriculumService.getCurriculumElement(element);
 			if(elementToDelete != null) {
+				CurriculumElement implementationElement = curriculumService.getImplementationOf(elementToDelete);
+				if(implementationElement != null) {
+					implementations.add(implementationElement);
+				}
 				curriculumService.deleteCurriculumElement(element);
+				dbInstance.commitAndCloseSession();
+			}
+		}
+		
+		for(CurriculumElement implementation:implementations) {
+			CurriculumElement implementationToNumber = curriculumService.getCurriculumElement(implementation);
+			if(implementationToNumber != null) {
+				curriculumService.numberRootCurriculumElement(implementationToNumber);
 				dbInstance.commitAndCloseSession();
 			}
 		}
