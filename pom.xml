@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.2.1</org.springframework.version>
+		<org.springframework.version>6.2.2</org.springframework.version>
 		<org.hibernate.version>6.5.3.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.2.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
@@ -75,13 +75,13 @@
 		<apache.poi>5.4.0</apache.poi>
 		<apache.log4j>2.24.3</apache.log4j>
 		<org.slf4j>2.0.16</org.slf4j>
-		<org.bouncycastle>1.79</org.bouncycastle>
+		<org.bouncycastle>1.80</org.bouncycastle>
 		<io.jsonwebtoken>0.12.6</io.jsonwebtoken>
 		<io.undertow>2.3.18.Final</io.undertow>
 		<jackson.version>2.18.2</jackson.version>
 		<swagger.ui.version>5.18.2</swagger.ui.version>
 		<com.mysql.version>9.1.0</com.mysql.version>
-		<org.postgresql.version>42.7.4</org.postgresql.version>
+		<org.postgresql.version>42.7.5</org.postgresql.version>
 		<org.infinispan.version>15.1.3.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.27.0</version.selenium>
@@ -1729,7 +1729,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15to18</artifactId>
+			<artifactId>bcprov-jdk18on</artifactId>
 			<version>${org.bouncycastle}</version>
 		</dependency>
 		<dependency>
