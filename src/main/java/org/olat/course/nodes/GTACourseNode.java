@@ -304,6 +304,24 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 	}
 	
 	/**
+	 * Returns the values of min/max saved in the configuration (nothing calculated).
+	 * 
+	 * @param config The course element configuration
+	 * @return The min/max from the configuration
+	 */
+	public static MinMax configuredMinMax(ModuleConfiguration config) {
+		MinMax minMax = null;
+		if(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD)) {
+			Float min = config.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MIN);
+			Float max = config.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+			if(min != null && max != null) {
+				minMax = MinMax.of(min, max);
+			}
+		}
+		return minMax;
+	}
+	
+	/**
 	 * Calculate the values min/max based on the configuration of the course element.
 	 * 
 	 * @return Min/max values
@@ -350,7 +368,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 			float pointsProReviewFloat = pointsProReview == null ? 0.0f : pointsProReview.floatValue();
 			submittedReview = MinMax.of(0.0f, pointsProReviewFloat * numberOfReviews);
 		}
-	
+
 		return MinMax.add(evaluationMinMax, peerReviewMinMax, submittedReview);
 	}
 	
@@ -1403,7 +1421,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode
 
 		// Score has to be in configured range.
 		MinMax minMax = calculateMinMax(getModuleConfiguration());
-		if (score != null) {
+		if(minMax == null) {
+			minMax = configuredMinMax(getModuleConfiguration());
+		}
+		if (score != null && minMax != null) {
 			if(minMax.getMax().floatValue() < score.floatValue()) {
 				score = minMax.getMax();
 			}
