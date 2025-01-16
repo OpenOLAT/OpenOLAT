@@ -79,7 +79,7 @@ public class MenuTreePageFragment {
 	}
 
 	public MenuTreePageFragment assertWithTitle(String title) {
-		By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li/div/span[contains(@class,'o_tree_link')]/a[span[contains(text(),'" + title + "')]]");
+		By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li/div/span[contains(@class,'o_tree_link')]/a[span[text()[contains(.,'" + title + "')]]]");
 		OOGraphene.waitElement(linkBy, browser);
 		return this;
 	}

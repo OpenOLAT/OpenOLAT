@@ -216,8 +216,8 @@ public class UserAdminPage {
 		browser.findElement(password2By).sendKeys(userVo.getPassword());
 		
 		By saveBy = By.cssSelector(".o_sel_id_create button.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.click(saveBy, browser);
+		OOGraphene.scrollTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}

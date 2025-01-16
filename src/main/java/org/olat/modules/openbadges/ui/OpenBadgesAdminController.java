@@ -75,12 +75,16 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 		mainVC = createVelocityContainer("open_badges_admin");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		configurationLink = LinkFactory.createLink("openBadges.configuration", mainVC, this);
+		configurationLink.setElementCssClass("o_sel_openbadges_configuration");
 		segmentView.addSegment(configurationLink, true);
 		templatesLink = LinkFactory.createLink("openBadges.templates", mainVC, this);
+		templatesLink.setElementCssClass("o_sel_openbadges_templates");
 		segmentView.addSegment(templatesLink, false);
 		globalBadgesLink = LinkFactory.createLink("form.global.badges", mainVC, this);
+		globalBadgesLink.setElementCssClass("o_sel_openbadges_global");
 		segmentView.addSegment(globalBadgesLink, false);
 		issuedGlobalBadgesLink = LinkFactory.createLink("issuedGlobalBadges", mainVC, this);
+		issuedGlobalBadgesLink.setElementCssClass("o_sel_openbadges_issued");
 		segmentView.addSegment(issuedGlobalBadgesLink, false);
 		doOpenConfiguration(ureq);
 

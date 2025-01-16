@@ -91,6 +91,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_openbadges_admin_form");
 		setFormContextHelp("manual_admin/administration/e-Assessment_openBadges/");
 		setFormTitle("openBadges.configuration");
 		setFormInfo("admin.info");

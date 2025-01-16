@@ -361,7 +361,8 @@ public class CourseElementTest extends Deployments {
 		VideoEditorPage videoEditorPage = videoPage
 			.assertOnVideo()
 			.edit()
-			.assertOnVideoEditor();
+			.assertOnVideoEditor()
+			.waitOnVideo();
 		
 		videoEditorPage
 			.selectSegments()
@@ -370,10 +371,14 @@ public class CourseElementTest extends Deployments {
 			.editSegment("00:00:01", "00:00:15")
 			.save()
 			.assertOnVideoSegments(1)
+			.assertOnVideoSegmentsInTimeline(1)
+			.assertOnVideoEditor()
 			.addSegment()
 			.editSegment("00:00:20", "00:00:45")
 			.save()
-			.assertOnVideoSegments(2);
+			.assertOnVideoSegments(2)
+			.assertOnVideoSegmentsInTimeline(2)
+			.assertOnVideoEditor();
 		// Back
 		videoEditorPage
 			.toolbarBack()
@@ -409,7 +414,6 @@ public class CourseElementTest extends Deployments {
 			.assetOnSegment()
 			.assetOnSegmentTooltip(15);
 	}
-	
 	
 	/**
 	 * An author create a video with a segment. After it creates a course with a video task element,

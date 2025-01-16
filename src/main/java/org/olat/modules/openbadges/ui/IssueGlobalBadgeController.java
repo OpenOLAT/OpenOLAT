@@ -90,10 +90,12 @@ public class IssueGlobalBadgeController extends FormBasicController {
 		recipientButtonCont.setLabel("form.recipient", null);
 
 		recipientButton = uifactory.addFormLink("form.recipient", "", "form.recipient", recipientButtonCont, Link.BUTTON | Link.NONTRANSLATED);
+		recipientButton.setElementCssClass("o_sel_openbadges_add_recipient");
 		recipientButton.setIconRightCSS("o_icon o_icon_caret");
 
 		badgeClassDropdown = uifactory.addDropdownSingleselect("form.badge.class", formLayout,
 				badgeClassKV.keys(), badgeClassKV.values());
+		badgeClassDropdown.setElementCssClass("o_sel_openbadges_class");
 		badgeClassDropdown.addActionListener(FormEvent.ONCHANGE);
 
 		if (!badgeClassKV.isEmpty()) {

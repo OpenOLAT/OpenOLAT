@@ -183,6 +183,11 @@ public class OOGraphene {
 		waitElement(calloutBy, browser);
 	}
 	
+	public static void waitCalloutDisappears(WebDriver browser, String cssSelector) {
+		By calloutBy = By.cssSelector("div.popover-content div.o_callout_content " + cssSelector);
+		waitModalDialogDisappears(browser, Duration.ofSeconds(5), calloutBy);
+	}
+	
 	public static void waitBusy(WebDriver browser) {
 		waitBusy(browser, timeout);
 	}

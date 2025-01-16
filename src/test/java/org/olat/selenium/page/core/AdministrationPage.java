@@ -22,6 +22,7 @@ package org.olat.selenium.page.core;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.selenium.page.course.BadgesAdminPage;
 import org.olat.selenium.page.course.BigBlueButtonSettingsPage;
 import org.olat.selenium.page.course.JupyterHubSettingsPage;
 import org.olat.selenium.page.course.LTI13SettingsPage;
@@ -250,6 +251,17 @@ public class AdministrationPage {
 		OOGraphene.waitElement(configBy, browser);
 		
 		return new QuestionPoolAdminPage(browser).assertOnConfiguration();
+	}
+	
+	public BadgesAdminPage openBadges() {
+		selectAssessment();
+		
+		By poolBy = By.cssSelector(".o_sel_openBadges span.o_tree_level_label_leaf>a");
+		browser.findElement(poolBy).click();
+		By configBy = By.cssSelector("fieldset.o_sel_openbadges_admin_form");
+		OOGraphene.waitElement(configBy, browser);
+		
+		return new BadgesAdminPage(browser).assertOnConfiguration();
 	}
 	
 	public TaxonomyAdminPage openTaxonomy() {
