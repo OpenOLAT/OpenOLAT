@@ -103,12 +103,14 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 					: null;
 			minParticipantsEl = uifactory.addTextElement("ce.participants.min", null, 20, minParticipants, participantsCont);
 			minParticipantsEl.setDisplaySize(100);
+			minParticipantsEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.numParticipants));
 			
 			String maxParticipants = element != null && element.getMaxParticipants() != null
 					? element.getMaxParticipants().toString()
 					: null;
 			maxParticipantsEl = uifactory.addTextElement("ce.participants.max", null, 20, maxParticipants, participantsCont);
 			maxParticipantsEl.setDisplaySize(100);
+			maxParticipantsEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.numParticipants));
 		}
 		
 		if (canEdit) {

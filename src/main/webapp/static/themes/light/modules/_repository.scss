@@ -69,6 +69,11 @@
 				color: $o-coursesite-meta-author-color;
 				white-space: normal;
 			}
+			
+			.o_price {
+				font-size: $o-coursesite-meta-price-font-size;
+				font-weight: $o-coursesite-meta-price-font-weight;
+			}
 		
 			.o_start_wrapper {
 				margin: 2em 0 2em 0;

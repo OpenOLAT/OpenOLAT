@@ -546,6 +546,8 @@ $o-coursesite-meta-author-color	: $state-success-text !default;
 $o-coursesite-meta-title-font-size	: ceil(($font-size-base * 2.6)) !default; /* same as h1 default size: 36px */
 $o-coursesite-meta-header-border 	: $panel-default-border !default;
 $o-coursesite-meta-header-border-width	: 1px !default; 
+$o-coursesite-meta-price-font-size		: 130% !default;
+$o-coursesite-meta-price-font-weight		: bold !default;
 $o-coursesite-sidecol-bg		: $panel-default-heading-bg !default;
 $o-coursesite-sidecol-border	: $panel-default-border !default;
 $o-coursesite-sidecol-radius	: $border-radius-base !default;

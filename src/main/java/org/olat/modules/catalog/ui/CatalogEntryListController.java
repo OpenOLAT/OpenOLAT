@@ -77,6 +77,9 @@ import org.olat.modules.catalog.CatalogFilterSearchParams;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
@@ -114,7 +117,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private CatalogEntryDataModel dataModel;
 	private final CatalogEntrySearchParams searchParams;
 	
-	private CatalogRepositoryEntryInfosController infosCtrl;
+	private Controller infosCtrl;
 	private LightboxController lightboxCtrl;
 	private WebCatalogAuthController authCtrl;
 	
@@ -134,6 +137,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
@@ -504,9 +509,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 					tableEl.setPage(page);
 				}
 				doOpenDetails(ureq, row);
-				if (infosCtrl != null) {
+				if (infosCtrl instanceof Activateable2 activateable) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
-					infosCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+					activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
 				}
 			}
 		} else if (CatalogBCFactory.isInfosType(entry.getOLATResourceable())) {
@@ -520,9 +525,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 					tableEl.setPage(page);
 				}
 				doOpenDetails(ureq, row);
-				if (infosCtrl != null) {
+				if (infosCtrl instanceof Activateable2 activateable) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
-					infosCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+					activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
 				}
 			}
 		}
@@ -537,7 +542,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == infosCtrl) {
 			if (event instanceof BookedEvent bookedEvent) {
-				doBooked(ureq, bookedEvent.getRepositoryEntry());
+				if (bookedEvent.getRepositoryEntry() != null) {
+					doBooked(ureq, bookedEvent.getRepositoryEntry());
+				} else if (bookedEvent.getCurriculumElement() != null) {
+					doBooked(ureq, bookedEvent.getCurriculumElement());
+				}
 			} else if (event instanceof LeavingEvent) {
 				stackPanel.popUpToController(this);
 				loadModel(false);
@@ -684,7 +693,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getRepositotyEntryKey());
 			doOpenDetails(ureq, entry);
 		} else if (row.getCurriculumElementKey() != null) {
-			
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(() -> row.getCurriculumElementKey());
+			doOpenDetails(ureq, curriculumElement);
 		}
 	}
 	
@@ -701,7 +711,27 @@ public class CatalogEntryListController extends FormBasicController implements A
 			String displayName = entry.getDisplayname();
 			stackPanel.pushController(displayName, infosCtrl);
 			
-			String windowTitle = translate("window.title.infos", entry.getDisplayname());
+			String windowTitle = translate("window.title.infos", displayName);
+			getWindow().setTitle(windowTitle);
+		} else {
+			tableEl.reloadData();
+		}
+	}
+	
+	private void doOpenDetails(UserRequest ureq, CurriculumElement curriculumElement) {
+		if (curriculumElement != null) {
+			removeAsListenerAndDispose(infosCtrl);
+			OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement);
+			listenTo(infosCtrl);
+			addToHistory(ureq, infosCtrl);
+			
+			String displayName = curriculumElement.getDisplayName();
+			stackPanel.pushController(displayName, infosCtrl);
+			
+			String windowTitle = translate("window.title.infos", displayName);
 			getWindow().setTitle(windowTitle);
 		} else {
 			tableEl.reloadData();
@@ -723,13 +753,22 @@ public class CatalogEntryListController extends FormBasicController implements A
 					return;
 				}
 			}
+		} else if (row.getCurriculumElementKey() != null) {
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(() -> row.getCurriculumElementKey());
+			if (curriculumElement != null) {
+				AccessResult acResult = acService.isAccessible(curriculumElement, getIdentity(), row.isMember(), searchParams.isGuestOnly(), null, false);
+				if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), curriculumElement, acResult)) {
+					doStart(ureq, row);
+					return;
+				}
+			}
 		}
 		
 		doOpenDetails(ureq, row);
-		if (infosCtrl != null) {
+		if (infosCtrl instanceof Activateable2 activateable) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("Offers");
 			ContextEntry contextEntry = BusinessControlFactory.getInstance().createContextEntry(ores);
-			infosCtrl.activate(ureq, List.of(contextEntry), null);
+			activateable.activate(ureq, List.of(contextEntry), null);
 		}
 	}
 
@@ -751,6 +790,21 @@ public class CatalogEntryListController extends FormBasicController implements A
 			doOpenDetails(ureq, repositoryEntry);
 			if (repositoryManager.isAllowed(ureq, repositoryEntry).canLaunch()) {
 				CatalogEntryRow row = dataModel.getObjectByResourceKey(repositoryEntry.getOlatResource().getKey());
+				if (row != null) {
+					doStart(ureq, row);
+				}
+			}
+		}
+	}
+
+	private void doBooked(UserRequest ureq, CurriculumElement element) {
+		stackPanel.popUpToController(this);
+		
+		if (element != null) {
+			doOpenDetails(ureq, element);
+			boolean isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(getIdentity())).isEmpty();
+			if (isMember) {
+				CatalogEntryRow row = dataModel.getObjectByResourceKey(element.getResource().getKey());
 				if (row != null) {
 					doStart(ureq, row);
 				}

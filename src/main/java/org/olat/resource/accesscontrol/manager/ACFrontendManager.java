@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,6 +39,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationModule;
@@ -62,8 +64,12 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.EnrollState;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -203,6 +209,38 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		
 		Date now = new Date();
 		List<Offer> offers = getOffers(entry, true, true, now, false, webPublish, offerOrganisations);
+		if(offers.isEmpty()) {
+			return new AccessResult(false);
+		}
+		return isAccessible(forId, offers, allowNonInteractiveAccess);
+	}
+	
+	@Override
+	public AccessResult isAccessible(CurriculumElement element, Identity forId, Boolean knowMember, boolean isGuest,
+			Boolean webPublish, boolean allowNonInteractiveAccess) {
+		if (isGuest) {
+			return new AccessResult(false);
+		}
+		
+		// Already member
+		boolean member;
+		if (knowMember == null) {
+			member = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(forId)).isEmpty();
+		} else {
+			member = knowMember.booleanValue();
+		}
+		if(member) {
+			return new AccessResult(true);
+		}
+		
+		// Bookings
+		if(!accessModule.isEnabled()) {
+			return new AccessResult(false);
+		}
+		
+		Date now = new Date();
+		List<OrganisationRef> offerOrganisations = webPublish == null || !webPublish? getOfferOrganisations(forId): null;
+		List<Offer> offers = getOffers(element, true, true, now, false, webPublish, offerOrganisations);
 		if(offers.isEmpty()) {
 			return new AccessResult(false);
 		}
@@ -382,6 +420,24 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		return offer.getValidFrom() == null && offer.getValidTo() == null
 				? RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD)
 				: RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+	}
+	
+	@Override
+	public List<Offer> getOffers(CurriculumElement element, boolean valid, boolean filterByStatus, Date atDate,
+			boolean dateMandatory, Boolean webPublish, List<? extends OrganisationRef> offerOrganisations) {
+		List<Offer> offers = accessManager.findOfferByResource(element.getResource(), valid, atDate, dateMandatory, webPublish, offerOrganisations);
+		if (filterByStatus) {
+			offers = offers.stream()
+					.filter(offer -> filterByStatus(offer, element.getElementStatus()))
+					.collect(Collectors.toList());
+		}
+		return offers;
+	}
+
+	private boolean filterByStatus(Offer offer, CurriculumElementStatus status) {
+		return offer.getValidFrom() == null && offer.getValidTo() == null
+				? Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD).contains(status)
+				: Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD_PERIOD).contains(status);
 	}
 	
 	@Override
@@ -608,6 +664,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		return !RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())
 					&& !findOrderItems(entry.getOlatResource(), identity, null, null, null, new OrderStatus[] { OrderStatus.PAYED }, 0, 1, null).isEmpty();
 	}
+	
+	@Override
+	public boolean isAccessRefusedByStatus(CurriculumElement element, IdentityRef identity) {
+		return !Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD).contains(element.getElementStatus())
+				&& !findOrderItems(element.getResource(), identity, null, null, null, new OrderStatus[] { OrderStatus.PAYED }, 0, 1, null).isEmpty();
+	}
 
 	@Override
 	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method) {
@@ -633,6 +695,18 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				MailPackage mailing = new MailPackage(offer.isConfirmationEmail());
 				EnrollState result = businessGroupService.enroll(identity, null, identity, group, mailing);
 				return !result.isFailed();
+			}
+		} else if("CurriculumElement".equals(resourceType)) {
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
+			if (curriculumElement != null) {
+				boolean isParticipant = curriculumService.getCurriculumElementMemberships(List.of(curriculumElement), identity).stream()
+						.anyMatch(CurriculumElementMembership::isParticipant);
+				if (!isParticipant) {
+					List<CurriculumElementMembershipChange> changes = List.of(CurriculumElementMembershipChange
+							.addMembership(identity, curriculumElement, CurriculumRoles.participant));
+					curriculumService.updateCurriculumElementMemberships(identity, null, changes, null);
+					return true;
+				}
 			}
 		} else {
 			RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
@@ -672,6 +746,17 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				}
 				return true;
 			}
+		} else if("CurriculumElement".equals(resourceType)) {
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
+			if (curriculumElement != null) {
+				boolean isParticipant = curriculumService.getCurriculumElementMemberships(List.of(curriculumElement), identity).stream()
+						.anyMatch(CurriculumElementMembership::isParticipant);
+				if (isParticipant) {
+					curriculumService.removeMember(curriculumElement, identity, CurriculumRoles.participant,
+							GroupMembershipStatus.cancel, identity, null);
+					return true;
+				}
+			}
 		} else {
 			RepositoryEntryRef entry = repositoryEntryDao.loadByResource(resource);
 			if(entry != null) {
@@ -686,12 +771,25 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	
 	@Override
 	public boolean tryAutoBooking(Identity identity, RepositoryEntry entry, AccessResult acResult) {
-		if (identity != null && entry != null && !entry.getEntryStatus().decommissioned() && !acResult.getAvailableMethods().isEmpty()) {
-			if (acResult.getAvailableMethods().size() == 1) {
-				OfferAccess offerAccess = acResult.getAvailableMethods().get(0);
-				if (offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
-					return accessResource(identity, offerAccess, null).isAccessible();
-				}
+		if (entry != null && !entry.getEntryStatus().decommissioned()) {
+			return tryAutoBooking(identity, acResult);
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean tryAutoBooking(Identity identity, CurriculumElement element, AccessResult acResult) {
+		if (element != null && !element.getElementStatus().isCancelledOrClosed()) {
+			return tryAutoBooking(identity, acResult);
+		}
+		return false;
+	}
+
+	private boolean tryAutoBooking(Identity identity, AccessResult acResult) {
+		if (identity != null && acResult.getAvailableMethods().size() == 1) {
+			OfferAccess offerAccess = acResult.getAvailableMethods().get(0);
+			if (offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
+				return accessResource(identity, offerAccess, null).isAccessible();
 			}
 		}
 		return false;
@@ -704,6 +802,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
 				return group.getName();
+			}
+		} else if("CurriculumElement".equals(resourceType)) {
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
+			if (curriculumElement != null) {
+				return curriculumElement.getDisplayName();
 			}
 		} else {
 			RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);

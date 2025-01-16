@@ -70,7 +70,7 @@ public class CatalogRepositoryEntryAccessController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("access");
 		
-		headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, false, false);
+		headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, false);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		

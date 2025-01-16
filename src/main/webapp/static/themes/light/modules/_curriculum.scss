@@ -714,6 +714,12 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	}
 }
 
+.o_curriculum_element_infos {
+	.o_curriculum_element_infos_main {
+		display: grid;
+	}
+}
+
 .o_curriculum_element_active a {
 	font-weight: bold;
 }

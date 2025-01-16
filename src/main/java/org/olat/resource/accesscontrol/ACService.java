@@ -31,6 +31,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -87,13 +88,19 @@ public interface ACService {
 	 * @param allowNonInteractiveAccess
 	 * @return
 	 */
-	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean isGuest, Boolean webPublish, boolean allowNonInteractiveAccess);
+	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean isGuest,
+			Boolean webPublish, boolean allowNonInteractiveAccess);
+
+	public AccessResult isAccessible(CurriculumElement element, Identity forId, Boolean knowMember, boolean isGuest,
+			Boolean webPublish, boolean allowNonInteractiveAccess);
 	
 	public boolean isGuestAccessible(RepositoryEntry entry, boolean filterStatus);
 	
 	public boolean isAccessToResourcePending(OLATResource resource, IdentityRef identity);
 
 	public boolean isAccessRefusedByStatus(RepositoryEntry entry, IdentityRef identity);
+	
+	public boolean isAccessRefusedByStatus(CurriculumElement element, IdentityRef identity);
 	
 	/**
 	 * A user can see and book the offers of this organisations.
@@ -143,8 +150,12 @@ public interface ACService {
 
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, List<? extends OrganisationRef> offerOrganisations);
 	
-	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate, boolean dateMandatory, Boolean webPublish, List<? extends OrganisationRef> offerOrganisations);
+	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate,
+			boolean dateMandatory, Boolean webPublish, List<? extends OrganisationRef> offerOrganisations);
 
+	public List<Offer> getOffers(CurriculumElement element, boolean valid, boolean filterByStatus, Date atDate,
+			boolean dateMandatory, Boolean webPublish, List<? extends OrganisationRef> offerOrganisations);
+	
 	/**
 	 *
 	 * @param resourceKeys This parameter is mandatory and must not be empty
@@ -179,6 +190,8 @@ public interface ACService {
 	public boolean denyAccesToResource(Identity identity, Offer offer);
 	
 	public boolean tryAutoBooking(Identity identity, RepositoryEntry entry, AccessResult acResult);
+	
+	public boolean tryAutoBooking(Identity identity, CurriculumElement element, AccessResult acResult);
 
 	/**
 	 * Get the reservation form an identity on a resource

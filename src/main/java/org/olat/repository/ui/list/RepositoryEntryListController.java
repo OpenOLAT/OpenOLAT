@@ -95,6 +95,7 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -636,7 +637,11 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		 if(cmc == source) {
+		if (source == detailsCtrl) {
+			if (event instanceof BookedEvent) {
+				doCloseDetails();
+			}
+		} else if (cmc == source) {
 			if(commentsCtrl != null) {
 				RepositoryEntryRow row = (RepositoryEntryRow)commentsCtrl.getUserObject();
 				long numOfComments = commentsCtrl.getCommentsCount();
@@ -747,6 +752,14 @@ public class RepositoryEntryListController extends FormBasicController
 				stackPanel.pushController(displayName, detailsCtrl);	
 			}
 		}
+	}
+	
+	private void doCloseDetails() {
+		removeAsListenerAndDispose(detailsCtrl);
+		detailsCtrl = null;
+		
+		stackPanel.popUpToController(this);
+		reloadRows();
 	}
 	
 	protected void doOpenComments(UserRequest ureq, RepositoryEntryRow row) {

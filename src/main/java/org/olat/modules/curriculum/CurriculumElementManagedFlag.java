@@ -55,6 +55,7 @@ public enum CurriculumElementManagedFlag {
 	 numParticipants(all),
 	 type(all),
 	 educationalType(all),
+	 taxonomyLevel(all),
 	 calendars(all),
 	 lectures(all),
 	 learningProgress(all),

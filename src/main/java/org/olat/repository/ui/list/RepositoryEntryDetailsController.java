@@ -41,10 +41,15 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.run.InfoCourse;
+import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.ui.AccessEvent;
+import org.olat.resource.accesscontrol.ui.OffersController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,8 +68,9 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	
 	private RepositoryEntryDetailsHeaderController headerCtrl;
 	private RepositoryEntryResourceInfoDetailsHeaderController resourceInfoHeaderCtrl;
-	private final RepositoryEntryDetailsDescriptionController accessListCtrl;
+	private final RepositoryEntryDetailsDescriptionController descriptionCtrl;
 	private final RepositoryEntryDetailsMetadataController metadataCtrl;
+	private OffersController offersCtrl;
 	private final RepositoryEntryDetailsLinkController linkCtrl;
 	private RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
 
@@ -75,6 +81,9 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryModule repositoryModule;
+
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private CourseModule courseModule;
 
@@ -101,7 +110,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 			List<PriceMethod> types = resourceInfoHeaderCtrl.getTypes();
 			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, types, true);
 		} else {
-			headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, true, closeTabOnLeave);
+			headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, closeTabOnLeave);
 			listenTo(headerCtrl);
 			mainVC.put("header", headerCtrl.getInitialComponent());
 			List<PriceMethod> types = headerCtrl.getTypes();
@@ -109,13 +118,26 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, types, guestOnly);
 		}
 		
-		accessListCtrl = new RepositoryEntryDetailsDescriptionController(ureq, wControl, entry);
-		listenTo(accessListCtrl);
-		mainVC.put("description", accessListCtrl.getInitialComponent());
-		mainVC.contextPut("hasDescription", Boolean.valueOf(accessListCtrl.hasDescription()));
-
 		listenTo(metadataCtrl);
 		mainVC.put("metadata", metadataCtrl.getInitialComponent());
+		
+		descriptionCtrl = new RepositoryEntryDetailsDescriptionController(ureq, wControl, entry);
+		listenTo(descriptionCtrl);
+		mainVC.put("description", descriptionCtrl.getInitialComponent());
+		mainVC.contextPut("hasDescription", Boolean.valueOf(descriptionCtrl.hasDescription()));
+		
+		if (!isMember) {
+			AccessResult acResult = ureq.getUserSession().getRoles() == null
+					? acService.isAccessible(entry, null, Boolean.FALSE, false, Boolean.TRUE, false)
+					: acService.isAccessible(entry, getIdentity(), null, ureq.getUserSession().getRoles().isGuestOnly(), Boolean.FALSE, false);
+			if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
+				fireEvent(ureq, new BookedEvent(entry));
+			} else if (!acResult.getAvailableMethods().isEmpty()) {
+				offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
+				listenTo(offersCtrl);
+				mainVC.put("offers", offersCtrl.getInitialComponent());
+			}
+		}
 		
 		linkCtrl = new RepositoryEntryDetailsLinkController(ureq, wControl, entry);
 		listenTo(linkCtrl);
@@ -184,6 +206,13 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		} else if (source == resourceInfoHeaderCtrl) {
 			if (event == RepositoryEntryResourceInfoDetailsHeaderController.START_EVENT) {
 				doStart(ureq);
+			}
+		} else if (source == offersCtrl) {
+			if (event instanceof AccessEvent aeEvent) {
+				if (event.equals(AccessEvent.ACCESS_OK_EVENT)) {
+					doStart(ureq);
+					fireEvent(ureq, new BookedEvent(entry));
+				}
 			}
 		}
 		super.event(ureq, source, event);

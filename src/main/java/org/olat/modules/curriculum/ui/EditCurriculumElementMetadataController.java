@@ -229,7 +229,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 					educationalTypeEl.select(educationalType.getKey().toString(), true);
 				}
 			}
-			educationalTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.educationalType));
+			educationalTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.educationalType) && canEdit);
 		}
 		
 		// Subjects
@@ -244,6 +244,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 					getWindowControl(), allTaxonomieLevels);
 			taxonomyLevelEl.setDisplayNameHeader(translate(labelI18nKey));
 			taxonomyLevelEl.setSelection(taxonomyLevels);
+			taxonomyLevelEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.taxonomyLevel) && canEdit);
 			if (isCatalogCandidate) {
 				taxonomyLevelEl.setHelpTextKey("cif.taxonomy.levels.help.catalog", null);
 			}

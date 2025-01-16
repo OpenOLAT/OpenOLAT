@@ -1,0 +1,27 @@
+<div class="o_curriculum_element_infos o_repo_details">
+	<div class="o_curriculum_element_infos_header o_repo_header">
+		$r.render("header")
+	</div>
+	<div class="o_curriculum_element_infos_main">
+		#if($r.available("details"))
+			<div class="o_curriculum_element_infos_details">
+				$r.render("details")
+			</div>
+		#end
+		#if($r.available("offers"))
+			<div id="offers" class="o_curriculum_element_infos_offers">
+				$r.render("offers")
+			</div>
+		#end
+		#if($r.available("overview"))
+			<div class="o_curriculum_element_infos_overview">
+				$r.render("overview")
+			</div>
+		#end
+		#if($r.available("lectures"))
+			<div class="o_curriculum_element_infos_lectures">
+				$r.render("lectures")
+			</div>
+		#end
+	</div>
+</div>

@@ -6,18 +6,18 @@
 			</div>
 		#end
 		<div class="o_meta">
-			#if($v.getExternalRef())
+			#if($externalRef)
 				<div class="o_ext_ref o_nowrap">
-					$r.escapeHtml($v.getExternalRef())
+					$r.escapeHtml($externalRef)
 				</div>
 			#end
 			<h2>
-				<i class="o_icon $cssClass o_icon-lg"> </i>
-				$r.escapeHtml($v.displayname)
+				<i class="o_icon o_icon-lg $iconCssClass"> </i>
+				$r.escapeHtml($title)
 			</h2>
 			
-			#if($r.isNotEmpty($v.teaser))
-				<p class="o_teaser">$r.escapeHtml($v.teaser)</p>
+			#if($r.isNotEmpty($teaser))
+				<p class="o_teaser">$r.escapeHtml($teaser)</p>
 			#end
 			
 			#if($educationalType)
@@ -26,10 +26,16 @@
 				</span>
 			#end
 			
-			#if($v.authors && !$v.authors.empty)
+			#if($authors)
 				<div class="o_author">
 					<span class="text-muted">$r.translate("course.made.by")</span> 
-					$r.escapeHtml($v.authors)
+					$r.escapeHtml($authors)
+				</div>
+			#end
+			
+			#if($r.isNotEmpty($info))
+				<div class="o_info_with_icon">
+					<div class="o_multi_line">$info</div>
 				</div>
 			#end
 			
@@ -42,6 +48,11 @@
 			
 			#if($r.available("start") || $r.available("start.guest"))
 				<div class="o_start_wrapper">
+					#if($r.isNotEmpty($price))
+						<div class="o_price">
+							$price
+						</div>
+					#end
 					<div class="o_start_inner">
 						#if($r.available("start"))
 							$r.render("start")

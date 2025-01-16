@@ -20,6 +20,7 @@
 package org.olat.modules.catalog.ui;
 
 import org.olat.core.gui.control.Event;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -33,14 +34,28 @@ public class BookedEvent extends Event {
 	private static final long serialVersionUID = -5960027431617295771L;
 	
 	private final RepositoryEntry repositoryEntry;
-
+	private final CurriculumElement curriculumElement;
+	
 	public BookedEvent(RepositoryEntry repositoryEntry) {
+		this(repositoryEntry, null);
+	}
+	
+	public BookedEvent(CurriculumElement curriculumElement) {
+		this(null, curriculumElement);
+	}
+
+	public BookedEvent(RepositoryEntry repositoryEntry, CurriculumElement curriculumElement) {
 		super("booked");
 		this.repositoryEntry = repositoryEntry;
+		this.curriculumElement = curriculumElement;
 	}
 
 	public RepositoryEntry getRepositoryEntry() {
 		return repositoryEntry;
+	}
+
+	public CurriculumElement getCurriculumElement() {
+		return curriculumElement;
 	}
 
 }

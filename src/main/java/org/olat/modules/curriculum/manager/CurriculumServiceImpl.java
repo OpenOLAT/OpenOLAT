@@ -546,6 +546,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element) {
 		return curriculumElementDao.loadByKey(element.getKey());
 	}
+	
+	@Override
+	public CurriculumElement getCurriculumElement(OLATResource resource) {
+		return curriculumElementDao.loadElementByResource(resource);
+	}
 
 	@Override
 	public List<CurriculumElement> getCurriculumElements(Collection<? extends CurriculumElementRef> elementRefs) {

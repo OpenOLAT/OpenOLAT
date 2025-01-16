@@ -55,6 +55,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
@@ -277,6 +278,8 @@ public interface CurriculumService {
 	
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
+	
+	public CurriculumElement getCurriculumElement(OLATResource resource);
 
 	public List<CurriculumElement> getCurriculumElements(Collection<? extends CurriculumElementRef> elementRefs);
 	
