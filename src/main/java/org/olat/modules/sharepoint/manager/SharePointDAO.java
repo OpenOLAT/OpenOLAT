@@ -114,7 +114,7 @@ public class SharePointDAO {
 			}
 			return MicrosoftSite.valueOf(site);
 		} catch (Exception e) {
-			log.error("", e);
+			log.error("Cannot load site with id: {}", siteId, e);
 			return null;
 		}
 	}
@@ -135,7 +135,7 @@ public class SharePointDAO {
 					.map(MicrosoftDrive::valueOf)
 					.toList();
 		} catch (Exception e) {
-			log.error("", e);
+			log.error("Cannot load drives of site with id: {}", siteId, e);
 			return null;
 		}
 	}
