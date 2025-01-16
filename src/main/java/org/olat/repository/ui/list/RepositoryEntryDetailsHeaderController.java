@@ -195,7 +195,7 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 		if (acResult.isAccessible()) {
 			startLink = createStartLink(layoutCont);
 		} else if (!acResult.getAvailableMethods().isEmpty()) {
-			formatOffers(acResult);
+			formatPrice(acResult);
 			createGoToOffersLink(layoutCont, guestOnly);
 		} else if (!getOffersNowNotInRange(entry, getIdentity()).isEmpty()) {
 			showAccessDenied(AccessDeniedFactory.createOfferNotNow(ureq, getWindowControl(), getOffersNowNotInRange(entry, getIdentity())));

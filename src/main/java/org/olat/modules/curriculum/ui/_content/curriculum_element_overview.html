@@ -1,0 +1,46 @@
+<div class="o_curriculum_element_overview o_repo_info_panel">
+	<h4>$r.translate("details.overview")</h4>
+	#if($r.isNotEmpty($period))
+		<div title="$r.translateInAttribute("cif.dates")">
+			<i class="o_icon o_icon-fw o_icon_calendar"> </i> $period
+		</div>
+	#end
+	#if($r.isNotEmpty($numEvents))
+		<div title="$r.translateInAttribute("curriculum.lectures")">
+			<i class="o_icon o_icon-fw o_icon_events"> </i> $numEvents
+		</div>
+	#end
+	#if($r.isNotEmpty($expenditureOfWork))
+		<div title="$r.translateInAttribute("details.expenditureOfWork.desc")">
+			<i class="o_icon o_icon-fw o_icon_expenditure"></i>
+			$r.escapeHtml($expenditureOfWork)
+		</div>
+	#end
+	#if($r.isNotEmpty($location))
+		<div title="$r.translateInAttribute("cif.location")">
+			<i class="o_icon o_icon-fw o_icon_location"> </i> $r.escapeHtml($location)
+		</div>
+	#end
+	#if($r.isNotEmpty($mainLanguage))
+		<div title="$r.translateInAttribute("cif.mainLanguage")">
+			<i class="o_icon o_icon-fw o_icon_language"></i> 
+			$r.escapeHtml($mainLanguage)
+		</div>
+	#end
+	#if($r.isNotEmpty($participants))
+		<div title="$r.translateInAttribute("curriculum.element.participants")">
+			<i class="o_icon o_icon-fw o_icon_num_participants"> </i> $participants
+		</div>
+	#end
+
+	#if($taxonomyLevels && !$taxonomyLevels.empty)
+		<div class="o_taxonomy_levels">
+			<h4>$r.translate("cif.taxonomy.levels")</h4>
+			#foreach($taxonomyLevel in $taxonomyLevels)
+			<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomyLevel.materializedPathIdentifiersWithoutSlash)">
+				$r.escapeHtml($taxonomyLevel.displayName)
+			</span>
+			#end
+		</div>
+	#end
+</div>

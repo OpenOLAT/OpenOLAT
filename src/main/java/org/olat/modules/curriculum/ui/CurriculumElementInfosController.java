@@ -29,9 +29,18 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.repository.ui.author.MediaContainerFilter;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
@@ -46,20 +55,29 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementInfosController extends BasicController implements Controller {
 	
+	private final VelocityContainer mainVC;
 	private CurriculumElementInfosHeaderController headerCtrl;
 	private OffersController offersCtrl;
+	private CurriculumElementInfosOverviewController overviewCtrl;
 
 	private final CurriculumElement element;
+	private VFSContainer mediaContainer;
+	private final String baseUrl;
+	private Boolean descriptionOpen = Boolean.TRUE;
+	private Boolean objectivesOpen = Boolean.TRUE;
+	private Boolean offersOpen = Boolean.TRUE;
 
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private ACService acService;
 
 	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element) {
 		super(ureq, wControl);
 		this.element = element;
-		VelocityContainer mainVC = createVelocityContainer("curriculum_element_infos");
+		mainVC = createVelocityContainer("curriculum_element_infos");
 		putInitialPanel(mainVC);
 		
 		Boolean webPublish = Boolean.TRUE;
@@ -69,10 +87,31 @@ public class CurriculumElementInfosController extends BasicController implements
 			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(getIdentity())).isEmpty();
 		}
 		
+		// Header
 		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, isMember);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
+		// Description, objectives
+		mediaContainer = curriculumService.getMediaContainer(element);
+		if (mediaContainer != null && mediaContainer.getName().equals("media")) {
+			mediaContainer = mediaContainer.getParentContainer();
+			mediaContainer.setDefaultItemFilter(new MediaContainerFilter(mediaContainer));
+		}
+		baseUrl = mediaContainer != null
+				? registerMapper(ureq, new VFSContainerMapper(mediaContainer.getParentContainer()))
+						: null;
+		
+		String description = getFormattedText(element.getDescription());
+		if (StringHelper.containsNonWhitespace(description)) {
+			mainVC.contextPut("description", element.getDescription());
+			mainVC.contextPut("descriptionOpen",descriptionOpen);
+		}
+		
+		mainVC.contextPut("objectives", element.getObjectives());
+		mainVC.contextPut("objectivesOpen", objectivesOpen);
+		
+		// Offers
 		AccessResult acResult = acService.isAccessible(element, getIdentity(), isMember, false, webPublish, false);
 		if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), element, acResult)) {
 			fireEvent(ureq, new BookedEvent(element));
@@ -80,7 +119,28 @@ public class CurriculumElementInfosController extends BasicController implements
 			offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
 			listenTo(offersCtrl);
 			mainVC.put("offers", offersCtrl.getInitialComponent());
+			mainVC.contextPut("offersOpen", offersOpen);
 		}
+		
+		// Overview and lecture blocks
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(false);
+		searchParams.setCurriculumElementPath(element.getMaterializedPathKeys());
+		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
+		
+		overviewCtrl = new CurriculumElementInfosOverviewController(ureq, getWindowControl(), element, lectureBlocks.size());
+		listenTo(overviewCtrl);
+		mainVC.put("overview", overviewCtrl.getInitialComponent());
+	}
+	
+	private String getFormattedText(final String text) {
+		if (!StringHelper.containsNonWhitespace(text)) return null;
+		
+		String formattedTtext = StringHelper.xssScan(text);
+		if (baseUrl != null) {
+			formattedTtext = FilterFactory.getBaseURLToMediaRelativeURLFilter(baseUrl).filter(formattedTtext);
+		}
+		return Formatter.formatLatexFormulas(formattedTtext);
 	}
 	
 	@Override
@@ -94,8 +154,24 @@ public class CurriculumElementInfosController extends BasicController implements
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+	public void event(UserRequest ureq, Component source, Event event) {
+		if ("ONCLICK".equals(event.getCommand())) {
+			String descriptionOpenVal = ureq.getParameter("descriptionOpen");
+			if (StringHelper.containsNonWhitespace(descriptionOpenVal)) {
+				descriptionOpen = Boolean.valueOf(descriptionOpenVal);
+				mainVC.contextPut("descriptionOpen", descriptionOpen);
+			}
+			String objectivesOpenVal = ureq.getParameter("objectivesOpen");
+			if (StringHelper.containsNonWhitespace(objectivesOpenVal)) {
+				objectivesOpen = Boolean.valueOf(objectivesOpenVal);
+				mainVC.contextPut("objectivesOpen", objectivesOpen);
+			}
+			String offersOpenVal = ureq.getParameter("offersOpen");
+			if (StringHelper.containsNonWhitespace(offersOpenVal)) {
+				offersOpen = Boolean.valueOf(offersOpenVal);
+				mainVC.contextPut("offersOpen", offersOpen);
+			}
+		}
 	}
 
 }

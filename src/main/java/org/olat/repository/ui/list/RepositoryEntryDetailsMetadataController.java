@@ -57,7 +57,6 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.RepositoryEntryStatistics;
-import org.olat.repository.ui.PriceMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -74,7 +73,6 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	private final RepositoryEntry entry;
 	private final boolean isMember;
 	private final boolean guestOnly;
-	private final List<PriceMethod> types;
 	
 	@Autowired
 	private RepositoryModule repositoryModule;
@@ -94,13 +92,12 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	private MarkManager markManager;
 
 	public RepositoryEntryDetailsMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean isMember, List<PriceMethod> types, boolean isGuestOnly) {
+			boolean isMember, boolean isGuestOnly) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details_metadata.html");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.isMember = isMember;
-		this.types = types;
 		this.guestOnly = isGuestOnly;
 		
 		initForm(ureq);
@@ -154,10 +151,6 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 				ratingEl = new RatingWithAverageFormItem("rating", ratingValue, averageRatingValue, 5, numOfRatings);
 				ratingEl.setEnabled(!guestOnly);
 				layoutCont.add("rating", ratingEl);
-			}
-			
-			if (types != null && !types.isEmpty()) {
-				layoutCont.contextPut("ac", types);
 			}
 			
 			if (isMember) {

@@ -188,7 +188,7 @@ public class EditCurriculumElementController extends BasicController {
 			mainVC.contextRemove("taxonomyLevels");
 		}
 		
-		mainVC.contextPut("participants", CurriculumHelper.getParticipantRange(getTranslator(), element));
+		mainVC.contextPut("participants", CurriculumHelper.getParticipantRange(getTranslator(), element, true));
 	}
 
 	private void doOpenMetadata(UserRequest ureq) {

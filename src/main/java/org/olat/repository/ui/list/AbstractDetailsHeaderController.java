@@ -20,8 +20,6 @@
 package org.olat.repository.ui.list;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
@@ -43,15 +41,11 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
-import org.olat.resource.accesscontrol.method.AccessMethodHandler;
-import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,22 +63,14 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 	protected FormLink startLink;
 	protected FormLink leaveLink;
 
-	private List<PriceMethod> types = new ArrayList<>(1);
-	
 	@Autowired
 	protected RepositoryService repositoryService;
-	@Autowired
-	private AccessControlModule acModule;
 	@Autowired
 	protected ACService acService;
 
 	public AbstractDetailsHeaderController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details_header.html");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-	}
-
-	public List<PriceMethod> getTypes() {
-		return types;
 	}
 	
 	protected abstract String getIconCssClass();
@@ -136,18 +122,12 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 		}
 	}
 
-	protected void formatOffers(AccessResult acResult) {
+	protected void formatPrice(AccessResult acResult) {
 		BigDecimal lowestPriceAmount = null;
 		String lowestPrice = null;
 		for(OfferAccess access:acResult.getAvailableMethods()) {
-			AccessMethod method = access.getMethod();
-			String type = (method.getMethodCssClass() + "_icon").intern();
 			Price p = access.getOffer().getPrice();
 			String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
-			AccessMethodHandler amh = acModule.getAccessMethodHandler(method.getType());
-			String displayName = amh.getMethodName(getLocale());
-			PriceMethod priceMethod = new PriceMethod(price, type, displayName);
-			types.add(priceMethod);
 			if (p != null && StringHelper.containsNonWhitespace(price)) {
 				if (lowestPriceAmount == null || lowestPriceAmount.compareTo(p.getAmount()) > 0) {
 					lowestPriceAmount = p.getAmount();

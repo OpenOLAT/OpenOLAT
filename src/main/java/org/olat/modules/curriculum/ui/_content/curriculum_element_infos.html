@@ -1,27 +1,96 @@
-<div class="o_curriculum_element_infos o_repo_details">
+<div class="o_curriculum_element_infos">
+
+## classes to look like the learning resource header
+<div class="o_repo_details">
 	<div class="o_curriculum_element_infos_header o_repo_header">
 		$r.render("header")
 	</div>
-	<div class="o_curriculum_element_infos_main">
-		#if($r.available("details"))
-			<div class="o_curriculum_element_infos_details">
-				$r.render("details")
-			</div>
-		#end
-		#if($r.available("offers"))
-			<div id="offers" class="o_curriculum_element_infos_offers">
-				$r.render("offers")
-			</div>
-		#end
-		#if($r.available("overview"))
-			<div class="o_curriculum_element_infos_overview">
-				$r.render("overview")
-			</div>
-		#end
-		#if($r.available("lectures"))
-			<div class="o_curriculum_element_infos_lectures">
-				$r.render("lectures")
-			</div>
-		#end
+</div>
+
+
+<div class="o_curriculum_element_infos_main">
+<div class="o_curriculum_element_infos_left">
+
+#if($r.isNotEmpty($description))
+<div class="o_curriculum_element_infos_description">
+	<fieldset><legend>
+	<h4 onclick="jQuery('#collapse_description_${r.getCId()}').collapse('toggle')">
+		<i id="collapse_description_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($descriptionOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.description")
+	</h4>
+	</fieldset></legend>
+	<div id="collapse_description_${r.getCId()}" class="collapse #if($descriptionOpen) in #end">$description</div>
+</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_description_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_description_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.openFfXHREvent(false, false, true), "descriptionOpen","false");
+	})
+	jQuery('#collapse_description_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_description_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.openFfXHREvent(false, false, true), "descriptionOpen","true");
+	})
+});
+</script>
+#end
+
+#if($r.isNotEmpty($objectives))
+<div class="o_curriculum_element_infos_objectives">
+	<fieldset><legend>
+	<h4 onclick="jQuery('#collapse_objectives_${r.getCId()}').collapse('toggle')">
+		<i id="collapse_objectives_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($objectivesOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.objectives")
+	</h4>
+	</fieldset></legend>
+	<div id="collapse_objectives_${r.getCId()}" class="collapse #if($objectivesOpen) in #end">$r.escapeHtml($objectives)</div>
+</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_objectives_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_objectives_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.openFfXHREvent(false, false, true), "objectivesOpen","false");
+	})
+	jQuery('#collapse_objectives_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_objectives_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.openFfXHREvent(false, false, true), "objectivesOpen","true");
+	})
+});
+</script>
+#end
+
+#if($r.available("offers"))
+<div id="offers" class="o_curriculum_element_infos_offers">
+	<fieldset><legend>
+	<h4 onclick="jQuery('#collapse_offers_${r.getCId()}').collapse('toggle')">
+		<i id="collapse_offers_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($offersOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.offers")
+	</h4>
+	</fieldset></legend>
+	<div id="collapse_offers_${r.getCId()}" class="collapse #if($offersOpen) in #end">$r.render("offers")</div>
+</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_offers_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_offers_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.openFfXHREvent(false, false, true), "offersOpen","false");
+	})
+	jQuery('#collapse_offers_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_offers_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.openFfXHREvent(false, false, true), "offersOpen","true");
+	})
+});
+</script>
+#end
+</div> ##o_curriculum_element_infos_left end
+
+<div class="o_curriculum_element_infos_right">
+#if($r.available("overview"))
+		$r.render("overview")
+#end
+#if($r.available("lectures"))
+	<div class="o_curriculum_element_infos_lectures o_ce_info_aside">
+		$r.render("lectures")
 	</div>
+#end
+</div>
+
+</div>
 </div>

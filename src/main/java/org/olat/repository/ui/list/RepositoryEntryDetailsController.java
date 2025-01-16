@@ -45,7 +45,6 @@ import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
@@ -107,15 +106,13 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 			resourceInfoHeaderCtrl = new RepositoryEntryResourceInfoDetailsHeaderController(ureq, wControl, entry);
 			listenTo(resourceInfoHeaderCtrl);
 			mainVC.put("header", resourceInfoHeaderCtrl.getInitialComponent());
-			List<PriceMethod> types = resourceInfoHeaderCtrl.getTypes();
-			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, types, true);
+			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, true);
 		} else {
 			headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, closeTabOnLeave);
 			listenTo(headerCtrl);
 			mainVC.put("header", headerCtrl.getInitialComponent());
-			List<PriceMethod> types = headerCtrl.getTypes();
 			boolean guestOnly = ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isGuestOnly();
-			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, types, guestOnly);
+			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, guestOnly);
 		}
 		
 		listenTo(metadataCtrl);

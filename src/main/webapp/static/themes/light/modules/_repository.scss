@@ -95,10 +95,6 @@
 	}
 	
 	.o_repo_meta {
-		border: 1px solid $o-coursesite-sidecol-border;
-		border-radius: $o-coursesite-sidecol-radius;
-		background: $o-coursesite-sidecol-bg;
-		padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
 		column-count: 1;
 		.o_tag.o_taxonomy {
 			max-width: calc(100vw - 80px);
@@ -166,6 +162,12 @@
     .o_tag {
     	display: inline-block;
     }
+}
+.o_repo_info_panel {
+	border: 1px solid $o-coursesite-sidecol-border;
+	border-radius: $o-coursesite-sidecol-radius;
+	background: $o-coursesite-sidecol-bg;
+	padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
 }
 
 .o_license_info {

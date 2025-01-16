@@ -67,12 +67,15 @@ public class CurriculumHelper {
 		return translator.translate(i18nKey, args);
 	}
 	
-	public static String getParticipantRange(Translator translator, CurriculumElement element) {
+	public static String getParticipantRange(Translator translator, CurriculumElement element, boolean appendIcon) {
 		if (element.getMinParticipants() == null && element.getMaxParticipants() == null) {
 			return null;
 		}
 		
-		String participants = "<i class=\"o_icon o_icon_num_participants\"></i> ";
+		String participants = "";
+		if (appendIcon) {
+			participants += "<i class=\"o_icon o_icon_num_participants\"></i> ";
+		}
 		if (element.getMinParticipants() != 0 && element.getMinParticipants() != 0) {
 			participants += translator.translate("curriculum.element.participants.min.max",
 					String.valueOf(element.getMinParticipants()), String.valueOf(element.getMaxParticipants()));

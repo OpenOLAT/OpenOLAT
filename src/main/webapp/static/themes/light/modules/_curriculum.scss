@@ -716,9 +716,29 @@ $o-curriculum-entry-bg							: #CCFFCC;
 
 .o_curriculum_element_infos {
 	.o_curriculum_element_infos_main {
-		display: grid;
+		display: flex;
+		gap: 15px;
+		flex-direction: column;
+		@media (min-width: $screen-md-max) {
+			flex-direction: row;
+			.o_curriculum_element_infos_right {
+				min-width: 400px;
+				margin-left: auto;
+			}
+		}
+		>div {
+			display: grid;
+			gap: 15px;
+		}
 	}
 }
+
+.o_curriculum_element_overview {
+	.o_tag {
+		 display: inline-block;
+	}
+}
+
 
 .o_curriculum_element_active a {
 	font-weight: bold;
