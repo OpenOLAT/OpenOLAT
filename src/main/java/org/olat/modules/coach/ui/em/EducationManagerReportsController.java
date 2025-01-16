@@ -45,6 +45,8 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.ui.coach.LecturesListController;
+import org.olat.resource.accesscontrol.manager.ACOrderDAO;
+import org.olat.resource.accesscontrol.model.UserOrder;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,9 +66,12 @@ public class EducationManagerReportsController extends BasicController implement
 	
 	private final Link attendanceReportsLink;
 	private final Link certificatesLink;
-	
+	private final Link ordersLink;
+
 	private LecturesListController lecturesListCtrl;
 	private CertificatesController certificatesCtrl;
+	
+	private OrdersController ordersCtrl;
 
 	private List<UserPropertyHandler> userPropertyHandlers;
 
@@ -76,6 +81,8 @@ public class EducationManagerReportsController extends BasicController implement
 	private LectureService lectureService;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private ACOrderDAO acOrderDAO;
 
 	public EducationManagerReportsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl);
@@ -96,6 +103,10 @@ public class EducationManagerReportsController extends BasicController implement
 		certificatesLink.setVisible(true);
 		segmentView.addSegment(certificatesLink, false);
 
+		ordersLink = LinkFactory.createLink("link.orders", mainVC, this);
+		ordersLink.setVisible(true);
+		segmentView.addSegment(ordersLink, false);
+		
 		if (mainVC.contextGet("segmentCmp") == null) {
 			EmptyStateFactory.create("emptyStateCmp", mainVC, this);
 		}
@@ -118,6 +129,9 @@ public class EducationManagerReportsController extends BasicController implement
 		} else if ("Certificates".equals(type)) {
 			doOpenCertificates(ureq).activate(ureq, entries.subList(1, entries.size()), nextState);
 			segmentView.select(certificatesLink);
+		} else if ("Bookings".equals(type)) {
+			doOpenOrders(ureq);
+			segmentView.select(ordersLink);
 		}
 	}
 
@@ -149,6 +163,19 @@ public class EducationManagerReportsController extends BasicController implement
 		mainVC.put("segmentCmp", certificatesCtrl.getInitialComponent());
 		return certificatesCtrl;
 	}
+	
+	private void doOpenOrders(UserRequest ureq) {
+		List<UserOrder> orders = acOrderDAO.getUserBookingsForOrganizations(getIdentity(), OrganisationRoles.educationmanager, userPropertyHandlers);
+		if (ordersCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Bookings"), null);
+			ordersCtrl = new OrdersController(ureq, swControl, orders, userPropertyHandlers, PROPS_IDENTIFIER);
+			listenTo(ordersCtrl);
+		} else {
+			ordersCtrl.reload(orders);
+		}
+		addToHistory(ureq, ordersCtrl);
+		mainVC.put("segmentCmp", ordersCtrl.getInitialComponent());
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -160,6 +187,8 @@ public class EducationManagerReportsController extends BasicController implement
 					doOpenAttendanceReports(ureq);
 				} else if (segmentComponent == certificatesLink) {
 					doOpenCertificates(ureq);
+				} else if (segmentComponent == ordersLink) {
+					doOpenOrders(ureq);
 				}
 			}
 		}

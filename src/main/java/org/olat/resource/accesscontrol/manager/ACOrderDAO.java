@@ -34,6 +34,7 @@ import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.NativeQueryBuilder;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -54,6 +55,7 @@ import org.olat.resource.accesscontrol.model.OrderImpl;
 import org.olat.resource.accesscontrol.model.OrderLineImpl;
 import org.olat.resource.accesscontrol.model.OrderPartImpl;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
+import org.olat.resource.accesscontrol.model.UserOrder;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -552,4 +554,41 @@ public class ACOrderDAO {
 				.collect(Collectors.toMap(row -> (Long)row[0], row -> (Long)row[1]));
 	}
 	
+	public List<UserOrder> getUserBookingsForOrganizations(Identity identity, OrganisationRoles organisationRole, List<UserPropertyHandler> userPropertyHandlers) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct o ");
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
+		}
+		sb.append(" from organisation org");
+		sb.append(" inner join org.group orgGroup");
+		sb.append(" inner join orgGroup.members mgmtMembership");
+		sb.append(" inner join orgGroup.members userMembership");
+		sb.append(" inner join acorder o on o.delivery = userMembership.identity");
+		sb.append(" inner join o.delivery.user user");
+		sb.append(" where mgmtMembership.identity.key = :identityKey ");
+		sb.append(" and mgmtMembership.role = '").append(organisationRole.name()).append("'");
+		sb.append(" and userMembership.role = 'user'");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList().stream()
+				.map(objects -> mapToUserBooking(objects, userPropertyHandlers))
+				.toList();
+	}
+
+	private UserOrder mapToUserBooking(Object[] objects, List<UserPropertyHandler> userPropertyHandlers) {
+		UserOrder userOrder = new UserOrder();
+		int srcIdx = 0;
+		if (objects[srcIdx++] instanceof Order order) {
+			userOrder.setOrder(order);
+		}
+		for (int dstIdx = 0; dstIdx < userPropertyHandlers.size() && srcIdx < objects.length; dstIdx++, srcIdx++) {
+			if (objects[srcIdx] instanceof String sourceString) {
+				userOrder.setIdentityProp(dstIdx, sourceString);
+			}
+		}
+		return userOrder;
+	}
 }

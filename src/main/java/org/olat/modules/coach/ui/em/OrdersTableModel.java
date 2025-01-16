@@ -20,78 +20,68 @@
 package org.olat.modules.coach.ui.em;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.course.certificate.model.CertificateIdentityConfig;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.olat.resource.accesscontrol.model.UserOrder;
 
 /**
- * Initial date: 2025-01-14<br>
+ * Initial date: 2025-01-16<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CertificatesTableModel extends DefaultFlexiTableDataModel<CertificateIdentityConfig> 
-		implements SortableFlexiTableDataModel<CertificateIdentityConfig>, ExportableFlexiTableDataModel {
+public class OrdersTableModel extends DefaultFlexiTableDataModel<UserOrder> implements SortableFlexiTableDataModel<UserOrder> {
 
-	private final ExportableFlexiTableDataModel exportDelegate;
+	private final Translator translator;
 
-	public CertificatesTableModel(FlexiTableColumnModel columnModel, ExportableFlexiTableDataModel exportDelegate) {
+	public OrdersTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
-		this.exportDelegate = exportDelegate;
+		translator = Util.createPackageTranslator(org.olat.resource.accesscontrol.ui.OrdersController.class, locale);
 	}
 
 	@Override
-	public MediaResource export(FlexiTableComponent ftC) {
-		return exportDelegate.export(ftC);
-	}
-
-	@Override
-	public void sort(SortKey orderBy) {
-		SortableFlexiTableModelDelegate<CertificateIdentityConfig> sorter = new SortableFlexiTableModelDelegate<>(orderBy, this, null);
-		List<CertificateIdentityConfig> views = sorter.sort();
-		super.setObjects(views);
+	public void sort(SortKey sortKey) {
+		SortableFlexiTableModelDelegate<UserOrder> sorter = new SortableFlexiTableModelDelegate<>(sortKey, this, null);
+		List<UserOrder> objects = sorter.sort();
+		super.setObjects(objects);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		CertificateIdentityConfig certificateIdentityConfig = getObject(row);
-		return getValueAt(certificateIdentityConfig, col);
+		UserOrder userOrder = getObject(row);
+		return getValueAt(userOrder, col);
 	}
 
 	@Override
-	public Object getValueAt(CertificateIdentityConfig row, int col) {
-		if (col >= 0 && col < CertificateCols.values().length) {
-			return switch (CertificateCols.values()[col]) {
-				case id -> row.getCertificate().getKey();
-				case course ->
-						row.getConfig() != null && row.getConfig().getEntry() != null ? row.getConfig().getEntry().getDisplayname() : "";
-				case path -> row.getCertificate().getPath();
+	public Object getValueAt(UserOrder row, int col) {
+		if (col >= 0 && col < OrdersCols.values().length) {
+			return switch (OrdersCols.values()[col]) {
+				case orderId -> row.getOrder().getKey(); 
+				case orderStatus -> translator.translate("order.status." + row.getOrder().getOrderStatus().name().toLowerCase());
 			};
 		}
 		
-		int propsPos = col - CertificatesController.USER_PROPS_OFFSET;
+		int propsPos = col - OrdersController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propsPos);
 	}
-	
-	public enum CertificateCols implements FlexiSortableColumnDef {
-		id("table.header.id"),
-		course("table.header.course"),
-		path("table.header.path");
+
+	public enum OrdersCols implements FlexiSortableColumnDef {
+		orderId("table.header.order.id"),
+		orderStatus("table.header.order.status");
 		
 		private final String i18nKey;
 		
-		CertificateCols(String i18nKey) {
+		OrdersCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
-
-
+		
 		@Override
 		public boolean sortable() {
 			return true;
