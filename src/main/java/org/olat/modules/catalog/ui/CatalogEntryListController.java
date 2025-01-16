@@ -78,7 +78,9 @@ import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
@@ -123,9 +125,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 	
 	private final boolean withSearch;
 	private String headerSearchString;
-	private final MapperKey mapperThumbnailKey;
-	private final TaxonomyLevelTeaserImageMapper teaserImageMapper;
-	private final MapperKey teaserImageMapperKey;
+	private final MapperKey repositoryEntryMapperKey;
+	private final TaxonomyLevelTeaserImageMapper taxonomyLevelMapper;
+	private final MapperKey taxonomyLevelMapperKey;
+	private final CurriculumElementImageMapper curriculumElementImageMapper;
+	private final String curriculumElementImageMapperUrl;
 
 	private final TaxonomyLevel taxonomyLevel;
 	
@@ -163,9 +167,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 		this.taxonomyLevel = searchParams.getLauncherTaxonomyLevels() != null && !searchParams.getLauncherTaxonomyLevels().isEmpty()
 				? searchParams.getLauncherTaxonomyLevels().get(0)
 				: null;
-		this.mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
-		this.teaserImageMapper = new TaxonomyLevelTeaserImageMapper();
-		this.teaserImageMapperKey = mapperService.register(null, "taxonomyLevelTeaserImage", teaserImageMapper);
+		this.repositoryEntryMapperKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
+		this.taxonomyLevelMapper = new TaxonomyLevelTeaserImageMapper();
+		this.taxonomyLevelMapperKey = mapperService.register(null, "taxonomyLevelTeaserImage", taxonomyLevelMapper);
+		this.curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
+		this.curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
+				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
 		
 		initForm(ureq);
 		loadModel(true);
@@ -196,9 +203,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 				
 				TaxonomyItem item = new TaxonomyItem(child.getKey(), displayName, selectLinkName);
 				
-				String imageUrl = teaserImageMapper.getImageUrl(child);
+				String imageUrl = taxonomyLevelMapper.getImageUrl(child);
 				if (StringHelper.containsNonWhitespace(imageUrl)) {
-					item.setThumbnailRelPath(teaserImageMapperKey.getUrl() + "/" + imageUrl);
+					item.setThumbnailRelPath(taxonomyLevelMapperKey.getUrl() + "/" + imageUrl);
 				}
 				
 				items.add(item);
@@ -241,7 +248,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		row.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(row, this);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "catalog-v2-relist");
+		tableEl.setAndLoadPersistedPreferences(ureq, "catalog-v2-relist-2");
 	}
 	
 	private void initFilters(List<CatalogEntry> catalogEntries) {
@@ -465,9 +472,17 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 	
 	private void forgeThumbnail(CatalogEntryRow row) {
-		VFSLeaf image = repositoryManager.getImage(row.getRepositotyEntryKey(), row.getOlatResource());
-		if (image != null) {
-			row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl() , image));
+		if (row.getRepositotyEntryKey() != null) {
+			VFSLeaf image = repositoryManager.getImage(row.getRepositotyEntryKey(), row.getOlatResource());
+			if (image != null) {
+				row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(repositoryEntryMapperKey.getUrl() , image));
+			}
+		} else if (row.getCurriculumElementKey() != null) {
+			String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
+					() -> row.getCurriculumElementKey(), CurriculumElementFileType.teaserImage);
+			if (imageUrl != null) {
+				row.setThumbnailRelPath(imageUrl);
+			}
 		}
 	}
 
