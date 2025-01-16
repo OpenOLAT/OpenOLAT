@@ -36,6 +36,8 @@ import org.olat.modules.portfolio.ui.BinderAssessmentController.AssessmentSectio
  */
 public class BinderAssessmentDataModel extends DefaultFlexiTableDataModel<AssessmentSectionWrapper> {
 	
+	private static final AssessmentSectionCols[] COLS = AssessmentSectionCols.values();
+	
 	public BinderAssessmentDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
 	}
@@ -43,62 +45,55 @@ public class BinderAssessmentDataModel extends DefaultFlexiTableDataModel<Assess
 	@Override
 	public Object getValueAt(int row, int col) {
 		AssessmentSectionWrapper wrapper = getObject(row);
-		switch (AssessmentSectionCols.values()[col]) {
-			case sectionName -> {
-				return wrapper.getSectionTitle();
+		return switch (COLS[col]) {
+			case sectionName -> wrapper.getSectionTitle();
+			case numOfPages -> wrapper.getNumOfPages();
+			case newEntries -> wrapper.getPageUserStatusList().stream()
+				.filter(p -> p != null)
+				.filter(p -> p.equals(PageUserStatus.incoming))
+				.count();
+			case inProgress ->  wrapper.getPageUserStatusList().stream()
+				.filter(p -> p != null)
+				.filter(p -> p.equals(PageUserStatus.inProcess))
+				.count();
+			case done -> wrapper.getPageUserStatusList().stream()
+				.filter(p -> p != null)
+				.filter(p -> p.equals(PageUserStatus.done))
+				.count();
+			case draft -> wrapper.getSection().getPages().stream()
+				.filter(p -> p != null)
+				.filter(p -> p.getPageStatus() != null && p.getPageStatus().equals(PageStatus.draft))
+				.count();
+			case published ->  wrapper.getSection().getPages().stream()
+				.filter(p -> p != null)
+				.filter(p -> p.getPageStatus() != null &&  p.getPageStatus().equals(PageStatus.published))
+				.count();
+			case inRevision ->  wrapper.getSection().getPages().stream()
+				.filter(p -> p != null)
+				.filter(p -> p.getPageStatus() != null &&  p.getPageStatus().equals(PageStatus.inRevision))
+				.count();
+			case closed ->  wrapper.getSection().getPages().stream()
+				.filter(p -> p != null)
+				.filter(p -> p.getPageStatus() != null &&  p.getPageStatus().equals(PageStatus.closed))
+				.count();
+			case passed -> wrapper.getPassedEl() != null ? wrapper.getPassedEl() : wrapper.getPassed();
+			case score -> wrapper.getScoreEl() != null ? wrapper.getScoreEl() : wrapper.getScore();
+			case changeStatus -> getChangeStatus(wrapper);
+			case openSection -> wrapper.getSectionLink();
+			default -> "ERROR";
+		};
+	}
+	
+	private Object getChangeStatus(AssessmentSectionWrapper wrapper) {
+		FormLink changeButton = wrapper.getButton();
+		if (changeButton == null && wrapper.getSection() != null) {
+			SectionStatus status = wrapper.getSection().getSectionStatus();
+			if (status == null) {
+				status = SectionStatus.notStarted;
 			}
-			case numOfPages -> {
-				return wrapper.getNumOfPages();
-			}
-			case newEntries -> {
-				return wrapper.getPageUserStatusList().stream().filter(p -> p.equals(PageUserStatus.incoming)).count();
-			}
-			case inProgress -> {
-				return wrapper.getPageUserStatusList().stream().filter(p -> p.equals(PageUserStatus.inProcess)).count();
-			}
-			case done -> {
-				return wrapper.getPageUserStatusList().stream().filter(p -> p.equals(PageUserStatus.done)).count();
-			}
-			case draft -> {
-				return wrapper.getSection().getPages().stream().filter(p -> p.getPageStatus() != null && p.getPageStatus().equals(PageStatus.draft)).count();
-			}
-			case published -> {
-				return wrapper.getSection().getPages().stream().filter(p -> p.getPageStatus() != null &&  p.getPageStatus().equals(PageStatus.published)).count();
-			}
-			case inRevision -> {
-				return wrapper.getSection().getPages().stream().filter(p -> p.getPageStatus() != null &&  p.getPageStatus().equals(PageStatus.inRevision)).count();
-			}
-			case closed -> {
-				return wrapper.getSection().getPages().stream().filter(p -> p.getPageStatus() != null &&  p.getPageStatus().equals(PageStatus.closed)).count();
-			}
-			case passed -> {
-				if (wrapper.getPassedEl() != null) {
-					return wrapper.getPassedEl();
-				}
-				return wrapper.getPassed();
-			}
-			case score -> {
-				if (wrapper.getScoreEl() != null) {
-					return wrapper.getScoreEl();
-				}
-				return wrapper.getScore();
-			}
-			case changeStatus -> {
-				FormLink changeButton = wrapper.getButton();
-				if (changeButton == null && wrapper.getSection() != null) {
-					SectionStatus status = wrapper.getSection().getSectionStatus();
-					if (status == null) {
-						status = SectionStatus.notStarted;
-					}
-					return status;
-				}
-				return changeButton;
-			}
-			case openSection -> {
-				return wrapper.getSectionLink();
-			}
+			return status;
 		}
-		return null;
+		return changeButton;
 	}
 
 	public enum AssessmentSectionCols implements FlexiSortableColumnDef {
