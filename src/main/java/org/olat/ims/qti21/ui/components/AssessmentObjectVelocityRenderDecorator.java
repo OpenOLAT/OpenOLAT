@@ -512,10 +512,13 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			//<xsl:variable name="choiceSequence" as="xs:string?"
 		    //  select="$shuffledChoiceOrders[@responseIdentifier=$interaction/@responseIdentifier]/@choiceSequence"/>
 			List<Identifier> choiceOrders = itemSessionState.getShuffledInteractionChoiceOrder(interaction.getResponseIdentifier());
-
-			choices = new ArrayList<>();
-			for(Identifier choiceOrder:choiceOrders) {
-				choices.add(interaction.getInlineChoice(choiceOrder));
+			if(choiceOrders == null) {
+				choices = interaction.getInlineChoices();
+			} else {
+				choices = new ArrayList<>();
+				for(Identifier choiceOrder:choiceOrders) {
+					choices.add(interaction.getInlineChoice(choiceOrder));
+				}
 			}
 		} else {
 			choices = interaction.getInlineChoices();

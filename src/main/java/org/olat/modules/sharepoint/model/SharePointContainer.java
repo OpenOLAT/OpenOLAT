@@ -74,14 +74,19 @@ public class SharePointContainer extends MergeSource {
 				SiteContainer siteContainer = idToContainers.get(config.getSiteId());
 				if(siteContainer == null) {
 					MicrosoftSite site = sharePointDao.getSite(config.getSiteId(), tokenProvider);
-					siteContainer = new SiteContainer(this, site, sharePointDao,
-							exclusionsSitesAndDrives, exclusionsLabels, permissionsDelegate, tokenProvider);
-					addContainer(siteContainer);
-					idToContainers.put(config.getSiteId(), siteContainer);
+					if(site != null) {
+						siteContainer = new SiteContainer(this, site, sharePointDao,
+								exclusionsSitesAndDrives, exclusionsLabels, permissionsDelegate, tokenProvider);
+						addContainer(siteContainer);
+						idToContainers.put(config.getSiteId(), siteContainer);
+					}
 				}
-				siteContainer.setLocalSecurityCallback(new ReadOnlyCallback());
-				if(StringHelper.containsNonWhitespace(config.getDriveId())) {
-					siteContainer.addAllowedDriveId(config.getDriveId());
+				
+				if(siteContainer != null) {
+					siteContainer.setLocalSecurityCallback(new ReadOnlyCallback());
+					if(StringHelper.containsNonWhitespace(config.getDriveId())) {
+						siteContainer.addAllowedDriveId(config.getDriveId());
+					}
 				}
 			}
 		}

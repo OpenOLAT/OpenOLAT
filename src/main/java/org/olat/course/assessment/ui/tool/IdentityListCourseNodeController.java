@@ -911,14 +911,22 @@ public class IdentityListCourseNodeController extends FormBasicController
 			row.setNumOfSectionsInProgress(numOfSectionsInProgress);
 
 			// Count published entries and entries in revision
-			long numOfEntriesPublished = sections.stream()
-					.flatMap(s -> s.getPages().stream())
+			long numOfEntriesPublished = 0;
+			long numOfEntriesInRevision = 0;
+			for(Section section:sections) {
+				if(section == null) continue;
+				
+				numOfEntriesPublished += section.getPages().stream()
+					.filter(p -> p != null)
 					.filter(p -> p.getPageStatus() == PageStatus.published)
 					.count();
-			long numOfEntriesInRevision = sections.stream()
-					.flatMap(s -> s.getPages().stream())
+				
+				numOfEntriesInRevision += section.getPages().stream()
+					.filter(p -> p != null)
 					.filter(p -> p.getPageStatus() == PageStatus.inRevision)
 					.count();
+			}
+
 			row.setNumOfEntriesPublished(numOfEntriesPublished);
 			row.setNumOfEntriesInRevision(numOfEntriesInRevision);
 
