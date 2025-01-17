@@ -1183,6 +1183,139 @@ public class AssessmentTest extends Deployments {
 			.assertOnBadge(badgeClassName);
 	}
 	
+
+	/**
+	 * An administrator creates a course (learn path) with a test, add a
+	 * participant to the course. Than it creates a global badge with a
+	 * rule based on the course (passed).<br>
+	 * The participant log in, passes the course successfully and goes
+	 * to its user tools to see the badge.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void createBadgeGlobalAuto()
+			throws IOException, URISyntaxException {
+		UserVO admin = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Adelaide");
+		
+		//deploy the test
+		URL testUrl = ArquillianDeployments.class.getResource("file_resources/qti21/e4_test_qti21.zip");
+		String testTitle = "E4Test-" + UUID.randomUUID();
+		new RepositoryRestClient(deploymentUrl, admin).deployResource(new File(testUrl.toURI()), "-", testTitle);
+		
+		LoginPage adminLoginPage = LoginPage.load(browser, deploymentUrl);
+		adminLoginPage.loginAs(admin.getLogin(), admin.getPassword())
+			.resume();
+		
+		//create a course
+		String courseTitle = "GBadge " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+
+		//create a course element of type test with the QTI 2.1 test that we upload above
+		String testNodeTitle = "Test-QTI-2.1";
+		CoursePageFragment courseRuntime = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment editor = courseRuntime
+			.edit()
+			.createNode("iqtest")
+			.nodeTitle(testNodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(testTitle);
+		
+		//publish the course
+		editor
+			.publish()
+			.quickPublish();
+		editor
+			.clickToolbarBack();
+		
+		CourseSettingsPage courseSetting = courseRuntime
+			.settings();
+		courseSetting
+			.certificates()
+			.enableBadges()
+			// Certificate
+			.enableCertificates(true)
+			.enableValidity()
+			.save();
+		courseSetting
+			.clickToolbarBack();
+		
+		//add a participant to the course
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		// Make a global badge
+		BadgesAdminPage adminPage = NavigationPage.load(browser)
+			.openAdministration()
+			.openBadges()
+			.openGlobalBadges();
+		
+		String badgeClassName = "Cup on shield";
+		String nameSuffix = " " + CodeHelper.getUniqueID();
+		String badgeDescription = "You become an OpenOlat expert at " + UUID.randomUUID();
+		String criteriaSummary = "Global OpenOlat badge";
+		
+		// Create a new class
+		BadgeClassesPage badgesPage = adminPage.createBadgeClass()
+			.selectClass(badgeClassName)
+			.nextToCustomization()
+			.customize("Selenium the test")
+			.nextToCriteria()
+			.criteria(criteriaSummary)
+			.criteriaGlobalAuto()
+			.criteriaGlobalPassedCourseAsFirstRule(courseTitle)
+			.nextToDetails()
+			.details(nameSuffix, badgeDescription)
+			.nextToSummary()
+			.assertOnSummary(badgeClassName)
+			.assertOnSummary(badgeDescription)
+			.assertOnSummary(criteriaSummary)
+			.nextToRecipients()
+			.finish();
+		
+		badgesPage
+			.assertOnTable(badgeClassName);
+		
+		// Participant login
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+
+		CoursePageFragment badgeCourse = new CoursePageFragment(browser);
+		badgeCourse
+			.assertOnLearnPathNodeInSequence(testNodeTitle);
+		
+		QTI21Page.getQTI21Page(browser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
+		
+		new UserToolsPage(browser)
+			.openUserToolsMenu()
+			.openBadges()
+			.assertOnBadge(badgeClassName);
+	}
+	
 	
 	/**
 	 * An author create a course with an assessment course element with
