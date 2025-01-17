@@ -98,6 +98,7 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 				false);
 
 		addLink = uifactory.addFormLink("add", "issueGlobalBadge", "issueGlobalBadge", formLayout, Link.BUTTON);
+		addLink.setElementCssClass("o_sel_openbadges_issue");
 		updateUI();
 	}
 

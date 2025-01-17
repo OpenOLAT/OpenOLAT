@@ -108,6 +108,17 @@ public class VideoEditorPage {
 		return this;
 	}
 	
+	public VideoEditorPage assertOnVideoSegmentsInTimeline(int numOfSegments) {
+		try {
+			By segmentsBy = By.xpath("//div[@id='o_video_editor_master']//div[contains(@class,'o_video_timeline_type_segment')][count(div[contains(@class,'o_video_timeline_event') and contains(@class,'o_video_segment')])=" + numOfSegments + "]");
+			OOGraphene.waitElement(segmentsBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Assert video segment timeline " + numOfSegments, browser);
+			throw e;
+		}
+		return this;
+	}
+	
 	/**
 	 * Save (but wait the dirty flag)
 	 * 
@@ -128,7 +139,7 @@ public class VideoEditorPage {
 			OOGraphene.takeScreenshot("Save segment", browser);
 			throw e;
 		}
-		return this;
+		return assertOnVideoEditor();
 	}
 	
 	public VideoPage toolbarBack() {

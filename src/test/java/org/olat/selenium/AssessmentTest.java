@@ -33,6 +33,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.core.util.CodeHelper;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.selenium.page.LoginPage;
@@ -42,6 +43,7 @@ import org.olat.selenium.page.course.AssessmentModePage;
 import org.olat.selenium.page.course.AssessmentPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.BadgeClassesPage;
+import org.olat.selenium.page.course.BadgesAdminPage;
 import org.olat.selenium.page.course.BulkAssessmentPage.BulkAssessmentData;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
@@ -1110,6 +1112,75 @@ public class AssessmentTest extends Deployments {
 			.myBadges()
 			.assertOnBadge(firstBadgeClassName)
 			.assertOnBadge(secondBadgeClassName);
+	}
+	
+	
+
+	/**
+	 * An administrator creates a global badge, awards the badge
+	 * to a recipient and the participant log in and goes
+	 * to its user tools to see the badge.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void createBadgeGlobalManually()
+			throws IOException, URISyntaxException {
+		UserVO admin = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Adelaide");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(admin.getLogin(), admin.getPassword())
+			.resume();
+		
+		BadgesAdminPage adminPage = NavigationPage.load(browser)
+			.openAdministration()
+			.openBadges()
+			.openGlobalBadges();
+		
+		String badgeClassName = "Cup on shield";
+		String nameSuffix = " " + CodeHelper.getUniqueID();
+		String badgeFullName = badgeClassName + nameSuffix;
+		String badgeDescription = "You become a selenium crack at " + UUID.randomUUID();
+		String criteriaSummary = "Global selenium badge";
+		
+		// Create a new class
+		BadgeClassesPage badgesPage = adminPage.createBadgeClass()
+			.selectClass(badgeClassName)
+			.nextToCustomization()
+			.customize("Selenium the test")
+			.nextToCriteria()
+			.criteria(criteriaSummary)
+			//Manual already selected
+			.nextToDetails()
+			.details(nameSuffix, badgeDescription)
+			.nextToSummary()
+			.assertOnSummary(badgeClassName)
+			.assertOnSummary(badgeDescription)
+			.assertOnSummary(criteriaSummary)
+			.finish();
+		
+		badgesPage
+			.assertOnTable(badgeClassName);
+		
+		adminPage
+			.openIssuedBadges()
+			.awardNewBadge()
+			.selectClass(badgeFullName)
+			.addRecipient(participant)
+			.award()
+			.assertIssuedBadge(badgeFullName, participant);
+		
+		// Participant login
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		
+		new UserToolsPage(browser)
+			.openUserToolsMenu()
+			.openBadges()
+			.assertOnBadge(badgeClassName);
 	}
 	
 	

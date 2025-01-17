@@ -649,6 +649,7 @@ public class CourseTest extends Deployments {
 		//The user click the first node and the changed second node
 		ryomouCourseTree
 			.selectWithTitle(firstNodeTitle)
+			.assertWithTitle(changedNodeTitlev2)
 			.selectWithTitle(changedNodeTitlev2);
 		ryomouCourse
 			.assertOnTitle(changedNodeTitlev2);

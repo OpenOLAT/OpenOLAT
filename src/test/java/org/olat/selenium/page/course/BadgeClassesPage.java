@@ -139,6 +139,13 @@ public class BadgeClassesPage {
 		return this;
 	}
 	
+	public BadgeClassesPage details(String nameSuffix, String description) {
+		details(description);
+		By nameBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_name input[type='text']");
+		browser.findElement(nameBy).sendKeys(nameSuffix);
+		return this;
+	}
+	
 	public BadgeClassesPage details(String description) {
 		By descriptionmarkDownBy = By.cssSelector("div.o_wizard_steps_current_content .o_sel_badge_description div.milkdown div.ProseMirror.editor[contenteditable=true]");
 		OOGraphene.waitElement(descriptionmarkDownBy, browser);

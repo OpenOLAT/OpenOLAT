@@ -24,6 +24,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.core.FileHubPage;
+import org.olat.selenium.page.course.BadgesPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LecturesProfilePage;
 import org.olat.selenium.page.portfolio.MediaCenterPage;
@@ -128,6 +129,16 @@ public class UserToolsPage {
 		By userFormBy =  By.cssSelector("div.o_user_profile_form");
 		OOGraphene.waitElement(userFormBy, browser);
 		return new UserProfilePage(browser);
+	}
+	
+	public BadgesPage openBadges() {
+		By badgesBy = By.cssSelector("li>a.o_sel_user_tools-badges");
+		OOGraphene.waitElement(badgesBy, browser);
+		browser.findElement(badgesBy).click();
+		OOGraphene.waitBusy(browser);
+		By issuedBadgesBy =  By.cssSelector("fieldset.o_sel_issued_badges");
+		OOGraphene.waitElement(issuedBadgesBy, browser);
+		return new BadgesPage(browser);
 	}
 	
 	public EfficiencyStatementPage openMyEfficiencyStatement() {
