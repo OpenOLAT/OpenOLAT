@@ -98,7 +98,7 @@ public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceM
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != execute;
 		}
 
 		@Override

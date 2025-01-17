@@ -221,6 +221,46 @@ public class BadgeClassesPage {
 		return this;
 	}
 	
+	public BadgeClassesPage criteriaGlobalAuto() {
+		By automaticBy = By.cssSelector("#o_fioform_award_procedure_wr input[name='form.award.procedure'][value='automatic'][checked='checked']");
+		List<WebElement> automaticEls = browser.findElements(automaticBy);
+		if(automaticEls.isEmpty()) {
+			By criteriaBy = By.cssSelector("#o_fioform_award_procedure_wr input[name='form.award.procedure'][value='automatic']");
+			browser.findElement(criteriaBy).click();
+		}
+		
+		By selectBy = By.id("o_fioform_condition_new_SELBOX");
+		OOGraphene.waitElement(selectBy, browser);
+		OOGraphene.scrollBottom(selectBy, browser);
+		return this;
+	}
+	
+	public BadgeClassesPage criteriaGlobalPassedCourseAsFirstRule(String course) {
+		By selectBy = By.id("o_fioform_condition_new_SELBOX");
+		WebElement selectEl = browser.findElement(selectBy);
+		new Select(selectEl).selectByValue("coursesPassed");
+		
+		By courseElementBy = By.cssSelector(".o_badge_wiz_criteria_step a.btn.o_badge_course_selector_button");
+		OOGraphene.waitElement(courseElementBy, browser);
+		OOGraphene.scrollBottom(courseElementBy, browser);
+		browser.findElement(courseElementBy).click();
+		OOGraphene.waitCallout(browser, ".o_badge_course_selector");
+		
+		By quickSearchBy = By.cssSelector("div.o_badge_course_selector_search input.o_quick_search[type='text']");
+		OOGraphene.waitElement(quickSearchBy, browser);
+		browser.findElement(quickSearchBy).sendKeys(course);
+		
+		By courseSelectBy = By.xpath("//label[div[contains(@class,'o_badge_course_selector_option')]/div[text()[contains(.,'" + course + "')]]]/input[@type='checkbox']");
+		OOGraphene.waitElement(courseSelectBy, browser);
+		browser.findElement(courseSelectBy).click();
+		
+		By selectCoursesBy = By.cssSelector(".o_badge_course_selector .o_button_group a.btn.btn-primary");
+		browser.findElement(selectCoursesBy).click();
+		
+		OOGraphene.waitCalloutDisappears(browser, ".o_badge_course_selector");
+		return this;
+	}
+	
 	public BadgeClassesPage nextToSummary() {
 		OOGraphene.nextStep(browser);
 		
