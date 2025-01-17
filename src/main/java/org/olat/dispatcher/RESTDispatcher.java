@@ -273,7 +273,7 @@ public class RESTDispatcher implements Dispatcher {
 		if(usess != null && !ureq.getHttpReq().isRequestedSessionIdFromCookie()) {
 			url += ";jsessionid=" + usess.getSessionInfo().getSession().getId();
 		}
-		DispatcherModule.redirectTo(ureq.getHttpResp(), url + "?invitation=3142d595-02ed-4085-a1e6-78f681136a66");
+		DispatcherModule.redirectTo(ureq.getHttpResp(), url);
 	}
 	
 	private void redirectRegister(HttpServletResponse response) {
