@@ -116,7 +116,9 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 
 	private Long getDaysToInactivation(IdentityPropertiesRow userRow) {
 		Date date = userRow.getPlannedInactivationDate();
-		if(date != null && !guestsKeys.contains(userRow.getIdentityKey())) {
+		if(date != null
+				&& !guestsKeys.contains(userRow.getIdentityKey())
+				&& userModule.isUserAutomaticDeactivation()) {
 			long days = DateUtils.countDays(now, date);
 			if(days <= 0) {
 				days = 1;

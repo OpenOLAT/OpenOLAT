@@ -8,9 +8,11 @@
 		<legend>$r.translate("overview.business.groups")</legend>
 		$r.render("groups")
 	</fieldset>
+	#if($r.available("portfolio"))
 	<fieldset class="o_block">
 		<legend>$r.translate("overview.portfolio")</legend>
 		$r.render("portfolio")
 	</fieldset>
+	#end
 </div>
 

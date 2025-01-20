@@ -262,14 +262,14 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		// Group table		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
-		StaticFlexiCellRenderer upRenderer = new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon-lg o_icon_move_up");
+		StaticFlexiCellRenderer upRenderer = new StaticFlexiCellRenderer("", CMD_UP, null, "o_icon o_icon-lg o_icon_move_up", translate("engroupedit.table.up"));
 		upRenderer.setPush(true);
 		upRenderer.setDirtyCheck(false);
 		moveUpColumnModel = new DefaultFlexiColumnModel(true, ENEditGroupTableColumns.up.i18nHeaderKey(), ENEditGroupTableColumns.up.ordinal(),
 						false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 						new BooleanCellRenderer(upRenderer, null));
 
-		StaticFlexiCellRenderer downRenderer = new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon-lg o_icon_move_down");
+		StaticFlexiCellRenderer downRenderer = new StaticFlexiCellRenderer("", CMD_DOWN, null, "o_icon o_icon-lg o_icon_move_down", translate("engroupedit.table.down"));
 		downRenderer.setPush(true);
 		downRenderer.setDirtyCheck(false);
 		moveDownColumnModel = new DefaultFlexiColumnModel(true, ENEditGroupTableColumns.down.i18nHeaderKey(), ENEditGroupTableColumns.down.ordinal(),
