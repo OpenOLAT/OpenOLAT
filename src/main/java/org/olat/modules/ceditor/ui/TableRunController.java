@@ -103,7 +103,7 @@ public class TableRunController extends BasicController implements PageRunElemen
 		List<Row> headerRows = new ArrayList<>(numOfRows);
 		
 		int i = 0;
-		if(settings.isColumnHeaders()) {
+		if(settings.isRowHeaders()) {
 			headerRows.add(loadColumns(i, content, settings));
 			i++;
 		}
@@ -137,7 +137,7 @@ public class TableRunController extends BasicController implements PageRunElemen
 			if (StringHelper.containsNonWhitespace(text) && httpPattern.matcher(text).find()) {
 				css = "o_hyphens";
 			}
-			Column column = new Column(text, j == 0 && settings.isRowHeaders(), css);
+			Column column = new Column(text, j == 0 && settings.isColumnHeaders(), css);
 			columns.add(column);
 		}
 		return row;

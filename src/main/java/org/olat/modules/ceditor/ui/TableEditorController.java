@@ -156,8 +156,8 @@ public class TableEditorController extends FormBasicController implements PageEl
 
 			final List<EditorColumn> columnList = row.getColumns();
 			for(int j=0; j<numOfColumns; j++) {
-				boolean header = (settings.isRowHeaders() && j == 0)
-						|| (settings.isColumnHeaders() && i == 0);
+				boolean header = (settings.isColumnHeaders() && j == 0)
+						|| (settings.isRowHeaders() && i == 0);
 				
 				if(j >= columnList.size()) {
 					String text = content.getContent(i, j);
@@ -209,8 +209,8 @@ public class TableEditorController extends FormBasicController implements PageEl
 				if(!dirty) {
 					col.getText().getComponent().setDirty(false);
 				}
-				boolean header = (settings.isColumnHeaders() && i == 0)
-						|| (settings.isRowHeaders() && col.getColumn() == 0);
+				boolean header = (settings.isRowHeaders() && i == 0)
+						|| (settings.isColumnHeaders() && col.getColumn() == 0);
 				col.setHeader(header);
 			}
 		}
