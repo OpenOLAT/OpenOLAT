@@ -77,6 +77,7 @@ import org.olat.modules.lecture.ui.component.LectureBlockParticipantGroupExclude
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -301,7 +302,7 @@ public class LectureListDetailsController extends FormBasicController {
 			boolean curriculumType = (repositoryEntry.getRuntimeType() == RepositoryEntryRuntimeType.curricular);
 			
 			Group defaultGroup = repositoryService.getDefaultGroup(repositoryEntry);
-			int participants = repositoryService.countMembers(repositoryEntry, GroupRoles.participant.name());
+			int participants = repositoryService.countMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
 			if(!curriculumType || (selectedGroups.contains(defaultGroup) && participants > 0)) {
 				groupList.add(decorateRow(new LectureBlockParticipantGroupRow(repositoryEntry, defaultGroup,
 					participants, !selectedGroups.contains(defaultGroup))));

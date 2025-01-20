@@ -219,6 +219,38 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertTrue(participants.contains(id2));
 	}
 	
+	
+	@Test
+	public void countMembersRepository() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-3");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-4");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-4");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Cosmic expansion", "cos", "cos", null, null,
+				RepositoryEntryStatusEnum.coachpublished, RepositoryEntryRuntimeType.standalone, defOrganisation);
+		dbInstance.commit();
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());
+	
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Dark energy", "de", BusinessGroup.BUSINESS_TYPE,
+				null, null, false, false, re);
+	    businessGroupRelationDao.addRole(id1, group, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(id3, group, GroupRoles.participant.name());
+	    dbInstance.commitAndCloseSession();
+
+		// owner
+		int numOfOwners = repositoryEntryRelationDao.countMembers(re, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+		Assert.assertEquals(1, numOfOwners);
+		
+		//participant
+		int numOfRepositoryParticipants = repositoryEntryRelationDao.countMembers(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
+		Assert.assertEquals(1, numOfRepositoryParticipants);
+		int numOfBusinessGroupParticipants = repositoryEntryRelationDao.countMembers(re, RepositoryEntryRelationType.businessGroups, GroupRoles.participant.name());
+		Assert.assertEquals(1, numOfBusinessGroupParticipants);
+		int numOfParticipants = repositoryEntryRelationDao.countMembers(re, RepositoryEntryRelationType.all, GroupRoles.participant.name());
+		Assert.assertEquals(2, numOfParticipants);
+	}
+	
 	@Test
 	public void getRepoKeyToCountMembers() {
 		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);

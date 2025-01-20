@@ -210,6 +210,15 @@ public interface RepositoryService {
 	 * @return
 	 */
 	public int countMembers(RepositoryEntryRef re, String role);
+	
+	/**
+	 * 
+	 * @param re The repository entry
+	 * @param relationType The relation type (all, business groups...)
+	 * @param role The role
+	 * @return The number of members (the same user in a group and in repository entry count for one)
+	 */
+	public int countMembers(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String role);
 
 	/**
 	 * Count all members (following up to business groups waiting list) with the following

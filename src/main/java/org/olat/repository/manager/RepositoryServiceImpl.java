@@ -903,6 +903,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	public int countMembers(RepositoryEntryRef re, String role) {
 		return reToGroupDao.countMembers(re, role);
 	}
+	
+	@Override
+	public int countMembers(RepositoryEntryRef re, RepositoryEntryRelationType relationType, String role) {
+		return reToGroupDao.countMembers(re, relationType, role);
+	}
 
 	@Override
 	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe) {

@@ -41,6 +41,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -329,6 +330,38 @@ public class RepositoryEntryRelationDAO {
 				.setParameter("role", role)
 				.getSingleResult();
 		return count == null ? 0 : count.intValue();
+	}
+	
+	public int countMembers(RepositoryEntryRef re, RepositoryEntryRelationType type, String role) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(distinct ident.key)")
+		  .append(" from repositoryentry as v")
+		  .append(" inner join v.groups as relGroup");
+		if(type == RepositoryEntryRelationType.defaultGroup) {
+			sb.append(" on relGroup.defaultGroup=true");
+		}
+		sb.append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as memberships")
+		  .append(" inner join memberships.identity as ident");
+
+		if(type == RepositoryEntryRelationType.businessGroups) {
+			sb.append(" inner join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)");
+		} else if(type == RepositoryEntryRelationType.curriculums) {
+			sb.append(" inner join curriculumelement as curEl on (curEl.group.key=baseGroup.key)");
+		} else if(type == RepositoryEntryRelationType.entryAndCurriculums) {
+			sb.append(" left join curriculumelement as curEl on (curEl.group.key=baseGroup.key)");
+		}
+		sb.where().append("v.key=:repoKey and memberships.role=:role");
+		if(type == RepositoryEntryRelationType.entryAndCurriculums) {
+			sb.append(" and (relGroup.defaultGroup=true or curEl.key is not null)");
+		}
+		
+		List<Long> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repoKey", re.getKey())
+				.setParameter("role", role)
+				.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
 	}
 	
 	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe) {
