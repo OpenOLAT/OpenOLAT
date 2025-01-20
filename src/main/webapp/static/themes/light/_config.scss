@@ -827,6 +827,14 @@ $o-curriculum-widget-card-border				: 1px solid #cccccc !default;
 $o-curriculum-widget-card-border-radius			: 4px !default;
 $o-curriculum-widget-now-bg-color				: rgb($brand-primary, 0.1) !default;
 
+/* Curriculum element in catalog */
+$o-curriculum-outline-height						: 60px !default;
+$o-curriculum-outline-thumb-height				: 48px !default;
+$o-curriculum-outline-thumb-width				: 72px !default;
+$o-curriculum-outline-thumb-border-radius		: 4px !default;
+$o-curriculum-outline-padding					: 10px !default;
+$o-curriculum-outline-space-width				: 2em !default;
+
 /* Asssessment */
 $o-assessment-mode-today-bg						: $state-success-bg !default;
 $o-assessment-mode-today-border-color			: $state-success-text !default;

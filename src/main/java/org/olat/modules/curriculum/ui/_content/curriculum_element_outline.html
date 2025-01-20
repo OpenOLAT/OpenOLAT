@@ -1,0 +1,36 @@
+<div class="o_curriculum_element_outline">
+	#foreach($row in $rows)
+		<div class="o_curriculum_element_outline_main">
+			<div class="o_curriculum_element_outline_spacer">
+				#foreach($level in $row.getLevels())
+					<div></div>
+				#end
+			</div>
+			<div class="o_curriculum_element_outline_lead">
+				#if($row.isThumbnailAvailable())
+					<div class="o_curriculum_element_outline_thumbnail">
+						<img src="${row.getThumbnailRelPath()}" alt="" />
+					</div>
+				#end
+				<div class="o_curriculum_element_outline_meta">
+					<div class="o_curriculum_element_outline_identifier">
+						<small class="text-muted">$r.escapeHtml($row.getIdentifier())</small>
+					</div>
+					<div class="o_curriculum_element_outline_title_wrapper o_flex_block_one_line_left">
+						<span class="o_curriculum_element_outline_title o_flex_item_max">$r.escapeHtml($row.getDisplayName())</span> <small class="o_curriculum_element_outline_type text-muted">($r.escapeHtml($row.getTypeName()))</small>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="o_curriculum_element_outline_events">
+			#if($r.isNotEmpty($row.getNumEvents()))
+				<i class="o_icon o_icon-fw o_icon_events"> </i> $row.getNumEvents()
+			#end
+		</div>
+		<div class="o_curriculum_element_outline_period">
+			#if($r.isNotEmpty($row.getPeriod()))
+				<i class="o_icon o_icon-fw o_icon_calendar"> </i> $row.getPeriod()
+			#end
+		</div>
+	#end
+</div>

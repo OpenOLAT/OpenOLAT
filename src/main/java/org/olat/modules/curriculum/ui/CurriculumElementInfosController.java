@@ -57,6 +57,7 @@ public class CurriculumElementInfosController extends BasicController implements
 	
 	private final VelocityContainer mainVC;
 	private CurriculumElementInfosHeaderController headerCtrl;
+	private CurriculumElementInfosOutlineController outlineCtrl;
 	private OffersController offersCtrl;
 	private CurriculumElementInfosOverviewController overviewCtrl;
 
@@ -65,6 +66,7 @@ public class CurriculumElementInfosController extends BasicController implements
 	private final String baseUrl;
 	private Boolean descriptionOpen = Boolean.TRUE;
 	private Boolean objectivesOpen = Boolean.TRUE;
+	private Boolean outlineOpen = Boolean.TRUE;
 	private Boolean offersOpen = Boolean.TRUE;
 
 	@Autowired
@@ -86,6 +88,12 @@ public class CurriculumElementInfosController extends BasicController implements
 			webPublish = null;
 			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(getIdentity())).isEmpty();
 		}
+		
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureConfiguredRepositoryEntry(false);
+		searchParams.setCurriculumElementPath(element.getMaterializedPathKeys());
+		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
+		
 		
 		// Header
 		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, isMember);
@@ -111,6 +119,14 @@ public class CurriculumElementInfosController extends BasicController implements
 		mainVC.contextPut("objectives", element.getObjectives());
 		mainVC.contextPut("objectivesOpen", objectivesOpen);
 		
+		// Outline
+		if (element.isShowOutline()) {
+			outlineCtrl = new CurriculumElementInfosOutlineController(ureq, getWindowControl(), element, lectureBlocks);
+			listenTo(outlineCtrl);
+			mainVC.put("outline", outlineCtrl.getInitialComponent());
+			mainVC.contextPut("outlineOpen", outlineOpen);
+		}
+		
 		// Offers
 		AccessResult acResult = acService.isAccessible(element, getIdentity(), isMember, false, webPublish, false);
 		if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), element, acResult)) {
@@ -122,12 +138,7 @@ public class CurriculumElementInfosController extends BasicController implements
 			mainVC.contextPut("offersOpen", offersOpen);
 		}
 		
-		// Overview and lecture blocks
-		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
-		searchParams.setLectureConfiguredRepositoryEntry(false);
-		searchParams.setCurriculumElementPath(element.getMaterializedPathKeys());
-		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
-		
+		// Overview and lecture blocks	
 		overviewCtrl = new CurriculumElementInfosOverviewController(ureq, getWindowControl(), element, lectureBlocks.size());
 		listenTo(overviewCtrl);
 		mainVC.put("overview", overviewCtrl.getInitialComponent());
@@ -165,6 +176,11 @@ public class CurriculumElementInfosController extends BasicController implements
 			if (StringHelper.containsNonWhitespace(objectivesOpenVal)) {
 				objectivesOpen = Boolean.valueOf(objectivesOpenVal);
 				mainVC.contextPut("objectivesOpen", objectivesOpen);
+			}
+			String outlineOpenVal = ureq.getParameter("outlineOpen");
+			if (StringHelper.containsNonWhitespace(outlineOpenVal)) {
+				outlineOpen = Boolean.valueOf(outlineOpenVal);
+				mainVC.contextPut("outlineOpen", outlineOpen);
 			}
 			String offersOpenVal = ureq.getParameter("offersOpen");
 			if (StringHelper.containsNonWhitespace(offersOpenVal)) {

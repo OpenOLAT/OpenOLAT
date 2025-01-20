@@ -57,6 +57,29 @@ jQuery(function() {
 </script>
 #end
 
+#if($r.available("outline"))
+<div class="o_curriculum_element_infos_outline">
+	<fieldset><legend>
+	<h4 onclick="jQuery('#collapse_outline_${r.getCId()}').collapse('toggle')">
+		<i id="collapse_outline_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($outlineOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.outline")
+	</h4>
+	</fieldset></legend>
+	<div id="collapse_outline_${r.getCId()}" class="collapse #if($outlineOpen) in #end">$r.render("outline")</div>
+</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_outline_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_outline_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.openFfXHREvent(false, false, true), "outlineOpen","false");
+	})
+	jQuery('#collapse_outline_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_outline_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.openFfXHREvent(false, false, true), "outlineOpen","true");
+	})
+});
+</script>
+#end
+
 #if($r.available("offers"))
 <div id="offers" class="o_curriculum_element_infos_offers">
 	<fieldset><legend>
@@ -79,6 +102,7 @@ jQuery(function() {
 });
 </script>
 #end
+
 </div> ##o_curriculum_element_infos_left end
 
 <div class="o_curriculum_element_infos_right">
