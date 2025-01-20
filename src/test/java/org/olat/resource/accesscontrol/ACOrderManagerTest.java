@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -479,6 +480,89 @@ public class ACOrderManagerTest extends OlatTestCase {
 		assertTrue(order3_2.equals(retrievedOrderOres2.get(0)) || order3_2.equals(retrievedOrderOres2.get(1)));
 		
 		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
+	public void findOrdersByResourceByStatus() {
+		//create some offers to buy
+		OLATResource randomOres = createResource();
+		Offer offer1 = acService.createOffer(randomOres, "TestLoadByStatus 1");
+		offer1 = acService.save(offer1);
+
+		dbInstance.commitAndCloseSession();
+		
+		//create a link offer to method
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
+		assertNotNull(methods);
+		assertEquals(1, methods.size());
+		AccessMethod method = methods.get(0);
+		OfferAccess access1 = acMethodManager.createOfferAccess(offer1, method);
+		acMethodManager.save(access1);
+		
+		dbInstance.commitAndCloseSession();
+		
+		//one clicks
+		Order order1 = acOrderManager.saveOneClick(ident4, access1);
+		Order order2 = acOrderManager.saveOneClick(ident6, access1);
+		
+		dbInstance.commitAndCloseSession();
+
+		// Payed orders
+		List<Order> retrievedOrders = acOrderManager.findOrdersByResource(randomOres, OrderStatus.PAYED);
+		Assertions.assertThat(retrievedOrders)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(order1, order2);
+		
+		// Pending orders
+		List<Order> pendingOrders = acOrderManager.findOrdersByResource(randomOres, OrderStatus.PREPAYMENT);
+		Assert.assertTrue(pendingOrders.isEmpty());
+		
+		// Payed orders
+		List<Order> allOrders = acOrderManager.findOrdersByResource(randomOres);
+		Assertions.assertThat(allOrders)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(order1, order2);
+	}
+	
+	@Test
+	public void findOrdersByIdentityStatus() {
+		//create some offers to buy
+		OLATResource randomOres = createResource();
+		Offer offer = acService.createOffer(randomOres, "TestLoadByIdentityStatus");
+		offer = acService.save(offer);
+
+		dbInstance.commitAndCloseSession();
+		
+		//create a link offer to method
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
+		assertNotNull(methods);
+		assertEquals(1, methods.size());
+		AccessMethod method = methods.get(0);
+		OfferAccess access = acMethodManager.createOfferAccess(offer, method);
+		acMethodManager.save(access);
+		
+		dbInstance.commitAndCloseSession();
+		
+		//one clicks
+		Order order = acOrderManager.saveOneClick(ident4, access);
+		
+		dbInstance.commitAndCloseSession();
+
+		// Payed orders
+		List<Order> retrievedOrders = acOrderManager.findOrdersBy(ident4, randomOres, OrderStatus.PAYED);
+		Assertions.assertThat(retrievedOrders)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(order);
+		
+		// Pending orders
+		List<Order> pendingOrders = acOrderManager.findOrdersBy(ident4, randomOres, OrderStatus.NEW);
+		Assert.assertTrue(pendingOrders.isEmpty());
+		
+		// All orders
+		List<Order> allOrders = acOrderManager.findOrdersBy(ident4, randomOres);
+		Assertions.assertThat(allOrders)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(order);
 	}
 	
 	@Test

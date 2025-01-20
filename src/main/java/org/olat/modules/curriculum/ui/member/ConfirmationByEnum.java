@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.ui.member;
 
+import org.olat.resource.accesscontrol.ResourceReservation;
+
 /**
  * 
  * Initial date: 26 nov. 2024<br>
@@ -28,6 +30,12 @@ package org.olat.modules.curriculum.ui.member;
 public enum ConfirmationByEnum {
 	
 	ADMINISTRATIVE_ROLE,
-	PARTICIPANT
+	PARTICIPANT;
+	
+	public static ConfirmationByEnum valueOf(ResourceReservation reservation) {
+		if(reservation == null) return null;
+		return (reservation.getUserConfirmable() == null || reservation.getUserConfirmable().booleanValue())
+			? PARTICIPANT : ADMINISTRATIVE_ROLE;
+	}
 
 }

@@ -146,6 +146,8 @@ import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.springframework.beans.factory.InitializingBean;
@@ -984,12 +986,16 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			removeMember(element, member, role, nextStatus, actor, adminNote);
 		}  else if(nextStatus == GroupMembershipStatus.cancel
 				|| nextStatus == GroupMembershipStatus.cancelWithFee
-				|| nextStatus == GroupMembershipStatus.removed
 				|| nextStatus == GroupMembershipStatus.declined) {
 			boolean removed = removeMemberReservation(element, member, role, nextStatus, actor, adminNote);
 			removed |= removeMember(element, member, role, nextStatus, actor, adminNote);
 			if(!removed) {
 				addMemberHistory(element, member, role, nextStatus, actor, adminNote);
+			}
+			
+			List<Order> orders = acService.findOrders(actor, element.getResource(), OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+			for(Order order:orders) {
+				acService.cancelOrder(order);
 			}
 		}
 	}

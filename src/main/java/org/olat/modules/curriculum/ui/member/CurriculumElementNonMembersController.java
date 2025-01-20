@@ -52,10 +52,8 @@ import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.UserAvatarMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -67,9 +65,6 @@ public class CurriculumElementNonMembersController extends AbstractMembersContro
 
 	private ToolsController	toolsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
-
-	@Autowired
-	private ACService acService;
 	
 	public CurriculumElementNonMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback,

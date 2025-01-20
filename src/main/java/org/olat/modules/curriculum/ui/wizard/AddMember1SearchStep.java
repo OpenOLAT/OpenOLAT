@@ -25,6 +25,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.BasicStepCollection;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
@@ -51,8 +52,10 @@ public class AddMember1SearchStep extends BasicStep {
 		stepCollection.setTitle(getTranslator(), "wizard.user.search");
 		setStepCollection(stepCollection);
 		
-		AddMember2RightsStep rightsStep = new AddMember2RightsStep(ureq, membersContext);
-		setNextStep(new UserSearchOverviewStep(ureq, membersContext, stepCollection, rightsStep));
+		Step nextStep = membersContext.isOffersAvailable()
+				? new AddMember2OffersStep(ureq, membersContext)
+				: new AddMember3RightsStep(ureq, membersContext);
+		setNextStep(new UserSearchOverviewStep(ureq, membersContext, stepCollection, nextStep));
 	}
 	
 	@Override

@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -68,6 +69,7 @@ import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
 import org.olat.modules.curriculum.ui.member.ConfirmationMembershipEnum;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.member.NoteCalloutController;
+import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
 import org.olat.modules.curriculum.ui.wizard.RightsCurriculumElementsTableModel.RightsElementsCols;
 
 /**
@@ -91,6 +93,7 @@ public class RightsController extends StepFormBasicController {
 	private RightsCurriculumElementsTableModel tableModel;
 	
 	private final boolean confirmationPossible;
+	private final boolean allCurriculumElements;
 	private final CurriculumRoles roleToModify;
 	private final MembersContext membersContext;
 	private final CurriculumElement curriculumElement;
@@ -108,7 +111,10 @@ public class RightsController extends StepFormBasicController {
 		roleToModify = membersContext.getRoleToModify();
 		curriculumElement = membersContext.getCurriculumElement();
 		curriculumElements = membersContext.getAllCurriculumElements();
-		confirmationPossible = roleToModify == CurriculumRoles.participant;
+
+		allCurriculumElements = membersContext.getSelectedOffer() != null;
+		confirmationPossible = (roleToModify == CurriculumRoles.participant)
+				&& membersContext.getSelectedOffer() == null;
 		
 		initForm(ureq);
 		loadModel();
@@ -160,7 +166,10 @@ public class RightsController extends StepFormBasicController {
 		applyToEl = uifactory.addRadiosVertical("apply.membership.to", "apply.membership.to", formLayout, applyToPK.keys(), applyToPK.values());
 		applyToEl.addActionListener(FormEvent.ONCHANGE);
 		applyToEl.select(ChangeApplyToEnum.CONTAINED.name(), true);
-		applyToEl.setVisible(!membersContext.getDescendants().isEmpty());
+		applyToEl.setVisible(!membersContext.getDescendants().isEmpty() && !allCurriculumElements);
+		
+		StaticTextElement applyInfosEl = uifactory.addStaticTextElement("apply.membership.to.alt", "apply.membership.to", applyContained, formLayout);
+		applyInfosEl.setVisible(!membersContext.getDescendants().isEmpty() && allCurriculumElements);
 		
 		adminNoteEl = uifactory.addTextAreaElement("admin.note", "admin.note", 2000, 4, 32, false, false, false, "", formLayout);
 		adminNoteEl.setVisible(roleToModify == CurriculumRoles.participant);
@@ -327,6 +336,8 @@ public class RightsController extends StepFormBasicController {
 
 	@Override
 	protected void formNext(UserRequest ureq) {
+		
+		
 		boolean participant = roleToModify == CurriculumRoles.participant;
 		ConfirmationMembershipEnum confirmation = participant
 				? ConfirmationMembershipEnum.valueOf(confirmationTypeEl.getSelectedKey())
@@ -370,9 +381,10 @@ public class RightsController extends StepFormBasicController {
 	}
 	
 	private GroupMembershipStatus getNextStatus() {
+		AccessInfos offer = membersContext.getSelectedOffer();
 		boolean participant = roleToModify == CurriculumRoles.participant;
 		ConfirmationMembershipEnum confirmation = ConfirmationMembershipEnum.valueOf(confirmationTypeEl.getSelectedKey());
-		return (participant && confirmation == ConfirmationMembershipEnum.WITH)
+		return (participant && (offer != null || confirmation == ConfirmationMembershipEnum.WITH))
 				? GroupMembershipStatus.reservation : GroupMembershipStatus.active;
 	}
 	

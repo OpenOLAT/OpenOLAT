@@ -23,12 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
 
 /**
  * 
@@ -44,14 +47,20 @@ public class MembersContext {
 	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
 	private final List<CurriculumElement> descendants;
+	
+	private final List<Offer> offers;
+	private AccessInfos selectedOffer;
 
 	private List<MembershipModification> modifications;
-	
+
 	private final CurriculumRoles roleToModify;
 	
 	private MailTemplate mailTemplate;
 	
-	public MembersContext(CurriculumRoles roleToModify, Curriculum curriculum, CurriculumElement curriculumElement, List<CurriculumElement> descendants) {
+	public MembersContext(CurriculumRoles roleToModify, Curriculum curriculum,
+			CurriculumElement curriculumElement, List<CurriculumElement> descendants,
+			List<Offer> offers) {
+		this.offers = offers;
 		this.roleToModify = roleToModify;
 		this.curriculum = curriculum;
 		this.curriculumElement = curriculumElement;
@@ -114,6 +123,22 @@ public class MembersContext {
 		return resources;
 	}
 	
+	public List<Offer> getOffers() {
+		return offers;
+	}
+	
+	public boolean isOffersAvailable() {
+		return offers != null && !offers.isEmpty();
+	}
+
+	public AccessInfos getSelectedOffer() {
+		return selectedOffer;
+	}
+
+	public void setSelectedOffer(AccessInfos selectedOffer) {
+		this.selectedOffer = selectedOffer;
+	}
+
 	public boolean hasModifications() {
 		return modifications != null && !modifications.isEmpty();
 	}
@@ -132,5 +157,9 @@ public class MembersContext {
 
 	public void setMailTemplate(MailTemplate mailTemplate) {
 		this.mailTemplate = mailTemplate;
+	}
+	
+	public record AccessInfos(Offer offer, OfferAccess offerAccess, List<Organisation> organisations) {
+		//
 	}
 }

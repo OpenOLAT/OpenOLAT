@@ -333,7 +333,9 @@ public class MemberRolesDetailsController extends FormBasicController {
 		int hasElementAccessBefore = 0;
 		int gainAccessAfter = 0;
 		int gainAccessAfterReservation = 0;
+		int gainReservationAfter = 0;
 		int looseAccessAfter = 0;
+		int looseReservationAfter = 0;
 		
 		for(CurriculumRoles role:CurriculumRoles.curriculumElementsRoles()) {
 			GroupMembershipStatus currentStatus = row.getStatus(role);
@@ -347,17 +349,22 @@ public class MemberRolesDetailsController extends FormBasicController {
 			GroupMembershipStatus modificationStatus = row.getModificationStatus(role);
 			if(currentStatus == GroupMembershipStatus.reservation && modificationStatus == GroupMembershipStatus.active) {
 				gainAccessAfterReservation++;
-			} else if(currentStatus == GroupMembershipStatus.active || currentStatus == GroupMembershipStatus.reservation) {
+			} else if(currentStatus == GroupMembershipStatus.active) {
 				if(modificationStatus != null && (modificationStatus == GroupMembershipStatus.removed
 						|| modificationStatus == GroupMembershipStatus.cancel
 						||  modificationStatus == GroupMembershipStatus.cancelWithFee)) {
 					looseAccessAfter++;
 				}
-			} else {
-				if(modificationStatus != null && (modificationStatus == GroupMembershipStatus.active
-						|| modificationStatus == GroupMembershipStatus.reservation)) {
-					gainAccessAfter++;
+			} else if(currentStatus == GroupMembershipStatus.reservation) {
+				if(modificationStatus != null && (modificationStatus == GroupMembershipStatus.removed
+						|| modificationStatus == GroupMembershipStatus.cancel
+						||  modificationStatus == GroupMembershipStatus.cancelWithFee)) {
+					looseReservationAfter++;
 				}
+			} else if(modificationStatus != null && modificationStatus == GroupMembershipStatus.active) {
+				gainAccessAfter++;
+			} else if(modificationStatus != null && modificationStatus == GroupMembershipStatus.reservation) {
+				gainReservationAfter++;
 			}
 		}
 		
@@ -367,13 +374,14 @@ public class MemberRolesDetailsController extends FormBasicController {
 		if(hasElementAccessBefore == 0) {
 			if(gainAccessAfter > 0) {
 				addition |= true;
-			} else if(gainAccessAfterReservation > 0) {
+			} else if(gainAccessAfterReservation > 0 || looseReservationAfter > 0 || gainReservationAfter > 0) {
 				modification |= true;
 			}
 		} else if(hasElementAccessBefore > 0) {
 			if(hasElementAccessBefore == looseAccessAfter && gainAccessAfter == 0 && gainAccessAfterReservation == 0) {
 				removal |= true;
-			} else if(gainAccessAfter > 0 || looseAccessAfter > 0 || gainAccessAfterReservation > 0) {
+			} else if(gainAccessAfter > 0 || looseAccessAfter > 0 || gainAccessAfterReservation > 0
+					|| looseReservationAfter > 0 || gainReservationAfter > 0) {
 				modification |= true;
 			}
 		}

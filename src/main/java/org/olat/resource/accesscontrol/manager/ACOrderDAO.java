@@ -484,12 +484,39 @@ public class ACOrderDAO {
 			.append(" inner join offer.resource rsrc ")
 			.append(" where rsrc.key=:resourceKey");
 		if(status != null && status.length > 0) {
-			sb.append(" and o.orderStatusStr in (:status)");
+			sb.append(" and o.orderStatus in (:status)");
 		}
 
 		TypedQuery<Order> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Order.class)
 				.setParameter("resourceKey", resource.getKey());
+		if(status != null && status.length > 0) {
+			List<String> statusStr = new ArrayList<>();
+			for(OrderStatus s:status) {
+				statusStr.add(s.name());
+			}
+			query.setParameter("status", statusStr);
+		}
+
+		return query.getResultList();
+	}
+	
+	public List<Order> findOrdersBy(IdentityRef identity, OLATResource resource, OrderStatus... status) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(o) from acorder o")
+			.append(" inner join o.parts orderPart")
+			.append(" inner join orderPart.lines orderLine")
+			.append(" inner join orderLine.offer offer")
+			.append(" inner join offer.resource rsrc")
+			.append(" where o.delivery.key=:deliveryKey and rsrc.key=:resourceKey");
+		if(status != null && status.length > 0) {
+			sb.append(" and o.orderStatus in (:status)");
+		}
+
+		TypedQuery<Order> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Order.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setParameter("deliveryKey", identity.getKey());
 		if(status != null && status.length > 0) {
 			List<String> statusStr = new ArrayList<>();
 			for(OrderStatus s:status) {

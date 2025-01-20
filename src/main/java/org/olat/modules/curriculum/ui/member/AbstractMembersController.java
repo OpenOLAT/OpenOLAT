@@ -78,6 +78,7 @@ import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.member.MemberManagementTableModel.MemberCols;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoService;
@@ -121,6 +122,8 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	protected ContactFormController contactCtrl;
 	protected EditMemberController editSingleMemberCtrl;
 
+	@Autowired
+	protected ACService acService;
 	@Autowired
 	protected UserManager userManager;
 	@Autowired

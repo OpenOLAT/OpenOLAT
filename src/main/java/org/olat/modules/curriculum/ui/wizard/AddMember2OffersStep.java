@@ -31,21 +31,22 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
 
 /**
  * 
- * Initial date: 6 déc. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ * Initial date: 16 janv. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AddMember3ReviewModificationsStep extends BasicStep {
+public class AddMember2OffersStep extends BasicStep {
 	
 	private final MembersContext membersContext;
 	
-	public AddMember3ReviewModificationsStep(UserRequest ureq, MembersContext membersContext) {
+	public AddMember2OffersStep(UserRequest ureq, MembersContext membersContext) {
 		super(ureq);
-		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.review", null);
 		this.membersContext = membersContext;
+		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale(), getTranslator()));
+		setI18nTitleAndDescr("wizard.bookings", null);
 		
-		setNextStep(new AddMember4NotificationsStep(ureq, membersContext));
+		setStepCollection(null);
+		setNextStep(new AddMember3RightsStep(ureq, membersContext));
 	}
 	
 	@Override
@@ -56,7 +57,7 @@ public class AddMember3ReviewModificationsStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new ReviewModificationsController(ureq, wControl, form, runContext, membersContext);
+		return new OffersController(ureq, wControl, form, runContext, membersContext);
 	}
 
 }

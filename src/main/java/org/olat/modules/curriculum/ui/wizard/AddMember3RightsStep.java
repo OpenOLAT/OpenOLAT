@@ -35,27 +35,28 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class AddMember4NotificationsStep extends BasicStep {
+public class AddMember3RightsStep extends BasicStep {
 	
 	private final MembersContext membersContext;
 	
-	public AddMember4NotificationsStep(UserRequest ureq, MembersContext membersContext) {
+	public AddMember3RightsStep(UserRequest ureq, MembersContext membersContext) {
 		super(ureq);
 		this.membersContext = membersContext;
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.notifications", null);
+		setI18nTitleAndDescr("wizard.member.rights", null);
 		
-		setNextStep(NOSTEP);
+		setStepCollection(null);
+		setNextStep(new AddMember4ReviewModificationsStep(ureq, membersContext));
 	}
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return PrevNextFinishConfig.BACK_FINISH;
+		return PrevNextFinishConfig.BACK_NEXT;
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new NotificationController(ureq, wControl, form, runContext, membersContext);
+		return new RightsController(ureq, wControl, form, runContext, membersContext);
 	}
 }

@@ -79,6 +79,7 @@ import org.olat.modules.curriculum.ui.wizard.EditMember1MembershipStep;
 import org.olat.modules.curriculum.ui.wizard.EditMemberFinishCallback;
 import org.olat.modules.curriculum.ui.wizard.EditMembersContext;
 import org.olat.modules.curriculum.ui.wizard.MembersContext;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.user.UserAvatarMapper;
 
 /**
@@ -383,7 +384,11 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	}
 
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
-		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants);
+		List<Offer> offers = (curriculumElement.getParent() == null)
+			? acService.findOfferByResource(curriculumElement.getResource(), true, null, null)
+			: List.of();
+		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants, offers);
+		
 		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContex);
 		AddMemberFinishCallback finish = new AddMemberFinishCallback(membersContex);
 		

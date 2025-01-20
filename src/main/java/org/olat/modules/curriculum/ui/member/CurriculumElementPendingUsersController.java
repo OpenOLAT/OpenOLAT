@@ -73,10 +73,11 @@ import org.olat.modules.curriculum.ui.wizard.AddMember1SearchStep;
 import org.olat.modules.curriculum.ui.wizard.AddMemberFinishCallback;
 import org.olat.modules.curriculum.ui.wizard.MembersContext;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.UserAvatarMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -97,13 +98,11 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private StepsMainRunController addMemberCtrl;
-	private AcceptDeclineMembershipsController acceptCtrl;
+	private CancelMembershipsController cancelCtrl;
+	private AcceptDeclineMembershipsController acceptDeclineCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	private final boolean membersManaged;
-
-	@Autowired
-	private ACService acService;
 	
 	public CurriculumElementPendingUsersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback,
@@ -259,7 +258,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 				reloadMember(ureq, editSingleMemberCtrl.getMember());
 				cleanUp();
 			}
-		} else if(acceptCtrl == source) {
+		} else if(acceptDeclineCtrl == source || cancelCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(true);
 				cmc.deactivate();
@@ -282,16 +281,18 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		super.event(ureq, source, event);
 	}
 	
-	@Autowired
+	@Override
 	protected void cleanUp() {
 		super.cleanUp();
+		removeAsListenerAndDispose(acceptDeclineCtrl);
 		removeAsListenerAndDispose(addMemberCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
-		removeAsListenerAndDispose(acceptCtrl);
+		removeAsListenerAndDispose(cancelCtrl);
 		removeAsListenerAndDispose(cmc);
+		acceptDeclineCtrl = null;
 		addMemberCtrl = null;
 		calloutCtrl = null;
-		acceptCtrl = null;
+		cancelCtrl = null;
 		cmc = null;
 	}
 
@@ -338,13 +339,13 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	
 	private void doAccept(UserRequest ureq, List<ResourceReservation> reservations) {
 		List<CurriculumElement> curriculumElements = getAllCurriculumElements();
-		acceptCtrl = new AcceptDeclineMembershipsController(ureq, getWindowControl(),
+		acceptDeclineCtrl = new AcceptDeclineMembershipsController(ureq, getWindowControl(),
 				curriculum, curriculumElement, curriculumElements,
 				reservations, GroupMembershipStatus.active);
-		listenTo(acceptCtrl);
+		listenTo(acceptDeclineCtrl);
 		
 		String title = translate("accept.memberships");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), acceptCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), acceptDeclineCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -361,13 +362,28 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 
 	private void doDecline(UserRequest ureq, List<ResourceReservation> reservations) {
 		List<CurriculumElement> curriculumElements = getAllCurriculumElements();
-		acceptCtrl = new AcceptDeclineMembershipsController(ureq, getWindowControl(),
+		acceptDeclineCtrl = new AcceptDeclineMembershipsController(ureq, getWindowControl(),
 				curriculum, curriculumElement, curriculumElements,
 				reservations, GroupMembershipStatus.declined);
-		listenTo(acceptCtrl);
+		listenTo(acceptDeclineCtrl);
 		
 		String title = translate("decline.memberships");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), acceptCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), acceptDeclineCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCancel(UserRequest ureq, MemberRow member) {
+		List<Identity> identities = List.of(member.getIdentity());
+		List<ResourceReservation> reservations = member.getReservations();
+		List<CurriculumElement> curriculumElements = getAllCurriculumElements();
+		
+		cancelCtrl = new CancelMembershipsController(ureq, getWindowControl(),
+				curriculum, curriculumElement, curriculumElements, identities, reservations);
+		listenTo(cancelCtrl);
+		
+		String title = translate("cancel.memberships");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), cancelCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -385,7 +401,10 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	}
 
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
-		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants);
+		List<Offer> offers = (curriculumElement.getParent() == null)
+				? acService.findOfferByResource(curriculumElement.getResource(), true, null, null)
+				: List.of();
+		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants, offers);
 		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContex);
 		AddMemberFinishCallback finish = new AddMemberFinishCallback(membersContex);
 		
@@ -419,6 +438,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		
 		private Link acceptLink;
 		private Link declineLink;
+		private Link cancelLink;
 		private final Link contactLink;
 		private final Link editMemberLink;
 		private final VelocityContainer mainVC;
@@ -433,14 +453,32 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 			mainVC = createVelocityContainer("tools");
 
 			contactLink = addLink("contact", "contact", "o_icon o_icon-fw o_icon_mail");
+			
+			boolean needDivider = false;
 			if(member.getNumOfReservations() > 0) {
 				acceptLink = addLink("accept", "accept", "o_icon o_icon-fw o_icon_check");
 				declineLink = addLink("decline", "decline", "o_icon o_icon-fw o_icon_decline");
+				needDivider = true;
+			}
+			
+			if(curriculumElement != null && hasOngoingOrder()) {
+				cancelLink = addLink("cancel.booking", "cancel", "o_icon o_icon-fw o_icon_decline");
+				needDivider |= true;
+			}
+			
+			if(needDivider) {
+				mainVC.contextPut("reservationDivider", Boolean.TRUE);
 			}
 			editMemberLink = addLink("edit.member", "edit.member", "o_icon o_icon-fw o_icon_edit");
 			
 			putInitialPanel(mainVC);
 		}
+		
+		private boolean hasOngoingOrder() {
+			List<Order> ongoingOrders = acService.findOrders(member.getIdentity(), curriculumElement.getResource(), OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+			return !ongoingOrders.isEmpty();
+		}
+		
 		private Link addLink(String name, String cmd, String iconCSS) {
 			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
 			if(iconCSS != null) {
@@ -461,6 +499,8 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 				doAccept(ureq, member);
 			} else if(declineLink == source) {
 				doDecline(ureq, member);
+			} else if(cancelLink == source) {
+				doCancel(ureq, member);
 			}
 		}
 	}

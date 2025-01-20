@@ -35,18 +35,17 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class AddMember2RightsStep extends BasicStep {
+public class AddMember4ReviewModificationsStep extends BasicStep {
 	
 	private final MembersContext membersContext;
 	
-	public AddMember2RightsStep(UserRequest ureq, MembersContext membersContext) {
+	public AddMember4ReviewModificationsStep(UserRequest ureq, MembersContext membersContext) {
 		super(ureq);
-		this.membersContext = membersContext;
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.member.rights", null);
+		setI18nTitleAndDescr("wizard.review", null);
+		this.membersContext = membersContext;
 		
-		setStepCollection(null);
-		setNextStep(new AddMember3ReviewModificationsStep(ureq, membersContext));
+		setNextStep(new AddMember5NotificationsStep(ureq, membersContext));
 	}
 	
 	@Override
@@ -57,6 +56,7 @@ public class AddMember2RightsStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new RightsController(ureq, wControl, form, runContext, membersContext);
+		return new ReviewModificationsController(ureq, wControl, form, runContext, membersContext);
 	}
+
 }

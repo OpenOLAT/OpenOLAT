@@ -220,11 +220,11 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			CurriculumElement curriculumElement = modification.curriculumElement();
 			CurriculumElementMembership membership = membershipsMap.get(curriculumElement.getKey());
 			ResourceReservation reservation = reservationsMap.get(curriculumElement.getResource());
-			if((memberStatus == GroupMembershipStatus.active || memberStatus == GroupMembershipStatus.reservation)
-					&& membership == null && reservation == null) {
+			if(memberStatus == GroupMembershipStatus.active && membership == null && reservation == null) {
 				add = true;
 				numOfModifications++;
-			} else if(memberStatus == GroupMembershipStatus.active && membership == null && reservation != null) {
+			} else if((memberStatus == GroupMembershipStatus.reservation && membership == null && reservation == null)
+					|| (memberStatus == GroupMembershipStatus.active && membership == null && reservation != null)) {
 				modify = true;
 				numOfModifications++;
 			}

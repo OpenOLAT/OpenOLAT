@@ -94,6 +94,7 @@ import org.olat.resource.accesscontrol.OfferOrganisationSelection;
 import org.olat.resource.accesscontrol.OfferRef;
 import org.olat.resource.accesscontrol.OfferToOrganisation;
 import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
@@ -544,10 +545,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 		if(handler.checkArgument(link, argument)) {
 			if(allowAccesToResource(identity, link.getOffer(), link.getMethod())) {
-				Order order = orderManager.saveOneClick(identity, link);
-				AccessTransaction transaction = transactionManager.createTransaction(order, order.getParts().get(0), link.getMethod());
-				transactionManager.save(transaction);
-				dbInstance.commit();
+				Order order = createAndSaveOrder(identity, link, OrderStatus.PAYED);
 				log.info(Tracing.M_AUDIT, "Access granted to: {} for {}", link, identity);
 				return new AccessResult(true, order);
 			} else {
@@ -557,6 +555,43 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			log.info(Tracing.M_AUDIT, "Access refused to: {} for {}", link, identity);
 		}
 		return new AccessResult(false);
+	}
+	
+	@Override
+	public Order createAndSaveOrder(Identity identity, OfferAccess link, OrderStatus orderStatus) {
+		Order order = orderManager.saveOneClick(identity, link, orderStatus);
+		AccessTransaction transaction = transactionManager.createTransaction(order, order.getParts().get(0), link.getMethod());
+		if(orderStatus == OrderStatus.NEW) {
+			transactionManager.update(transaction, AccessTransactionStatus.NEW);
+		} else if(orderStatus == OrderStatus.PREPAYMENT) {
+			transactionManager.update(transaction, AccessTransactionStatus.PENDING);
+		} else if(orderStatus == OrderStatus.PAYED) {
+			transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
+		} else if(orderStatus == OrderStatus.CANCELED) {
+			transactionManager.update(transaction, AccessTransactionStatus.CANCELED);
+		} else if(orderStatus == OrderStatus.ERROR) {
+			transactionManager.update(transaction, AccessTransactionStatus.ERROR);
+		} else {
+			transactionManager.save(transaction);
+		}
+		dbInstance.commit();
+		return order;
+	}
+	
+	@Override
+	public void cancelOrder(Order order) {
+		order = orderManager.save(order, OrderStatus.CANCELED);
+		
+		List<AccessTransaction> transactions = transactionManager.loadTransactionsForOrder(order);
+		if(!transactions.isEmpty()) {
+			// Mark the transactions as cancelled too
+			Collections.sort(transactions, (t1, t2) -> t2.getCreationDate().compareTo(t1.getCreationDate()));
+			for(OrderPart part:order.getParts()) {
+				AccessTransaction lastTransaction = transactions.get(0);
+				AccessTransaction transaction = transactionManager.createTransaction(order, part, lastTransaction.getMethod());
+				transactionManager.update(transaction, AccessTransactionStatus.CANCELED);
+			}
+		}
 	}
 
 	@Override
@@ -987,6 +1022,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Override
 	public List<Order> findOrders(Identity delivery, OrderStatus... status) {
 		return orderManager.findOrdersByDelivery(delivery, status);
+	}
+
+	@Override
+	public List<Order> findOrders(Identity delivery, OLATResource resource, OrderStatus... status) {
+		return orderManager.findOrdersBy(delivery, resource, status);
 	}
 
 	@Override

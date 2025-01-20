@@ -55,7 +55,7 @@ public enum GroupMembershipStatus {
 		}
 		// Reservation can be accepted or declined
 		if(current == reservation) {
-			return (next == declined || next == active);
+			return (next == declined || next == active || next == cancel || next == cancelWithFee);
 		}
 		// A membership can be canceled or removed
 		if(current == active) {

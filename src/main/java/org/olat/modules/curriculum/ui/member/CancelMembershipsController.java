@@ -53,6 +53,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailPackage;
@@ -60,14 +61,22 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.component.DualNumberCellRenderer;
-import org.olat.modules.curriculum.ui.member.AcceptDeclineMembershipsTableModel.AcceptDeclineCols;
+import org.olat.modules.curriculum.ui.member.CancelMembershipsTableModel.CancelCols;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderLine;
+import org.olat.resource.accesscontrol.OrderPart;
+import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
@@ -78,11 +87,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 10 déc. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 20 janv. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class AcceptDeclineMembershipsController extends FormBasicController implements FlexiTableComponentDelegate {
+public class CancelMembershipsController extends FormBasicController implements FlexiTableComponentDelegate {
 
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
 	
@@ -90,21 +99,25 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	private FormLink applyCustomNotificationButton;
 	private FormLink applyWithoutNotificationButton;
 	private FlexiTableElement tableEl;
-	private AcceptDeclineMembershipsTableModel tableModel;
+	private CancelMembershipsTableModel tableModel;
 	private final VelocityContainer detailsVC;
 	
 	private final Curriculum curriculum;
+	private final List<Identity> identities;
 	private final String avatarMapperBaseURL;
-	private final GroupMembershipStatus nextStatus;
-	private List<ResourceReservation> reservations;
+	private final CurriculumRoles roleToModify;
+	private final List<ResourceReservation> reservations;
 	private List<CurriculumElement> curriculumElements;
 	private final CurriculumElement selectedCurriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final Date cancellationDate = DateUtils.getStartOfDay(new Date());
 	
 	private CloseableModalController cmc;
 	private CustomizeNotificationController customizeNotificationsCtrl;
 	
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -114,17 +127,18 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public AcceptDeclineMembershipsController(UserRequest ureq, WindowControl wControl,
-			Curriculum curriculum, CurriculumElement selectedCurriculumElement, List<CurriculumElement> curriculumElements,
-			List<ResourceReservation> reservations, GroupMembershipStatus nextStatus) {
+	public CancelMembershipsController(UserRequest ureq, WindowControl wControl, Curriculum curriculum,
+			CurriculumElement selectedCurriculumElement, List<CurriculumElement> curriculumElements,
+			List<Identity> identities, List<ResourceReservation> reservations) {
 		super(ureq, wControl, "accept_memberships", Util
 				.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.curriculum = curriculum;
-		this.nextStatus = nextStatus;
+		this.identities = identities;
 		this.reservations = reservations;
 		this.curriculumElements = curriculumElements;
 		this.selectedCurriculumElement = selectedCurriculumElement;
+		roleToModify = CurriculumRoles.participant;
 
 		detailsVC = createVelocityContainer("member_details");
 		
@@ -147,7 +161,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	private void initTableForm(FormItemContainer formLayout) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AcceptDeclineCols.modifications,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CancelCols.modifications,
 				new ModificationCellRenderer(getTranslator())));
 		
 		int colIndex = AbstractMembersController.USER_PROPS_OFFSET;
@@ -162,15 +176,11 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 			colIndex++;
 		}
 		
-		if(nextStatus == GroupMembershipStatus.active) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AcceptDeclineCols.accepted,
-					new DualNumberCellRenderer(getTranslator())));
-		} else {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AcceptDeclineCols.declined,
-					new DualNumberCellRenderer(getTranslator())));
-		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CancelCols.cancelled,
+				new DualNumberCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CancelCols.cancellationFee));
 		
-		tableModel = new AcceptDeclineMembershipsTableModel(columnsModel, getLocale());
+		tableModel = new CancelMembershipsTableModel(columnsModel, curriculumElements, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		
@@ -198,7 +208,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> components = new ArrayList<>();
-		if(rowObject instanceof AcceptDeclineMembershipRow memberRow
+		if(rowObject instanceof CancelMembershipRow memberRow
 				&& memberRow.getDetailsController() != null) {
 			components.add(memberRow.getDetailsController().getInitialFormItem().getComponent());
 		}
@@ -206,22 +216,65 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	}
 	
 	private void loadModel() {
-		final List<AcceptDeclineMembershipRow> rows = new ArrayList<>(reservations.size());
-		final Map<Identity,AcceptDeclineMembershipRow> rowsMap = new HashMap<>();
-		for(ResourceReservation reservation:reservations) {
-			Identity identity = reservation.getIdentity();
-			AcceptDeclineMembershipRow adRow = rowsMap.computeIfAbsent(identity, id -> {
-				AcceptDeclineMembershipRow row = new AcceptDeclineMembershipRow(identity, userPropertyHandlers, getLocale());
-				rows.add(row);
-				return row;
-			});
-			adRow.addReservation(reservation);
+		final Map<Long,CancelMembershipRow> rowsMap = new HashMap<>();
+		final List<CancelMembershipRow> rows = new ArrayList<>(identities.size());
+		final List<Order> ongoingOrders = acService.findOrders(selectedCurriculumElement.getResource(),
+				OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+		final Map<Long,CurriculumElement> elementsToKeys = curriculumElements.stream()
+				.collect(Collectors.toMap(CurriculumElement::getKey, el -> el, (u, v) -> u));
+		final List<CurriculumElementMembership> memberships = curriculumService
+				.getCurriculumElementMemberships(curriculumElements, identities);
+
+		for(Identity identity:identities) {
+			CancelMembershipRow row = new CancelMembershipRow(identity, userPropertyHandlers, getLocale());
+			rows.add(row);
+			rowsMap.put(identity.getKey(), row);
 		}
 		
+		// Map the reservations
+		for(ResourceReservation reservation:reservations) {
+			CancelMembershipRow row = rowsMap.get(reservation.getIdentity().getKey());
+			if(row != null && roleToModify == ResourceToRoleKey.reservationToRole(reservation.getType())) {
+				row.addReservation(reservation);
+			}
+		}
+		
+		// Map of orders
+		for(Order order:ongoingOrders) {
+			CancelMembershipRow row = rowsMap.get(order.getDelivery().getKey());
+			if(row != null) {
+				row.addOrder(order);
+			}
+		}
+		
+		// Memberships of the curriculum elements
+		for(CurriculumElementMembership membership:memberships) {
+			CancelMembershipRow row = rowsMap.get(membership.getIdentityKey());
+			CurriculumElement curriculumElement = elementsToKeys.get(membership.getCurriculumElementKey());
+			if(row != null && curriculumElement != null && containsRole(membership.getRoles())) {
+				row.addMemberships(curriculumElement);
+			}
+		}
+		
+		// Calculate cancellation fees
+		for(CancelMembershipRow row:rows) {
+			Price cancellationFee = getCancellationFee(row.getOngoingOrders());
+			row.setCancellationFee(cancellationFee);	
+		}
+
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
+	private boolean containsRole(List<CurriculumRoles> roles) {
+		if(roles == null || roles.isEmpty()) return false;
+		for(CurriculumRoles role:roles) {
+			if(roleToModify == role) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -257,7 +310,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if(TOGGLE_DETAILS_CMD.equals(cmd)) {
-					AcceptDeclineMembershipRow row = tableModel.getObject(se.getIndex());
+					CancelMembershipRow row = tableModel.getObject(se.getIndex());
 					if(row.getDetailsController() != null) {
 						doCloseMemberDetails(row);
 						tableEl.collapseDetails(se.getIndex());
@@ -267,7 +320,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 					}
 				}
 			} else if(event instanceof DetailsToggleEvent toggleEvent) {
-				AcceptDeclineMembershipRow row = tableModel.getObject(toggleEvent.getRowIndex());
+				CancelMembershipRow row = tableModel.getObject(toggleEvent.getRowIndex());
 				if(toggleEvent.isVisible()) {
 					doOpenMemberDetails(ureq, row);
 				} else {
@@ -315,20 +368,18 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	
 	private void doApply(UserRequest ureq, MailPackage mailing) {
 		String adminNote = adminNoteEl.getValue();
-		
-		Map<OLATResource, CurriculumElement> resourceToCurriculumElements = curriculumElements.stream()
-				.collect(Collectors.toMap(CurriculumElement::getResource, ce -> ce, (u, v) -> u));
-		
+
 		List<CurriculumElementMembershipChange> changes = new ArrayList<>();
-		for(ResourceReservation reservation:reservations) {
-			Identity member = reservation.getIdentity();
-			CurriculumRoles role = ResourceToRoleKey.reservationToRole(reservation.getType());
-			CurriculumElement curriculumElement = resourceToCurriculumElements.get(reservation.getResource());
-			if(role != null && curriculumElement != null) {
+		List<CancelMembershipRow> rows = tableModel.getObjects();
+		for(CancelMembershipRow row:rows) {
+			Identity member = row.getIdentity();
+			Price cancellationFee = row.getCancellationFee();
+			GroupMembershipStatus nextStatus = cancellationFee == null ? GroupMembershipStatus.cancel : GroupMembershipStatus.cancelWithFee;
+			for(CurriculumElement curriculumElement:curriculumElements) {
 				CurriculumElementMembershipChange change = CurriculumElementMembershipChange
 						.valueOf(member, curriculumElement);
-				change.setNextStatus(role, nextStatus);
-				change.setAdminNote(role, adminNote);
+				change.setNextStatus(roleToModify, nextStatus);
+				change.setAdminNote(roleToModify, adminNote);
 				changes.add(change);
 			}
 		}
@@ -336,7 +387,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		curriculumService.updateCurriculumElementMemberships(getIdentity(), ureq.getUserSession().getRoles(), changes, mailing);
 	}
 	
-	private final void doOpenMemberDetails(UserRequest ureq, AcceptDeclineMembershipRow row) {
+	private final void doOpenMemberDetails(UserRequest ureq, CancelMembershipRow row) {
 		if(row.getDetailsController() != null) {
 			removeAsListenerAndDispose(row.getDetailsController());
 			flc.remove(row.getDetailsController().getInitialFormItem());
@@ -350,33 +401,93 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 				curriculum, selectedCurriculumElement, curriculumElements, row.getIdentity(), config);
 		listenTo(detailsCtrl);
 		
-		List<MembershipModification> modifications = buildAcceptDeclineModification(role,row.getReservations());
+		List<MembershipModification> modifications = buildCancelModification(role, row.getOngoingOrders(), row.getReservations());
 		detailsCtrl.setModifications(modifications);
 		
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());
 	}
 	
-	private final List<MembershipModification> buildAcceptDeclineModification(CurriculumRoles role, List<ResourceReservation> rowReservations) {
+	private final List<MembershipModification> buildCancelModification(CurriculumRoles role, List<Order> orders, List<ResourceReservation> rowReservations) {
 		List<MembershipModification> modifications = new ArrayList<>();
-		Map<OLATResource, CurriculumElement> resourceToCurriculumElements = curriculumElements.stream()
-				.collect(Collectors.toMap(CurriculumElement::getResource, ce -> ce, (u, v) -> u));
+		Map<OLATResource, ResourceReservation> resourceToCurriculumElements = rowReservations.stream()
+				.collect(Collectors.toMap(ResourceReservation::getResource, ce -> ce, (u, v) -> u));
 		
-		for(ResourceReservation reservation:rowReservations) {
-			CurriculumRoles reservationRole = ResourceToRoleKey.reservationToRole(reservation.getType());
-			if(role.equals(reservationRole)) {
-				Date confirmationUntil = reservation.getExpirationDate();
-				CurriculumElement curriculumElement = resourceToCurriculumElements.get(reservation.getResource());
-				MembershipModification modification = new MembershipModification(role, curriculumElement, nextStatus,
-						null, null, confirmationUntil, false, null);
-				modifications.add(modification);
-			}
+		Price cancellationFee = getCancellationFee(orders);
+		GroupMembershipStatus nextStatus = cancellationFee == null ? GroupMembershipStatus.cancel : GroupMembershipStatus.cancelWithFee;
+		
+		for(CurriculumElement curriculumElement:curriculumElements) {
+			ResourceReservation reservation = resourceToCurriculumElements.get(curriculumElement.getResource());
+			
+			Date confirmationUntil = reservation == null ? null : reservation.getExpirationDate();
+			ConfirmationByEnum confirmation = ConfirmationByEnum.valueOf(reservation);
+			
+			MembershipModification modification = new MembershipModification(role, curriculumElement, nextStatus,
+					null, confirmation, confirmationUntil, false, null);
+			modifications.add(modification);
 		}
-		
 		return modifications;
 	}
 	
-	protected final void doCloseMemberDetails(AcceptDeclineMembershipRow row) {
+	/**
+	 * Order is only possible on the implementation element.
+	 * 
+	 * @param orders List of all orders
+	 * @return
+	 */
+	private Price getCancellationFee(List<Order> orders) {
+		Price totalFee = null;
+		
+		for(Order order:orders) {
+			for(OrderPart part:order.getParts()) {
+				for(OrderLine line:part.getOrderLines()) {
+					OLATResource resource = line.getOffer().getResource();
+					if(selectedCurriculumElement.getResource().equals(resource)) {
+						Price fee = getCancellationFee(line.getOffer());
+						if(fee != null) {
+							if(totalFee == null) {
+								totalFee = fee;
+							} else {
+								totalFee = totalFee.add(fee);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return totalFee;
+	}
+	
+	private Price getCancellationFee(Offer offer) {
+		Price cancellingFee = offer.getCancellingFee();
+		Integer cancellationDeadline = offer.getCancellingFeeDeadlineDays();
+
+		Price fee;
+		if(cancellingFee == null) {
+			fee = null;
+		} else if(cancellationDeadline == null) {
+			fee = cancellingFee;
+		} else if(cancellatioFeeApply(cancellationDate, cancellationDeadline.intValue())) {
+			fee = cancellingFee;
+		} else {
+			fee = null;
+		}
+		return fee;
+	}
+	
+	private boolean cancellatioFeeApply(Date cancellationDate, long days) {
+		Date begin = selectedCurriculumElement.getBeginDate();
+		if(begin != null) {
+			long countDays = DateUtils.countDays(cancellationDate, begin);
+			if(days > countDays) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	protected final void doCloseMemberDetails(CancelMembershipRow row) {
 		if(row.getDetailsController() == null) return;
 		removeAsListenerAndDispose(row.getDetailsController());
 		flc.remove(row.getDetailsController().getInitialFormItem());

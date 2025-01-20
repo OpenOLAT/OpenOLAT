@@ -192,6 +192,10 @@ public interface ACService {
 	public boolean tryAutoBooking(Identity identity, RepositoryEntry entry, AccessResult acResult);
 	
 	public boolean tryAutoBooking(Identity identity, CurriculumElement element, AccessResult acResult);
+	
+	public Order createAndSaveOrder(Identity identity, OfferAccess link, OrderStatus orderStatus);
+	
+	public void cancelOrder(Order order);
 
 	/**
 	 * Get the reservation form an identity on a resource
@@ -297,6 +301,8 @@ public interface ACService {
 	public Order loadOrderByKey(Long key);
 	
 	public List<Order> findOrders(Identity delivery, OrderStatus... status);
+	
+	public List<Order> findOrders(Identity delivery, OLATResource resource, OrderStatus... status);
 
 	public List<AccessTransaction> findAccessTransactions(Order order);
 

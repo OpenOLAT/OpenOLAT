@@ -192,6 +192,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_fire { @include o-add-icon('fire');}
 .o_icon_flask { @include o-add-icon('flask');}
 .o_icon_form { @include o-add-icon('clipboard', false);}
+.o_icon_forward { @include o-add-icon('angles-right');}
 .o_icon_gear { @include o-add-icon('gear');}
 .o_icon_globe { @include o-add-icon('globe');}
 .o_icon_grade { @include o-add-icon('star');}

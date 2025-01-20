@@ -23,9 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
-import org.olat.core.gui.control.generic.wizard.BasicStepCollection;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
-import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
@@ -34,31 +32,30 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
 /**
  * 
  * Initial date: 6 déc. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class UserSearchOverviewStep extends BasicStep {
+public class AddMember5NotificationsStep extends BasicStep {
 	
 	private final MembersContext membersContext;
 	
-	public UserSearchOverviewStep(UserRequest ureq, MembersContext membersContext,
-			BasicStepCollection stepCollection, Step nextStep) {
+	public AddMember5NotificationsStep(UserRequest ureq, MembersContext membersContext) {
 		super(ureq);
 		this.membersContext = membersContext;
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("wizard.select", null);
-		setStepCollection(stepCollection);
-		setNextStep(nextStep);
+		setI18nTitleAndDescr("wizard.notifications", null);
+		
+		setNextStep(NOSTEP);
 	}
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return PrevNextFinishConfig.BACK_NEXT;
+		return PrevNextFinishConfig.BACK_FINISH;
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form form) {
-		return new UsersOverviewController(ureq, wControl, form, runContext, membersContext);
+		return new NotificationController(ureq, wControl, form, runContext, membersContext);
 	}
 }

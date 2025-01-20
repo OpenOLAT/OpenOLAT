@@ -36,6 +36,8 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
+import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
 
 /**
@@ -47,6 +49,7 @@ import org.olat.resource.accesscontrol.ResourceReservation;
 public class AddMemberFinishCallback extends AbstractMemberCallback {
 	
 	private final MembersContext membersContext;
+	
 
 	public AddMemberFinishCallback(MembersContext membersContext) {
 		super();
@@ -65,6 +68,13 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 			MailTemplate template = membersContext.getMailTemplate();
 			MailPackage mailPackage = new MailPackage(template, result, (MailContext)null, template != null);
 			curriculumService.updateCurriculumElementMemberships(ureq.getIdentity(), ureq.getUserSession().getRoles(), changes, mailPackage);
+			
+			AccessInfos offer = membersContext.getSelectedOffer();
+			if(offer != null) {
+				for(Identity identity:identities) {
+					acService.createAndSaveOrder(identity, offer.offerAccess(), OrderStatus.PREPAYMENT);
+				}
+			}
 		}
 		return StepsMainRunController.DONE_MODIFIED;
 	}

@@ -8,6 +8,12 @@
 		#if($r.available("decline"))
 			<li>$r.render("decline")</li>
 		#end
+		#if($r.available("cancel.booking"))
+			<li>$r.render("cancel.booking")</li>
+		#end
+		#if($r.isTrue($reservationDivider))
+			<li class="divider"></li>
+		#end
 		#if($r.available("edit.member"))
 			<li>$r.render("edit.member")</li>
 		#end
