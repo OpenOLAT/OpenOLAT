@@ -1212,7 +1212,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry) {
-		RepositoryEntry reloadedCourseEntry = repositoryEntryDao.loadByKey(courseEntry.getKey());
+		RepositoryEntry reloadedCourseEntry = courseEntry != null ? repositoryEntryDao.loadByKey(courseEntry.getKey()) : null;
 
 		if (reloadedCourseEntry != null && reloadedCourseEntry.getEntryStatus() != RepositoryEntryStatusEnum.published) {
 			return;
