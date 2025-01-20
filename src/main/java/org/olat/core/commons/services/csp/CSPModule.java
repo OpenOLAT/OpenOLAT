@@ -74,7 +74,7 @@ public class CSPModule extends AbstractSpringModule {
 
 	@Value("${base.security.csrf:enabled}")
 	private String csrf;
-	@Value("${base.security.cookie.samesite:Strict}")
+	@Value("${base.security.cookie.samesite:Lax}")
 	private String cookieSameSite;
 	
 	@Value("${base.security.frameOptionsSameOrigine:enabled}")
