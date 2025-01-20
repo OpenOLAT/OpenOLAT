@@ -570,7 +570,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			root.addChild(search);
 		}
 		
-		if (showLineManagerView) {
+		if (showEducationManagerView) {
 			GenericTreeNode reports = new GenericTreeNode();
 			reports.setUserObject("Reports");
 			reports.setTitle(translate("reports.menu.title"));
