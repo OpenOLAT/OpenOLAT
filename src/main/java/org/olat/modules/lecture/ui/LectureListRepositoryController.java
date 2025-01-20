@@ -378,8 +378,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			List<Curriculum> curriculums = curriculumService.getCurriculums(searchParams);
 			
 			SelectionValues curriculumValues = new SelectionValues();
-			for(Curriculum curriculum:curriculums) {
-				curriculumValues.add(SelectionValues.entry(curriculum.getKey().toString(), curriculum.getDisplayName()));
+			for(Curriculum cur:curriculums) {
+				curriculumValues.add(SelectionValues.entry(cur.getKey().toString(), cur.getDisplayName()));
 			}
 			
 			curriculumFilter = new FlexiTableMultiSelectionFilter(translate("filter.curriculum"),

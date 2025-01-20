@@ -59,9 +59,11 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.StatisticsBusinessGroupRow;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumService;
@@ -309,6 +311,7 @@ public class LectureListDetailsController extends FormBasicController {
 			}
 		
 			BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+			params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE, LTI13Service.LTI_GROUP_TYPE));
 			List<StatisticsBusinessGroupRow> businessGroups = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, null, repositoryEntry);
 			for(StatisticsBusinessGroupRow businessGroup:businessGroups) {
 				boolean included = selectedGroups.contains(businessGroup.getBaseGroup());

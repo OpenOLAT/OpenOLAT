@@ -65,14 +65,18 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.member.MemberListController;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.MemberViewQueries;
+import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.MemberView;
+import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.model.comparator.MemberViewNamesComparator;
 import org.olat.group.ui.main.CourseMembership;
 import org.olat.group.ui.main.CourseRoleCellRenderer;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.group.ui.main.SearchMembersParams.Origin;
 import org.olat.group.ui.main.SearchMembersParams.UserType;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
@@ -147,6 +151,8 @@ public class EditLectureBlockController extends FormBasicController {
 	private CurriculumService curriculumService;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			LectureBlock lectureBlock, boolean readOnly) {
@@ -492,8 +498,16 @@ public class EditLectureBlockController extends FormBasicController {
 				selectedGroups.add(curriculumElement.getGroup());
 			} else if(entry != null) {
 				lectureBlock = lectureService.createLectureBlock(entry);
+				// Add default group and business groups automatically
 				Group defGroup = repositoryService.getDefaultGroup(entry);
 				selectedGroups.add(defGroup);
+				
+				BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+				params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE, LTI13Service.LTI_GROUP_TYPE));
+				List<StatisticsBusinessGroupRow> businessGroups = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, null, entry);
+				for(StatisticsBusinessGroupRow businessGroup:businessGroups) {
+					selectedGroups.add(businessGroup.getBaseGroup());
+				}
 			} else {
 				showWarning("error.no.entry.curriculum");
 				return;
