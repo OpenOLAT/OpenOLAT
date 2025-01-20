@@ -35,11 +35,13 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.ui.main.BusinessGroupListController;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.shared.InviteeBindersController;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.list.RepositoryEntryListController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -80,10 +82,9 @@ public class InvitationsMainController extends MainLayoutBasicController impleme
 	}
 	
 	public static class InvitationsOverviewController extends BasicController {
-
-		private final InviteeBindersController bindersCtrl;
-		private final BusinessGroupListController businessGroupCtrl;
-		private final RepositoryEntryListController repositoryEntryListCtrl;
+		
+		@Autowired
+		private PortfolioV2Module portfolioModule;
 		
 		public InvitationsOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
 			super(ureq, wControl);
@@ -98,22 +99,24 @@ public class InvitationsMainController extends MainLayoutBasicController impleme
 	        searchParams.setRuntimeType(RepositoryEntryRuntimeType.standalone);
 			
 			// Courses
-			repositoryEntryListCtrl = new RepositoryEntryListController(ureq, getWindowControl(),
+	        RepositoryEntryListController repositoryEntryListCtrl = new RepositoryEntryListController(ureq, getWindowControl(),
 					searchParams, false, true, true, true, "entries-invitations", stackedPanel);
 			listenTo(repositoryEntryListCtrl);
 			mainVC.put("entries", repositoryEntryListCtrl.getInitialComponent());
 			repositoryEntryListCtrl.selectFilterTab(ureq, repositoryEntryListCtrl.getMyEntriesPreset());
 			
 			// Business groups
-			businessGroupCtrl = new BusinessGroupListController(ureq, getWindowControl(), "businessgroups-invitations");
+			BusinessGroupListController businessGroupCtrl = new BusinessGroupListController(ureq, getWindowControl(), "businessgroups-invitations");
 			listenTo(businessGroupCtrl);
 			mainVC.put("groups", businessGroupCtrl.getInitialComponent());
 			businessGroupCtrl.selectFilterTab(ureq, businessGroupCtrl.getMyGroupsTab());
 			
 			// Portfolio
-			bindersCtrl = new InviteeBindersController(ureq, getWindowControl(), stackedPanel);
-			listenTo(bindersCtrl);
-			mainVC.put("portfolio", bindersCtrl.getInitialComponent());
+			if(portfolioModule.isEnabled()) {
+				InviteeBindersController bindersCtrl = new InviteeBindersController(ureq, getWindowControl(), stackedPanel);
+				listenTo(bindersCtrl);
+				mainVC.put("portfolio", bindersCtrl.getInitialComponent());
+			}
 			
 			putInitialPanel(mainVC);
 		}
