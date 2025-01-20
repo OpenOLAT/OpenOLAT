@@ -291,23 +291,21 @@ public class DispatcherModule {
 	}
 	
 	public static void forwardToAuth(HttpServletRequest request, HttpServletResponse response) {
-		clearRequest();
-		try {
-			RequestDispatcher dispatcher = request.getRequestDispatcher("/auth/");
-			dispatcher.forward(request, response);
-		} catch (ServletException | IOException e) {
-			log.error("Forward failed", e);
-		}
+		forwardTo(request, response, "/auth/");
 	}
 	
 	public static void forwardToDefault(HttpServletRequest request, HttpServletResponse response) {
+		String defaultPath = getPathDefault();
+		forwardTo(request, response, defaultPath);
+	}
+	
+	public static void forwardTo(HttpServletRequest request, HttpServletResponse response, String path) {
 		clearRequest();
 		try {
-			String defaultPath = getPathDefault();
-			RequestDispatcher dispatcher = request.getRequestDispatcher(defaultPath);
+			RequestDispatcher dispatcher = request.getRequestDispatcher(path);
 			dispatcher.forward(request, response);
 		} catch (ServletException | IOException e) {
-			log.error("Forward failed", e);
+			log.error("Forward failed: {}", path, e);
 		}
 	}
 	

@@ -375,17 +375,17 @@ public class OAuthDispatcher implements Dispatcher {
 			request.getSession().setAttribute(OAuthConstants.OAUTH_SPI, provider);
 			request.getSession().setAttribute(OAuthConstants.OAUTH_USER_ATTR, user);
 			request.getSession().setAttribute(OAuthConstants.OAUTH_REGISTRATION_ATTR, registration);
-			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + OAuthConstants.OAUTH_DISCLAIMER_PATH + "/");
-		} catch (IOException e) {
+			DispatcherModule.forwardTo(request, response, DispatcherModule.getPathDefault() + OAuthConstants.OAUTH_DISCLAIMER_PATH + "/");
+		} catch (Exception e) {
 			log.error("Redirect failed: url={}{}", WebappHelper.getServletContextPath(), DispatcherModule.getPathDefault(),e);
 		}
 	}
 	
 	private void register(HttpServletRequest request, HttpServletResponse response, OAuthRegistration registration) {
 		try {
-			request.getSession().setAttribute("oauthRegistration", registration);
-			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + OAuthConstants.OAUTH_REGISTER_PATH + "/");
-		} catch (IOException e) {
+			request.getSession().setAttribute(OAuthConstants.OAUTH_REGISTRATION_ATTR, registration);
+			DispatcherModule.forwardTo(request, response, DispatcherModule.getPathDefault() + OAuthConstants.OAUTH_REGISTER_PATH + "/");
+		} catch (Exception e) {
 			log.error("Redirect failed: url={}{}", WebappHelper.getServletContextPath(), DispatcherModule.getPathDefault(),e);
 		}
 	}
