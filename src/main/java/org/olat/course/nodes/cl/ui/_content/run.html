@@ -77,6 +77,8 @@
 						#if ($checkbox.score)
 							#set($params = [$checkbox.score,$checkbox.points])
 							<small>$r.translate("box.points.info.score", $params)</small>
+						#elseif($checkbox.isOnePoint())
+							<small>$r.translate("box.points.info.one", $checkbox.points)</small>
 						#else 
 							<small>$r.translate("box.points.info", $checkbox.points)</small>
 						#end

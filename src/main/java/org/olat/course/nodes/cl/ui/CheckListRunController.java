@@ -412,6 +412,10 @@ public class CheckListRunController extends FormBasicController implements Activ
 			return AssessmentHelper.getRoundedScore(checkbox.getPoints());
 		}
 		
+		public boolean isOnePoint() {
+			return "1".equals(getPoints());
+		}
+		
 		public String getDescription() {
 			String desc = StringHelper.xssScan(checkbox.getDescription());
 			return Formatter.formatLatexFormulas(desc);
