@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.user;
@@ -74,7 +74,6 @@ import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
-import org.olat.registration.RegistrationManager;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.user.manager.UserChangesListener;
 import org.olat.user.manager.UserChangesListener.ChangedEvent;
@@ -88,7 +87,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * <p>
  * Initial Date: 31.07.2007 <br>
  * 
- * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
+ * @author Florian Gnaegi, frentix GmbH, https://www.frentix.com
  */
 public class UserManagerImpl extends UserManager implements UserDataDeletable, UserDataExportable {
 	
@@ -117,8 +116,6 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
   private UserModule userModule;
   @Autowired
   private BaseSecurity securityManager;
-  @Autowired
-  private RegistrationManager registrationManager;
   @Autowired
   private LoginModule loginModule;
   @Autowired
@@ -289,9 +286,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	}
 	
 	private boolean isEmailNotInUse(String email) {
-		boolean emailIsNotInUse = !userDAO.isEmailInUse(email);
-		boolean emailIsNotReserved = !registrationManager.isEmailReserved(email);
-		return emailIsNotInUse && emailIsNotReserved;
+		return !userDAO.isEmailInUse(email);
 	}
 	
 	@Override

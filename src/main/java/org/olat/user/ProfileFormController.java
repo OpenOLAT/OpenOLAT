@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -22,18 +22,23 @@ package org.olat.user;
 
 import java.io.File;
 import java.text.DateFormat;
-import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.core.dispatcher.DispatcherModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -50,20 +55,22 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
@@ -83,39 +90,46 @@ import de.bps.olat.user.ChangeEMailController;
  */
 public class ProfileFormController extends FormBasicController {
 
+	private static final Logger log = Tracing.createLoggerFor(ProfileFormController.class);
+
 	private static final String USAGE_USER_IDENTIFIER = ProfileFormController.class.getCanonicalName();
 	private static final String USAGE_INVITEE_IDENTIFIER = ProfileFormController.class.getCanonicalName() + "_invitee";
 	
 	private static final String SEPARATOR = "\n____________________________________________________________________\n";
+	private static final String EMAIL_CHANGE_KEY_PROP = "emchangeKey";
 
 	private final Map<String, FormItem> formItems = new HashMap<>();
 	private final Map<String, String> formContext = new HashMap<>();
 	private RichTextElement textAboutMe;
 
 	private Identity identityToModify;
-	private DialogBoxController dialogCtr;
+	private Roles roles;
 
 	private TextElement emailEl;
 	private FileElement logoUpload;
 	private FileElement portraitUpload;
-	
-	private FormLink removeEmailInProcessButton;
-	private FormLink confirmEmailInProcessButton;
-	private FormLayoutContainer emailLayoutContainer;
-	
+
+	private FormLink changeEmailBtn;
+
 	private final boolean canModify;
 	private final boolean logoEnabled;
 	private final boolean inviteeOnly;
 	private final boolean isAdministrativeUser;
 	private final String usageIdentifier;
+	private List<OrganisationEmailDomain> matchingMailDomains;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private boolean portraitDeleted = false;
 	private boolean logoDeleted = false;
-	private boolean emailChanged = false;
 	private final boolean canManageCritical;
 	private String changedEmail;
 	private String currentEmail;
+
+	private ChangeMailUMDialogController changeMailUMDialogCtrl;
+	private ChangeMailSupportController changeMailSupportCtrl;
+	private ChangeOrganisationController changeOrgCtrl;
+	private ChangeMailController changeMailCtrl;
+	private CloseableModalController cmc;
 	
 	@Autowired
 	private UserModule userModule;
@@ -133,6 +147,10 @@ public class ProfileFormController extends FormBasicController {
 	private HomePageConfigManager hpcm;
 	@Autowired
 	private DisplayPortraitManager dps;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	/**
 	 * Create this controller with the request's identity as none administrative
@@ -234,7 +252,7 @@ public class ProfileFormController extends FormBasicController {
 			}
 			
 			if (UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
-				initEmailForm(user, formItem, groupContainer);
+				initEmailForm(formItem, groupContainer);
 			}
 		}
 		
@@ -315,80 +333,22 @@ public class ProfileFormController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
-	private void initEmailForm(User user, FormItem formItem, FormLayoutContainer groupContainer) {
+	private void initEmailForm(FormItem formItem, FormLayoutContainer groupContainer) {
 		// special case for email field
 		emailEl = (TextElement)formItem;
-		
-		emailLayoutContainer = FormLayoutContainer.createButtonLayout("emails.buttons", getTranslator());
+		emailEl.setEnabled(false);
+		currentEmail = emailEl.getValue();
+
+		FormLayoutContainer emailLayoutContainer = FormLayoutContainer.createButtonLayout("emails.buttons", getTranslator());
 		groupContainer.add(emailLayoutContainer);
 		emailLayoutContainer.setRootForm(mainForm);
-		
-		confirmEmailInProcessButton = uifactory.addFormLink("confirm.email.in.process", emailLayoutContainer, Link.BUTTON_SMALL);
-		confirmEmailInProcessButton.setIconLeftCSS("o_icon o_icon_ok");
-		removeEmailInProcessButton = uifactory.addFormLink("remove.emails.in.process", emailLayoutContainer, Link.BUTTON_SMALL);
-		removeEmailInProcessButton.setIconLeftCSS("o_icon o_icon_delete");
+
+		changeEmailBtn = uifactory.addFormLink("change.mail.in.process", emailLayoutContainer, Link.BUTTON_SMALL);
+		changeEmailBtn.setIconLeftCSS("o_icon o_icon_edit");
 		
 		if (!userModule.isEmailMandatory()) {
 			emailEl.setMandatory(false);
 		}
-		
-		updateEmailForm(user);
-	}
-	
-	private void updateEmailForm(User user) {
-		String key = user.getProperty("emchangeKey", null);
-		TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
-		boolean buttonsVisible = false;
-		if (tempKey != null) {
-			Map<String, String> mails = registrationManager.readTemporaryValue(tempKey.getEmailAddress());
-			String mail = mails.get("changedEMail");
-			emailEl.setExampleKey("email.change.form.info", new String[] { mail });
-			emailEl.setElementCssClass("o_omit_margin o_user_profil_email");
-			buttonsVisible = isAdministrativeUser;
-		} else {
-			emailEl.setExampleKey(null, null);
-			emailEl.setElementCssClass("o_user_profil_email");
-		}
-		removeEmailInProcessButton.setVisible(buttonsVisible);
-		confirmEmailInProcessButton.setVisible(buttonsVisible);
-		emailLayoutContainer.setVisible(buttonsVisible);
-	}
-
-	/**
-	 * Stores the data from the form into a) the user's home page configuration
-	 * and b) the user's properties.
-	 * 
-	 * @param config The user's home page configuration (i.e. flags for publicly
-	 *          visible fields).
-	 * @param identity The user's identity
-	 */
-	public void updateFromFormData() {
-		User user = identityToModify.getUser();
-		// For each user property...
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			// ...get the value from the form field and store it into the user
-			// property...
-			FormItem formItem = formItems.get(userPropertyHandler.getName());
-			if(formItem.isEnabled()) {
-				userPropertyHandler.updateUserFromFormItem(user, formItem);
-			}
-		}
-		// Store the "about me" text.
-		HomePageConfig conf = hpcm.loadConfigFor(identityToModify);
-		conf.setTextAboutMe(textAboutMe.getValue());
-		hpcm.saveConfigTo(identityToModify, conf);
-	}
-	
-	public Identity updateIdentityFromFormData(Identity identity) {
-		identityToModify = identity;
-		User user = identityToModify.getUser();
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			FormItem formItem = formItems.get(userPropertyHandler.getName());
-			if(formItem.isEnabled()) {
-				userPropertyHandler.updateUserFromFormItem(user, formItem);
-			}
-		}
-		return identityToModify;
 	}
 
 	@Override
@@ -408,13 +368,13 @@ public class ProfileFormController extends FormBasicController {
 		try {
 			String aboutMe = textAboutMe.getValue();
 			if(aboutMe.length() > 10000) {
-				textAboutMe.setErrorKey("input.toolong", new String[] {"10000"});
+				textAboutMe.setErrorKey("input.toolong", "10000");
 				allOk = false;
 			} else {
 				textAboutMe.clearError();
 			}
 		} catch (Exception e) {
-			textAboutMe.setErrorKey("input.toolong", new String[] {"10000"});
+			textAboutMe.setErrorKey("input.toolong", "10000");
 			allOk = false;
 		}
 		return allOk;
@@ -430,28 +390,124 @@ public class ProfileFormController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
+	private void cleanUp() {
+		removeAsListenerAndDispose(changeMailUMDialogCtrl);
+		removeAsListenerAndDispose(changeMailSupportCtrl);
+		removeAsListenerAndDispose(changeMailCtrl);
+		removeAsListenerAndDispose(changeOrgCtrl);
+		removeAsListenerAndDispose(cmc);
+		changeMailUMDialogCtrl = null;
+		changeMailSupportCtrl = null;
+		changeMailCtrl = null;
+		changeOrgCtrl = null;
+		cmc = null;
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == dialogCtr) {
-			dialogCtr.dispose();
-			dialogCtr = null;
-			if (DialogBoxUIFactory.isYesEvent(event) && changedEmail != null) {
-				createChangeEmailWorkflow(ureq);
-				fireEvent(ureq, Event.DONE_EVENT);
-			} else {
-				fireEvent(ureq, Event.FAILED_EVENT);
-			}
+		if (isAllowedToChangeEmailWithoutVerification(ureq)
+				&& source == changeMailCtrl
+				&& event instanceof ChangeMailEvent cme) {
+			changedEmail = cme.getChangedEmail();
+			cmc.deactivate();
+			cmc = null;
+			doStartChangeMailDialogAdmin(ureq);
+		} else if (source == changeMailCtrl
+				|| source == changeOrgCtrl
+				|| source == changeMailSupportCtrl
+				|| source == changeMailUMDialogCtrl) {
+			handleChangeEvent(ureq, event);
+		} else if (source == cmc) {
+			handleCmcEvent(ureq);
 		}
 		super.event(ureq, source, event);
 	}
 
+	private void handleChangeEvent(UserRequest ureq, Event event) {
+		if (event instanceof ChangeMailEvent cme) {
+			handleChangeMailEvent(ureq, cme, event);
+		} else if (event == Event.CANCELLED_EVENT) {
+			handleEmailChangeCancellation(ureq);
+			cleanUp();
+		} else if (event == Event.DONE_EVENT) {
+			startChangeEmailWorkflow(ureq);
+		}
+	}
+
+	private void handleChangeMailEvent(UserRequest ureq, ChangeMailEvent cme, Event event) {
+		changedEmail = cme.getChangedEmail();
+		cmc.deactivate();
+		cmc = null;
+
+		// default: when org module & emailDomain is disabled
+		switch (event.getCommand()) {
+			case ChangeMailEvent.CHANGED_EMAIL_EVENT:
+				handleChangedEmailEvent(ureq, cme);
+				break;
+			case ChangeMailEvent.CHANGED_ORG_EVENT:
+				handleChangedOrgEvent(ureq);
+				break;
+			default:
+				startChangeEmailWorkflow(ureq);
+				break;
+		}
+	}
+
+	private void handleChangedEmailEvent(UserRequest ureq, ChangeMailEvent cme) {
+		if (isAllowedToChangeEmailWithoutVerification(ureq)) {
+			startChangeEmailWorkflow(ureq);
+		} else if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+			String newDomain = MailHelper.getMailDomain(cme.getChangedEmail());
+			String currentDomain = MailHelper.getMailDomain(emailEl.getValue());
+
+			// mail change for administrative users is straight forward without any consideration of orgs
+			if (newDomain.equals(currentDomain)) {
+				startChangeEmailWorkflow(ureq);
+			} else {
+				processMailDomainChange(ureq, newDomain);
+			}
+		}
+	}
+
+	private void processMailDomainChange(UserRequest ureq, String newDomain) {
+		matchingMailDomains = getMatchingMailDomains();
+
+		// Only go further to change org dialog if mail domain got changed
+		// null is a special case: If a user already is in an org without having the mailDomain previously
+		// then just change mail without any organisational change
+		if (matchingMailDomains == null) {
+			startChangeEmailWorkflow(ureq);
+		} else if (matchingMailDomains.isEmpty()) {
+			doCancelChangeMailProcess(ureq, MailHelper.getMailDomain(newDomain));
+		} else {
+			doStartChangeOrgProcess(ureq, matchingMailDomains);
+		}
+	}
+
+	private void handleChangedOrgEvent(UserRequest ureq) {
+		if (startChangeEmailWorkflow(ureq)) {
+			if (!updateOrganisationMembership()) {
+				showError("change.org.failed");
+				handleEmailChangeCancellation(ureq);
+			} else {
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+		} else {
+			handleEmailChangeCancellation(ureq);
+		}
+	}
+
+	private void handleCmcEvent(UserRequest ureq) {
+		String emChangeKey = identityToModify.getUser().getProperty(EMAIL_CHANGE_KEY_PROP, null);
+		if (emChangeKey != null) {
+			handleEmailChangeCancellation(ureq);
+		}
+		cleanUp();
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(removeEmailInProcessButton == source) {
-			doRemoveEmailsFromProcess(ureq);
-		} else if(confirmEmailInProcessButton == source) {
-			doConfirmEmailInProcess(ureq);
-		} else if (source == portraitUpload) {
+		if (source == portraitUpload) {
 			if(event instanceof DeleteFileElementEvent) {
 				if(DeleteFileElementEvent.DELETE.equals(event.getCommand())) {
 					portraitDeleted = true;
@@ -459,10 +515,10 @@ public class ProfileFormController extends FormBasicController {
 					if(portraitUpload.getUploadFile() != null) {
 						portraitUpload.reset();
 					}
-					flc.setDirty(true);
+					setDirtyMarking(true);
 				}
 			} else if (portraitUpload.isUploadSuccess()) {
-				flc.setDirty(true);
+				setDirtyMarking(true);
 			}
 		} else if (source == logoUpload) {
 			if(event instanceof DeleteFileElementEvent) {
@@ -472,60 +528,131 @@ public class ProfileFormController extends FormBasicController {
 					if(logoUpload.getUploadFile() != null) {
 						logoUpload.reset();
 					}
-					flc.setDirty(true);
+					setDirtyMarking(true);
 				}
 			} else if (logoUpload.isUploadSuccess()) {
-				flc.setDirty(true);
+				setDirtyMarking(true);
 			}
+		} else if (source == changeEmailBtn) {
+			doStartChangeMailProcess(ureq);
 		}
 
 		super.formInnerEvent(ureq, source, event);
 	}
-	
-	private void doRemoveEmailsFromProcess(UserRequest ureq) {
-		String key = identityToModify.getUser().getProperty("emchangeKey", null);
-		if(StringHelper.containsNonWhitespace(key)) {
-			TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
-			if(tempKey != null) {
-				registrationManager.deleteTemporaryKey(tempKey);
-			}
-			
-			identityToModify.getUser().setProperty("emchangeKey", null);
-			userManager.updateUserFromIdentity(identityToModify);
-			identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
+
+	private List<OrganisationEmailDomain> getMatchingMailDomains() {
+		OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+		String mailDomain = MailHelper.getMailDomain(changedEmail);
+		List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
+
+		roles = securityManager.getRoles(identityToModify);
+		List<OrganisationRef> currentOrgs = roles.getOrganisations();
+
+		// Filter emailDomains
+		List<OrganisationEmailDomain> validDomains = emailDomains.stream()
+				.filter(domain -> isDomainMatching(domain, mailDomain))
+				.toList();
+
+		// Check if a match with current orgs exists
+		boolean matchFound = isMatchFound(validDomains, currentOrgs);
+
+		// If a match is found, return null, because there is no need for an organisational change
+		if (matchFound) {
+			return null;
+		} else if (validDomains.isEmpty()) {
+			return Collections.emptyList();
+		} else {
+			return validDomains;
 		}
-		
-		updateEmailForm(identityToModify.getUser());
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
-	private void doConfirmEmailInProcess(UserRequest ureq) {
-		String key = identityToModify.getUser().getProperty("emchangeKey", null);
-		if(StringHelper.containsNonWhitespace(key)) {
-			TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
-			if(tempKey != null) {
-				Map<String, String> mails = registrationManager.readTemporaryValue(tempKey.getEmailAddress());
-				String mail = mails.get("changedEMail");
-				String oldEmail = identityToModify.getUser().getEmail();
-				
-				identityToModify.getUser().setProperty("emchangeKey", null);
-				identityToModify.getUser().setProperty("email", mail);
-				String value = identityToModify.getUser().getProperty("emailDisabled", null);
-				if (value != null && value.equals("true")) {
-					identityToModify.getUser().setProperty("emailDisabled", "false");
-				}
-				
-				userManager.updateUserFromIdentity(identityToModify);
-				identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
-				registrationManager.deleteTemporaryKey(tempKey);
-				securityManager.deleteInvalidAuthenticationsByEmail(oldEmail);
-				
-				emailEl.setValue(identityToModify.getUser().getEmail());
-			}
+
+	/**
+	 * special case: If a user already is in an org without having the mailDomain previously
+	 * then just change mail without any organisational change
+	 * @param emailDomains new possible organisational mailDomains
+	 * @param currentOrgs List of current orgs
+	 * @return true, so user already is in the "new" org, false if the user is not in the "new" org yet
+	 */
+	private boolean isMatchFound(List<OrganisationEmailDomain> emailDomains, List<OrganisationRef> currentOrgs) {
+		return emailDomains.stream()
+				.anyMatch(emailDomain -> currentOrgs.stream()
+						.anyMatch(org -> org.getKey().equals(emailDomain.getOrganisation().getKey())));
+	}
+
+	private boolean isDomainMatching(OrganisationEmailDomain domain, String mailDomain) {
+		return "*".equals(domain.getDomain()) || mailDomain.equalsIgnoreCase(domain.getDomain());
+	}
+
+	private void doStartChangeMailDialogAdmin(UserRequest ureq) {
+		changeMailUMDialogCtrl = new ChangeMailUMDialogController(ureq, getWindowControl(), changedEmail);
+		listenTo(changeMailUMDialogCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				changeMailUMDialogCtrl.getInitialComponent(), true, translate("change.mail"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doStartChangeMailProcess(UserRequest ureq) {
+		changeMailCtrl = new ChangeMailController(ureq, getWindowControl(),
+				emailEl.getValue(), identityToModify, isAllowedToChangeEmailWithoutVerification(ureq));
+		listenTo(changeMailCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				changeMailCtrl.getInitialComponent(), true, translate("change.mail"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doStartChangeOrgProcess(UserRequest ureq, List<OrganisationEmailDomain> matchingMailDomains) {
+		changeOrgCtrl = new ChangeOrganisationController(ureq, getWindowControl(),
+				matchingMailDomains, changedEmail, identityToModify);
+		listenTo(changeOrgCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				changeOrgCtrl.getInitialComponent(), true, translate("change.org"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	/**
+	 * This cancel situation happens through the system
+	 * because there are no matching mail domains for the changed mail
+	 * @param ureq
+	 */
+	private void doCancelChangeMailProcess(UserRequest ureq, String changedEmailDomain) {
+		changeMailSupportCtrl = new ChangeMailSupportController(ureq, getWindowControl(), changedEmailDomain);
+		listenTo(changeMailSupportCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				changeMailSupportCtrl.getInitialComponent(), true, translate("change.org.cancel.title"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void handleEmailChangeCancellation(UserRequest ureq) {
+		String key = identityToModify.getUser().getProperty(EMAIL_CHANGE_KEY_PROP, null);
+		if (!StringHelper.containsNonWhitespace(key)) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			return; // Exit if no key is present
 		}
 
-		updateEmailForm(identityToModify.getUser());
+		deleteTemporaryKeyIfExists(key);
+
+		// Clear the email change key
+		identityToModify.getUser().setProperty(EMAIL_CHANGE_KEY_PROP, null);
+
+		// Reload identity
+		identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
+
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	private void deleteTemporaryKeyIfExists(String key) {
+		TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
+		if (tempKey != null) {
+			registrationManager.deleteTemporaryKey(tempKey);
+		}
 	}
 	
 	private void notifyPortraitChanged() {
@@ -536,176 +663,308 @@ public class ProfileFormController extends FormBasicController {
 
 	@Override
 	protected void formOK(final UserRequest ureq) {
-		User user = identityToModify.getUser();
 		// update each user field
+		updateUserProperties();
+		handlePortraitUpdates();
+		handleLogoUpdates();
+		// Store the "about me" text.
+		updateAboutMeText();
+
+		// update the user profile data
+		identityToModify = updateUserProfile();
+
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	private void updateUserProperties() {
+		User user = identityToModify.getUser();
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem formItem = formItems.get(userPropertyHandler.getName());
-			if(formItem.isEnabled()) {
+			if (formItem.isEnabled()) {
 				userPropertyHandler.updateUserFromFormItem(user, formItem);
 			}
 		}
-		
+	}
+
+	private void handlePortraitUpdates() {
 		if (portraitDeleted) {
 			File img = dps.getLargestPortrait(identityToModify);
-			if(img != null) {
+			if (img != null) {
 				dps.deletePortrait(identityToModify);
 				notifyPortraitChanged();
 			}
 		}
-		
+
 		File uploadedImage = portraitUpload.getUploadFile();
 		String uploadedFilename = portraitUpload.getUploadFileName();
-		if(uploadedImage != null) {
+		if (uploadedImage != null) {
 			dps.setPortrait(uploadedImage, uploadedFilename, identityToModify);
 			notifyPortraitChanged();
 		}
-		
+	}
+
+	private void handleLogoUpdates() {
 		if (logoDeleted) {
 			File img = dps.getLargestLogo(identityToModify);
-			if(img != null) {
+			if (img != null) {
 				dps.deleteLogo(identityToModify);
 				notifyPortraitChanged();
 			}
 		}
-		
-		if(logoUpload != null) {
+
+		if (logoUpload != null) {
 			File uploadedLogo = logoUpload.getUploadFile();
 			String uploadedLogoname = logoUpload.getUploadFileName();
-			if(uploadedLogo != null) {
+			if (uploadedLogo != null) {
 				dps.setLogo(uploadedLogo, uploadedLogoname, identityToModify);
 				notifyPortraitChanged();
 			}
 		}
-		
-		// Store the "about me" text.
+	}
+
+	private void updateAboutMeText() {
 		HomePageConfig conf = hpcm.loadConfigFor(identityToModify);
 		conf.setTextAboutMe(textAboutMe.getValue());
 		hpcm.saveConfigTo(identityToModify, conf);
+	}
 
-		// update the user profile data
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(
-			OresHelper.createOLATResourceableInstance(Identity.class, identityToModify.getKey()), new SyncerExecutor() {
-			@Override
-			public void execute() {
-				identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
-				currentEmail = identityToModify.getUser().getProperty(UserConstants.EMAIL, null);
-
-				identityToModify = updateIdentityFromFormData(identityToModify);
-				changedEmail = identityToModify.getUser().getProperty("email", null);
-				emailChanged = false;
-				if ((currentEmail == null && StringHelper.containsNonWhitespace(changedEmail))
-						|| (currentEmail != null && !currentEmail.equals(changedEmail))) {
-					if (isAllowedToChangeEmailWithoutVerification(ureq) || !StringHelper.containsNonWhitespace(changedEmail)) {
-						String key = identityToModify.getUser().getProperty("emchangeKey", null);
-						TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
-						if (tempKey != null) {
-							registrationManager.deleteTemporaryKey(tempKey);
-						}
-						securityManager.deleteInvalidAuthenticationsByEmail(currentEmail);
-					} else {
-						emailChanged = true;
-						// change email address to old address until it is verified
-						identityToModify.getUser().setProperty(UserConstants.EMAIL, currentEmail);
-						emailEl.setValue(currentEmail);
+	private Identity updateUserProfile() {
+		// Final update of the user profile after save button was hit
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(
+				OresHelper.createOLATResourceableInstance(Identity.class, identityToModify.getKey()), () -> {
+					if (!userManager.updateUserFromIdentity(identityToModify)) {
+						getWindowControl().setInfo(translate("profile.unsuccessful"));
+						identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
 					}
-				}
-				if (!userManager.updateUserFromIdentity(identityToModify)) {
-					getWindowControl().setInfo(translate("profile.unsuccessful"));
-					// reload user data from db
-					identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
-				}
-				
-				OLATResourceable modRes = OresHelper.createOLATResourceableInstance(Identity.class, identityToModify.getKey());
-				CoordinatorManager.getInstance().getCoordinator().getEventBus()
-					.fireEventToListenersOf(new MultiUserEvent("changed"), modRes);
-			}
-		});
-		
-		if (emailChanged) {
-			removeAsListenerAndDispose(dialogCtr);
+					notifyProfileChanges();
+					return identityToModify;
+				});
+	}
 
-			String dialogText = "";
-			if(identityToModify.equals(ureq.getIdentity())) {
-				dialogText = translate("email.change.dialog.text");
-			} else {
-				dialogText = translate("email.change.dialog.text.usermanager");
-			}
-			dialogCtr = DialogBoxUIFactory.createYesNoDialog(ureq, getWindowControl(), translate("email.change.dialog.title"), dialogText);
-			listenTo(dialogCtr);
-			dialogCtr.activate();
+	private void notifyProfileChanges() {
+		OLATResourceable modRes = OresHelper.createOLATResourceableInstance(Identity.class, identityToModify.getKey());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new MultiUserEvent("changed"), modRes);
+	}
+
+	private boolean startChangeEmailWorkflow(UserRequest ureq) {
+		if (changedEmail == null || changedEmail.trim().isEmpty()) {
+			log.warn("Changed email is empty or null.");
+			handleEmailChangeCancellation(ureq);
+			return false;
+		}
+		changedEmail = changedEmail.trim();
+
+		// Mailer configuration
+		String serverPath = Settings.getServerContextPathURI();
+		String serverName = ureq.getHttpReq().getServerName();
+		logDebug("this servername is " + serverName + " and serverpath is " + serverPath);
+
+		boolean areMailsSent;
+		if (isAllowedToChangeEmailWithoutVerification(ureq)) {
+			// A usermanager does not need to verify the new mail and can change it directly
+			areMailsSent = handleDirectEmailChange(ureq);
 		} else {
-			fireEvent(ureq, Event.DONE_EVENT);
+			areMailsSent = handleVerifiedEmailChange(ureq, serverPath);
+		}
+
+		if (areMailsSent) {
+			updateUserEmail(ureq);
+			return true;
+		} else {
+			log.error("Failed to send one or more emails for user: {}", identityToModify.getKey());
+			handleSendingError(ureq);
+			return false;
 		}
 	}
-	
-	private void createChangeEmailWorkflow(UserRequest ureq) {
-		// send email
-		changedEmail = changedEmail.trim();
-		String body = null;
-		String subject = null;
-		// get remote address
-		String ip = ureq.getHttpReq().getRemoteAddr();
-		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
-		// mailer configuration
-		String serverpath = Settings.getServerContextPathURI();
-		String servername = ureq.getHttpReq().getServerName();
 
-		logDebug("this servername is " + servername + " and serverpath is " + serverpath);
-		// load or create temporary key
-		Map<String, String> mailMap = new HashMap<>();
-		mailMap.put("currentEMail", currentEmail);
-		mailMap.put("changedEMail", changedEmail);
-		String serMailMap = registrationManager.temporaryValueToString(mailMap);
-		TemporaryKey tk = registrationManager.createAndDeleteOldTemporaryKey(identityToModify.getKey(), serMailMap, ip, RegistrationManager.EMAIL_CHANGE, null);
-		
-		// create date, time string
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(tk.getCreationDate());
-		cal.add(Calendar.DAY_OF_WEEK, ChangeEMailController.TIME_OUT);
-		String time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(cal.getTime());
-		// create body and subject for email
-		String link = serverpath + DispatcherModule.getPathDefault() + "emchange/index.html?key=" + tk.getRegistrationKey() + "&language=" + ureq.getLocale().getLanguage();
-		if(Settings.isDebuging()) {
-			logInfo(link);
+	private boolean handleDirectEmailChange(UserRequest ureq) {
+		if (changeMailUMDialogCtrl != null && changeMailUMDialogCtrl.getIsNotifyUser()) {
+			// Notify user via email
+			String subject = translate("email.change.subject");
+			String bodyUserManager = translate("email.change.body.usermanager");
+			return sendEmail(ureq, subject, bodyUserManager, currentEmail);
+		} else if (changeMailUMDialogCtrl != null && !changeMailUMDialogCtrl.getIsNotifyUser()) {
+			// Directly update user email without notification
+			updateUserEmail(ureq);
+			return true;
 		}
-		String currentEmailDisplay = userManager.getUserDisplayEmail(currentEmail, getLocale());
-		String changedEmaildisplay = userManager.getUserDisplayEmail(changedEmail, getLocale());
-		body = translate("email.change.body", new String[] { link, time, currentEmailDisplay, changedEmaildisplay })
-				+ SEPARATOR + translate("email.change.wherefrom", new String[] { serverpath, today });
-		subject = translate("email.change.subject");
-		// send email
+		return false; // Default case if conditions are not met
+	}
+
+	private boolean handleVerifiedEmailChange(UserRequest ureq, String serverPath) {
+		// Load temporary key
+		String key = identityToModify.getUser().getProperty(EMAIL_CHANGE_KEY_PROP, null);
+		TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
+		if (tempKey == null) {
+			// Temporary key not found, log error and cancel workflow
+			log.error("Temporary key not found for user: {}!", identityToModify.getKey());
+			handleEmailChangeCancellation(ureq);
+			return false;
+		}
+
+		// Prepare email content
+		String subject = translate("email.change.subject");
+		String bodyOld = buildEmailBody(ureq, serverPath, "email.change.body.old");
+		String bodyNew = buildEmailBody(ureq, serverPath, "email.change.body.new");
+
+		// Send emails to current and new email addresses
+		boolean emailToCurrentSent = sendEmail(ureq, subject, bodyOld, currentEmail);
+		boolean emailToNewSent = sendEmail(ureq, subject, bodyNew, changedEmail);
+		boolean areMailsSent = emailToCurrentSent && emailToNewSent;
+
+		// Update
+		tempKey.setMailSent(areMailsSent);
+		User user = identityToModify.getUser();
+		user.setProperty(EMAIL_CHANGE_KEY_PROP, tempKey.getRegistrationKey());
+
+		return areMailsSent;
+	}
+
+	private String buildEmailBody(UserRequest ureq, String serverPath, String bodyKey) {
+		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
+
+		return translate(bodyKey, identityToModify.getName(), WebappHelper.getMailConfig("mailSupport"))
+				+ SEPARATOR + translate("email.change.wherefrom", serverPath, today);
+	}
+
+	private boolean sendEmail(UserRequest ureq, String subject,
+							  String body, String recipient) {
 		try {
-			
 			MailBundle bundle = new MailBundle();
 			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
-			bundle.setTo(changedEmail);
+			bundle.setTo(recipient);
 			bundle.setContent(subject, body);
 
 			MailerResult result = mailManager.sendMessage(bundle);
-			boolean isMailSent = result.isSuccessful();
-			if (isMailSent) {
-				tk.setMailSent(true);
-				// set key
-				User user = identityToModify.getUser();
-				user.setProperty("emchangeKey", tk.getRegistrationKey());
-				userManager.updateUserFromIdentity(identityToModify);
-				getWindowControl().setInfo(translate("email.sent"));
-				updateEmailForm(identityToModify.getUser());
-				flc.setDirty(true);
-			} else {
-				tk.setMailSent(false);
-				registrationManager.deleteTemporaryKeyWithId(tk.getRegistrationKey());
-				getWindowControl().setError(translate("email.notsent"));
-			}
+			return result.isSuccessful();
 		} catch (Exception e) {
-			registrationManager.deleteTemporaryKeyWithId(tk.getRegistrationKey());
-			getWindowControl().setError(translate("email.notsent"));
+			log.error("Unexpected exception occurred while sending email", e);
+			handleSendingError(ureq);
 		}
+		return false;
+	}
+
+	private void updateUserEmail(UserRequest ureq) {
+		if (changeEMail(ureq)) {
+			userManager.updateUserFromIdentity(identityToModify);
+			identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
+		setDirtyMarking(true);
+	}
+
+	private boolean changeEMail(UserRequest ureq) {
+		if (identityToModify == null) {
+			return false;
+		}
+
+		User user = identityToModify.getUser();
+
+		String newMail = getNewEmail(ureq, user);
+		if (newMail == null || newMail.isEmpty()) {
+			// Failed to retrieve a valid new email; cannot proceed
+			return false;
+		}
+
+		// Update the email property and clear the change key
+		user.setProperty("email", newMail);
+		user.setProperty(EMAIL_CHANGE_KEY_PROP, null);
+
+		// success
+		String currentEmailDisplay = userManager.getUserDisplayEmail(currentEmail, getLocale());
+		String changedEmailDisplay = userManager.getUserDisplayEmail(newMail, getLocale());
+		getWindowControl().setInfo(translate("success.change.email", currentEmailDisplay, changedEmailDisplay));
+
+		// Remove session entries and cleanup
+		ureq.getUserSession().removeEntryFromNonClearedStore(ChangeEMailController.CHANGE_EMAIL_ENTRY);
+		securityManager.deleteInvalidAuthenticationsByEmail(currentEmail);
+		emailEl.setValue(newMail);
+
+		return true;
+	}
+
+	private String getNewEmail(UserRequest ureq, User user) {
+		if (isAllowedToChangeEmailWithoutVerification(ureq)) {
+			return changedEmail;
+		}
+
+		String key = user.getProperty(EMAIL_CHANGE_KEY_PROP, null);
+		if (key == null) {
+			// Missing change key; cannot proceed with email change
+			return null;
+		}
+
+		// Using tempKey to retrieve changed E-Mail to also verify that the regKey is still valid
+		TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
+		if (tempKey == null) {
+			// Temporary key could not be found
+			return null;
+		}
+
+		String newMail = tempKey.getEmailAddress();
+		if (newMail == null || newMail.isEmpty()) {
+			// Invalid email retrieved
+			return null;
+		}
+
+		// Delete the used temporary registration key, because process is done after changing mail
+		registrationManager.deleteTemporaryKeyWithId(tempKey.getRegistrationKey());
+
+		return newMail;
+	}
+
+	private void handleSendingError(UserRequest ureq) {
+		handleEmailChangeCancellation(ureq);
+		getWindowControl().setError(translate("email.notsent"));
+	}
+
+	private boolean updateOrganisationMembership() {
+		if (matchingMailDomains == null || matchingMailDomains.isEmpty()) {
+			log.warn("No matching mail domains found.");
+			return false;
+		}
+
+		Optional<OrganisationEmailDomain> selectedDomain;
+		if (matchingMailDomains.size() == 1) {
+			selectedDomain = Optional.of(matchingMailDomains.get(0));
+		} else {
+			// Identify the selected organisation based on the matching mail domains
+			String selectedKey = changeOrgCtrl.getOrgSelection().getSelectedKey();
+			selectedDomain = matchingMailDomains.stream()
+					.filter(domain -> domain.getOrganisation().getKey().toString().equals(selectedKey))
+					.findFirst();
+		}
+
+		if (selectedDomain.isEmpty()) {
+			log.warn("No organisation found based on email domains and/or org selection.");
+			return false;
+		}
+
+		OrganisationEmailDomain domain = selectedDomain.get();
+		Organisation organisationEntity = domain.getOrganisation();
+		Organisation newOrg = organisationService.getOrganisation(organisationEntity);
+		if (newOrg == null) {
+			log.error("Organisation not found for key: {}", organisationEntity.getKey());
+			return false;
+		}
+
+		identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
+		// User changed his mail domain, thats why he is getting moved to a new matching org
+		organisationService.addMember(newOrg, identityToModify, OrganisationRoles.user);
+
+		// Remove the user from all old organisations
+		roles.getOrganisations().forEach(orgRef -> {
+			Organisation oldOrg = organisationService.getOrganisation(orgRef);
+			organisationService.removeMember(oldOrg, identityToModify);
+		});
+
+		return true;
 	}
 
 	/**
 	 * Sets the dirty mark for this form.
-	 * 
+	 *
 	 * @param isDirtyMarking <code>true</code> sets this form dirty.
 	 */
 	public void setDirtyMarking(boolean isDirtyMarking) {

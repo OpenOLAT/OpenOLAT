@@ -30,13 +30,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import jakarta.mail.Address;
 import jakarta.mail.internet.AddressException;
@@ -47,8 +44,6 @@ import jakarta.persistence.TemporalType;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.OrganisationEmailDomain;
-import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -74,7 +69,6 @@ import org.olat.core.util.filter.impl.HtmlFilter;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.xml.XStreamHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.UserDataDeletable;
@@ -83,9 +77,6 @@ import org.olat.user.UserManager;
 import org.olat.user.manager.ManifestBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * Description:
@@ -96,14 +87,6 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
 public class RegistrationManager implements UserDataDeletable, UserDataExportable {
 	
 	private static final Logger log = Tracing.createLoggerFor(RegistrationManager.class);
-	
-	private static final XStream xmlXStream = XStreamHelper.createXStreamInstance();
-	static {
-		Class<?>[] types = new Class[] {
-				HashMap.class
-			};
-		xmlXStream.addPermission(new ExplicitTypePermission(types));
-	}
 
 	private static final int VALID_UNTIL_30_DAYS = 30*24;
 
@@ -156,13 +139,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		List<String> whiteList;
 		// if organisation e-mail domains are enabled, the regular domain list is deactivated.
 		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
-			OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
-			List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
-			whiteList = emailDomains.stream()
-					.flatMap(domain -> Arrays.stream(domain.getDomain().split(","))) // Split each domain string by "," (inspired by registrationModule.getDomainList())
-					.map(String::trim) // Remove any leading/trailing whitespace
-					.filter(domain -> !domain.isEmpty()) // Exclude empty entries
-					.toList();
+			return true;
 		} else {
 			whiteList = registrationModule.getDomainList();
 		}
@@ -180,7 +157,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 						break;
 					}
 				} catch (Exception e) {
-					log.error("Error matching an email adress", e);
+					log.error("Error matching an email address", e);
 				}
 			}
 			return valid;
@@ -549,29 +526,6 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		}
 	}
 	
-	public boolean isEmailReserved(String emailAddress) {
-		if (!StringHelper.containsNonWhitespace(emailAddress)) return false;
-		
-		List<TemporaryKey> tk = loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
-		for (TemporaryKey temporaryKey : tk) {
-			Map<String, String> mails = readTemporaryValue(temporaryKey.getEmailAddress());
-			if (emailAddress.equalsIgnoreCase(mails.get("changedEMail"))) {
-				return true;
-			}
-		}
-		return isRegistrationPending(emailAddress);
-	}
-
-	public boolean isRegistrationPending(String emailAddress) {
-		List<TemporaryKey> temporaryKeys = loadTemporaryKeyByAction(RegistrationManager.REGISTRATION);
-		for (TemporaryKey temporaryKey : temporaryKeys) {
-			if (emailAddress.equalsIgnoreCase(temporaryKey.getEmailAddress())) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	/**
 	 * Evaluates whether the given identity needs to accept a disclaimer before
 	 * logging in or not.
@@ -614,7 +568,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 * Remove all disclaimer confirmations. This means that every user on the
 	 * system must accept the disclaimer again.
 	 */
-	public void revokeAllconfirmedDisclaimers() {
+	public void revokeAllConfirmedDisclaimers() {
 		propertyManager.deleteProperties(null, null, null, "user", "dislaimer_accepted");		
 	}
 
@@ -626,15 +580,6 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 */
 	public void revokeConfirmedDisclaimer(Identity identity) {
 		propertyManager.deleteProperties(identity, null, null, "user", "dislaimer_accepted");		
-	}
-	
-	@SuppressWarnings("unchecked")
-	public Map<String, String> readTemporaryValue(String value) {
-		return (Map<String, String>)xmlXStream.fromXML(value);
-	}
-	
-	public String temporaryValueToString(Map<String, String> map) {
-		return xmlXStream.toXML(map);
 	}
 
 	private String createRegistrationToken() {

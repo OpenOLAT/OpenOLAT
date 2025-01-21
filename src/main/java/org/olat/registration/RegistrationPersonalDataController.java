@@ -69,7 +69,6 @@ import org.olat.login.webauthn.ui.NewPasskeyController;
 import org.olat.login.webauthn.ui.RegistrationPasskeyListController;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.ui.identity.UserOpenOlatAuthenticationController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,8 +119,6 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
-	@Autowired
-	private RegistrationManager registrationManager;
 
 	public RegistrationPersonalDataController(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername,
 											  String firstName, String lastName, String email, boolean userInUse, boolean usernameReadonly, Form mainForm) {
@@ -336,6 +333,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 				String[] orgKeys = matchedDomains.stream()
 						.map(domain -> domain.getOrganisation().getKey().toString())
 						.toArray(String[]::new);
+
 				// Extract concatenated displayName and Location as values
 				String[] orgValues = matchedDomains.stream()
 						.map(domain -> {
@@ -365,14 +363,9 @@ public class RegistrationPersonalDataController extends FormBasicController {
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
 			if (fi.isEnabled() ) {
-				if(fi instanceof TextElement textEl && !validateElement(textEl)) {
+				if(fi instanceof TextElement textEl && !validateElement(textEl)
+						|| !userPropertyHandler.isValid(null, fi, null)) {
 					allOk = false;
-				} else if(!userPropertyHandler.isValid(null, fi, null)) {
-					if (userPropertyHandler instanceof EmailProperty) {
-						allOk &= registrationManager.isEmailReserved(getEmail());
-					} else {
-						allOk = false;
-					}
 				}
 			}
 		}

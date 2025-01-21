@@ -523,6 +523,19 @@
 	}
 }
 
+.dropdown_horizontal_alignment {
+	display: flex;
+	align-items: baseline;
+	gap: 20px;
+	padding: 10px 0 20px 0;
+}
+
+.checkbox_horizontal_alignment {
+	display: flex;
+	gap: 20px;
+	padding: 10px 0 20px 0;
+}
+
 /* media classes for video and image component */
 .o_video, .o_video video, %o_video, .o_video_wrapper {
 	@include img-responsive(inline-block);

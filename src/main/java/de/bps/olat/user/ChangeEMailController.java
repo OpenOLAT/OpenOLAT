@@ -46,9 +46,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  27.04.2009 <br>
  * @author bja
  */
+// TODO: May be removed safely?
 public class ChangeEMailController extends DefaultController {
 
-	protected static final String CHANGE_EMAIL_ENTRY = "change.email.login";
+	public static final String CHANGE_EMAIL_ENTRY = "change.email.login";
 	
 	public static final int TIME_OUT = 30;
 	

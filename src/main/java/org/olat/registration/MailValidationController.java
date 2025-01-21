@@ -65,6 +65,7 @@ public class MailValidationController extends FormBasicController {
 
 	private static final String SEPARATOR = "____________________________________________________________________\n";
 	private final boolean isRegistrationProcess;
+	private final boolean isUserManager;
 	private final StepsRunContext runContext;
 
 	private FormLink validateMailLink;
@@ -91,9 +92,10 @@ public class MailValidationController extends FormBasicController {
 	private MailManager mailManager;
 	
 	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm,
-									boolean isRegistrationProcess, StepsRunContext runContext) {
+									boolean isRegistrationProcess, boolean isUserManager, StepsRunContext runContext) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		this.isRegistrationProcess = isRegistrationProcess;
+		this.isUserManager = isUserManager;
 		this.runContext = runContext;
 		initForm(ureq);
 	}
@@ -114,11 +116,12 @@ public class MailValidationController extends FormBasicController {
 
 		validateMailLink = uifactory.addFormLink("submit.validate", mailCont, Link.BUTTON);
 		validateMailLink.setPrimary(true);
+		validateMailLink.setVisible(!isUserManager);
 	}
 
 	private void initValidation() {
 		if (validationCont == null) {
-			validationCont = FormLayoutContainer.createVerticalFormLayout("validation_cont", getTranslator());
+			validationCont = FormLayoutContainer.createHorizontalFormLayout("validation_cont", getTranslator());
 			validationCont.setFormTitle(translate("validation.title"));
 			validationCont.setFormInfo(translate("validation.desc"));
 			flc.add(validationCont);
@@ -184,8 +187,7 @@ public class MailValidationController extends FormBasicController {
 	}
 
 	private boolean isEmailEligibleForRegistration(String email) {
-		return (registrationManager.isRegistrationPending(email) || userManager.isEmailAllowed(email))
-				&& userManager.findUniqueIdentityByEmail(email) == null;
+		return userManager.isEmailAllowed(email) && userManager.findUniqueIdentityByEmail(email) == null;
 	}
 
 	private void loadOrCreateTemporaryKey(UserRequest ureq, String email, String ip, String[] whereFromAttrs) {
@@ -193,8 +195,14 @@ public class MailValidationController extends FormBasicController {
 			temporaryKey = registrationManager.loadTemporaryKeyByEmail(email);
 		}
 		if (temporaryKey == null) {
+			String action;
+			if (isRegistrationProcess) {
+				action = RegistrationManager.REGISTRATION;
+			} else {
+				action = RegistrationManager.EMAIL_CHANGE;
+			}
 			temporaryKey = registrationManager.loadOrCreateTemporaryKeyByEmail(
-					email, ip, RegistrationManager.REGISTRATION, registrationModule.getValidUntilMinutesGui()
+					email, ip, action, registrationModule.getValidUntilMinutesGui()
 			);
 			sendRegistrationEmail(email, whereFromAttrs);
 		} else {
@@ -293,7 +301,7 @@ public class MailValidationController extends FormBasicController {
 				otpEl.setErrorKey("reg.otp.invalid");
 				allOk = false;
 			}
-		} else {
+		} else if (!isUserManager) {
 			allOk = false;
 		}
 
@@ -309,7 +317,7 @@ public class MailValidationController extends FormBasicController {
 		} else if (!MailHelper.isValidEmailAddress(getEmailAddress())) {
 			mailEl.setErrorKey("email.address.notregular");
 			allOk = false;
-		} else {
+		} else if (!isUserManager){
 			String val = getEmailAddress();
 
 			boolean valid = registrationManager.validateEmailUsername(val);
@@ -324,7 +332,7 @@ public class MailValidationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == validateMailLink && validateMail()) {
+		if (source == validateMailLink && validateMail() && !isUserManager) {
 			initValidation();
 			processEmail(ureq);
 			toggleFormVisibility();

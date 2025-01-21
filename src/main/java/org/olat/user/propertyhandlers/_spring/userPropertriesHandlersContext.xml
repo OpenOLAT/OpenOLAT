@@ -16,7 +16,7 @@
 
 	<bean id="userPropertyUserDisplayName" class="org.olat.user.propertyhandlers.UserDisplayNameReadOnlyPropertyHandler">
 		<property name="name" value="userDisplayName" />
-		<property name="group" value="account" />
+		<property name="group" value="personal" />
 	</bean>
 	
 	<bean id="userPropertyFirstName" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
@@ -31,7 +31,7 @@
 	
 	<bean id="userPropertyEmail" class="org.olat.user.propertyhandlers.EmailProperty">
 		<property name="name" value="email" />
-		<property name="group" value="account" />
+		<property name="group" value="personal" />
 	</bean>
 
 	<bean id="userPropertyEmailSignature" class="org.olat.user.propertyhandlers.Generic2048RichTextPropertyHandler">
@@ -69,7 +69,7 @@
 	
 	<bean id="userPropertySmsTelMobile" class="org.olat.user.propertyhandlers.SmsPhonePropertyHandler">
 		<property name="name" value="smsTelMobile" />
-		<property name="group" value="contact" />
+		<property name="group" value="personal" />
 	</bean>
 	
 	<bean id="userPropertyTelOffice" class="org.olat.user.propertyhandlers.PhonePropertyHandler">
@@ -174,7 +174,7 @@
 
 	<bean id="userPropertyEmailDisabled" class="org.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
 		<property name="name" value="emailDisabled" />
-		<property name="group" value="account" />
+		<property name="group" value="personal" />
 	</bean>
 	
 	<bean id="userPropertyTypeOfUser" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">

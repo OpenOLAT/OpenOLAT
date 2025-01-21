@@ -32,14 +32,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.CodeHelper;
 import org.olat.test.OlatTestCase;
@@ -59,6 +58,8 @@ public class RegistrationManagerTest extends OlatTestCase {
 	private RegistrationManager registrationManager;
 	@Autowired
 	private RegistrationModule registrationModule;
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	@Test
 	public void testManagers() {
@@ -252,7 +253,8 @@ public class RegistrationManagerTest extends OlatTestCase {
 		sleep(2000);//event based, asynchronous
 		String domains = registrationModule.getDomainListRaw();
 		assertEquals("frentix.com,cyberiacafe.ch,openolat.org,frentix.de", domains);
-		
+		organisationModule.setEnabled(false);
+
 		//check equals matching
 		assertTrue(registrationManager.validateEmailUsername("aoi@cyberiacafe.ch"));
 		assertFalse(registrationManager.validateEmailUsername("aoi@cyberia.ch"));
@@ -266,21 +268,11 @@ public class RegistrationManagerTest extends OlatTestCase {
 		sleep(2000);//event based, asynchronous
 		String domains = registrationModule.getDomainListRaw();
 		assertEquals("frentix.com,*cyberiacafe.ch,openolat.org,frentix.de", domains);
+		organisationModule.setEnabled(false);
 		
 		//check equals matching
 		assertTrue(registrationManager.validateEmailUsername("aoi@cyberiacafe.ch"));
 		assertFalse(registrationManager.validateEmailUsername("aoi@cyberia.ch"));
 		assertTrue(registrationManager.validateEmailUsername("aoi@blog.cyberiacafe.ch"));
-	}
-	
-	@Test
-	public void readWriteTemporaryMap() {
-		Map<String, String> mailMap = new HashMap<>();
-		mailMap.put("currentEMail", "current");
-		mailMap.put("changedEMail", "changed");
-		String xml = registrationManager.temporaryValueToString(mailMap);
-		Map<String, String> xmlMap = registrationManager.readTemporaryValue(xml);
-		Assert.assertEquals("current", xmlMap.get("currentEMail"));
-		Assert.assertEquals("changed", xmlMap.get("changedEMail"));
 	}
 }

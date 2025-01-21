@@ -49,6 +49,7 @@ import com.thoughtworks.xstream.XStream;
  * Initial Date:  19.05.2009 <br>
  * @author bja
  */
+// TODO: May be removed safely?
 public class ChangeEMailExecuteController extends ChangeEMailController implements SupportsAfterLoginInterceptor {
 	
 	private static final String PRESENTED_EMAIL_CHANGE_REMINDER = "presentedemailchangereminder";

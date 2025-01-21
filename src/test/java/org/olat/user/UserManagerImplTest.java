@@ -200,7 +200,6 @@ public class UserManagerImplTest {
 	public void shouldNotAllowUnusedEmailIfReserved_UniqueMandatory_EmailMandatory() {
 		when(userModuleMock.isEmailUnique()).thenReturn(true);
 		when(userModuleMock.isEmailMandatory()).thenReturn(true);
-		when(registrationManagerMock.isEmailReserved(UNUSED_EMAIL)).thenReturn(true);
 		
 		boolean isEmailAllowed = sut.isEmailAllowed(UNUSED_EMAIL);
 

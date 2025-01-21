@@ -50,7 +50,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 /**
  * 
  * Initial date: 7 févr. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SmsPhoneElement extends FormItemImpl implements FormItemCollection, ControllerEventListener {
@@ -139,12 +139,12 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 	@Override
 	public void setRootForm(Form rootForm) {
 		String dispatchId = component.getDispatchID();
-		editLink = new FormLinkImpl(dispatchId + "_editSmsButton", "editSms", "edit", Link.BUTTON);
+		editLink = new FormLinkImpl(dispatchId + "_editSmsButton", "editSms", "edit", Link.BUTTON_SMALL);
 		editLink.setDomReplacementWrapperRequired(false);
 		editLink.setTranslator(getTranslator());
 		editLink.setIconLeftCSS("o_icon o_icon_edit");
 		
-		removeLink = new FormLinkImpl(dispatchId + "_removeSmsButton", "removeSms", "remove", Link.BUTTON);
+		removeLink = new FormLinkImpl(dispatchId + "_removeSmsButton", "removeSms", "remove", Link.BUTTON_SMALL);
 		removeLink.setDomReplacementWrapperRequired(false);
 		removeLink.setTranslator(getTranslator());
 		removeLink.setIconLeftCSS("o_icon o_icon_delete");

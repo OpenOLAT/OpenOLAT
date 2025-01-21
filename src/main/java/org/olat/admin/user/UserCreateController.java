@@ -1,12 +1,12 @@
 /**
 * OLAT - Online Learning and Training<br>
-* http://www.olat.org
+* https://www.olat.org
 * <p>
 * Licensed under the Apache License, Version 2.0 (the "License"); <br>
 * you may not use this file except in compliance with the License.<br>
 * You may obtain a copy of the License at
 * <p>
-* http://www.apache.org/licenses/LICENSE-2.0
+* https://www.apache.org/licenses/LICENSE-2.0
 * <p>
 * Unless required by applicable law or agreed to in writing,<br>
 * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -17,7 +17,7 @@
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
 * <hr>
-* <a href="http://www.openolat.org">
+* <a href="https://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
@@ -55,8 +55,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -73,8 +71,6 @@ import org.olat.login.LoginModule;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
-import org.olat.registration.RegistrationManager;
-import org.olat.registration.TemporaryKey;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
@@ -90,7 +86,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserCreateController extends BasicController  {
 
-	private NewUserForm createUserForm;
+	private final NewUserForm createUserForm;
 	
 	@Autowired
 	private UserManager userManager;
@@ -152,7 +148,7 @@ class NewUserForm extends FormBasicController {
 	private boolean showPasswordFields = false;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private final List<Organisation> manageableOrganisations;
-	private Organisation preselectedOrganisation;
+	private final Organisation preselectedOrganisation;
 	
 	private TextElement emailTextElement;
 	private TextElement usernameTextElement;
@@ -162,8 +158,6 @@ class NewUserForm extends FormBasicController {
 	private SingleSelection languageSingleSelection;
 	private SelectionElement authCheckbox;
 	private DateChooser expirationDateEl;
-	
-	private DialogBoxController confirmRemoveCtrl;
 
 	private final SyntaxValidator passwordSyntaxValidator;
 	private final SyntaxValidator usernameSyntaxValidator;
@@ -178,8 +172,6 @@ class NewUserForm extends FormBasicController {
 	private OLATAuthManager olatAuthManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
-	@Autowired
-	private RegistrationManager registrationManager;
 	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired
@@ -274,7 +266,7 @@ class NewUserForm extends FormBasicController {
 		if (showPasswordFields) {
 			String descriptions = formatDescriptionAsList(passwordSyntaxValidator.getAllDescriptions(), getLocale());
 			uifactory.addStaticTextElement("heading2", null,
-					translate("new.form.please.enter.pwd", new String[] { descriptions }), formLayout);
+					translate("new.form.please.enter.pwd", descriptions), formLayout);
 
 			// checkBox: generate user with OLAT authentication or not
 			String[] authKeys = {"xx"};
@@ -332,18 +324,6 @@ class NewUserForm extends FormBasicController {
 			super.propagateDirtinessToContainer(fiSrc, event);
 		}
 	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (confirmRemoveCtrl == source) {
-			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				String email = (String) confirmRemoveCtrl.getUserObject();
-				doDeletePendingRegistration(email);
-				mainForm.submit(ureq);
-			}
-		}
-		super.event(ureq, source, event);
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -367,7 +347,7 @@ class NewUserForm extends FormBasicController {
 			ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
 			if (!validationResult.isValid()) {
 				String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
-				usernameTextElement.setErrorKey("error.username.invalid", new String[] { descriptions });
+				usernameTextElement.setErrorKey("error.username.invalid", descriptions);
 				allOk &= false;
 			}
 		}
@@ -389,9 +369,6 @@ class NewUserForm extends FormBasicController {
 			allOk &= emailTextElement.validate();
 		}
 		if (!userManager.isEmailAllowed(email)) {
-			if (registrationManager.isRegistrationPending(email)) {
-				doConfirmDeletePendingRegistration(ureq, email);
-			}
 			emailTextElement.setErrorKey("new.error.email.choosen");
 			allOk &= false;
 		}
@@ -426,14 +403,14 @@ class NewUserForm extends FormBasicController {
 				ValidationResult validationResult = passwordSyntaxValidator.validate(newPassword, newIdentity);
 				if (!validationResult.isValid()) {
 					String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
-					psw1TextElement.setErrorKey("error.password.invalid", new String[] { descriptions });
+					psw1TextElement.setErrorKey("error.password.invalid", descriptions);
 					allOk &= false;
 				}
 			}
 			if(psw2TextElement.isEmpty("new.form.mandatory") || psw2TextElement.hasError()) {
 				allOk &= false;
 			} else if (!pwd.equals(psw2TextElement.getValue())) {
-				psw2TextElement.setErrorKey("new.error.password.nomatch", new String []{});
+				psw2TextElement.setErrorKey("new.error.password.nomatch");
 				allOk &= false;
 			}
 		}
@@ -499,16 +476,5 @@ class NewUserForm extends FormBasicController {
 		String provider = pwd == null ? null : BaseSecurityModule.getDefaultAuthProviderIdentifier();
 		return securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, username, null, newUser,
 				provider, BaseSecurity.DEFAULT_ISSUER, null, username, pwd, userOrganisation, expirationDate);
-	}
-	
-	private void doConfirmDeletePendingRegistration(UserRequest ureq, String email) {
-		String title = translate("delete.pending.registration.confirmation.title");
-		confirmRemoveCtrl = activateYesNoDialog(ureq, title, translate("delete.pending.registration.confirmation", email), confirmRemoveCtrl);
-		confirmRemoveCtrl.setUserObject(email);
-	}
-
-	private void doDeletePendingRegistration(String email) {
-		TemporaryKey temporaryKey = registrationManager.loadTemporaryKeyByEmail(email);
-		registrationManager.deleteTemporaryKey(temporaryKey);	
 	}
 }

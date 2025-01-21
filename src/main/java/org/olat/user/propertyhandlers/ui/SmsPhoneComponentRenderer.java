@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.user.propertyhandlers.ui;
@@ -32,7 +32,7 @@ import org.olat.core.util.StringHelper;
 /**
  * 
  * Initial date: 7 févr. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SmsPhoneComponentRenderer extends DefaultComponentRenderer {
@@ -62,7 +62,7 @@ public class SmsPhoneComponentRenderer extends DefaultComponentRenderer {
 			FormLink editLink = smsFte.getEditLink();
 			if(editLink != null && editLink.isVisible()) {
 				Component cmp = editLink.getComponent();
-				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, new String[]{"horizontal"});
 				cmp.setDirty(false);
 			}
 	
@@ -71,7 +71,7 @@ public class SmsPhoneComponentRenderer extends DefaultComponentRenderer {
 				FormLink removeLink = smsFte.getRemoveLink();
 				if(removeLink != null && removeLink.isVisible()) {
 					Component cmp = removeLink.getComponent();
-					cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+					cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, new String[]{"horizontal"});
 					cmp.setDirty(false);
 				}
 			}

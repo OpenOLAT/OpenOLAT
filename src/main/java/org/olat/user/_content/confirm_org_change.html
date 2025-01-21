@@ -1,0 +1,22 @@
+$r.render("desc")
+#if($r.available("changeDropdown"))
+	<div class="dropdown_horizontal_alignment">
+		$r.render("changeDropdown", "label") $r.render("changeDropdown")
+	</div>
+#end
+#if($hasRoles)
+	<div class="o_warning_with_icon">
+		<p>$msg</p>
+		$rolesDesc
+		$roles
+	</div>
+#end
+#if("confirmation")
+	<div class="checkbox_horizontal_alignment">
+		$r.render("confirmation", "label") $r.render("confirmation")
+	</div>
+#end
+<div class="o_button_group o_button_group_left">
+	$r.render("confirm.email.in.process")
+	$r.render("cancel")
+</div>

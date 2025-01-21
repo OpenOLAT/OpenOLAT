@@ -81,7 +81,7 @@ public class UsrPropCfgTableController extends FormBasicController {
 
 	private DialogBoxController deactPropertyYesNoCtrl;
 
-	private static final String[] GROUP_KEYS = { "account", "person", "contact", "address", "institute" };
+	private static final String[] GROUP_KEYS = { "account", "person", "contact", "address", "institute", "personal" };
 
 	@Autowired
 	private UsrPropCfgManager usrPropCfgMng;

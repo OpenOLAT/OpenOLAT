@@ -43,7 +43,7 @@ public class RegistrationMailStep03Controller extends StepFormBasicController {
 	public RegistrationMailStep03Controller(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.runContext = runContext;
-		this.emailForm = new MailValidationController(ureq, wControl, rootForm, true, runContext);
+		this.emailForm = new MailValidationController(ureq, wControl, rootForm, true, false, runContext);
 
 		initForm(ureq);
 	}

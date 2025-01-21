@@ -1,0 +1,10 @@
+$r.render("desc")
+#if("notifyCheck")
+	<div class="checkbox_horizontal_alignment">
+		$r.render("notifyCheck", "label") $r.render("notifyCheck")
+	</div>
+#end
+<div class="o_button_group o_button_group_left">
+	$r.render("confirm.email.in.process")
+	$r.render("cancel")
+</div>
