@@ -221,7 +221,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		Identity identity = securityManager
 				.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
 						provider, issuer, null, login, pwd,  organisation, expirationDate);
-		if(!OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(organisation.getIdentifier())) {
+		if(!OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(organisation.getIdentifier()) && !organisationModule.isEmailDomainEnabled()) {
 			Organisation defOrganisation = organisationService.getDefaultOrganisation();
 			organisationService.addMember(defOrganisation, identity, OrganisationRoles.user);
 		}
