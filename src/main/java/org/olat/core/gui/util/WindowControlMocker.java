@@ -22,6 +22,7 @@ package org.olat.core.gui.util;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
@@ -35,6 +36,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindowController;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindowControllerCreator;
 import org.olat.core.gui.control.guistack.GuiStack;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.control.util.ZIndexWrapper;
@@ -319,15 +322,19 @@ public class WindowControlMocker implements WindowControl{
 		}
 
 		@Override
-		public PopupBrowserWindow createNewPopupBrowserWindowFor(
-				UserRequest ureq, ControllerCreator controllerCreator) {
-			return null;
+		public PopupBrowserWindow createNewPopupBrowserWindowFor(UserRequest ureq, ControllerCreator controllerCreator) {
+			PopupBrowserWindowControllerCreator pbwcc = CoreSpringFactory.getImpl(PopupBrowserWindowControllerCreator.class);
+			PopupBrowserWindowController cc = pbwcc.createNewPopupBrowserController(ureq, controllerCreator);
+			cc.addBodyCssClass("o_body_popup");
+			return cc;
 		}
 
 		@Override
-		public PopupBrowserWindow createNewUnauthenticatedPopupWindowFor(
-				UserRequest ureq, ControllerCreator controllerCreator) {
-			return null;
+		public PopupBrowserWindow createNewUnauthenticatedPopupWindowFor(UserRequest ureq, ControllerCreator controllerCreator) {
+			PopupBrowserWindowControllerCreator pbwcc = CoreSpringFactory.getImpl(PopupBrowserWindowControllerCreator.class);
+			PopupBrowserWindowController cc = pbwcc.createNewUnauthenticatedPopupWindowController(ureq, controllerCreator);
+			cc.addBodyCssClass("o_body_popup");
+			return cc;
 		}
 	}
 }
