@@ -60,8 +60,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AccessOverviewController extends BasicController {
 	
-	private static final String ICON_ACTIVE = "<i class=\"o_icon o_icon-fw o_icon_offer_active\"> </i> ";
-	private static final String ICON_INACTIVE = "<i class=\"o_icon o_icon-fw o_icon_offer_inactive\"> </i> ";
+	private static final String ICON_ACTIVE = "<i class=\"o_icon o_icon-fw o_ac_offer_active_icon\"> </i> ";
+	private static final String ICON_INACTIVE = "<i class=\"o_icon o_icon-fw o_ac_offer_inactive_icon\"> </i> ";
 
 	private final VelocityContainer mainVC;
 	private final Collator collator;

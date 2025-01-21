@@ -1,20 +1,20 @@
 <div class="o_info_with_icon clearfix">
 	<h4>$r.translate("offers.overview.title")</h4>
 
-#if($internalCatalog)
-	<div>
-		<label class="control-label col-sm-3" for="o_ac_internalcatalog">$r.translate("offers.overview.internal.catalog")</label>
-	</div>
-	<div class="form-control-static col-sm-9" id="o_ac_internalcatalog">
-		$internalCatalog
-	</div>
-#end
 #if($externalCatalog)
 	<div>
 		<label class="control-label col-sm-3" for="o_ac_externalcatalog">$r.translate("offers.overview.external.catalog")</label>
 	</div>
 	<div class="form-control-static col-sm-9" id="o_ac_externalcatalog">
 		$externalCatalog
+	</div>
+#end
+#if($internalCatalog)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_internalcatalog">$r.translate("offers.overview.internal.catalog")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_internalcatalog">
+		$internalCatalog
 	</div>
 #end
 #if($details)

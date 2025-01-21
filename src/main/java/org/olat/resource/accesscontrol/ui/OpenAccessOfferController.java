@@ -105,7 +105,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		}
 		
 		// Period
-		uifactory.addStaticTextElement("offer.period", catalogInfo.getPeriodStatusOption(), formLayout);
+		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getPeriodStatusOption(), formLayout);
 		
 		uifactory.addSpacerElement("others", formLayout, false);
 		
@@ -142,7 +142,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		}
 		
 		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.offered.to", formLayout, getWindowControl(), orgSV);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.released.for", formLayout, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
 		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}

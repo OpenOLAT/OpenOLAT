@@ -30,7 +30,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
@@ -48,6 +47,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.author.RepositoryCatalogInfoFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
+import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,18 +68,15 @@ public class CurriculumElementOffersController extends BasicController {
 
 	public CurriculumElementOffersController(UserRequest ureq, WindowControl wControl,
 			CurriculumElementRef elementRef, CurriculumSecurityCallback secCallback) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(AccessConfigurationController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		CurriculumElement element = curriculumService.getCurriculumElement(elementRef);
 		element.getCurriculum().getOrganisation().getDisplayName(); // avoid LazyInitializationException
 		
 		Collection<Organisation> defaultOfferOrganisations = List.of(element.getCurriculum().getOrganisation());
 
-		Translator translator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
-		translator = Util.createPackageTranslator(AccessConfigurationController.class, getLocale(), translator);
-		translator = Util.createPackageTranslator(RepositoryService.class, getLocale(), translator);
-		setTranslator(translator);
-		
 		List<TaxonomyLevel> taxonomyLevels = null;
 		List<TaxonomyLevelNamePath> taxonomyLevelPath = null;
 		Set<CurriculumElementToTaxonomyLevel> ce2taxonomyLevels = element.getTaxonomyLevels();
@@ -100,10 +97,10 @@ public class CurriculumElementOffersController extends BasicController {
 
 		boolean fullyBooked = false;
 		CatalogInfo catalogInfo = new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
-				translate("offer.period.status.curriculum.element"), true, translate("access.taxonomy.level"), details,
-				false, getStatusNotAvailable(translator, element.getElementStatus()), fullyBooked, editBusinessPath,
-				translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
-				taxonomyLevels, true);
+				translate("offer.available.in.status.curriculum.element"), true, translate("access.taxonomy.level"),
+				details, false, getCatalogStatusEvaluator(element.getElementStatus()), fullyBooked,
+				editBusinessPath, translate("access.open.metadata"),
+				CatalogBCFactory.get(false).getOfferUrl(element.getResource()), taxonomyLevels, true);
 		
 		accessConfigCtrl = new AccessConfigurationController(ureq, wControl, element.getResource(),
 				element.getDisplayName(), true, false, false, true, defaultOfferOrganisations, catalogInfo,
@@ -114,16 +111,14 @@ public class CurriculumElementOffersController extends BasicController {
 	}
 
 	public void updateStatus(CurriculumElementStatus status) {
-		accessConfigCtrl.setNotAvailableStatus(getStatusNotAvailable(getTranslator(), status));
+		accessConfigCtrl.setStatusEvaluator(getCatalogStatusEvaluator(status));
 	}
 	
-	private String getStatusNotAvailable(Translator translator, CurriculumElementStatus status) {
+	private CatalogStatusEvaluator getCatalogStatusEvaluator(CurriculumElementStatus status) {
 		if (catalogV2Module.isEnabled()) {
-			if (!Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD).contains(status)) {
-				return translator.translate("status." + status.name());
-			}
+			return new CurriculumElementStatusEvaluator(status);
 		}
-		return null;
+		return CatalogInfo.TRUE_STATUS_EVALUATOR;
 	}
 
 	@Override
@@ -140,6 +135,26 @@ public class CurriculumElementOffersController extends BasicController {
 			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private static final class CurriculumElementStatusEvaluator implements CatalogStatusEvaluator {
+
+		private final CurriculumElementStatus status;
+
+		public CurriculumElementStatusEvaluator(CurriculumElementStatus status) {
+			this.status = status;
+		}
+
+		@Override
+		public boolean isVisibleStatusNoPeriod() {
+			return Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD).contains(status);
+		}
+
+		@Override
+		public boolean isVisibleStatusPeriod() {
+			return Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD_PERIOD).contains(status);
+		}
+		
 	}
 
 }

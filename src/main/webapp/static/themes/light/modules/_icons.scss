@@ -327,11 +327,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_notice_unauthorized { @include o-add-icon('exclamation-triangle'); color: $brand-warning }
 .o_icon_notification { @include o-add-icon('rss');}
 .o_icon_number_of { @include o-add-icon('hashtag');}
-.o_icon_offer_active { @include o-add-icon('eye'); color: $o-ac-offer-active-color;}
-.o_icon_offer_ended { @include o-add-icon('ban'); }
-.o_icon_offer_inactive { @include o-add-icon('eye-slash'); color: $o-ac-offer-inactive-color;}
-.o_icon_offer_ongoing { @include o-add-icon('hourglass'); }
-.o_icon_offer_planned { @include o-add-icon('clock'); }
 .o_icon_ok { @include o-add-icon('check'); color: $brand-success}
 .o_icon_onedrive { @include o-add-icon('cloud'); }
 .o_icon_open_tree { @include o-add-icon('caret-right');}
@@ -922,13 +917,18 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_guests_icon { @include o-add-icon('user-circle', false);}
 .o_ac_openaccess_icon { @include o-add-icon('user-secret');}
 .o_ac_paypal_icon { @include o-add-brand-icon('cc-paypal');}
-.o_ac_bookable_icon { @include o-add-icon('cart-shopping'); }
-.o_ac_fully_booked_icon { @include o-add-icon('cart-shopping'); }
 .o_ac_status_canceled_icon { @include o-add-icon('minus'); color: $brand-warning;}
 .o_ac_status_error_icon { @include o-add-icon('times'); color: $brand-danger;}
 .o_ac_status_new_icon { @include o-add-icon('asterisk'); color: $brand-primary;}
 .o_ac_status_success_icon { @include o-add-icon('check'); color: $brand-success;}
 .o_ac_status_waiting_icon { @include o-add-icon('clock', false); color: $brand-primary;}
+.o_ac_offer_active_icon { @include o-add-icon('eye'); color: $o-ac-offer-active-color;}
+.o_ac_offer_bookable_icon { @include o-add-icon('cart-shopping'); }
+.o_ac_offer_finished_icon { @include o-add-icon('ban'); }
+.o_ac_offer_fully_booked_icon { @include o-add-icon('cart-shopping'); }
+.o_ac_offer_inactive_icon { @include o-add-icon('eye-slash'); color: $o-ac-offer-inactive-color;}
+.o_ac_offer_not_available_icon { @include o-add-icon('eye-slash'); }
+.o_ac_offer_pending_icon { @include o-add-icon('clock'); }
 .o_ac_order_status_new_icon { @include o-add-icon('asterisk'); color: $brand-primary;}
 .o_ac_order_status_prepayment_icon { @include o-add-icon('money-bill', false); color: $brand-info;}
 .o_ac_order_status_payed_icon { @include o-add-icon('check'); color: $brand-success;}

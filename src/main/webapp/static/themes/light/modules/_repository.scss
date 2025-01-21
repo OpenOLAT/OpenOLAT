@@ -323,29 +323,20 @@
 	}
 }
 .o_labeled_light {
-	&.o_ac_offer_planned {
-		border-color: 		$o-ac-planned-color;
-		color: 				$o-ac-planned-color;
+	&.o_ac_offer_pending {
+		@extend %o_labeled_light_blue;
 	}
-	&.o_ac_offer_ongoing {
-		border-color: 		$o-ac-ongoing-color;
-		color: 				$o-ac-ongoing-color;
+	&.o_ac_offer_finished {
+		@extend %o_labeled_light_brown;
 	}
-	&.o_ac_offer_ended {
-		border-color: 		$o-ac-ended-color;
-		color: 				$o-ac-ended-color;
+	&.o_ac_offer_bookable {
+		@extend %o_labeled_light_green;
 	}
-	&.o_ac_bookable {
-		border-color: 		$o-ac-bookable-color;
-		color: 				$o-ac-bookable-color;
+	&.o_ac_offer_fully_booked {
+		@extend %o_labeled_light_red;
 	}
-	&.o_ac_fully_booked {
-		border-color: 		$o-ac-fully-booked-color;
-		color: 				$o-ac-fully-booked-color;
-	}
-	&.o_ac_not_available {
-		border-color: 		$o-ac-not-available-color;
-		color: 				$o-ac-not-available-color;
+	&.o_ac_offer_not_available {
+		@extend %o_labeled_light_grey;
 	}
 }
 

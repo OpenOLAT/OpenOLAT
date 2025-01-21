@@ -126,8 +126,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		// Period
 		SelectionValues periodSV = new SelectionValues();
 		periodSV.add(SelectionValues.entry(PERIOD_STATUS, catalogInfo.getPeriodStatusOption()));
-		periodSV.add(SelectionValues.entry(PERIOD_DATE, translate("offer.period.date")));
-		periodEl = uifactory.addRadiosVertical("offer.period", formLayout, periodSV.keys(), periodSV.values());
+		periodSV.add(SelectionValues.entry(PERIOD_DATE, translate("offer.available.in.period")));
+		periodEl = uifactory.addRadiosVertical("offer.available.in", formLayout, periodSV.keys(), periodSV.values());
 		periodEl.addActionListener(FormEvent.ONCHANGE);
 		String selectedPeriodKey = link.getOffer() != null && (link.getOffer().getValidFrom() != null || link.getOffer().getValidTo() != null)
 				? PERIOD_DATE
@@ -192,7 +192,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		}
 		
 		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations, getLocale());
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.offered.to", formLayout, getWindowControl(), orgSV);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "offer.released.for", formLayout, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
 		offerOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}

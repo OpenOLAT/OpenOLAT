@@ -103,7 +103,7 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 					accessOffersCtrl.setDefaultOfferOrganisations(accessShareCtrl.getSelectedOrganisations());
 				}
 			} else if (event instanceof StatusEvent se) {
-				accessOffersCtrl.setNotAvailableStatus(RepositoryCatalogInfoFactory.getStatusNotAvailable(getTranslator(), se.getStatus()));
+				accessOffersCtrl.setStatusEvaluator(RepositoryCatalogInfoFactory.getCatalogStatusEvaluator(se.getStatus()));
 			}
 		}
 		super.event(ureq, source, event);

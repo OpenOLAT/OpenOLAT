@@ -84,6 +84,11 @@ public class IconPanelRenderer extends DefaultComponentRenderer {
 		if (StringHelper.containsNonWhitespace(panel.getTagline())) {
 			sb.append("<small class=\"text-muted\">").appendHtmlEscaped(panel.getTagline()).append("</small>");
 		}
+		if (StringHelper.containsNonWhitespace(panel.getTitleLabel())) {
+			sb.append("<div class='o_icon_panel_title_label'>");
+			sb.append(panel.getTitleLabel());
+			sb.append("</div>");
+		}
 		sb.append("</div>");
 		
 		if(StringHelper.containsNonWhitespace(panel.getMessage())) {

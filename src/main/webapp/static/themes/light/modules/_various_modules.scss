@@ -1224,6 +1224,10 @@ div.o_reminder_custom_email {
 			display: inline;
 			margin-right: 5px;
 		}
+		display: flex;
+		.o_icon_panel_title_label {
+			margin-left: auto;
+		}
 	}
 	
 	display: flex;

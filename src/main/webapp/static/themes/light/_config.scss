@@ -586,14 +586,8 @@ $o-repo-status-color-bright			: #fff;
 $o-repo-access-denied-cross-fill		: $brand-primary  !default;
 
 /* Access control */
-$o-ac-offer-active-color			: #3c763d !default;
+$o-ac-offer-active-color				: #3c763d !default;
 $o-ac-offer-inactive-color			: #8A6D40 !default;
-$o-ac-planned-color					: #4a6785 !default;
-$o-ac-ongoing-color					: #14892c !default;
-$o-ac-ended-color					: #5A5958 !default;
-$o-ac-bookable-color				: $brand-success !default;
-$o-ac-fully-booked-color				: $brand-danger !default;
-$o-ac-not-available-color			: #5A5958 !default;
 $o-ac-offers-bg						: $o-coursesite-sidecol-bg !default;
 $o-ac-offers-border					: $o-coursesite-sidecol-border !default;
 $o-ac-offers-radius					: $o-coursesite-sidecol-radius !default;

@@ -70,6 +70,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.CatalogInfo;
+import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
@@ -113,7 +114,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private int counter = 0;
 	private final String displayName;
 	private final OLATResource resource;
-	private String notAvailableStatus;
+	private CatalogStatusEvaluator statusEvaluator;
 	private boolean allowPaymentMethod;
 	private final boolean openAccessSupported;
 	private final boolean guestSupported;
@@ -150,7 +151,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.offerOrganisationsSupported = offerOrganisationsSupported;
 		this.defaultOfferOrganisations = defaultOfferOrganisations;
 		this.catalogInfo = catalogInfo;
-		this.notAvailableStatus = catalogInfo.getNotAvailableStatus();
+		this.statusEvaluator = catalogInfo.getStatusEvaluator();
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
 		this.helpUrl = helpUrl;
@@ -229,8 +230,8 @@ public class AccessConfigurationController extends FormBasicController {
 		return deletedOfferList;
 	}
 
-	public void setNotAvailableStatus(String notAvailableStatus) {
-		this.notAvailableStatus = notAvailableStatus;
+	public void setStatusEvaluator(CatalogStatusEvaluator statusEvaluator) {
+		this.statusEvaluator = statusEvaluator;
 		updateCatalogOverviewUI();
 	}
 
@@ -656,29 +657,28 @@ public class AccessConfigurationController extends FormBasicController {
 				boolean atLeastOneActive = catalogAccessInfo.stream().anyMatch(AccessInfo::isActive);
 				if (atLeastOneActive) {
 					if (catalogInfo.isFullyBooked()) {
-						catalogStatus = "<span class=\"o_labeled_light o_ac_fully_booked\"><i class=\"o_icon o_ac_fully_booked_icon\"> </i> "
+						catalogStatus = "<span class=\"o_labeled_light o_ac_offer_fully_booked\"><i class=\"o_icon o_ac_offer_fully_booked_icon\"> </i> "
 										+ translate("offers.overview.fully.booked")
 										+ "</span>";
 					} else {
-						if (StringHelper.containsNonWhitespace(notAvailableStatus)) {
-							boolean onlyWithOpenPeriod = !catalogAccessInfo.stream().anyMatch(AccessInfo::isWithPeriod);
-							if (onlyWithOpenPeriod) {
-								catalogStatus = "<span class=\"o_labeled_light o_ac_not_available\"><i class=\"o_icon o_ac_fully_booked_icon\"> </i> "
-												+ translate("offers.overview.not.available")
-												+ "</span> "
-												+ translate("offers.overview.not.available.status", notAvailableStatus);
-							}
+						boolean statusVisible = catalogAccessInfo.stream().anyMatch(AccessInfo::isWithPeriod)
+								? statusEvaluator.isVisibleStatusPeriod()
+								: statusEvaluator.isVisibleStatusNoPeriod();
+						if (!statusVisible) {
+							catalogStatus = "<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> "
+											+ translate("offers.overview.not.available")
+											+ "</span>";
 						}
 					}
 					if (!StringHelper.containsNonWhitespace(catalogStatus)) {
-						catalogStatus = "<span class=\"o_labeled_light o_ac_bookable\"><i class=\"o_icon o_ac_bookable_icon\"> </i> "
+						catalogStatus = "<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> "
 								+ translate("offers.overview.bookable")
 								+ "</span>";
 					}
 				}
 			}
 			if (!StringHelper.containsNonWhitespace(catalogStatus)) {
-				catalogStatus = "<span class=\"o_labeled_light o_ac_not_available\"><i class=\"o_icon o_ac_not_available_icon\"> </i> "
+				catalogStatus = "<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> "
 								+ translate("offers.overview.not.available")
 								+ "</span>";
 			}
@@ -1017,25 +1017,35 @@ public class AccessConfigurationController extends FormBasicController {
 			Date from = offer.getValidFrom();
 			Date to = offer.getValidTo();
 			if (to != null && to.before(new Date())) {
-				dates = "<span class=\"o_labeled_light o_ac_offer_ended\"><i class=\"o_icon o_icon_offer_ended\"> </i> " + translate("access.period.ended") + "</span> "
-					+ "<del>" + formatPeriod(from, to) + "</del>";
+				iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_finished\"><i class=\"o_icon o_ac_offer_finished_icon\"> </i> " + translate("access.period.finished") + "</span>");
+				dates = "<del>" + formatPeriod(from, to) + "</del>";
 				active = false;
 				withPeriod = true;
 			} else if (from != null && from.after(new Date())) {
-				dates = "<span class=\"o_labeled_light o_ac_offer_planned\"><i class=\"o_icon o_icon_offer_planned\"> </i> " + translate("access.period.planned") + "</span> "
-					+ formatPeriod(from, to)
+				iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_pending\"><i class=\"o_icon o_ac_offer_pending_icon\"> </i> " + translate("access.period.pending") + "</span>");
+				dates = formatPeriod(from, to)
 					+ " | <strong>" + translate("access.period.starts.in", String.valueOf(DateUtils.countDays(new Date(), from))) + "</strong>";
 				active = false;
 				withPeriod = true;
 			} else if (to != null && to.after(new Date())) {
-				dates = "<span class=\"o_labeled_light o_ac_offer_ongoing\"><i class=\"o_icon o_icon_offer_ongoing\"> </i> " + translate("access.period.ongoing") + "</span> "
-					+ formatPeriod(from, to)
+				if (statusEvaluator.isVisibleStatusPeriod()) {
+					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> " + translate("offers.overview.not.available") + "</span>");
+				} else {
+					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> " + translate("offers.overview.bookable") + "</span>");
+				}
+				dates = formatPeriod(from, to)
 					+ " | <strong>" + translate("access.period.ends.in", String.valueOf(DateUtils.countDays(new Date(), to))) + "</strong>";
 				active = true;
 				withPeriod = true;
 			} else {
-				dates = "<span class=\"o_labeled_light o_ac_offer_ongoing\"><i class=\"o_icon o_icon_offer_ongoing\"> </i> " + translate("access.period.ongoing") + "</span> "
-					+ translate("access.period.none");
+				if (statusEvaluator.isVisibleStatusNoPeriod()) {
+					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> " + translate("offers.overview.not.available") + "</span>");
+				} else {
+					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> " + translate("offers.overview.bookable") + "</span>");
+				}
+				dates = StringHelper.containsNonWhitespace(catalogInfo.getPeriodStatusOption())
+						? catalogInfo.getPeriodStatusOption()
+						: translate("access.period.none"); // business group
 				active = true;
 				withPeriod = false;
 			}

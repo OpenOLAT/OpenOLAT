@@ -42,6 +42,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
+import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 
 /**
@@ -85,8 +86,9 @@ public class RepositoryCatalogInfoFactory {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
 			}
 			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
-					translator.translate("offer.period.status"), true, translator.translate("access.taxonomy.level"),
-					details, false, getStatusNotAvailable(translator, entry.getEntryStatus()), false, editBusinessPath,
+					translator.translate("offer.available.in.status.course"), true,
+					translator.translate("access.taxonomy.level"), details, false,
+					getCatalogStatusEvaluator(entry.getEntryStatus()), false, editBusinessPath,
 					translator.translate("access.open.metadata"),
 					CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), taxonomyLevels, showRQCode);
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
@@ -117,7 +119,7 @@ public class RepositoryCatalogInfoFactory {
 			if (showBusinessPath) {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			}
-			return new CatalogInfo(true, false, translator.translate("offer.period.status"), true,
+			return new CatalogInfo(true, false, translator.translate("offer.available.in.status.course"), true,
 					translator.translate("access.info.catalog.entries"), details, notAvailableEntry, null, false,
 					editBusinessPath, translator.translate("access.open.catalog"), null, null, showRQCode);
 		}
@@ -134,15 +136,31 @@ public class RepositoryCatalogInfoFactory {
 		}
 	}
 	
-	public static final String getStatusNotAvailable(Translator translator, RepositoryEntryStatusEnum reStatus) {
-		CatalogV2Module catalogV2Module = CoreSpringFactory.getImpl(CatalogV2Module.class);
-		if (catalogV2Module.isEnabled()) {
-			if (!RepositoryEntryStatusEnum.isInArray(reStatus, ACService.RESTATUS_ACTIVE_METHOD)) {
-				return translator.translate(reStatus.i18nKey());
-			}
+	public static final CatalogStatusEvaluator getCatalogStatusEvaluator(RepositoryEntryStatusEnum status) {
+		if (CoreSpringFactory.getImpl(CatalogV2Module.class).isEnabled()) {
+			return new RepositoryEntryCatalogV2StatusEvaluator(status);
 		}
-		return null;
+		return CatalogInfo.TRUE_STATUS_EVALUATOR;
 	}
 	
+	private static final class RepositoryEntryCatalogV2StatusEvaluator implements CatalogStatusEvaluator {
+
+		private final RepositoryEntryStatusEnum status;
+
+		public RepositoryEntryCatalogV2StatusEvaluator(RepositoryEntryStatusEnum status) {
+			this.status = status;
+		}
+
+		@Override
+		public boolean isVisibleStatusNoPeriod() {
+			return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD);
+		}
+
+		@Override
+		public boolean isVisibleStatusPeriod() {
+			return RepositoryEntryStatusEnum.isInArray(status, ACService.RESTATUS_ACTIVE_METHOD_PERIOD);
+		}
+		
+	}
 
 }

@@ -26,6 +26,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class CatalogInfo {
 
 	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, null, false, null, null, true, null, false, null, null, null, null, true);
+	public static final TrueStatusEvaluator TRUE_STATUS_EVALUATOR = new TrueStatusEvaluator();
 
 	private final boolean catalogSupported;
 	private final boolean webCatalogSupported;
@@ -34,7 +35,7 @@ public class CatalogInfo {
 	private final String detailsLabel;
 	private final String details;
 	private final boolean notAvailableEntry;
-	private final String notAvailableStatus;
+	private final CatalogStatusEvaluator statusEvaluator;
 	private final boolean fullyBooked;
 	private final String editBusinessPath;
 	private final String editLabel;
@@ -44,7 +45,7 @@ public class CatalogInfo {
 
 	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, String periodStatusOption,
 			boolean showDetails, String detailsLabel, String details, boolean notAvailableEntry,
-			String notAvailableStatus, boolean fullyBooked, String editBusinessPath, String editLabel,
+			CatalogStatusEvaluator statusEvaluator, boolean fullyBooked, String editBusinessPath, String editLabel,
 			String catalogBusinessPath, List<TaxonomyLevel> microsites, boolean showQRCode) {
 		this.catalogSupported = catalogSupported;
 		this.webCatalogSupported = webCatalogSupported;
@@ -53,7 +54,7 @@ public class CatalogInfo {
 		this.detailsLabel = detailsLabel;
 		this.details = details;
 		this.notAvailableEntry = notAvailableEntry;
-		this.notAvailableStatus = notAvailableStatus;
+		this.statusEvaluator = statusEvaluator;
 		this.fullyBooked = fullyBooked;
 		this.editBusinessPath = editBusinessPath;
 		this.editLabel = editLabel;
@@ -90,8 +91,8 @@ public class CatalogInfo {
 		return notAvailableEntry;
 	}
 
-	public String getNotAvailableStatus() {
-		return notAvailableStatus;
+	public CatalogStatusEvaluator getStatusEvaluator() {
+		return statusEvaluator;
 	}
 
 	public boolean isFullyBooked() {
@@ -116,6 +117,28 @@ public class CatalogInfo {
 
 	public boolean isShowQRCode() {
 		return showQRCode;
+	}
+	
+	public interface CatalogStatusEvaluator {
+		
+		boolean isVisibleStatusNoPeriod();
+		
+		boolean isVisibleStatusPeriod();
+		
+	}
+	
+	private static final class TrueStatusEvaluator implements CatalogStatusEvaluator {
+
+		@Override
+		public boolean isVisibleStatusNoPeriod() {
+			return true;
+		}
+
+		@Override
+		public boolean isVisibleStatusPeriod() {
+			return true;
+		}
+		
 	}
 
 }
