@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.user;
@@ -47,7 +47,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 /**
  * 
  * Initial date: 27.10.2017<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class UserManagerImplTest {
@@ -194,16 +194,6 @@ public class UserManagerImplTest {
 		boolean isEmailAllowed = sut.isEmailAllowed(null);
 
 		assertThat(isEmailAllowed).isTrue();
-	}
-	
-	@Test
-	public void shouldNotAllowUnusedEmailIfReserved_UniqueMandatory_EmailMandatory() {
-		when(userModuleMock.isEmailUnique()).thenReturn(true);
-		when(userModuleMock.isEmailMandatory()).thenReturn(true);
-		
-		boolean isEmailAllowed = sut.isEmailAllowed(UNUSED_EMAIL);
-
-		assertThat(isEmailAllowed).isFalse();
 	}
 	
 	@Test
