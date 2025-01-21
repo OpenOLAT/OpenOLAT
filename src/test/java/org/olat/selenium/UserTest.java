@@ -632,33 +632,35 @@ public class UserTest extends Deployments {
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword());
 		
-		String newEmail = user.getLogin() + "@openolat.frentix.com";
+		String newEmail = user.getLogin() + "@openolat.com";
 
 		UserToolsPage userTools = new UserToolsPage(browser);
 		UserProfilePage profil = userTools
 			.openUserToolsMenu()
 			.openMyProfil()
 			.changeEmail(newEmail)
-			.saveProfilAndConfirmEmail()
-			.assertOnChangedEmail(newEmail);
-		
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+			.validateEmail();
 		
 		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
 		Assert.assertEquals(1, messages.size());
-		String confirmationLink = profil.extractConfirmationLink(messages.get(0));
-		profil.loadConfirmationLink(confirmationLink);
+		String otp = profil.extractOtp(messages.get(0));
 		
+		profil
+			.confirmEmail(otp)
+			.assertOnChangedEmail(newEmail);
+		
+		userTools
+			.logout();
+		
+		OOGraphene.waitingALittleBit();
+	
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword())
 			.assertOnResume()
 			.resume();
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
-		userTools = new UserToolsPage(browser);
-		userTools
-			.openUserToolsMenu()
-			.openMyProfil()
+		profil = new UserProfilePage(browser);
+		profil
 			.assertOnEmail(newEmail);
 	}
 	

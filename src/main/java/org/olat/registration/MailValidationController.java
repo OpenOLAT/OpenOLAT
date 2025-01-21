@@ -106,6 +106,8 @@ public class MailValidationController extends FormBasicController {
 			setFormTitle("reg.title");
 			setFormInfo("reg.desc");
 			formLayout.setElementCssClass("o_sel_registration_email_form");
+		} else {
+			formLayout.setElementCssClass("o_sel_email_form");
 		}
 
 		FormLayoutContainer mailCont = FormLayoutContainer.createDefaultFormLayout("mail_cont", getTranslator());

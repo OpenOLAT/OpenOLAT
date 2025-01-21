@@ -336,6 +336,7 @@ public class ProfileFormController extends FormBasicController {
 	private void initEmailForm(FormItem formItem, FormLayoutContainer groupContainer) {
 		// special case for email field
 		emailEl = (TextElement)formItem;
+		emailEl.setElementCssClass("o_sel_user_mail");
 		emailEl.setEnabled(false);
 		currentEmail = emailEl.getValue();
 
@@ -344,6 +345,7 @@ public class ProfileFormController extends FormBasicController {
 		emailLayoutContainer.setRootForm(mainForm);
 
 		changeEmailBtn = uifactory.addFormLink("change.mail.in.process", emailLayoutContainer, Link.BUTTON_SMALL);
+		changeEmailBtn.setElementCssClass("o_sel_user_change_mail");
 		changeEmailBtn.setIconLeftCSS("o_icon o_icon_edit");
 		
 		if (!userModule.isEmailMandatory()) {

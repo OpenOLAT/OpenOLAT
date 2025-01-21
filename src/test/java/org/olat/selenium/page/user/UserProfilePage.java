@@ -85,25 +85,64 @@ public class UserProfilePage {
 	}
 	
 	public UserProfilePage changeEmail(String newEmail) {
-		By emailBy = By.cssSelector(".o_user_profile_form .o_user_profil_email input[type='text']");
+		By changeEmailBy = By.cssSelector(".o_user_profile_form a.o_sel_user_change_mail");
+		OOGraphene.waitElement(changeEmailBy, browser);
+        browser.findElement(changeEmailBy).click();
+		
+		// Modal to change the E-mail
+		OOGraphene.waitModalDialog(browser);
+		
+		By emailBy = By.cssSelector("dialog .o_sel_email_form input.o_sel_registration_email[type='text']");
 		OOGraphene.waitElement(emailBy, browser);
-        browser.findElement(emailBy).clear();
-        // Make it reliable for Firefox (server)
-        OOGraphene.waitingALittleBit();
-        browser.findElement(emailBy).sendKeys("");
-        OOGraphene.waitingALittleBit();
         browser.findElement(emailBy).sendKeys(newEmail);
 		return this;
 	}
+
+	public UserProfilePage validateEmail() {
+		By validateBy = By.cssSelector(".o_sel_email_form a.btn.btn-primary");
+        browser.findElement(validateBy).click();
+        
+        By otpBy = By.cssSelector(".o_sel_registration_otp");
+        OOGraphene.waitElement(otpBy, browser);
+		return this;
+	}
+	
+	public UserProfilePage confirmEmail(String otp) {
+		By otpBy = By.cssSelector(".o_sel_email_form .o_sel_registration_otp input[type='text']");
+		OOGraphene.waitElement(otpBy, browser);
+		browser.findElement(otpBy).sendKeys(otp);
+		OOGraphene.waitBusy(browser);
+		
+		By confirmBy = By.xpath("//dialog//fieldset[contains(@class,'o_form')]//button[contains(@class,'btn-primary')][not(contains(@class,'o_disabled'))]");
+		OOGraphene.waitElement(confirmBy, browser);
+		browser.findElement(confirmBy).click();
+		 
+		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
+	}
+	
+	public String extractOtp(SmtpMessage message) {
+		String body = message.getBody();
+		int index = body.indexOf("'otp'>");
+		if(index >= 0) {
+			body = body.substring(index + 6);
+		}
+		int nextIndex = body.indexOf("</span");
+		if(nextIndex >= 0) {
+			body = body.substring(0, nextIndex);
+		}
+		return body;
+	}
 	
 	public UserProfilePage assertOnEmail(String email) {
-		By emailBy = By.xpath("//div[contains(@class,'o_user_profile_form')]//div[contains(@class,'o_user_profil_email')]//input[@type='text'][@value='" + email + "']");
+		By emailBy = By.xpath("//div[contains(@class,'o_user_profile_form')]//div[contains(@class,'o_sel_user_mail')]//input[@type='text'][@value='" + email + "']");
 		OOGraphene.waitElement(emailBy, browser);
 		return this;
 	}
 	
 	public  UserProfilePage assertOnChangedEmail(String newEmail) {
-		By emailBy = By.xpath("//div[contains(@class,'o_user_profile_form')]//div[contains(@class,'o_user_profil_email')]/div[contains(@class,'o_form_example')]/b[text()[contains(.,'" + newEmail + "')]]");
+		By emailBy = By.xpath("//div[contains(@class,'o_user_profile_form')]//div[contains(@class,'o_sel_user_mail')]//input[@type='text'][@disabled='disabled'][contains(@value,'" + newEmail + "')]");
 		OOGraphene.waitElement(emailBy, browser);
 		return this;
 	}
