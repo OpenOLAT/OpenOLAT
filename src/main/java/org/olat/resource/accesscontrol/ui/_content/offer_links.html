@@ -1,0 +1,53 @@
+#if($r.isNotNull($catalogUrlExtern))
+	<div class="form-group clearfix o_block_large_bottom">
+		<label class="control-label" for="o_ac_url_extern"><i class="o_icon o_icon-fw o_icon_catalog_extern"> </i> $r.translate("offer.publish.in.extern")</label>
+		<div id="o_ac_url_extern" class="o_copy_code o_nowrap">
+			#if($showQRCode)
+				<a href="javascript:;" id="o_extlink_extern"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+				<script>
+				jQuery(function() {
+					o_QRCodePopup('o_extlink_extern', '$catalogUrlExtern', 'right');
+				});
+				</script>
+			#end
+			<input type="text" value="$catalogUrlExtern" onclick="this.select()"/>
+		</div>
+	</div>
+#end
+
+<div class="form-group clearfix o_block_large_bottom">
+	<label class="control-label" for="o_ac_url_intern"><i class="o_icon o_icon-fw o_icon_catalog_intern"> </i> $r.translate("offer.publish.in.intern")</label>
+	<div id="o_ac_url_intern" class="o_copy_code o_nowrap">
+		#if($showQRCode)
+			<a href="javascript:;" id="o_extlink_intern"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+			<script>
+			jQuery(function() {
+				o_QRCodePopup('o_extlink_intern', '$catalogUrlIntern', 'right');
+			});
+			</script>
+		#end
+		<input type="text" value="$catalogUrlIntern" onclick="this.select()"/>
+	</div>
+</div>
+
+#if($taxonomyLinks && $r.isNotEmpty($taxonomyLinks))
+	#foreach($link in $taxonomyLinks)
+		<div class="form-group clearfix o_block_large_bottom">
+			<label class="control-label" for="o_ac_url_${link.id}"><i class="o_icon o_icon-fw o_icon_tag"> </i> $link.name</label>
+			<div id="o_ac_url_${link.id}" class="o_copy_code o_nowrap">
+				#if($showQRCode)
+					<a href="javascript:;" id="o_extlink_${link.id}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+					<script>
+						"use strict";
+						jQuery(function() {
+							o_QRCodePopup('o_extlink_${link.id}', '${link.url}', 'right');
+						});
+					</script>
+				#end
+				<input type="text" value="$link.url" onclick="this.select()"/>
+			</div>
+		</div>
+	#end
+#end
+
+$r.render("close")

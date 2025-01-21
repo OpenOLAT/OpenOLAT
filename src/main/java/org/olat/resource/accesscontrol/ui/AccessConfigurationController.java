@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -56,16 +55,12 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.Roles;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.catalog.ui.CatalogBCFactory;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.ui.author.AuthoringEditAccessShareController.ExtLink;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -91,6 +86,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private static final String ICON_CATALOG_EXTERN = "<i class=\"o_icon o_icon-fw o_icon_catalog_extern\"> </i> ";
 	private static final String ICON_CATALOG_INTERN = "<i class=\"o_icon o_icon-fw o_icon_catalog_intern\"> </i> ";
 	
+	private FormLink linksLink;
 	private FormLink addButton;
 	private DropdownItem addMethodDropdown;
 	private FormLink addOpenAccessLink;
@@ -107,6 +103,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private AbstractConfigurationMethodController newMethodCtrl;
 	private AbstractConfigurationMethodController editMethodCtrl;
 	private MethodSelectionController methodSelectionCtrl;
+	private OfferLinksController offerLinksCtrl;
 
 	private final List<Offer> deletedOfferList = new ArrayList<>(1);
 	private final List<AccessInfo> accessInfos = new ArrayList<>(3);
@@ -408,6 +405,9 @@ public class AccessConfigurationController extends FormBasicController {
 				cmc.deactivate();
 				cleanUp();
 			}
+		} else if (source == offerLinksCtrl) {
+			cmc.deactivate();
+			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
 		} else {
@@ -420,18 +420,22 @@ public class AccessConfigurationController extends FormBasicController {
 		removeAsListenerAndDispose(guestOfferCtrl);
 		removeAsListenerAndDispose(editMethodCtrl);
 		removeAsListenerAndDispose(newMethodCtrl);
+		removeAsListenerAndDispose(offerLinksCtrl);
 		removeAsListenerAndDispose(cmc);
 		openAccessOfferCtrl = null;
 		guestOfferCtrl = null;
 		editMethodCtrl = null;
 		newMethodCtrl = null;
+		offerLinksCtrl = null;
 		cmc = null;
 	}
 	
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == addOpenAccessLink || source == addOpenAccessButton) {
+		if (source == linksLink) {
+			doOpenLinks(ureq);
+		} else if (source == addOpenAccessLink || source == addOpenAccessButton) {
 			editOpenAccessOffer(ureq, null);
 		} else if (source == addGuestLink || source == addGuestButton) {
 			editGuestOffer(ureq, null);
@@ -603,7 +607,6 @@ public class AccessConfigurationController extends FormBasicController {
 			if (catalogInfo.isShowDetails()) {
 				overviewContainer.contextPut("detailsLabel", catalogInfo.getDetailsLabel());
 				overviewContainer.contextPut("details", catalogInfo.getDetails());
-				overviewContainer.contextPut("showQRCode", catalogInfo.isShowQRCode());
 				
 				if (StringHelper.containsNonWhitespace(catalogInfo.getEditBusinessPath())) {
 					FormLink catEditLink = uifactory.addFormLink("catEdit", "catalog", null, "", overviewContainer, Link.NONTRANSLATED + Link.LINK);
@@ -613,24 +616,8 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 			
 			if (StringHelper.containsNonWhitespace(catalogInfo.getCatalogBusinessPath())) {
-				long id = CodeHelper.getRAMUniqueID();
-				overviewContainer.contextPut("id", String.valueOf(id));
-				overviewContainer.contextPut("catalogUrl", catalogInfo.getCatalogBusinessPath());
-				
-				if (catalogInfo.getMicrosites() != null && !catalogInfo.getMicrosites().isEmpty()) {
-					FormLink showMicrositeLinks = uifactory.addFormLink("show.additional" + id, "nodeConfigForm.show.additional", null, overviewContainer, Link.LINK);
-					showMicrositeLinks.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
-					
-					HashSet<TaxonomyLevel> taxonomyLevels = new HashSet<>(catalogInfo.getMicrosites());
-					List<ExtLink> taxonomyLinks = new ArrayList<>(taxonomyLevels.size());
-					for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
-						String url = CatalogBCFactory.get(false).getTaxonomyLevelUrl(taxonomyLevel);
-						String name = translate("cif.catalog.links.microsite", TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel));
-						ExtLink extLink = new ExtLink(taxonomyLevel.getKey().toString() + id, url, name);
-						taxonomyLinks.add(extLink);
-						overviewContainer.contextPut("taxonomyLinks", taxonomyLinks);
-					}
-				}
+				linksLink = uifactory.addFormLink("offer.links", "offer.links", "offer.links.label", overviewContainer, Link.LINK);
+				linksLink.setIconLeftCSS("o_icon o_icon_link");
 			}
 		}
 	}
@@ -844,6 +831,15 @@ public class AccessConfigurationController extends FormBasicController {
 			//
 		}
 	}
+	
+	private void doOpenLinks(UserRequest ureq) {
+		removeAsListenerAndDispose(offerLinksCtrl);
+		offerLinksCtrl = new OfferLinksController(ureq, getWindowControl(), catalogInfo);
+		listenTo(offerLinksCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), offerLinksCtrl.getInitialComponent(), true, translate("offer.links"));
+		cmc.activate();
+		listenTo(cmc);
+	}
 
 	public void commitChanges() {
 		for(AccessInfo info:accessInfos) {
@@ -1028,7 +1024,7 @@ public class AccessConfigurationController extends FormBasicController {
 				active = false;
 				withPeriod = true;
 			} else if (to != null && to.after(new Date())) {
-				if (statusEvaluator.isVisibleStatusPeriod()) {
+				if (statusEvaluator != null && !statusEvaluator.isVisibleStatusPeriod()) {
 					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> " + translate("offers.overview.not.available") + "</span>");
 				} else {
 					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> " + translate("offers.overview.bookable") + "</span>");
@@ -1038,14 +1034,12 @@ public class AccessConfigurationController extends FormBasicController {
 				active = true;
 				withPeriod = true;
 			} else {
-				if (statusEvaluator.isVisibleStatusNoPeriod()) {
+				if (statusEvaluator != null && !statusEvaluator.isVisibleStatusNoPeriod()) {
 					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> " + translate("offers.overview.not.available") + "</span>");
 				} else {
 					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> " + translate("offers.overview.bookable") + "</span>");
 				}
-				dates = StringHelper.containsNonWhitespace(catalogInfo.getPeriodStatusOption())
-						? catalogInfo.getPeriodStatusOption()
-						: translate("access.period.none"); // business group
+				dates = catalogInfo.getPeriodStatusOption();
 				active = true;
 				withPeriod = false;
 			}

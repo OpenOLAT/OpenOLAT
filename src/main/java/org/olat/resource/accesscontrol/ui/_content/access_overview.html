@@ -27,51 +27,8 @@
 		</div>
 	</div>
 #end
-
-#if($details)
-	<div>
-		<label class="control-label col-sm-3" for="o_ac_catalog_url">$r.translate("cif.catalog.links")</label>
-	</div>
-	<div class="form-control-static col-sm-9" id="o_ac_catalog_url">
-		<div class="o_block_small_top #if($r.isNotNull($taxonomyLinks) && $r.isNotEmpty($taxonomyLinks))o_block_small_bottom#end">
-			<div class="o_copy_code o_nowrap">
-				#if($showQRCode)
-					<a href="javascript:;" id="o_extlink_searchlink${id}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
-					<script>
-					jQuery(function() {
-						o_QRCodePopup('o_extlink_searchlink${id}', '$catalogUrl', 'right');
-					});
-					</script>
-				#end
-				<input type="text" value="$catalogUrl" onclick="this.select()"/>
-			</div>
-		</div>
-		#if($taxonomyLinks && $r.isNotEmpty($taxonomyLinks))
-			<div class="o_repo_links_microsites">
-				#o_togglebox_start("o_course_node_links_${id}" $r.translate("cif.microsite.links"))
-					#foreach($link in $taxonomyLinks)
-						<div id="o_ac_url_${link.id}" class="o_block_small">
-							<div>
-								$link.name
-							</div>
-							<div class="o_copy_code o_nowrap">
-								#if($showQRCode)
-									<a href="javascript:;" id="o_extlink_${link.id}"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
-									<script>
-										"use strict";
-										jQuery(function() {
-											o_QRCodePopup('o_extlink_${link.id}', '${link.url}', 'right');
-										});
-									</script>
-								#end
-								<input type="text" value="$link.url" onclick="this.select()"/>
-							</div>
-						</div>
-					#end
-				#o_togglebox_end()
-			</div>
-		#end
-	</div>
+#if ($r.available("offer.links"))
+	$r.render("offer.links", "3_9", "form")
 #end
 
 </div>

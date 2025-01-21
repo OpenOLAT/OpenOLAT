@@ -100,7 +100,9 @@ public class CurriculumElementOffersController extends BasicController {
 				translate("offer.available.in.status.curriculum.element"), true, translate("access.taxonomy.level"),
 				details, false, getCatalogStatusEvaluator(element.getElementStatus()), fullyBooked,
 				editBusinessPath, translate("access.open.metadata"),
-				CatalogBCFactory.get(false).getOfferUrl(element.getResource()), taxonomyLevels, true);
+				CatalogBCFactory.get(false).getOfferUrl(element.getResource()), 
+				catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(element.getResource()): null,
+				taxonomyLevels, true);
 		
 		accessConfigCtrl = new AccessConfigurationController(ureq, wControl, element.getResource(),
 				element.getDisplayName(), true, false, false, true, defaultOfferOrganisations, catalogInfo,

@@ -25,7 +25,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 
 public class CatalogInfo {
 
-	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, null, false, null, null, true, null, false, null, null, null, null, true);
+	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, null, false, null, null, true, null, false, null, null, null, null, null, true);
 	public static final TrueStatusEvaluator TRUE_STATUS_EVALUATOR = new TrueStatusEvaluator();
 
 	private final boolean catalogSupported;
@@ -40,13 +40,15 @@ public class CatalogInfo {
 	private final String editBusinessPath;
 	private final String editLabel;
 	private final String catalogBusinessPath;
+	private final String webCatalogBusinessPath;
 	private final List<TaxonomyLevel> microsites;
 	private final boolean showQRCode;
 
 	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, String periodStatusOption,
 			boolean showDetails, String detailsLabel, String details, boolean notAvailableEntry,
 			CatalogStatusEvaluator statusEvaluator, boolean fullyBooked, String editBusinessPath, String editLabel,
-			String catalogBusinessPath, List<TaxonomyLevel> microsites, boolean showQRCode) {
+			String catalogBusinessPath, String webCatalogBusinessPath, List<TaxonomyLevel> microsites,
+			boolean showQRCode) {
 		this.catalogSupported = catalogSupported;
 		this.webCatalogSupported = webCatalogSupported;
 		this.periodStatusOption = periodStatusOption;
@@ -59,6 +61,7 @@ public class CatalogInfo {
 		this.editBusinessPath = editBusinessPath;
 		this.editLabel = editLabel;
 		this.catalogBusinessPath = catalogBusinessPath;
+		this.webCatalogBusinessPath = webCatalogBusinessPath;
 		this.microsites = microsites;
 		this.showQRCode = showQRCode;
 	}
@@ -109,6 +112,10 @@ public class CatalogInfo {
 
 	public String getCatalogBusinessPath() {
 		return catalogBusinessPath;
+	}
+
+	public String getWebCatalogBusinessPath() {
+		return webCatalogBusinessPath;
 	}
 
 	public List<TaxonomyLevel> getMicrosites() {

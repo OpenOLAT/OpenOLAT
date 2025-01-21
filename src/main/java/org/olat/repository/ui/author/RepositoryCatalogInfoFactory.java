@@ -90,7 +90,9 @@ public class RepositoryCatalogInfoFactory {
 					translator.translate("access.taxonomy.level"), details, false,
 					getCatalogStatusEvaluator(entry.getEntryStatus()), false, editBusinessPath,
 					translator.translate("access.open.metadata"),
-					CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), taxonomyLevels, showRQCode);
+					CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), 
+					catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()): null,
+					taxonomyLevels, showRQCode);
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
@@ -121,7 +123,7 @@ public class RepositoryCatalogInfoFactory {
 			}
 			return new CatalogInfo(true, false, translator.translate("offer.available.in.status.course"), true,
 					translator.translate("access.info.catalog.entries"), details, notAvailableEntry, null, false,
-					editBusinessPath, translator.translate("access.open.catalog"), null, null, showRQCode);
+					editBusinessPath, translator.translate("access.open.catalog"), null, null, null, showRQCode);
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}
