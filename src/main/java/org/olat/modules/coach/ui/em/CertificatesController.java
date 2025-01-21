@@ -21,6 +21,7 @@ package org.olat.modules.coach.ui.em;
 
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,13 +33,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Exportable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateIdentityConfig;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -53,7 +54,6 @@ public class CertificatesController extends FormBasicController implements Activ
 
 	public static final int USER_PROPS_OFFSET = 100;
 
-	private final List<CertificateIdentityConfig> certificates;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final String propsIdentifier;
 
@@ -62,15 +62,17 @@ public class CertificatesController extends FormBasicController implements Activ
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private CertificatesManager certificatesManager;
 
-	public CertificatesController(UserRequest ureq, WindowControl wControl, List<CertificateIdentityConfig> certificates, 
+	public CertificatesController(UserRequest ureq, WindowControl wControl, 
 								  List<UserPropertyHandler> userPropertyHandlers, String propsIdentifier) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		this.certificates = certificates;
 		this.userPropertyHandlers = userPropertyHandlers;
 		this.propsIdentifier = propsIdentifier;
 
 		initForm(ureq);
+		loadData();
 	}
 
 	@Override
@@ -92,10 +94,18 @@ public class CertificatesController extends FormBasicController implements Activ
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CertificatesTableModel.CertificateCols.course));
 		
 		tableModel = new CertificatesTableModel(columnsModel, this);
-		tableModel.setObjects(certificates);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, 
 				getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
+	}
+
+	private void loadData() {
+		List<CertificateRow> certificates = certificatesManager
+				.getCertificatesForOrganizations(getIdentity(), OrganisationRoles.educationmanager, userPropertyHandlers)
+				.stream()
+				.map(CertificateRow::new).toList();
+		tableModel.setObjects(certificates);
+
 	}
 
 	@Override
@@ -105,28 +115,24 @@ public class CertificatesController extends FormBasicController implements Activ
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == tableEl) {
-			if (event instanceof SelectionEvent selectionEvent) {
-				if ("select".equals(selectionEvent.getCommand())) {
-					CertificateIdentityConfig certificateIdentityConfig = tableModel.getObject(selectionEvent.getIndex());
-				}
-			}
-		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-
+		reload();
 	}
 
-	public void reload(List<CertificateIdentityConfig> certificates) {
-		tableModel.setObjects(certificates);
+	public void reload() {
+		loadData();
 		tableEl.reloadData();
 	}
 
+
 	@Override
 	public MediaResource export(FlexiTableComponent ftC) {
+		List<CertificateIdentityConfig> certificates = certificatesManager
+				.getCertificatesForOrganizations(getIdentity(), OrganisationRoles.educationmanager, userPropertyHandlers);
 		return new CertificatesExport(certificates, userPropertyHandlers, getTranslator());
 	}
 }

@@ -30,15 +30,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.course.certificate.model.CertificateIdentityConfig;
 
 /**
  * Initial date: 2025-01-14<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CertificatesTableModel extends DefaultFlexiTableDataModel<CertificateIdentityConfig> 
-		implements SortableFlexiTableDataModel<CertificateIdentityConfig>, ExportableFlexiTableDataModel {
+public class CertificatesTableModel extends DefaultFlexiTableDataModel<CertificateRow> 
+		implements SortableFlexiTableDataModel<CertificateRow>, ExportableFlexiTableDataModel {
 
 	private final ExportableFlexiTableDataModel exportDelegate;
 
@@ -54,25 +53,24 @@ public class CertificatesTableModel extends DefaultFlexiTableDataModel<Certifica
 
 	@Override
 	public void sort(SortKey orderBy) {
-		SortableFlexiTableModelDelegate<CertificateIdentityConfig> sorter = new SortableFlexiTableModelDelegate<>(orderBy, this, null);
-		List<CertificateIdentityConfig> views = sorter.sort();
+		SortableFlexiTableModelDelegate<CertificateRow> sorter = new SortableFlexiTableModelDelegate<>(orderBy, this, null);
+		List<CertificateRow> views = sorter.sort();
 		super.setObjects(views);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		CertificateIdentityConfig certificateIdentityConfig = getObject(row);
-		return getValueAt(certificateIdentityConfig, col);
+		CertificateRow object = getObject(row);
+		return getValueAt(object, col);
 	}
 
 	@Override
-	public Object getValueAt(CertificateIdentityConfig row, int col) {
+	public Object getValueAt(CertificateRow row, int col) {
 		if (col >= 0 && col < CertificateCols.values().length) {
 			return switch (CertificateCols.values()[col]) {
-				case id -> row.getCertificate().getKey();
-				case course ->
-						row.getConfig() != null && row.getConfig().getEntry() != null ? row.getConfig().getEntry().getDisplayname() : "";
-				case path -> row.getCertificate().getPath();
+				case id -> row.getCertificateId();
+				case course -> row.getCourseDisplayName();
+				case path -> row.getPath();
 			};
 		}
 		

@@ -81,6 +81,10 @@ public class CertificateIdentityConfig {
 		}
 		return identityProps.get(index);
 	}
+	
+	public List<String> getIdentityProps() {
+		return identityProps;
+	}
 
 	public void setConfig(RepositoryEntryCertificateConfiguration certificateConfig) {
 		this.certificateConfig = certificateConfig;
