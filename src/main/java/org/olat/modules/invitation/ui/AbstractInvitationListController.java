@@ -411,7 +411,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		
 		MailerResult result = new MailerResult();
 		MailContext ctxt = new MailContextImpl(ores, null, getWindowControl().getBusinessControl().getAsString());
-		MailBundle bundle = mailManager.makeMailBundle(ctxt, mailTemplate, getIdentity(), null, result);
+		MailBundle bundle = mailManager.makeMailBundle(ctxt, mailTemplate, getIdentity(), null, null, result);
 		bundle.setContactList(contactList);
 
 		return mailManager.sendExternMessage(bundle, result, true);

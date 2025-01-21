@@ -195,12 +195,13 @@ public interface MailManager {
 	 * @param ctxt The context where the mail will be sent
 	 * @param template The mail template
 	 * @param sender Who send the mail
+	 * @param recipient Who receive the mail (optional)
 	 * @param metaId The ID of the mailing
 	 * @param result The mailer result
 	 * @return The mail bundle
 	 */
-	public MailBundle makeMailBundle(MailContext ctxt,
-			MailTemplate template, Identity sender, String metaId, MailerResult result);
+	public MailBundle makeMailBundle(MailContext ctxt, MailTemplate template,
+			Identity sender, Identity recipient, String metaId, MailerResult result);
 	
 	/**
 	 * Send the mail bundle

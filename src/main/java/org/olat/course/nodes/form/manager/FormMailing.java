@@ -153,7 +153,7 @@ public class FormMailing {
 						   Identity formParticipant) {
 		MailContext context = new MailContextImpl("[RepositoryEntry:" + courseEntry.getKey() + "][CourseNode:" + courseNode.getIdent() + "]");
 		MailerResult result = new MailerResult();
-		MailBundle bundle = mailManager.makeMailBundle(context, template, formParticipant, null, result);
+		MailBundle bundle = mailManager.makeMailBundle(context, template, formParticipant, null, null, result);
 		bundle.setContactLists(recipients);
 
 		mailManager.sendMessage(bundle);

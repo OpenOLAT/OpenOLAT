@@ -334,7 +334,7 @@ public class BGMailHelper {
 	
 	public static final class BGMailTemplateInfos {
 		private final String groupName;
-		private final String groupUrl;
+		private String groupUrl;
 		private final String groupNameWithUrl;
 		private final String groupDescription;
 		private final String courseList;
@@ -357,6 +357,10 @@ public class BGMailHelper {
 		public String getGroupUrl() {
 			if(groupUrl == null) return "";
 			return groupUrl;
+		}
+		
+		public void setGroupUrl(String groupUrl) {
+			this.groupUrl = groupUrl;
 		}
 		
 		public String getGroupNameWithUrl() {

@@ -50,6 +50,7 @@ import org.olat.course.member.wizard.InvitationContext.TransientInvitation;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.ui.BGMailHelper.BGMailTemplate;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationStatusEnum;
@@ -260,16 +261,17 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		} else if(businessGroup != null) {
 			String businessGroupUrl = invitationService.toUrl(invitation, businessGroup);
 			template.addToContext("groupurl", businessGroupUrl);
-		} else if (project != null) {
-			if (template instanceof ProjProjectMailTemplate projectMailTemplate) {
-				projectMailTemplate.setUrl(invitationService.toUrl(invitation, project));
-				projectMailTemplate.setRolesAddNames(invitation.getRoleList());
+			if(template instanceof BGMailTemplate mailTemplate && mailTemplate.getInfos() != null) {
+				mailTemplate.getInfos().setGroupUrl(businessGroupUrl);
 			}
+		} else if (project != null && template instanceof ProjProjectMailTemplate projectMailTemplate) {
+			projectMailTemplate.setUrl(invitationService.toUrl(invitation, project));
+			projectMailTemplate.setRolesAddNames(invitation.getRoleList());
 		}
 		
 		MailerResult result = new MailerResult();
 		MailContext ctxt = new MailContextImpl(ores, null, wControl.getBusinessControl().getAsString());
-		MailBundle bundle = mailManager.makeMailBundle(ctxt, template, ureq.getIdentity(), null, result);
+		MailBundle bundle = mailManager.makeMailBundle(ctxt, template, ureq.getIdentity(), transientInvitation.getIdentity(), null, result);
 		bundle.setContactList(contactList);
 
 		result = mailManager.sendExternMessage(bundle, result, true);
