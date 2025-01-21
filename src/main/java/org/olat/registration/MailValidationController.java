@@ -301,6 +301,9 @@ public class MailValidationController extends FormBasicController {
 				otpEl.setErrorKey("reg.otp.invalid");
 				allOk = false;
 			}
+		} else if (validationCont == null || !validationCont.isVisible()) {
+			mailEl.setErrorKey("email.address.not.validated");
+			allOk = false;
 		} else if (!isUserManager) {
 			allOk = false;
 		}
