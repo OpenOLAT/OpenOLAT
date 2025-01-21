@@ -653,10 +653,10 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	}
 	
 	@Override
-	public MailBundle makeMailBundle(MailContext ctxt, MailTemplate template, Identity sender, String metaId,
+	public MailBundle makeMailBundle(MailContext ctxt, MailTemplate template, Identity sender, Identity recipient, String metaId,
 			MailerResult result) {
 		MailBundle bundle;
-		MailContent msg = createWithContext(null, template, result);
+		MailContent msg = createWithContext(recipient, template, result);
 		if(msg != null && result.getReturnCode() == MailerResult.OK){
 			// send mail
 			bundle = new MailBundle();
@@ -673,7 +673,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	@Override
 	public MailBundle makeMailBundle(MailContext ctxt, String externalRecipientTO,
 			MailTemplate template, Identity sender, String metaId, MailerResult result) {	
-		MailBundle bundle = makeMailBundle(ctxt, template, sender, metaId, result);
+		MailBundle bundle = makeMailBundle(ctxt, template, sender, null, metaId, result);
 		if(bundle != null) {
 			bundle.setTo(externalRecipientTO);
 		}
