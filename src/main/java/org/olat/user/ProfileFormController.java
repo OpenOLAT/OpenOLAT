@@ -454,9 +454,7 @@ public class ProfileFormController extends FormBasicController {
 	}
 
 	private void handleChangedEmailEvent(UserRequest ureq, ChangeMailEvent cme) {
-		if (isAllowedToChangeEmailWithoutVerification(ureq)) {
-			startChangeEmailWorkflow(ureq);
-		} else if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
 			String newDomain = MailHelper.getMailDomain(cme.getChangedEmail());
 			String currentDomain = MailHelper.getMailDomain(emailEl.getValue());
 
@@ -466,6 +464,8 @@ public class ProfileFormController extends FormBasicController {
 			} else {
 				processMailDomainChange(ureq, newDomain);
 			}
+		} else {
+			startChangeEmailWorkflow(ureq);
 		}
 	}
 
@@ -762,7 +762,7 @@ public class ProfileFormController extends FormBasicController {
 
 		boolean areMailsSent;
 		if (isAllowedToChangeEmailWithoutVerification(ureq)) {
-			// A usermanager does not need to verify the new mail and can change it directly
+			// An usermanager does not need to verify the new mail and can change it directly
 			areMailsSent = handleDirectEmailChange(ureq);
 		} else {
 			areMailsSent = handleVerifiedEmailChange(ureq, serverPath);
