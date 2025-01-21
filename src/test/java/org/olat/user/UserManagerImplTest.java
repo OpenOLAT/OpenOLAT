@@ -40,7 +40,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
-import org.olat.registration.RegistrationManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 
@@ -59,8 +58,6 @@ public class UserManagerImplTest {
 	private UserDAO userDaoMock;
 	@Mock
 	private UserModule userModuleMock;
-	@Mock
-	private RegistrationManager registrationManagerMock;
 	@Mock
 	private LoginModule loginModuleMock;
 	
