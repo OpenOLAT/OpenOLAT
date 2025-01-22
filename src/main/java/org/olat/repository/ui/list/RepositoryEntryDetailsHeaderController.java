@@ -243,9 +243,14 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	}
 
 	@Override
-	protected boolean doAutoBooking(UserRequest ureq) {
+	protected boolean tryAutoBooking(UserRequest ureq) {
 		AccessResult acResult = acService.isAccessible(entry, getIdentity(), null, false, null, false);
 		return acService.tryAutoBooking(getIdentity(), entry, acResult);
+	}
+
+	@Override
+	protected Long getResourceKey() {
+		return entry.getOlatResource().getKey();
 	}
 	
 	@Override

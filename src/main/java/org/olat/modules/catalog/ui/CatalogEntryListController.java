@@ -561,6 +561,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 				} else if (bookedEvent.getCurriculumElement() != null) {
 					doBooked(ureq, bookedEvent.getCurriculumElement());
 				}
+			} else if (event instanceof BookEvent bookEvent) {
+				doBook(ureq, bookEvent.getResourceKey());
 			} else if (event instanceof LeavingEvent) {
 				stackPanel.popUpToController(this);
 				loadModel(false);
@@ -718,7 +720,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(entry.getOlatResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, stackPanel, entry, scrollToOffers);
+			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, stackPanel, entry, scrollToOffers, searchParams.isWebPublish());
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
@@ -749,6 +751,13 @@ public class CatalogEntryListController extends FormBasicController implements A
 			getWindow().setTitle(windowTitle);
 		} else {
 			tableEl.reloadData();
+		}
+	}
+	
+	private void doBook(UserRequest ureq, Long resourceKey) {
+		CatalogEntryRow row = dataModel.getObjectByResourceKey(resourceKey);
+		if (row != null) {
+			doBook(ureq, row);
 		}
 	}
 

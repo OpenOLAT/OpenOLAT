@@ -35,6 +35,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
+import org.olat.modules.catalog.ui.BookEvent;
 import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
@@ -134,7 +135,8 @@ public class CurriculumElementInfosController extends BasicController implements
 			fireEvent(ureq, new BookedEvent(element));
 		} else if (!acResult.getAvailableMethods().isEmpty()) {
 			if (acResult.getAvailableMethods().size() > 1 || !acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
-				offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
+				boolean webCatalog = webPublish != null? webPublish.booleanValue(): false;
+				offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false, webCatalog);
 				listenTo(offersCtrl);
 				mainVC.put("offers", offersCtrl.getInitialComponent());
 				mainVC.contextPut("offersOpen", offersOpen);
@@ -165,9 +167,15 @@ public class CurriculumElementInfosController extends BasicController implements
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == offersCtrl) {
+		if (source == headerCtrl) {
+			if (event instanceof BookEvent) {
+				fireEvent(ureq, event);
+			}
+		} else if (source == offersCtrl) {
 			if (event == AccessEvent.ACCESS_OK_EVENT) {
 				fireEvent(ureq, new BookedEvent(element));
+			} else if (event == OffersController.LOGIN_EVENT) {
+				fireEvent(ureq, new BookEvent(element.getResource().getKey()));
 			}
 		}
 		super.event(ureq, source, event);

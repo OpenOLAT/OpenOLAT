@@ -40,6 +40,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.run.InfoCourse;
+import org.olat.modules.catalog.ui.BookEvent;
 import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
@@ -85,7 +86,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	private CourseModule courseModule;
 
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean isResourceInfoView, boolean closeTabOnLeave) {
+			boolean isResourceInfoView, boolean closeTabOnLeave, boolean webCatalog) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
@@ -126,7 +127,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 				fireEvent(ureq, new BookedEvent(entry));
 			} else if (!acResult.getAvailableMethods().isEmpty()) {
 				if (acResult.getAvailableMethods().size() > 1 || !acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
-					offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
+					offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false, webCatalog);
 					listenTo(offersCtrl);
 					mainVC.put("offers", offersCtrl.getInitialComponent());
 				}
@@ -192,6 +193,8 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		if (source == headerCtrl) {
 			if (event == RepositoryEntryDetailsHeaderController.START_EVENT) {
 				doStart(ureq);
+			} else if (event instanceof BookEvent) {
+				fireEvent(ureq, event);
 			} else if (event instanceof LeavingEvent) {
 				fireEvent(ureq, event);
 			}
@@ -205,6 +208,8 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 					doStart(ureq);
 					fireEvent(ureq, new BookedEvent(entry));
 				}
+			} else if (event == OffersController.LOGIN_EVENT) {
+				fireEvent(ureq, new BookEvent(entry.getOlatResource().getKey()));
 			}
 		}
 		super.event(ureq, source, event);

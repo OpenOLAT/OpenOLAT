@@ -42,17 +42,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OffersController extends BasicController {
+	
+	public static final Event LOGIN_EVENT = new Event("login.or.register");
 
 	private final VelocityContainer mainVC;
 	
 	private final OfferSelectionController offerSelectionCtrl;
 	private Controller accessCtrl;
+
+	private final boolean webCatalog;
 	
 	@Autowired
 	private AccessControlModule acModule;
 
-	public OffersController(UserRequest ureq, WindowControl wControl, List<OfferAccess> offers, boolean withTitle) {
+	public OffersController(UserRequest ureq, WindowControl wControl, List<OfferAccess> offers, boolean withTitle, boolean webCatalog) {
 		super(ureq, wControl);
+		this.webCatalog = webCatalog;
 		mainVC = createVelocityContainer("offers");
 		putInitialPanel(mainVC);
 		
@@ -89,6 +94,8 @@ public class OffersController extends BasicController {
 						showError("error.accesscontrol");
 					}
 				}
+			} else if (event == LOGIN_EVENT) {
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);
@@ -97,8 +104,12 @@ public class OffersController extends BasicController {
 	private void updateOfferUI(UserRequest ureq, OfferAccess offer) {
 		removeAsListenerAndDispose(accessCtrl);
 		
-		AccessMethodHandler handler = acModule.getAccessMethodHandler(offer.getMethod().getType());
-		accessCtrl = handler.createAccessController(ureq, getWindowControl(), offer);
+		if (webCatalog) {
+			accessCtrl = new OfferLoginController(ureq, getWindowControl(), offer);
+		} else {
+			AccessMethodHandler handler = acModule.getAccessMethodHandler(offer.getMethod().getType());
+			accessCtrl = handler.createAccessController(ureq, getWindowControl(), offer);
+		}
 		listenTo(accessCtrl);
 		mainVC.put("offer", accessCtrl.getInitialComponent());
 	}

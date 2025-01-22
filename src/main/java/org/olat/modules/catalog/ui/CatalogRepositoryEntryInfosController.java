@@ -45,7 +45,6 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 
 	private final BreadcrumbedStackedPanel stackPanel;
 	
-	private CatalogRepositoryEntryAccessController accessCtrl;
 	private LightboxController lightboxCtrl;
 	private WebCatalogAuthController authCtrl;
 	
@@ -53,8 +52,8 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	protected ACService acService;
 
 	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbedStackedPanel stackPanel, RepositoryEntry entry, boolean scrollToOffers) {
-		super(ureq, wControl, entry, false, false);
+			BreadcrumbedStackedPanel stackPanel, RepositoryEntry entry, boolean scrollToOffers, boolean webCatalog) {
+		super(ureq, wControl, entry, false, false, webCatalog);
 		this.stackPanel = stackPanel;
 		
 		if (scrollToOffers) {
@@ -66,11 +65,7 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessCtrl) {
-			if (event instanceof BookedEvent) {
-				fireEvent(ureq, event);
-			}
-		} else if (authCtrl == source) {
+		if (authCtrl == source) {
 			lightboxCtrl.deactivate();
 			cleanUp();
 			if (event instanceof LoginProcessEvent) {

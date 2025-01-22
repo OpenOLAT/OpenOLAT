@@ -90,7 +90,7 @@ public class CatalogRepositoryEntryAccessController extends BasicController {
 		if (acResult.isAccessible()) {
 			fireEvent(ureq, new BookedEvent(entry));
 		} else {
-			accessCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
+			accessCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false, false);
 			listenTo(accessCtrl);
 			mainVC.put("access", accessCtrl.getInitialComponent());
 		}

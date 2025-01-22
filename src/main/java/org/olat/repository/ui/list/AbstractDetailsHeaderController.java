@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.catalog.ui.BookEvent;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -85,7 +86,8 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 	
 	protected abstract void initAccess(UserRequest ureq, FormLayoutContainer layoutCont);
 	protected abstract String getStartLinkText();
-	protected abstract boolean doAutoBooking(UserRequest ureq);
+	protected abstract boolean tryAutoBooking(UserRequest ureq);
+	protected abstract Long getResourceKey();
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -184,10 +186,7 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 			if (CMD_START.equals(cmd)) {
 				fireEvent(ureq, START_EVENT);
 			} else if (CMD_AUTO_BOOKING.equals(cmd)) {
-				boolean success = doAutoBooking(ureq);
-				if (success) {
-					fireEvent(ureq, START_EVENT);
-				}
+				doAutoBooking(ureq);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -196,6 +195,17 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private void doAutoBooking(UserRequest ureq) {
+		if (getIdentity() == null) {
+			fireEvent(ureq, new BookEvent(getResourceKey()));
+		} else {
+			boolean success = tryAutoBooking(ureq);
+			if (success) {
+				fireEvent(ureq, START_EVENT);
+			}
+		}
 	}
 
 }
