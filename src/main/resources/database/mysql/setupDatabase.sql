@@ -1195,14 +1195,14 @@ create table if not exists o_ac_order_line (
   total_amount DECIMAL(12,4),
   total_currency_code VARCHAR(3),
   cancellation_fee_amount decimal(12,4),
-  column cancellation_currency_code varchar(3),
+  cancellation_currency_code varchar(3),
   fk_order_part_id bigint,
   fk_offer_id bigint,
   primary key (order_item_id)
 );
 
 create table if not exists o_ac_transaction (
-    transaction_id bigint NOT NULL,
+  transaction_id bigint NOT NULL,
   version mediumint unsigned not null,
   creationdate datetime,
   trx_status VARCHAR(32) default 'NEW',
@@ -1211,7 +1211,7 @@ create table if not exists o_ac_transaction (
   fk_order_part_id bigint,
   fk_order_id bigint,
   fk_method_id bigint,
-    primary key (transaction_id)
+  primary key (transaction_id)
 );
 
 create table  if not exists o_ac_reservation (
