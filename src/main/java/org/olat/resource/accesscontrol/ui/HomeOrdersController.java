@@ -87,7 +87,8 @@ public class HomeOrdersController extends BasicController {
 
 	private void doOpenOrders(UserRequest ureq) {
 		if(ordersCtrl == null) {
-			ordersCtrl = new OrdersController(ureq, getWindowControl(), getIdentity());
+			OrdersSettings settings = OrdersSettings.defaultSettings();
+			ordersCtrl = new OrdersController(ureq, getWindowControl(), getIdentity(), settings);
 			listenTo(ordersCtrl);
 		}
 		mainVC.put("segmentCmp", ordersCtrl.getInitialComponent());

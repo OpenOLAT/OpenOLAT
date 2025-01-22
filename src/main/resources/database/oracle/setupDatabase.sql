@@ -1114,6 +1114,8 @@ create table o_ac_order (
   total_currency_code VARCHAR(3 char),
   discount_amount number(20,2),
   discount_currency_code VARCHAR(3 char),
+  cancellation_fee_amount number(20,2),
+  cancellation_fee_currency_code varchar(3),
   order_status VARCHAR(32 char) default 'NEW',
   purchase_order_number varchar(100),
   order_comment varchar(4000),
@@ -1131,6 +1133,8 @@ create table o_ac_order_part (
   total_lines_currency_code VARCHAR(3 char),
   total_amount number(20,2),
   total_currency_code VARCHAR(3 char),
+  total_lines_cfee_amount number(20,2),
+  total_lines_cfee_currency_code varchar(3),
   fk_order_id number(20),
   primary key (order_part_id)
 );
@@ -1144,6 +1148,8 @@ create table o_ac_order_line (
   unit_price_currency_code VARCHAR(3 char),
   total_amount number(20,2),
   total_currency_code VARCHAR(3 char),
+  cancellation_fee_amount number(20,2),
+  cancellation_currency_code varchar(3),
   fk_order_part_id number(20),
   fk_offer_id number(20),
   primary key (order_item_id)

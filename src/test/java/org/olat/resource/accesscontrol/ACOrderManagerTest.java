@@ -165,6 +165,63 @@ public class ACOrderManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testSaveOrderWithCancellationFee() {
+		//create an offer to buy
+		OLATResource randomOres = createResource();
+		Offer offer = acService.createOffer(randomOres, "TestSaveOrderToCancel");
+		offer.setPrice(new PriceImpl(BigDecimal.valueOf(10.0), "CHF"));
+		offer.setCancellingFee(new PriceImpl(BigDecimal.valueOf(2.0), "CHF"));
+		offer = acService.save(offer);
+		
+		dbInstance.commitAndCloseSession();
+		
+		//create and save an order
+		Order order = acOrderManager.createOrder(ident1);
+		OrderPart part = acOrderManager.addOrderPart(order);
+		OrderLine item = acOrderManager.addOrderLine(part, offer);
+		assertNotNull(order);
+		assertNotNull(order.getDelivery());
+		assertEquals(ident1, order.getDelivery());
+		order.recalculate();
+		acOrderManager.save(order);
+		dbInstance.commitAndCloseSession();
+		
+		order = acOrderManager.loadOrderByKey(order.getKey());
+		BillingAddress billingAddress = acService.createBillingAddress(JunitTestHelper.getDefaultOrganisation(), null);
+		acService.addBillingAddress(order, billingAddress);
+		dbInstance.commitAndCloseSession();
+		
+		// Check the total on the database
+		Order retrievedOrder = acOrderManager.loadOrderByKey(order.getKey());
+		Assert.assertNotNull(retrievedOrder);
+		Assert.assertEquals(ident1, retrievedOrder.getDelivery());
+		Assert.assertEquals(order, retrievedOrder);
+		Assert.assertEquals(billingAddress, retrievedOrder.getBillingAddress());
+		Assertions.assertThat(retrievedOrder.getTotal().getAmount()).isEqualByComparingTo(BigDecimal.valueOf(10.0));
+		Assertions.assertThat(retrievedOrder.getCancellationFees().getAmount()).isEqualByComparingTo(BigDecimal.valueOf(2.0));
+
+		// Order part
+		List<OrderPart> parts = retrievedOrder.getParts();
+		Assert.assertNotNull(parts);
+		Assert.assertEquals(1, parts.size());
+		Assert.assertEquals(part, parts.get(0));
+		
+		OrderPart retrievedPart = parts.get(0);
+		Assert.assertNotNull(retrievedPart.getOrderLines());
+		Assert.assertEquals(1, retrievedPart.getOrderLines().size());
+		Assert.assertEquals(item, retrievedPart.getOrderLines().get(0));
+		Assertions.assertThat(retrievedPart.getTotal().getAmount()).isEqualByComparingTo(BigDecimal.valueOf(10.0));
+		Assertions.assertThat(retrievedPart.getCancellationFees().getAmount()).isEqualByComparingTo(BigDecimal.valueOf(2.0));
+		
+		// Order line
+		OrderLine retrievedItem = retrievedPart.getOrderLines().get(0);
+		Assert.assertNotNull(retrievedItem.getOffer());
+		Assert.assertEquals(offer, retrievedItem.getOffer());
+		Assertions.assertThat(retrievedItem.getTotal().getAmount()).isEqualByComparingTo(BigDecimal.valueOf(10.0));
+		Assertions.assertThat(retrievedItem.getCancellationFee().getAmount()).isEqualByComparingTo(BigDecimal.valueOf(2.0));
+	}
+	
+	@Test
 	public void findOrderItems_1() {
 		//create an offer to buy
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
@@ -209,9 +266,11 @@ public class ACOrderManagerTest extends OlatTestCase {
 		
 		//check the order by
 		for(OrderCol col:OrderCol.values()) {
-			List<RawOrderItem> rawItems = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null,
-					0, -1, null, new SortKey(col.sortKey(), false));
-			Assert.assertNotNull(rawItems);
+			if(col.sortable()) {
+				List<RawOrderItem> rawItems = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null,
+						0, -1, null, new SortKey(col.sortKey(), false));
+				Assert.assertNotNull(rawItems);
+			}
 		}
 	}
 	

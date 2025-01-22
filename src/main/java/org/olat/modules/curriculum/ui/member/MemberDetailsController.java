@@ -46,6 +46,8 @@ import org.olat.modules.curriculum.ui.event.EditMemberEvent;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.ui.OrdersController;
+import org.olat.resource.accesscontrol.ui.OrdersSettings;
 import org.olat.user.UserInfoProfile;
 import org.olat.user.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +76,7 @@ public class MemberDetailsController extends FormBasicController {
 	private AcceptDeclineMembershipsController acceptCtrl;
 	private MemberHistoryDetailsController historyDetailsCtrl;
 	private final MemberRolesDetailsController rolesDetailsCtrl;
+	private final OrdersController ordersCtrl;
 
 	@Autowired
 	private ACService acService;
@@ -95,6 +98,11 @@ public class MemberDetailsController extends FormBasicController {
 		rolesDetailsCtrl = new MemberRolesDetailsController(ureq, getWindowControl(), rootForm,
 				curriculum, selectedCurriculumElement, elements, member, config);
 		listenTo(rolesDetailsCtrl);
+		
+		OrdersSettings settings = OrdersSettings.defaultSettings();
+		ordersCtrl = new OrdersController(ureq, getWindowControl(), identity, selectedCurriculumElement.getResource(),
+				settings, rootForm);
+		listenTo(ordersCtrl);
 		
 		if(config.withHistory()) {
 			historyDetailsCtrl = new MemberHistoryDetailsController(ureq, getWindowControl(), rootForm,
@@ -146,6 +154,7 @@ public class MemberDetailsController extends FormBasicController {
 		declineButton.setVisible(showAcceptDeclineButtons);
 	
 		formLayout.add("roles", rolesDetailsCtrl.getInitialFormItem());
+		formLayout.add("orders", ordersCtrl.getInitialFormItem());
 		if(historyDetailsCtrl != null) {
 			formLayout.add("history", historyDetailsCtrl.getInitialFormItem());
 		}

@@ -51,6 +51,7 @@ public class OrderTableItem {
 	private final Long orderKey;
 	private final String orderNr;
 	private final Price total;
+	private final Price cancellationFees;
 	private final Date creationDate;
 	private final OrderStatus orderStatus;
 	private String resourceDisplayname;
@@ -62,12 +63,13 @@ public class OrderTableItem {
 	private Status status;
 	private List<AccessMethod> methods;
 	
-	public OrderTableItem(Long orderKey, String orderNr, Price total, Date creationDate,
-			OrderStatus orderStatus, Status status, Long deliveryKey,
+	public OrderTableItem(Long orderKey, String orderNr, Price total, Price cancellationFees,
+			Date creationDate, OrderStatus orderStatus, Status status, Long deliveryKey,
 			String username, String[] userProperties, List<AccessMethod> methods) {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
 		this.total = total;
+		this.cancellationFees = cancellationFees;
 		this.orderStatus = orderStatus;
 		this.creationDate = creationDate;
 		this.status = status;
@@ -99,6 +101,10 @@ public class OrderTableItem {
 	
 	public Price getTotal() {
 		return total;
+	}
+	
+	public Price getCancellationFees() {
+		return cancellationFees;
 	}
 	
 	public String getResourceDisplayname() {

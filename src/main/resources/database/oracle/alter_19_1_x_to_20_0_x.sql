@@ -119,14 +119,20 @@ create table o_ac_billing_address (
   fk_identity number(20),
   primary key (id)
 );
-alter table o_ac_offer add column confirm_by_manager_required default 0 not null;
-alter table o_ac_offer add column cancelling_fee_amount number(20,2);
-alter table o_ac_offer add column cancelling_fee_currency_code varchar(3 char);
-alter table o_ac_offer add column cancelling_fee_deadline_days number(20);
-alter table o_ac_offer add column fk_cost_center number(20);
-alter table o_ac_order add column purchase_order_number varchar(100);
-alter table o_ac_order add column order_comment varchar(4000);
-alter table o_ac_order add column fk_billing_address number(20);
+alter table o_ac_offer add confirm_by_manager_required number default 0 not null;
+alter table o_ac_offer add cancelling_fee_amount number(20,2);
+alter table o_ac_offer add cancelling_fee_currency_code varchar(3 char);
+alter table o_ac_offer add cancelling_fee_deadline_days number(20);
+alter table o_ac_offer add fk_cost_center number(20);
+alter table o_ac_order add purchase_order_number varchar(100);
+alter table o_ac_order add order_comment varchar(4000);
+alter table o_ac_order add fk_billing_address number(20);
+alter table o_ac_order add cancellation_fee_amount number(20,2);
+alter table o_ac_order add cancellation_fee_currency_code varchar(3);
+alter table o_ac_order_part add total_lines_cfee_amount number(20,2);
+alter table o_ac_order_part add total_lines_cfee_currency_code varchar(3);
+alter table o_ac_order_line add cancellation_fee_amount number(20,2);
+alter table o_ac_order_line add cancellation_currency_code varchar(3);
 
 alter table o_ac_offer add constraint ac_offer_to_cc_idx foreign key (fk_cost_center) references o_ac_cost_center (id);
 create index idx_ac_offer_to_cc_idx on o_ac_offer (fk_cost_center);
@@ -138,3 +144,4 @@ create index idx_ac_billing_to_ident_idx on o_ac_billing_address (fk_identity);
 
 alter table o_ac_order add constraint ord_billing_idx foreign key (fk_billing_address) references o_ac_billing_address (id);
 create index idx_ord_billing_idx on o_ac_order (fk_billing_address);
+

@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -104,24 +103,22 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 	private String comment;
 	
 	@Embedded
-    @AttributeOverrides( {
-    	@AttributeOverride(name="amount", column = @Column(name="total_amount") ),
-    	@AttributeOverride(name="currencyCode", column = @Column(name="total_currency_code") )
-    })
+    @AttributeOverride(name="amount", column = @Column(name="total_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="total_currency_code"))
 	private PriceImpl total;
 	@Embedded
-    @AttributeOverrides( {
-    	@AttributeOverride(name="amount", column = @Column(name="total_lines_amount") ),
-    	@AttributeOverride(name="currencyCode", column = @Column(name="total_lines_currency_code") )
-    })
+    @AttributeOverride(name="amount", column = @Column(name="total_lines_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="total_lines_currency_code"))
 	private PriceImpl totalOrderLines;
 	@Embedded
-    @AttributeOverrides( {
-    	@AttributeOverride(name="amount", column = @Column(name="discount_amount") ),
-    	@AttributeOverride(name="currencyCode", column = @Column(name="discount_currency_code") )
-    })
+    @AttributeOverride(name="amount", column = @Column(name="discount_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="discount_currency_code"))
 	private PriceImpl discount;
-
+	@Embedded
+    @AttributeOverride(name="amount", column = @Column(name="cancellation_fee_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="cancellation_fee_currency_code"))
+	private PriceImpl cancellationFees;
+	
 	@Transient
 	private String currencyCode;
 
@@ -273,6 +270,15 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 	public void setDiscount(Price discount) {
 		this.discount = (PriceImpl)discount;
 	}
+	
+	@Override
+	public Price getCancellationFees() {
+		return cancellationFees;
+	}
+
+	public void setCancellationFees(Price cancellationFees) {
+		this.cancellationFees = (PriceImpl)cancellationFees;
+	}
 
 	@Override
 	public List<OrderPart> getParts() {
@@ -289,12 +295,23 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 	@Override
 	public void recalculate() {
 		totalOrderLines = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
+		PriceImpl fees = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
 		for(OrderPart part : getParts()) {
 			((OrderPartImpl)part).recalculate(getCurrencyCode());
 			totalOrderLines = totalOrderLines.add(part.getTotalOrderLines());
+			
+			if(part.getCancellationFees() != null) {
+				fees = fees.add(part.getCancellationFees());
+			}
 		}
 
 		total = totalOrderLines.clone();
+		
+		if(fees.getAmount().compareTo(BigDecimal.ZERO) == 0) {
+			cancellationFees = null;
+		} else {
+			cancellationFees = fees;
+		}
 		
 		if(discount == null) {
 			discount = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
@@ -320,8 +337,7 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof OrderImpl) {
-			OrderImpl order = (OrderImpl)obj;
+		if(obj instanceof OrderImpl order) {
 			return getKey() != null && getKey().equals(order.getKey());
 		}
 		return false;

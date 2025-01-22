@@ -23,7 +23,6 @@ package org.olat.resource.accesscontrol.model;
 import java.util.Date;
 
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -51,7 +50,7 @@ import org.olat.resource.accesscontrol.Price;
  * 
  * <P>
  * Initial Date:  19 avr. 2011 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 @Entity(name="acorderline")
 @Table(name="o_ac_order_line")
@@ -79,17 +78,17 @@ public class OrderLineImpl implements Persistable, OrderLine {
 	private Date creationDate;
 	
 	@Embedded
-    @AttributeOverrides( {
-    	@AttributeOverride(name="amount", column = @Column(name="unit_price_amount") ),
-    	@AttributeOverride(name="currencyCode", column = @Column(name="unit_price_currency_code") )
-    })
+    @AttributeOverride(name="amount", column = @Column(name="unit_price_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="unit_price_currency_code"))
 	private PriceImpl unitPrice;
 	@Embedded
-    @AttributeOverrides( {
-    	@AttributeOverride(name="amount", column = @Column(name="total_amount") ),
-    	@AttributeOverride(name="currencyCode", column = @Column(name="total_currency_code") )
-    })
+    @AttributeOverride(name="amount", column = @Column(name="total_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="total_currency_code"))
 	private PriceImpl totalPrice;
+	@Embedded
+    @AttributeOverride(name="amount", column = @Column(name="cancellation_fee_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="cancellation_currency_code"))
+	private PriceImpl cancellationFee;
 	
 	@ManyToOne(targetEntity=OfferImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_offer_id", nullable=false, insertable=true, updatable=false)
@@ -140,6 +139,15 @@ public class OrderLineImpl implements Persistable, OrderLine {
 	}
 
 	@Override
+	public Price getCancellationFee() {
+		return cancellationFee;
+	}
+
+	public void setCancellationFee(Price cancellationFee) {
+		this.cancellationFee = (PriceImpl)cancellationFee;
+	}
+
+	@Override
 	public int hashCode() {
 		return getKey() == null ? 27591 : getKey().hashCode();
 	}
@@ -149,8 +157,7 @@ public class OrderLineImpl implements Persistable, OrderLine {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof OrderLineImpl) {
-			OrderLineImpl orderLine = (OrderLineImpl)obj;
+		if(obj instanceof OrderLineImpl orderLine) {
 			return getKey() != null && getKey().equals(orderLine.getKey());
 		}
 		return false;

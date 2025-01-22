@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -84,17 +83,17 @@ public class OrderPartImpl implements Persistable, OrderPart {
 	private Date creationDate;
 
 	@Embedded
-    @AttributeOverrides( {
-    	@AttributeOverride(name="amount", column = @Column(name="total_amount") ),
-    	@AttributeOverride(name="currencyCode", column = @Column(name="total_currency_code") )
-    })
+    @AttributeOverride(name="amount", column = @Column(name="total_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="total_currency_code"))
 	private PriceImpl total;
 	@Embedded
-    @AttributeOverrides( {
-    	@AttributeOverride(name="amount", column = @Column(name="total_lines_amount") ),
-    	@AttributeOverride(name="currencyCode", column = @Column(name="total_lines_currency_code") )
-    })
+    @AttributeOverride(name="amount", column = @Column(name="total_lines_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="total_lines_currency_code"))
 	private PriceImpl totalOrderLines;
+	@Embedded
+    @AttributeOverride(name="amount", column = @Column(name="total_lines_cfee_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="total_lines_cfee_currency_code"))
+	private PriceImpl cancellationFees;
 	
 	@OneToMany(targetEntity=OrderLineImpl.class, fetch=FetchType.LAZY,
 			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
@@ -138,6 +137,15 @@ public class OrderPartImpl implements Persistable, OrderPart {
 	}
 
 	@Override
+	public Price getCancellationFees() {
+		return cancellationFees;
+	}
+
+	public void setCancellationFees(Price cancellationFees) {
+		this.cancellationFees = (PriceImpl)cancellationFees;
+	}
+
+	@Override
 	public List<OrderLine> getOrderLines() {
 		if(lines == null) {
 			lines = new ArrayList<>();
@@ -151,11 +159,21 @@ public class OrderPartImpl implements Persistable, OrderPart {
 	
 	public void recalculate(String currencyCode) {
 		totalOrderLines = new PriceImpl(BigDecimal.ZERO, currencyCode);
+		
+		PriceImpl fees = new PriceImpl(BigDecimal.ZERO, currencyCode);
 		for(OrderLine orderLine : getOrderLines()) {
 			totalOrderLines = totalOrderLines.add(orderLine.getTotal());
+			if(orderLine.getCancellationFee() != null) {
+				fees = fees.add(orderLine.getCancellationFee());
+			}
 		}
-		
+
 		total = totalOrderLines.clone();
+		if(fees.getAmount().equals(BigDecimal.ZERO)) {
+			cancellationFees = null;
+		} else {
+			cancellationFees = fees;
+		}
 	}
 
 	@Override
@@ -168,8 +186,7 @@ public class OrderPartImpl implements Persistable, OrderPart {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof OrderPartImpl) {
-			OrderPartImpl orderPart = (OrderPartImpl)obj;
+		if(obj instanceof OrderPartImpl orderPart) {
 			return getKey() != null && getKey().equals(orderPart.getKey());
 		}
 		return false;

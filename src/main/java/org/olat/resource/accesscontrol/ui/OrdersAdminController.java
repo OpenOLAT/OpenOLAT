@@ -57,6 +57,7 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
+import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  30 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OrdersAdminController extends FormBasicController implements Activateable2, BreadcrumbPanelAware {
+public class OrdersAdminController extends FormBasicController implements Activateable2, ForgeDelegate, BreadcrumbPanelAware {
 	
 	protected static final int USER_PROPS_OFFSET = 500;
 	protected static final String USER_PROPS_ID = OrdersAdminController.class.getCanonicalName();
@@ -150,7 +151,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.order.details", translate("select"), CMD_SELECT));
 		
-		dataSource = new OrdersDataSource(acService, resource, null, userPropertyHandlers);
+		dataSource = new OrdersDataSource(acService, resource, null, userPropertyHandlers, this);
 		if(resource == null) {
 			searchForm = new OrdersSearchForm(ureq, getWindowControl(), mainForm);
 			listenTo(searchForm);
@@ -189,6 +190,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	}
 
 	@Override
+	public void forge(OrderTableRow row) {
+		//
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
@@ -196,9 +202,8 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				OrderTableItem row = dataModel.getObject(se.getIndex());
+			if(event instanceof SelectionEvent se) {
+				OrderTableRow row = dataModel.getObject(se.getIndex());
 				if(CMD_SELECT.equals(se.getCommand())) {
 					doSelectOrder(ureq, row);
 				}
@@ -245,9 +250,10 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		addToHistory(ureq, getWindowControl());
 	}
 	
-	protected void doSelectOrder(UserRequest ureq, OrderTableItem order) {
+	protected void doSelectOrder(UserRequest ureq, OrderTableRow row) {
 		removeAsListenerAndDispose(detailController);
 		
+		OrderTableItem order = row.getItem();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey());

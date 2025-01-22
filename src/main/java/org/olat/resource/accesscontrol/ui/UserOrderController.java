@@ -69,8 +69,7 @@ public class UserOrderController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == ordersLink) {
@@ -84,7 +83,8 @@ public class UserOrderController extends BasicController {
 
 	private void doOpenOrders(UserRequest ureq) {
 		if(ordersCtrl == null) {
-			ordersCtrl = new OrdersController(ureq, getWindowControl(), identity);
+			OrdersSettings settings = OrdersSettings.defaultSettings();
+			ordersCtrl = new OrdersController(ureq, getWindowControl(), identity, settings);
 			listenTo(ordersCtrl);
 		}
 		mainVC.put("segmentCmp", ordersCtrl.getInitialComponent());

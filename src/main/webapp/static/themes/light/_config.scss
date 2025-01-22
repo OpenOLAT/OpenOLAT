@@ -586,12 +586,20 @@ $o-repo-status-color-bright			: #fff;
 $o-repo-access-denied-cross-fill		: $brand-primary  !default;
 
 /* Access control */
-$o-ac-offer-active-color				: #3c763d !default;
+$o-ac-offer-active-color			: #3c763d !default;
 $o-ac-offer-inactive-color			: #8A6D40 !default;
 $o-ac-offers-bg						: $o-coursesite-sidecol-bg !default;
 $o-ac-offers-border					: $o-coursesite-sidecol-border !default;
 $o-ac-offers-radius					: $o-coursesite-sidecol-radius !default;
 $o-ac-offers-padding				: 15px !default;
+
+$o-ac-order-new-color				: $o-labeled-yellow-color !default;
+$o-ac-order-prepayment-color		: $o-labeled-green-light-color !default;
+$o-ac-order-payed-color				: $o-labeled-green-light-color !default;
+$o-ac-order-canceled-color			: $o-labeled-grey-light-color !default;
+$o-ac-order-error-color				: $o-labeled-red-light-color !default;
+$o-ac-order-warning-color			: $o-labeled-orange-light-color !default;
+$o-ac-order-pending-color			: $o-labeled-grey-light-color !default;
 
 /* Feed (Blog/Podcast) */
 $o-feed-planned-color				: $o-repo-preparation-color;	/* blue */

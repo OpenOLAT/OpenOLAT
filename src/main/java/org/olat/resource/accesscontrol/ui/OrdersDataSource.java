@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -39,7 +40,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTableItem> {
+public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTableRow> {
 	
 	private ACService acService;
 	
@@ -49,13 +50,15 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	private Date from;
 	private final OLATResource resource;
 	private final IdentityRef delivery;
+	private final ForgeDelegate delegate;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	public OrdersDataSource(ACService acService, OLATResource resource, IdentityRef delivery,
-			List<UserPropertyHandler> userPropertyHandlers) {
+			List<UserPropertyHandler> userPropertyHandlers, ForgeDelegate delegate) {
 		this.acService = acService;
 		this.resource = resource;
 		this.delivery = delivery;
+		this.delegate = delegate;
 		this.userPropertyHandlers = userPropertyHandlers;
 	}
 
@@ -96,12 +99,12 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	}
 
 	@Override
-	public List<OrderTableItem> reload(List<OrderTableItem> rows) {
+	public List<OrderTableRow> reload(List<OrderTableRow> rows) {
 		return rows;
 	}
 
 	@Override
-	public ResultInfos<OrderTableItem> getRows(String query, List<FlexiTableFilter> filters,
+	public ResultInfos<OrderTableRow> getRows(String query, List<FlexiTableFilter> filters,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		
 		OrderStatus[] states = null;
@@ -110,8 +113,20 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 			states = new OrderStatus[] { OrderStatus.valueOf(filter) };
 		}
 
-		List<OrderTableItem> rows = acService.findOrderItems(resource, delivery, refNo, from, to, states,
+		List<OrderTableItem> items = acService.findOrderItems(resource, delivery, refNo, from, to, states,
 				firstResult, maxResults, userPropertyHandlers, orderBy);
+		List<OrderTableRow> rows = new ArrayList<>(items.size());
+		for(OrderTableItem item:items) {
+			OrderTableRow row = new OrderTableRow(item);
+			delegate.forge(row);
+			rows.add(row);
+		}
 		return new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
+	}
+	
+	public interface ForgeDelegate {
+		
+		void forge(OrderTableRow row);
+		
 	}
 }

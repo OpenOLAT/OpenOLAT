@@ -27,7 +27,7 @@ package org.olat.resource.accesscontrol;
  * 
  * <P>
  * Initial Date:  19 avr. 2011 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public interface OrderLine {
 
@@ -38,4 +38,6 @@ public interface OrderLine {
 	public Price getUnitPrice();
 	
 	public Price getTotal();
+	
+	public Price getCancellationFee();
 }

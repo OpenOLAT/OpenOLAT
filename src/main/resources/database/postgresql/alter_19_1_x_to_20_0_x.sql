@@ -127,6 +127,12 @@ alter table o_ac_offer add column fk_cost_center int8;
 alter table o_ac_order add column purchase_order_number varchar(100);
 alter table o_ac_order add column order_comment text;
 alter table o_ac_order add column fk_billing_address int8;
+alter table o_ac_order add column cancellation_fee_amount decimal;
+alter table o_ac_order add column cancellation_fee_currency_code varchar(3);
+alter table o_ac_order_part add column total_lines_cfee_amount decimal;
+alter table o_ac_order_part add column total_lines_cfee_currency_code varchar(3);
+alter table o_ac_order_line add column cancellation_fee_amount decimal;
+alter table o_ac_order_line add column cancellation_currency_code varchar(3);
 
 alter table o_ac_offer add constraint ac_offer_to_cc_idx foreign key (fk_cost_center) references o_ac_cost_center (id);
 create index idx_ac_offer_to_cc_idx on o_ac_offer (fk_cost_center);
@@ -138,4 +144,8 @@ create index idx_ac_billing_to_ident_idx on o_ac_billing_address (fk_identity);
 
 alter table o_ac_order add constraint ord_billing_idx foreign key (fk_billing_address) references o_ac_billing_address (id);
 create index idx_ord_billing_idx on o_ac_order (fk_billing_address);
+
+
+    
+
 

@@ -929,13 +929,13 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_offer_inactive_icon { @include o-add-icon('eye-slash'); color: $o-ac-offer-inactive-color;}
 .o_ac_offer_not_available_icon { @include o-add-icon('eye-slash'); }
 .o_ac_offer_pending_icon { @include o-add-icon('clock'); }
-.o_ac_order_status_new_icon { @include o-add-icon('asterisk'); color: $brand-primary;}
-.o_ac_order_status_prepayment_icon { @include o-add-icon('money-bill', false); color: $brand-info;}
-.o_ac_order_status_payed_icon { @include o-add-icon('check'); color: $brand-success;}
-.o_ac_order_status_canceled_icon { @include o-add-icon('minus'); color: $brand-warning;}
-.o_ac_order_status_error_icon { @include o-add-icon('times'); color: $brand-danger;}
-.o_ac_order_status_warning_icon { @include o-add-icon('exclamation'); color: $brand-warning;}
-.o_ac_order_status_pending_icon { @include o-add-icon('clock', false);}
+.o_ac_order_status_new_icon { @include o-add-icon('asterisk'); color: $o-ac-order-new-color;}
+.o_ac_order_status_prepayment_icon { @include o-add-icon('money-bill', false); color: $o-ac-order-prepayment-color;}
+.o_ac_order_status_payed_icon { @include o-add-icon('circle-check'); color: $o-ac-order-payed-color;}
+.o_ac_order_status_canceled_icon { @include o-add-icon('circle-xmark'); color: $o-ac-order-canceled-color;}
+.o_ac_order_status_error_icon { @include o-add-icon('circle-xmark'); color: $o-ac-order-error-color;}
+.o_ac_order_status_warning_icon { @include o-add-icon('exclamation-triangle'); color: $o-ac-order-warning-color;}
+.o_ac_order_status_pending_icon { @include o-add-icon('hourglass-half', false); color: $o-ac-order-pending-color;}
 
 /* Curriculum */
 .o_icon_curriculum { @include o-add-icon('cubes');}

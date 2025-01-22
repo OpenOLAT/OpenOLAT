@@ -108,6 +108,9 @@ public class ACOrderDAO {
 		line.setOffer(offer);
 		line.setUnitPrice(offer.getPrice().clone());
 		line.setTotal(line.getUnitPrice().clone());
+		if(offer.getCancellingFee() != null) {
+			line.setCancellationFee(offer.getCancellingFee().clone());
+		}
 		return line;
 	}
 
@@ -315,6 +318,7 @@ public class ACOrderDAO {
 		  .append("  o.order_id as order_id,")
 		  .append("  o.total_currency_code as total_currency_code,")
 		  .append("  o.total_amount as total_amount,")
+		  .append("  o.cancellation_fee_amount as cancellation_fee_amount,")
 		  .append("  o.creationdate as creationdate,")
 		  .append("  o.order_status as o_status,")
 		  .append("  o.fk_delivery_id as delivery_id,")
@@ -444,6 +448,7 @@ public class ACOrderDAO {
 			Long orderKey = ((Number)order[pos++]).longValue();
 			String totalCurrencyCode = (String)order[pos++];
 			BigDecimal totalAmount = (BigDecimal)order[pos++];
+			BigDecimal cancellationFees = (BigDecimal)order[pos++];
 			Date creationDate = (Date)order[pos++];
 			String orderStatus = (String)order[pos++];
 			Long deliveryKey = ((Number)order[pos++]).longValue();
@@ -466,7 +471,8 @@ public class ACOrderDAO {
 				}
 			}
 
-			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), totalCurrencyCode, totalAmount,
+			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(),
+					totalCurrencyCode, totalAmount, cancellationFees,
 					creationDate, orderStatus, deliveryKey, resourceName,
 					trxStatus, trxMethodIds, pspTrxStatus, checkoutTrxStatus, checkoutOrderTrxStatus,
 					username, userProperties);

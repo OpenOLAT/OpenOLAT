@@ -24,21 +24,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
@@ -46,11 +53,12 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Order;
-import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
+import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,10 +71,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  20 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OrdersController extends FormBasicController implements Activateable2, BreadcrumbPanelAware {
+public class OrdersController extends FormBasicController implements Activateable2, ForgeDelegate, BreadcrumbPanelAware {
 
-	private static final String CMD_SELECT = "sel";
-
+	private static final String CMD_TOOLS = "ordertools";
 
 	private FlexiTableElement tableEl;
 	private OrdersDataSource dataSource;
@@ -74,9 +81,14 @@ public class OrdersController extends FormBasicController implements Activateabl
 	private BreadcrumbPanel stackPanel;
 	private CloseableModalController cmc;
 
-	private Identity identity;
+	private int counter = 0;
+	private final Identity identity;
+	private final OLATResource resource;
+	private final OrdersSettings settings;
 
+	private ToolsController toolsCtrl;
 	private OrderDetailController detailController;
+	private CloseableCalloutWindowController calloutCtrl;
 
 	@Autowired
 	private ACService acService;
@@ -85,9 +97,20 @@ public class OrdersController extends FormBasicController implements Activateabl
 	@Autowired
 	private AccessControlModule acModule;
 
-	public OrdersController(UserRequest ureq, WindowControl wControl, Identity identity) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+	public OrdersController(UserRequest ureq, WindowControl wControl, Identity identity, OrdersSettings settings) {
+		super(ureq, wControl, "orders_identity");
 		this.identity = identity;
+		this.resource = null;
+		this.settings = settings;
+		initForm(ureq);
+	}
+	
+	public OrdersController(UserRequest ureq, WindowControl wControl, Identity identity, OLATResource resource,
+			OrdersSettings settings, Form rootForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "orders_identity", rootForm);
+		this.identity = identity;
+		this.resource = resource;
+		this.settings = settings;
 		initForm(ureq);
 	}
 
@@ -99,24 +122,40 @@ public class OrdersController extends FormBasicController implements Activateabl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.status, new OrderStatusRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderNr));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.status, new OrderStatusRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.methods, new AccessMethodRenderer(acModule)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offerName));
+		
+		if(resource == null && settings.withResourceDisplayName()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
+		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.order.details", translate("select"), CMD_SELECT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
+		if(settings.withTools()) {
+			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(OrderCol.tools);
+			toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
+			toolsColumn.setExportable(false);
+			toolsColumn.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(toolsColumn);
+		}
 
-		dataSource = new OrdersDataSource(acService, null, identity, null);
+		dataSource = new OrdersDataSource(acService, resource, identity, null, this);
 		dataModel = new OrdersDataModel(dataSource, getLocale(), userManager, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmptyTableMessageKey("table.order.empty");
+	}
 
-		List<FlexiTableFilter> filters = new ArrayList<>();
-		filters.add(new FlexiTableFilter(translate("order.status.payed"), OrderStatus.PAYED.name()));
-		filters.add(new FlexiTableFilter(translate("order.status.error"), OrderStatus.ERROR.name()));
-		tableEl.setFilters("", filters, false);
+	@Override
+	public void forge(OrderTableRow row) {
+		String id = Integer.toString(++counter);
+		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		toolsLink.setTitle(translate("action.more"));
+		toolsLink.setUserObject(row);
+		row.setToolsLink(toolsLink);
 	}
 
 	@Override
@@ -133,49 +172,59 @@ public class OrdersController extends FormBasicController implements Activateabl
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				OrderTableItem row = dataModel.getObject(se.getIndex());
-				if(CMD_SELECT.equals(se.getCommand())) {
-					doSelectOrder(ureq, row);
-				}
-			}
+		if(source instanceof FormLink link && CMD_TOOLS.equals(link.getCmd())
+				&& link.getUserObject() instanceof OrderTableRow row) {
+			doOpenTools(ureq, row, link);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
-
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == detailController) {
-			if(event == Event.BACK_EVENT) {
-				removeAsListenerAndDispose(detailController);
-				detailController = null;
-			}
+		if(toolsCtrl == source) {
+			calloutCtrl.deactivate();
+			cleanUp();	
+		} else if (detailController == source) {
+			cleanUp();
+			cmc.deactivate();
+		} else if(calloutCtrl == source || cmc == source) {
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(detailController);
+		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
+		this.removeAsListenerAndDispose(cmc);
+		detailController = null;
+		calloutCtrl = null;
+		toolsCtrl = null;
+		cmc = null;
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		/*if(entries == null || entries.isEmpty()) return;
+		//
+	}
+	
+	protected void doOpenTools(UserRequest ureq, OrderTableRow member, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
 
-		ContextEntry entry = entries.get(0);
-		String type = entry.getOLATResourceable().getResourceableTypeName();
-		if(Order.class.getSimpleName().equals(type)) {
-			for(int i=tableCtr.getTableDataModel().getRowCount(); i-->0; ) {
-				OrderTableItem order = (OrderTableItem)tableCtr.getTableDataModel().getObject(i);
-				if(order.getOrderKey().equals(entry.getOLATResourceable().getResourceableId())) {
-					selectOrder(ureq, order);
-					break;
-				}
-			}
-		}*/
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), member);
+		listenTo(toolsCtrl);
+
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 
-	private void doSelectOrder(UserRequest ureq, OrderTableItem order) {
+	private void doOpenDetails(UserRequest ureq, OrderTableRow row) {
 		removeAsListenerAndDispose(detailController);
 
+		OrderTableItem order = row.getItem();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey());
@@ -188,6 +237,44 @@ public class OrdersController extends FormBasicController implements Activateabl
 					true, translate("order.booking"));
 			cmc.activate();
 			listenTo(cmc);
+		}
+	}
+	
+	private class ToolsController extends BasicController {
+
+		private Link detailsLink;
+		private final VelocityContainer mainVC;
+		
+		private final OrderTableRow row;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, OrderTableRow row) {
+			super(ureq, wControl);
+			this.row = row;
+			mainVC = createVelocityContainer("tools");
+			
+			List<String> links = new ArrayList<>();
+			detailsLink = addLink("details", "details", "o_icon o_icon-fw o_icon_circle_info", links);
+			
+			mainVC.contextPut("links", links);
+			putInitialPanel(mainVC);
+		}
+		
+		private Link addLink(String name, String cmd, String iconCSS, List<String> links) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			if(iconCSS != null) {
+				link.setIconLeftCSS(iconCSS);
+			}
+			mainVC.put(name, link);
+			links.add(name);
+			return link;
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(detailsLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doOpenDetails(ureq, row);
+			}
 		}
 	}
 }

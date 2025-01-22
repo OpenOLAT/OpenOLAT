@@ -35,5 +35,7 @@ public interface OrderPart {
 	public Price getTotal();
 
 	public Price getTotalOrderLines();
+	
+	public Price getCancellationFees();
 
 }

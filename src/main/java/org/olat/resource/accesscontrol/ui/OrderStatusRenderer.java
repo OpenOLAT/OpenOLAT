@@ -26,6 +26,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 
 /**
  * 
@@ -47,35 +48,61 @@ public class OrderStatusRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object val, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(val instanceof OrderStatus) {
-			OrderStatus status = (OrderStatus)val;
-			String name = status.name().toLowerCase();
-			String title = translator.translate("order.status.".concat(name));
-			sb.append("<span title=\"").append(title).append("\"><i class='o_icon o_icon-fw o_ac_order_status_").append(name).append("_icon'> </i></span>");
-		} else if (val instanceof OrderTableItem) {
-			OrderTableItem item = (OrderTableItem)val;
-			switch(item.getStatus()) {
-				case ERROR:
-					sb.append("<i class='o_icon o_icon-fw o_ac_order_status_error_icon'> </i>");
-					break;
-				case WARNING:
-					sb.append("<i class='o_icon o_icon-fw o_ac_order_status_warning_icon'> </i>");
-					break;
-				case PENDING:
-					sb.append("<i class='o_icon o_icon-fw o_ac_order_status_pending_icon'> </i>");
-					break;	
-				case CANCELED:
-					String canceledTitle = translator.translate("order.status.canceled");
-					sb.append("<span title=\"").append(canceledTitle).append("\"><i class='o_icon o_icon-fw o_ac_order_status_canceled_icon'> </i></span>");
-					break;
-				case OK_PENDING:
-					String acceptedButPending = translator.translate("order.status.ok.pending");
-					sb.append("<span title=\"").append(acceptedButPending).append("\"><i class='o_icon o_icon-fw o_ac_order_status_payed_icon'> </i> <small><i class='o_icon o_ac_order_status_pending_icon'> </i></small></span>");
-					break;	
-				default:
-					String payedTitle = translator.translate("order.status.payed");
-					sb.append("<span title=\"").append(payedTitle).append("\"><i class='o_icon o_icon-fw o_ac_order_status_payed_icon'> </i></span>");
-			}
+		if(val instanceof OrderStatus status) {
+			renderStatus(sb, status);
+		} else if (val instanceof OrderTableRow orderRow) {
+			renderStatus(sb, orderRow.getStatus());
+		} else if (val instanceof OrderTableItem item) {
+			renderStatus(sb, item.getStatus());
 		}
+	}
+	
+	private void renderStatus(StringOutput sb, OrderStatus status) {
+		switch(status) {
+			case ERROR:
+				render(sb, "order.status.error", "o_ac_order_status_error_icon", "o_ac_order_status_error");
+				break;
+			case PREPAYMENT:
+				render(sb, "order.status.prepayment", "o_ac_order_status_pending_icon", "o_ac_order_status_pending");
+				break;	
+			case CANCELED:
+				render(sb, "order.status.canceled", "o_ac_order_status_canceled_icon", "o_ac_order_status_canceled");
+				break;
+			case PAYED:
+				render(sb, "order.status.payed", "o_ac_order_status_payed_icon", "o_ac_order_status_payed");
+				break;	
+			default:
+				break;
+		}
+	}
+	
+	private void renderStatus(StringOutput sb, Status status) {
+		switch(status) {
+			case ERROR:
+				render(sb, "order.status.error", "o_ac_order_status_error_icon", "o_ac_order_status_error");
+				break;
+			case WARNING:
+				render(sb, "order.status.warning", "o_ac_order_status_warning_icon", "o_ac_order_status_warning");
+				break;
+			case PENDING:
+				render(sb, "order.status.pending", "o_ac_order_status_pending_icon", "o_ac_order_status_pending");
+				break;	
+			case CANCELED:
+				render(sb, "order.status.canceled", "o_ac_order_status_canceled_icon", "o_ac_order_status_canceled");
+				break;
+			case OK_PENDING:
+				render(sb, "order.status.ok.pending", "o_ac_order_status_pending_icon", "o_ac_order_status_payed_pending");
+				break;	
+			default:
+				render(sb, "order.status.payed", "o_ac_order_status_payed_icon", "o_ac_order_status_payed");
+		}
+	}
+	
+	public void render(StringOutput target, String i18nLabel, String iconCssClass, String cssClass) {
+		String label = translator.translate(i18nLabel);
+		target.append("<span class='o_labeled_light ").append(cssClass).append("'>")
+		  .append("<i class='o_icon ").append(iconCssClass).append(" o_icon-fw' title='").append(label).append("'> </i> ")
+		  .append(label)
+	      .append("</span>");
 	}
 }

@@ -59,6 +59,8 @@ public interface Order {
 
 	public Price getDiscount();
 	
+	public Price getCancellationFees();
+	
 	public List<OrderPart> getParts();
 	
 	public void recalculate();

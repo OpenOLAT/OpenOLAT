@@ -1149,27 +1149,29 @@ create table o_ac_billing_address (
 );
 
 create table if not exists o_ac_order (
-    order_id bigint NOT NULL,
+  order_id bigint NOT NULL,
   version mediumint unsigned not null,
   creationdate datetime,
-    lastmodified datetime,
-    is_valid bit default 1,
-    total_lines_amount DECIMAL(12,4),
-    total_lines_currency_code VARCHAR(3),
-    total_amount DECIMAL(12,4),
-    total_currency_code VARCHAR(3),
-    discount_amount DECIMAL(12,4),
-    discount_currency_code VARCHAR(3),
-    order_status VARCHAR(32) default 'NEW',
-    purchase_order_number varchar(100),
-    order_comment mediumtext,
+  lastmodified datetime,
+  is_valid bit default 1,
+  total_lines_amount DECIMAL(12,4),
+  total_lines_currency_code VARCHAR(3),
+  total_amount DECIMAL(12,4),
+  total_currency_code VARCHAR(3),
+  discount_amount DECIMAL(12,4),
+  discount_currency_code VARCHAR(3),
+  cancellation_fee_amount decimal(12,4),
+  cancellation_fee_currency_code varchar(3),
+  order_status VARCHAR(32) default 'NEW',
+  purchase_order_number varchar(100),
+  order_comment mediumtext,
   fk_delivery_id bigint,
   fk_billing_address bigint,
-    primary key (order_id)
+  primary key (order_id)
 );
 
 create table if not exists o_ac_order_part (
-    order_part_id bigint NOT NULL,
+  order_part_id bigint NOT NULL,
   version mediumint unsigned not null,
   pos mediumint unsigned,
   creationdate datetime,
@@ -1177,22 +1179,26 @@ create table if not exists o_ac_order_part (
   total_lines_currency_code VARCHAR(3),
   total_amount DECIMAL(12,4),
   total_currency_code VARCHAR(3),
+  total_lines_cfee_amount decimal(12,4),
+  total_lines_cfee_currency_code varchar(3),
   fk_order_id bigint,
-    primary key (order_part_id)
+  primary key (order_part_id)
 );
 
 create table if not exists o_ac_order_line (
-    order_item_id bigint NOT NULL,
+  order_item_id bigint NOT NULL,
   version mediumint unsigned not null,
   pos mediumint unsigned,
   creationdate datetime,
-    unit_price_amount DECIMAL(12,4),
-    unit_price_currency_code VARCHAR(3),
-    total_amount DECIMAL(12,4),
-    total_currency_code VARCHAR(3),
+  unit_price_amount DECIMAL(12,4),
+  unit_price_currency_code VARCHAR(3),
+  total_amount DECIMAL(12,4),
+  total_currency_code VARCHAR(3),
+  cancellation_fee_amount decimal(12,4),
+  column cancellation_currency_code varchar(3),
   fk_order_part_id bigint,
   fk_offer_id bigint,
-    primary key (order_item_id)
+  primary key (order_item_id)
 );
 
 create table if not exists o_ac_transaction (

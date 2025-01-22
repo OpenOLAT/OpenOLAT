@@ -332,6 +332,22 @@
 	&.o_ac_offer_not_available {
 		@extend %o_labeled_light_grey;
 	}
+	
+	
+	&.o_ac_order_status_pending,
+	&.o_ac_order_status_canceled {
+		@extend %o_labeled_light_grey;
+	}
+	&.o_ac_order_status_payed,
+	&.o_ac_order_status_payed_pending {
+		@extend %o_labeled_light_green;
+	}
+	&.o_ac_order_status_warning {
+		@extend %o_labeled_light_orange;
+	}
+	&.o_ac_order_status_error {
+		@extend %o_labeled_light_red;
+	}
 }
 
 

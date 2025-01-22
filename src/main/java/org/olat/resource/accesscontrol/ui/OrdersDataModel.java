@@ -36,12 +36,14 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTableItem> {
+public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTableRow> {
+	
+	private static final OrderCol[] COLS = OrderCol.values();
 	
 	private final Locale locale;
 	private final UserManager userManager;
 	
-	public OrdersDataModel(FlexiTableDataSourceDelegate<OrderTableItem> dataSource, Locale locale, UserManager userManager, FlexiTableColumnModel columnModel) {
+	public OrdersDataModel(FlexiTableDataSourceDelegate<OrderTableRow> dataSource, Locale locale, UserManager userManager, FlexiTableColumnModel columnModel) {
 		super(dataSource, columnModel);
 		this.locale = locale;
 		this.userManager = userManager;
@@ -49,43 +51,59 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		OrderTableItem order = getObject(row);
+		OrderTableRow order = getObject(row);
 		 if(col >= OrdersAdminController.USER_PROPS_OFFSET) {
 			int propIndex = col - OrdersAdminController.USER_PROPS_OFFSET;
 			return order.getUserProperties()[propIndex];
 		}
 		
-		switch(OrderCol.values()[col]) {
-			case status: {
-				return order;
+		return switch(COLS[col]) {
+			case status -> order;
+			case orderNr -> order.getOrderNr();
+			case creationDate -> order.getCreationDate();
+			case delivery -> getDelivery(order);
+			case methods -> order.getMethods();
+			case offerName -> "";
+			case total -> getTotal(order);
+			case cancellationFee -> getCancellationFees(order);
+			case summary -> order.getResourceDisplayname();
+			case tools -> order.getToolsLink();
+			default -> order;
+		};
+	}
+	
+	private String getDelivery(OrderTableRow order) {
+		Long deliveryKey = order.getDeliveryKey();
+		return userManager.getUserDisplayName(deliveryKey);
+	}
+	
+	private String getTotal(OrderTableRow order) {
+		if(hasPaymentMethods(order)) {
+			String total = PriceFormat.fullFormat(order.getTotal());
+			if(StringHelper.containsNonWhitespace(total)) {
+				return total;
 			}
-			case orderNr: return order.getOrderNr();
-			case creationDate: return order.getCreationDate();
-			case delivery: {
-				Long deliveryKey = order.getDeliveryKey();
-				return userManager.getUserDisplayName(deliveryKey);
-			}
-			case methods: {
-				return order.getMethods();
-			}
-			case total: {
-				boolean paymentMethod = false;
-				Collection<AccessMethod> methods = order.getMethods();
-				for(AccessMethod method:methods) {
-					paymentMethod |= method.isPaymentMethod();
-				}
-				
-				if(paymentMethod) {
-					String total = PriceFormat.fullFormat(order.getTotal());
-					if(StringHelper.containsNonWhitespace(total)) {
-						return total;
-					}
-				}
-				return "-";
-			}
-			case summary: return order.getResourceDisplayname();
-			default: return order;
 		}
+		return null;
+	}
+	
+	private String getCancellationFees(OrderTableRow order) {
+		if(hasPaymentMethods(order)) {
+			String fees = PriceFormat.fullFormat(order.getCancellationFees());
+			if(StringHelper.containsNonWhitespace(fees)) {
+				return fees;
+			}
+		}
+		return null;
+	}
+	
+	private boolean hasPaymentMethods(OrderTableRow order) {
+		boolean paymentMethod = false;
+		Collection<AccessMethod> methods = order.getMethods();
+		for(AccessMethod method:methods) {
+			paymentMethod |= method.isPaymentMethod();
+		}
+		return paymentMethod;
 	}
 
 	@Override
@@ -95,12 +113,15 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 	
 	public enum OrderCol implements FlexiSortableColumnDef {
 		orderNr("order.nr", "order_id"),
-		creationDate("order.creationDate", "creationdate"),
+		creationDate("table.order.creationDate", "creationdate"),
 		delivery("order.delivery", "delivery_id"),
-		methods("order.part.payment", "trxMethodIds"),
-		total("order.total", "total_amount"),
+		methods("table.order.part.payment", "trxMethodIds"),
+		offerName("table.order.offer.name", null),
+		total("table.order.total", "total_amount"),
+		cancellationFee("order.cancellation.fee", "cancellation_fee_amount"),
 		summary("order.summary", "resDisplaynames"),
-		status("order.status", "o_status");
+		status("order.status", "o_status"),
+		tools("table.header.tools", null);
 
 		private final String i18nKey;
 		private final String sortKey;
@@ -117,7 +138,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != tools && this != offerName;
 		}
 
 		@Override

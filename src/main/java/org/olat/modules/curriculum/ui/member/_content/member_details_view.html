@@ -15,6 +15,12 @@ $r.render("profil")
 #end
 
 $r.render("roles")
+
+<fieldset class="o_block_top">
+	<legend>$r.translate("booking.orders")</legend>
+	$r.render("orders")
+</fieldset>
+
 #if($r.available("history"))
 	$r.render("history")
 #end

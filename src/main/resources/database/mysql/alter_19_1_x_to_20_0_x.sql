@@ -120,6 +120,12 @@ alter table o_ac_offer add column fk_cost_center bigint;
 alter table o_ac_order add column purchase_order_number varchar(100);
 alter table o_ac_order add column order_comment mediumtext;
 alter table o_ac_order add column fk_billing_address bigint;
+alter table o_ac_order add column cancellation_fee_amount decimal(12,4);
+alter table o_ac_order add column cancellation_fee_currency_code varchar(3);
+alter table o_ac_order_part add column total_lines_cfee_amount decimal(12,4);
+alter table o_ac_order_part add column total_lines_cfee_currency_code varchar(3);
+alter table o_ac_order_line add column cancellation_fee_amount decimal(12,4);
+alter table o_ac_order_line add column cancellation_currency_code varchar(3);
 
 alter table o_ac_cost_center ENGINE = InnoDB;
 alter table o_ac_billing_address ENGINE = InnoDB;

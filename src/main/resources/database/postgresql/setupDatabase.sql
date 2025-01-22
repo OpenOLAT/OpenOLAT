@@ -1067,50 +1067,56 @@ create table o_ac_billing_address (
 );
 
 create table o_ac_order (
-    order_id int8 NOT NULL,
+  order_id int8 NOT NULL,
   version int4 not null,
   creationdate timestamp,
-    lastmodified timestamp,
-    is_valid boolean default true,
-    total_lines_amount DECIMAL,
-    total_lines_currency_code VARCHAR(3),
-    total_amount DECIMAL,
-    total_currency_code VARCHAR(3),
-    discount_amount DECIMAL,
-    discount_currency_code VARCHAR(3),
-    order_status VARCHAR(32) default 'NEW',
-    purchase_order_number varchar(100),
-    order_comment text,
+  lastmodified timestamp,
+  is_valid boolean default true,
+  total_lines_amount decimal,
+  total_lines_currency_code varchar(3),
+  total_amount decimal,
+  total_currency_code varchar(3),
+  discount_amount decimal,
+  discount_currency_code varchar(3),
+  cancellation_fee_amount decimal,
+  cancellation_fee_currency_code varchar(3),
+  order_status VARCHAR(32) default 'NEW',
+  purchase_order_number varchar(100),
+  order_comment text,
   fk_delivery_id int8,
   fk_billing_address int8,
-    primary key (order_id)
+  primary key (order_id)
 );
 
 create table o_ac_order_part (
-    order_part_id int8 NOT NULL,
+  order_part_id int8 NOT NULL,
   version int4 not null,
   pos int4,
   creationdate timestamp,
-  total_lines_amount DECIMAL,
-    total_lines_currency_code VARCHAR(3),
-    total_amount DECIMAL,
-    total_currency_code VARCHAR(3),
+  total_lines_amount decimal,
+  total_lines_currency_code varchar(3),
+  total_amount decimal,
+  total_currency_code varchar(3),
+  total_lines_cfee_amount decimal,
+  total_lines_cfee_currency_code varchar(3),
   fk_order_id int8,
-    primary key (order_part_id)
+  primary key (order_part_id)
 );
 
 create table o_ac_order_line (
-    order_item_id int8 NOT NULL,
+  order_item_id int8 NOT NULL,
   version int4 not null,
   pos int4,
   creationdate timestamp,
-  unit_price_amount DECIMAL,
-    unit_price_currency_code VARCHAR(3),
-    total_amount DECIMAL,
-    total_currency_code VARCHAR(3),
+  unit_price_amount decimal,
+  unit_price_currency_code varchar(3),
+  total_amount decimal,
+  total_currency_code varchar(3),
+  cancellation_fee_amount decimal,
+  cancellation_currency_code varchar(3),
   fk_order_part_id int8,
   fk_offer_id int8,
-    primary key (order_item_id)
+  primary key (order_item_id)
 );
 
 create table o_ac_transaction (

@@ -673,6 +673,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			}
 			return true;
 		}
+		//TODO booking
 		return false;
 	}
 
@@ -739,6 +740,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				if (!isParticipant) {
 					List<CurriculumElementMembershipChange> changes = List.of(CurriculumElementMembershipChange
 							.addMembership(identity, curriculumElement, CurriculumRoles.participant));
+					//TODO booking
 					curriculumService.updateCurriculumElementMemberships(identity, null, changes, null);
 					return true;
 				}
@@ -787,6 +789,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				boolean isParticipant = curriculumService.getCurriculumElementMemberships(List.of(curriculumElement), identity).stream()
 						.anyMatch(CurriculumElementMembership::isParticipant);
 				if (isParticipant) {
+					//TODO booking
 					curriculumService.removeMember(curriculumElement, identity, CurriculumRoles.participant,
 							GroupMembershipStatus.cancel, identity, null);
 					return true;
@@ -1086,7 +1089,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			}
 
 			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(),
-					rawOrder.getTotal(), rawOrder.getCreationDate(), orderStatus, finalStatus,
+					rawOrder.getTotal(), rawOrder.getCancellationFees(),
+					rawOrder.getCreationDate(), orderStatus, finalStatus,
 					rawOrder.getDeliveryKey(), rawOrder.getUsername(), rawOrder.getUserProperties(), orderMethods);
 			item.setResourceDisplayname(rawOrder.getResourceName());
 
