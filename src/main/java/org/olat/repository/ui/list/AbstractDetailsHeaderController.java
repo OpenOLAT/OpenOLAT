@@ -58,7 +58,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractDetailsHeaderController extends FormBasicController {
 	
 	public static final Event START_EVENT = new Event("start");
-	public static final Event BOOK_EVENT = new Event("book");
+	private final static String CMD_START = "start";
+	private final static String CMD_AUTO_BOOKING = "autoBooking";
 	
 	protected FormLink startLink;
 	protected FormLink leaveLink;
@@ -84,6 +85,7 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 	
 	protected abstract void initAccess(UserRequest ureq, FormLayoutContainer layoutCont);
 	protected abstract String getStartLinkText();
+	protected abstract boolean doAutoBooking(UserRequest ureq);
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -152,9 +154,15 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 		offersLink.setVisible(!guestOnly);
 	}
 	
+
 	protected FormLink createStartLink(FormLayoutContainer layoutCont) {
+		return createStartLink(layoutCont, false);
+	}
+	
+	protected FormLink createStartLink(FormLayoutContainer layoutCont, boolean autoBooking) {
 		String linkText = getStartLinkText();
-		FormLink link = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+		String cmd = autoBooking? CMD_AUTO_BOOKING : CMD_START;
+		FormLink link = uifactory.addFormLink("start", cmd, linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 		link.setEscapeMode(EscapeMode.html);
 		link.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 		link.setPrimary(true);
@@ -173,8 +181,13 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 		if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if ("start".equals(cmd)) {
+			if (CMD_START.equals(cmd)) {
 				fireEvent(ureq, START_EVENT);
+			} else if (CMD_AUTO_BOOKING.equals(cmd)) {
+				boolean success = doAutoBooking(ureq);
+				if (success) {
+					fireEvent(ureq, START_EVENT);
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

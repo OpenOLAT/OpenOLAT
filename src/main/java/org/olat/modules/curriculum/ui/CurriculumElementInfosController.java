@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -76,7 +77,7 @@ public class CurriculumElementInfosController extends BasicController implements
 	@Autowired
 	private ACService acService;
 
-	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element) {
+	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element, boolean scrollToOffers) {
 		super(ureq, wControl);
 		this.element = element;
 		mainVC = createVelocityContainer("curriculum_element_infos");
@@ -129,19 +130,27 @@ public class CurriculumElementInfosController extends BasicController implements
 		
 		// Offers
 		AccessResult acResult = acService.isAccessible(element, getIdentity(), isMember, false, webPublish, false);
-		if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), element, acResult)) {
+		if (acResult.isAccessible()) {
 			fireEvent(ureq, new BookedEvent(element));
-		} else {
-			offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
-			listenTo(offersCtrl);
-			mainVC.put("offers", offersCtrl.getInitialComponent());
-			mainVC.contextPut("offersOpen", offersOpen);
+		} else if (!acResult.getAvailableMethods().isEmpty()) {
+			if (acResult.getAvailableMethods().size() > 1 || !acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
+				offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
+				listenTo(offersCtrl);
+				mainVC.put("offers", offersCtrl.getInitialComponent());
+				mainVC.contextPut("offersOpen", offersOpen);
+			}
 		}
 		
 		// Overview and lecture blocks	
 		overviewCtrl = new CurriculumElementInfosOverviewController(ureq, getWindowControl(), element, lectureBlocks.size());
 		listenTo(overviewCtrl);
 		mainVC.put("overview", overviewCtrl.getInitialComponent());
+		
+		if (scrollToOffers) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#offers"));
+		} else {
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#o_navbar_wrapper"));
+		}
 	}
 	
 	private String getFormattedText(final String text) {

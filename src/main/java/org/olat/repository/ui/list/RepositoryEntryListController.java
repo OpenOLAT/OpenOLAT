@@ -867,7 +867,7 @@ public class RepositoryEntryListController extends FormBasicController
 			label = "book";
 			iconCss = "btn btn-sm btn-primary o_book ";
 		} else {
-			label = "start";
+			label = "open";
 			iconCss = "btn btn-sm btn-primary o_start";
 		}
 		FormLink startLink = uifactory.addFormLink("start_" + row.getKey(), "start", label, null, null, Link.LINK);
@@ -883,7 +883,7 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	@Override
 	public void forgeDetails(RepositoryEntryRow row) {
-		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, null, Link.LINK);
+		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "learn.more", null, null, Link.LINK);
 		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details");
 		detailsLink.setIconRightCSS("o_icon o_icon_details");
 		detailsLink.setTitle("details");

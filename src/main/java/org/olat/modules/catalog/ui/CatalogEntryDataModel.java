@@ -121,8 +121,8 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 		educationalType("table.header.educational.type"),
 		taxonomyLevels("table.header.taxonomy.levels"),
 		offers("table.header.offers"),
-		details("table.header.details"),
-		detailsSmall("table.header.details"),
+		details("table.header.learn.more"),
+		detailsSmall("table.header.learn.more"),
 		start("table.header.start"),
 		startSmall("table.header.start");
 		

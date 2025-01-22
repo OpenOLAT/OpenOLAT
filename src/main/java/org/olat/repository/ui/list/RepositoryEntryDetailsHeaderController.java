@@ -195,8 +195,12 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 		if (acResult.isAccessible()) {
 			startLink = createStartLink(layoutCont);
 		} else if (!acResult.getAvailableMethods().isEmpty()) {
-			formatPrice(acResult);
-			createGoToOffersLink(layoutCont, guestOnly);
+			if (acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
+				startLink = createStartLink(layoutCont, true);
+			} else {
+				formatPrice(acResult);
+				createGoToOffersLink(layoutCont, guestOnly);
+			}
 		} else if (!getOffersNowNotInRange(entry, getIdentity()).isEmpty()) {
 			showAccessDenied(AccessDeniedFactory.createOfferNotNow(ureq, getWindowControl(), getOffersNowNotInRange(entry, getIdentity())));
 		} else {
@@ -236,6 +240,12 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	@Override
 	protected String getStartLinkText() {
 		return translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+	}
+
+	@Override
+	protected boolean doAutoBooking(UserRequest ureq) {
+		AccessResult acResult = acService.isAccessible(entry, getIdentity(), null, false, null, false);
+		return acService.tryAutoBooking(getIdentity(), entry, acResult);
 	}
 	
 	@Override

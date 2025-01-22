@@ -19,28 +19,20 @@
  */
 package org.olat.modules.catalog.ui;
 
-import java.util.List;
-
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.resource.OresHelper;
+import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.course.CorruptedCourseException;
 import org.olat.login.LoginProcessController;
 import org.olat.login.LoginProcessEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetailsController implements Activateable2 {
+public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetailsController {
 
 	private final BreadcrumbedStackedPanel stackPanel;
 	
@@ -60,18 +52,15 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	@Autowired
 	protected ACService acService;
 
-	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, RepositoryEntry entry) {
+	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl,
+			BreadcrumbedStackedPanel stackPanel, RepositoryEntry entry, boolean scrollToOffers) {
 		super(ureq, wControl, entry, false, false);
 		this.stackPanel = stackPanel;
-	}
-
-	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (entries == null || entries.isEmpty()) return;
 		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if ("Offers".equalsIgnoreCase(type)) {
-			doBook(ureq);
+		if (scrollToOffers) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#offers"));
+		} else {
+			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#o_navbar_wrapper"));
 		}
 	}
 	
@@ -116,35 +105,6 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 			logError("Course corrupted: " + getEntry().getKey() + " (" + getEntry().getOlatResource().getResourceableId() + ")", e);
 			showError("cif.error.corrupted");
 		}
-	}
-
-	@Override
-	protected void doBook(UserRequest ureq) {
-		if (getEntry() != null) {
-			if (getIdentity() != null) {
-				AccessResult acResult = acService.isAccessible(getEntry(), getIdentity(), Boolean.FALSE, ureq.getUserSession().getRoles().isGuestOnly(), null, false);
-				if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), getEntry(), acResult)) {
-					doStart(ureq);
-				} else {
-					doOpenBooking(ureq);
-				}
-			} else {
-				doShowLogin(ureq);
-			}
-		}
-	}
-	
-	private void doOpenBooking(UserRequest ureq) {
-		removeAsListenerAndDispose(accessCtrl);
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Offers", 0l);
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		accessCtrl = new CatalogRepositoryEntryAccessController(ureq, bwControl, getEntry());
-		listenTo(accessCtrl);
-		addToHistory(ureq, accessCtrl);
-		
-		String displayName = translate("offers");
-		stackPanel.pushController(displayName, accessCtrl);
 	}
 
 	private void doShowLogin(UserRequest ureq) {

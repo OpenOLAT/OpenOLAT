@@ -87,7 +87,7 @@ public class CatalogRepositoryEntryAccessController extends BasicController {
 		}
 		
 		AccessResult acResult = acService.isAccessible(entry, getIdentity(), null, ureq.getUserSession().getRoles().isGuestOnly(), null, false);
-		if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
+		if (acResult.isAccessible()) {
 			fireEvent(ureq, new BookedEvent(entry));
 		} else {
 			accessCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);

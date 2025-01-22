@@ -64,7 +64,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.login.LoginProcessController;
@@ -409,7 +408,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		String url = getStartUrl(row, searchParams.isWebPublish() && row.isGuestAccess());
 		
 		String cmd = "start";
-		String label = "start";
+		String label = "open";
 		String css = "btn btn-sm btn-primary o_start";
 		String cssSmall = "btn btn-xs btn-primary o_start";
 		if (searchParams.isWebPublish() && row.isGuestAccess()) {
@@ -427,7 +426,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			return;
 		}
 		
-		if (!row.isMember() && row.isPublicVisible() && !row.isOpenAccess() && row.getAccessPriceMethods() != null && !row.getAccessPriceMethods().isEmpty()) {
+		if (!searchParams.isGuestOnly() && !row.isMember() && row.isPublicVisible() && !row.isOpenAccess() && row.getAccessPriceMethods() != null && !row.getAccessPriceMethods().isEmpty()) {
 			cmd = "book";
 			label = "book";
 			css = "btn btn-sm btn-primary o_book";
@@ -454,7 +453,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private void forgeDetailsLink(CatalogEntryRow row) {
 		String url = CatalogBCFactory.get(searchParams.isWebPublish()).getOfferUrl(row.getOlatResource());
 		
-		FormLink detailsLink = uifactory.addFormLink("details_" + row.getOlatResource().getKey(), "details", "details", null, flc, Link.LINK);
+		FormLink detailsLink = uifactory.addFormLink("details_" + row.getOlatResource().getKey(), "details", "learn.more", null, flc, Link.LINK);
 		detailsLink.setIconRightCSS("o_icon o_icon_details");
 		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details");
 		detailsLink.setTitle("details");
@@ -462,7 +461,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		detailsLink.setUserObject(row);
 		row.setDetailsLink(detailsLink);
 		
-		FormLink detailsSmallLink = uifactory.addFormLink("details_small_" + row.getOlatResource().getKey(), "details", "details", null, null, Link.LINK);
+		FormLink detailsSmallLink = uifactory.addFormLink("details_small_" + row.getOlatResource().getKey(), "details", "learn.more", null, null, Link.LINK);
 		detailsSmallLink.setCustomEnabledLinkCSS("btn btn-xs btn-default o_details");
 		detailsSmallLink.setTitle("details");
 		detailsSmallLink.setUrl(url);
@@ -523,7 +522,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 					int page = index / tableEl.getPageSize();
 					tableEl.setPage(page);
 				}
-				doOpenDetails(ureq, row);
+				doOpenDetails(ureq, row, false);
 				if (infosCtrl instanceof Activateable2 activateable) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
 					activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -539,7 +538,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 					int page = index / tableEl.getPageSize();
 					tableEl.setPage(page);
 				}
-				doOpenDetails(ureq, row);
+				doOpenDetails(ureq, row, false);
 				if (infosCtrl instanceof Activateable2 activateable) {
 					List<ContextEntry> subEntries = entries.subList(1, entries.size());
 					activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -635,7 +634,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 				doBook(ureq, row);
 			} else if ("details".equals(cmd) || "select".equals(cmd)){
 				CatalogEntryRow row = (CatalogEntryRow)link.getUserObject();
-				doOpenDetails(ureq, row);
+				doOpenDetails(ureq, row, false);
 			} else if ("select_tax".equals(cmd)){
 				Long key = (Long)link.getUserObject();
 				fireEvent(ureq, new OpenTaxonomyEvent(
@@ -699,27 +698,27 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private void doOpenDetails(UserRequest ureq, Long resourceKey) {
 		CatalogEntryRow row = dataModel.getObjectByResourceKey(resourceKey);
 		if (row != null) {
-			doOpenDetails(ureq, row);
+			doOpenDetails(ureq, row, false);
 		}
 	}
 	
-	private void doOpenDetails(UserRequest ureq, CatalogEntryRow row) {
+	private void doOpenDetails(UserRequest ureq, CatalogEntryRow row, boolean scrollToOffers) {
 		if (row.getRepositotyEntryKey() != null) {
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getRepositotyEntryKey());
-			doOpenDetails(ureq, entry);
+			doOpenDetails(ureq, entry, scrollToOffers);
 		} else if (row.getCurriculumElementKey() != null) {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(() -> row.getCurriculumElementKey());
-			doOpenDetails(ureq, curriculumElement);
+			doOpenDetails(ureq, curriculumElement, scrollToOffers);
 		}
 	}
 	
-	private void doOpenDetails(UserRequest ureq, RepositoryEntry entry) {
+	private void doOpenDetails(UserRequest ureq, RepositoryEntry entry, boolean scrollToOffers) {
 		if (entry != null) {
 			removeAsListenerAndDispose(infosCtrl);
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(entry.getOlatResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, stackPanel, entry);
+			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, stackPanel, entry, scrollToOffers);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
@@ -733,13 +732,13 @@ public class CatalogEntryListController extends FormBasicController implements A
 		}
 	}
 	
-	private void doOpenDetails(UserRequest ureq, CurriculumElement curriculumElement) {
+	private void doOpenDetails(UserRequest ureq, CurriculumElement curriculumElement, boolean scrollToOffers) {
 		if (curriculumElement != null) {
 			removeAsListenerAndDispose(infosCtrl);
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement);
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, scrollToOffers);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
@@ -779,12 +778,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			}
 		}
 		
-		doOpenDetails(ureq, row);
-		if (infosCtrl instanceof Activateable2 activateable) {
-			OLATResourceable ores = OresHelper.createOLATResourceableType("Offers");
-			ContextEntry contextEntry = BusinessControlFactory.getInstance().createContextEntry(ores);
-			activateable.activate(ureq, List.of(contextEntry), null);
-		}
+		doOpenDetails(ureq, row, true);
 	}
 
 	private void doLogin(UserRequest ureq, CatalogEntryRow row) {
@@ -802,7 +796,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		stackPanel.popUpToController(this);
 		
 		if (repositoryEntry != null) {
-			doOpenDetails(ureq, repositoryEntry);
+			doOpenDetails(ureq, repositoryEntry, false);
 			if (repositoryManager.isAllowed(ureq, repositoryEntry).canLaunch()) {
 				CatalogEntryRow row = dataModel.getObjectByResourceKey(repositoryEntry.getOlatResource().getKey());
 				if (row != null) {
@@ -816,7 +810,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		stackPanel.popUpToController(this);
 		
 		if (element != null) {
-			doOpenDetails(ureq, element);
+			doOpenDetails(ureq, element, false);
 			boolean isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(getIdentity())).isEmpty();
 			if (isMember) {
 				CatalogEntryRow row = dataModel.getObjectByResourceKey(element.getResource().getKey());

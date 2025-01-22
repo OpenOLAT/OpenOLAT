@@ -36,7 +36,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
@@ -49,7 +48,6 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.OffersController;
-import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -98,9 +96,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		
 		velocity_root = Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class);
 		VelocityContainer mainVC = createVelocityContainer("details");
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 
 		if (isResourceInfoView) {
 			resourceInfoHeaderCtrl = new RepositoryEntryResourceInfoDetailsHeaderController(ureq, wControl, entry);
@@ -126,13 +121,15 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		if (!isMember) {
 			AccessResult acResult = ureq.getUserSession().getRoles() == null
 					? acService.isAccessible(entry, null, Boolean.FALSE, false, Boolean.TRUE, false)
-					: acService.isAccessible(entry, getIdentity(), null, ureq.getUserSession().getRoles().isGuestOnly(), Boolean.FALSE, false);
-			if (acResult.isAccessible() || acService.tryAutoBooking(getIdentity(), entry, acResult)) {
+					: acService.isAccessible(entry, getIdentity(), null, ureq.getUserSession().getRoles().isGuestOnly(), null, false);
+			if (acResult.isAccessible()) {
 				fireEvent(ureq, new BookedEvent(entry));
 			} else if (!acResult.getAvailableMethods().isEmpty()) {
-				offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
-				listenTo(offersCtrl);
-				mainVC.put("offers", offersCtrl.getInitialComponent());
+				if (acResult.getAvailableMethods().size() > 1 || !acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
+					offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false);
+					listenTo(offersCtrl);
+					mainVC.put("offers", offersCtrl.getInitialComponent());
+				}
 			}
 		}
 		
@@ -195,8 +192,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		if (source == headerCtrl) {
 			if (event == RepositoryEntryDetailsHeaderController.START_EVENT) {
 				doStart(ureq);
-			} else if (event == RepositoryEntryDetailsHeaderController.BOOK_EVENT) {
-				doBook(ureq);
 			} else if (event instanceof LeavingEvent) {
 				fireEvent(ureq, event);
 			}
@@ -220,7 +215,5 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	}
 
 	protected abstract void doStart(UserRequest ureq);
-	
-	protected abstract void doBook(UserRequest ureq);
 	
 }

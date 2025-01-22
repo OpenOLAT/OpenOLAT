@@ -46,9 +46,4 @@ public class RepositoryEntryPublicInfosController extends RepositoryEntryDetails
 		}
 	}
 
-	@Override
-	protected void doBook(UserRequest ureq) {
-		// No need
-	}
-
 }

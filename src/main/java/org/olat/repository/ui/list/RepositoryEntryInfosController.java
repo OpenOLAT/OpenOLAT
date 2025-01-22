@@ -23,8 +23,12 @@ import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -41,6 +45,9 @@ public class RepositoryEntryInfosController extends RepositoryEntryDetailsContro
 			boolean inRuntime) {
 		super(ureq, wControl, entry, false, true);
 		this.inRuntime = inRuntime;
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 	}
 
 	@Override
@@ -56,11 +63,6 @@ public class RepositoryEntryInfosController extends RepositoryEntryDetailsContro
 				showError("cif.error.corrupted");
 			}
 		}
-	}
-
-	@Override
-	protected void doBook(UserRequest ureq) {
-		doStart(ureq);
 	}
 
 }
