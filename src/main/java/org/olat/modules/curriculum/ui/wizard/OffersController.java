@@ -21,24 +21,31 @@ package org.olat.modules.curriculum.ui.wizard;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
@@ -53,6 +60,8 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.BillingAddress;
+import org.olat.resource.accesscontrol.BillingAddressSearchParams;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
@@ -60,7 +69,9 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
+import org.olat.resource.accesscontrol.ui.BillingAddressController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,12 +90,21 @@ public class OffersController extends StepFormBasicController {
 	private StaticTextElement priceEl;
 	private TextElement purchaseOrderNumberEl;
 	private StaticTextElement cancellationFeeEl;
+	private SingleSelection billingAdressEl;
+	private FormLink createBillingAdresseButton;
 	
+	private BillingAddress newBillingAddress;
 	private final MembersContext membersContext;
 	private final List<AccessInfos> validOffers;
+	private final Map<Long,BillingAddress> billingAddressMap = new HashMap<>();
+	
+	private CloseableModalController cmc;
+	private BillingAddressController billingAddressCtrl;
 	
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
@@ -180,12 +200,76 @@ public class OffersController extends StepFormBasicController {
 		
 		spacerEl = uifactory.addSpacerElement("after-booking", formLayout, false);
 		
+		SelectionValues addressPK = forgeBillingAddress();
+		billingAdressEl = uifactory.addDropdownSingleselect("booking.billing.address", formLayout,
+				addressPK.keys(), addressPK.values());
+		billingAdressEl.setMandatory(true);
+		createBillingAdresseButton = uifactory.addFormLink("create.billing.address", formLayout, Link.BUTTON);
+		createBillingAdresseButton.setVisible(membersContext.getSelectedIdentities().size() == 1);
+		
 		priceEl = uifactory.addStaticTextElement("booking.offer.price", "booking.offer.price", "", formLayout);
 		cancellationFeeEl = uifactory.addStaticTextElement("booking.offer.cancellation.fee", "booking.offer.cancellation.fee", "", formLayout);
 		
 		purchaseOrderNumberEl = uifactory.addTextElement("booking.po.number", 128, "", formLayout);
 		commentEl = uifactory.addTextAreaElement("booking.offer.comment", "booking.offer.comment", 4000, 3, 60, false, false, false, "", formLayout);
 		
+	}
+	
+	private SelectionValues forgeBillingAddress() {
+		SelectionValues addressPK = new SelectionValues();
+		addressPK.add(SelectionValues.entry("", translate("select.billing.address")));
+
+		Set<Organisation> organisations = new HashSet<>();
+		for(AccessInfos offer:validOffers) {
+			organisations.addAll(offer.organisations());
+		}
+		if(!organisations.isEmpty()) {
+			BillingAddressSearchParams organisationParams = new BillingAddressSearchParams();
+			organisationParams.setOrganisations(organisations);
+			List<BillingAddress> billingAddressList = acService.getBillingAddresses(organisationParams);
+			for(BillingAddress billingAddress:billingAddressList) {
+				String value = billingAddressLabel(billingAddress);
+				addressPK.add(SelectionValues.entry(billingAddress.getKey().toString(), value));
+				billingAddressMap.put(billingAddress.getKey(), billingAddress);
+			}
+		}
+		
+		List<Identity> identities = membersContext.getSelectedIdentities();
+		if(identities.size() == 1) {
+			BillingAddressSearchParams userParams = new BillingAddressSearchParams();
+			userParams.setIdentityKeys(identities);
+			List<BillingAddress> billingAddressList = acService.getBillingAddresses(userParams);
+			for(BillingAddress billingAddress:billingAddressList) {
+				String value = billingAddressLabel(billingAddress);
+				addressPK.add(SelectionValues.entry(billingAddress.getKey().toString(), value));
+				billingAddressMap.put(billingAddress.getKey(), billingAddress);
+			}
+		}
+		
+		if(newBillingAddress != null) {
+			String value = billingAddressLabel(newBillingAddress);
+			addressPK.add(SelectionValues.entry(newBillingAddress.getKey().toString(), value));
+			billingAddressMap.put(newBillingAddress.getKey(), newBillingAddress);
+		}
+		
+		return addressPK;
+	}
+	
+	private String billingAddressLabel(BillingAddress billingAddress) {
+		List<String> sb = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(billingAddress.getIdentifier())) {
+			sb.add(billingAddress.getIdentifier());
+		}
+		
+		if(billingAddress.getIdentity() != null) {
+			String fullName = userManager.getUserDisplayName(billingAddress.getIdentity());
+			sb.add(fullName);
+		}
+		
+		if(billingAddress.getOrganisation() != null) {
+			sb.add(billingAddress.getOrganisation().getDisplayName());
+		}
+		return String.join(" \u00B7 ", sb);
 	}
 	
 	private SelectionValue forgeOfferAccess(Offer offer, OfferAccess offerAccess, List<Organisation> offerOrganisations) {
@@ -267,9 +351,41 @@ public class OffersController extends StepFormBasicController {
 	}
 	
 	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if(billingAddressCtrl == source) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				newBillingAddress = billingAddressCtrl.getBillingAddress();
+				updateBillingAddress(newBillingAddress);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void updateBillingAddress(BillingAddress billingAddressToSelect) {
+		SelectionValues addressPK = forgeBillingAddress();
+		billingAdressEl.setKeysAndValues(addressPK.keys(), addressPK.values(), null);
+		if(billingAddressToSelect != null) {
+			billingAdressEl.select(billingAddressToSelect.getKey().toString(), true);
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(billingAddressCtrl);
+		removeAsListenerAndDispose(cmc);
+		billingAddressCtrl = null;
+		cmc = null;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(bookingsEl == source) {
 			updateUI();
+		} else if(createBillingAdresseButton == source) {
+			doCreateBillingAdresseButton(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -291,6 +407,14 @@ public class OffersController extends StepFormBasicController {
 			} else {
 				membersContext.setOrderComment(null);
 			}
+			
+			String addressKey = billingAdressEl.isVisible() && billingAdressEl.isOneSelected()
+					? billingAdressEl.getSelectedKey()
+					: null;
+			if(StringHelper.isLong(addressKey)) {
+				BillingAddress address = billingAddressMap.get(Long.valueOf(addressKey));
+				membersContext.setBillingAddress(address);
+			}
 		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
@@ -298,5 +422,16 @@ public class OffersController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doCreateBillingAdresseButton(UserRequest ureq) {
+		Identity identity = membersContext.getSelectedIdentities().get(0);
+		billingAddressCtrl = new BillingAddressController(ureq, getWindowControl(), null, null, identity);
+		listenTo(billingAddressCtrl);
+		
+		String title = translate("create.billing.address");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), billingAddressCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

@@ -37,6 +37,7 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
+import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
 
@@ -60,6 +61,7 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 		final String comment = membersContext.getOrderComment();
 		final String poNumber = membersContext.getPurchaseOrderNumber();
+		final BillingAddress billingAddress = membersContext.getBillingAddress();
 		final List<Identity> identities = membersContext.getSelectedIdentities();
 		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
 		List<MembershipModification> modifications = membersContext.getModifications();
@@ -74,7 +76,8 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 			AccessInfos offer = membersContext.getSelectedOffer();
 			if(offer != null) {
 				for(Identity identity:identities) {
-					acService.createAndSaveOrder(identity, offer.offerAccess(), OrderStatus.PREPAYMENT, poNumber, comment);
+					acService.createAndSaveOrder(identity, offer.offerAccess(), OrderStatus.PREPAYMENT,
+						billingAddress, poNumber, comment);
 				}
 			}
 		}

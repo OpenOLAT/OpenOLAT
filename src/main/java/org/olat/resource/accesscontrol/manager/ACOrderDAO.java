@@ -147,14 +147,16 @@ public class ACOrderDAO {
 	}
 
 	public Order saveOneClick(Identity delivery, OfferAccess link) {
-		return saveOneClick(delivery, link, OrderStatus.PAYED, null, null);
+		return saveOneClick(delivery, link, OrderStatus.PAYED, null, null, null);
 	}
 
-	public Order saveOneClick(Identity delivery, OfferAccess link, OrderStatus status, String purchaseOrderNumber, String comment) {
+	public Order saveOneClick(Identity delivery, OfferAccess link, OrderStatus status,
+			BillingAddress billingAddress, String purchaseOrderNumber, String comment) {
 		OrderImpl order = createOrder(delivery);
 		order.setPurchaseOrderNumber(purchaseOrderNumber);
 		order.setComment(comment);
 		order.setOrderStatus(status);
+		order.setBillingAddress(billingAddress);
 		if(link.getOffer().getPrice().isEmpty()) {
 			order.setCurrencyCode("CHF");
 		} else {

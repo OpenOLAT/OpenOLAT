@@ -545,7 +545,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 		if(handler.checkArgument(link, argument)) {
 			if(allowAccesToResource(identity, link.getOffer(), link.getMethod())) {
-				Order order = createAndSaveOrder(identity, link, OrderStatus.PAYED, null, null);
+				Order order = createAndSaveOrder(identity, link, OrderStatus.PAYED, null, null, null);
 				log.info(Tracing.M_AUDIT, "Access granted to: {} for {}", link, identity);
 				return new AccessResult(true, order);
 			} else {
@@ -558,9 +558,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 	
 	@Override
-	public Order createAndSaveOrder(Identity identity, OfferAccess link, OrderStatus orderStatus, String purchaseOrderNumber, String comment) {
-		Order order = orderManager.saveOneClick(identity, link, orderStatus, purchaseOrderNumber, comment);
-		AccessTransaction transaction = transactionManager.createTransaction(order, order.getParts().get(0), link.getMethod());
+	public Order createAndSaveOrder(Identity identity, OfferAccess link, OrderStatus orderStatus,
+			BillingAddress billingAddress, String purchaseOrderNumber, String comment) {
+		Order order = orderManager.saveOneClick(identity, link, orderStatus,
+				billingAddress, purchaseOrderNumber, comment);
+		AccessTransaction transaction = transactionManager
+				.createTransaction(order, order.getParts().get(0), link.getMethod());
 		if(orderStatus == OrderStatus.NEW) {
 			transactionManager.update(transaction, AccessTransactionStatus.NEW);
 		} else if(orderStatus == OrderStatus.PREPAYMENT) {

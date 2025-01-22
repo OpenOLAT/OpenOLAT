@@ -30,6 +30,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 
@@ -50,6 +51,7 @@ public class MembersContext {
 	
 	private final List<Offer> offers;
 	private AccessInfos selectedOffer;
+	private BillingAddress billingAddress;
 	private String purchaseOrderNumber;
 	private String orderComment;
 
@@ -155,6 +157,14 @@ public class MembersContext {
 
 	public void setOrderComment(String orderComment) {
 		this.orderComment = orderComment;
+	}
+	
+	public BillingAddress getBillingAddress() {
+		return billingAddress;
+	}
+
+	public void setBillingAddress(BillingAddress billingAddress) {
+		this.billingAddress = billingAddress;
 	}
 
 	public boolean hasModifications() {
