@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.list;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -49,9 +50,12 @@ import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
+import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
+import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 
 /**
@@ -278,6 +282,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			
 			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(uifactory.getTranslator(), entry.getTaxonomyLevels());
 			row.setTaxonomyLevels(taxonomyLevels);
+
+			row.setMember(repoKeys.contains(entry.getKey()));
 			
 			List<PriceMethod> types = new ArrayList<>(3);
 			if(entry.isPublicVisible()) {
@@ -294,11 +300,10 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 						}
 					}
 				}
+				updateAccessInfo(row, resourcesWithOffer);
 			} else {
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
 			} 
-			
-			row.setMember(repoKeys.contains(entry.getKey()));
 			
 			if(!types.isEmpty()) {
 				row.setAccessTypes(types);
@@ -315,5 +320,52 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			items.add(row);
 		}
 		return items;
+	}
+	
+	private void updateAccessInfo(RepositoryEntryRow row, List<OLATResourceAccess> resourcesWithOffer) {
+		if (row.isMember() || resourcesWithOffer.isEmpty()) {
+			return;
+		}
+		
+		for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
+			for(PriceMethodBundle bundle:resourceAccess.getMethods()) {
+				if (bundle.getMethod().getType().equals(FreeAccessHandler.METHOD_TYPE)) {
+					row.setAccessInfo(uifactory.getTranslator().translate("access.info.freely.available"));
+					return;
+				}
+			}
+		}
+		
+		for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
+			for(PriceMethodBundle bundle:resourceAccess.getMethods()) {
+				if (bundle.getMethod().getType().equals(TokenAccessHandler.METHOD_TYPE)) {
+					row.setAccessInfo(uifactory.getTranslator().translate("access.info.token"));
+					return;
+				}
+			}
+		}
+		
+		BigDecimal lowestPriceAmount = null;
+		String lowestPrice = null;
+		int numOfPrices = 0;
+		for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
+			for(PriceMethodBundle bundle:resourceAccess.getMethods()) {
+				Price p = bundle.getPrice();
+				String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
+				if (p != null && StringHelper.containsNonWhitespace(price)) {
+					numOfPrices++;
+					if (lowestPriceAmount == null || lowestPriceAmount.compareTo(p.getAmount()) > 0) {
+						lowestPriceAmount = p.getAmount();
+						lowestPrice = price;
+					}
+				}
+			}
+		}
+		if (lowestPriceAmount != null) {
+			if (numOfPrices > 1) {
+				lowestPrice = uifactory.getTranslator().translate("book.price.from", lowestPrice);
+			}
+			row.setAccessInfo(lowestPrice);
+		}
 	}
 }

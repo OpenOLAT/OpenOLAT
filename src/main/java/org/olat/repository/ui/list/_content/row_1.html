@@ -110,20 +110,10 @@
 			#end
 		#end
 		
-		#if($row.accessTypes && !$row.isMember())
-		<div class="o_bookings">
-			<div class="o_methods">
-				<ul class="list-unstyled">
-				#foreach($type in $row.accessTypes)
-					<li class="o_nowrap">
-						<i class="o_icon o_icon-fw $type.type o_icon-lg"></i>
-						#if($type.price && $type.price.length() > 0)<span class="o_access_price"> ($type.price) </span>#end 
-						<span class="o_access_name"> $r.escapeHtml("$type.displayName")</span>
-					</li>
-				#end
-				</ul>
-			</div>							
-		</div> 
+		#if($r.isNotEmpty($row.getAccessInfo()))
+			<div class="o_access_info">
+				$row.getAccessInfo()
+			</div>
 		#end
 		
 		<div class="o_actions">

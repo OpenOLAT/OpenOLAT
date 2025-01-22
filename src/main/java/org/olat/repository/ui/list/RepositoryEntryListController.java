@@ -115,6 +115,7 @@ import org.olat.repository.ui.author.TypeRenderer;
 import org.olat.repository.ui.list.DefaultRepositoryEntryDataSource.FilterButton;
 import org.olat.repository.ui.list.DefaultRepositoryEntryDataSource.FilterStatus;
 import org.olat.repository.ui.list.RepositoryEntryDataModel.Cols;
+import org.olat.resource.accesscontrol.ui.OpenAccessOfferController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -169,6 +170,7 @@ public class RepositoryEntryListController extends FormBasicController
 			SearchMyRepositoryEntryViewParams searchParams, boolean load, 
 			boolean withSearch, boolean withPresets, boolean withSavedSettings, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
+		setTranslator(Util.createPackageTranslator(OpenAccessOfferController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
@@ -886,7 +888,7 @@ public class RepositoryEntryListController extends FormBasicController
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "learn.more", null, null, Link.LINK);
 		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details");
 		detailsLink.setIconRightCSS("o_icon o_icon_details");
-		detailsLink.setTitle("details");
+		detailsLink.setTitle("learn.more");
 		detailsLink.setUserObject(row);
 		if (row.isMember()) {
 			String businessPath = "[RepositoryEntry:" + row.getKey() + "][Infos:0]";

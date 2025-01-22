@@ -76,6 +76,7 @@ public class CatalogEntryRow {
 	private final boolean guestAccess;
 	private Set<String> accessMethodTypes;
 	private List<PriceMethod> accessPriceMethods;
+	private String accessInfo;
 	private final License license;
 	
 	private String thumbnailRelPath;
@@ -228,6 +229,14 @@ public class CatalogEntryRow {
 		this.accessPriceMethods = accessPriceMethods;
 	}
 	
+	public String getAccessInfo() {
+		return accessInfo;
+	}
+
+	public void setAccessInfo(String accessInfo) {
+		this.accessInfo = accessInfo;
+	}
+
 	public String getAuthors() {
 		return authors;
 	}

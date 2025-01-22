@@ -129,21 +129,22 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 	protected void formatPrice(AccessResult acResult) {
 		BigDecimal lowestPriceAmount = null;
 		String lowestPrice = null;
-		for(OfferAccess access:acResult.getAvailableMethods()) {
+		int numOfPrices = 0;
+		for (OfferAccess access:acResult.getAvailableMethods()) {
 			Price p = access.getOffer().getPrice();
 			String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
 			if (p != null && StringHelper.containsNonWhitespace(price)) {
+				numOfPrices++;
 				if (lowestPriceAmount == null || lowestPriceAmount.compareTo(p.getAmount()) > 0) {
 					lowestPriceAmount = p.getAmount();
-					if (StringHelper.containsNonWhitespace(lowestPrice)) {
-						lowestPrice = translate("book.price.from", price);
-					} else {
-						lowestPrice = price;
-					}
+					lowestPrice = price;
 				}
 			}
 		}
-		if (StringHelper.containsNonWhitespace(lowestPrice)) {
+		if (lowestPriceAmount != null) {
+			if (numOfPrices > 1) {
+				lowestPrice = translate("book.price.from", lowestPrice);
+			}
 			flc.contextPut("price", lowestPrice);
 		}
 	}

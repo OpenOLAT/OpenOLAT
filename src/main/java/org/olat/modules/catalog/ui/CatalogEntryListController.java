@@ -19,6 +19,7 @@
  */
 package org.olat.modules.catalog.ui;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -98,9 +99,12 @@ import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
+import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
+import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 import org.olat.resource.accesscontrol.ui.OpenAccessOfferController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -365,13 +369,57 @@ public class CatalogEntryListController extends FormBasicController implements A
 				row.setAccessMethodTypes(accessMethodTypes);
 			}
 			
-			if (!priceMethods.isEmpty()) {
-				row.setAccessMethodTypes(accessMethodTypes);
-				row.setAccessPriceMethods(priceMethods);
-			}
+			updateAccessInfo(row, catalogEntry);
 		}
 		
 		return row;
+	}
+
+	private void updateAccessInfo(CatalogEntryRow row, CatalogEntry catalogEntry) {
+		if (searchParams.isGuestOnly() || row.isMember() || catalogEntry.isOpenAccess()) {
+			return;
+		}
+		
+		for (OLATResourceAccess resourceAccess : catalogEntry.getResourceAccess()) {
+			for (PriceMethodBundle bundle : resourceAccess.getMethods()) {
+				if (bundle.getMethod().getType().equals(FreeAccessHandler.METHOD_TYPE)) {
+					row.setAccessInfo(translate("access.info.freely.available"));
+					return;
+				}
+			}
+		}
+		
+		for (OLATResourceAccess resourceAccess : catalogEntry.getResourceAccess()) {
+			for (PriceMethodBundle bundle : resourceAccess.getMethods()) {
+				if (bundle.getMethod().getType().equals(TokenAccessHandler.METHOD_TYPE)) {
+					row.setAccessInfo(translate("access.info.token"));
+					return;
+				}
+			}
+		}
+		
+		BigDecimal lowestPriceAmount = null;
+		String lowestPrice = null;
+		int numOfPrices = 0;
+		for (OLATResourceAccess resourceAccess : catalogEntry.getResourceAccess()) {
+			for (PriceMethodBundle bundle : resourceAccess.getMethods()) {
+				Price p = bundle.getPrice();
+				String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
+				if (p != null && StringHelper.containsNonWhitespace(price)) {
+					numOfPrices++;
+					if (lowestPriceAmount == null || lowestPriceAmount.compareTo(p.getAmount()) > 0) {
+						lowestPriceAmount = p.getAmount();
+						lowestPrice = price;
+					}
+				}
+			}
+		}
+		if (lowestPriceAmount != null) {
+			if (numOfPrices > 1) {
+				lowestPrice = translate("book.price.from", lowestPrice);
+			}
+			row.setAccessInfo(lowestPrice);
+		}
 	}
 
 	private PriceMethod toPriceMethod(PriceMethodBundle bundle) {

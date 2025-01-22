@@ -259,18 +259,11 @@
 					}
 				}
 				
-				.o_bookings {
-					padding-top: 20px;							
-					@include text-overflow();
-					color: $text-muted;
-					font-size: 80%;
-					.o_methods { 
-					
-					}				
+				.o_access_info {
+					padding-top: 20px;
 					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-						padding-top: 10px;					
-					}		
-					
+						padding-top: 10px;
+					}
 				}
 				
 				.o_actions {

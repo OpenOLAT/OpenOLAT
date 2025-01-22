@@ -81,6 +81,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private Date lifecycleEnd;
 	
 	private List<PriceMethod> accessTypes;
+	private String accessInfo;
 	private List<TaxonomyLevelNamePath> taxonomyLevels;
 	
 	private FormLink markLink;
@@ -248,6 +249,14 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 
 	public void setAccessTypes(List<PriceMethod> accessTypes) {
 		this.accessTypes = accessTypes;
+	}
+
+	public String getAccessInfo() {
+		return accessInfo;
+	}
+
+	public void setAccessInfo(String accessInfo) {
+		this.accessInfo = accessInfo;
 	}
 
 	public String getCompletionItemName() {
