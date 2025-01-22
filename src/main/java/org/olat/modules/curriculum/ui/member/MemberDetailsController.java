@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -45,7 +46,10 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.event.EditMemberEvent;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.ui.OrderModification;
 import org.olat.resource.accesscontrol.ui.OrdersController;
 import org.olat.resource.accesscontrol.ui.OrdersSettings;
 import org.olat.user.UserInfoProfile;
@@ -60,6 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MemberDetailsController extends FormBasicController {
 
+	private FormLink cancelButton;
 	private FormLink acceptButton;
 	private FormLink declineButton;
 	private FormLink editMemberShipButton;
@@ -72,11 +77,12 @@ public class MemberDetailsController extends FormBasicController {
 	
 	private Object userObject;
 
+	private OrdersController ordersCtrl;
 	private CloseableModalController cmc;
+	private CancelMembershipsController cancelCtrl;
 	private AcceptDeclineMembershipsController acceptCtrl;
 	private MemberHistoryDetailsController historyDetailsCtrl;
 	private final MemberRolesDetailsController rolesDetailsCtrl;
-	private final OrdersController ordersCtrl;
 
 	@Autowired
 	private ACService acService;
@@ -99,10 +105,13 @@ public class MemberDetailsController extends FormBasicController {
 				curriculum, selectedCurriculumElement, elements, member, config);
 		listenTo(rolesDetailsCtrl);
 		
-		OrdersSettings settings = OrdersSettings.defaultSettings();
-		ordersCtrl = new OrdersController(ureq, getWindowControl(), identity, selectedCurriculumElement.getResource(),
-				settings, rootForm);
-		listenTo(ordersCtrl);
+		if(config.withOrders()) {
+			OrdersSettings settings = OrdersSettings.valueOf(config.withActivityColumns(),
+					config.withOrdersDetails(), false, config.canPayOrder());
+			ordersCtrl = new OrdersController(ureq, getWindowControl(), identity, selectedCurriculumElement.getResource(),
+					settings, rootForm);
+			listenTo(ordersCtrl);
+		}
 		
 		if(config.withHistory()) {
 			historyDetailsCtrl = new MemberHistoryDetailsController(ureq, getWindowControl(), rootForm,
@@ -119,6 +128,12 @@ public class MemberDetailsController extends FormBasicController {
 	
 	public void setModifications(List<MembershipModification> modifications) {
 		rolesDetailsCtrl.setModifications(modifications);
+	}
+	
+	public void setOrderModifications(List<OrderModification> orderModifications) {
+		if(ordersCtrl != null) {
+			ordersCtrl.setModifications(orderModifications);
+		}
 	}
 
 	public Object getUserObject() {
@@ -138,6 +153,9 @@ public class MemberDetailsController extends FormBasicController {
 					member, config.profileConfig(), memberConfig);
 			listenTo(profile);
 			layoutCont.put("profil", profile.getInitialComponent());
+			
+			String historyTitle = translate("details.history.title", "<small class='o_muted'>" + StringHelper.escapeHtml(selectedCurriculumElement.getDisplayName()) + "</small>" );
+			layoutCont.contextPut("historyTitle", historyTitle);
 		}
 		
 		editMemberShipButton = uifactory.addFormLink("edit.member", formLayout, Link.BUTTON);
@@ -152,17 +170,29 @@ public class MemberDetailsController extends FormBasicController {
 		declineButton = uifactory.addFormLink("decline", formLayout, Link.BUTTON);
 		declineButton.setIconLeftCSS("o_icon o_icon-fw o_icon_decline");
 		declineButton.setVisible(showAcceptDeclineButtons);
+		
+		cancelButton = uifactory.addFormLink("cancel.booking", formLayout, Link.BUTTON);
+		cancelButton.setIconLeftCSS("o_icon o_icon-fw o_icon_decline");
+		cancelButton.setVisible(showAcceptDeclineButtons && config.withOrders() && hasOngoingOrder());
 	
 		formLayout.add("roles", rolesDetailsCtrl.getInitialFormItem());
-		formLayout.add("orders", ordersCtrl.getInitialFormItem());
+		if(ordersCtrl != null) {
+			formLayout.add("orders", ordersCtrl.getInitialFormItem());
+		}
 		if(historyDetailsCtrl != null) {
 			formLayout.add("history", historyDetailsCtrl.getInitialFormItem());
 		}
 	}
+	
+	private boolean hasOngoingOrder() {
+		List<Order> ongoingOrders = acService.findOrders(member, selectedCurriculumElement.getResource(),
+				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+		return !ongoingOrders.isEmpty();
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(acceptCtrl == source) {
+		if(acceptCtrl == source || cancelCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -175,8 +205,10 @@ public class MemberDetailsController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(acceptCtrl);
+		removeAsListenerAndDispose(cancelCtrl);
 		removeAsListenerAndDispose(cmc);
 		acceptCtrl = null;
+		cancelCtrl = null;
 		cmc = null;
 	}
 
@@ -193,6 +225,8 @@ public class MemberDetailsController extends FormBasicController {
 			doAccept(ureq);
 		} else if(declineButton == source) {
 			doDecline(ureq);
+		} else if(cancelButton == source) {
+			doCancel(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -219,6 +253,19 @@ public class MemberDetailsController extends FormBasicController {
 		
 		String title = translate("decline.memberships");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), acceptCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCancel(UserRequest ureq) {
+		List<Identity> identities = List.of(member);
+		List<ResourceReservation> reservations = getPendingReservations();
+		cancelCtrl = new CancelMembershipsController(ureq, getWindowControl(),
+				curriculum, selectedCurriculumElement, curriculumElements, identities, reservations);
+		listenTo(cancelCtrl);
+		
+		String title = translate("cancel.memberships");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), cancelCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

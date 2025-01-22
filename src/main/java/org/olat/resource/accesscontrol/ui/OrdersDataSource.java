@@ -22,6 +22,8 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DefaultResultInfos;
@@ -32,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -53,6 +56,8 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	private final ForgeDelegate delegate;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
+	private Map<Long,OrderModification> modifications = Map.of();
+	
 	public OrdersDataSource(ACService acService, OLATResource resource, IdentityRef delivery,
 			List<UserPropertyHandler> userPropertyHandlers, ForgeDelegate delegate) {
 		this.acService = acService;
@@ -60,6 +65,11 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 		this.delivery = delivery;
 		this.delegate = delegate;
 		this.userPropertyHandlers = userPropertyHandlers;
+	}
+	
+	public void setModifications(List<OrderModification> orderModifications) {
+		modifications = orderModifications.stream()
+				.collect(Collectors.toMap(OrderModification::orderKey, o -> o, (u, v) -> u));
 	}
 
 	public Long getRefNo() {
@@ -118,10 +128,33 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 		List<OrderTableRow> rows = new ArrayList<>(items.size());
 		for(OrderTableItem item:items) {
 			OrderTableRow row = new OrderTableRow(item);
+			updateModifications(row);
 			delegate.forge(row);
 			rows.add(row);
 		}
 		return new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
+	}
+	
+	protected OrderTableRow updateModifications(OrderTableRow row) {
+		OrderModification modification = modifications.get(row.getOrderKey());
+		if(modification != null) {
+			Status modifiedStatus = getStatus(modification.nextStatus());
+			row.setModifiedStatus(modifiedStatus);
+			row.setModificationsSummary(new OrderModificationSummary(modifiedStatus != null));
+		} else {
+			row.setModifiedStatus(null);
+			row.setModificationsSummary(null);
+		}
+		return row;
+	}
+	
+	private Status getStatus(OrderStatus nextStatus) {
+		return switch(nextStatus) {
+			case PAYED -> Status.OK;
+			case CANCELED -> Status.CANCELED;
+			case ERROR -> Status.ERROR;
+			default -> null;
+		};
 	}
 	
 	public interface ForgeDelegate {

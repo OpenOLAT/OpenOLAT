@@ -69,8 +69,7 @@ implements SortableFlexiTableDataModel<CancelMembershipRow> {
 	public Object getValueAt(CancelMembershipRow row, int col) {
 		if(col >= 0 && col < COLS.length) {
 			return switch(COLS[col]) {
-				case modifications -> row.getReservations().isEmpty()
-					? ModificationStatus.NONE : ModificationStatus.MODIFICATION;
+				case modifications -> getModificationStatus(row);
 				case cancelled -> getNumOfModificationsToDecline(row);
 				case cancellationFee -> row.getCancellationFee();
 				default -> "ERROR";
@@ -79,6 +78,16 @@ implements SortableFlexiTableDataModel<CancelMembershipRow> {
 
 		int propPos = col - AbstractMembersController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
+	}
+	
+	private ModificationStatus getModificationStatus(CancelMembershipRow row) {
+		if(!row.getMembershipsToElements().isEmpty()) {
+			return ModificationStatus.REMOVE;
+		}
+		if(!row.getReservations().isEmpty()) {
+			return ModificationStatus.MODIFICATION;
+		}
+		return null;
 	}
 	
 	private DualNumber getNumOfModificationsToDecline(CancelMembershipRow row) {

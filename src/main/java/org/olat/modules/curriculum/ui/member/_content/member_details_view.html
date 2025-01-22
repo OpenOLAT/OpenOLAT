@@ -8,6 +8,9 @@ $r.render("profil")
 	#if($r.available("decline"))
 		$r.render("decline")
 	#end
+	#if($r.available("cancel.booking"))
+		$r.render("cancel.booking")
+	#end
 	#if($r.available("edit.member"))
 		$r.render("edit.member")
 	#end
@@ -16,11 +19,16 @@ $r.render("profil")
 
 $r.render("roles")
 
-<fieldset class="o_block_top">
+#if($r.available("orders"))
+<fieldset class="o_block_large_top">
 	<legend>$r.translate("booking.orders")</legend>
 	$r.render("orders")
 </fieldset>
+#end
 
 #if($r.available("history"))
+<fieldset class="o_block_large_top">
+	<legend>$historyTitle</legend>
 	$r.render("history")
+</fieldset>
 #end

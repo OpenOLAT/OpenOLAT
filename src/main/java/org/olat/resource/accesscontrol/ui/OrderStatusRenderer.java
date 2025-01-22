@@ -48,12 +48,10 @@ public class OrderStatusRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object val, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(val instanceof OrderStatus status) {
+		if(val instanceof Status status) {
 			renderStatus(sb, status);
-		} else if (val instanceof OrderTableRow orderRow) {
-			renderStatus(sb, orderRow.getStatus());
-		} else if (val instanceof OrderTableItem item) {
-			renderStatus(sb, item.getStatus());
+		} else if(val instanceof OrderStatus orderStatus) {
+			renderStatus(sb, orderStatus);
 		}
 	}
 	

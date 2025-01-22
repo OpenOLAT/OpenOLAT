@@ -44,25 +44,25 @@ public class ModificationCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator transl) {
 		if(cellValue instanceof Boolean modified && modified.booleanValue()) {
-			renderModification(target, "has.modification", "o_membership_modify", "o_icon_retry");
+			renderModification(target, "has.modification", "o_activity_modify", "o_icon_retry");
 		} else if(cellValue instanceof ModificationStatus modification) {
 			switch(modification) {
-				case MODIFICATION: renderModification(target, "has.modification", "o_membership_modify", "o_icon_retry"); break;
-				case ADD: renderModification(target, "has.add", "o_membership_add", "o_icon_plus"); break;
-				case REMOVE: renderModification(target, "has.remove", "o_membership_remove", "o_icon_minus"); break;
+				case MODIFICATION: renderModification(target, "has.modification", "o_activity_modify", "o_icon_retry"); break;
+				case ADD: renderModification(target, "has.add", "o_activity_add", "o_icon_plus"); break;
+				case REMOVE: renderModification(target, "has.remove", "o_activity_remove", "o_icon_minus"); break;
 				default: break;
 			}
 		} else if(cellValue instanceof ModificationStatusSummary summary) {
 			if(summary.addition()) {
-				renderModification(target, "has.add", "o_membership_add", "o_icon_plus");
+				renderModification(target, "has.add", "o_activity_add", "o_icon_plus");
 				target.append(" ");
 			}
 			if(summary.modification()) {
-				renderModification(target, "has.modification", "o_membership_modify", "o_icon_retry");
+				renderModification(target, "has.modification", "o_activity_modify", "o_icon_retry");
 				target.append(" ");
 			}
 			if(summary.removal()) {
-				renderModification(target, "has.remove", "o_membership_remove", "o_icon_minus");
+				renderModification(target, "has.remove", "o_activity_remove", "o_icon_minus");
 				target.append(" ");
 			}
 		}

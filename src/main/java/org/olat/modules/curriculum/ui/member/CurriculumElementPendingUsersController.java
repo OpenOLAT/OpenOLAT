@@ -401,9 +401,7 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	}
 
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
-		List<Offer> offers = (curriculumElement.getParent() == null)
-				? acService.findOfferByResource(curriculumElement.getResource(), true, null, null)
-				: List.of();
+		List<Offer> offers = getAvailableOffers();
 		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants, offers);
 		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContex);
 		AddMemberFinishCallback finish = new AddMemberFinishCallback(membersContex);
@@ -475,7 +473,8 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 		}
 		
 		private boolean hasOngoingOrder() {
-			List<Order> ongoingOrders = acService.findOrders(member.getIdentity(), curriculumElement.getResource(), OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+			List<Order> ongoingOrders = acService.findOrders(member.getIdentity(), curriculumElement.getResource(),
+					OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
 			return !ongoingOrders.isEmpty();
 		}
 		

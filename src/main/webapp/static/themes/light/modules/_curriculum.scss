@@ -863,34 +863,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	font-weight: bold;
 }
 
-.o_membership_add {
-	border: $o-curriculum-activity-add-border;
-}
 
-.o_membership_modify{
-	border: $o-curriculum-activity-modify-border;
-}
-
-.o_membership_remove {
-	border: $o-curriculum-activity-remove-border;
-	>i {
-		color: $o-curriculum-activity-remove-color;
-	}
-}
-
-.o_membership_modify, .o_membership_add, .o_membership_remove {
-	border-radius: $o-curriculum-activity-border-radius;
-	width: 20px;
-	height: 20px;
-	display: inline-flex;
-	align-items: center;
-	justify-items: center;
-	padding: 2px 1px 1px 2px;
-	
-	>i {
-		font-size: 80%;
-	}
-}
 
 .o_labeled {
 	&.o_curriculum_status_preparation {

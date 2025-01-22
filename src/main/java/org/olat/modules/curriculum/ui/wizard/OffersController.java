@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -57,6 +58,8 @@ import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -70,9 +73,11 @@ public class OffersController extends StepFormBasicController {
 	
 	private static final String NO_BOOKING  = "nob";
 	
+	private TextElement commentEl;
 	private SpacerElement spacerEl;
 	private SingleSelection bookingsEl;
 	private StaticTextElement priceEl;
+	private TextElement purchaseOrderNumberEl;
 	private StaticTextElement cancellationFeeEl;
 	
 	private final MembersContext membersContext;
@@ -119,11 +124,27 @@ public class OffersController extends StepFormBasicController {
 			if(allowedByOrganisations(organisations, offerOrganisations)) {
 				List<OfferAccess> offerAccess = acService.getOfferAccess(offer, true);
 				for(OfferAccess link:offerAccess) {
-					accessList.add(new AccessInfos(offer, link, offerOrganisations));
+					if(validOfferAccess(link)) {
+						accessList.add(new AccessInfos(offer, link, offerOrganisations));
+					}
 				}
 			}
 		}
 		return accessList;
+	}
+	
+	/**
+	 * Exclude Paypal
+	 * 
+	 * @param offerAccess The offer access
+	 * @return Accepted or not for this process
+	 */
+	private boolean validOfferAccess(OfferAccess offerAccess) {
+		AccessMethod method = offerAccess.getMethod();
+		if(method instanceof PaypalAccessMethod || method instanceof PaypalCheckoutAccessMethod) {
+			return false;
+		}
+		return true;
 	}
 	
 	private boolean allowedByOrganisations(List<OrganisationRef> organisations, List<Organisation> offerOrganisations) {
@@ -161,6 +182,10 @@ public class OffersController extends StepFormBasicController {
 		
 		priceEl = uifactory.addStaticTextElement("booking.offer.price", "booking.offer.price", "", formLayout);
 		cancellationFeeEl = uifactory.addStaticTextElement("booking.offer.cancellation.fee", "booking.offer.cancellation.fee", "", formLayout);
+		
+		purchaseOrderNumberEl = uifactory.addTextElement("booking.po.number", 128, "", formLayout);
+		commentEl = uifactory.addTextAreaElement("booking.offer.comment", "booking.offer.comment", 4000, 3, 60, false, false, false, "", formLayout);
+		
 	}
 	
 	private SelectionValue forgeOfferAccess(Offer offer, OfferAccess offerAccess, List<Organisation> offerOrganisations) {
@@ -230,10 +255,14 @@ public class OffersController extends StepFormBasicController {
 			String cancellationFee = PriceFormat.fullFormat(infos.offer().getCancellingFee());
 			cancellationFeeEl.setValue(cancellationFee);
 			cancellationFeeEl.setVisible(StringHelper.containsNonWhitespace(cancellationFee));
-	
+			
+			purchaseOrderNumberEl.setVisible(true);
+			commentEl.setVisible(true);
 		} else {
 			priceEl.setVisible(false);
 			cancellationFeeEl.setVisible(false);
+			purchaseOrderNumberEl.setVisible(false);
+			commentEl.setVisible(false);
 		}
 	}
 	
@@ -250,6 +279,18 @@ public class OffersController extends StepFormBasicController {
 		if(bookingsEl.isOneSelected()) {
 			AccessInfos infos = getAccessInfos(bookingsEl.getSelectedKey());
 			membersContext.setSelectedOffer(infos);
+			
+			if(purchaseOrderNumberEl.isVisible() && StringHelper.containsNonWhitespace(purchaseOrderNumberEl.getValue())) {
+				membersContext.setPurchaseOrderNumber(purchaseOrderNumberEl.getValue());
+			} else {
+				membersContext.setPurchaseOrderNumber(null);
+			}
+			
+			if(commentEl.isVisible() && StringHelper.containsNonWhitespace(commentEl.getValue())) {
+				membersContext.setOrderComment(commentEl.getValue());
+			} else {
+				membersContext.setOrderComment(null);
+			}
 		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

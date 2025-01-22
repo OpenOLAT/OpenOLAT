@@ -141,7 +141,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 		Offer offer = offerAccess.getOffer();
 		Price amount = offer.getPrice();
 
-		Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT);
+		Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT, null, null);
 		PaypalCheckoutTransaction trx = transactionDao.createTransaction(amount, order, order.getParts().get(0), offerAccess.getMethod());
 		dbInstance.commit();// secure first step
 		return checkoutProvider.paymentUrl(url.toString(), order, trx, sessionId);
@@ -153,7 +153,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 		Price amount = offer.getPrice();
 
 		if(acService.reserveAccessToResource(delivery, offerAccess.getOffer(), offerAccess.getMethod())) {
-			Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT);
+			Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT, null, null);
 			PaypalCheckoutTransaction trx = transactionDao.createTransaction(amount, order, order.getParts().get(0), offerAccess.getMethod());
 			trx = checkoutProvider.createOrder(order, trx);
 			return new CreateSmartOrder(trx.getPaypalOrderId(), true);

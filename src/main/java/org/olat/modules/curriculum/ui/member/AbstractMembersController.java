@@ -79,6 +79,7 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.member.MemberManagementTableModel.MemberCols;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoService;
@@ -486,7 +487,8 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		
 		UserInfoProfileConfig profileConfig = createProfilConfig();
 		Identity member = securityManager.loadIdentityByKey(row.getIdentityKey());
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, withEdit, withAcceptDecline, true, false, true);
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, null, withEdit, withAcceptDecline, true, false, true,
+				true, true, true);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, curriculumElement, elements, member, config);
 		detailsCtrl.setUserObject(row);
@@ -554,6 +556,12 @@ public abstract class AbstractMembersController extends FormBasicController impl
 			}
 		}
 		return identities;
+	}
+	
+	protected List<Offer> getAvailableOffers() {
+		return (curriculumElement.getParent() == null)
+				? acService.findOfferByResource(curriculumElement.getResource(), true, null, null)
+				: List.of();
 	}
 	
 	protected final UserInfoProfileConfig createProfilConfig() {

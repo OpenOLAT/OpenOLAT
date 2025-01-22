@@ -58,6 +58,8 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+		final String comment = membersContext.getOrderComment();
+		final String poNumber = membersContext.getPurchaseOrderNumber();
 		final List<Identity> identities = membersContext.getSelectedIdentities();
 		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
 		List<MembershipModification> modifications = membersContext.getModifications();
@@ -72,7 +74,7 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 			AccessInfos offer = membersContext.getSelectedOffer();
 			if(offer != null) {
 				for(Identity identity:identities) {
-					acService.createAndSaveOrder(identity, offer.offerAccess(), OrderStatus.PREPAYMENT);
+					acService.createAndSaveOrder(identity, offer.offerAccess(), OrderStatus.PREPAYMENT, poNumber, comment);
 				}
 			}
 		}

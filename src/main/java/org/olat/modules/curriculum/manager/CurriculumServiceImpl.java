@@ -993,7 +993,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				addMemberHistory(element, member, role, nextStatus, actor, adminNote);
 			}
 			
-			List<Order> orders = acService.findOrders(actor, element.getResource(), OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+			List<Order> orders = acService.findOrders(member, element.getResource(), OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
 			for(Order order:orders) {
 				acService.cancelOrder(order);
 			}

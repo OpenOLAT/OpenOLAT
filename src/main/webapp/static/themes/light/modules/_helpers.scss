@@ -655,6 +655,35 @@
 	-webkit-overflow-scrolling: touch;
 }
 
+/* activity */
+.o_activity_add {
+	border: $o-activity-add-border;
+}
+
+.o_activity_modify {
+	border: $o-activity-modify-border;
+}
+
+.o_activity_remove {
+	border: $o-activity-remove-border;
+	>i {
+		color: $o-activity-remove-color;
+	}
+}
+
+.o_activity_modify, .o_activity_add, .o_activity_remove {
+	border-radius: $o-activity-border-radius;
+	width: 20px;
+	height: 20px;
+	display: inline-flex;
+	align-items: center;
+	justify-items: center;
+	padding: 2px 1px 1px 2px;
+	
+	>i {
+		font-size: 80%;
+	}
+}
 
  
  /* misc */

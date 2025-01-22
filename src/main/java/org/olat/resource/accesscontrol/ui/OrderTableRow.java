@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
@@ -36,6 +37,9 @@ import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 public class OrderTableRow {
 	
 	private final OrderTableItem item;
+	
+	private Status modifiedStatus;
+	private OrderModificationSummary modificationsSummary;
 	
 	private FormLink toolsLink;
 	
@@ -53,6 +57,22 @@ public class OrderTableRow {
 
 	public Status getStatus() {
 		return item.getStatus();
+	}
+	
+	public OrderStatus getOrderStatus() {
+		return item.getOrderStatus();
+	}
+
+	public Status getModifiedStatus() {
+		return modifiedStatus;
+	}
+	
+	public void setModifiedStatus(Status modifiedStatus) {
+		this.modifiedStatus = modifiedStatus;
+	}
+	
+	public Long getOrderKey() {
+		return item.getOrderKey();
 	}
 
 	public String getOrderNr() {
@@ -77,6 +97,14 @@ public class OrderTableRow {
 	
 	public Price getCancellationFees() {
 		return item.getCancellationFees();
+	}
+
+	public OrderModificationSummary getModificationsSummary() {
+		return modificationsSummary;
+	}
+
+	public void setModificationsSummary(OrderModificationSummary modificationsSummary) {
+		this.modificationsSummary = modificationsSummary;
 	}
 
 	public String[] getUserProperties() {

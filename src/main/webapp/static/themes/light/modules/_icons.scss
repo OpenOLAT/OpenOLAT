@@ -342,6 +342,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_passed { @include o-add-icon('check-circle');}
 .o_icon_passed_undefined { @include o-add-icon('dot-circle', false);}
 .o_icon_password { @include o-add-icon('lock');}
+.o_icon_pay { @include o-add-icon('money-bill-1');}
 .o_icon_pencil { @include o-add-icon('pencil');}
 .o_icon_pending { @include o-add-icon('spinner');}
 .o_icon_people { @include o-add-icon('people-group');}

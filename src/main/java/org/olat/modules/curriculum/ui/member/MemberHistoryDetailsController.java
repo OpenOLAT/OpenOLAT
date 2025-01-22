@@ -28,7 +28,6 @@ import org.olat.core.gui.components.panel.EmptyPanelItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
@@ -59,8 +58,6 @@ public class MemberHistoryDetailsController extends AbstractHistoryController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("details.history.title", new String[] { "<small class='o_muted'>" + StringHelper.escapeHtml(curriculumElement.getDisplayName()) + "</small>" });
-		
 		emptyHistoryEl = uifactory.addEmptyPanel("empty.history", null, formLayout);
 		emptyHistoryEl.setElementCssClass("o_sel_empty_history");
 		emptyHistoryEl.setTitle(translate("membership.no.history.title"));

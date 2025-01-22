@@ -80,6 +80,9 @@ import org.olat.modules.curriculum.ui.wizard.EditMemberFinishCallback;
 import org.olat.modules.curriculum.ui.wizard.EditMembersContext;
 import org.olat.modules.curriculum.ui.wizard.MembersContext;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.UserAvatarMapper;
 
 /**
@@ -108,6 +111,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	private StepsMainRunController addMemberCtrl;
 	private StepsMainRunController editMemberCtrl;
 	private RemoveMembershipsController removeCtrl;
+	private CancelMembershipsController cancelCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	private final boolean membersManaged;
@@ -300,6 +304,15 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 				loadModel(true);
 				cleanUp();
 			}
+		} else if(cancelCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel(true);
+				cmc.deactivate();
+				cleanUp();
+			} else if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if(editSingleMemberCtrl == source) {
 			if(event == Event.BACK_EVENT || event == Event.CLOSE_EVENT) {
 				toolbarPanel.popController(editSingleMemberCtrl);
@@ -326,10 +339,12 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		removeAsListenerAndDispose(addMemberCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(removeCtrl);
+		removeAsListenerAndDispose(cancelCtrl);
 		removeAsListenerAndDispose(cmc);
 		addMemberCtrl = null;
 		calloutCtrl = null;
 		removeCtrl = null;
+		cancelCtrl = null;
 		cmc = null;
 	}
 
@@ -384,9 +399,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	}
 
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
-		List<Offer> offers = (curriculumElement.getParent() == null)
-			? acService.findOfferByResource(curriculumElement.getResource(), true, null, null)
-			: List.of();
+		List<Offer> offers = getAvailableOffers();
 		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants, offers);
 		
 		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContex);
@@ -414,6 +427,21 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 		getWindowControl().pushAsModalDialog(editMemberCtrl.getInitialComponent());
 	}
 	
+	private void doCancel(UserRequest ureq, MemberRow member) {
+		List<Identity> identities = List.of(member.getIdentity());
+		List<ResourceReservation> reservations = member.getReservations();
+		List<CurriculumElement> curriculumElements = getAllCurriculumElements();
+		
+		cancelCtrl = new CancelMembershipsController(ureq, getWindowControl(),
+				curriculum, curriculumElement, curriculumElements, identities, reservations);
+		listenTo(cancelCtrl);
+		
+		String title = translate("cancel.memberships");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), cancelCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	@Override
 	protected void doOpenMemberDetails(UserRequest ureq, MemberRow row) {
 		super.doOpenMemberDetails(ureq, row, true, true);
@@ -435,6 +463,7 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 
 	private class ToolsController extends BasicController {
 		
+		private Link cancelLink;
 		private final Link contactLink;
 		private final Link editMemberLink;
 		private final Link removeMembershipsLink;
@@ -451,6 +480,10 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 
 			contactLink = addLink("contact", "contact", "o_icon o_icon-fw o_icon_mail");
 			editMemberLink = addLink("edit.member", "edit.member", "o_icon o_icon-fw o_icon_edit");
+			if(curriculumElement != null && hasOngoingOrder()) {
+				cancelLink = addLink("cancel.booking", "cancel", "o_icon o_icon-fw o_icon_decline");
+				mainVC.contextPut("reservationDivider", Boolean.TRUE);
+			}
 			removeMembershipsLink = addLink("remove.memberships", "remove.memberships", "o_icon o_icon-fw o_icon_remove");
 			
 			putInitialPanel(mainVC);
@@ -464,6 +497,12 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 			return link;
 		}
 		
+		private boolean hasOngoingOrder() {
+			List<Order> ongoingOrders = acService.findOrders(member.getIdentity(), curriculumElement.getResource(),
+					OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+			return !ongoingOrders.isEmpty();
+		}
+		
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
@@ -473,6 +512,8 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 				doEditMember(ureq, member);
 			} else if(removeMembershipsLink == source) {
 				doRemoveMemberships(ureq, List.of(member));
+			} else if(cancelLink == source) {
+				doCancel(ureq, member);
 			}
 		}
 	}

@@ -78,6 +78,7 @@ import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.ui.OrderModification;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoService;
@@ -396,13 +397,21 @@ public class CancelMembershipsController extends FormBasicController implements 
 		CurriculumRoles role = CurriculumRoles.participant;
 		UserInfoProfileConfig profileConfig = createProfilConfig();
 		List<CurriculumRoles> rolesToSee = List.of(role);
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToSee, false, false, false, true, true);
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToSee, false, false, false, true, true,
+				true, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, selectedCurriculumElement, curriculumElements, row.getIdentity(), config);
 		listenTo(detailsCtrl);
 		
 		List<MembershipModification> modifications = buildCancelModification(role, row.getOngoingOrders(), row.getReservations());
 		detailsCtrl.setModifications(modifications);
+		
+		List<Order> ongoingOrders = acService.findOrders(row.getIdentity(), selectedCurriculumElement.getResource(),
+				OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+		List<OrderModification> orderModifications = ongoingOrders.stream()
+				.map(order -> new OrderModification(order.getKey(), OrderStatus.CANCELED))
+				.toList();
+		detailsCtrl.setOrderModifications(orderModifications);
 		
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());

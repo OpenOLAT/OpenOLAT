@@ -50,6 +50,8 @@ public class MembersContext {
 	
 	private final List<Offer> offers;
 	private AccessInfos selectedOffer;
+	private String purchaseOrderNumber;
+	private String orderComment;
 
 	private List<MembershipModification> modifications;
 
@@ -60,7 +62,7 @@ public class MembersContext {
 	public MembersContext(CurriculumRoles roleToModify, Curriculum curriculum,
 			CurriculumElement curriculumElement, List<CurriculumElement> descendants,
 			List<Offer> offers) {
-		this.offers = offers;
+		this.offers = offers == null ? List.of() : new ArrayList<>(offers);
 		this.roleToModify = roleToModify;
 		this.curriculum = curriculum;
 		this.curriculumElement = curriculumElement;
@@ -137,6 +139,22 @@ public class MembersContext {
 
 	public void setSelectedOffer(AccessInfos selectedOffer) {
 		this.selectedOffer = selectedOffer;
+	}
+
+	public String getPurchaseOrderNumber() {
+		return purchaseOrderNumber;
+	}
+
+	public void setPurchaseOrderNumber(String purchaseOrderNumber) {
+		this.purchaseOrderNumber = purchaseOrderNumber;
+	}
+
+	public String getOrderComment() {
+		return orderComment;
+	}
+
+	public void setOrderComment(String orderComment) {
+		this.orderComment = orderComment;
 	}
 
 	public boolean hasModifications() {

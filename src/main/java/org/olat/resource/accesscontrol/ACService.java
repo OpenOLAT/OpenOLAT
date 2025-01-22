@@ -193,9 +193,11 @@ public interface ACService {
 	
 	public boolean tryAutoBooking(Identity identity, CurriculumElement element, AccessResult acResult);
 	
-	public Order createAndSaveOrder(Identity identity, OfferAccess link, OrderStatus orderStatus);
+	public Order createAndSaveOrder(Identity identity, OfferAccess link, OrderStatus orderStatus, String purchaseOrderNumber, String comment);
 	
 	public void cancelOrder(Order order);
+	
+	public void payOrder(Order order);
 
 	/**
 	 * Get the reservation form an identity on a resource

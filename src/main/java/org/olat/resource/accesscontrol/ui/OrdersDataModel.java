@@ -20,6 +20,7 @@
 package org.olat.resource.accesscontrol.ui;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
@@ -28,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.user.UserManager;
 
 /**
@@ -58,7 +60,8 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		}
 		
 		return switch(COLS[col]) {
-			case status -> order;
+			case activity -> order.getModificationsSummary();
+			case status -> getStatus(order);
 			case orderNr -> order.getOrderNr();
 			case creationDate -> order.getCreationDate();
 			case delivery -> getDelivery(order);
@@ -70,6 +73,13 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 			case tools -> order.getToolsLink();
 			default -> order;
 		};
+	}
+	
+	private Status getStatus(OrderTableRow order) {
+		if(order.getModifiedStatus() != null) {
+			return order.getModifiedStatus();
+		}
+		return order.getStatus();
 	}
 	
 	private String getDelivery(OrderTableRow order) {
@@ -105,6 +115,14 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		}
 		return paymentMethod;
 	}
+	
+	public void updateModifications() {
+		OrdersDataSource ordersDataSource = (OrdersDataSource)getSourceDelegate();
+		List<OrderTableRow> orderRows = getObjects();
+		for(OrderTableRow orderRow:orderRows) {
+			ordersDataSource.updateModifications(orderRow);
+		}
+	}
 
 	@Override
 	public OrdersDataModel createCopyWithEmptyList() {
@@ -112,6 +130,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 	}
 	
 	public enum OrderCol implements FlexiSortableColumnDef {
+		activity("table.order.activity", null),
 		orderNr("order.nr", "order_id"),
 		creationDate("table.order.creationDate", "creationdate"),
 		delivery("order.delivery", "delivery_id"),
@@ -138,7 +157,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 
 		@Override
 		public boolean sortable() {
-			return this != tools && this != offerName;
+			return sortKey != null;
 		}
 
 		@Override

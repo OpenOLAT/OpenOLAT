@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,39 +14,17 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.resource.accesscontrol.ui;
 
-import java.util.Locale;
-
-import org.olat.core.gui.components.table.CustomCellRenderer;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.resource.accesscontrol.Price;
-
 /**
  * 
- * Description:<br>
- * Render the type of an access method
- * 
- * <P>
- * Initial Date:  27 mai 2011 <br>
+ * Initial date: 22 janv. 2025<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class PriceCellRenderer implements CustomCellRenderer {
-
-	public PriceCellRenderer() {
-		//
-	}
-	
-	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof Price) {
-			Price amount = (Price)val;
-			sb.append(PriceFormat.fullFormat(amount));
-		}
-	}
-
+public record OrderModificationSummary(boolean modification) {
+	//
 }

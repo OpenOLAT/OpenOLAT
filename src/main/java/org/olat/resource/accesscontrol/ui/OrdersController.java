@@ -57,6 +57,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
 import org.olat.user.UserManager;
@@ -79,7 +80,6 @@ public class OrdersController extends FormBasicController implements Activateabl
 	private OrdersDataSource dataSource;
 	private OrdersDataModel dataModel;
 	private BreadcrumbPanel stackPanel;
-	private CloseableModalController cmc;
 
 	private int counter = 0;
 	private final Identity identity;
@@ -87,6 +87,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 	private final OrdersSettings settings;
 
 	private ToolsController toolsCtrl;
+	private CloseableModalController cmc;
 	private OrderDetailController detailController;
 	private CloseableCalloutWindowController calloutCtrl;
 
@@ -122,11 +123,16 @@ public class OrdersController extends FormBasicController implements Activateabl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		if(settings.withActivities()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.activity,
+					new OrderModificationCellRenderer(getTranslator())));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderNr));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.status, new OrderStatusRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.methods, new AccessMethodRenderer(acModule)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.status,
+				new OrderStatusRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.methods,
+				new AccessMethodRenderer(acModule)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offerName));
-		
 		if(resource == null && settings.withResourceDisplayName()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
 		}
@@ -156,6 +162,11 @@ public class OrdersController extends FormBasicController implements Activateabl
 		toolsLink.setTitle(translate("action.more"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
+	}
+	
+	public void setModifications(List<OrderModification> orderModifications) {
+		dataSource.setModifications(orderModifications);
+		dataModel.updateModifications();
 	}
 
 	@Override
@@ -208,7 +219,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		//
 	}
 	
-	protected void doOpenTools(UserRequest ureq, OrderTableRow member, FormLink link) {
+	private void doOpenTools(UserRequest ureq, OrderTableRow member, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 
@@ -240,8 +251,21 @@ public class OrdersController extends FormBasicController implements Activateabl
 		}
 	}
 	
+	private void doSetPaied(OrderTableRow row) {
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if(order != null) {
+			acService.payOrder(order);
+		}
+
+		tableEl.deselectAll();
+		tableEl.reloadData();
+		
+		showInfo("info.order.set.as.paied");
+	}
+	
 	private class ToolsController extends BasicController {
 
+		private Link payLink;
 		private Link detailsLink;
 		private final VelocityContainer mainVC;
 		
@@ -254,6 +278,10 @@ public class OrdersController extends FormBasicController implements Activateabl
 			
 			List<String> links = new ArrayList<>();
 			detailsLink = addLink("details", "details", "o_icon o_icon-fw o_icon_circle_info", links);
+			
+			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT) {
+				payLink = addLink("set.paied", "set.paied", "o_icon o_icon-fw o_icon_pay", links);
+			}
 			
 			mainVC.contextPut("links", links);
 			putInitialPanel(mainVC);
@@ -274,6 +302,9 @@ public class OrdersController extends FormBasicController implements Activateabl
 			if(detailsLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doOpenDetails(ureq, row);
+			} else if(payLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doSetPaied(row);
 			}
 		}
 	}

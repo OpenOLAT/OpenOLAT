@@ -68,7 +68,11 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.component.DualNumberCellRenderer;
 import org.olat.modules.curriculum.ui.member.AcceptDeclineMembershipsTableModel.AcceptDeclineCols;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.ui.OrderModification;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoService;
@@ -104,7 +108,9 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	
 	private CloseableModalController cmc;
 	private CustomizeNotificationController customizeNotificationsCtrl;
-	
+
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -345,13 +351,24 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		CurriculumRoles role = CurriculumRoles.participant;
 		UserInfoProfileConfig profileConfig = createProfilConfig();
 		List<CurriculumRoles> rolesToSee = List.of(role);
-		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToSee, false, false, false, true, true);
+		boolean withOrders = (nextStatus == GroupMembershipStatus.declined);
+		MemberDetailsConfig config = new MemberDetailsConfig(profileConfig, rolesToSee, false, false, false, true, true,
+				withOrders, false, false);
 		MemberDetailsController detailsCtrl = new MemberDetailsController(ureq, getWindowControl(), mainForm,
 				curriculum, selectedCurriculumElement, curriculumElements, row.getIdentity(), config);
 		listenTo(detailsCtrl);
 		
 		List<MembershipModification> modifications = buildAcceptDeclineModification(role,row.getReservations());
 		detailsCtrl.setModifications(modifications);
+		
+		if(withOrders) {
+			List<Order> ongoingOrders = acService.findOrders(row.getIdentity(), selectedCurriculumElement.getResource(),
+					OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+			List<OrderModification> orderModifications = ongoingOrders.stream()
+					.map(order -> new OrderModification(order.getKey(), OrderStatus.CANCELED))
+					.toList();
+			detailsCtrl.setOrderModifications(orderModifications);
+		}
 		
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());
