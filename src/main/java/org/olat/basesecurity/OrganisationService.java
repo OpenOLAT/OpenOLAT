@@ -198,6 +198,8 @@ public interface OrganisationService {
 	 */
 	public List<Organisation> getOrganisations(IdentityRef member, OrganisationRoles... role);
 	
+	public List<OrganisationRef> getOrganisationsWithParentLines(IdentityRef member, OrganisationRoles... role);
+	
 	/**
 	 * The list of organizations where the user has the specified roles,
 	 * without any inheritance in the organization structure.

@@ -727,9 +727,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 	private OLATResource createResource() {
 		//create a repository entry
 		OLATResourceable resourceable = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));
-		OLATResource r =  resourceManager.createOLATResourceInstance(resourceable);
-		dbInstance.saveObject(r);
-		return r;
+		return resourceManager.createAndPersistOLATResourceInstance(resourceable);
 	}
 	
 	@Test

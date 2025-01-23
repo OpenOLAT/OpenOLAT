@@ -374,12 +374,10 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 	}
 	
 	private void doCancel(UserRequest ureq, MemberRow member) {
-		List<Identity> identities = List.of(member.getIdentity());
-		List<ResourceReservation> reservations = member.getReservations();
 		List<CurriculumElement> curriculumElements = getAllCurriculumElements();
-		
 		cancelCtrl = new CancelMembershipsController(ureq, getWindowControl(),
-				curriculum, curriculumElement, curriculumElements, identities, reservations);
+				curriculum, curriculumElement, curriculumElements,
+				List.of(member.getIdentity()), member.getReservations());
 		listenTo(cancelCtrl);
 		
 		String title = translate("cancel.memberships");

@@ -44,6 +44,7 @@ import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.basesecurity.model.SearchOrganisationParameters;
 import org.olat.core.commons.persistence.DB;
@@ -437,6 +438,30 @@ public class OrganisationDAO {
 				.getResultList();
 		// because of the CLOB on Oracle, we make the "distinct" in Java
 		Set<Organisation> deduplicatedOrganisations = new HashSet<>(organisations);
+		return new ArrayList<>(deduplicatedOrganisations);
+	}
+	
+	public List<OrganisationRef> getOrganisationsWithParentLine(IdentityRef identity, List<String> roleList) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select org from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role in (:roles)")
+		  .append(" and org.status ").in(OrganisationStatus.notDelete());
+
+		List<Organisation> organisations = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Organisation.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("roles", roleList)
+				.getResultList();
+		// because of the CLOB on Oracle, we make the "distinct" in Java
+		Set<OrganisationRef> deduplicatedOrganisations = organisations.stream()
+				.map(org -> new OrganisationRefImpl(org.getKey()))
+				.collect(Collectors.toSet());
+		if(!deduplicatedOrganisations.isEmpty()) {
+			List<OrganisationRef> parentLines = getParentLineRefs(new ArrayList<>(organisations));
+			deduplicatedOrganisations.addAll(parentLines);
+		}
 		return new ArrayList<>(deduplicatedOrganisations);
 	}
 	

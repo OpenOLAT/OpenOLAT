@@ -33,6 +33,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
 
 /**
  * 
@@ -165,6 +166,10 @@ public class MembersContext {
 
 	public void setBillingAddress(BillingAddress billingAddress) {
 		this.billingAddress = billingAddress;
+	}
+	
+	public OrderAdditionalInfos createOrderInfos() {
+		return new OrderAdditionalInfos(purchaseOrderNumber, orderComment, billingAddress);
 	}
 
 	public boolean hasModifications() {

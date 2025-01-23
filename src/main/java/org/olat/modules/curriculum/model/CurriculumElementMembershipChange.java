@@ -45,6 +45,7 @@ public class CurriculumElementMembershipChange extends Event {
 
 	private final Identity member;
 	private final CurriculumElement curriculumElement;
+	private final boolean applyDescendants;
 	
 	private Date confirmUntil;
 	private ConfirmationByEnum confirmationBy;
@@ -53,26 +54,32 @@ public class CurriculumElementMembershipChange extends Event {
 	private EnumMap<CurriculumRoles,GroupMembershipStatus> modifications = new EnumMap<>(CurriculumRoles.class);
 	private EnumMap<CurriculumRoles,String> adminNotes = new EnumMap<>(CurriculumRoles.class);
 	
-	private CurriculumElementMembershipChange(Identity member, CurriculumElement curriculumElement) {
+	private CurriculumElementMembershipChange(Identity member, CurriculumElement curriculumElement, boolean applyDescendants) {
 		super("id-perm-changed");
 		this.member = member;
+		this.applyDescendants = applyDescendants;
 		this.curriculumElement = curriculumElement;
 	}
 
 	public static final CurriculumElementMembershipChange valueOf(Identity member, CurriculumElement curriculumElement) {
-		return new CurriculumElementMembershipChange(member, curriculumElement);
+		return new CurriculumElementMembershipChange(member, curriculumElement, false);
 	}
 	
 	public static final CurriculumElementMembershipChange copy(Identity member, CurriculumElementMembershipChange origin) {
-		CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, origin.getCurriculumElement());
+		CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, origin.getCurriculumElement(), false);
 		change.modifications.putAll(origin.modifications);
 		return change;
 	}
 	
-	public static final CurriculumElementMembershipChange addMembership(Identity member, CurriculumElement curriculumElement, CurriculumRoles role) {
-		CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, curriculumElement);
+	public static final CurriculumElementMembershipChange addMembership(Identity member, CurriculumElement curriculumElement,
+			boolean applyToDescendants, CurriculumRoles role) {
+		CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, curriculumElement, applyToDescendants);
 		change.modifications.put(role, GroupMembershipStatus.active);
 		return change;
+	}
+	
+	public boolean isApplyDescendants() {
+		return applyDescendants;
 	}
 
 	public CurriculumElement getCurriculumElement() {

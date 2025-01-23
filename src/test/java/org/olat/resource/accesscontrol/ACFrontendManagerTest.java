@@ -36,24 +36,31 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupMembershipHistory;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.manager.GroupMembershipHistoryDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -63,10 +70,13 @@ import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
+import org.olat.resource.accesscontrol.provider.invoice.model.InvoiceAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.dumbster.smtp.SmtpMessage;
 
 /**
  *
@@ -103,6 +113,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	private ACMethodDAO acMethodManager;
 	@Autowired
 	private AccessControlModule acModule;
+	@Autowired
+	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
 
 	@Test
 	public void testManagers() {
@@ -425,6 +437,77 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		
 		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
 		Assertions.assertThat(reservations)
+			.hasSize(1);
+	}
+	
+	@Test
+	public void testOrderAndCancelAccessToCurriculumElement() {
+		//enable paypal
+		boolean enabled = acModule.isPaypalEnabled();
+		if(!enabled) {
+			acModule.setPaypalEnabled(true);
+		}
+
+		//create curriculum with a free offer
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pay-22");
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser("doer-22");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-AC-2", "Curriculum AC 2", "Curriculum", false, null);
+		CurriculumElement implementationElement = curriculumService.createCurriculumElement("Implementation-for-order", "Implementation for order",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-order", "Element for order",
+				CurriculumElementStatus.active, null, null, implementationElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Offer offer = acService.createOffer(implementationElement.getResource(), "Invoice curriculum element");
+		offer = acService.save(offer);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(InvoiceAccessMethod.class);
+		Assert.assertFalse(methods.isEmpty());
+		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
+		Assert.assertNotNull(offerAccess);
+		offerAccess = acService.saveOfferAccess(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		// Book the curriculum
+		AccessResult result = acService.accessResource(id, offerAccess, OrderStatus.PREPAYMENT, null, doer);
+		Assert.assertTrue(result.isAccessible());
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(curriculum, id);
+		Assertions.assertThat(memberships)
+			.hasSize(2)
+			.map(CurriculumElementMembership::getCurriculumElementKey)
+			.containsExactlyInAnyOrder(implementationElement.getKey(), element.getKey());
+		
+		List<GroupMembershipHistory> activeHistory = groupMembershipHistoryDao.loadMembershipHistory(element.getGroup(), id);
+		Assertions.assertThat(activeHistory)
+			.filteredOn(point -> GroupMembershipStatus.active == point.getStatus())
+			.hasSize(1);
+		
+		dbInstance.commitAndCloseSession();
+		
+		// Cancel the order
+		Order order = result.getOrder();
+		MailTemplate mail = CurriculumMailing.getStatusCancelledMailTemplate(curriculum, implementationElement, doer);
+		MailPackage mailing = new MailPackage(mail, null);
+		acService.cancelOrder(order, doer, "Cancelled", mailing);
+		
+		dbInstance.commitAndCloseSession();
+		
+		// Check all memberships are cancelled
+		List<CurriculumElementMembership> cancelledMemberships = curriculumService.getCurriculumElementMemberships(curriculum, id);
+		Assert.assertTrue(cancelledMemberships.isEmpty());
+		
+		List<GroupMembershipHistory> canceledHistory = groupMembershipHistoryDao.loadMembershipHistory(element.getGroup(), id);
+		Assertions.assertThat(canceledHistory)
+			.hasSize(2)
+			.filteredOn(point -> GroupMembershipStatus.cancel == point.getStatus())
+			.hasSize(1);
+		
+		// Check email send
+		List<SmtpMessage> mails = getSmtpServer().getReceivedEmails();
+		Assertions.assertThat(mails)
 			.hasSize(1);
 	}
 

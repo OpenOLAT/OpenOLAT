@@ -63,6 +63,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.EnrollState;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -70,6 +71,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
+import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -94,6 +96,7 @@ import org.olat.resource.accesscontrol.OfferOrganisationSelection;
 import org.olat.resource.accesscontrol.OfferRef;
 import org.olat.resource.accesscontrol.OfferToOrganisation;
 import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
@@ -104,6 +107,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethodSecurityCallback;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
+import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
 import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
@@ -309,8 +313,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	public List<OrganisationRef> getOfferOrganisations(IdentityRef identity) {
 		if (!organisationModule.isEnabled() || identity == null) return List.of();
 		
-		List<Organisation> userOrganisations = organisationService.getOrganisations(identity, OrganisationRoles.user);
-		return organisationService.getParentLineRefs(userOrganisations);
+		return organisationService.getOrganisationsWithParentLines(identity, OrganisationRoles.user);
 	}
 	
 	@Override
@@ -550,7 +553,10 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 		if(handler.checkArgument(link, argument)) {
 			if(allowAccesToResource(identity, link.getOffer(), link.getMethod(), doer)) {
-				Order order = createAndSaveOrder(identity, link, OrderStatus.PAYED, null, null, null);
+				String purchaseOrderNumber = (argument instanceof OrderAdditionalInfos infos) ? infos.purchaseOrderNumber() : null;
+				String comment = (argument instanceof OrderAdditionalInfos infos) ? infos.comment() : null;
+				BillingAddress billingAddress = (argument instanceof OrderAdditionalInfos infos) ? infos.billingAddress() : null;
+				Order order = createAndSaveOrder(identity, link, orderStatus, billingAddress, purchaseOrderNumber, comment);
 				log.info(Tracing.M_AUDIT, "Access granted to: {} for {}", link, identity);
 				return new AccessResult(true, order);
 			} else {
@@ -587,28 +593,62 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 	
 	@Override
-	public void cancelOrder(Order order) {
-		internalChangeStatus(order, OrderStatus.CANCELED, AccessTransactionStatus.CANCELED);
-	}
-	
-	@Override
-	public void payOrder(Order order) {
-		internalChangeStatus(order, OrderStatus.PAYED, AccessTransactionStatus.SUCCESS);
-	}
-	
-	private void internalChangeStatus(Order order, OrderStatus orderStatus, AccessTransactionStatus transactionStatus) {
-		order = orderManager.save(order, orderStatus);
+	public void cancelOrder(Order order, Identity doer, String adminNote, MailPackage mailing) {
+		order = orderManager.save(order, OrderStatus.CANCELED);
 		
-		List<AccessTransaction> transactions = transactionManager.loadTransactionsForOrder(order);
-		if(!transactions.isEmpty()) {
-			// Mark the transactions as changed too
-			Collections.sort(transactions, (t1, t2) -> t2.getCreationDate().compareTo(t1.getCreationDate()));
-			for(OrderPart part:order.getParts()) {
-				AccessTransaction lastTransaction = transactions.get(0);
-				AccessTransaction transaction = transactionManager.createTransaction(order, part, lastTransaction.getMethod());
-				transactionManager.update(transaction, transactionStatus);
+		List<OLATResource> deniedRessources = new ArrayList<>();
+		Identity identity = order.getDelivery();
+		if(identity != null) {
+			identity.getUser();// Load it to send email
+		}
+		
+		for(OrderPart part:order.getParts()) {
+			for(OrderLine line:part.getOrderLines()) {
+				Offer offer = line.getOffer();
+				Date begin = getBeginDate(offer.getResource());
+				GroupMembershipStatus nextStatus = offer.isCancellationFeeApplyingFor(new Date(), begin)
+						? GroupMembershipStatus.cancelWithFee
+						: GroupMembershipStatus.cancel;
+				if(internalDenyAccesToResource(identity, offer, nextStatus, doer, adminNote)) {
+					deniedRessources.add(offer.getResource());
+				}
 			}
 		}
+		
+		if(mailing != null && mailing.isSendEmail()) {
+			for(OLATResource deniedRessource:deniedRessources) {
+				sendMail(identity, deniedRessource, doer, mailing);
+			}
+		}
+	}
+	
+	private void sendMail(Identity delivery, OLATResource resource, Identity doer, MailPackage mailing) {
+		if("CurriculumElement".equals(resource.getResourceableTypeName())) {
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
+			Curriculum curriculum = curriculumElement.getCurriculum();
+			CurriculumMailing.sendEmail(doer, delivery, curriculum, curriculumElement, mailing);
+		}
+	}
+	
+	private Date getBeginDate(OLATResource resource) {
+		if("CurriculumElement".equals(resource.getResourceableTypeName())) {
+			CurriculumElement element = curriculumService.getCurriculumElement(resource);
+			return element == null ? null : element.getBeginDate();
+		} else if("BusinessGroup".equals(resource.getResourceableTypeName())) {
+			return null;
+		}
+		
+		RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
+		if(entry != null && entry.getLifecycle() != null) {
+			return entry.getLifecycle().getValidFrom();
+		}
+		return null;
+	}
+
+	@Override
+	public Order changeOrderStatus(Order order, OrderStatus newStatus) {
+		log.info("Change order status {} ({}) from {} to {}", order.getOrderNr(), order.getKey(), order.getOrderStatus(), newStatus);
+		return orderManager.save(order, OrderStatus.PAYED);
 	}
 
 	@Override
@@ -678,7 +718,6 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		return false;
 	}
 
-	//TODO booking
 	private boolean reserveAccessToCurriculumElement(Identity identity, Offer offer, OLATResource resource) {
 		boolean reserved = false;
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
@@ -778,8 +817,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 						.anyMatch(CurriculumElementMembership::isParticipant);
 				if (!isParticipant) {
 					List<CurriculumElementMembershipChange> changes = List.of(CurriculumElementMembershipChange
-							.addMembership(identity, curriculumElement, CurriculumRoles.participant));
-					//TODO booking
+							.addMembership(identity, curriculumElement, true, CurriculumRoles.participant));
 					curriculumService.updateCurriculumElementMemberships(doer, null, changes, null);
 					return true;
 				}
@@ -802,6 +840,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 	@Override
 	public boolean denyAccesToResource(Identity identity, Offer offer) {
+		return internalDenyAccesToResource(identity, offer, GroupMembershipStatus.declined, identity, null);
+	}
+	
+	private boolean internalDenyAccesToResource(Identity identity, Offer offer, GroupMembershipStatus status,
+			Identity doer, String adminNote) {
 		//check if offer is ok: key is stupid but further check as date, validity...
 		if(offer.getKey() == null) {
 			return false;
@@ -825,10 +868,9 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		} else if("CurriculumElement".equals(resourceType)) {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
 			if (curriculumElement != null) {
-				//TODO booking
 				// Delegate the job to the curriculum service, inherited memberships will be removed too
 				return curriculumService.removeMember(curriculumElement, identity, CurriculumRoles.participant,
-						GroupMembershipStatus.declined, identity, null);
+						status, doer, adminNote);
 			}
 		} else {
 			RepositoryEntryRef entry = repositoryEntryDao.loadByResource(resource);

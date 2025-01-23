@@ -258,10 +258,9 @@ public class MemberDetailsController extends FormBasicController {
 	}
 	
 	private void doCancel(UserRequest ureq) {
-		List<Identity> identities = List.of(member);
 		List<ResourceReservation> reservations = getPendingReservations();
 		cancelCtrl = new CancelMembershipsController(ureq, getWindowControl(),
-				curriculum, selectedCurriculumElement, curriculumElements, identities, reservations);
+				curriculum, selectedCurriculumElement, curriculumElements, List.of(member), reservations);
 		listenTo(cancelCtrl);
 		
 		String title = translate("cancel.memberships");

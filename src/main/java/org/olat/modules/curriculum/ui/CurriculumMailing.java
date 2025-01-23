@@ -109,7 +109,7 @@ public class CurriculumMailing {
 			curriculumElementDescription = (StringHelper.containsNonWhitespace(curriculumElement.getDescription())
 					? FilterFactory.getHtmlTagAndDescapingFilter().filter(curriculumElement.getDescription()) : ""); 
 			curriculumElementIdentifier = curriculumElement.getIdentifier();
-			curriculumTypeName = curriculumElement.getType().getDisplayName();
+			curriculumTypeName = curriculumElement.getType() == null ? null : curriculumElement.getType().getDisplayName();
 		}
 		
 		// get some data about the actor and fetch the translated subject / body via i18n module

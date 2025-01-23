@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -198,9 +199,15 @@ public interface ACService {
 	public Order createAndSaveOrder(Identity identity, OfferAccess link, OrderStatus orderStatus,
 			BillingAddress billingAddress, String purchaseOrderNumber, String comment);
 	
-	public void cancelOrder(Order order);
+	public void cancelOrder(Order order, Identity doer, String adminNote, MailPackage mailing);
 	
-	public void payOrder(Order order);
+	/**
+	 * Change to order status to pay and only the order status. Use wisely!
+	 * 
+	 * @param order The order
+	 * @param status The new status
+	 */
+	public Order changeOrderStatus(Order order, OrderStatus status);
 
 	/**
 	 * Get the reservation form an identity on a resource

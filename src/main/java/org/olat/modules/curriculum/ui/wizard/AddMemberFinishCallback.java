@@ -37,9 +37,9 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
-import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
 
 /**
  * 
@@ -59,26 +59,22 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 
 	@Override
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-		final String comment = membersContext.getOrderComment();
-		final String poNumber = membersContext.getPurchaseOrderNumber();
-		final BillingAddress billingAddress = membersContext.getBillingAddress();
 		final List<Identity> identities = membersContext.getSelectedIdentities();
-		List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
-		List<MembershipModification> modifications = membersContext.getModifications();
-		List<CurriculumElementMembershipChange> changes = applyModification(identities, curriculumElements, modifications);
-		
-		if(!changes.isEmpty()) {
-			MailerResult result = new MailerResult();
-			MailTemplate template = membersContext.getMailTemplate();
-			MailPackage mailPackage = new MailPackage(template, result, (MailContext)null, template != null);
-			curriculumService.updateCurriculumElementMemberships(ureq.getIdentity(), ureq.getUserSession().getRoles(), changes, mailPackage);
-			
-			AccessInfos offer = membersContext.getSelectedOffer();
-			if(offer != null) {
-				for(Identity identity:identities) {
-					acService.createAndSaveOrder(identity, offer.offerAccess(), OrderStatus.PREPAYMENT,
-						billingAddress, poNumber, comment);
-				}
+		AccessInfos offer = membersContext.getSelectedOffer();
+		if(offer != null) {
+			for(Identity identity:identities) {
+				OrderAdditionalInfos orderInfos = membersContext.createOrderInfos();
+				acService.accessResource(identity, offer.offerAccess(), OrderStatus.PREPAYMENT, orderInfos, ureq.getIdentity());
+			}
+		} else {
+			List<MembershipModification> modifications = membersContext.getModifications();
+			List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
+			List<CurriculumElementMembershipChange> changes = applyModification(identities, curriculumElements, modifications);
+			if(!changes.isEmpty()) {
+				MailerResult result = new MailerResult();
+				MailTemplate template = membersContext.getMailTemplate();
+				MailPackage mailPackage = new MailPackage(template, result, (MailContext)null, template != null);
+				curriculumService.updateCurriculumElementMemberships(ureq.getIdentity(), ureq.getUserSession().getRoles(), changes, mailPackage);
 			}
 		}
 		return StepsMainRunController.DONE_MODIFIED;

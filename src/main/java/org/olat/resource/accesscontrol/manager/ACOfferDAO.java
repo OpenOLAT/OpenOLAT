@@ -265,13 +265,7 @@ public class ACOfferDAO {
 	
 	public Offer save(Offer offer, CostCenter costCenter) {
 		((OfferImpl)offer).setCostCenter(costCenter);
-		if(offer.getKey() == null) {
-			dbInstance.saveObject(offer);
-		} else {
-			((OfferImpl)offer).setLastModified(new Date());
-			dbInstance.updateObject(offer);
-		}
-		return offer;
+		return saveOffer(offer);
 	}
 	
 	public Map<Long, Long> getCostCenterKeyToOfferCount(Collection<CostCenter> costCenters) {

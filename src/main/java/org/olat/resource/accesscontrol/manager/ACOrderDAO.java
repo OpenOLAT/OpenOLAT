@@ -116,34 +116,22 @@ public class ACOrderDAO {
 
 	public Order save(Order order) {
 		if(order.getKey() == null) {
-			dbInstance.saveObject(order);
+			dbInstance.getCurrentEntityManager().persist(order);
 		} else {
 			((OrderImpl)order).setLastModified(new Date());
-			dbInstance.updateObject(order);
+			order = dbInstance.getCurrentEntityManager().merge(order);
 		}
 		return order;
 	}
 
 	public Order save(Order order, OrderStatus status) {
 		((OrderImpl)order).setOrderStatus(status);
-		if(order.getKey() == null) {
-			dbInstance.saveObject(order);
-		} else {
-			((OrderImpl)order).setLastModified(new Date());
-			dbInstance.updateObject(order);
-		}
-		return order;
+		return save(order);
 	}
 
 	public Order save(Order order, BillingAddress billingAddress) {
 		((OrderImpl)order).setBillingAddress(billingAddress);
-		if(order.getKey() == null) {
-			dbInstance.saveObject(order);
-		} else {
-			((OrderImpl)order).setLastModified(new Date());
-			dbInstance.updateObject(order);
-		}
-		return order;
+		return save(order);
 	}
 
 	public Order saveOneClick(Identity delivery, OfferAccess link) {

@@ -22,6 +22,9 @@ package org.olat.resource.accesscontrol;
 
 import java.util.Date;
 
+import jakarta.persistence.Transient;
+
+import org.olat.core.util.DateUtils;
 import org.olat.resource.OLATResource;
 
 /**
@@ -58,7 +61,7 @@ public interface Offer extends OfferRef {
 	public void setPrice(Price price);
 	
 	/*
-	 * CostCenter, cancellingFee, cancellingFeeDeadlineDays, etc. are deliberately
+	 * CostCenter, cancellingFeeDeadlineDays, etc. are deliberately
 	 * not copied to the OrderLine, OrderPart and Order. We therefore keep the data
 	 * model simple. And since many areas of the GUI in particular would not have to
 	 * be adapted if multiple relationships were to be used effectively, the data
@@ -75,6 +78,18 @@ public interface Offer extends OfferRef {
 	public Integer getCancellingFeeDeadlineDays();
 
 	public void setCancellingFeeDeadlineDays(Integer cancellingFeeDeadlineDays);
+	
+	@Transient
+	public default boolean isCancellationFeeApplyingFor(Date orderCancellationDate, Date begin) {
+		Integer days = getCancellingFeeDeadlineDays();
+		if(orderCancellationDate != null && days != null && begin != null) {
+			long countDays = DateUtils.countDays(orderCancellationDate, begin);
+			if(days.intValue() > countDays) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	public String getDescription();
 	

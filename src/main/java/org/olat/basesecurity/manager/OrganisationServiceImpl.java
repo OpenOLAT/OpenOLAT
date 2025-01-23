@@ -527,6 +527,15 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
+	public List<OrganisationRef> getOrganisationsWithParentLines(IdentityRef member, OrganisationRoles... role) {
+		List<String> roleList = new ArrayList<>(role.length);
+		for(OrganisationRoles r:role) {
+			roleList.add(r.name());
+		}
+		return organisationDao.getOrganisationsWithParentLine(member, roleList);
+	}
+
+	@Override
 	public List<Organisation> getOrganisationsNotInherited(IdentityRef member, OrganisationRoles... role) {
 		List<String> roleList = new ArrayList<>(role.length);
 		for(OrganisationRoles r:role) {

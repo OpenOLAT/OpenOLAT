@@ -75,8 +75,6 @@ public class GroupMembershipHistoryDAO {
 				.createQuery(query, GroupMembershipHistory.class)
 				.setParameter("groupKey", group.getKey())
 				.setParameter("identityKey", identity.getKey())
-				.setFirstResult(0)
-				.setMaxResults(1)
 				.getResultList();
 	}
 	

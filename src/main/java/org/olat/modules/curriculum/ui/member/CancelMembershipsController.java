@@ -64,7 +64,6 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.component.DualNumberCellRenderer;
@@ -87,6 +86,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * Cancel ongoing orders.
  * 
  * Initial date: 20 janv. 2025<br>
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
@@ -285,7 +285,7 @@ public class CancelMembershipsController extends FormBasicController implements 
 			cleanUp();
 			
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
-				doApplyWithCustomNotifications(ureq, customTemplate);
+				doApplyWithCustomNotifications(customTemplate);
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if(cmc == source) {
@@ -303,7 +303,7 @@ public class CancelMembershipsController extends FormBasicController implements 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(applyWithoutNotificationButton == source) {
-			doApply(ureq, new MailPackage(false));
+			doCancelMemberships(new MailPackage(false));
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(applyCustomNotificationButton == source) {
 			doCustomizeNotifications(ureq);
@@ -334,7 +334,7 @@ public class CancelMembershipsController extends FormBasicController implements 
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doApplyWithNotification(ureq);
+		doApplyWithNotification();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -354,38 +354,29 @@ public class CancelMembershipsController extends FormBasicController implements 
 		cmc.activate();
 	}
 	
-	private void doApplyWithNotification(UserRequest ureq) {
+	private void doApplyWithNotification() {
 		MailerResult result = new MailerResult();
 		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
 		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
-		doApply(ureq, mailing);
+		doCancelMemberships(mailing);
 	}
 	
-	private void doApplyWithCustomNotifications(UserRequest ureq, MailTemplate template) {
+	private void doApplyWithCustomNotifications(MailTemplate template) {
 		MailerResult result = new MailerResult();
 		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
-		doApply(ureq, mailing);
+		doCancelMemberships(mailing);
 	}
 	
-	private void doApply(UserRequest ureq, MailPackage mailing) {
+	private void doCancelMemberships(MailPackage mailing) {
 		String adminNote = adminNoteEl.getValue();
 
-		List<CurriculumElementMembershipChange> changes = new ArrayList<>();
 		List<CancelMembershipRow> rows = tableModel.getObjects();
 		for(CancelMembershipRow row:rows) {
-			Identity member = row.getIdentity();
-			Price cancellationFee = row.getCancellationFee();
-			GroupMembershipStatus nextStatus = cancellationFee == null ? GroupMembershipStatus.cancel : GroupMembershipStatus.cancelWithFee;
-			for(CurriculumElement curriculumElement:curriculumElements) {
-				CurriculumElementMembershipChange change = CurriculumElementMembershipChange
-						.valueOf(member, curriculumElement);
-				change.setNextStatus(roleToModify, nextStatus);
-				change.setAdminNote(roleToModify, adminNote);
-				changes.add(change);
+			List<Order> ordersToCancel = row.getOngoingOrders();
+			for(Order order:ordersToCancel) {
+				acService.cancelOrder(order, getIdentity(), adminNote, mailing);
 			}
 		}
-		
-		curriculumService.updateCurriculumElementMemberships(getIdentity(), ureq.getUserSession().getRoles(), changes, mailing);
 	}
 	
 	private final void doOpenMemberDetails(UserRequest ureq, CancelMembershipRow row) {

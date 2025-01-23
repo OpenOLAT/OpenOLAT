@@ -92,7 +92,7 @@ public class GroupMembershipHistoryDAOTest extends OlatTestCase {
 		
 		List<GroupMembershipHistory> history = groupMembershipHistoryDao.loadMembershipHistory(groupToDelete, id);
 		Assertions.assertThat(history)
-			.hasSize(0);
+			.isEmpty();
 		
 		List<GroupMembershipHistory> refHistory = groupMembershipHistoryDao.loadMembershipHistory(refGroup, id);
 		Assertions.assertThat(refHistory)

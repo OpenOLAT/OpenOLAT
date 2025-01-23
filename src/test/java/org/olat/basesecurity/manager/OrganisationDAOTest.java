@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -330,6 +331,8 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Assert.assertTrue(organisations.contains(defOrganisation));	
 	}
 	
+	
+	
 	@Test
 	public void getOrganisations_identity_notInherited() {
 		Identity member1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-16");
@@ -388,6 +391,23 @@ public class OrganisationDAOTest extends OlatTestCase {
 		List<Organisation> organisations = organisationDao.getOrganisations(null);
 		Assert.assertNotNull(organisations);
 		Assert.assertTrue(organisations.isEmpty());
+	}
+	
+	@Test
+	public void getOrganisationsWithParentLine() {
+		String identifier = UUID.randomUUID().toString();
+		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root", identifier, null, null, null);
+		Organisation organisation1 = organisationDao.createAndPersistOrganisation("Org 10", identifier, null, rootOrganisation, null);
+		Organisation organisation2 = organisationDao.createAndPersistOrganisation("Org 11", identifier, null, rootOrganisation, null);
+		dbInstance.commit();
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-30", organisation2, "2change");
+		dbInstance.commitAndCloseSession();
+		
+		List<OrganisationRef> userOrgnisations = organisationDao.getOrganisationsWithParentLine(member, List.of(OrganisationRoles.user.name()));
+		Assertions.assertThat(userOrgnisations)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(new OrganisationRefImpl(rootOrganisation.getKey()), new OrganisationRefImpl(organisation2.getKey()))
+			.doesNotContain(new OrganisationRefImpl(organisation1.getKey()));
 	}
 	
 	@Test

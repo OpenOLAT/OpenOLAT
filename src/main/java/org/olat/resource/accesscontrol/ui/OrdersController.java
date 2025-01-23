@@ -254,7 +254,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 	private void doSetPaied(OrderTableRow row) {
 		Order order = acService.loadOrderByKey(row.getOrderKey());
 		if(order != null) {
-			acService.payOrder(order);
+			acService.changeOrderStatus(order, OrderStatus.PAYED);
 		}
 
 		tableEl.deselectAll();

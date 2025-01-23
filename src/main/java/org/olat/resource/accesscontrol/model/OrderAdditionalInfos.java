@@ -17,16 +17,16 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.resource.accesscontrol.ui;
+package org.olat.resource.accesscontrol.model;
 
-import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.BillingAddress;
 
 /**
  * 
- * Initial date: 22 janv. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 23 janv. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record OrderModification(Long orderKey, OrderStatus nextStatus) {
+public record OrderAdditionalInfos(String purchaseOrderNumber, String comment, BillingAddress billingAddress) {
 	//
 }
