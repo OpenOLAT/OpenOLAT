@@ -47,6 +47,7 @@ public class ContactTracingPage {
 	 */
 	public ContactTracingPage load(String url) {
 		browser.navigate().to(url);
+		OOGraphene.waitUrl(browser, url);
 		return assertOnContactTracing();
 	}
 	
@@ -83,7 +84,6 @@ public class ContactTracingPage {
 	public LoginPage asAuthenticatedUser() {
 		By loginBy = By.cssSelector("fieldset.o_sel_contacttracing_login button.btn.btn-primary");
 		browser.findElement(loginBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(LoginPage.loginFormBy, browser);
 		return new LoginPage(browser);
 	}

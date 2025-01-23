@@ -199,6 +199,20 @@ public class OOGraphene {
 			.until(new BusyPredicate());
 	}
 	
+	public static void waitUrl(WebDriver browser, String url) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(5))
+			.pollingEvery(polling)
+			.until(ExpectedConditions.urlToBe(url));
+	}
+	
+	public static void waitUrlContains(WebDriver browser, String url) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(5))
+			.pollingEvery(polling)
+			.until(ExpectedConditions.urlContains(url));
+	}
+	
 	public static void waitSpinnerDisappears(WebDriver browser) {
 		By modalBy = By.xpath("//dialog[@id='o_ajax_busy']");
 		new WebDriverWait(browser, driverTimeout)

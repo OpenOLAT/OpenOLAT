@@ -196,6 +196,7 @@ public class UserToolsPage {
 
 		By logoutBy = By.className("o_logout");
 		browser.findElement(logoutBy).click();
+		OOGraphene.waitUrlContains(browser, "/dmz/");
 		OOGraphene.waitElement(LoginPage.loginFormBy, browser);
 	}
 }
