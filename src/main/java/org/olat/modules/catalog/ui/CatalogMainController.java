@@ -171,8 +171,9 @@ public class CatalogMainController extends BasicController implements Activateab
 				doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
 			}
 		} else if (source instanceof CatalogEntryListController) {
-			OpenTaxonomyEvent ote = (OpenTaxonomyEvent)event;
-			doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
+			if (event instanceof OpenTaxonomyEvent ote ) {
+				doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
+			}
 		} else if (source == taxonomyAdminCtrl) {
 			if (event == Event.BACK_EVENT) {
 				getWindowControl().pop();
@@ -237,7 +238,9 @@ public class CatalogMainController extends BasicController implements Activateab
 					searchParams.setRepositoryEntryKeys(catalogEntryState.getSpecialFilterRepositoryEntryKeys());
 				}
 				boolean withSearch = catalogEntryState != null;
-				catalogRepositoryEntryListCtrl = new CatalogEntryListController(ureq, swControl, stackPanel, searchParams, withSearch);
+				CatalogEntryListParams listParams = new CatalogEntryListParams();
+				listParams.setWithSearch(withSearch);
+				catalogRepositoryEntryListCtrl = new CatalogEntryListController(ureq, swControl, stackPanel, searchParams, listParams);
 				listenTo(catalogRepositoryEntryListCtrl);
 				String crumbName = catalogEntryState != null
 						? catalogEntryState.getSpecialFilterRepositoryEntryLabel()
@@ -306,7 +309,9 @@ public class CatalogMainController extends BasicController implements Activateab
 		searchParams.setLauncherTaxonomyLevels(List.of(taxonomyLevel));
 		searchParams.setLauncherEducationalTypeKeys(educationalTypeKeys);
 		searchParams.setLauncherResourceTypes(resourceTypes);
-		CatalogEntryListController taxonomyListCtrl = new CatalogEntryListController(ureq, swControl, stackPanel, searchParams, true);
+		CatalogEntryListParams listParams = new CatalogEntryListParams();
+		listParams.setWithSearch(true);
+		CatalogEntryListController taxonomyListCtrl = new CatalogEntryListController(ureq, swControl, stackPanel, searchParams, listParams);
 		listenTo(taxonomyListCtrl);
 		stackPanel.pushController(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyListCtrl);
 	}

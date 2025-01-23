@@ -27,6 +27,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -45,10 +46,12 @@ public class InvoiceSubmitController extends FormBasicController implements Cont
 	private InvoiceSubmitDetailsController detailsCtrl;
 
 	private OfferAccess link;
+	private final Identity identity;
 
-	protected InvoiceSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+	protected InvoiceSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
 		super(ureq, wControl, "submit");
 		this.link = link;
+		this.identity = identity;
 		initForm(ureq);
 	}
 
@@ -104,7 +107,7 @@ public class InvoiceSubmitController extends FormBasicController implements Cont
 	private void doOpenDetailsSubmit(UserRequest ureq) {
 		if (guardModalController(detailsCtrl)) return;
 		
-		detailsCtrl = new InvoiceSubmitDetailsController(ureq, getWindowControl(), link);
+		detailsCtrl = new InvoiceSubmitDetailsController(ureq, getWindowControl(), link, identity);
 		listenTo(detailsCtrl);
 		
 		String title = translate("access.invoice.details.title", StringHelper.escapeHtml(link.getOffer().getResourceDisplayName()));

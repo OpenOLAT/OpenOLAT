@@ -69,7 +69,7 @@ public interface AccessMethodHandler {
 	
 	public AccessMethodSecurityCallback getSecurityCallback(OLATResource resource, Identity identity, Roles roles);
 	
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link);
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity);
 	
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl,
 			OfferAccess link, boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations,

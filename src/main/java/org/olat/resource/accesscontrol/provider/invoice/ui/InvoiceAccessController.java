@@ -22,6 +22,7 @@ package org.olat.resource.accesscontrol.provider.invoice.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ui.AbstractAccessController;
 
@@ -33,14 +34,17 @@ import org.olat.resource.accesscontrol.ui.AbstractAccessController;
  */
 public class InvoiceAccessController extends AbstractAccessController {
 
-	public InvoiceAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+	private final Identity identity;
+
+	public InvoiceAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
 		super(ureq, wControl, link);
+		this.identity = identity;
 		init(ureq);
 	}
 
 	@Override
 	protected Controller createDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new InvoiceSubmitController(ureq, wControl, link);
+		return new InvoiceSubmitController(ureq, wControl, link, identity);
 	}
 
 }

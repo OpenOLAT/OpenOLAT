@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -43,14 +44,16 @@ public class TokenSubmitController extends FormBasicController implements Contro
 	private TextElement tokenEl;
 
 	private final OfferAccess link;
-	
+	private final Identity identity;
+
 	@Autowired
 	private ACService acService;
 
-	public TokenSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+	public TokenSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
 		super(ureq, wControl, "submit");
 		this.link = link;
-		
+		this.identity = identity;
+
 		initForm(ureq);
 	}
 
@@ -82,7 +85,7 @@ public class TokenSubmitController extends FormBasicController implements Contro
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String token = tokenEl.getValue();
-		AccessResult result = acService.accessResource(getIdentity(), link, token, getIdentity());
+		AccessResult result = acService.accessResource(identity, link, token, getIdentity());
 		
 		if (result.isAccessible()) {
 			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);

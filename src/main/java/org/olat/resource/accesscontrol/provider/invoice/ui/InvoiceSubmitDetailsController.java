@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -71,16 +72,18 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	private CloseableModalController cmc;
 	private BillingAddressController editCtrl;
 
-	private OfferAccess link;
+	private final OfferAccess link;
+	private final Identity identity;
 	private BillingAddress billingAddress;
 	
 	@Autowired
 	private ACService acService;
 
-	protected InvoiceSubmitDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+	protected InvoiceSubmitDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(BillingAddressController.class, getLocale(), getTranslator()));
 		this.link = link;
+		this.identity = identity;
 		
 		initForm(ureq);
 	}
@@ -124,7 +127,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		
 		BillingAddressSearchParams searchParams = new BillingAddressSearchParams();
 		searchParams.setEnabled(Boolean.TRUE);
-		searchParams.setIdentityKeys(List.of(getIdentity()));
+		searchParams.setIdentityKeys(List.of(identity));
 		acService.getBillingAddresses(searchParams).forEach(
 				address -> billingAddressSV.add(SelectionValues.entry(
 						address.getKey().toString(),
@@ -206,7 +209,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		AccessResult result = acService.accessResource(getIdentity(), link, null, getIdentity());
+		AccessResult result = acService.accessResource(identity, link, null, getIdentity());
 		
 		if (result.isAccessible()) {
 			Order order = result.getOrder();
@@ -230,7 +233,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	private void doCreateBillingAddress(UserRequest ureq) {
 		if (guardModalController(editCtrl)) return;
 		
-		editCtrl = new BillingAddressController(ureq, getWindowControl(), null, null, getIdentity());
+		editCtrl = new BillingAddressController(ureq, getWindowControl(), null, null, identity);
 		listenTo(editCtrl);
 		
 		String title = translate("billing.address.create");

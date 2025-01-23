@@ -96,8 +96,8 @@ public class InvoiceAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new InvoiceAccessController(ureq, wControl, link);
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
+		return new InvoiceAccessController(ureq, wControl, link, identity);
 	}
 
 	@Override

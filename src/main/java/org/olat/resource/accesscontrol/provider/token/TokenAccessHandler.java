@@ -94,8 +94,8 @@ public class TokenAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new TokenAccessController(ureq, wControl, link);
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
+		return new TokenAccessController(ureq, wControl, link, identity);
 	}
 
 	@Override

@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
@@ -46,18 +47,20 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	private final boolean isMember;
 	private String startLinkWarning;
 	private String startLinkError;
-	
+	private final Identity identity;
+
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private AccessControlModule acModule;
 
 	public CurriculumElementInfosHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			boolean isMember) {
+												  boolean isMember, Identity identity) {
 		super(ureq, wControl);
 		this.element = element;
 		this.isMember = isMember;
-		
+		this.identity = identity;
+
 		initForm(ureq);
 	}
 
@@ -108,7 +111,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			return;
 		}
 		
-		if (isMember && acService.isAccessRefusedByStatus(element, getIdentity())) {
+		if (isMember && acService.isAccessRefusedByStatus(element, identity)) {
 			layoutCont.contextPut("warning", translate("access.denied.not.published"));
 			layoutCont.contextPut("warningHint", translate("access.denied.not.published.hint"));
 			
@@ -122,7 +125,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	}
 
 	private void initOffers(FormLayoutContainer layoutCont, Boolean webPublish) {
-		AccessResult acResult = acService.isAccessible(element, getIdentity(), isMember, false, webPublish, false);
+		AccessResult acResult = acService.isAccessible(element, identity, isMember, false, webPublish, false);
 		if (acResult.isAccessible()) {
 			startLink = createStartLink(layoutCont);
 		} else if (!acResult.getAvailableMethods().isEmpty()) {
@@ -178,8 +181,8 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 
 	@Override
 	protected boolean tryAutoBooking(UserRequest ureq) {
-		AccessResult acResult = acService.isAccessible(element, getIdentity(), null, false, null, false);
-		return acService.tryAutoBooking(getIdentity(), element, acResult);
+		AccessResult acResult = acService.isAccessible(element, identity, null, false, null, false);
+		return acService.tryAutoBooking(identity, element, acResult);
 	}
 
 	@Override

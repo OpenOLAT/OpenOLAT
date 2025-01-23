@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -78,7 +79,8 @@ public class CurriculumElementInfosController extends BasicController implements
 	@Autowired
 	private ACService acService;
 
-	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element, boolean scrollToOffers) {
+	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element, 
+											boolean scrollToOffers, Identity identity) {
 		super(ureq, wControl);
 		this.element = element;
 		mainVC = createVelocityContainer("curriculum_element_infos");
@@ -86,9 +88,10 @@ public class CurriculumElementInfosController extends BasicController implements
 		
 		Boolean webPublish = Boolean.TRUE;
 		Boolean isMember = Boolean.FALSE;
-		if (getIdentity() != null) {
+		identity = identity != null ? identity : getIdentity();
+		if (identity != null) {
 			webPublish = null;
-			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(getIdentity())).isEmpty();
+			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(identity)).isEmpty();
 		}
 		
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
@@ -98,7 +101,7 @@ public class CurriculumElementInfosController extends BasicController implements
 		
 		
 		// Header
-		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, isMember);
+		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, isMember, identity);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
@@ -132,13 +135,13 @@ public class CurriculumElementInfosController extends BasicController implements
 		}
 		
 		// Offers
-		AccessResult acResult = acService.isAccessible(element, getIdentity(), isMember, false, webPublish, false);
+		AccessResult acResult = acService.isAccessible(element, identity, isMember, false, webPublish, false);
 		if (acResult.isAccessible()) {
 			fireEvent(ureq, new BookedEvent(element));
 		} else if (!StringHelper.containsNonWhitespace(headerCtrl.getStartLinkError()) && !acResult.getAvailableMethods().isEmpty()) {
 			if (acResult.getAvailableMethods().size() > 1 || !acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
 				boolean webCatalog = webPublish != null? webPublish.booleanValue(): false;
-				offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false, webCatalog);
+				offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false, webCatalog, identity);
 				listenTo(offersCtrl);
 				mainVC.put("offers", offersCtrl.getInitialComponent());
 				mainVC.contextPut("offersOpen", offersOpen);

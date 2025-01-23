@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -49,6 +50,7 @@ public class OffersController extends BasicController {
 	
 	private final OfferSelectionController offerSelectionCtrl;
 	private Controller accessCtrl;
+	private Identity identity;
 
 	private final boolean webCatalog;
 	
@@ -56,8 +58,13 @@ public class OffersController extends BasicController {
 	private AccessControlModule acModule;
 
 	public OffersController(UserRequest ureq, WindowControl wControl, List<OfferAccess> offers, boolean withTitle, boolean webCatalog) {
+		this(ureq, wControl, offers, withTitle, webCatalog, ureq.getIdentity());
+	}
+
+	public OffersController(UserRequest ureq, WindowControl wControl, List<OfferAccess> offers, boolean withTitle, boolean webCatalog, Identity identity) {
 		super(ureq, wControl);
 		this.webCatalog = webCatalog;
+		this.identity = identity;
 		mainVC = createVelocityContainer("offers");
 		putInitialPanel(mainVC);
 		
@@ -108,7 +115,7 @@ public class OffersController extends BasicController {
 			accessCtrl = new OfferLoginController(ureq, getWindowControl(), offer);
 		} else {
 			AccessMethodHandler handler = acModule.getAccessMethodHandler(offer.getMethod().getType());
-			accessCtrl = handler.createAccessController(ureq, getWindowControl(), offer);
+			accessCtrl = handler.createAccessController(ureq, getWindowControl(), offer, identity);
 		}
 		listenTo(accessCtrl);
 		mainVC.put("offer", accessCtrl.getInitialComponent());

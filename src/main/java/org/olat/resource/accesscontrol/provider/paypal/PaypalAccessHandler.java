@@ -100,7 +100,7 @@ public class PaypalAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
 		return new PaypalAccessController(ureq, wControl, link);
 	}
 

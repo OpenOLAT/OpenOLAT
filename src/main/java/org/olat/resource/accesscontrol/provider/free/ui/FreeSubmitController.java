@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -45,14 +46,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class FreeSubmitController extends FormBasicController implements FormController {
 	
 	private final OfferAccess link;
-	
+	private final Identity identity;
+
 	@Autowired
 	private ACService acService;
 
-	public FreeSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+	public FreeSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
 		super(ureq, wControl, "submit");
 		this.link = link;
-		
+		this.identity = identity;
+
 		initForm(ureq);
 	}
 
@@ -63,7 +66,7 @@ public class FreeSubmitController extends FormBasicController implements FormCon
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		AccessResult result = acService.accessResource(getIdentity(), link, null, getIdentity());
+		AccessResult result = acService.accessResource(identity, link, null, getIdentity());
 		
 		if(result.isAccessible()) {
 			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);

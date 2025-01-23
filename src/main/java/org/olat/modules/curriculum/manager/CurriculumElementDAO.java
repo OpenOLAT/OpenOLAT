@@ -584,6 +584,19 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
+	public List<Long> loadReservedElementKeys(IdentityRef identity) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct el.key");
+		sb.append(" from curriculumelement el");
+		sb.append(" inner join resourcereservation reservation on reservation.resource.key = el.resource.key");
+		sb.and().append("reservation.identity.key = :identityKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
 	public List<CurriculumElement> searchElements(String externalId, String identifier, Long key) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el from curriculumelement el")

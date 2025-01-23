@@ -68,6 +68,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.login.webauthn.OLATWebAuthnManager;
+import org.olat.modules.catalog.CatalogV2Module;
+import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.RoleSecurityCallback;
@@ -82,6 +84,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.modules.openbadges.ui.BadgesController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.HomePageConfig;
@@ -122,7 +125,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	private int calendarTabIndex;
 	private int profileTabIndex;
 	
-	private Link homeLink, contactLink, resetLink;
+	private Link homeLink, contactLink, resetLink, bookOnBehalfOfLink;
 	private Link nextStudent, detailsStudentCmp, previousStudent;
 
 	private final TooledStackedPanel stackPanel;
@@ -142,6 +145,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	private CourseListWrapperController courseListWrapperController;
 	private CertificateAndEfficiencyStatementWrapperController certificateAndEfficiencyStatementWrapperController;
 	private BadgesController badgesController;
+	private BookOnBehalfOfController bookOnBehalfOfController;
 
 	private TabbedPane functionsTabbedPane;
 
@@ -173,6 +177,10 @@ public class UserOverviewController extends BasicController implements Activatea
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private CalendarModule calendarModule;
+	@Autowired
+	private CatalogV2Module catalogV2Module;
+	@Autowired
+	private ACReservationDAO reservationDAO;;
 
 	public UserOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 								  StudentStatEntry statEntry, Identity mentee, int index, int numOfStudents, String role, RoleSecurityCallback roleSecurityCallback) {
@@ -214,6 +222,13 @@ public class UserOverviewController extends BasicController implements Activatea
 				resetLink.setIconLeftCSS("o_icon o_icon_password");
 				stackPanel.addTool(resetLink, Align.left, true);
 			}
+		}
+		
+		if (catalogV2Module.isEnabled() && roleSecurityCallback.canCreateBookingOnBehalfOf()) {
+			bookOnBehalfOfLink = LinkFactory.createToolLink("book.on.behalf.of.link", 
+					translate("book.on.behalf.of.link"), this);
+			bookOnBehalfOfLink.setIconLeftCSS("o_icon o_icon_booking");
+			stackPanel.addTool(bookOnBehalfOfLink, Align.left, true);
 		}
 
 		previousStudent = LinkFactory.createToolLink("previous.student", translate("previous.student"), this);
@@ -275,7 +290,7 @@ public class UserOverviewController extends BasicController implements Activatea
 			});
 		}
 
-		if (roleSecurityCallback.canViewResourcesAndBookings()) {
+		if (catalogV2Module.isEnabled() && roleSecurityCallback.canViewResourcesAndBookings()) {
 			orderTabIndex = functionsTabbedPane.addTabControllerCreator(ureq, translate("bookings"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_BOOKINGS), null);
 				userOrderController = new UserOrderController(uureq, bwControl, mentee);
@@ -365,6 +380,8 @@ public class UserOverviewController extends BasicController implements Activatea
 			contact(ureq);
 		} else if (source == resetLink) {
 			resetPassword(ureq);
+		} else if (source == bookOnBehalfOfLink) {
+			bookOnBehalfOf(ureq);
 		} else if (source == functionsTabbedPane) {
 			if(event instanceof TabbedPaneChangedEvent pce && pce.getNewController() != null) {
 				addToHistory(ureq, pce.getNewController());
@@ -393,8 +410,27 @@ public class UserOverviewController extends BasicController implements Activatea
 			removeAsListenerAndDispose(userChangePasswordController);
 			cmc = null;
 			userChangePasswordController = null;
+		} else if (source == bookOnBehalfOfController) {
+			cleanUpNonModalControllers();
+			if (event instanceof BookedEvent bookedEvent) {
+				doDisplayInfo(bookedEvent);
+			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void doDisplayInfo(BookedEvent bookedEvent) {
+		if (bookedEvent.getCurriculumElement() != null) {
+			Identity reloadedIdentity = securityManager.loadIdentityByKey(mentee.getKey());
+			String userDisplayName = reloadedIdentity.getUser().getFirstName() + " " + reloadedIdentity.getUser().getLastName();
+			if (reservationDAO.loadReservation(mentee, bookedEvent.getCurriculumElement().getResource()) == null) {
+				showInfo("booked.on.behalf.of", 
+						new String[] {bookedEvent.getCurriculumElement().getDisplayName(), userDisplayName});	
+			} else {
+				showInfo("reserved.on.behalf.of", 
+						new String[] {bookedEvent.getCurriculumElement().getDisplayName(), userDisplayName});
+			}
+		}
 	}
 
 	@Override
@@ -465,15 +501,36 @@ public class UserOverviewController extends BasicController implements Activatea
 		}
 	}
 
-	private void openHome(UserRequest ureq) {
-		if (stackPanel.getLastController() != homePageDisplayController) {
-			HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(mentee);
-			removeAsListenerAndDispose(homePageDisplayController);
-			homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), mentee, homePageConfig);
-			listenTo(homePageDisplayController);
-
-			stackPanel.pushController("Visiting card", homePageDisplayController);
+	private void cleanUpNonModalControllers() {
+		bookOnBehalfOfController = cleanUpNonModalController(bookOnBehalfOfController);
+		homePageDisplayController = cleanUpNonModalController(homePageDisplayController);
+	}
+	
+	private <T extends Controller> T cleanUpNonModalController(T controller) {
+		if (controller != null && stackPanel.hasController(controller)) {
+			stackPanel.popController(controller);
+			removeAsListenerAndDispose(controller);
 		}
+		return null;
+	}
+	
+	private void bookOnBehalfOf(UserRequest ureq) {
+		cleanUpNonModalControllers();
+
+		bookOnBehalfOfController = new BookOnBehalfOfController(ureq, getWindowControl(), mentee, stackPanel);
+		listenTo(bookOnBehalfOfController);
+
+		stackPanel.pushController(translate("book.on.behalf.of.link"), bookOnBehalfOfController);
+	}
+
+	private void openHome(UserRequest ureq) {
+		cleanUpNonModalControllers();
+
+		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(mentee);
+		homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), mentee, homePageConfig);
+		listenTo(homePageDisplayController);
+
+		stackPanel.pushController(translate("home.link"), homePageDisplayController);
 	}
 
 	private WeeklyCalendarController doOpenCalendar(UserRequest ureq) {

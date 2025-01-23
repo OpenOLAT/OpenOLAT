@@ -97,8 +97,8 @@ public class FreeAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new FreeAccessController(ureq, wControl, link);
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
+		return new FreeAccessController(ureq, wControl, link, identity);
 	}
 
 	@Override

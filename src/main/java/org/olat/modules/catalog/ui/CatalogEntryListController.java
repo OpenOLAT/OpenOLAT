@@ -121,12 +121,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private FlexiTableElement tableEl;
 	private CatalogEntryDataModel dataModel;
 	private final CatalogEntrySearchParams searchParams;
+	private final CatalogEntryListParams listParams;
 	
 	private Controller infosCtrl;
 	private LightboxController lightboxCtrl;
 	private WebCatalogAuthController authCtrl;
 	
-	private final boolean withSearch;
 	private String headerSearchString;
 	private final MapperKey repositoryEntryMapperKey;
 	private final TaxonomyLevelTeaserImageMapper taxonomyLevelMapper;
@@ -156,7 +156,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private MapperService mapperService;
 
 	public CatalogEntryListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, 
-			CatalogEntrySearchParams searchParams, boolean withSearch) {
+			CatalogEntrySearchParams searchParams, CatalogEntryListParams listParams) {
 		super(ureq, wControl, "entry_list");
 		// Order of the translators matters.
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale()));
@@ -166,7 +166,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.searchParams = searchParams;
-		this.withSearch = withSearch;
+		this.listParams = listParams;
 		this.taxonomyLevel = searchParams.getLauncherTaxonomyLevels() != null && !searchParams.getLauncherTaxonomyLevels().isEmpty()
 				? searchParams.getLauncherTaxonomyLevels().get(0)
 				: null;
@@ -194,6 +194,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			
 			List<TaxonomyLevel> taxonomyLevels = taxonomyLevelDao.getChildren(taxonomyLevel);
 			List<CatalogEntry> catalogEntries = catalogService.getCatalogEntries(searchParams);
+			catalogEntries.removeIf(this::shouldExcludeCatalogEntry);
 			catalogService.excludeLevelsWithoutEntries(taxonomyLevels, catalogEntries);
 			taxonomyLevels.sort(CatalogV2UIFactory.getTaxonomyLevelComparator(getTranslator()));
 			List<TaxonomyItem> items = new ArrayList<>(taxonomyLevels.size());
@@ -242,7 +243,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
-		tableEl.setSearchEnabled(withSearch);
+		tableEl.setSearchEnabled(listParams.isWithSearch());
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmptyTableSettings("table.search.empty", "table.search.empty.hint", "o_CourseModule_icon");
 		tableEl.setElementCssClass("o_coursetable");
@@ -253,7 +254,40 @@ public class CatalogEntryListController extends FormBasicController implements A
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "catalog-v2-relist-2");
 	}
-	
+
+	private boolean shouldExcludeCatalogEntry(CatalogEntry catalogEntry) {
+		if (listParams.isExcludeRepositoryEntries()) {
+			if (catalogEntry.getRepositoryEntryKey() != null) {
+				return true;
+			}
+		}
+		
+		if (listParams.isExcludeMembers() && catalogEntry.isMember()) {
+			return true;
+		}
+		
+		if (catalogEntry.getCurriculumElementKey() != null && listParams.getExcludedCurriculumElementKeys() != null) {
+			if (listParams.getExcludedCurriculumElementKeys().contains(catalogEntry.getCurriculumElementKey())) {
+				return true;
+			}
+		}
+
+		if (listParams.getExcludedAccessMethodTypes() != null) {
+			Set<String> excludedAccessMethodTypes = listParams.getExcludedAccessMethodTypes();
+			if (catalogEntry.getResourceAccess() != null) {
+				for (OLATResourceAccess resourceAccess : catalogEntry.getResourceAccess()) {
+					for (PriceMethodBundle priceMethodBundle : resourceAccess.getMethods()) {
+						if (excludedAccessMethodTypes.contains(priceMethodBundle.getMethod().getType())) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
 	private void initFilters(List<CatalogEntry> catalogEntries) {
 		CatalogFilterSearchParams filterSearchParams = new CatalogFilterSearchParams();
 		filterSearchParams.setEnabled(Boolean.TRUE);
@@ -284,6 +318,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	
 	private void loadModel(boolean initFilters) {
 		List<CatalogEntry> catalogEntries = catalogService.getCatalogEntries(searchParams);
+		catalogEntries.removeIf(this::shouldExcludeCatalogEntry);
 		if(initFilters) {
 			initFilters(catalogEntries);
 		}
@@ -311,7 +346,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 	
 	private void applySearch(List<CatalogEntryRow> rows) {
-		String searchValue = withSearch? tableEl.getQuickSearchString(): headerSearchString;
+		String searchValue = listParams.isWithSearch() ? tableEl.getQuickSearchString(): headerSearchString;
 		if (StringHelper.containsNonWhitespace(searchValue)) {
 			List<String> searchValues = Arrays.stream(searchValue.toLowerCase().split(" ")).filter(StringHelper::containsNonWhitespace).toList();
 			rows.removeIf(row -> 
@@ -629,7 +664,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == infosCtrl) {
 			if (event instanceof BookedEvent bookedEvent) {
-				if (bookedEvent.getRepositoryEntry() != null) {
+				if (listParams.isFireBookedEvent()) {
+					fireEvent(ureq, event);
+				} else if (bookedEvent.getRepositoryEntry() != null) {
 					doBooked(ureq, bookedEvent.getRepositoryEntry());
 				} else if (bookedEvent.getCurriculumElement() != null) {
 					doBooked(ureq, bookedEvent.getCurriculumElement());
@@ -813,7 +850,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, scrollToOffers);
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, scrollToOffers, searchParams.getMember());
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
