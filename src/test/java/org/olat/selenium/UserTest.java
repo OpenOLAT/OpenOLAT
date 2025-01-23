@@ -1214,7 +1214,8 @@ public class UserTest extends Deployments {
 			.logout();
 		
 		ContactTracingPage tracing = new ContactTracingPage(browser);
-		tracing.load(url)
+		tracing
+			.load(url)
 			.asAuthenticatedUser()
 			.loginAs(user);
 		
