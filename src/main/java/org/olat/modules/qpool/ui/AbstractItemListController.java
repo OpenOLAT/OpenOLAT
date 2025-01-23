@@ -270,6 +270,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		// Title
 		filters.add(new FlexiTableTextFilter(translate("general.title"), AbstractItemsSource.FILTER_TITLE, true));
 		filters.add(new FlexiTableTextFilter(translate("general.topic"), AbstractItemsSource.FILTER_TOPIC, false));
+		filters.add(new FlexiTableTextFilter(translate("owner"), AbstractItemsSource.FILTER_OWNER, true));
 		filters.add(new FlexiTableTextFilter(translate("general.keywords"), AbstractItemsSource.FILTER_KEYWORDS, false));
 		filters.add(new FlexiTableTextFilter(translate("general.coverage"), AbstractItemsSource.FILTER_COVERAGE, false));
 		filters.add(new FlexiTableTextFilter(translate("general.additional.informations"), AbstractItemsSource.FILTER_ADD_INFOS, false));
