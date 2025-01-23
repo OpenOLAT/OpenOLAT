@@ -27,6 +27,12 @@
 		padding-left: floor($font-size-base * 1.8) + $o-box-padding;
 	}
 }
+@mixin o-make-message-line($bgcolor, $color) {
+	background-color: $bgcolor;
+	color: $color;
+	padding: $o-message-line-padding;
+	border-radius: $o-message-line-radius;
+}
 
 /* bootstrap override */
 @mixin o-alert-variant($bgcolor, $color, $boxicon:false){

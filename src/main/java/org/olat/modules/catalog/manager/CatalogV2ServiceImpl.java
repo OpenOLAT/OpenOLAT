@@ -195,6 +195,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 			ceResourcesWithAC = new ArrayList<>(curriculumElements.size());
 			
 			Map<Long, List<TaxonomyLevel>> ceKeyTaxonomyLevels = loadCurriculumElementToTaxonomyLevels(curriculumElements);
+			Map<Long, Long> ceKeyToNumParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(curriculumElements, true);
 			
 			Set<Long> myCurriculumKeys = loadMyCurriculumKeys(curriculumElements, searchParams.getMember());
 			
@@ -203,7 +204,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 				
 				List<TaxonomyLevel> levels = ceKeyTaxonomyLevels.get(curriculumElement.getKey());
 				catalogEntry.setTaxonomyLevels(levels != null ? new HashSet<>(levels): null);
-				
+				catalogEntry.setNumParticipants(ceKeyToNumParticipants.get(curriculumElement.getKey()));
 				catalogEntry.setMember(myCurriculumKeys.contains(catalogEntry.getCurriculumKey()));
 				
 				catalogEntries.add(catalogEntry);

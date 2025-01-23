@@ -924,9 +924,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_status_success_icon { @include o-add-icon('check'); color: $brand-success;}
 .o_ac_status_waiting_icon { @include o-add-icon('clock', false); color: $brand-primary;}
 .o_ac_offer_active_icon { @include o-add-icon('eye'); color: $o-ac-offer-active-color;}
+.o_ac_offer_almost_fully_booked_icon { @include o-add-icon('circle-half-stroke'); }
 .o_ac_offer_bookable_icon { @include o-add-icon('cart-shopping'); }
 .o_ac_offer_finished_icon { @include o-add-icon('ban'); }
-.o_ac_offer_fully_booked_icon { @include o-add-icon('cart-shopping'); }
+.o_ac_offer_fully_booked_icon { @include o-add-icon('ban'); }
 .o_ac_offer_inactive_icon { @include o-add-icon('eye-slash'); color: $o-ac-offer-inactive-color;}
 .o_ac_offer_not_available_icon { @include o-add-icon('eye-slash'); }
 .o_ac_offer_pending_icon { @include o-add-icon('clock'); }

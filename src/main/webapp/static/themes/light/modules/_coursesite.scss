@@ -262,7 +262,7 @@
 				.o_access_info {
 					padding-top: 20px;
 					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-						padding-top: 10px;
+						padding-top: 0px;
 					}
 				}
 				
@@ -887,6 +887,30 @@
 	.o_taxonomy_cell {
 		display: flex;
 		flex-wrap: wrap;
+	}
+	
+	/** Override some settings from the course table **/
+	.o_coursetable {
+		&.o_rendertype_custom {
+			.o_table_row {
+				.o_access {
+					display: flex;
+					flex-direction: column;
+					gap: 5px;
+					
+					.o_access_info {
+						margin-bottom: auto;
+					}
+					.o_actions {
+						position: initial;
+					}
+					
+					@media (max-width: $screen-xs-max) { 
+						display: none;
+					}
+				}
+			}
+		}
 	}
 }
 

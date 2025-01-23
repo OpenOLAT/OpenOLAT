@@ -32,6 +32,9 @@
 .o_warning, %o_warning { 
 	@include o-make-message-box($o-box-warning-bg, $o-box-warning-color);
 }
+.o_warning_line, %o_warning_line { 
+	@include o-make-message-line($o-box-warning-bg, $o-box-warning-color);
+}
 .o_warning_with_icon, %o_warning_with_icon { 
 	@include o-make-message-box($o-box-warning-bg, $o-box-warning-color, 'triangle-exclamation');
 }
@@ -40,6 +43,9 @@
 }
 .o_error_with_icon, %o_error_with_icon { 
 	@include o-make-message-box($o-box-error-bg, $o-box-error-color, 'circle-xmark');
+}
+.o_error_line, %o_error_line { 
+	@include o-make-message-line($o-box-error-bg, $o-box-error-color);
 }
 
 .o_instruction {

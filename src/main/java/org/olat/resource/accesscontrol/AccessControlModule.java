@@ -60,6 +60,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	public static final String AC_ENABLED = "resource.accesscontrol.enabled";
 	public static final String AC_HOME_ENABLED = "resource.accesscontrol.home.overview";
 	private static final String AC_OFFER_ORG_SELECTION = "resource.accesss.org.selection";
+	private static final String AC_PARTICIPANTS_LEFT_MESSAGE_PERCENTAGE = "resource.participants.left.message.percentage";
 	private static final String VAT_ENABLED = "vat.enabled";
 	private static final String VAT_RATE = "vat.rate";
 	private static final String VAT_NR = "vat.number";
@@ -81,6 +82,8 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private boolean homeOverviewEnabled;
 	@Value("${resource.accesss.offer.org.selection}")
 	private OfferOrganisationSelection offerOrganisationSelection;
+	@Value("${resource.participants.left.message.percentage}")
+	private Double participantsLeftMessagePercentage;
 	@Value("${method.free.enabled:true}")
 	private boolean freeEnabled;
 	@Value("${method.auto.enabled:false}")
@@ -199,6 +202,16 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		
 		String offerOrgSelectionObj = getStringPropertyValue(AC_OFFER_ORG_SELECTION, true);
 		if(StringHelper.containsNonWhitespace(offerOrgSelectionObj)) {
+			offerOrganisationSelection = OfferOrganisationSelection.valueOf(offerOrgSelectionObj);
+		}
+		
+		String participantsLeftMessagePercentageObj = getStringPropertyValue(AC_OFFER_ORG_SELECTION, true);
+		if(StringHelper.containsNonWhitespace(participantsLeftMessagePercentageObj)) {
+			try {
+				participantsLeftMessagePercentage = Double.valueOf(participantsLeftMessagePercentageObj);
+			} catch (Exception e) {
+				log.error("Error parsing the participantsLeftMessagePercentage: " + participantsLeftMessagePercentage, e);
+			}
 			offerOrganisationSelection = OfferOrganisationSelection.valueOf(offerOrgSelectionObj);
 		}
 
@@ -355,6 +368,19 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	public void setOfferOrganisationSelection(OfferOrganisationSelection offerOrganisationSelection) {
 		this.offerOrganisationSelection = offerOrganisationSelection;
 		setStringProperty(AC_OFFER_ORG_SELECTION, offerOrganisationSelection.name(), true);
+	}
+
+	public Double getParticipantsLeftMessagePercentage() {
+		return participantsLeftMessagePercentage;
+	}
+
+	public void setParticipantsLeftMessagePercentage(Double participantsLeftMessagePercentage) {
+		this.participantsLeftMessagePercentage = participantsLeftMessagePercentage;
+		if (participantsLeftMessagePercentage == null) {
+			setStringProperty(AC_PARTICIPANTS_LEFT_MESSAGE_PERCENTAGE, null, true);
+		} else {
+			setStringProperty(AC_PARTICIPANTS_LEFT_MESSAGE_PERCENTAGE, String.valueOf(participantsLeftMessagePercentage), true);
+		}
 	}
 
 	public boolean isVatEnabled() {

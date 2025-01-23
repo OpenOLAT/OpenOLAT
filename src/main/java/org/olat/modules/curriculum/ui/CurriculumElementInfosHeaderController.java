@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.WindowControl;
@@ -28,6 +30,7 @@ import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.ui.list.AbstractDetailsHeaderController;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -41,9 +44,13 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 
 	private final CurriculumElement element;
 	private final boolean isMember;
+	private String startLinkWarning;
+	private String startLinkError;
 	
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private AccessControlModule acModule;
 
 	public CurriculumElementInfosHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
 			boolean isMember) {
@@ -119,6 +126,8 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		if (acResult.isAccessible()) {
 			startLink = createStartLink(layoutCont);
 		} else if (!acResult.getAvailableMethods().isEmpty()) {
+			updateAccessMaxParticipants();
+			
 			if (acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
 				startLink = createStartLink(layoutCont, true);
 			} else {
@@ -128,9 +137,43 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		}
 	}
 	
+	private void updateAccessMaxParticipants() {
+		if (isMember || element.getMaxParticipants() == null) {
+			return;
+		}
+		
+		Long numParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(List.of(element), true).get(element.getKey());
+		if (numParticipants != null) {
+			if (numParticipants >= element.getMaxParticipants()) {
+				startLinkError = "<i class=\"o_icon o_ac_offer_fully_booked_icon\"> </i> " + translate("book.fully.booked.unfortunately");
+			} else {
+				Double participantsLeftMessagePercentage = acModule.getParticipantsLeftMessagePercentage();
+				if (participantsLeftMessagePercentage != null) {
+					long leftParticipants = element.getMaxParticipants() - numParticipants;
+					double leftParticipantsPercentage = leftParticipants * 100l / element.getMaxParticipants();
+					if (leftParticipants == 1) {
+						startLinkWarning = "<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.single");
+					} else if (leftParticipantsPercentage < participantsLeftMessagePercentage) {
+						startLinkWarning = "<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.multi", String.valueOf(leftParticipants));
+					}
+				}
+			}
+		}
+	}
+	
 	@Override
 	protected String getStartLinkText() {
 		return translate("open.with.type", element.getType().getDisplayName());
+	}
+
+	@Override
+	protected String getStartLinkWarning() {
+		return startLinkWarning;
+	}
+
+	@Override
+	protected String getStartLinkError() {
+		return startLinkError;
 	}
 
 	@Override

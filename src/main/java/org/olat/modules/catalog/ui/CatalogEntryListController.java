@@ -316,6 +316,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			List<String> searchValues = Arrays.stream(searchValue.toLowerCase().split(" ")).filter(StringHelper::containsNonWhitespace).toList();
 			rows.removeIf(row -> 
 					containsNot(searchValues, row.getTitle())
+					&& containsNot(searchValues, row.getExternalRef())
 					&& containsNot(searchValues, row.getAuthors())
 					&& containsNot(searchValues, row.getTaxonomyLevelNamePaths())
 				);
@@ -358,7 +359,6 @@ public class CatalogEntryListController extends FormBasicController implements A
 					accessMethodTypes.add(bundle.getMethod().getType());
 					priceMethods.add(toPriceMethod(bundle));
 				}
-				
 			}
 			
 			if (catalogEntry.isOpenAccess()) {
@@ -370,6 +370,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			}
 			
 			updateAccessInfo(row, catalogEntry);
+			updateAccessMaxParticipants(row, catalogEntry);
 		}
 		
 		return row;
@@ -422,6 +423,29 @@ public class CatalogEntryListController extends FormBasicController implements A
 		}
 	}
 
+	private void updateAccessMaxParticipants(CatalogEntryRow row, CatalogEntry catalogEntry) {
+		if (searchParams.isGuestOnly() || row.isMember() || catalogEntry.isOpenAccess() || row.getMaxParticipants() == null) {
+			return;
+		}
+		
+		if (row.getNumParticipants() != null) {
+			if (row.getNumParticipants() >= row.getMaxParticipants()) {
+				row.setAccessError("<i class=\"o_icon o_ac_offer_fully_booked_icon\"> </i> " + translate("book.fully.booked"));
+			} else {
+				Double participantsLeftMessagePercentage = acModule.getParticipantsLeftMessagePercentage();
+				if (participantsLeftMessagePercentage != null) {
+					long leftParticipants = row.getMaxParticipants() - row.getNumParticipants();
+					double leftParticipantsPercentage = leftParticipants * 100l / row.getMaxParticipants();
+					if (leftParticipants == 1) {
+						row.setAccessWarning("<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.single"));
+					} else if (leftParticipantsPercentage < participantsLeftMessagePercentage) {
+						row.setAccessWarning("<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.multi", String.valueOf(leftParticipants)));
+					}
+				}
+			}
+		}
+	}
+
 	private PriceMethod toPriceMethod(PriceMethodBundle bundle) {
 		String type = bundle.getMethod().getMethodCssClass() + "_icon";
 		String price = bundle.getPrice() == null || bundle.getPrice().isEmpty() ? "" : PriceFormat.fullFormat(bundle.getPrice());
@@ -457,45 +481,46 @@ public class CatalogEntryListController extends FormBasicController implements A
 		
 		String cmd = "start";
 		String label = "open";
-		String css = "btn btn-sm btn-primary o_start";
-		String cssSmall = "btn btn-xs btn-primary o_start";
 		if (searchParams.isWebPublish() && row.isGuestAccess()) {
 			ExternalLinkItem link = uifactory.addExternalLink("start_" + row.getOlatResource().getKey(), url, "_self", null);
-			link.setCssClass(css);
+			link.setCssClass("btn btn-sm btn-primary");
 			link.setIconRightCSS("o_icon o_icon_start");
 			link.setName(translate("start.guest"));
 			row.setStartLink(link);
 			
 			ExternalLinkItem linkSmall = uifactory.addExternalLink("starts_" + row.getOlatResource().getKey(), url, "_self", null);
-			linkSmall.setCssClass(cssSmall);
+			linkSmall.setCssClass("btn btn-xs btn-primary");
 			linkSmall.setIconRightCSS("o_icon o_icon_start");
 			linkSmall.setName(translate("start.guest"));
 			row.setStartSmallLink(linkSmall);
 			return;
 		}
 		
-		if (!searchParams.isGuestOnly() && !row.isMember() && row.isPublicVisible() && !row.isOpenAccess() && row.getAccessPriceMethods() != null && !row.getAccessPriceMethods().isEmpty()) {
+		if (!searchParams.isGuestOnly() && !row.isMember() && row.isPublicVisible() && !row.isOpenAccess() && row.getAccessMethodTypes() != null && !row.getAccessMethodTypes().isEmpty()) {
 			cmd = "book";
 			label = "book";
-			css = "btn btn-sm btn-primary o_book";
-			cssSmall = "btn btn-xs btn-primary o_book";
 		}
 		
-		FormLink link = uifactory.addFormLink("start_" + row.getOlatResource().getKey(), cmd, label, null, flc, Link.LINK);
+		FormLink link = uifactory.addFormLink("start_" + row.getOlatResource().getKey(), cmd, label, null, flc, Link.BUTTON_SMALL);
 		link.setUserObject(row);
-		link.setCustomEnabledLinkCSS(css);
+		link.setPrimary(true);
 		link.setIconRightCSS("o_icon o_icon_start");
 		link.setTitle(label);
 		link.setUrl(url);
 		row.setStartLink(link);
 		
-		FormLink linkSmall = uifactory.addFormLink("starts_" + row.getOlatResource().getKey(), cmd, label, null, null, Link.LINK);
+		FormLink linkSmall = uifactory.addFormLink("starts_" + row.getOlatResource().getKey(), cmd, label, null, null, Link.BUTTON_XSMALL);
 		linkSmall.setUserObject(row);
-		linkSmall.setCustomEnabledLinkCSS(cssSmall);
+		linkSmall.setPrimary(true);
 		linkSmall.setIconRightCSS("o_icon o_icon_start");
 		linkSmall.setTitle(label);
 		linkSmall.setUrl(url);
 		row.setStartSmallLink(linkSmall);
+		
+		if (StringHelper.containsNonWhitespace(row.getAccessError())) {
+			link.setEnabled(false);
+			linkSmall.setEnabled(false);
+		}
 	}
 
 	private void forgeDetailsLink(CatalogEntryRow row) {

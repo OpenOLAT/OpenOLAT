@@ -53,6 +53,16 @@
 							$price
 						</div>
 					#end
+					#if($r.isNotEmpty($startLinkWarning))
+						<div class="o_start_message o_warning_line">
+							$startLinkWarning
+						</div>
+					#end
+					#if($r.isNotEmpty($startLinkError))
+						<div class="o_start_message o_error_line">
+							$startLinkError
+						</div>
+					#end
 					<div class="o_start_inner">
 						#if($r.available("start"))
 							$r.render("start")

@@ -76,15 +76,18 @@ public class CurriculumHelper {
 		if (appendIcon) {
 			participants += "<i class=\"o_icon o_icon_num_participants\"></i> ";
 		}
-		if (element.getMinParticipants() != 0 && element.getMinParticipants() != 0) {
+		if (element.getMinParticipants() != null && element.getMinParticipants() != 0 
+				&& element.getMaxParticipants() != null && element.getMaxParticipants() != 0) {
 			participants += translator.translate("curriculum.element.participants.min.max",
 					String.valueOf(element.getMinParticipants()), String.valueOf(element.getMaxParticipants()));
-		} else if (element.getMinParticipants() != 0) {
+		} else if (element.getMinParticipants() != null && element.getMinParticipants() != 0) {
 			participants += translator.translate("curriculum.element.participants.min",
 					String.valueOf(element.getMaxParticipants()));
-		} else {
+		} else if (element.getMaxParticipants() != null && element.getMaxParticipants() != 0) {
 			participants += translator.translate("curriculum.element.participants.max",
 					String.valueOf(element.getMaxParticipants()));
+		} else {
+			participants = null;
 		}
 		return participants;
 	}

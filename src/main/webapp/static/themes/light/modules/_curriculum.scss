@@ -727,6 +727,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 			flex-direction: row;
 			.o_curriculum_element_infos_right {
 				min-width: 400px;
+				max-width: 400px;
 			}
 		}
 		>div {

@@ -243,6 +243,16 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	}
 
 	@Override
+	protected String getStartLinkWarning() {
+		return null;
+	}
+
+	@Override
+	protected String getStartLinkError() {
+		return null;
+	}
+
+	@Override
 	protected boolean tryAutoBooking(UserRequest ureq) {
 		AccessResult acResult = acService.isAccessible(entry, getIdentity(), null, false, null, false);
 		return acService.tryAutoBooking(getIdentity(), entry, acResult);

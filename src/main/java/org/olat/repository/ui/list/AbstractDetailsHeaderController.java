@@ -64,6 +64,7 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 	
 	protected FormLink startLink;
 	protected FormLink leaveLink;
+	private ExternalLinkItem offersLink;
 
 	@Autowired
 	protected RepositoryService repositoryService;
@@ -86,6 +87,8 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 	
 	protected abstract void initAccess(UserRequest ureq, FormLayoutContainer layoutCont);
 	protected abstract String getStartLinkText();
+	protected abstract String getStartLinkWarning();
+	protected abstract String getStartLinkError();
 	protected abstract boolean tryAutoBooking(UserRequest ureq);
 	protected abstract Long getResourceKey();
 
@@ -123,6 +126,18 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 			}
 			
 			initAccess(ureq, layoutCont);
+			
+			layoutCont.contextPut("startLinkWarning", getStartLinkWarning());
+			layoutCont.contextPut("startLinkError", getStartLinkError());
+			if (StringHelper.containsNonWhitespace(getStartLinkError())) {
+				if (startLink != null) {
+					startLink.setEnabled(false);
+				}
+				if (offersLink != null) {
+					offersLink.setUrl("#");
+					offersLink.setCssClass("btn btn-default btn-primary o_disabled disabled");
+				}
+			}
 		}
 	}
 
@@ -150,7 +165,7 @@ public abstract class AbstractDetailsHeaderController extends FormBasicControlle
 	}
 
 	protected void createGoToOffersLink(FormLayoutContainer layoutCont, boolean guestOnly) {
-		ExternalLinkItem offersLink = uifactory.addExternalLink("start", "#offers", "_self", layoutCont);
+		offersLink = uifactory.addExternalLink("start", "#offers", "_self", layoutCont);
 		offersLink.setCssClass("btn btn-default btn-primary ");
 		offersLink.setElementCssClass("o_book o_button_call_to_action");
 		offersLink.setName(translate("book.now"));

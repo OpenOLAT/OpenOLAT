@@ -125,15 +125,17 @@ public class CurriculumElementInfosController extends BasicController implements
 		if (element.isShowOutline()) {
 			outlineCtrl = new CurriculumElementInfosOutlineController(ureq, getWindowControl(), element, lectureBlocks);
 			listenTo(outlineCtrl);
-			mainVC.put("outline", outlineCtrl.getInitialComponent());
-			mainVC.contextPut("outlineOpen", outlineOpen);
+			if (!outlineCtrl.isEmpty()) {
+				mainVC.put("outline", outlineCtrl.getInitialComponent());
+				mainVC.contextPut("outlineOpen", outlineOpen);
+			}
 		}
 		
 		// Offers
 		AccessResult acResult = acService.isAccessible(element, getIdentity(), isMember, false, webPublish, false);
 		if (acResult.isAccessible()) {
 			fireEvent(ureq, new BookedEvent(element));
-		} else if (!acResult.getAvailableMethods().isEmpty()) {
+		} else if (!StringHelper.containsNonWhitespace(headerCtrl.getStartLinkError()) && !acResult.getAvailableMethods().isEmpty()) {
 			if (acResult.getAvailableMethods().size() > 1 || !acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
 				boolean webCatalog = webPublish != null? webPublish.booleanValue(): false;
 				offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false, webCatalog);

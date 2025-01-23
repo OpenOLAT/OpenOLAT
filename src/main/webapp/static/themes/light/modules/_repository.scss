@@ -74,6 +74,14 @@
 				font-size: $o-coursesite-meta-price-font-size;
 				font-weight: $o-coursesite-meta-price-font-weight;
 			}
+			
+			.o_start_message {
+				width: 30%;
+				margin-top: 5px;
+				@media (max-width: $screen-xs-max) {
+					width: 100%;
+				}
+			}
 		
 			.o_start_wrapper {
 				margin: 2em 0 2em 0;

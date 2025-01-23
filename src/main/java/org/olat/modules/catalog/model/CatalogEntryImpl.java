@@ -70,6 +70,8 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private boolean openAccess;
 	private boolean guestAccess;
 	private List<OLATResourceAccess> resourceAccess;
+	private final Long maxParticipants;
+	private Long numParticipants;
 	private License license;
 
 	public CatalogEntryImpl(RepositoryEntry re) {
@@ -90,6 +92,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		status = re.getEntryStatus();
 		publishedDate = re.getStatusPublishedDate();
 		publicVisible = re.isPublicVisible();
+		maxParticipants = null;
 		
 		curriculumKey = null;
 		curriculumElementTypeName = null;
@@ -114,6 +117,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		status = null;
 		publishedDate = null;
 		publicVisible = true;
+		maxParticipants = element.getMaxParticipants();
 		
 		curriculumKey = element.getCurriculum().getKey();
 		curriculumElementTypeName = element.getType().getDisplayName();
@@ -259,6 +263,20 @@ public class CatalogEntryImpl implements CatalogEntry {
 
 	public void setResourceAccess(List<OLATResourceAccess> resourceAccess) {
 		this.resourceAccess = resourceAccess;
+	}
+
+	@Override
+	public Long getMaxParticipants() {
+		return maxParticipants;
+	}
+
+	@Override
+	public Long getNumParticipants() {
+		return numParticipants;
+	}
+
+	public void setNumParticipants(Long numParticipants) {
+		this.numParticipants = numParticipants;
 	}
 
 	@Override

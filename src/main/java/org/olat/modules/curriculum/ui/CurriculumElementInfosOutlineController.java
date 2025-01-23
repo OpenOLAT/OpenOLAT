@@ -53,6 +53,7 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 	
 	private final CurriculumElementImageMapper curriculumElementImageMapper;
 	private final String curriculumElementImageMapperUrl;
+	private boolean empty;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -68,6 +69,7 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
 		
 		List<CurriculumElement> elements = curriculumService.getCurriculumElementsDescendants(rootElement);
+		empty = elements.isEmpty();
 		
 		List<CurriculumElementRow> rows = new ArrayList<>(elements.size());
 		Map<Long, CurriculumElementRow> keyToRows = new HashMap<>();
@@ -130,6 +132,10 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 		}
 		
 		return levels;
+	}
+	
+	public boolean isEmpty() {
+		return empty;
 	}
 
 	@Override

@@ -483,6 +483,9 @@ public interface CurriculumService {
 	public void addMemberHistory(CurriculumElement element, Identity member, CurriculumRoles role,
 			GroupMembershipStatus status, Identity actor, String note);
 	
+	public Map<Long, Long> getCurriculumElementKeyToNumParticipants(List<CurriculumElement> curriculumElements,
+			boolean countReservations);
+	
 	/**
 	 * Remove a member of the curriculum element and discard all its roles.
 	 * 

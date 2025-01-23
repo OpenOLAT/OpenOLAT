@@ -77,6 +77,10 @@ public class CatalogEntryRow {
 	private Set<String> accessMethodTypes;
 	private List<PriceMethod> accessPriceMethods;
 	private String accessInfo;
+	private String accessWarning;
+	private String accessError;
+	private final Long maxParticipants;
+	private final Long numParticipants;
 	private final License license;
 	
 	private String thumbnailRelPath;
@@ -105,6 +109,8 @@ public class CatalogEntryRow {
 		member = catalogEntry.isMember();
 		openAccess = catalogEntry.isOpenAccess();
 		guestAccess = catalogEntry.isGuestAccess();
+		maxParticipants = catalogEntry.getMaxParticipants();
+		numParticipants = catalogEntry.getNumParticipants();
 		license = catalogEntry.getLicense();
 		
 		reLifecycle = catalogEntry.getLifecycle();
@@ -213,6 +219,14 @@ public class CatalogEntryRow {
 		return guestAccess;
 	}
 
+	public Long getMaxParticipants() {
+		return maxParticipants;
+	}
+
+	public Long getNumParticipants() {
+		return numParticipants;
+	}
+
 	public Set<String> getAccessMethodTypes() {
 		return accessMethodTypes;
 	}
@@ -235,6 +249,22 @@ public class CatalogEntryRow {
 
 	public void setAccessInfo(String accessInfo) {
 		this.accessInfo = accessInfo;
+	}
+
+	public String getAccessWarning() {
+		return accessWarning;
+	}
+
+	public void setAccessWarning(String accessWarning) {
+		this.accessWarning = accessWarning;
+	}
+
+	public String getAccessError() {
+		return accessError;
+	}
+
+	public void setAccessError(String accessError) {
+		this.accessError = accessError;
 	}
 
 	public String getAuthors() {

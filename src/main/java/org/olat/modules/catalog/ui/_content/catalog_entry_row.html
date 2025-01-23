@@ -79,11 +79,22 @@
 	</div>
 	
 	<div class="o_access">
-		<div class="o_access_info">
+		<div class="o_access_info o_nowrap">
 			#if($r.isNotEmpty($row.getAccessInfo()))
 				$row.getAccessInfo()
 			#end
 		</div>
+		#if($r.isNotEmpty($row.getAccessWarning()))
+			<div class="o_access_warning o_warning_line o_nowrap">
+				$row.getAccessWarning()
+			</div>
+		#end
+		#if($r.isNotEmpty($row.getAccessError()))
+			<div class="o_access_error o_error_line o_nowrap">
+				$row.getAccessError()
+			</div>
+		#end
+	
 		<div class="o_actions">
 			$r.render($row.getDetailsLinkName())
 			#if($row.getStartLinkName())

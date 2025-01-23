@@ -85,6 +85,10 @@ public interface CatalogEntry {
 	
 	boolean isGuestAccess();
 	
+	public Long getMaxParticipants();
+	
+	public Long getNumParticipants();
+	
 	List<OLATResourceAccess> getResourceAccess();
 	
 	License getLicense();

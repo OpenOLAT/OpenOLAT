@@ -1196,6 +1196,46 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
+	public Map<Long, Long> getCurriculumElementKeyToNumParticipants(List<CurriculumElement> curriculumElements, boolean countReservations) {
+		if (curriculumElements.isEmpty()) {
+			return Map.of();
+		}
+		
+		// Memberships
+		Map<Long, Long> curriculumElementKeyToNumParticipants = new HashMap<>(curriculumElements.size());
+		for (CurriculumElementMembership membership : getCurriculumElementMemberships(curriculumElements)) {
+			if (membership.isParticipant()) {
+				Long numParticipants = curriculumElementKeyToNumParticipants.getOrDefault(membership.getCurriculumElementKey(), Long.valueOf(0));
+				numParticipants++;
+				curriculumElementKeyToNumParticipants.put(membership.getCurriculumElementKey(), numParticipants);
+			}
+		}
+		
+		// Reservations
+		if (countReservations) {
+			List<OLATResource> resources = new ArrayList<>(curriculumElements.size());
+			Map<Long, Long> resourceKeyToElementKey = new HashMap<>(curriculumElements.size());
+			for (CurriculumElement curriculumElement : curriculumElements) {
+				resources.add(curriculumElement.getResource());
+				resourceKeyToElementKey.put(curriculumElement.getResource().getKey(), curriculumElement.getKey());
+			}
+			
+			List<ResourceReservation> reservations = acService.getReservations(resources);
+			for (ResourceReservation reservation : reservations) {
+				Long resourceKey = reservation.getResource().getKey();
+				Long ceKey = resourceKeyToElementKey.get(resourceKey);
+				if (ceKey != null) {
+					Long numParticipants = curriculumElementKeyToNumParticipants.getOrDefault(ceKey, Long.valueOf(0));
+					numParticipants++;
+					curriculumElementKeyToNumParticipants.put(ceKey, numParticipants);
+				}
+			}
+		}
+		
+		return curriculumElementKeyToNumParticipants;
+	}
+	
+	@Override
 	public boolean hasRepositoryEntries(CurriculumElementRef element) {
 		return curriculumRepositoryEntryRelationDao.hasRepositoryEntries(element);
 	}
