@@ -36,13 +36,22 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * @author twuersch, timo.wuersch@frentix.com, www.frentix.com
  */
 public class MetadataAcceptStep extends BasicStep {
-	private final String filename;
+
+	private String filename;
+	private boolean isApprovalEnabled;
 
 	public MetadataAcceptStep(UserRequest ureq, String filename) {
 		super(ureq);
 		this.filename = filename;
 		setI18nTitleAndDescr("acceptstep.metadata.title", "acceptstep.metadata.description");
 		setNextStep(new DestinationAcceptStep(ureq));
+	}
+
+	public MetadataAcceptStep(UserRequest ureq, boolean isApprovalEnabled) {
+		super(ureq);
+		this.isApprovalEnabled = isApprovalEnabled;
+		setI18nTitleAndDescr("acceptstep.metadata.title", "acceptstep.metadata.description");
+		setNextStep(new DestinationAcceptStep(ureq, isApprovalEnabled));
 	}
 
 	@Override
@@ -52,8 +61,10 @@ public class MetadataAcceptStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		stepsRunContext.put(MetadataAcceptStepController.STEPS_RUN_CONTEXT_FILENAME_KEY, filename);
-		
+		if (!isApprovalEnabled) {
+			stepsRunContext.put(MetadataAcceptStepController.STEPS_RUN_CONTEXT_FILENAME_KEY, filename);
+		}
+
 		return new MetadataAcceptStepController(ureq, windowControl, stepsRunContext, form);
 	}
 }

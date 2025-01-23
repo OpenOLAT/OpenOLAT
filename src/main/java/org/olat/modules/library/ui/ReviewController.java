@@ -59,7 +59,7 @@ public class ReviewController extends BasicController {
 	private static final String CMD_REJECT = "reject";
 	private static final String CMD_ACCEPT = "accept";
 	
-	private TableController documentListTableController;
+	private final TableController documentListTableController;
 	private ReviewTableDataModel documentListModel;
 	private RejectController rejectController;
 	private CloseableModalController rejectModalController;
@@ -112,16 +112,14 @@ public class ReviewController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == documentListTableController && event instanceof TableEvent) {
-			TableEvent e = (TableEvent) event;
-			
-			VFSLeaf file = (VFSLeaf) documentListModel.getValueAt(e.getRowId(), ReviewTableDataModel.Columns.accept.ordinal());
-			if (CMD_REJECT.equals(e.getActionId())) {
+		if (source == documentListTableController && event instanceof TableEvent te) {
+			VFSLeaf file = (VFSLeaf) documentListModel.getValueAt(te.getRowId(), ReviewTableDataModel.Columns.accept.ordinal());
+			if (CMD_REJECT.equals(te.getActionId())) {
 				rejectController = new RejectController(ureq, getWindowControl(), file);
 				listenTo(rejectController);
 				rejectModalController = new CloseableModalController(getWindowControl(), translate("close"), rejectController.getInitialComponent());
 				rejectModalController.activate();
-			} else if (CMD_ACCEPT.equals(e.getActionId())) {
+			} else if (CMD_ACCEPT.equals(te.getActionId())) {
 				if (libraryManager.getSharedFolder() == null) {
 					showError("library.catalog.none.setup");
 				} else {
@@ -169,7 +167,7 @@ public class ReviewController extends BasicController {
 	// no events from components to fetch
 	}
 	
-	public class ReviewFinishCallback implements StepRunnerCallback {
+	public static class ReviewFinishCallback implements StepRunnerCallback {
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 			return StepsMainRunController.DONE_MODIFIED;
 		}

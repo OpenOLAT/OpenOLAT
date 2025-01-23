@@ -44,14 +44,17 @@ public class LibraryModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String CONTACTS_TO_NOTIFY_AFTER_FREEING = "notify.afterfreeing";
 	private static final String LIBRARY_ENTRY_KEY = "library.repository.entry.key";
 	private static final String LIBRARY_ENABLE = "site.library.enabled";
-	private static final String LIBRARY_UPLOAD_ENABLEd = "library.upload.enabled";
-	
+	private static final String LIBRARY_UPLOAD_ENABLED = "library.upload.enabled";
+	private static final String LIBRARY_UPLOAD_APPROVAL_ENABLED = "library.upload.approval.enabled";
+
 	private boolean autoSubscribe = false;
-	
+
 	@Value("${site.library.enabled}")
 	private boolean enabled;
 	@Value("${library.upload.enabled:true}")
 	private boolean uploadEnabled;
+	@Value("${library.upload.approval.enabled:true}")
+	private boolean approvalEnabled;
 	@Value("${library.repository.entry.key}")
 	private String libraryEntryKey;
 	@Value("${library.notify.afterupload}")
@@ -99,9 +102,14 @@ public class LibraryModule extends AbstractSpringModule implements ConfigOnOff {
 			emailContactsToNotifyAfterFreeing = emailContactsToNotifyAfterFreeingObj;
 		}
 		
-		String uploadEnabledObj = getStringPropertyValue(LIBRARY_UPLOAD_ENABLEd, true);
+		String uploadEnabledObj = getStringPropertyValue(LIBRARY_UPLOAD_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(uploadEnabledObj)) {
 			uploadEnabled = "true".equals(uploadEnabledObj);
+		}
+
+		String uploadApprovalEnabledObj = getStringPropertyValue(LIBRARY_UPLOAD_APPROVAL_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(uploadApprovalEnabledObj)) {
+			approvalEnabled = "true".equals(uploadApprovalEnabledObj);
 		}
 	}
 
@@ -152,6 +160,15 @@ public class LibraryModule extends AbstractSpringModule implements ConfigOnOff {
 
 	public void setUploadEnabled(boolean enabled) {
 		this.uploadEnabled = enabled;
-		setStringProperty(LIBRARY_UPLOAD_ENABLEd, enabled ? "true" : "false", true);
+		setStringProperty(LIBRARY_UPLOAD_ENABLED, enabled ? "true" : "false", true);
+	}
+
+	public boolean isApprovalEnabled() {
+		return approvalEnabled;
+	}
+
+	public void setApprovalEnabled(boolean approvalEnabled) {
+		this.approvalEnabled = approvalEnabled;
+		setStringProperty(LIBRARY_UPLOAD_APPROVAL_ENABLED, approvalEnabled ? "true" : "false", true);
 	}
 }

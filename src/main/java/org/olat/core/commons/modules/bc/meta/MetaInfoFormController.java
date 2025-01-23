@@ -75,16 +75,28 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author gwassmann
  */
 public class MetaInfoFormController extends FormBasicController {
-	private VFSItem item;
+
+	private final VFSItem item;
 	private FormLink moreMetaDataLink;
 	private String initialFilename;
-	private TextElement filename, title, publisher, creator, sourceEl, city, pages, language, url, comment, publicationMonth, publicationYear;
+	private TextElement filename;
+	private TextElement title;
+	private TextElement publisher;
+	private TextElement creator;
+	private TextElement sourceEl;
+	private TextElement city;
+	private TextElement pages;
+	private TextElement language;
+	private TextElement url;
+	private TextElement comment;
+	private TextElement publicationMonth;
+	private TextElement publicationYear;
 	private SingleSelection licenseEl;
 	private TextElement licensorEl;
 	private TextAreaElement licenseFreetextEl;
 	private SingleSelection locked;
 	
-	private boolean isSubform;
+	private final boolean isSubform;
 	private boolean showFilename = true;
 	private boolean showTitle = true;
 	private boolean showTechnicalData;
@@ -302,6 +314,7 @@ public class MetaInfoFormController extends FormBasicController {
 		if (!hasMetadata(meta)) {
 			moreMetaDataLink = uifactory.addFormLink("mf.more.meta.link", formLayout, Link.LINK_CUSTOM_CSS);
 			setMetaFieldsVisible(false);
+			moreMetaDataLink.setVisible(item != null);
 		}
 
 		if (showTechnicalData) {
@@ -330,7 +343,7 @@ public class MetaInfoFormController extends FormBasicController {
 					if (lock.getCreationDate() != null) {
 						date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, getLocale()).format(lock.getCreationDate());
 					}
-					lockedDetails = getTranslator().translate("mf.locked.description", new String[]{user, date});
+					lockedDetails = getTranslator().translate("mf.locked.description", user, date);
 				} else {
 					lockedDetails = getTranslator().translate("mf.unlocked.description");
 				}
@@ -418,7 +431,7 @@ public class MetaInfoFormController extends FormBasicController {
 	 * 
 	 * @param visible
 	 */
-	private void setMetaFieldsVisible(boolean visible) {
+	public void setMetaFieldsVisible(boolean visible) {
 		for (FormItem formItem : metaFields) {
 			formItem.setVisible(visible);
 		}
@@ -586,9 +599,9 @@ public class MetaInfoFormController extends FormBasicController {
 			} else if(!FileUtils.validateFilename(filenameStr)) {
 				valid = false;
 				if (item instanceof VFSContainer) {
-					filename.setErrorKey("folder.name.notvalid", new String[0]);
+					filename.setErrorKey("folder.name.notvalid");
 				} else {	
-					filename.setErrorKey("file.name.notvalid", new String[0]);
+					filename.setErrorKey("file.name.notvalid");
 				}
 			}
 		}

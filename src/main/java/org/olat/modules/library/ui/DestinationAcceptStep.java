@@ -36,16 +36,27 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * @author twuersch, timo.wuersch@frentix.com, www.frentix.com
  */
 public class DestinationAcceptStep extends BasicStep {
-	
+
+	private final boolean isApprovalEnabled;
+
 	public DestinationAcceptStep(UserRequest ureq) {
 		super(ureq);
+		// default value should be true, because if this constructor is used that means that approval is needed from review
+		this.isApprovalEnabled = true;
+		setI18nTitleAndDescr("acceptstep.destination.title", "acceptstep.destination.description");
+		setNextStep(new NotificationAcceptStep(ureq));
+	}
+
+	public DestinationAcceptStep(UserRequest ureq, boolean isApprovalEnabled) {
+		super(ureq);
+		this.isApprovalEnabled = isApprovalEnabled;
 		setI18nTitleAndDescr("acceptstep.destination.title", "acceptstep.destination.description");
 		setNextStep(new NotificationAcceptStep(ureq));
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, true, false);
+		return new PrevNextFinishConfig(true, isApprovalEnabled, !isApprovalEnabled);
 	}
 
 	@Override

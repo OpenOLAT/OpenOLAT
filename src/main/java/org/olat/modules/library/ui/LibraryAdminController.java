@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.library.ui;
@@ -47,13 +47,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 29 mars 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class LibraryAdminController extends FormBasicController {
 	
 	private FormToggle enableEl;
 	private FormToggle uploadEnableEl;
+	private FormToggle uploadApproveEnableEl;
 	private TextElement mailAfterUploadEl;
 	private TextElement mailAfterFreeingEl;
 	private FormLink addSharedFolderButton;
@@ -116,6 +117,11 @@ public class LibraryAdminController extends FormBasicController {
 		uploadEnableEl = uifactory.addToggleButton("library.upload.enabled", "library.upload.enabled", translate("on"), translate("off"), formLayout);
 		uploadEnableEl.addActionListener(FormEvent.ONCHANGE);
 		uploadEnableEl.toggle(uploadEnabled);
+
+		boolean uploadApprovalEnabled = libraryModule.isApprovalEnabled();
+		uploadApproveEnableEl = uifactory.addToggleButton("library.upload.approval.enabled", "library.upload.approval.enabled", translate("on"), translate("off"), formLayout);
+		uploadApproveEnableEl.addActionListener(FormEvent.ONCHANGE);
+		uploadApproveEnableEl.toggle(uploadApprovalEnabled);
 		
 		String mailAfterUpload = libraryModule.getEmailContactsToNotifyAfterUpload();
 		mailAfterUploadEl = uifactory.addTextElement("library.configuration.mail.after.upload", 256, mailAfterUpload, formLayout);
@@ -132,6 +138,7 @@ public class LibraryAdminController extends FormBasicController {
 		boolean enabled = enableEl.isOn();
 		boolean uploadEnable = uploadEnableEl.isOn();
 		uploadEnableEl.setVisible(enabled);
+		uploadApproveEnableEl.setVisible(uploadEnable);
 		mailAfterUploadEl.setVisible(enabled && uploadEnable);
 		mailAfterFreeingEl.setVisible(enabled && uploadEnable);
 		sharedFolderNameEl.setVisible(enabled);
@@ -194,8 +201,10 @@ public class LibraryAdminController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		boolean enabled = enableEl.isOn();
 		boolean uploadEnabled = uploadEnableEl.isOn();
+		boolean uploadApprovalEnabled = uploadApproveEnableEl.isOn();
 		libraryModule.setEnabled(enabled);
 		libraryModule.setUploadEnabled(uploadEnabled);
+		libraryModule.setApprovalEnabled(uploadApprovalEnabled);
 		if(enabled) {
 			libraryModule.setEmailContactsToNotifyAfterUpload(mailAfterUploadEl.getValue());
 			libraryModule.setEmailContactsToNotifyAfterFreeing(mailAfterFreeingEl.getValue());

@@ -94,6 +94,13 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 	}
 
 	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener,  UserRequest ureq) {
+		subjectTextElement = uifactory.addTextElement("acceptstep.notification.ui.subject", "acceptstep.notification.ui.subject", -1, containsRunContextKey(STEPS_RUN_CONTEXT_NOTIFICATION_SUBJECT_KEY) ? (String) getFromRunContext(STEPS_RUN_CONTEXT_NOTIFICATION_SUBJECT_KEY) : "", formLayout);
+		bodyTextElement = uifactory.addTextAreaElement("acceptstep.notification.ui.body", "acceptstep.notification.ui.body", -1, 10, 30, false, false, containsRunContextKey(STEPS_RUN_CONTEXT_NOTIFICATION_BODY_KEY) ? (String) getFromRunContext(STEPS_RUN_CONTEXT_NOTIFICATION_BODY_KEY) : "", formLayout);
+		bodyTextElement.setElementCssClass("o_sel_notification_body");
+	}
+
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isInputValid = true;
 		String subject = subjectTextElement.getValue();
@@ -109,14 +116,13 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 		return isInputValid;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void formOK(UserRequest ureq) {
 		try {
 			// get the source file name.
 			String relativeSourceFileName = (String) getFromRunContext(MetadataAcceptStepController.STEPS_RUN_CONTEXT_FILENAME_KEY); 
 			String relativeNewSourceFileName = (String) getFromRunContext(MetadataAcceptStepController.STEPS_RUN_CONTEXT_NEW_FILENAME_KEY); 
-			VFSLeaf sourceFile = (VFSLeaf)libraryManager.getUploadFolder().resolve(relativeSourceFileName);
+			VFSLeaf sourceFile = (VFSLeaf) libraryManager.getUploadFolder().resolve(relativeSourceFileName);
 			String targetFileName = relativeNewSourceFileName == null ? relativeSourceFileName : relativeNewSourceFileName;
 			
 			// get the relative destination file name, the tree model, and the selection.
@@ -124,45 +130,12 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 			Set<String> selection = (Set<String>) getFromRunContext(DestinationAcceptStepController.STEPS_RUN_CONTEXT_DESTINATIONFOLDERS_KEY);
 			
 			VFSContainer rootContainer = VFSManager.olatRootContainer("", null);
-			
-			// for all selected destination folders, ...
-			for (String key : selection) {
-				TreeNode selectedNode = treeModel.getNodeById(key);
-				// ...calculate the absolute destination file name...
-				String relativeDestinationDirectoryName = (String) selectedNode.getUserObject();
-				VFSContainer destinationDirectory = (VFSContainer)rootContainer.resolve(relativeDestinationDirectoryName);
-				VFSLeaf targetFile = destinationDirectory.createChildLeaf(targetFileName);
-				
-				// ...and copy the file there.
-				if (!VFSManager.copyContent(sourceFile, targetFile, true, getIdentity())) {
-					showError("acceptstep.notification.copyerror");
-					logError("Error while copying \"" + sourceFile.getName() + "\" to \"" + destinationDirectory.getName() + "\".", null);
-				}
-				
-				VFSMetadata metaInfo = targetFile.getMetaInfo();
-				metaInfo.copyValues((VFSMetadata)getFromRunContext(MetadataAcceptStepController.STEPS_RUN_CONTEXT_METADATA_KEY), true);
-				metaInfo = vfsRepositoryService.updateMetadata(metaInfo);
-				if (metaInfo == null) {
-					logError("Error writing metadata for " + relativeDestinationDirectoryName + "/" + relativeSourceFileName, null);
-					showError("acceptstep.notification.metafileerror");
-				}
-			}
 
-			// send notification e-mail
-			VFSMetadata metaInfo = sourceFile.getMetaInfo();
-			Identity uploaderIdentity = metaInfo.getFileInitializedBy();
+			// for all selected destination folders
+			processToDestinationFolders(selection, treeModel, rootContainer, sourceFile, targetFileName, relativeSourceFileName);
 
-			String mailto;
-			if(StringHelper.containsNonWhitespace(libraryModule.getEmailContactsToNotifyAfterFreeing())) {
-				mailto = libraryModule.getEmailContactsToNotifyAfterFreeing();
-			} else {
-				mailto = uploaderIdentity.getUser().getProperty(UserConstants.EMAIL, getLocale());
-			}
-			MailBundle bundle = new MailBundle();
-			bundle.setTo(mailto);
-			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
-			bundle.setContent(subjectTextElement.getValue(), bodyTextElement.getValue());
-			mailManager.sendMessage(bundle);
+			// Send notification email
+			sendNotificationEmail(sourceFile);
 			
 			sourceFile.deleteSilently();
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
@@ -173,13 +146,56 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 		}
 	}
 
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener,  UserRequest ureq) {
-		subjectTextElement = uifactory.addTextElement("acceptstep.notification.ui.subject", "acceptstep.notification.ui.subject", -1, containsRunContextKey(STEPS_RUN_CONTEXT_NOTIFICATION_SUBJECT_KEY) ? (String) getFromRunContext(STEPS_RUN_CONTEXT_NOTIFICATION_SUBJECT_KEY) : "", formLayout);
-		bodyTextElement = uifactory.addTextAreaElement("acceptstep.notification.ui.body", "acceptstep.notification.ui.body", -1, 10, 30, false, false, containsRunContextKey(STEPS_RUN_CONTEXT_NOTIFICATION_BODY_KEY) ? (String) getFromRunContext(STEPS_RUN_CONTEXT_NOTIFICATION_BODY_KEY) : "", formLayout);
-		bodyTextElement.setElementCssClass("o_sel_notification_body");
+	private void processToDestinationFolders(Set<String> selection, LibraryTreeModel treeModel, VFSContainer rootContainer,
+											 VFSLeaf sourceFile, String targetFileName, String relativeSourceFileName) {
+		for (String key : selection) {
+			TreeNode selectedNode = treeModel.getNodeById(key);
+
+			// Calculate the absolute destination file name
+			String relativeDestinationDirectoryName = (String) selectedNode.getUserObject();
+			VFSContainer destinationDirectory = (VFSContainer) rootContainer.resolve(relativeDestinationDirectoryName);
+			VFSLeaf targetFile = destinationDirectory.createChildLeaf(targetFileName);
+
+			// Copy the file to the destination directory
+			if (!VFSManager.copyContent(sourceFile, targetFile, true, getIdentity())) {
+				showError("acceptstep.notification.copyerror");
+				logError("Error while copying \"" + sourceFile.getName() + "\" to \"" + destinationDirectory.getName() + "\".", null);
+				continue;
+			}
+
+			// Update metadata for the copied file
+			updateFileMetadata(targetFile, relativeDestinationDirectoryName, relativeSourceFileName);
+		}
 	}
-	
+
+	private void updateFileMetadata(VFSLeaf targetFile, String relativeDestinationDirectoryName, String relativeSourceFileName) {
+		VFSMetadata metaInfo = targetFile.getMetaInfo();
+		metaInfo.copyValues((VFSMetadata) getFromRunContext(MetadataAcceptStepController.STEPS_RUN_CONTEXT_METADATA_KEY), true);
+		metaInfo = vfsRepositoryService.updateMetadata(metaInfo);
+
+		if (metaInfo == null) {
+			logError("Error writing metadata for " + relativeDestinationDirectoryName + "/" + relativeSourceFileName, null);
+			showError("acceptstep.notification.metafileerror");
+		}
+	}
+
+	private void sendNotificationEmail(VFSLeaf sourceFile) {
+		VFSMetadata metaInfo = sourceFile.getMetaInfo();
+		Identity uploaderIdentity = metaInfo.getFileInitializedBy();
+
+		// Determine recipient email
+		String mailto = StringHelper.containsNonWhitespace(libraryModule.getEmailContactsToNotifyAfterFreeing())
+				? libraryModule.getEmailContactsToNotifyAfterFreeing()
+				: uploaderIdentity.getUser().getProperty(UserConstants.EMAIL, getLocale());
+
+		// Prepare and send email
+		MailBundle bundle = new MailBundle();
+		bundle.setTo(mailto);
+		bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+		bundle.setContent(subjectTextElement.getValue(), bodyTextElement.getValue());
+		mailManager.sendMessage(bundle);
+	}
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		super.event(ureq, source, event);
