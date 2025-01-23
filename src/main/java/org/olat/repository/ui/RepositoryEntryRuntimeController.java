@@ -1167,7 +1167,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(acResult.getAvailableMethods().size() == 1) {
 			OfferAccess offerAccess = acResult.getAvailableMethods().get(0);
 			if(offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
-				acResult = acService.accessResource(getIdentity(), offerAccess, null);
+				acResult = acService.accessResource(getIdentity(), offerAccess, null, getIdentity());
 				 if(acResult.isAccessible()) {
 					 reloadSecurity(ureq);
 				 }
@@ -1177,7 +1177,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private List<Offer> getOffersNowNotInRange(RepositoryEntry re, Identity identity) {
-		List<? extends OrganisationRef> offerOrganisations = CoreSpringFactory.getImpl(ACService.class).getOfferOrganisations(identity);
+		List<? extends OrganisationRef> offerOrganisations = acService.getOfferOrganisations(identity);
 		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, null, offerOrganisations);
 	}
 	

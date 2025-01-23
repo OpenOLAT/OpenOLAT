@@ -206,7 +206,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		AccessResult result = acService.accessResource(getIdentity(), link, null);
+		AccessResult result = acService.accessResource(getIdentity(), link, null, getIdentity());
 		
 		if (result.isAccessible()) {
 			Order order = result.getOrder();

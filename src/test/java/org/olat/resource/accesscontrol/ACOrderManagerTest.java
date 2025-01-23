@@ -768,7 +768,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		
 		AccessMethod method = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
 		OfferAccess access = acMethodManager.createOfferAccess(offer, method);
-		acService.accessResource(ident1, access, null);
+		acService.accessResource(ident1, access, null, ident1);
 		dbInstance.commitAndCloseSession();
 		
 		assertTrue(acOrderManager.hasOrder(offer));

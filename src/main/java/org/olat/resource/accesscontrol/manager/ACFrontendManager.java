@@ -299,7 +299,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			//is it a method without user interaction as the free access?
 			OfferAccess link = offerAccess.get(0);
 			if(!link.getMethod().isNeedUserInteraction() && link.getOffer().isAutoBooking()) {
-				return accessResource(identity, link, null);
+				return accessResource(identity, link, null, identity);
 			}
 		}
 		return new AccessResult(false, offerAccess);
@@ -531,7 +531,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument) {
+	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument, Identity doer) {
+		return accessResource(identity, link, OrderStatus.PAYED, argument, doer);
+	}
+
+	@Override
+	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus, Object argument, Identity doer) {
 		if(link == null || link.getOffer() == null || link.getMethod() == null) {
 			log.info(Tracing.M_AUDIT, "Access refused (no offer) to: {} for {}", link, identity);
 			return new AccessResult(false);
@@ -544,7 +549,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 
 		if(handler.checkArgument(link, argument)) {
-			if(allowAccesToResource(identity, link.getOffer(), link.getMethod())) {
+			if(allowAccesToResource(identity, link.getOffer(), link.getMethod(), doer)) {
 				Order order = createAndSaveOrder(identity, link, OrderStatus.PAYED, null, null, null);
 				log.info(Tracing.M_AUDIT, "Access granted to: {} for {}", link, identity);
 				return new AccessResult(true, order);
@@ -658,25 +663,10 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		OLATResource resource = offer.getResource();
 		String resourceType = resource.getResourceableTypeName();
 		if("BusinessGroup".equals(resourceType)) {
-			boolean reserved = false;
-			final BusinessGroup group = businessGroupDao.loadForUpdate(resource.getResourceableId());
-			if(group.getMaxParticipants() == null || group.getMaxParticipants().intValue() <= 0) {
-				reserved = true;//don't need reservation
-			} else {
-				BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(resource);
-				ResourceReservation reservation = reservationDao.loadReservation(identity, resource);
-				if(reservation != null) {
-					reserved = true;
-				}
-
-				int currentCount = businessGroupService.countMembers(reloadedGroup, GroupRoles.participant.name());
-				int reservations = reservationDao.countReservations(resource, BusinessGroupService.GROUP_PARTICIPANT);
-				if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
-					reservationDao.createReservation(identity, method.getType(), null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
-					reserved = true;
-				}
-			}
-			return reserved;
+			return reserveAccessToBusinessGroup(identity, offer, resource, method);
+		}
+		if("CurriculumElement".equals(resourceType)) {
+			return reserveAccessToCurriculumElement(identity, offer, resource);
 		}
 		RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
 		if (entry != null) {
@@ -685,8 +675,45 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			}
 			return true;
 		}
-		//TODO booking
 		return false;
+	}
+
+	//TODO booking
+	private boolean reserveAccessToCurriculumElement(Identity identity, Offer offer, OLATResource resource) {
+		boolean reserved = false;
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
+		if (curriculumElement != null) {
+			boolean isParticipant = curriculumService.getCurriculumElementMemberships(List.of(curriculumElement), identity).stream()
+					.anyMatch(CurriculumElementMembership::isParticipant);
+			if(!isParticipant) {
+				reservationDao.createReservation(identity, CurriculumService.RESERVATION_PREFIX.concat("participant"),
+						null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
+			}
+			reserved = true;
+		}
+		return reserved;
+	}
+	
+	private boolean reserveAccessToBusinessGroup(Identity identity, Offer offer, OLATResource resource, AccessMethod method) {
+		boolean reserved = false;
+		final BusinessGroup group = businessGroupDao.loadForUpdate(resource.getResourceableId());
+		if(group.getMaxParticipants() == null || group.getMaxParticipants().intValue() <= 0) {
+			reserved = true;//don't need reservation
+		} else {
+			BusinessGroup reloadedGroup = businessGroupService.loadBusinessGroup(resource);
+			ResourceReservation reservation = reservationDao.loadReservation(identity, resource);
+			if(reservation != null) {
+				reserved = true;
+			}
+
+			int currentCount = businessGroupService.countMembers(reloadedGroup, GroupRoles.participant.name());
+			int reservations = reservationDao.countReservations(resource, BusinessGroupService.GROUP_PARTICIPANT);
+			if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
+				reservationDao.createReservation(identity, method.getType(), null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
+				reserved = true;
+			}
+		}
+		return reserved;
 	}
 
 	@Override
@@ -720,7 +747,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method) {
+	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method, Identity doer) {
 		//check if offer is ok: key is stupid but further check as date, validity...
 		if(offer.getKey() == null) {
 			return false;
@@ -741,7 +768,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
 				MailPackage mailing = new MailPackage(offer.isConfirmationEmail());
-				EnrollState result = businessGroupService.enroll(identity, null, identity, group, mailing);
+				EnrollState result = businessGroupService.enroll(doer, null, identity, group, mailing);
 				return !result.isFailed();
 			}
 		} else if("CurriculumElement".equals(resourceType)) {
@@ -753,7 +780,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 					List<CurriculumElementMembershipChange> changes = List.of(CurriculumElementMembershipChange
 							.addMembership(identity, curriculumElement, CurriculumRoles.participant));
 					//TODO booking
-					curriculumService.updateCurriculumElementMemberships(identity, null, changes, null);
+					curriculumService.updateCurriculumElementMemberships(doer, null, changes, null);
 					return true;
 				}
 			}
@@ -764,7 +791,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 					repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
 					if(offer.isConfirmationEmail()) {
 						MailPackage mailing = new MailPackage(offer.isConfirmationEmail());
-						RepositoryMailing.sendEmail(identity, identity, entry, RepositoryMailing.Type.addParticipantItself, mailing);
+						RepositoryMailing.sendEmail(doer, identity, entry, RepositoryMailing.Type.addParticipantItself, mailing);
 					}
 				}
 				return true;
@@ -798,14 +825,10 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		} else if("CurriculumElement".equals(resourceType)) {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
 			if (curriculumElement != null) {
-				boolean isParticipant = curriculumService.getCurriculumElementMemberships(List.of(curriculumElement), identity).stream()
-						.anyMatch(CurriculumElementMembership::isParticipant);
-				if (isParticipant) {
-					//TODO booking
-					curriculumService.removeMember(curriculumElement, identity, CurriculumRoles.participant,
-							GroupMembershipStatus.cancel, identity, null);
-					return true;
-				}
+				//TODO booking
+				// Delegate the job to the curriculum service, inherited memberships will be removed too
+				return curriculumService.removeMember(curriculumElement, identity, CurriculumRoles.participant,
+						GroupMembershipStatus.declined, identity, null);
 			}
 		} else {
 			RepositoryEntryRef entry = repositoryEntryDao.loadByResource(resource);
@@ -839,7 +862,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		if (identity != null && acResult.getAvailableMethods().size() == 1) {
 			OfferAccess offerAccess = acResult.getAvailableMethods().get(0);
 			if (offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
-				return accessResource(identity, offerAccess, null).isAccessible();
+				return accessResource(identity, offerAccess, null, identity).isAccessible();
 			}
 		}
 		return false;

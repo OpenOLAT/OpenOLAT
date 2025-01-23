@@ -492,7 +492,8 @@ public interface CurriculumService {
 	public void removeMember(CurriculumElement element, Identity member, Identity actor);
 	
 	/**
-	 * Remove the membership of a user with the specified role.
+	 * Remove the membership of a user with the specified role. The remove operation
+	 * happens to the element and the inherited memberships.
 	 * 
 	 * @param element The curriculum element
 	 * @param member The identity which loose the membership

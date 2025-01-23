@@ -183,9 +183,11 @@ public interface ACService {
 
 	public OfferAccess saveOfferAccess(OfferAccess link);
 
-	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument);
+	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument, Identity doer);
+	
+	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus, Object argument, Identity doer);
 
-	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method);
+	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method, Identity doer);
 
 	public boolean denyAccesToResource(Identity identity, Offer offer);
 	

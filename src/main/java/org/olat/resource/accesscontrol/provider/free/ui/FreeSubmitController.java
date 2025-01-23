@@ -63,7 +63,7 @@ public class FreeSubmitController extends FormBasicController implements FormCon
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		AccessResult result = acService.accessResource(getIdentity(), link, null);
+		AccessResult result = acService.accessResource(getIdentity(), link, null, getIdentity());
 		
 		if(result.isAccessible()) {
 			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);

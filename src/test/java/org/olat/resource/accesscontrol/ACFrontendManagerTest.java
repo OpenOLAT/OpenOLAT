@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -46,6 +47,13 @@ import org.olat.core.util.CodeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -83,6 +91,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -150,7 +160,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//access it
-		AccessResult result = acService.accessResource(id, offerAccess, null);
+		AccessResult result = acService.accessResource(id, offerAccess, null, id);
 		Assert.assertNotNull(result);
 		Assert.assertTrue(result.isAccessible());
 		dbInstance.commitAndCloseSession();
@@ -183,7 +193,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//access it
-		AccessResult result = acService.accessResource(id3, offerAccess, null);
+		AccessResult result = acService.accessResource(id3, offerAccess, null, id3);
 		Assert.assertNotNull(result);
 		Assert.assertFalse(result.isAccessible());
 		dbInstance.commitAndCloseSession();
@@ -213,7 +223,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//access it
-		AccessResult result = acService.accessResource(id, offerAccess, null);
+		AccessResult result = acService.accessResource(id, offerAccess, null, id);
 		Assert.assertNotNull(result);
 		Assert.assertTrue(result.isAccessible());
 		dbInstance.commitAndCloseSession();
@@ -248,7 +258,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//access it
-		AccessResult result = acService.accessResource(id3, offerAccess, null);
+		AccessResult result = acService.accessResource(id3, offerAccess, null, id3);
 		Assert.assertNotNull(result);
 		Assert.assertTrue(result.isAccessible());
 		dbInstance.commitAndCloseSession();
@@ -300,7 +310,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//id1 finish the process
-		AccessResult result = acService.accessResource(id1, offerAccess, null);
+		AccessResult result = acService.accessResource(id1, offerAccess, null, id1);
 		Assert.assertNotNull(result);
 		Assert.assertTrue(result.isAccessible());
 		dbInstance.commitAndCloseSession();
@@ -383,10 +393,44 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod());
 		Assert.assertTrue(reserved);
 	}
+	
+	@Test
+	public void testPaiedReservationAccessToCurriculumElement() {
+		//enable paypal
+		boolean enabled = acModule.isPaypalEnabled();
+		if(!enabled) {
+			acModule.setPaypalEnabled(true);
+		}
+
+		//create a group with a free offer
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pay-21");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-AC-1", "Curriculum AC 1", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for reservation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Offer offer = acService.createOffer(element.getResource(), "Paypal curriculum element");
+		offer = acService.save(offer);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(PaypalAccessMethod.class);
+		Assert.assertFalse(methods.isEmpty());
+		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
+		Assert.assertNotNull(offerAccess);
+		offerAccess = acService.saveOfferAccess(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		//id try to reserve a place before the payment process, no problem, no limit
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod());
+		Assert.assertTrue(reserved);
+		
+		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
+		Assertions.assertThat(reservations)
+			.hasSize(1);
+	}
 
 	@Test
 	public void makeAccessible() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("acc-" + UUID.randomUUID());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("acc");
 		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
 		organisationService.addMember(organisation, id, OrganisationRoles.user);
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);

@@ -246,7 +246,7 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 
 	private void makeOrder(OfferAccess offerAccess, AdvanceOrder advanceOrder) {
 		Identity identity = advanceOrder.getIdentity();
-		acService.accessResource(identity, offerAccess, null);
+		acService.accessResource(identity, offerAccess, null, identity);
 	}
 
 	@Override

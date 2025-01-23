@@ -82,7 +82,7 @@ public class TokenSubmitController extends FormBasicController implements Contro
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String token = tokenEl.getValue();
-		AccessResult result = acService.accessResource(getIdentity(), link, token);
+		AccessResult result = acService.accessResource(getIdentity(), link, token, getIdentity());
 		
 		if (result.isAccessible()) {
 			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);
