@@ -19,13 +19,17 @@
  */
 package org.olat.modules.library.ui;
 
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -39,13 +43,14 @@ import org.olat.core.util.vfs.VFSLeaf;
  * @author srosse
  */
 public class MetadataAcceptFilenameController extends FormBasicController {
+
 	private static final int FILENAME_MAX_LENGTH = 64;
-	
-	private String initialFilename;
+
 	private final VFSLeaf item;
-	
-	private TextElement filename;
+
+	protected FileElement fileUploadEl;
 	private TextElement newFilename;
+
 	
 	public MetadataAcceptFilenameController(UserRequest ureq, WindowControl control, Form parentForm, VFSLeaf item) {
 		super(ureq, control, FormBasicController.LAYOUT_DEFAULT, null, parentForm);
@@ -55,28 +60,50 @@ public class MetadataAcceptFilenameController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("mf.filename.title");
-		
-		initialFilename = item.getName();
-		filename = uifactory.addTextElement("filename", "mf.filename", -1, initialFilename, formLayout);
-		filename.setElementCssClass("o_sel_filename");
-		filename.setEnabled(false);
-		
-		newFilename = uifactory.addTextElement("newFilename", "mf.newFilename", -1, initialFilename, formLayout);
-		newFilename.setElementCssClass("o_sel_new_filename");
-		if(!validateFilename(initialFilename)) {
-			newFilename.setErrorKey("mf.newFilename.error");
+		if (item == null) {
+			setFormTitle("ul.file");
+		} else {
+			setFormTitle("mf.filename.title");
+		}
+
+		// if item is null, that means approval is
+		if (item == null) {
+			fileUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "ul.file", formLayout);
+			fileUploadEl.addActionListener(FormEvent.ONCHANGE);
+			fileUploadEl.setMaxUploadSizeKB((int) FolderConfig.getLimitULKB(), "attachments.too.big", new String[]{((Long) (FolderConfig
+					.getLimitULKB() / 1024)).toString()});
+			fileUploadEl.setMandatory(true, "NoFileChosen");
+		} else {
+			String initialFilename = item.getName();
+			TextElement filename = uifactory.addTextElement("filename", "mf.filename", -1, initialFilename, formLayout);
+			filename.setElementCssClass("o_sel_filename");
+			filename.setEnabled(false);
+
+			newFilename = uifactory.addTextElement("newFilename", "mf.newFilename", -1, initialFilename, formLayout);
+			newFilename.setElementCssClass("o_sel_new_filename");
+			if(!validateFilename(initialFilename)) {
+				newFilename.setErrorKey("mf.newFilename.error");
+			}
 		}
 	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		String name = getNewFilename();
-		if(!validateFilename(name)) {
-			newFilename.setErrorKey("mf.newFilename.error");
-			return false;
+		boolean allOk = super.validateFormLogic(ureq);
+		if (item != null) {
+			String name = getNewFilename();
+			if (!validateFilename(name)) {
+				newFilename.setErrorKey("mf.newFilename.error");
+				allOk = false;
+			}
+		} else {
+			fileUploadEl.clearError();
+			if(fileUploadEl.getUploadFile() == null) {
+				fileUploadEl.setErrorKey("form.legende.mandatory");
+				allOk = false;
+			}
 		}
-		return true;
+		return allOk;
 	}
 	
 	/**
@@ -91,6 +118,13 @@ public class MetadataAcceptFilenameController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == fileUploadEl) {
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//nothing to do
 	}
@@ -100,7 +134,7 @@ public class MetadataAcceptFilenameController extends FormBasicController {
 	 * @return
 	 */
 	public String getNewFilename() {
-		return newFilename.getValue();
+		return newFilename != null ? newFilename.getValue() : fileUploadEl.getUploadFileName();
 	}
 	
 	/**
@@ -110,5 +144,9 @@ public class MetadataAcceptFilenameController extends FormBasicController {
 	 */
 	public FormItem getFormItem() {
 		return flc;
+	}
+
+	public FileElement getFileUploadEl() {
+		return fileUploadEl;
 	}
 }

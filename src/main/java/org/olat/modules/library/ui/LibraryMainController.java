@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.library.ui;
@@ -62,6 +62,8 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -105,6 +107,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author gwassmann
  */
 public class LibraryMainController extends MainLayoutBasicController implements GenericEventListener, Activateable2 {
+
 	public static final String ICON_CSS_CLASS = "o_library_icon";
 	private static final String GUI_CONF_LAYOUT_KEY = "library_layout_conf";
 	private static final String I18N_UPLOAD_FOLDER_DISPLAYNAME = "library.upload.folder.displayname";
@@ -136,6 +139,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 	private SearchQueryController searchCtr;
 	private SearchCatalogItemController searchItemCtr;
 	private MainLayout3ColumnsController columnLayoutCtr;
+	private StepsMainRunController stepsMainRunController;
 	
 	private String basePath = "";
 	private String mapperBaseURL;
@@ -328,7 +332,11 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		} else if (source == editLink) {
 			displayEditController(ureq);
 		} else if (source == uploadLink) {
-			displayUploadController(ureq);
+			if (libraryModule.isApprovalEnabled()) {
+				displayUploadController(ureq);
+			} else {
+				doStartUploadWithoutApprovalProcess(ureq);
+			}
 		} else if (source == reviewLink) {
 			displayReviewController(ureq);
 		}
@@ -467,6 +475,15 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 				openFolder(ureq, (OpenFolderEvent)event);
 			} else if (event instanceof OpenFileEvent) {
 				openFile(ureq, (OpenFileEvent)event);
+			}
+		} else if (source == stepsMainRunController) {
+			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(stepsMainRunController);
+				stepsMainRunController = null;
+				if (event == Event.CHANGED_EVENT) {
+					newestFilesCtr.updateView(ureq.getLocale());
+				}
 			}
 		}
 	}
@@ -645,6 +662,16 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		uploadModalController = new CloseableModalController(getWindowControl(), translate("close"), uploadController.getInitialComponent());
 		listenTo(uploadModalController);
 		uploadModalController.activate();
+	}
+
+	private void doStartUploadWithoutApprovalProcess(UserRequest ureq) {
+		Step startStep = new MetadataAcceptStep(ureq, libraryModule.isApprovalEnabled());
+		ReviewController.ReviewFinishCallback finishReviewCallback = new ReviewController.ReviewFinishCallback();
+		removeAsListenerAndDispose(stepsMainRunController);
+		stepsMainRunController = new StepsMainRunController(ureq, getWindowControl(), startStep, finishReviewCallback, null,
+				translate("ul.header"), "o_sel_library_review_wizard");
+		listenTo(stepsMainRunController);
+		getWindowControl().pushAsModalDialog(stepsMainRunController.getInitialComponent());
 	}
 	
 	private void displayReviewController(UserRequest ureq) {

@@ -60,11 +60,13 @@ public class MetadataAcceptStepController extends BasicController implements Ste
 	public static final String STEPS_RUN_CONTEXT_METADATA_KEY = "metadata";
 	public static final String STEPS_RUN_CONTEXT_FILENAME_KEY = "filename";
 	public static final String STEPS_RUN_CONTEXT_NEW_FILENAME_KEY = "new_filename";
+	public static final String STEP_RUN_CONTEXT_FILE_UPLOAD_EL_KEY = "file_upload_el";
 	
-	private StepsRunContext stepsRunContext;
+	private final StepsRunContext stepsRunContext;
+	private final Form rootForm;
 	private MetaInfoFormController metaInfoFormController;
-	private MetadataAcceptFilenameController filenameController;
-	private FormLayoutContainer mainC;
+	private final MetadataAcceptFilenameController filenameController;
+	private final FormLayoutContainer mainCont;
 	
 	@Autowired
 	private LibraryManager libraryManager;
@@ -74,24 +76,28 @@ public class MetadataAcceptStepController extends BasicController implements Ste
 	public MetadataAcceptStepController(UserRequest ureq, WindowControl wControl, StepsRunContext stepsRunContext, Form rootForm) {
 		super(ureq, wControl);
 		this.stepsRunContext = stepsRunContext;
-		
-		VFSContainer uploadFolder = libraryManager.getUploadFolder();
-		LocalFileImpl uploadFile = VFSManager.olatRootLeaf("/" + uploadFolder.getName() + "/" + (String)stepsRunContext.get(STEPS_RUN_CONTEXT_FILENAME_KEY));
-		metaInfoFormController = new MetaInfoFormController(ureq, wControl, rootForm, uploadFile);
-		
-		VFSMetadata metaInfo = vfsRepositoryService.getMetadataFor(uploadFile);
-		metaInfoFormController.getMetaInfo(metaInfo, true);
-		listenTo(metaInfoFormController);
-		
-		filenameController = new MetadataAcceptFilenameController(ureq, wControl, rootForm, uploadFile);
-		listenTo(filenameController);
-		
+		this.rootForm = rootForm;
+		String filename = (String) stepsRunContext.get(STEPS_RUN_CONTEXT_FILENAME_KEY);
+
 		String page = Util.getPackageVelocityRoot(this.getClass()) + "/metainfos_step.html";
-		mainC = FormLayoutContainer.createCustomFormLayout("infoContainer", getTranslator(), page);
-		mainC.setRootForm(rootForm);
-		mainC.add("filename", filenameController.getFormItem());
-		mainC.add("metainfos", metaInfoFormController.getFormItem());
-		putInitialPanel(mainC.getComponent());
+		mainCont = FormLayoutContainer.createCustomFormLayout("infoContainer", getTranslator(), page);
+		mainCont.setRootForm(rootForm);
+
+		// if it is null, that means the upload process does not require an approval
+		// and the uploaded file will be added after this step is done
+		if (filename != null) {
+			LocalFileImpl uploadFile = createVfsLeaf(filename);
+			filenameController = new MetadataAcceptFilenameController(ureq, wControl, rootForm, uploadFile);
+			listenTo(filenameController);
+			mainCont.add("filename", filenameController.getFormItem());
+			initMetaInfoForm(ureq, uploadFile);
+		} else {
+			filenameController = new MetadataAcceptFilenameController(ureq, wControl, rootForm, null);
+			listenTo(filenameController);
+			mainCont.add("filename", filenameController.getFormItem());
+		}
+
+		putInitialPanel(mainCont.getComponent());
 	}
 	
 	@Override
@@ -105,16 +111,41 @@ public class MetadataAcceptStepController extends BasicController implements Ste
 	}
 
 	public FormItem getStepFormItem() {
-		return mainC;
+		return mainCont;
+	}
+
+	private void initMetaInfoForm(UserRequest ureq, LocalFileImpl uploadFile) {
+		metaInfoFormController = new MetaInfoFormController(ureq, getWindowControl(), rootForm, uploadFile);
+		metaInfoFormController.setMetaFieldsVisible(true);
+		VFSMetadata metaInfo = vfsRepositoryService.getMetadataFor(uploadFile);
+		metaInfo.setFileInitializedBy(getIdentity());
+		metaInfoFormController.getMetaInfo(metaInfo, true);
+
+		listenTo(metaInfoFormController);
+
+		mainCont.add("metainfos", metaInfoFormController.getFormItem());
+	}
+
+	private LocalFileImpl createVfsLeaf(String filename) {
+		VFSContainer uploadFolder = libraryManager.getUploadFolder();
+		return VFSManager.olatRootLeaf("/" + uploadFolder.getName() + "/" + filename);
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == metaInfoFormController || source == filenameController) {
+			String filename = filenameController.getNewFilename();
 			if (event == Event.DONE_EVENT) {
-				stepsRunContext.put(STEPS_RUN_CONTEXT_NEW_FILENAME_KEY, filenameController.getNewFilename());
+				stepsRunContext.put(STEPS_RUN_CONTEXT_NEW_FILENAME_KEY, filename);
 				stepsRunContext.put(STEPS_RUN_CONTEXT_METADATA_KEY, metaInfoFormController.getMetaInfo());
+				stepsRunContext.put(STEP_RUN_CONTEXT_FILE_UPLOAD_EL_KEY, filenameController.getFileUploadEl());
 				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+			} else if (event == Event.CHANGED_EVENT) {
+				// Changed happens after a file gets uploaded
+				stepsRunContext.put(STEPS_RUN_CONTEXT_FILENAME_KEY, filename);
+				// create vfs leaf, to pass for metaInfoForm, where it gets populated
+				LocalFileImpl uploadFile = createVfsLeaf(filename);
+				initMetaInfoForm(ureq, uploadFile);
 			}
 		}
 	}
