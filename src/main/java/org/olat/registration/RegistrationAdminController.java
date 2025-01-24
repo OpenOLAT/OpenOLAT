@@ -80,6 +80,7 @@ public class RegistrationAdminController extends FormBasicController {
 	private MultipleSelectionElement staticPropElement;
 	private MultipleSelectionElement emailValidationEl;
 	private MultipleSelectionElement allowRecurringUserEl;
+	private MultipleSelectionElement addDefaultOrgEl;
 	private SingleSelection propertyElement;
 	private SingleSelection pendingRegistrationStatusEl;
 	private TextElement pendingRegistrationNotificationEl;
@@ -386,6 +387,14 @@ public class RegistrationAdminController extends FormBasicController {
 				break;
 			}
 		}
+		organisationsEl.addActionListener(FormEvent.ONCHANGE);
+
+		addDefaultOrgEl = uifactory.addCheckboxesHorizontal("enable.add.default.org", "admin.enable.add.default.org", formLayout,
+				enableRegistrationKeys, new String[]{translate("admin.enable.add.default.org.label")});
+		// only show this option if the non-default org is selected
+		Long defaultOrgKey = organisationService.getDefaultOrganisation().getKey();
+		addDefaultOrgEl.setVisible(!organisationsEl.getSelectedKey().equals(String.valueOf(defaultOrgKey)));
+		addDefaultOrgEl.select("on", registrationModule.isAddDefaultOrgEnabled());
 	}
 
 	@Override
@@ -413,11 +422,14 @@ public class RegistrationAdminController extends FormBasicController {
 			openCourseBrowser(ureq);
 		} else if (source instanceof FormLink link) {
 			if (link.getCmd().equals("remove_course")) {
-				if (source.getUserObject() instanceof Long) {
-					registrationModule.removeCourseFromAutoEnrolment((Long) source.getUserObject());
+				if (source.getUserObject() instanceof Long courseKey) {
+					registrationModule.removeCourseFromAutoEnrolment(courseKey);
 					initForm(ureq);
 				}
 			}
+		} else if (source == organisationsEl) {
+			Long defaultOrgKey = organisationService.getDefaultOrganisation().getKey();
+			addDefaultOrgEl.setVisible(!organisationsEl.getSelectedKey().equals(String.valueOf(defaultOrgKey)));
 		}
 		
 		super.formInnerEvent(ureq, source, event);
@@ -471,6 +483,7 @@ public class RegistrationAdminController extends FormBasicController {
 		registrationLinkElement.setEnabled(enableMain);
 		registrationLoginElement.setEnabled(enableMain);
 		organisationsEl.setEnabled(enableMain && !orgEmailDomainEnabled);
+		addDefaultOrgEl.setEnabled(enableMain && !orgEmailDomainEnabled);
 		
 		boolean example = enableMain && registrationLinkElement.isSelected(0);
 		exampleElement.setVisible(example);
@@ -626,6 +639,9 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		if(organisationsEl.isOneSelected()) {
 			registrationModule.setSelfRegistrationOrganisationKey(organisationsEl.getSelectedKey());
+
+			// adding to default org value can be false, if default org is already selected
+			registrationModule.setAddDefaultOrgEnabled(addDefaultOrgEl.isVisible() && addDefaultOrgEl.isAtLeastSelected(1));
 		}
 		if(pendingRegistrationStatusEl.isOneSelected()) {
 			registrationModule.setRegistrationPendingStatus(RegistrationPendingStatus.valueOf(pendingRegistrationStatusEl.getSelectedKey()));

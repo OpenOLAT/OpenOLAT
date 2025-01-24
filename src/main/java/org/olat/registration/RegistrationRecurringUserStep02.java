@@ -52,7 +52,7 @@ public class RegistrationRecurringUserStep02 extends BasicStep {
 
 	private void updateNextStep(UserRequest ureq, boolean isRecurringUser) {
 		if (isRecurringUser) {
-			setNextStep(new RegistrationSupportFormStep03(ureq));
+			setNextStep(new RegistrationSupportFormStep03(ureq, false));
 		} else if (isEmailValidationEnabled) {
 			setNextStep(new RegistrationMailStep03(ureq, isAdditionalRegistrationFormEnabled));
 		} else {

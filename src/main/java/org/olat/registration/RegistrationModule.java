@@ -69,6 +69,7 @@ public class RegistrationModule extends AbstractSpringModule {
 	private static final String ACCOUNT_EXPIRATION = "registration.account.expiration";
 	private static final String AUTO_ENROLMENT_COURSES = "registration.auto.enrolment.courses";
 	private static final String RECURRING_USERS_ENABLED = "registration.recurring.users.enabled";
+	private static final String ADD_DEFAULT_ORG_ADDITIONALLY = "registration.add.default.org.enabled";
 	
 	@Value("${registration.enableSelfRegistration}")
 	private boolean selfRegistrationEnabled;
@@ -80,6 +81,8 @@ public class RegistrationModule extends AbstractSpringModule {
 	private boolean emailValidationEnabled;
 	@Value("${registration.recurring.user}")
 	private boolean allowRecurringUserEnabled;
+	@Value("${registration.add.default.org}")
+	private boolean addDefaultOrgEnabled;
 	@Value("${registration.valid.minutes.gui}")
 	private Integer validUntilMinutesGui;
 	@Value("${registration.valid.hours.rest}")
@@ -227,6 +230,15 @@ public class RegistrationModule extends AbstractSpringModule {
 	public void setAllowRecurringUserEnabled(boolean allowRecurringUserEnabled) {
 		this.allowRecurringUserEnabled = allowRecurringUserEnabled;
 		setStringProperty(RECURRING_USERS_ENABLED, Boolean.toString(allowRecurringUserEnabled), true);
+	}
+
+	public boolean isAddDefaultOrgEnabled() {
+		return addDefaultOrgEnabled;
+	}
+
+	public void setAddDefaultOrgEnabled(boolean addDefaultOrgEnabled) {
+		this.addDefaultOrgEnabled = addDefaultOrgEnabled;
+		setStringProperty(ADD_DEFAULT_ORG_ADDITIONALLY, Boolean.toString(addDefaultOrgEnabled), true);
 	}
 	
 	public void resetEmailUserProperty() {
@@ -527,6 +539,11 @@ public class RegistrationModule extends AbstractSpringModule {
 		String recurringUserObj = getStringPropertyValue(RECURRING_USERS_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(recurringUserObj)) {
 			allowRecurringUserEnabled = Boolean.parseBoolean(recurringUserObj);
+		}
+
+		String addDefaultOrgObj = getStringPropertyValue(ADD_DEFAULT_ORG_ADDITIONALLY, true);
+		if(StringHelper.containsNonWhitespace(addDefaultOrgObj)) {
+			addDefaultOrgEnabled = Boolean.parseBoolean(addDefaultOrgObj);
 		}
 
 		String enableNotificationEmailObj = getStringPropertyValue("registration.enableNotificationEmail", true);

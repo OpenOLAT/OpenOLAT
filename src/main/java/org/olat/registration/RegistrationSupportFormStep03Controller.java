@@ -37,17 +37,24 @@ import org.olat.core.util.WebappHelper;
 public class RegistrationSupportFormStep03Controller extends StepFormBasicController {
 
 	private final StepsRunContext runContext;
+	private final boolean isOrgMismatch;
 
-	public RegistrationSupportFormStep03Controller(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public RegistrationSupportFormStep03Controller(UserRequest ureq, WindowControl wControl, Form rootForm,
+												   StepsRunContext runContext, boolean isOrgMismatch) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.runContext = runContext;
+		this.isOrgMismatch = isOrgMismatch;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("step3.reg.support.form.title");
-		setFormInfo("step3.reg.support.form.text", new String[]{WebappHelper.getMailConfig("mailSupport")});
+		if (isOrgMismatch) {
+			setFormInfo("step3.reg.mismatch.form.text", new String[]{WebappHelper.getMailConfig("mailSupport")});
+		} else {
+			setFormInfo("step3.reg.support.form.text", new String[]{WebappHelper.getMailConfig("mailSupport")});
+		}
 	}
 
 	@Override

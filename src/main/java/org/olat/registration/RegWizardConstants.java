@@ -38,6 +38,7 @@ public class RegWizardConstants {
 	public static final String SELECTEDORGANIZATIONKEY = "selectedorganizationkey";
 	public static final String ADDITIONALPROPFORMITEMS = "additionalpropformitems";
 	public static final String RECURRINGDETAILS = "recurringdetails";
+	public static final String MAILDOMAINS = "maildomains";
 
 	/**
 	 * private constructor to hide the implicit public one

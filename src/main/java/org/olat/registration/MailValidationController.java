@@ -30,6 +30,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -90,6 +94,10 @@ public class MailValidationController extends FormBasicController {
 	private UserModule userModule;
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm,
 									boolean isRegistrationProcess, boolean isUserManager, StepsRunContext runContext) {
@@ -333,6 +341,30 @@ public class MailValidationController extends FormBasicController {
 		}
 
 		return allOk;
+	}
+
+	public boolean isDomainAllowed() {
+		String mailDomain = MailHelper.getMailDomain(getEmailAddress());
+		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+			OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+			// ensure to only get organisations with matching mailDomains
+			List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
+
+			// retrieve matching domains with the given email and additionally the wildcard domain, if available
+			List<OrganisationEmailDomain> matchedDomains = emailDomains.stream()
+					.filter(domain -> "*".equals(domain.getDomain()) || mailDomain.equalsIgnoreCase(domain.getDomain()))
+					.toList();
+			if (matchedDomains.isEmpty()) {
+				return false;
+			} else {
+				runContext.put(RegWizardConstants.MAILDOMAINS, matchedDomains);
+				return true;
+			}
+		} else if (!registrationModule.getDomainList().isEmpty()) {
+			return registrationModule.getDomainList().stream().anyMatch(domain -> domain.equals(mailDomain));
+		} else {
+			return true;
+		}
 	}
 
 	@Override

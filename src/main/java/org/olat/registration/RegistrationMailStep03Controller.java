@@ -38,11 +38,14 @@ public class RegistrationMailStep03Controller extends StepFormBasicController {
 
 
 	private final StepsRunContext runContext;
+	private final RegistrationStepsListener registrationStepsListener;
 	private final MailValidationController emailForm;
 
-	public RegistrationMailStep03Controller(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public RegistrationMailStep03Controller(UserRequest ureq, WindowControl wControl, Form rootForm,
+											StepsRunContext runContext, RegistrationStepsListener registrationStepsListener) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.runContext = runContext;
+		this.registrationStepsListener = registrationStepsListener;
 		this.emailForm = new MailValidationController(ureq, wControl, rootForm, true, false, runContext);
 
 		initForm(ureq);
@@ -70,8 +73,12 @@ public class RegistrationMailStep03Controller extends StepFormBasicController {
 
 	@Override
 	protected void formNext(UserRequest ureq) {
-		runContext.put(RegWizardConstants.EMAIL, emailForm.getEmailAddress());
-		runContext.put(RegWizardConstants.TEMPORARYKEY, emailForm.getTemporaryKey());
+		if (emailForm.isDomainAllowed()) {
+			runContext.put(RegWizardConstants.EMAIL, emailForm.getEmailAddress());
+			runContext.put(RegWizardConstants.TEMPORARYKEY, emailForm.getTemporaryKey());
+		}
+		registrationStepsListener.onStepsChanged(ureq, emailForm.isDomainAllowed());
+		fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 

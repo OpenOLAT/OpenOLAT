@@ -34,11 +34,23 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class RegistrationMailStep03 extends BasicStep {
 
+	private final boolean isAdditionalRegistrationFormEnabled;
+
 	public RegistrationMailStep03(UserRequest ureq, boolean isAdditionalRegistrationFormEnabled) {
 		super(ureq);
+		this.isAdditionalRegistrationFormEnabled = isAdditionalRegistrationFormEnabled;
 
 		setI18nTitleAndDescr("admin.enable.email.validation", "step1.reg.text");
-		setNextStep(new RegistrationPersonalDataStep04(ureq, null, isAdditionalRegistrationFormEnabled));
+		// assuming the domain is allowed, so initially the user gets shown personalData as next step
+		updateNextStep(ureq, true);
+	}
+
+	private void updateNextStep(UserRequest ureq, boolean isDomainAllowed) {
+		if (isDomainAllowed) {
+			setNextStep(new RegistrationPersonalDataStep04(ureq, null, isAdditionalRegistrationFormEnabled));
+		} else {
+			setNextStep(new RegistrationSupportFormStep03(ureq, true));
+		}
 	}
 
 	@Override
@@ -48,6 +60,6 @@ public class RegistrationMailStep03 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new RegistrationMailStep03Controller(ureq, wControl, form, runContext);
+		return new RegistrationMailStep03Controller(ureq, wControl, form, runContext, this::updateNextStep);
 	}
 }

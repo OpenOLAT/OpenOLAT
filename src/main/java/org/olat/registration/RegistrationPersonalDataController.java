@@ -35,10 +35,8 @@ import java.util.Map;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.OrganisationEmailDomain;
-import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -54,12 +52,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.mail.MailHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.SyntaxValidator;
@@ -85,7 +83,8 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private final String languageKey;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final Map<String,FormItem> propFormItems = new HashMap<>();
-	
+	private final StepsRunContext runContext;
+
 	private SingleSelection lang;
 	private SingleSelection organisationSelection;
 	private TextElement usernameEl;
@@ -117,12 +116,12 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private OLATAuthManager olatAuthManager;
 	@Autowired
 	private OrganisationModule organisationModule;
-	@Autowired
-	private OrganisationService organisationService;
 
-	public RegistrationPersonalDataController(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername,
-											  String firstName, String lastName, String email, boolean userInUse, boolean usernameReadonly, Form mainForm) {
+	public RegistrationPersonalDataController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, String languageKey,
+											  String proposedUsername, String firstName, String lastName,
+											  String email, boolean userInUse, boolean usernameReadonly, Form mainForm) {
 		super(ureq, wControl, "registration_personal_data", Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
+		this.runContext = runContext;
 		this.mainForm = mainForm;
 		flc.setRootForm(mainForm);
 		this.mainForm.addSubFormListener(this);
@@ -317,41 +316,35 @@ public class RegistrationPersonalDataController extends FormBasicController {
 		}
 
 		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
-			OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
-			// ensure to only get organisations with matching mailDomains
-			String mailDomain = MailHelper.getMailDomain(email);
-			List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
 
-			// retrieve matching domains with the given email and additionally the wildcard domain, if available
-			List<OrganisationEmailDomain> matchedDomains = emailDomains.stream()
-					.filter(domain -> "*".equals(domain.getDomain()) || mailDomain.equalsIgnoreCase(domain.getDomain()))
-					.toList();
+			// at this stage, matchedDomains can not be empty, see in MailValidationCtrl
+			@SuppressWarnings("unchecked")
+			List<OrganisationEmailDomain> matchedDomains = (List<OrganisationEmailDomain>) runContext.get(RegWizardConstants.MAILDOMAINS);
 
-			if (!matchedDomains.isEmpty()) {
-				// Extract orgKey as keys
-				matchedDomains = matchedDomains.stream().sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName())).toList();
-				String[] orgKeys = matchedDomains.stream()
-						.map(domain -> domain.getOrganisation().getKey().toString())
-						.toArray(String[]::new);
+			// Extract orgKey as keys
+			matchedDomains = matchedDomains.stream().sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName())).toList();
+			String[] orgKeys = matchedDomains.stream()
+					.map(domain -> domain.getOrganisation().getKey().toString())
+					.toArray(String[]::new);
 
-				// Extract concatenated displayName and Location as values
-				String[] orgValues = matchedDomains.stream()
-						.map(domain -> {
-							String displayName = domain.getOrganisation().getDisplayName();
-							String location = domain.getOrganisation().getLocation();
-							return StringHelper.containsNonWhitespace(location) ? displayName + " · " + location : displayName; // location can be null, ignore if it is empty/null
-						})
-						.toArray(String[]::new);
+			// Extract concatenated displayName and Location as values
+			String[] orgValues = matchedDomains.stream()
+					.map(domain -> {
+						String displayName = domain.getOrganisation().getDisplayName();
+						String location = domain.getOrganisation().getLocation();
+						return StringHelper.containsNonWhitespace(location) ? displayName + " · " + location : displayName; // location can be null, ignore if it is empty/null
+					})
+					.toArray(String[]::new);
 
-				organisationSelection = uifactory.addDropdownSingleselect("user.organisation", formLayout, orgKeys, orgValues, null);
-				if (matchedDomains.size() == 1) {
-					organisationSelection.select(orgKeys[0], true);
-					organisationSelection.setEnabled(false);
-				} else {
-					organisationSelection.enableNoneSelection(translate("user.organisation.select"));
-					organisationSelection.setMandatory(true);
-				}
+			organisationSelection = uifactory.addDropdownSingleselect("user.organisation", formLayout, orgKeys, orgValues, null);
+			if (matchedDomains.size() == 1) {
+				organisationSelection.select(orgKeys[0], true);
+				organisationSelection.setEnabled(false);
+			} else {
+				organisationSelection.enableNoneSelection(translate("user.organisation.select"));
+				organisationSelection.setMandatory(true);
 			}
+
 		}
 	}
 

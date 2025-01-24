@@ -36,8 +36,11 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 public class RegistrationSupportFormStep03 extends BasicStep {
 
 
-	public RegistrationSupportFormStep03(UserRequest ureq) {
+	private final boolean isOrgMismatch;
+
+	public RegistrationSupportFormStep03(UserRequest ureq, boolean isOrgMismatch) {
 		super(ureq);
+		this.isOrgMismatch = isOrgMismatch;
 
 		setI18nTitleAndDescr("step3.reg.support.form.title", "step3.reg.support.form.text");
 		setNextStep(Step.NOSTEP);
@@ -50,6 +53,6 @@ public class RegistrationSupportFormStep03 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext runContext, Form form) {
-		return new RegistrationSupportFormStep03Controller(ureq, windowControl, form, runContext);
+		return new RegistrationSupportFormStep03Controller(ureq, windowControl, form, runContext, isOrgMismatch);
 	}
 }

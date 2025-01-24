@@ -32,8 +32,8 @@ public interface RegistrationStepsListener {
 	/**
 	 * let the basic step know, that step sequence changed
 	 * @param ureq
-	 * @param isRecurringUser based on the user selection
+	 * @param isConditionFulfilled based on the user selection
 	 */
-	void onStepsChanged(UserRequest ureq, boolean isRecurringUser);
+	void onStepsChanged(UserRequest ureq, boolean isConditionFulfilled);
 
 }
