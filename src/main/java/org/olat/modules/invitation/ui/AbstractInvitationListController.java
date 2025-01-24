@@ -226,6 +226,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 	protected InvitationRow forgeRow(Invitation invitation, RepositoryEntry entry, BusinessGroup businessGroup, ProjProject projProject) {
 		FormLink urlLink = uifactory.addFormLink("url_" + (++counter), "url", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		urlLink.setIconLeftCSS("o_icon o_icon_link o_icon-fw");
+		urlLink.setTitle("invitation.url");
 		
 		FormLink toolsLink = null;
 		if(invitation.getStatus() == InvitationStatusEnum.inactive) {
