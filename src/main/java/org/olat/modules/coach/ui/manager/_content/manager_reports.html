@@ -1,0 +1,29 @@
+<style>
+	.o_coach_manager_report_templates, .o_coach_manager_generated_reports {
+		margin-top: 20px;
+		margin-bottom: 20px;
+	}
+</style>
+
+<div class="o_coach_manager_reports">
+	<h2><i class="o_icon o_icon_report"> </i> $r.translate("reporting")</h2>
+
+	#if($r.available("report.templates") && $r.visible("report.templates"))
+	<div class="o_coach_manager_report_templates">
+		<fieldset>
+			<legend>$r.translate("report.templates")</legend>
+			$r.render("report.templates")
+		</fieldset>
+	</div>
+	#end
+
+	#if($r.available("generated.reports") && $r.visible("generated.reports"))
+	<div class="o_coach_manager_generated_reports">
+		<fieldset>
+			<legend>$r.translate("generated.reports")</legend>
+			$r.render("generated.reports")
+		</fieldset>
+	</div>
+	#end
+
+</div>

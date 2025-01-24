@@ -61,7 +61,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.coach.model.CoachingSecurity;
-import org.olat.modules.coach.ui.em.EducationManagerReportsController;
+import org.olat.modules.coach.ui.manager.ManagerReportsController;
 import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.GradingSecurityCallback;
 import org.olat.modules.grading.GradingSecurityCallbackFactory;
@@ -105,7 +105,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private OrdersAdminController ordersAdminCtrl;
 	private LecturesCoachingController lecturesTeacherCtrl;
 	private LecturesCoachingController lecturesMasterCoachCtrl;
-	private EducationManagerReportsController reportsCtrl;
+	private ManagerReportsController reportsCtrl;
 
 	private Map<String, RelationRole> userRelationRolesMap;
 	private Map<String, OrganisationWithRole> lineOrgMap;
@@ -382,12 +382,12 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			selectedCtrl = ordersAdminCtrl;
 		} else if (userRelationRolesMap.keySet().contains(cmd)) {
 			selectMenuItem(ureq, userRelationRolesMap.get(cmd));
-		} else if ("reports".equalsIgnoreCase(cmd) && showEducationManagerView) {
+		} else if ("reports".equalsIgnoreCase(cmd) && (showEducationManagerView || showLineManagerView)) {
 			if (reportsCtrl == null) {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Reports", 0L);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				reportsCtrl = new EducationManagerReportsController(ureq, bwControl, content);
+				reportsCtrl = new ManagerReportsController(ureq, bwControl, content);
 				listenTo(reportsCtrl);
 			}
 			selectedCtrl = reportsCtrl;
@@ -570,7 +570,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			root.addChild(search);
 		}
 		
-		if (showEducationManagerView) {
+		if (showEducationManagerView || showLineManagerView) {
 			GenericTreeNode reports = new GenericTreeNode();
 			reports.setUserObject("Reports");
 			reports.setTitle(translate("reports.menu.title"));
