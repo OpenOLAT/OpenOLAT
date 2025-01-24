@@ -158,7 +158,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	 * Test free access to a group without waiting list
 	 */
 	@Test
-	public void testFreeAccesToBusinessGroup() {
+	public void freeAccesToBusinessGroup() {
 		//create a group with a free offer
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "Really free", BusinessGroup.BUSINESS_TYPE,
@@ -186,7 +186,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	 * Test free access to a group without waiting list and which is full
 	 */
 	@Test
-	public void testFreeAccesToBusinessGroup_full() {
+	public void freeAccesToBusinessGroup_full() {
 		//create a group with a free offer, fill 2 places on 2
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-" + UUID.randomUUID().toString());
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-" + UUID.randomUUID().toString());
@@ -221,7 +221,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	 * Test free access to a group with waiting list enough place
 	 */
 	@Test
-	public void testFreeAccesToBusinessGroupWithWaitingList_enoughPlace() {
+	public void freeAccesToBusinessGroupWithWaitingList_enoughPlace() {
 		//create a group with a free offer
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("agp-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Free group", "But you must wait", BusinessGroup.BUSINESS_TYPE,
@@ -251,7 +251,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	 * Test free access to a group with waiting list enough place
 	 */
 	@Test
-	public void testFreeAccesToBusinessGroupWithWaitingList_full() {
+	public void freeAccesToBusinessGroupWithWaitingList_full() {
 		//create a group with a free offer, fill 2 places on 2
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("agp-2");
@@ -288,7 +288,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	 * to a group while an administrator is filling the group,
 	 */
 	@Test
-	public void testPaiedAccesToBusinessGroupWithWaitingList_enoughPlaceButAdmin() {
+	public void paiedAccesToBusinessGroupWithWaitingList_enoughPlaceButAdmin() {
 		//enable paypal
 		boolean enabled = acModule.isPaypalEnabled();
 		if(!enabled) {
@@ -339,7 +339,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	}
 
 	@Test
-	public void testPaiedAccesToBusinessGroup_full() {
+	public void paiedAccesToBusinessGroup_full() {
 		//enable paypal
 		boolean enabled = acModule.isPaypalEnabled();
 		if(!enabled) {
@@ -380,7 +380,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	 * Check a special case which produced NPE
 	 */
 	@Test
-	public void testPaiedReservationAccessToBusinessGroupNoLimit() {
+	public void paiedReservationAccessToBusinessGroupNoLimit() {
 		//enable paypal
 		boolean enabled = acModule.isPaypalEnabled();
 		if(!enabled) {
@@ -407,7 +407,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testPaiedReservationAccessToCurriculumElement() {
+	public void paiedReservationAccessToCurriculumElement() {
 		//enable paypal
 		boolean enabled = acModule.isPaypalEnabled();
 		if(!enabled) {
@@ -441,7 +441,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testOrderAndCancelAccessToCurriculumElement() {
+	public void orderAndCancelAccessToCurriculumElement() {
 		//enable paypal
 		boolean enabled = acModule.isPaypalEnabled();
 		if(!enabled) {
@@ -540,7 +540,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testStandardMethods() {
+	public void getAvailableMethods() {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("ac-method-mgr");
 		
 		Roles roles = Roles.authorRoles();
