@@ -339,15 +339,15 @@ public class OffersController extends StepFormBasicController {
 			String cancellationFee = PriceFormat.fullFormat(infos.offer().getCancellingFee());
 			cancellationFeeEl.setValue(cancellationFee);
 			cancellationFeeEl.setVisible(StringHelper.containsNonWhitespace(cancellationFee));
-			
-			purchaseOrderNumberEl.setVisible(true);
-			commentEl.setVisible(true);
 		} else {
 			priceEl.setVisible(false);
 			cancellationFeeEl.setVisible(false);
-			purchaseOrderNumberEl.setVisible(false);
-			commentEl.setVisible(false);
 		}
+		
+		createBillingAdresseButton.setVisible(selected);
+		purchaseOrderNumberEl.setVisible(selected);
+		billingAdressEl.setVisible(selected);
+		commentEl.setVisible(selected);
 	}
 	
 	@Override

@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
@@ -80,7 +81,7 @@ public class EditCurriculumElementOptionsController extends FormBasicController 
 		boolean canEdit = secCallback.canEditCurriculumElement(element);
 		
 		String[] configValues = new String[] {
-				translate("option.adopt", element.getType().getDisplayName(), 
+				translate("option.adopt", StringHelper.escapeHtml(element.getType().getDisplayName()),
 						element.getType().getCalendars() == CurriculumCalendars.enabled? translate("on"): translate("off")),
 				translate("option.override")
 		};
@@ -98,7 +99,7 @@ public class EditCurriculumElementOptionsController extends FormBasicController 
 		calendarEl.toggle(element.getCalendars() == CurriculumCalendars.enabled || element.getCalendars() == CurriculumCalendars.inherited);
 		
 		configValues = new String[] {
-				translate("option.adopt", element.getType().getDisplayName(), 
+				translate("option.adopt", StringHelper.escapeHtml(element.getType().getDisplayName()),
 						element.getType().getLectures() == CurriculumLectures.enabled? translate("on"): translate("off")),
 				translate("option.override")
 		};
@@ -116,7 +117,7 @@ public class EditCurriculumElementOptionsController extends FormBasicController 
 		lectureEl.toggle(element.getLectures() == CurriculumLectures.enabled || element.getLectures() == CurriculumLectures.inherited);
 		
 		configValues = new String[] {
-				translate("option.adopt", element.getType().getDisplayName(), 
+				translate("option.adopt", StringHelper.escapeHtml(element.getType().getDisplayName()),
 						element.getType().getLearningProgress() == CurriculumLearningProgress.enabled? translate("on"): translate("off")),
 				translate("option.override")
 		};

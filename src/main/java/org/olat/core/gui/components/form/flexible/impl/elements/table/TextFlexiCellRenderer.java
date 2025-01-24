@@ -63,11 +63,10 @@ public class TextFlexiCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof Date) {
+		if (cellValue instanceof Date date) {
 			Formatter formatter = Formatter.getInstance(translator.getLocale());
-			target.append( formatter.formatDateAndTime((Date)cellValue) );
-		} else if(cellValue instanceof String) {
-			String str = (String)cellValue;
+			target.append( formatter.formatDateAndTime(date));
+		} else if(cellValue instanceof String str) {
 			if(escapeHtml != null) {
 				switch(escapeHtml) {
 					case antisamy:
@@ -83,8 +82,7 @@ public class TextFlexiCellRenderer implements FlexiCellRenderer {
 			} else {
 				StringHelper.escapeHtml(target, str);
 			}
-		} else if(cellValue instanceof Boolean) {
-			Boolean bool = (Boolean)cellValue;
+		} else if(cellValue instanceof Boolean bool) {
 			if(bool.booleanValue()) {
 				target.append("<input type='checkbox' value='' checked='checked' disabled='disabled' aria-label='").append(translator.translate("a11y.active")).append("' />");
 			} else {

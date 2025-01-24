@@ -336,8 +336,6 @@ public class RightsController extends StepFormBasicController {
 
 	@Override
 	protected void formNext(UserRequest ureq) {
-		
-		
 		boolean participant = roleToModify == CurriculumRoles.participant;
 		ConfirmationMembershipEnum confirmation = participant
 				? ConfirmationMembershipEnum.valueOf(confirmationTypeEl.getSelectedKey())

@@ -111,7 +111,12 @@ public class AddMembersController extends StepFormBasicController {
 			super.event(ureq, source, event);
 		}
 	}
-	
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		return true;
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(importTypeEl == source) {
