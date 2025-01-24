@@ -98,8 +98,9 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		} else {
 			loginComp.contextPut("wayfReturnUrl", config.getWayfReturnUrl());
 		}
+		loginComp.contextPut("wayfHideCategories", config.getWayfHideCategories());
+		loginComp.contextPut("wayfHideIDPs", config.getWayfHideIDPs());
 		loginComp.contextPut("additionalIDPs", config.getAdditionalIdentityProviders());
-		
 
 		// displays warning after logout
 		// logout=true is set by the AuthHelper.doLogout(..) as URL param

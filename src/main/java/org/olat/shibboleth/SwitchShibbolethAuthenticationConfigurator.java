@@ -24,6 +24,8 @@
 */
 package org.olat.shibboleth;
 
+import org.olat.core.util.StringHelper;
+
 public class SwitchShibbolethAuthenticationConfigurator {
 
 	private String wayfSPEntityID;
@@ -31,6 +33,8 @@ public class SwitchShibbolethAuthenticationConfigurator {
 	private String wayfSPSamlDSURL;
 	private String wayfReturnUrl;
 	private String wayfReturnMobileUrl;
+	private String wayfHideCategories;
+	private String wayfHideIDPs;
 	private String additionalIDPs;
 	
 	/**
@@ -64,6 +68,18 @@ public class SwitchShibbolethAuthenticationConfigurator {
 		return aString;
 	}
 
+	@SuppressWarnings("SameParameterValue")
+	private String wrapWithQuotes(String aString, String separator) {
+		if (!StringHelper.containsNonWhitespace(aString)) {
+			return aString;
+		}
+		String[] strings = aString.split(separator);
+		for (int i = 0; i < strings.length; i++) {
+			strings[i] = wrapWithQuotes(strings[i].trim());
+		}
+		return String.join("," , strings);
+	}
+
 	public String getWayfSPHandlerURL() {
 		return wrapWithQuotes(wayfSPHandlerURL);
 	}
@@ -94,6 +110,22 @@ public class SwitchShibbolethAuthenticationConfigurator {
 
 	public void setWayfReturnMobileUrl(String wayfReturnMobileUrl) {
 		this.wayfReturnMobileUrl = wayfReturnMobileUrl;
+	}
+
+	public String getWayfHideCategories() {
+		return wrapWithQuotes(wayfHideCategories, ",");
+	}
+
+	public void setWayfHideCategories(String wayfHideCategories) {
+		this.wayfHideCategories = wayfHideCategories;
+	}
+
+	public String getWayfHideIDPs() {
+		return wrapWithQuotes(wayfHideIDPs, ",");
+	}
+
+	public void setWayfHideIDPs(String wayfHideIDPs) {
+		this.wayfHideIDPs = wayfHideIDPs;
 	}
 
 	public void setAdditionalIdentityProviders(String additionalIDPs) {

@@ -112,6 +112,7 @@ wayf_show_categories =  true;
 // Possible values are: "university","uas","hospital","library","vho","others","all"
 // [Optional, default: none]
 //wayf_hide_categories =  new Array("university","uas","hospital","library","vho","others");
+wayf_hide_categories = new Array($wayfHideCategories);
 
 // EntityIDs of Identity Provider whose category is hidden but that shall be shown anyway
 // Examples: "urn:mace:switch.ch:SWITCHaai:ethz.ch", "https://aai-logon.switch.ch/idp/shibboleth"
@@ -124,7 +125,7 @@ wayf_unhide_idps = new Array();
 // EntityIDs of Identity Provider that shall not be shown at all
 // Examples: "urn:mace:switch.ch:SWITCHaai:ethz.ch", "https://aai-logon.switch.ch/idp/shibboleth"
 // [Optional, default: none]
-wayf_hide_idps = new Array();
+wayf_hide_idps = new Array($wayfHideIDPs);
 
 // Example of how to hide certain Identity Providers
 //wayf_hide_idps = new Array("https://aai.example.ch/idp/shibboleth", "urn:mace:switch.ch:aaitest:test-idp.org");
