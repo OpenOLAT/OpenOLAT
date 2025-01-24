@@ -48,6 +48,8 @@ public interface QuestionItemShort extends OLATResourceable, CreateInfo, Modifie
 	
 	public String getKeywords();
 	
+	public String getAdditionalInformations();
+	
 	//classification
 	public TaxonomyLevel getTaxonomyLevel();
 	

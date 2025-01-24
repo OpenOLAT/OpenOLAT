@@ -117,6 +117,7 @@ public class CreateTestOverviewController extends FormBasicController {
 		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.topic));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.additionalInformations));
 		if(withTaxonomy) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxonomyLevel));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.taxonomyPath));
@@ -136,6 +137,7 @@ public class CreateTestOverviewController extends FormBasicController {
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(Cols.title.sortKey(), true));
 		tableEl.setSortSettings(options);
+		tableEl.setAndLoadPersistedPreferences(ureq, "create-test-question-pool-v1");
 		
 		String[] groupByValues = new String[] { translate("group.by.taxonomy.level") };
 		groupByEl = uifactory.addCheckboxesHorizontal("group.by", null, formLayout, groupByKeys, groupByValues);
@@ -263,6 +265,10 @@ public class CreateTestOverviewController extends FormBasicController {
 			return question.getTopic();
 		}
 		
+		public String getAdditionalInformations() {
+			return question.getAdditionalInformations();
+		}
+		
 		public String getTaxonomyLevelName() {
 			return taxonomyLevelDisplayName;
 		}
@@ -334,6 +340,7 @@ public class CreateTestOverviewController extends FormBasicController {
 				case accept -> getAcceptStatus(questionRow);
 				case title -> questionRow.getTitle();
 				case topic -> questionRow.getTopic();
+				case additionalInformations -> questionRow.getAdditionalInformations();
 				case taxonomyLevel -> questionRow.getTaxonomyLevelName();
 				case taxonomyPath -> questionRow.getTaxonomyPath();
 				case format -> questionRow.getFormat();
@@ -404,6 +411,7 @@ public class CreateTestOverviewController extends FormBasicController {
 		accept("export.overview.accept"),
 		title("general.title"),
 		topic("general.topic"),
+		additionalInformations("general.additional.informations"),
 		taxonomyLevel("classification.taxonomy.level"),
 		taxonomyPath("classification.taxonomic.path"),
 		format("technical.format"),

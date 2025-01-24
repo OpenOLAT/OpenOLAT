@@ -491,8 +491,7 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof QItemMarkedEvent) {
-			QItemMarkedEvent qime = (QItemMarkedEvent)event;
+		if(event instanceof QItemMarkedEvent qime) {
 			ItemRow row = getRowByItemKey(qime.getKey());
 			if(row != null) {
 				row.setMark(qime.isMark());

@@ -55,7 +55,6 @@ public interface QuestionItemView extends QuestionItemShort {
 	//general
 	public String getCoverage();
 
-	public String getAdditionalInformations();
 	
 	//life cycle
 	public String getItemVersion();
