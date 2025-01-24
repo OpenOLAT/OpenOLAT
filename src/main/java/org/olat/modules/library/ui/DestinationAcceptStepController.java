@@ -149,31 +149,32 @@ public class DestinationAcceptStepController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		// formOk can just get called from "finish" button
-		// If the user hits finish button, that means approval is not needed in this wizard
-		try {
-			// get the source file name.
-			String relativeSourceFileName = (String) getFromRunContext(MetadataAcceptStepController.STEPS_RUN_CONTEXT_FILENAME_KEY);
+		// formOk is only relevant when approval is not needed in this wizard
+		if (!libraryModule.isApprovalEnabled()) {
+			try {
+				// get the source file name.
+				String relativeSourceFileName = (String) getFromRunContext(MetadataAcceptStepController.STEPS_RUN_CONTEXT_FILENAME_KEY);
 
-			// get the relative destination file name and the selection.
-			Set<String> selection = treeMultipleSelectionElement.getSelectedKeys();
+				// get the relative destination file name and the selection.
+				Set<String> selection = treeMultipleSelectionElement.getSelectedKeys();
 
-			// for all selected destination folders
-			processToDestinationFolders(selection, relativeSourceFileName);
+				// for all selected destination folders
+				processToDestinationFolders(selection, relativeSourceFileName);
 
-			// Send notification email
-			sendNotificationEmail(targetFile);
+				// Send notification email
+				sendNotificationEmail(targetFile);
 
-			// notify user
-			showInfo("library.uploadnotification.approval.success", relativeSourceFileName);
-			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-		} catch (Exception e) {
-			logError("Exception while reading source folder.", e);
-			showError("acceptstep.notification.ioexception");
-			fireEvent(ureq, Event.FAILED_EVENT);
+				// notify user
+				showInfo("library.uploadnotification.approval.success", relativeSourceFileName);
+				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+			} catch (Exception e) {
+				logError("Exception while reading source folder.", e);
+				showError("acceptstep.notification.ioexception");
+				fireEvent(ureq, Event.FAILED_EVENT);
+			}
+
+			fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 		}
-
-		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 
 	private void processToDestinationFolders(Set<String> selection, String relativeSourceFileName) {
