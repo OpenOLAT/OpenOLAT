@@ -34,11 +34,11 @@ public class OLATResourceAccess {
 		//
 	}
 	
-	public OLATResourceAccess(OLATResource resource, Price price, AccessMethod method) {
+	public OLATResourceAccess(OLATResource resource, Price price, AccessMethod method, boolean autoBooking) {
 		this.resource = resource;
 		
 		if(method != null) {
-			this.methods.add(new PriceMethodBundle(price, method));
+			this.methods.add(new PriceMethodBundle(price, method, autoBooking));
 		}
 	}
 
@@ -54,9 +54,9 @@ public class OLATResourceAccess {
 		return methods;
 	}
 	
-	public void addBundle(Price price, AccessMethod method) {
+	public void addBundle(Price price, AccessMethod method, boolean autoBooking) {
 		if(method != null) {
-			this.methods.add(new PriceMethodBundle(price, method));
+			this.methods.add(new PriceMethodBundle(price, method, autoBooking));
 		}
 	}
 }

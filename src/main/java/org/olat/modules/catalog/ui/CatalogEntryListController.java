@@ -387,21 +387,27 @@ public class CatalogEntryListController extends FormBasicController implements A
 		
 		if (catalogEntry.isPublicVisible()) {
 			
+			boolean autoBooking = true;
 			Set<String> accessMethodTypes = new HashSet<>(2);
 			List<PriceMethod> priceMethods = new ArrayList<>(2);
 			for (OLATResourceAccess resourceAccess : catalogEntry.getResourceAccess()) {
 				for (PriceMethodBundle bundle : resourceAccess.getMethods()) {
 					accessMethodTypes.add(bundle.getMethod().getType());
 					priceMethods.add(toPriceMethod(bundle));
+					if (!FreeAccessHandler.METHOD_TYPE.equals(bundle.getMethod().getType()) || !bundle.isAutoBooking()) {
+						autoBooking = false;
+					}
 				}
 			}
 			
 			if (catalogEntry.isOpenAccess()) {
 				priceMethods.add(new PriceMethod(null, "o_ac_openaccess_icon", translate("open.access.name")));
+				autoBooking = false;
 			}
 			
 			if (!accessMethodTypes.isEmpty()) {
 				row.setAccessMethodTypes(accessMethodTypes);
+				row.setAutoBooking(autoBooking);
 			}
 			
 			updateAccessInfo(row, catalogEntry);
@@ -531,7 +537,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			return;
 		}
 		
-		if (!searchParams.isGuestOnly() && !row.isMember() && row.isPublicVisible() && !row.isOpenAccess() && row.getAccessMethodTypes() != null && !row.getAccessMethodTypes().isEmpty()) {
+		if (!searchParams.isGuestOnly() && !row.isMember() && row.isPublicVisible() && !row.isOpenAccess() && !row.isAutoBooking()) {
 			cmd = "book";
 			label = "book";
 		}

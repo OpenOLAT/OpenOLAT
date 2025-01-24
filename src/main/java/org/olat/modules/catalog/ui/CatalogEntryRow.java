@@ -76,6 +76,7 @@ public class CatalogEntryRow {
 	private final boolean guestAccess;
 	private Set<String> accessMethodTypes;
 	private List<PriceMethod> accessPriceMethods;
+	private boolean autoBooking;
 	private String accessInfo;
 	private String accessWarning;
 	private String accessError;
@@ -249,6 +250,14 @@ public class CatalogEntryRow {
 
 	public void setAccessInfo(String accessInfo) {
 		this.accessInfo = accessInfo;
+	}
+
+	public boolean isAutoBooking() {
+		return autoBooking;
+	}
+
+	public void setAutoBooking(boolean autoBooking) {
+		this.autoBooking = autoBooking;
 	}
 
 	public String getAccessWarning() {

@@ -33,15 +33,25 @@ import org.olat.resource.accesscontrol.Price;
 public class PriceMethodBundle {
 	
 	private final Price price;
+	private final boolean autoBooking;
 	private final AccessMethod method;
 	
 	public PriceMethodBundle(Price price, AccessMethod method) {
+		this(price, method, false);
+	}
+	
+	public PriceMethodBundle(Price price, AccessMethod method, boolean autoBooking) {
 		this.price = price;
 		this.method = method;
+		this.autoBooking = autoBooking;
 	}
 
 	public Price getPrice() {
 		return price;
+	}
+
+	public boolean isAutoBooking() {
+		return autoBooking;
 	}
 
 	public AccessMethod getMethod() {

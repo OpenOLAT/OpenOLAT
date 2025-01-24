@@ -232,7 +232,7 @@ public class ACMethodDAO {
 		final int maxResourcesEntries = 250;//quicker to filter in java, numerous keys in "in" are slow
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select access.method, resource, offer.key, offer.price")
+		sb.append("select access.method, resource, offer.key, offer.price, offer.autoBooking")
 			.append(" from acofferaccess access, ")
 			.append(OLATResourceImpl.class.getName()).append(" resource")
 			.append(" inner join access.offer offer")
@@ -309,10 +309,11 @@ public class ACMethodDAO {
 			}
 			
 			Price price = (Price)rawResult[3];
+			boolean autoBooking = (boolean)rawResult[4];
 			if(rawResultsMap.containsKey(resource.getKey())) {
-				rawResultsMap.get(resource.getKey()).addBundle(price, method);
+				rawResultsMap.get(resource.getKey()).addBundle(price, method, autoBooking);
 			} else {
-				rawResultsMap.put(resource.getKey(), new OLATResourceAccess(resource, price, method));
+				rawResultsMap.put(resource.getKey(), new OLATResourceAccess(resource, price, method, autoBooking));
 			}
 		}
 		
