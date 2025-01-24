@@ -39,12 +39,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.manager.GroupMembershipHistoryDAO;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
@@ -167,6 +169,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private GroupMembershipHistoryDAO groupMembershipHistoryDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
@@ -826,7 +830,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
 			if(entry != null) {
 				if(!repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
-					repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
+					Group group = repositoryEntryRelationDao.getDefaultGroup(entry);
+					repositoryEntryRelationDao.addRole(identity, group, GroupRoles.participant.name());
+					groupMembershipHistoryDao.createMembershipHistory(group, identity,
+							GroupRoles.participant.name(), GroupMembershipStatus.active, null, null,
+							doer, null);
 					if(offer.isConfirmationEmail()) {
 						MailPackage mailing = new MailPackage(offer.isConfirmationEmail());
 						RepositoryMailing.sendEmail(doer, identity, entry, RepositoryMailing.Type.addParticipantItself, mailing);
@@ -862,6 +870,9 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			if(group != null) {
 				if(businessGroupService.hasRoles(identity, group, GroupRoles.participant.name())) {
 					businessGroupRelationDao.removeRole(identity, group, GroupRoles.participant.name());
+					groupMembershipHistoryDao.createMembershipHistory(group.getBaseGroup(), identity,
+							GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null,
+							doer, null);
 				}
 				return true;
 			}
@@ -876,7 +887,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			RepositoryEntryRef entry = repositoryEntryDao.loadByResource(resource);
 			if(entry != null) {
 				if(repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
+					Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(entry);
 					repositoryEntryRelationDao.removeRole(identity, entry, GroupRoles.participant.name());
+					groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
+							GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null,
+							doer, null);
 				}
 				return true;
 			}

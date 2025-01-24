@@ -455,19 +455,31 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			List<Identity> owners = businessGroupRelationDAO.getMembers(sourceBusinessGroup, GroupRoles.coach.name());
 			if(owners.isEmpty()) {
 				businessGroupRelationDAO.addRole(identity, newGroup, GroupRoles.coach.name());
+				groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), identity,
+						GroupRoles.coach.name(), GroupMembershipStatus.active, null, null,
+						doer, null);
 			} else {
 				for (Identity owner:owners) {
 					businessGroupRelationDAO.addRole(owner, newGroup, GroupRoles.coach.name());
+					groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), owner,
+							GroupRoles.coach.name(), GroupMembershipStatus.active, null, null,
+							doer, null);
 				}
 			}
 		} else {
 			businessGroupRelationDAO.addRole(identity, newGroup, GroupRoles.coach.name());
+			groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), identity,
+					GroupRoles.coach.name(), GroupMembershipStatus.active, null, null,
+					doer, null);
 		}
 		// 6. copy participants
 		if (copyParticipants) {
 			List<Identity> participants = businessGroupRelationDAO.getMembers(sourceBusinessGroup, GroupRoles.participant.name());
 			for(Identity participant:participants) {
 				businessGroupRelationDAO.addRole(participant, newGroup, GroupRoles.participant.name());
+				groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), participant,
+						GroupRoles.participant.name(), GroupMembershipStatus.active, null, null,
+						doer, null);
 			}
 		}
 		// 7. copy rights
@@ -487,6 +499,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			List<Identity> waitingIdentitiesList = getMembers(sourceBusinessGroup, GroupRoles.waiting.name());
 			for (Identity waiting:waitingIdentitiesList) {
 				businessGroupRelationDAO.addRole(waiting, newGroup, GroupRoles.waiting.name());
+				groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), waiting,
+						GroupRoles.waiting.name(), GroupMembershipStatus.reservation, null, null,
+						doer, null);
 			}
 		}
 		//9. copy relations
@@ -855,6 +870,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			List<BusinessGroupModifiedEvent.Deferred> events) {
 		
 		businessGroupRelationDAO.addRole(identityToAdd, group, GroupRoles.coach.name());
+		groupMembershipHistoryDao.createMembershipHistory(group.getBaseGroup(), identityToAdd,
+				GroupRoles.coach.name(), GroupMembershipStatus.active, null, null,
+				ureqIdentity, null);
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identityToAdd);
 		if(events != null) {
@@ -1251,6 +1269,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private void internalAddToWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group, MailPackage mailing,
 										  List<BusinessGroupModifiedEvent.Deferred> events) {
 		businessGroupRelationDAO.addRole(identity, group, GroupRoles.waiting.name());
+		groupMembershipHistoryDao.createMembershipHistory(group.getBaseGroup(), identity,
+				GroupRoles.participant.name(), GroupMembershipStatus.reservation, null, null,
+				ureqIdentity, null);
 
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identity);
