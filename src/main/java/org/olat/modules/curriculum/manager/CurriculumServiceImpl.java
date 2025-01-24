@@ -1545,7 +1545,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	
 	@Override
 	public CurriculumElement getImplementationOf(CurriculumElement curriculumElement) {
-		if(curriculumElement.getParent() == null) {
+		if(curriculumElement == null || curriculumElement.getParent() == null) {
 			return curriculumElement;
 		}
 		List<CurriculumElement> parentLine = getCurriculumElementParentLine(curriculumElement);

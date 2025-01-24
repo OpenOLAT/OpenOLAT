@@ -77,7 +77,7 @@ public class EditCurriculumElementController extends BasicController {
 	
 	@Autowired
 	private CurriculumService curriculumService;
-
+	
 	protected EditCurriculumElementController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
 			CurriculumElement parentElement, Curriculum curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);

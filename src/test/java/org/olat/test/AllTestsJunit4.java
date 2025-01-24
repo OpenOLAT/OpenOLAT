@@ -311,6 +311,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAOTest.class,
 	org.olat.modules.curriculum.manager.ReorderCurriculumElementComparatorTest.class,
 	org.olat.modules.curriculum.manager.CurriculumServiceTest.class,
+	org.olat.modules.curriculum.manager.CurriculumElementIdentifierGeneratorTest.class,
+	org.olat.modules.curriculum.manager.ParentBasedIdentifierGeneratorTest.class,
 	org.olat.modules.docpool.manager.DocumentPoolManagerTest.class,
 	org.olat.modules.forms.manager.EvaluationFormParticipationDAOTest.class,
 	org.olat.modules.forms.manager.EvaluationFormReportDAOTest.class,

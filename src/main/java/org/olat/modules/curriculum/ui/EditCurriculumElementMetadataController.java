@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -43,6 +44,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementIdentifierGenerator;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
@@ -63,6 +65,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 
@@ -101,6 +104,8 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private CatalogV2Module catalogModule;
+	@Autowired(required=false) @Qualifier("curriculumIdentifierGenerator")
+	private CurriculumElementIdentifierGenerator identifierGenerator;
 	
 	public EditCurriculumElementMetadataController(UserRequest ureq, WindowControl wControl,
 			CurriculumElement parentElement, CurriculumElementType preSelectedType, Curriculum curriculum,
@@ -186,7 +191,16 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		String identifier = element == null ? "" : element.getIdentifier();
 		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 64, identifier, formLayout);
 		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier) && canEdit);
+		identifierEl.setInlineValidationOn(true);
 		identifierEl.setMandatory(true);
+		if(element == null && identifierGenerator != null) {
+			CurriculumElement implementationElement = curriculumService.getImplementationOf(parentElement);
+			String val = identifierGenerator.generate(curriculum, implementationElement, parentElement);
+			if(StringHelper.containsNonWhitespace(val)) {
+				identifierEl.setValue(val);
+				validateIdentifier();
+			}
+		}
 		
 		// Element type
 		List<CurriculumElementType> types = getTypes();
@@ -275,6 +289,17 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		}
 		return types;
 	}
+	
+	@Override
+	protected boolean validateFormItem(UserRequest ureq, FormItem item) {
+		boolean ok = super.validateFormItem(ureq, item);
+		
+		if(item == identifierEl) {
+			validateIdentifier();
+		}
+		
+		return ok;
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -298,6 +323,30 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		}
 		
 		return allOk;
+	}
+	
+	/**
+	 * Only write a warning, no error
+	 */
+	private void validateIdentifier() {
+		identifierEl.clearWarning();
+		
+		if(StringHelper.containsNonWhitespace(identifierEl.getValue())) {
+			List<CurriculumElement> elements = curriculumService.searchCurriculumElements(null, identifierEl.getValue(), null);
+			if(element != null) {
+				elements.remove(element);
+			}
+			if(!elements.isEmpty()) {
+				identifierEl.setWarningKey("warning.identifier.in.use");
+			}
+		}
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(identifierEl != fiSrc) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
 	}
 
 	@Override
