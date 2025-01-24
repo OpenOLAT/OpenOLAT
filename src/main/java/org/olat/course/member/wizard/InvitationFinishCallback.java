@@ -237,9 +237,10 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 			return StepsMainRunController.DONE_UNCHANGED;
 		}
 		
+		Identity invitee = transientInvitation.getIdentity();
 		Invitation similarInvitation = invitationService.findSimilarInvitation(type, transientInvitation.getEmail(), roles, group);
 		if(similarInvitation == null) {
-			invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, ureq.getLocale(), ureq.getIdentity());
+			invitee = invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, ureq.getLocale(), ureq.getIdentity());
 		} else {
 			if(similarInvitation.getStatus() != InvitationStatusEnum.active) {
 				similarInvitation.setStatus(InvitationStatusEnum.active);
@@ -271,7 +272,7 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 		
 		MailerResult result = new MailerResult();
 		MailContext ctxt = new MailContextImpl(ores, null, wControl.getBusinessControl().getAsString());
-		MailBundle bundle = mailManager.makeMailBundle(ctxt, template, ureq.getIdentity(), transientInvitation.getIdentity(), null, result);
+		MailBundle bundle = mailManager.makeMailBundle(ctxt, template, ureq.getIdentity(), invitee, null, result);
 		bundle.setContactList(contactList);
 
 		result = mailManager.sendExternMessage(bundle, result, true);
