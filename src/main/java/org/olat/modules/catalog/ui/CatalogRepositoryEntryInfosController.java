@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.course.CorruptedCourseException;
 import org.olat.login.LoginProcessController;
@@ -59,7 +60,7 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 		if (scrollToOffers) {
 			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#offers"));
 		} else {
-			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#o_navbar_wrapper"));
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		}
 	}
 	

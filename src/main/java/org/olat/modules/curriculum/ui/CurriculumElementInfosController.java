@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
@@ -156,7 +157,7 @@ public class CurriculumElementInfosController extends BasicController implements
 		if (scrollToOffers) {
 			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#offers"));
 		} else {
-			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#o_navbar_wrapper"));
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		}
 	}
 	

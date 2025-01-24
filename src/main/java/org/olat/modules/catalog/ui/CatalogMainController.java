@@ -131,6 +131,7 @@ public class CatalogMainController extends BasicController implements Activateab
 			OLATResourceable ores = entries.get(0).getOLATResourceable();
 			if (CatalogBCFactory.isSearchType(ores)) {
 				headerSearchCtrl.setSearchString(null);
+				headerSearchCtrl.setExploreLinkVisibile(false);
 				doSearch(ureq, null, null);
 				entries = entries.subList(1, entries.size());
 				catalogRepositoryEntryListCtrl.activate(ureq, entries, state);
