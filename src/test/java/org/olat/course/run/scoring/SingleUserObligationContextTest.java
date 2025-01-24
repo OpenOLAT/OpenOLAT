@@ -113,12 +113,14 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 	
 	@Test
 	public void shouldBeOrganisationMember() {
-		Organisation organisation = organisationService.createOrganisation(random(), miniRandom(), random(), organisationService.getDefaultOrganisation(), null);
+		Organisation organisation = organisationService.createOrganisation(random(), miniRandom(), random(), organisationService.getDefaultOrganisation(),
+				null, JunitTestHelper.getDefaultActor());
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		organisationService.addMember(organisation, identity, OrganisationRoles.author);
-		Organisation organisationOther = organisationService.createOrganisation(random(), miniRandom(), random(), organisationService.getDefaultOrganisation(), null);
+		organisationService.addMember(organisation, identity, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		Organisation organisationOther = organisationService.createOrganisation(random(), miniRandom(), random(), organisationService.getDefaultOrganisation(),
+				null, JunitTestHelper.getDefaultActor());
 		Identity identityOther = JunitTestHelper.createAndPersistIdentityAsUser(random());
-		organisationService.addMember(organisationOther, identityOther, OrganisationRoles.author);
+		organisationService.addMember(organisationOther, identityOther, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		SingleUserObligationContext sutIdentity = new SingleUserObligationContext();

@@ -133,7 +133,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntries_exclude_organisation() {
 		TestCatalogItem catalogItem = createCatalogItem(true);
 		
-		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null, JunitTestHelper.getDefaultActor());
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
 		searchParams.setOfferOrganisations(List.of(organisation));
 		
@@ -312,7 +312,8 @@ public class CatalogQueriesTest extends OlatTestCase {
 	public void shouldLoadRepositoryEntriesOpenAccess_exclude_organisation() {
 		TestCatalogItem catalogItem = createOpenAccessCatalogItem();
 		
-		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
 		searchParams.setOfferOrganisations(List.of(organisation));
 		
@@ -571,7 +572,8 @@ public class CatalogQueriesTest extends OlatTestCase {
 	public void shouldLoadCurriculumElements_exclude_organisation() {
 		TestCatalogItem catalogItem = createCatalogItem(false);
 		
-		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(),
+				null, null, JunitTestHelper.getDefaultActor());
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
 		searchParams.setOfferOrganisations(List.of(organisation));
 		
@@ -801,7 +803,8 @@ public class CatalogQueriesTest extends OlatTestCase {
 	}
 	
 	private TestCatalogItem createCatalogItem(int number, boolean repositoryEntryResource) {
-		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		List<Organisation> offerOrganisations = List.of(organisation);
 		List<RepositoryEntry> repositoryEntries = new ArrayList<>(number);
 		List<CurriculumElement> curriculumElements = new ArrayList<>(number);
@@ -858,7 +861,8 @@ public class CatalogQueriesTest extends OlatTestCase {
 		offer.setOpenAccess(true);
 		offer.setCatalogPublish(true);
 		offer = acService.save(offer);
-		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		List<Organisation> offerOrganisations = List.of(organisation);
 		acService.updateOfferOrganisations(offer, offerOrganisations);
 		dbInstance.commitAndCloseSession();

@@ -1261,7 +1261,7 @@ public class CourseWebService {
 		boolean hasBeenAuthor = organisationService.hasRole(author, OrganisationRoles.author);
 		if(!hasBeenAuthor) {
 			//not an author already, add this identity to the security group "authors"
-			organisationService.addMember(author, OrganisationRoles.author);
+			organisationService.addMember(author, OrganisationRoles.author, identity);
 			log.info(Tracing.M_AUDIT, "User::{} added system role::{} to user::{} via addAuthor method in course REST API",
 					identity.getKey(), OrganisationRoles.author, author.getKey());
 		}
@@ -1294,7 +1294,7 @@ public class CourseWebService {
 			boolean hasBeenAuthor = organisationService.hasRole(author, OrganisationRoles.author);
 			if(!hasBeenAuthor) {
 				//not an author already, add this identity to the security group "authors"
-				organisationService.addMember(author, OrganisationRoles.author);
+				organisationService.addMember(author, OrganisationRoles.author, identity);
 				log.info(Tracing.M_AUDIT, "User::{} added system role::{} to user::{} via addAuthor method in course REST API",
 						identity.getKey(), OrganisationRoles.author, author.getKey());
 			}

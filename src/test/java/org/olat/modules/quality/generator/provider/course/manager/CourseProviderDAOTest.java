@@ -50,6 +50,7 @@ import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -120,7 +121,8 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByNotAlreadyGenerated() {
-		Organisation organisation = organisationService.createOrganisation("Org-32", "o1", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("Org-32", "o1", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		RepositoryEntry courseWithoutDataCollection = createEntry(null, null, organisation);
 		RepositoryEntry courseWithDataCollection = createEntry(null, null, organisation);
 		QualityGenerator generator = generatorService.createGenerator("Gen", singletonList(organisation));
@@ -141,10 +143,14 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByOrganisation() {
-		Organisation superOrganisation = organisationService.createOrganisation("Org-33", "o1", null, null, null);
-		Organisation organisation = organisationService.createOrganisation("Org-34", "o1", null, superOrganisation, null);
-		Organisation subOrganisation = organisationService.createOrganisation("Org-35", "o1s", null, organisation, null);
-		Organisation organisationOther = organisationService.createOrganisation("Org.36", "o2", null, null, null);
+		Organisation superOrganisation = organisationService.createOrganisation("Org-33", "o1", null, null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation = organisationService.createOrganisation("Org-34", "o1", null, superOrganisation,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation subOrganisation = organisationService.createOrganisation("Org-35", "o1s", null, organisation,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisationOther = organisationService.createOrganisation("Org.36", "o2", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		RepositoryEntry courseSuper = createEntry(null, null, superOrganisation);
 		RepositoryEntry course1 = createEntry(null, null, organisation);
 		RepositoryEntry course2 = createEntry(null, null, organisation);

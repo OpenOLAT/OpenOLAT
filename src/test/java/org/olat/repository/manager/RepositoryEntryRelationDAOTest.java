@@ -253,7 +253,8 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getRepoKeyToCountMembers() {
-		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		RepositoryEntry repositoryEntry1 = repositoryService.create(null, random(), random(), random(), null, null,
 				RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, organisation);
 		RepositoryEntry repositoryEntry2 = repositoryService.create(null, random(), random(), random(), null, null,
@@ -289,10 +290,14 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getRoleToCountMemebers() {
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
-		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), organisation2, null);
-		Organisation organisation4 = organisationService.createOrganisation(random(), null, random(), organisation2, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), organisation2,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation4 = organisationService.createOrganisation(random(), null, random(), organisation2,
+				null, JunitTestHelper.getDefaultActor());
 		RepositoryEntry repositoryEntry = repositoryService.create(null, random(), random(), random(), null, null,
 				RepositoryEntryStatusEnum.published, RepositoryEntryRuntimeType.embedded, organisation2);
 		repositoryService.addOrganisation(repositoryEntry, organisation4);
@@ -306,11 +311,11 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity author4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		repositoryEntryRelationDao.addRole(participant1, repositoryEntry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(participant2, repositoryEntry, GroupRoles.participant.name());
-		organisationService.addMember(organisation1, author1, OrganisationRoles.author);
-		organisationService.addMember(organisation2, author2, OrganisationRoles.author);
-		organisationService.addMember(organisation3, author3, OrganisationRoles.author);
-		organisationService.addMember(organisation1, author4, OrganisationRoles.author);
-		organisationService.addMember(organisation4, author4, OrganisationRoles.author);
+		organisationService.addMember(organisation1, author1, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation2, author2, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation3, author3, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation1, author4, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation4, author4, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		Map<String,Long> roleToCountMemebers = repositoryEntryRelationDao.getRoleToCountMemebers(repositoryEntry);
@@ -716,8 +721,10 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getOrganisations() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation1 = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation, null);
-		Organisation organisation2 = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation, null);
+		Organisation organisation1 = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation,
+				null, JunitTestHelper.getDefaultActor());
 		RepositoryEntry re1 = repositoryService.create(null, random(), "rel1", "rel1", null, null,
 				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, organisation1);
 		RepositoryEntry re2 = repositoryService.create(null, random(), "rel2", "rel2", null, null,
@@ -736,7 +743,8 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRepositoryEntries() {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation, null);
+		Organisation organisation = organisationService.createOrganisation("Repo-org-1", null, null, defOrganisation,
+				null, JunitTestHelper.getDefaultActor());
 		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
 				RepositoryEntryStatusEnum.trash, RepositoryEntryRuntimeType.embedded, organisation);
 		dbInstance.commitAndCloseSession();

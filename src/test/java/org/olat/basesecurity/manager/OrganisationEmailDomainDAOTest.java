@@ -75,7 +75,7 @@ public class OrganisationEmailDomainDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldDeleteByKey() {
-		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		OrganisationEmailDomain emailDomain1 = sut.create(organisation, random());
 		OrganisationEmailDomain emailDomain2 = sut.create(organisation, random());
 		OrganisationEmailDomain emailDomain3 = sut.create(organisation, random());
@@ -95,8 +95,8 @@ public class OrganisationEmailDomainDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldDeleteByOrganisation() {
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		OrganisationEmailDomain emailDomain11 = sut.create(organisation1, random());
 		OrganisationEmailDomain emailDomain12 = sut.create(organisation1, random());
 		OrganisationEmailDomain emailDomain21 = sut.create(organisation2, random());
@@ -116,9 +116,9 @@ public class OrganisationEmailDomainDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFiler_organisations() {
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null);
-		Organisation organisation3 = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		OrganisationEmailDomain emailDomain11 = sut.create(organisation1, random());
 		OrganisationEmailDomain emailDomain12 = sut.create(organisation1, random());
 		OrganisationEmailDomain emailDomain21 = sut.create(organisation2, random());
@@ -134,7 +134,7 @@ public class OrganisationEmailDomainDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFiler_domains() {
-		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		OrganisationEmailDomain emailDomain1 = sut.create(organisation, random());
 		OrganisationEmailDomain emailDomain2 = sut.create(organisation, random());
 		OrganisationEmailDomain emailDomain3 = sut.create(organisation, random());
@@ -152,7 +152,7 @@ public class OrganisationEmailDomainDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFiler_enabled() {
-		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		OrganisationEmailDomain emailDomain1 = sut.create(organisation, random());
 		OrganisationEmailDomain emailDomain2 = sut.create(organisation, random());
 		emailDomain2.setEnabled(false);
@@ -172,9 +172,9 @@ public class OrganisationEmailDomainDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldGetOrganisationIdentityEmails() {
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null);
-		Organisation organisation3 = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		// Regular users
 		createUser(organisation1, random(), "openolat.com");
 		createUser(organisation1, random(), "openolat.com");
@@ -183,8 +183,8 @@ public class OrganisationEmailDomainDAOTest extends OlatTestCase {
 		 createUser(organisation3, random(), "openolat.com");
 		// Not user role
 		Identity identityAuthor = createUser(organisation1, random(), "openolat.com");
-		organisationService.addMember(organisation1, identityAuthor, OrganisationRoles.administrator);
-		organisationService.removeMember(organisation1, identityAuthor, OrganisationRoles.user, true);
+		organisationService.addMember(organisation1, identityAuthor, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
+		organisationService.removeMember(organisation1, identityAuthor, OrganisationRoles.user, true, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		List<OrganisationIdentityEmail> organisationIdentityEmails = sut
@@ -196,7 +196,7 @@ public class OrganisationEmailDomainDAOTest extends OlatTestCase {
 	private Identity createUser(Organisation organisation, String login, String mailDomain) {
 		User user = userManager.createUser("orged" + login, "orged" + login, login + "@" + mailDomain);
 		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
-				null, null, null, null, null, organisation, null);
+				null, null, null, null, null, organisation, null, JunitTestHelper.getDefaultActor());
 	}
 
 

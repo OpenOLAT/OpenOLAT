@@ -1404,7 +1404,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dataCollectionIdentity = sut.updateDataCollection(dataCollectionIdentity);
 		
 		// Organisation
-		Organisation topicOrganisation = organisationService.createOrganisation("The lions cage", UUID.randomUUID().toString(), null, null, null);
+		Organisation topicOrganisation = organisationService.createOrganisation("The lions cage", UUID.randomUUID().toString(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		QualityDataCollection dataCollectionOrganisation = qualityTestHelper.createDataCollection(organisation);
 		dataCollectionOrganisation.setTopicOrganisation(topicOrganisation);
 		dataCollectionOrganisation = sut.updateDataCollection(dataCollectionOrganisation);

@@ -77,7 +77,8 @@ public class ProjActivityDAOTest extends OlatTestCase {
 		ProjProject project = createProject(creator);
 		ProjArtefact artefact1 = createArtefact(project, creator);
 		ProjArtefact artefact2 = createArtefact(project, creator);
-		Organisation organisation = organisationService.createOrganisation(random(), random(), random(), null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), random(), random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		Action action = Action.noteCreate;

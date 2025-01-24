@@ -955,12 +955,12 @@ public class ProfileFormController extends FormBasicController {
 
 		identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
 		// User changed his mail domain, thats why he is getting moved to a new matching org
-		organisationService.addMember(newOrg, identityToModify, OrganisationRoles.user);
+		organisationService.addMember(newOrg, identityToModify, OrganisationRoles.user, getIdentity());
 
 		// Remove the user from all old organisations
 		roles.getOrganisations().forEach(orgRef -> {
 			Organisation oldOrg = organisationService.getOrganisation(orgRef);
-			organisationService.removeMember(oldOrg, identityToModify);
+			organisationService.removeMember(oldOrg, identityToModify, getIdentity());
 		});
 
 		return true;

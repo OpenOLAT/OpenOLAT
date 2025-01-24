@@ -121,7 +121,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		if(initialized) return;
 
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation = organisationService.createOrganisation("Test repo query", "test-repo-query", null, defOrganisation, null);
+		Organisation organisation = organisationService.createOrganisation("Test repo query", "test-repo-query", null, defOrganisation,
+				null, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 		
 		admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("queryAdministrator");
@@ -150,10 +151,10 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 
 		dbInstance.commit();
 		
-		organisationService.addMember(organisation, learnResourceManager1, OrganisationRoles.learnresourcemanager);
-		organisationService.addMember(organisation, learnResourceManager2, OrganisationRoles.learnresourcemanager);
-		organisationService.addMember(organisation, user1, OrganisationRoles.user);
-		organisationService.addMember(organisation, user1, OrganisationRoles.user);
+		organisationService.addMember(organisation, learnResourceManager1, OrganisationRoles.learnresourcemanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, learnResourceManager2, OrganisationRoles.learnresourcemanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, user1, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, user1, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
 		// generate some repo entries
@@ -494,7 +495,7 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 		//promote id to institution resource manager
 		id.getUser().setProperty(UserConstants.INSTITUTIONALNAME, "openolat.org");
 		userManager.updateUserFromIdentity(id);
-		organisationService.addMember(id, OrganisationRoles.learnresourcemanager);
+		organisationService.addMember(id, OrganisationRoles.learnresourcemanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		//check
@@ -526,8 +527,10 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	public void searchViews_offer_bookable() {
 		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
-		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
 		
 		// Not bookable
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -560,8 +563,10 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	public void searchViews_offer_status() {
 		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
-		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
 		Date now = new Date();
 		Date inPast = DateUtils.addDays(now, -2);
 		Date inFuture = DateUtils.addDays(now, 2);
@@ -601,10 +606,14 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	public void searchViews_offer_organisation() {
 		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
-		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		
 		RepositoryEntry reOfferOrg1 = createReOffer(method, reOrgs, singletonList(organisation1), RepositoryEntryStatusEnum.published, null, null);
 		RepositoryEntry reOfferOrg2 = createReOffer(method, reOrgs, singletonList(organisation2), RepositoryEntryStatusEnum.published, null, null);
@@ -624,8 +633,10 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	public void searchViews_offer_period() {
 		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
-		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
 		Date now = new Date();
 		Date inPast = DateUtils.addDays(now, -2);
 		Date inFuture = DateUtils.addDays(now, 2);
@@ -656,8 +667,10 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	public void searchViews_offer_method() {
 		AccessMethod method = acService.getAvailableMethodsByType(FreeAccessMethod.class).get(0);
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
-		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
 		RepositoryEntry re = createReOffer(method, reOrgs, offerOrganisations, RepositoryEntryStatusEnum.published, null, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -704,7 +717,8 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	public void searchViews_openaccess() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
+		List<Organisation> offerOrganisations = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
 		dbInstance.commitAndCloseSession();
 		
 		// Open access enabled, repository entry public visible, status published
@@ -751,10 +765,14 @@ public class RepositoryEntryQueriesTest extends OlatTestCase {
 	@Test
 	public void searchViews_openaccess_organisations() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null, null));
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
-		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		List<Organisation> reOrgs = singletonList(organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor()));
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		
 		RepositoryEntry reOfferOrg1 = createReOpenAccess(reOrgs, singletonList(organisation1));
 		RepositoryEntry reOfferOrg2 = createReOpenAccess(reOrgs, singletonList(organisation2));

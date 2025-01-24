@@ -122,7 +122,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	public void initDefaultUnitTestOrganisation() {
 		if(defaultUnitTestOrganisation == null) {
 			defaultUnitTestOrganisation = organisationService
-					.createOrganisation("Org-lectures-unit-test", "Org-lectures-unit-test", "", null, null);
+					.createOrganisation("Org-lectures-unit-test", "Org-lectures-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
 			author = JunitTestHelper.createAndPersistIdentityAsRndUser("lecture_author", defaultUnitTestOrganisation, null);
 			defaultUnitTestAdministrator = JunitTestHelper
 					.createAndPersistRndAdmin("Cur-Elem-Web", defaultUnitTestOrganisation);

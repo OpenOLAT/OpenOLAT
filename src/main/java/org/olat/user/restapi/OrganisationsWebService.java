@@ -19,6 +19,8 @@
  */
 package org.olat.user.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -156,7 +158,8 @@ public class OrganisationsWebService {
 		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		Organisation savedOrganisation = saveOrganisation(organisation);
+		Identity doer = getIdentity(httpRequest);
+		Organisation savedOrganisation = saveOrganisation(organisation, doer);
 		return Response.ok(OrganisationVO.valueOf(savedOrganisation)).build();
 	}
 	
@@ -180,7 +183,8 @@ public class OrganisationsWebService {
 		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		Organisation savedOrganisation = saveOrganisation(organisation);
+		Identity doer = getIdentity(httpRequest);
+		Organisation savedOrganisation = saveOrganisation(organisation, doer);
 		return Response.ok(OrganisationVO.valueOf(savedOrganisation)).build();
 	}
 	
@@ -214,7 +218,8 @@ public class OrganisationsWebService {
 		if(organisationToDelete.equals(defOrganisation)) {
 			return Response.serverError().status(Status.CONFLICT).build();	
 		}
-		organisationService.deleteOrganisation(organisationToDelete, defOrganisation);
+		Identity doer = getIdentity(httpRequest);
+		organisationService.deleteOrganisation(organisationToDelete, defOrganisation, doer);
 		return Response.ok().build();
 	}
 	
@@ -331,12 +336,13 @@ public class OrganisationsWebService {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 
-		Organisation savedOrganisation = saveOrganisation(organisation);
+		Identity doer = getIdentity(httpRequest);
+		Organisation savedOrganisation = saveOrganisation(organisation, doer);
 		return Response.ok(OrganisationVO.valueOf(savedOrganisation)).build();
 	}
 	
 	
-	private Organisation saveOrganisation(OrganisationVO organisation) {
+	private Organisation saveOrganisation(OrganisationVO organisation, Identity doer) {
 		Organisation organisationToSave = null;
 		Organisation parentOrganisation = null;
 		if(organisation.getParentOrganisationKey() != null) {
@@ -349,7 +355,8 @@ public class OrganisationsWebService {
 		
 		boolean move = false;
 		if(organisation.getKey() == null) {
-			organisationToSave = organisationService.createOrganisation(organisation.getDisplayName(), organisation.getIdentifier(), organisation.getDescription(), parentOrganisation, type);
+			organisationToSave = organisationService.createOrganisation(organisation.getDisplayName(), organisation.getIdentifier(), organisation.getDescription(),
+					parentOrganisation, type, doer);
 		} else {
 			organisationToSave = organisationService.getOrganisation(new OrganisationRefImpl(organisation.getKey()));
 			organisationToSave.setDisplayName(organisation.getDisplayName());
@@ -372,7 +379,7 @@ public class OrganisationsWebService {
 		
 		Organisation savedOrganisation = organisationService.updateOrganisation(organisationToSave);
 		if(move) {
-			organisationService.moveOrganisation(savedOrganisation, parentOrganisation);
+			organisationService.moveOrganisation(savedOrganisation, parentOrganisation, doer);
 			dbInstance.commit();
 			savedOrganisation = organisationService.getOrganisation(savedOrganisation);
 		}
@@ -446,10 +453,10 @@ public class OrganisationsWebService {
 		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		return putMember(organisationKey, identityKey, getRoles(role), inheritanceMode);
+		return putMember(organisationKey, identityKey, getRoles(role), inheritanceMode, httpRequest);
 	}
 	
-	private Response putMember(Long organisationKey, Long identityKey, OrganisationRoles role, String inheritanceMode) {
+	private Response putMember(Long organisationKey, Long identityKey, OrganisationRoles role, String inheritanceMode, HttpServletRequest httpRequest) {
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		if(organisation == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -462,11 +469,12 @@ public class OrganisationsWebService {
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		
+
+		Identity doer = getIdentity(httpRequest);
 		if(GroupMembershipInheritance.isValueOf(inheritanceMode)) {
-			organisationService.addMember(organisation, identity, role, GroupMembershipInheritance.valueOf(inheritanceMode));
+			organisationService.addMember(organisation, identity, role, GroupMembershipInheritance.valueOf(inheritanceMode), doer);
 		} else {
-			organisationService.addMember(organisation, identity, role);
+			organisationService.addMember(organisation, identity, role, doer);
 		}
 		return Response.ok().build();
 	}
@@ -506,13 +514,14 @@ public class OrganisationsWebService {
 		}
 
 		int count = 0;
+		Identity doer = getIdentity(httpRequest);
 		for(UserVO member:members) {
 			Identity identity = securityManager.loadIdentityByKey(member.getKey());
 			if(identity != null) {
 				if(inheritance == null) {
-					organisationService.addMember(organisation, identity, getRoles(role));
+					organisationService.addMember(organisation, identity, getRoles(role), doer);
 				} else {
-					organisationService.addMember(organisation, identity, getRoles(role), inheritance);
+					organisationService.addMember(organisation, identity, getRoles(role), inheritance, doer);
 				}
 			}
 			if(++count % 25 == 0) {
@@ -540,10 +549,11 @@ public class OrganisationsWebService {
 		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		return deleteMember(organisationKey, identityKey, getRoles(role));
+		Identity doer = getIdentity(httpRequest);
+		return deleteMember(organisationKey, identityKey, getRoles(role), doer);
 	}
 	
-	private Response deleteMember(Long organisationKey, Long identityKey, OrganisationRoles role) {
+	private Response deleteMember(Long organisationKey, Long identityKey, OrganisationRoles role, Identity doer) {
 		Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		if(organisation == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -557,7 +567,7 @@ public class OrganisationsWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		organisationService.removeMember(organisation, identity, role, true);
+		organisationService.removeMember(organisation, identity, role, true, doer);
 		return Response.ok().build();
 	}
 	

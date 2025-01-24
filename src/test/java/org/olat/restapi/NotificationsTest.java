@@ -224,7 +224,7 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void getNotifications() throws IOException, URISyntaxException {
 		IdentityWithLogin userSubscriberId = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-1");
-		organisationService.addMember(userSubscriberId.getIdentity(), OrganisationRoles.usermanager);
+		organisationService.addMember(userSubscriberId.getIdentity(), OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		
 		SubscriptionContext subContext = usersSubscriptionManager.getNewUsersSubscriptionContext();
 		PublisherData publisherData = usersSubscriptionManager.getNewUsersPublisherData();
@@ -256,7 +256,7 @@ public class NotificationsTest extends OlatRestTestCase {
 	@Test
 	public void getUserNotifications() throws IOException, URISyntaxException {
 		IdentityWithLogin userSubscriberId = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-2");
-		organisationService.addMember(userSubscriberId.getIdentity(), OrganisationRoles.usermanager);
+		organisationService.addMember(userSubscriberId.getIdentity(), OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		
 		SubscriptionContext subContext = usersSubscriptionManager.getNewUsersSubscriptionContext();
 		PublisherData publisherData = usersSubscriptionManager.getNewUsersPublisherData();

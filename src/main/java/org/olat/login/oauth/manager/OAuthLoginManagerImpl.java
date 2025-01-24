@@ -181,6 +181,7 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationP
 		return true;
 	}
 	
+	@Override
 	public Identity createIdentity(OAuthUser oauthUser, String provider) {
 		String username = null;
 		if(StringHelper.containsNonWhitespace(oauthUser.getNickName())) {
@@ -215,7 +216,7 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationP
 			id = username;
 		}
 		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, username, null, newUser,
-				provider, BaseSecurity.DEFAULT_ISSUER, null, id, null, null, null);
+				provider, BaseSecurity.DEFAULT_ISSUER, null, id, null, null, null, null);
 	}
 
 	@Override

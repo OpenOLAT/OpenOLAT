@@ -514,8 +514,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	@Test
 	public void makeAccessible() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("acc");
-		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
-		organisationService.addMember(organisation, id, OrganisationRoles.user);
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, id, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		AccessMethod method = methods.get(0);
 
@@ -580,16 +581,20 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		assertThat(acService.getOfferOrganisations(offer)).isEmpty();
 		
 		// Add two organisations
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		acService.updateOfferOrganisations(offer, List.of(organisation1, organisation2));
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(acService.getOfferOrganisations(offer)).containsExactlyInAnyOrder(organisation1, organisation2);
 		
 		// Remove one organisation, add two new organisations
-		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation4 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation4 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		acService.updateOfferOrganisations(offer, List.of(organisation2, organisation3, organisation4));
 		dbInstance.commitAndCloseSession();
 		

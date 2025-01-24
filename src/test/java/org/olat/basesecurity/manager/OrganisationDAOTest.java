@@ -76,7 +76,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 	public void initDefaultUnitTestOrganisation() {
 		if(defaultUnitTestOrganisation == null) {
 			defaultUnitTestOrganisation = organisationService
-					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
 		}
 	}
 	
@@ -197,7 +197,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT EE", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member, OrganisationRoles.user);
+		organisationService.addMember(organisation, member, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		SearchMemberParameters params = new SearchMemberParameters();
@@ -215,7 +215,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT EI", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member, OrganisationRoles.user);
+		organisationService.addMember(organisation, member, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		// get users
@@ -236,8 +236,8 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Org 6", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member1, OrganisationRoles.groupmanager);
-		organisationService.addMember(organisation, member2, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation, member1, OrganisationRoles.groupmanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, member2, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> userManagers = organisationDao.getIdentities(identifier, OrganisationRoles.usermanager.name());
@@ -255,9 +255,9 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Org A", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, memberA1, OrganisationRoles.groupmanager);
-		organisationService.addMember(organisation, memberA2, OrganisationRoles.user);
-		organisationService.addMember(organisation, memberA3, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation, memberA1, OrganisationRoles.groupmanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, memberA2, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, memberA3, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		List<Long> memeberKeys = organisationDao.getMemberKeys(organisation, OrganisationRoles.groupmanager, OrganisationRoles.user);
@@ -275,10 +275,10 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Organisation organisation1 = organisationDao.createAndPersistOrganisation("Org 8", identifier, null, null, null);
 		Organisation organisation2 = organisationDao.createAndPersistOrganisation("Org 9", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation1, member1, OrganisationRoles.groupmanager);
-		organisationService.addMember(organisation1, member2, OrganisationRoles.usermanager);
-		organisationService.addMember(organisation2, member1, OrganisationRoles.usermanager);
-		organisationService.addMember(organisation2, member2, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation1, member1, OrganisationRoles.groupmanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation1, member2, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation2, member1, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation2, member2, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> userManagers = organisationDao.getIdentities(OrganisationRoles.usermanager.name());
@@ -306,11 +306,11 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Organisation organisation2 = organisationDao.createAndPersistOrganisation("Org 11", identifier, null, null, null);
 		Organisation organisation3 = organisationDao.createAndPersistOrganisation("Org 12", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation1, member, OrganisationRoles.user);
-		organisationService.addMember(organisation1, member, OrganisationRoles.usermanager);
-		organisationService.addMember(organisation2, member, OrganisationRoles.user);
-		organisationService.addMember(organisation3, member, OrganisationRoles.user);
-		organisationService.addMember(organisation3, member, OrganisationRoles.poolmanager);
+		organisationService.addMember(organisation1, member, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation1, member, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation2, member, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation3, member, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation3, member, OrganisationRoles.poolmanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		List<String> managerRoles = new ArrayList<>();
@@ -342,9 +342,9 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Organisation organisation1_1 = organisationDao.createAndPersistOrganisation("Org 11", identifier, null, organisation1, null);
 		Organisation organisation2 = organisationDao.createAndPersistOrganisation("Org 12", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation1, member1, OrganisationRoles.usermanager);
-		organisationService.addMember(organisation2, member1, OrganisationRoles.usermanager);
-		organisationService.addMember(organisation2, member2, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation1, member1, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation2, member1, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation2, member2, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
 		List<String> managerRoles = new ArrayList<>();
@@ -601,7 +601,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT E2E", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager);
+		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		boolean isPoolManager = organisationDao.hasRole(member, identifier, null, OrganisationRoles.poolmanager.name());
@@ -619,7 +619,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT E3E", identifier, null, null, null);
 		Organisation otherOrganisation = organisationDao.createAndPersistOrganisation("OpenOLAT other one", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager);
+		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		boolean isPoolManager = organisationDao.hasRole(member, null, organisation, OrganisationRoles.poolmanager.name());
@@ -636,7 +636,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT E4E", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager);
+		organisationService.addMember(organisation, member, OrganisationRoles.poolmanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		boolean isManager = organisationDao.hasRole(member, identifier, organisation,
@@ -661,7 +661,7 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Org. 8", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, member, OrganisationRoles.user);
+		organisationService.addMember(organisation, member, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		boolean hasNot = organisationDao.hasAnyRole(member, OrganisationRoles.user.name());
@@ -679,8 +679,8 @@ public class OrganisationDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		// remove def. organisation and make some noise
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		organisationService.removeMember(defOrganisation, notMember);
-		organisationService.addMember(organisation1, member, OrganisationRoles.user);
+		organisationService.removeMember(defOrganisation, notMember, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation1, member, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		// check
@@ -698,9 +698,9 @@ public class OrganisationDAOTest extends OlatTestCase {
 		String identifier = UUID.randomUUID().toString();
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Org 14", identifier, null, null, null);
 		dbInstance.commit();
-		organisationService.addMember(organisation, user, OrganisationRoles.user);
-		organisationService.addMember(organisation, author1, OrganisationRoles.author);
-		organisationService.addMember(organisation, author2, OrganisationRoles.author);
+		organisationService.addMember(organisation, user, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, author1, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, author2, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		// check

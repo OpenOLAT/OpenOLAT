@@ -359,7 +359,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-1");
 		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-org");
 		RepositoryEntry entry = createResourceWithLecturesEnabled();
-		organisationService.addMember(lectureManager, OrganisationRoles.lecturemanager);
+		organisationService.addMember(lectureManager, OrganisationRoles.lecturemanager, JunitTestHelper.getDefaultActor());
 		
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);
 		lectureBlock.setStartDate(new Date());
@@ -720,14 +720,15 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		String elementId = UUID.randomUUID().toString();
-		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture", "cur-lecture", null, null, null);
+		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture", "cur-lecture", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", false, curOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commit();
-		organisationService.addMember(curOrganisation, lectureManager, OrganisationRoles.lecturemanager);
+		organisationService.addMember(curOrganisation, lectureManager, OrganisationRoles.lecturemanager, JunitTestHelper.getDefaultActor());
 		curriculumService.addMember(element, participant1, CurriculumRoles.participant, lectureManager);
 		curriculumService.addMember(element, participant2, CurriculumRoles.participant, lectureManager);
 		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
@@ -1132,7 +1133,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		String elementId = UUID.randomUUID().toString();
-		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture-mc", "cur-lecture-mc", null, null, null);
+		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture-mc", "cur-lecture-mc", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-mc-3", "Curriculum with lectures 5", "Curriculum", false, curOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation with master coaches",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -1162,7 +1164,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		String elementId = UUID.randomUUID().toString();
-		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture-mc", "cur-lecture-mc", null, null, null);
+		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture-mc", "cur-lecture-mc", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-mc-1", "Curriculum with lectures 4", "Curriculum", false, curOrganisation);
 		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation with master coaches",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,

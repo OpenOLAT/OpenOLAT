@@ -122,7 +122,8 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@openolat.com");
 		Identity identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(name, name, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, name, "secret", null, null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, name, "secret", null, null,
+				JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);

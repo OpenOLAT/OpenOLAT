@@ -76,7 +76,7 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 	public void initDefaultUnitTestOrganisation() {
 		if(defaultUnitTestOrganisation == null) {
 			defaultUnitTestOrganisation = organisationService
-					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
 		}
 	}
 	

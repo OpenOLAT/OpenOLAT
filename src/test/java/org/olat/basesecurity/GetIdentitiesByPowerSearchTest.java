@@ -80,7 +80,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity deletedIdent = getOrCreateTestIdentity("delete-" + suffix);
 		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED, null);
 
-		organisationService.addMember(deletedIdent, OrganisationRoles.administrator);
+		organisationService.addMember(deletedIdent, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		// basic query to find all system users without restrictions
@@ -162,7 +162,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity deletedIdent = getOrCreateTestIdentity("delete-" + suffix);
 		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED, null);
 
-		organisationService.addMember(deletedIdent, OrganisationRoles.administrator);
+		organisationService.addMember(deletedIdent, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		//search institutional name with *zh2
@@ -256,9 +256,9 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		// add some stats
 		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV, null);
 		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV, null);
-		organisationService.addMember(ident, OrganisationRoles.administrator);
-		organisationService.addMember(ident, OrganisationRoles.author);
-		organisationService.addMember(ident2, OrganisationRoles.administrator);
+		organisationService.addMember(ident, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(ident, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(ident2, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		// security group search test
@@ -309,9 +309,9 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		// add some stats
 		ident = baseSecurityManager.saveIdentityStatus(ident, Identity.STATUS_ACTIV, null);
 		ident2 = baseSecurityManager.saveIdentityStatus(ident2, Identity.STATUS_ACTIV, null);
-		organisationService.addMember(ident, OrganisationRoles.administrator);
-		organisationService.addMember(ident, OrganisationRoles.author);
-		organisationService.addMember(ident2, OrganisationRoles.administrator);
+		organisationService.addMember(ident, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(ident, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(ident2, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		OrganisationRoles[] groups1 = { OrganisationRoles.administrator };

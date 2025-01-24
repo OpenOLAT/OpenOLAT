@@ -33,6 +33,7 @@ import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherToOrganisation;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.model.CatalogLauncherToOrganisationImpl;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,7 +58,7 @@ public class CatalogLauncherToOrganisationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateRelation() {
 		CatalogLauncher launcher = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
-		Organisation organisation = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		CatalogLauncherToOrganisation launcherToOrganisation = sut.createRelation(launcher, organisation);
@@ -73,8 +74,8 @@ public class CatalogLauncherToOrganisationDAOTest extends OlatTestCase {
 	public void shouldLoadRelationsByCatalogLauncherOrgOrganistion() {
 		CatalogLauncher launcher1 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
 		CatalogLauncher launcher2 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		CatalogLauncherToOrganisation launcherToOrganisation11 = sut.createRelation(launcher1, organisation1);
 		CatalogLauncherToOrganisation launcherToOrganisation12 = sut.createRelation(launcher1, organisation2);
 		sut.createRelation(launcher2, organisation2);
@@ -90,8 +91,8 @@ public class CatalogLauncherToOrganisationDAOTest extends OlatTestCase {
 		CatalogLauncher launcher1 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
 		CatalogLauncher launcher2 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
 		CatalogLauncher launcher3 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		CatalogLauncherToOrganisation launcherToOrganisation11 = sut.createRelation(launcher1, organisation1);
 		CatalogLauncherToOrganisation launcherToOrganisation12 = sut.createRelation(launcher1, organisation2);
 		CatalogLauncherToOrganisation launcherToOrganisation21 = sut.createRelation(launcher2, organisation1);
@@ -111,8 +112,8 @@ public class CatalogLauncherToOrganisationDAOTest extends OlatTestCase {
 	public void shouldLoadOrganisationsByCatalogLauncher() {
 		CatalogLauncher launcher1 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
 		CatalogLauncher launcher2 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		sut.createRelation(launcher1, organisation1);
 		sut.createRelation(launcher1, organisation2);
 		sut.createRelation(launcher2, organisation2);
@@ -126,8 +127,8 @@ public class CatalogLauncherToOrganisationDAOTest extends OlatTestCase {
 	public void shouldDeleteReleation() {
 		CatalogLauncher launcher1 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
 		CatalogLauncher launcher2 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		CatalogLauncherToOrganisation launcherToOrganisation11 = sut.createRelation(launcher1, organisation1);
 		CatalogLauncherToOrganisation launcherToOrganisation12 = sut.createRelation(launcher1, organisation2);
 		CatalogLauncherToOrganisation launcherToOrganisation21 = sut.createRelation(launcher2, organisation2);
@@ -144,8 +145,8 @@ public class CatalogLauncherToOrganisationDAOTest extends OlatTestCase {
 	public void shouldDeleteByCatalogLauncher() {
 		CatalogLauncher launcher1 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
 		CatalogLauncher launcher2 = catalogService.createCatalogLauncher(miniRandom(), miniRandom());
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		sut.createRelation(launcher1, organisation1);
 		sut.createRelation(launcher1, organisation2);
 		CatalogLauncherToOrganisation launcherToOrganisation21 = sut.createRelation(launcher2, organisation2);

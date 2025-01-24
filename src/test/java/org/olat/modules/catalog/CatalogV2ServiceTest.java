@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -115,16 +116,20 @@ public class CatalogV2ServiceTest extends OlatTestCase {
 		assertThat(sut.getCatalogLauncherOrganisations(launcher)).isEmpty();
 		
 		// Add two organisations
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		sut.updateLauncherOrganisations(launcher, List.of(organisation1, organisation2));
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(sut.getCatalogLauncherOrganisations(launcher)).containsExactlyInAnyOrder(organisation1, organisation2);
 		
 		// Remove one organisation, add two new organisations
-		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation4 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation4 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		sut.updateLauncherOrganisations(launcher, List.of(organisation2, organisation3, organisation4));
 		dbInstance.commitAndCloseSession();
 		
@@ -145,22 +150,25 @@ public class CatalogV2ServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// Add two organisations
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		sut.updateLauncherOrganisations(launcher, List.of(organisation1, organisation2));
 		dbInstance.commitAndCloseSession();
 		
 		// Replace one organisation
-		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), null, null);
-		organisationService.deleteOrganisation(organisation2, organisation3);
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		organisationService.deleteOrganisation(organisation2, organisation3, null);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(sut.getCatalogLauncherOrganisations(launcher)).containsExactlyInAnyOrder(organisation1, organisation3);
 		assertThat(sut.getCatalogLauncher(launcher).isEnabled()).isTrue();
 		
 		// Delete all organisations
-		organisationService.deleteOrganisation(organisation1, null);
-		organisationService.deleteOrganisation(organisation3, null);
+		organisationService.deleteOrganisation(organisation1, null, null);
+		organisationService.deleteOrganisation(organisation3, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(sut.getCatalogLauncherOrganisations(launcher)).isEmpty();

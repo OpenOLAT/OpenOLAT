@@ -92,7 +92,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getOrganisations()
 	throws IOException, URISyntaxException {
-		Organisation organisation = organisationService.createOrganisation("REST Organisation", "REST-organisation", "", null, null);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation", "REST-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -117,7 +117,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	public void getOrganisationsByExternalId()
 	throws IOException, URISyntaxException {
 		String externalId = UUID.randomUUID().toString();
-		Organisation organisation = organisationService.createOrganisation("REST Organisation-ext", "REST-organisation-ext", "", null, null);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation-ext", "REST-organisation-ext", "", null, null, JunitTestHelper.getDefaultActor());
 		organisation.setExternalId(externalId);
 		organisation = organisationService.updateOrganisation(organisation);
 		dbInstance.commitAndCloseSession();
@@ -140,7 +140,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getOrganisation()
 	throws IOException, URISyntaxException {
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 5", "REST-5-organisation", "", null, null);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 5", "REST-5-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -162,7 +162,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation", "REST-p-organisation", "", null, null);
+		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation", "REST-p-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
 		dbInstance.commitAndCloseSession();
 		
@@ -220,9 +220,9 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 2 ", "REST-p-2-organisation", "", null, null);
+		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 2 ", "REST-p-2-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 3", "REST-p-3-organisation", "", parentOrganisation, type);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 3", "REST-p-3-organisation", "", parentOrganisation, type, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		OrganisationVO vo = new OrganisationVO();
@@ -279,8 +279,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 6", "REST-p-6-organisation", "", null, null);
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 7", "REST-p-7-organisation", "", parentOrganisation, null);
+		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 6", "REST-p-6-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 7", "REST-p-7-organisation", "", parentOrganisation, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		OrganisationVO vo = OrganisationVO.valueOf(organisation);
@@ -323,10 +323,10 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 4 ", "REST-p-4-organisation", "", null, null);
+		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 4 ", "REST-p-4-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
-		Organisation organisation1 = organisationService.createOrganisation("REST Organisation 5", "REST-p-5-organisation", "", parentOrganisation, type);
-		Organisation organisation2 = organisationService.createOrganisation("REST Organisation 6", "REST-p-6-organisation", "", parentOrganisation, type);
+		Organisation organisation1 = organisationService.createOrganisation("REST Organisation 5", "REST-p-5-organisation", "", parentOrganisation, type, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation("REST Organisation 6", "REST-p-6-organisation", "", parentOrganisation, type, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		OrganisationVO vo = OrganisationVO.valueOf(organisation1);
@@ -360,20 +360,20 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", null, null);
+		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
-		Organisation organisation1 = organisationService.createOrganisation("REST Organisation 1", "REST-p-5-organisation", "", parentOrganisation, type);
-		Organisation organisation2 = organisationService.createOrganisation("REST Organisation 2", "REST-p-6-organisation", "", parentOrganisation, type);
+		Organisation organisation1 = organisationService.createOrganisation("REST Organisation 1", "REST-p-5-organisation", "", parentOrganisation, type, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation("REST Organisation 2", "REST-p-6-organisation", "", parentOrganisation, type, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
 		Identity userManagerOrg1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-mgr-1");
 		Identity userManagerOrg2 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-mgr-2");
 		Identity user1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-1");
 		Identity user2 = JunitTestHelper.createAndPersistIdentityAsRndUser("user2");
-		organisationService.addMember(organisation1, userManagerOrg1, OrganisationRoles.usermanager);
-		organisationService.addMember(organisation2, userManagerOrg2, OrganisationRoles.usermanager);
-		organisationService.addMember(organisation1, user1, OrganisationRoles.user);
-		organisationService.addMember(organisation2, user2, OrganisationRoles.user);
+		organisationService.addMember(organisation1, userManagerOrg1, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation2, userManagerOrg2, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation1, user1, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation2, user2, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		OrganisationVO organisationVo2 = OrganisationVO.valueOf(organisation2);
@@ -443,8 +443,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		Organisation rootOrganisation = organisationService.createOrganisation("ROOT Organisation 10", "REST-p-10-organisation", "", null, null);
-		Organisation rootOrganisation2 = organisationService.createOrganisation("REST Organisation 10.1", "REST-p-10-1-organisation", "", null, null);
+		Organisation rootOrganisation = organisationService.createOrganisation("ROOT Organisation 10", "REST-p-10-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		Organisation rootOrganisation2 = organisationService.createOrganisation("REST Organisation 10.1", "REST-p-10-1-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		OrganisationVO vo = OrganisationVO.valueOf(rootOrganisation2);
@@ -476,8 +476,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	public void deleteOrganisation()
 	throws IOException, URISyntaxException {
 		IdentityWithLogin admin = JunitTestHelper.createAndPersistRndUser("org-del-admin");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 51", "REST-51-organisation", "", null, null);
-		organisationService.addMember(organisation, admin.getIdentity(), OrganisationRoles.administrator);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 51", "REST-51-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, admin.getIdentity(), OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -516,7 +516,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void deleteOrganisationForbidden()
 	throws IOException, URISyntaxException {
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 53", "REST-53-organisation", "", null, null);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 53", "REST-53-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		RestConnection conn = new RestConnection();
@@ -539,8 +539,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-11");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 5", "REST-p-5-organisation", "", null, null);
-		organisationService.addMember(organisation, member, OrganisationRoles.user);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 5", "REST-p-5-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, member, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
@@ -562,7 +562,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-12");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 6", "REST-p-6-organisation", "", null, null);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 6", "REST-p-6-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
@@ -587,7 +587,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		
 		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-14");
 		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-15");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 7", "REST-p-7-organisation", "", null, null);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 7", "REST-p-7-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 		
 		
@@ -616,8 +616,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-13");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 7", "REST-p-7-organisation", "", null, null);
-		organisationService.addMember(organisation, member, OrganisationRoles.administrator);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 7", "REST-p-7-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, member, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
@@ -638,8 +638,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-13");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 8", "REST-p-8-organisation", "", null, null);
-		organisationService.addMember(organisation, member, OrganisationRoles.administrator);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 8", "REST-p-8-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, member, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(member);
 		repositoryService.addOrganisation(course, organisation);
@@ -665,8 +665,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-14");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 9", "REST-p-9-organisation", "", null, null);
-		organisationService.addMember(organisation, member, OrganisationRoles.author);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 9", "REST-p-9-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, member, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
@@ -695,11 +695,11 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-16");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 14", "REST-p-14-organisation", "", null, null);
-		Organisation subOrganisation = organisationService.createOrganisation("REST Organisation 14b", "REST-p-14-b-organisation", "", organisation, null);
-		Organisation otherOrganisation = organisationService.createOrganisation("REST Organisation 15", "REST-p-16-organisation", "", null, null);
-		organisationService.addMember(organisation, member, OrganisationRoles.rolesmanager);
-		organisationService.addMember(otherOrganisation, member, OrganisationRoles.rolesmanager);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 14", "REST-p-14-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		Organisation subOrganisation = organisationService.createOrganisation("REST Organisation 14b", "REST-p-14-b-organisation", "", organisation, null, JunitTestHelper.getDefaultActor());
+		Organisation otherOrganisation = organisationService.createOrganisation("REST Organisation 15", "REST-p-16-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, member, OrganisationRoles.rolesmanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(otherOrganisation, member, OrganisationRoles.rolesmanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
@@ -722,11 +722,11 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-17");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 16", "REST-p-16-organisation", "", null, null);
-		Organisation subOrganisation = organisationService.createOrganisation("REST Organisation 16b", "REST-p-16-b-organisation", "", organisation, null);
-		Organisation otherOrganisation = organisationService.createOrganisation("REST Organisation 17", "REST-p-17-organisation", "", null, null);
-		organisationService.addMember(organisation, member, OrganisationRoles.usermanager);
-		organisationService.addMember(otherOrganisation, member, OrganisationRoles.usermanager);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 16", "REST-p-16-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		Organisation subOrganisation = organisationService.createOrganisation("REST Organisation 16b", "REST-p-16-b-organisation", "", organisation, null, JunitTestHelper.getDefaultActor());
+		Organisation otherOrganisation = organisationService.createOrganisation("REST Organisation 17", "REST-p-17-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, member, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(otherOrganisation, member, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();
@@ -749,11 +749,11 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-15");
-		Organisation organisation = organisationService.createOrganisation("REST Organisation 10", "REST-p-10-organisation", "", null, null);
-		Organisation subOrganisation = organisationService.createOrganisation("REST Organisation 11", "REST-p-11-organisation", "", organisation, null);
-		Organisation otherOrganisation = organisationService.createOrganisation("REST Organisation 12", "REST-p-12-organisation", "", null, null);
-		organisationService.addMember(organisation, member, OrganisationRoles.usermanager);
-		organisationService.addMember(otherOrganisation, member, OrganisationRoles.usermanager);
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 10", "REST-p-10-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		Organisation subOrganisation = organisationService.createOrganisation("REST Organisation 11", "REST-p-11-organisation", "", organisation, null, JunitTestHelper.getDefaultActor());
+		Organisation otherOrganisation = organisationService.createOrganisation("REST Organisation 12", "REST-p-12-organisation", "", null, null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, member, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(otherOrganisation, member, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 
 		RestConnection conn = new RestConnection();

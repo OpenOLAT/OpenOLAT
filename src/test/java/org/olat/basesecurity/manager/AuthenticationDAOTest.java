@@ -171,7 +171,7 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(auth1);
 		Assert.assertNotNull(auth2);
 		
-		organisationService.removeMember(identWithoutOrg, OrganisationRoles.user);
+		organisationService.removeMember(identWithoutOrg, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> identities = authenticationDao.getIdentitiesWithAuthenticationWithoutOrgnisation("SPECAUTH");

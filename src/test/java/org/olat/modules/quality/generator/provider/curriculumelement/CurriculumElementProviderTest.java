@@ -364,7 +364,8 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 	}
 
 	private Organisation createOrganisation(Organisation parent) {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), random(), parent, null);
+		Organisation organisation = organisationService.createOrganisation(random(), random(), random(), parent,
+				null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		return organisation;
 	}

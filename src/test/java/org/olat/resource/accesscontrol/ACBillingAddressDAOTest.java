@@ -67,7 +67,7 @@ public class ACBillingAddressDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldDeleteByKey() {
-		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		BillingAddress billingaAddress1 = sut.create(organisation, null);
 		BillingAddress billingaAddress2 = sut.create(organisation, null);
 		BillingAddress billingaAddress3 = sut.create(organisation, null);
@@ -100,9 +100,9 @@ public class ACBillingAddressDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFiler_organisations() {
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null);
-		Organisation organisation3 = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		BillingAddress billingaAddress11 = sut.create(organisation1, null);
 		BillingAddress billingaAddress12 = sut.create(organisation1, null);
 		BillingAddress billingaAddress21 = sut.create(organisation2, null);
@@ -135,7 +135,7 @@ public class ACBillingAddressDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFiler_enabled() {
-		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		BillingAddress billingaAddress1 = sut.create(organisation, null);
 		BillingAddress billingaAddress2 = sut.create(organisation, null);
 		billingaAddress2.setEnabled(false);

@@ -218,12 +218,12 @@ public class MoveOrganisationController extends FormBasicController {
 			TreeNode selectedNode = organisationTreeEl.getSelectedNode();
 			if(selectedNode == organisationModel.getRootNode()) {
 				for(Organisation organisationToMove:organisationsToMove) {
-					organisationService.moveOrganisation(organisationToMove, null);
+					organisationService.moveOrganisation(organisationToMove, null, getIdentity());
 				}
 			} else {
 				Organisation newParent = (Organisation)selectedNode.getUserObject();
 				for(Organisation organisationToMove:organisationsToMove) {
-					organisationService.moveOrganisation(organisationToMove, newParent);
+					organisationService.moveOrganisation(organisationToMove, newParent, getIdentity());
 				}
 			}
 		}

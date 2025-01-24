@@ -152,29 +152,29 @@ public class SetupModule extends AbstractSpringModule {
 			if (identity == null) {
 				throw new OLATRuntimeException(this.getClass(), "Error, could not create  user and subject with name " + user.getUserName(), null);
 			} else if (user.isGuest()) {
-				organisationService.addMember(identity, OrganisationRoles.guest);
+				organisationService.addMember(identity, OrganisationRoles.guest, null);
 				log .info("Created anonymous user {}", user.getUserName());
 			} else {
-				organisationService.addMember(identity, OrganisationRoles.user);
+				organisationService.addMember(identity, OrganisationRoles.user, null);
 				log .info("Created user {}", user.getUserName());
 				if (user.isAdmin()) {
-					organisationService.addMember(identity, OrganisationRoles.administrator);
+					organisationService.addMember(identity, OrganisationRoles.administrator, null);
 					log .info("Created administrator user {}", user.getUserName());
 				}
 				if (user.isSysAdmin()) {
-					organisationService.addMember(identity, OrganisationRoles.sysadmin);
+					organisationService.addMember(identity, OrganisationRoles.sysadmin, null);
 					log .info("Created admin user {}", user.getUserName());
 				}
 				if (user.isAuthor()) {
-					organisationService.addMember(identity, OrganisationRoles.author);
+					organisationService.addMember(identity, OrganisationRoles.author, null);
 					log.info("Created author user {}", user.getUserName());
 				}
 				if (user.isUserManager()) {
-					organisationService.addMember(identity, OrganisationRoles.usermanager);
+					organisationService.addMember(identity, OrganisationRoles.usermanager, null);
 					log .info("Created userManager user {}", user.getUserName());
 				}
 				if (user.isGroupManager()) {
-					organisationService.addMember(identity, OrganisationRoles.groupmanager);
+					organisationService.addMember(identity, OrganisationRoles.groupmanager, null);
 					log .info("Created groupManager user {}", user.getUserName());
 				}
 			}

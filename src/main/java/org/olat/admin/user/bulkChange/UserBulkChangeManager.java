@@ -296,13 +296,13 @@ public class UserBulkChangeManager implements InitializingBean {
 					}
 					
 					if(allowed) {
-						organisationService.removeMember(organisation, identity, organisationRole, false);
+						organisationService.removeMember(organisation, identity, organisationRole, false, actingIdentity);
 						log.info(Tracing.M_AUDIT, "User::{} removed system role::{} from user:: {}", actingIdentity.getKey(), organisationRole, identity);
 					}
 				}
 				// user not yet in security group, add him
 				if (!isInGroup && thisRoleAction.equals("add")) {
-					organisationService.addMember(organisation, identity, organisationRole);
+					organisationService.addMember(organisation, identity, organisationRole, actingIdentity);
 					log.info(Tracing.M_AUDIT, "User::{} added system role::{} to user::{}", actingIdentity.getKey(), organisationRole, identity);
 				}
 			}

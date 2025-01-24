@@ -216,7 +216,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//promote owner1 to institution resource manager
-		organisationService.addMember(owner1, OrganisationRoles.learnresourcemanager);
+		organisationService.addMember(owner1, OrganisationRoles.learnresourcemanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		//check

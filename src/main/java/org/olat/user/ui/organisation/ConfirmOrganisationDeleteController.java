@@ -156,6 +156,6 @@ public class ConfirmOrganisationDeleteController extends FormBasicController {
 			String selectedKey = organisationAltEl.getSelectedKey();
 			organisationAlt = new OrganisationRefImpl(Long.valueOf(selectedKey));
 		}
-		organisationService.deleteOrganisation(organisationRow, organisationAlt);
+		organisationService.deleteOrganisation(organisationRow, organisationAlt, getIdentity());
 	}
 }

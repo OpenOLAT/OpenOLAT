@@ -255,7 +255,8 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByEducationalTypeExclusion() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum("Curriculum", "Curriculum", null, false, organisation);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element", "Element",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -355,7 +356,8 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByExcludeForTopicIdentity() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(course1, organisation);
@@ -399,7 +401,8 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByExcludeForTopicRepository() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(course1, organisation);
@@ -443,9 +446,12 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByOrganisation() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation superOrganisation = organisationService.createOrganisation("org", "Org", null, null, null);
-		Organisation organisation = organisationService.createOrganisation("org", "Org", null, superOrganisation, null);
-		Organisation subOrganisation = organisationService.createOrganisation("org", "Org", null, organisation, null);
+		Organisation superOrganisation = organisationService.createOrganisation("org", "Org", null, null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, superOrganisation,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation subOrganisation = organisationService.createOrganisation("org", "Org", null, organisation,
+				null, JunitTestHelper.getDefaultActor());
 		RepositoryEntry courseSuperOrg = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(courseSuperOrg, superOrganisation);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();

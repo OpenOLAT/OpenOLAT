@@ -115,13 +115,13 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
 		
 		Organisation curriculumOrganisation1 = organisationService.createOrganisation("Org-10", UUID.randomUUID().toString(),
-				"", null, null);
+				"", null, null, JunitTestHelper.getDefaultActor());
 		Organisation curriculumOrganisation2Parent = organisationService.createOrganisation("Org-11",
-				UUID.randomUUID().toString(), "", null, null);
+				UUID.randomUUID().toString(), "", null, null, JunitTestHelper.getDefaultActor());
 		Organisation curriculumOrganisation2 = organisationService.createOrganisation("Org-12", UUID.randomUUID().toString(),
-				"", curriculumOrganisation2Parent, null);
+				"", curriculumOrganisation2Parent, null, JunitTestHelper.getDefaultActor());
 		Organisation curriculumOrganisation3 = organisationService.createOrganisation("Org-13", UUID.randomUUID().toString(),
-				"", null, null);
+				"", null, null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 1", "", false,
 				curriculumOrganisation1);
 		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 2", "", false,
@@ -217,13 +217,13 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
 
 		Organisation curriculumOrganisation1 = organisationService.createOrganisation("Org-1", UUID.randomUUID().toString(), "", null,
-				null);
+				null, JunitTestHelper.getDefaultActor());
 		Organisation curriculumOrganisation2Parent = organisationService.createOrganisation("Org-26", UUID.randomUUID().toString(), "",
-				null, null);
+				null, null, JunitTestHelper.getDefaultActor());
 		Organisation organisation2 = organisationService.createOrganisation("Org-27", UUID.randomUUID().toString(), "",
-				curriculumOrganisation2Parent, null);
+				curriculumOrganisation2Parent, null, JunitTestHelper.getDefaultActor());
 		Organisation curriculumOrganisationOther = organisationService.createOrganisation("Org-28", UUID.randomUUID().toString(), "", null,
-				null);
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 1", "", false,
 				curriculumOrganisation1);
 		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 2", "", false,
@@ -314,13 +314,13 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
 		
 		Organisation organisationExecutorAndCurriculum1 = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorAndCurriculum1, executor, OrganisationRoles.user);
+		organisationService.addMember(organisationExecutorAndCurriculum1, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation organisationExecutorAndCurriculum2 = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorAndCurriculum2, executor, OrganisationRoles.user);
+		organisationService.addMember(organisationExecutorAndCurriculum2, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
+		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation organisationExecutorAndCurriculumButManager = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorAndCurriculumButManager, executor, OrganisationRoles.usermanager);
+		organisationService.addMember(organisationExecutorAndCurriculumButManager, executor, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		Organisation organisationRepositoreyOnly = qualityTestHelper.createOrganisation();
 		
 		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 1", "", false,
@@ -378,13 +378,13 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
 		
 		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
+		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation organisationExecutorAndCurriculumButManager = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorAndCurriculumButManager, executor, OrganisationRoles.curriculummanager);
+		organisationService.addMember(organisationExecutorAndCurriculumButManager, executor, OrganisationRoles.curriculummanager, JunitTestHelper.getDefaultActor());
 		Organisation organisationUserAndRepository = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationUserAndRepository, executor, OrganisationRoles.user);
+		organisationService.addMember(organisationUserAndRepository, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation organisationUserAndRepositoryButManager = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationUserAndRepositoryButManager, executor, OrganisationRoles.linemanager);
+		organisationService.addMember(organisationUserAndRepositoryButManager, executor, OrganisationRoles.linemanager, JunitTestHelper.getDefaultActor());
 		Organisation organisationRepositoreyOnly = qualityTestHelper.createOrganisation();
 
 		Curriculum curriculum3 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "", false,
@@ -426,9 +426,9 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		
 		Organisation executorDefaultOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
+		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation organisationUserAndRepositoryButManager = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationUserAndRepositoryButManager, executor, OrganisationRoles.linemanager);
+		organisationService.addMember(organisationUserAndRepositoryButManager, executor, OrganisationRoles.linemanager, JunitTestHelper.getDefaultActor());
 		Organisation organisationRepositoreyOnly = qualityTestHelper.createOrganisation();
 
 		entry = repositoryManager.setDescriptionAndName(entry, "Repo. entry", null, null, null, null, null, null, null, null, null, null, null,

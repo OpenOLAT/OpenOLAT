@@ -639,7 +639,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		if(!syncConfiguration.syncOrganisationWithLDAPGroup()) {
 			List<Organisation> organisationAsUsers = organisationService.getOrganisations(identity, OrganisationRoles.user);
 			if(organisationAsUsers.isEmpty()) {
-				organisationService.addMember(identity, OrganisationRoles.user);
+				organisationService.addMember(identity, OrganisationRoles.user, null);
 			}
 		}
 	}
@@ -746,7 +746,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, uid, uid, null, null);
 		} else {
 			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, uid, null, user,
-					LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, uid, uid, null, null, null);
+					LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, uid, uid, null, null, null, null);
 		}
 		log.info("Created LDAP user username::{}", uid);
 		return identity;
@@ -1416,7 +1416,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			}
 		} else {
 			Organisation defOrganisation = organisationService.getDefaultOrganisation();
-			organisation = organisationService.createOrganisation(commonName, commonName, null, defOrganisation, null);
+			organisation = organisationService.createOrganisation(commonName, commonName, null, defOrganisation, null, null);
 			organisation.setExternalId(commonName);
 			organisation.setManagedFlags(OrganisationManagedFlag.toEnum("externalId,delete,members"));
 			organisation = organisationService.updateOrganisation(organisation);
@@ -1532,7 +1532,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			}
 			
 			if(organisationDao.hasRole(identity, null, defOrganisation, OrganisationRoles.user.name())) {
-				organisationService.addMember(defOrganisation, identity, OrganisationRoles.user);
+				organisationService.addMember(defOrganisation, identity, OrganisationRoles.user, null);
 			}
 
 			if(!roles.isEmpty() || count % 25 == 0) {

@@ -64,7 +64,8 @@ public class ScoreAccountingTriggerDAOTest extends OlatTestCase {
 	public void initDefaultUnitTestOrganisation() {
 		if(defaultUnitTestOrganisation == null) {
 			defaultUnitTestOrganisation = organisationService
-					.createOrganisation("Org-score-account-unit-test", "Org-service-unit-test", "", null, null);
+					.createOrganisation("Org-score-account-unit-test", "Org-service-unit-test", "", null,
+							null, JunitTestHelper.getDefaultActor());
 		}
 	}
 	

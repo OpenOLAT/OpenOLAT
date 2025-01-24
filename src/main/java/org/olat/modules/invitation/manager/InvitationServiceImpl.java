@@ -135,7 +135,7 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 		user.getPreferences().setLanguage(locale.toString());
 		Identity invitee = securityManager.createAndPersistIdentityAndUser(null, tempUsername, null, user, null, null, null, null, null, null);
 		groupDao.addMembershipTwoWay(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
-		organisationService.addMember(invitee, OrganisationRoles.invitee);
+		organisationService.addMember(invitee, OrganisationRoles.invitee, invitee);
 		return invitee;
 	}
 	
@@ -181,7 +181,7 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 
 		// add invitee to the security group of that portfolio element
 		groupDao.addMembershipTwoWay(group, invitee, GroupRoles.invitee.name());
-		organisationService.addMember(invitee, OrganisationRoles.invitee);
+		organisationService.addMember(invitee, OrganisationRoles.invitee, doer);
 		
 		return invitee;
 	}

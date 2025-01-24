@@ -297,12 +297,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			OrganisationRoles role, boolean hasBeen, boolean isNow) {
 		if (!hasBeen && isNow) {
 			// user not yet in security group, add him
-			organisationService.addMember(organisation, updatedIdentity, role);
+			organisationService.addMember(organisation, updatedIdentity, role, actingIdentity);
 			log.info(Tracing.M_AUDIT, "User::{} added system role::{} to user::{}",
 					(actingIdentity == null ? "unkown" : actingIdentity.getKey()), role, updatedIdentity.getKey());
 		} else if (hasBeen && !isNow) {
 			// user not anymore in security group, remove him
-			boolean deleted = organisationService.removeMember(organisation, updatedIdentity, role, true);
+			boolean deleted = organisationService.removeMember(organisation, updatedIdentity, role, true, actingIdentity);
 			if(deleted) {
 				log.info(Tracing.M_AUDIT, "User::{} removed system role::{} from user::{}",
 						(actingIdentity == null ? "unkown" : actingIdentity.getKey()), role, updatedIdentity.getKey());
@@ -407,7 +407,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 */
 	@Override
 	public Identity createAndPersistIdentityAndUserWithOrganisation(String legacyName, String nickName, String externalId, User newUser,
-			String provider, String issuer, String authenticationExternalId, String authusername, String pwd, Organisation organisation, Date expirationDate) {
+			String provider, String issuer, String authenticationExternalId, String authusername, String pwd, Organisation organisation, Date expirationDate,
+			Identity doer) {
 		Identity ident;
 		if (pwd == null) {
 			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, issuer, authenticationExternalId, authusername, null, expirationDate);
@@ -418,9 +419,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		}
 		
 		if(organisation == null) {
-			organisationService.addMember(ident, OrganisationRoles.user);
+			organisationService.addMember(ident, OrganisationRoles.user, doer);
 		} else {
-			organisationService.addMember(organisation, ident, OrganisationRoles.user);
+			organisationService.addMember(organisation, ident, OrganisationRoles.user, doer);
 		}
 		return ident;
 	}
@@ -1325,7 +1326,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			User guestUser = UserManager.getInstance().createUser(trans.translate("user.guest"), null, null);
 			guestUser.getPreferences().setLanguage(locale.toString());
 			guestIdentity = createAndPersistIdentityAndUser(guestUsername, guestUsername, null, guestUser, null, null, null, null, null, null);
-			organisationService.addMember(guestIdentity, OrganisationRoles.guest);
+			organisationService.addMember(guestIdentity, OrganisationRoles.guest, null);
 		} else if (!guestIdentity.getUser().getProperty(UserConstants.FIRSTNAME, locale).equals(trans.translate("user.guest"))) {
 			//Check if guest name has been updated in the i18n tool
 			guestIdentity.getUser().setProperty(UserConstants.FIRSTNAME, trans.translate("user.guest"));

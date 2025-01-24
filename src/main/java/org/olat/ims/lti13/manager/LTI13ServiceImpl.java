@@ -617,7 +617,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			user.getPreferences().setLanguage(locale.toString());
 			String nickName = "l" + CodeHelper.getForeverUniqueID();
 			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, nickName, null, user,
-					LTI13Service.LTI_PROVIDER, issuer, null, sub, null, ltiOrganisation, null);
+					LTI13Service.LTI_PROVIDER, issuer, null, sub, null, ltiOrganisation, null, null);
 		} else if(isLTIOnlyUser(identity) &&
 				(!StringHelper.isSame(identity.getUser().getFirstName(), givenName)
 						|| !StringHelper.isSame(identity.getUser().getLastName(), familyName)

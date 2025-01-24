@@ -60,7 +60,8 @@ public class ProjTemplateToOrganisationDAOTest extends OlatTestCase {
 	public void shouldCreateRelation() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project = projectService.createProject(identity, new ProjectBCFactory(), identity);
-		Organisation organisation = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		ProjTemplateToOrganisation templateToOrganisation = sut.createRelation(project, organisation);
@@ -76,8 +77,10 @@ public class ProjTemplateToOrganisationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project1 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		ProjProject project2 = projectService.createProject(identity, new ProjectBCFactory(), identity);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
 		ProjTemplateToOrganisation templateToOrganisation11 = sut.createRelation(project1, organisation1);
 		ProjTemplateToOrganisation templateToOrganisation12 = sut.createRelation(project1, organisation2);
 		sut.createRelation(project2, organisation2);
@@ -94,8 +97,10 @@ public class ProjTemplateToOrganisationDAOTest extends OlatTestCase {
 		ProjProject project1 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		ProjProject project2 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		ProjProject project3 = projectService.createProject(identity, new ProjectBCFactory(), identity);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
 		ProjTemplateToOrganisation templateToOrganisation11 = sut.createRelation(project1, organisation1);
 		ProjTemplateToOrganisation templateToOrganisation12 = sut.createRelation(project1, organisation2);
 		ProjTemplateToOrganisation templateToOrganisation21 = sut.createRelation(project2, organisation1);
@@ -116,8 +121,10 @@ public class ProjTemplateToOrganisationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project1 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		ProjProject project2 = projectService.createProject(identity, new ProjectBCFactory(), identity);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
 		sut.createRelation(project1, organisation1);
 		sut.createRelation(project1, organisation2);
 		sut.createRelation(project2, organisation2);
@@ -132,8 +139,10 @@ public class ProjTemplateToOrganisationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project1 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		ProjProject project2 = projectService.createProject(identity, new ProjectBCFactory(), identity);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
 		ProjTemplateToOrganisation templateToOrganisation11 = sut.createRelation(project1, organisation1);
 		ProjTemplateToOrganisation templateToOrganisation12 = sut.createRelation(project1, organisation2);
 		ProjTemplateToOrganisation templateToOrganisation21 = sut.createRelation(project2, organisation2);
@@ -151,8 +160,10 @@ public class ProjTemplateToOrganisationDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project1 = projectService.createProject(identity, new ProjectBCFactory(), identity);
 		ProjProject project2 = projectService.createProject(identity, new ProjectBCFactory(), identity);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,
+				null, JunitTestHelper.getDefaultActor());
 		sut.createRelation(project1, organisation1);
 		sut.createRelation(project1, organisation2);
 		ProjTemplateToOrganisation templateToOrganisation21 = sut.createRelation(project2, organisation2);

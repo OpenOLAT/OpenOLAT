@@ -1240,21 +1240,21 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		String uuid = UUID.randomUUID().toString();
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		Organisation subOrganisation = organisationService
-				.createOrganisation("Sub-organisation", uuid, "", organisation, null);
+				.createOrganisation("Sub-organisation", uuid, "", organisation, null, JunitTestHelper.getDefaultActor());
 		
 		// create an administrator
 		String adminName = "admin" + uuid;
 		User adminUser = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
 		Identity adminIdentity = securityManager.createAndPersistIdentityAndUser(null, adminName, null, adminUser,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, adminName, JunitTestHelper.PWD, null);
-		organisationService.addMember(subOrganisation, adminIdentity, OrganisationRoles.user);
-		organisationService.addMember(subOrganisation, adminIdentity, OrganisationRoles.administrator);
+		organisationService.addMember(subOrganisation, adminIdentity, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(subOrganisation, adminIdentity, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		//create a user
 		String userName = "user" + uuid;
 		User user = userManager.createUser("Us", "er", uuid + "user@openolat.org");
 		Identity userIdentity = securityManager.createAndPersistIdentityAndUser(null, userName, null, user,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, userName, JunitTestHelper.PWD, null);
-		organisationService.addMember(subOrganisation, userIdentity, OrganisationRoles.user);
+		organisationService.addMember(subOrganisation, userIdentity, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Leaving group", "But you cannot leave :-(", BusinessGroup.BUSINESS_TYPE,
@@ -1283,39 +1283,39 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		String uuid = UUID.randomUUID().toString();
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		Organisation subOrganisation1 = organisationService
-				.createOrganisation("Sub-organisation 1", uuid, "", organisation, null);
+				.createOrganisation("Sub-organisation 1", uuid, "", organisation, null, JunitTestHelper.getDefaultActor());
 		Organisation subOrganisation1_1 = organisationService
-				.createOrganisation("Sub-organisation 1.1", uuid, "", subOrganisation1, null);
+				.createOrganisation("Sub-organisation 1.1", uuid, "", subOrganisation1, null, JunitTestHelper.getDefaultActor());
 		Organisation subOrganisation2 = organisationService
-				.createOrganisation("Sub-organisation 2", uuid, "", organisation, null);
+				.createOrganisation("Sub-organisation 2", uuid, "", organisation, null, JunitTestHelper.getDefaultActor());
 		
 		// create an administrator
 		String adminName = "admin" + uuid;
 		User adminUser = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
 		Identity adminIdentity = securityManager.createAndPersistIdentityAndUser(null, adminName, null, adminUser,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, adminName, "secret-pw", null);
-		organisationService.addMember(subOrganisation1, adminIdentity, OrganisationRoles.user);
-		organisationService.addMember(subOrganisation1, adminIdentity, OrganisationRoles.administrator);
+		organisationService.addMember(subOrganisation1, adminIdentity, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(subOrganisation1, adminIdentity, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		// create a second administrator in the second sub organization
 		String adminName2 = "admin2" + uuid;
 		User adminUser2 = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
 		Identity adminIdentity2 = securityManager.createAndPersistIdentityAndUser(null, adminName2, null, adminUser2,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, adminName2, "secret-pw", null);
-		organisationService.addMember(subOrganisation2, adminIdentity2, OrganisationRoles.user);
-		organisationService.addMember(subOrganisation2, adminIdentity2, OrganisationRoles.administrator);
+		organisationService.addMember(subOrganisation2, adminIdentity2, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(subOrganisation2, adminIdentity2, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		// create a third administrator in the organization under the first sub organization
 		String adminName3 = "admin3" + uuid;
 		User adminUser3 = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
 		Identity adminIdentity3 = securityManager.createAndPersistIdentityAndUser(null, adminName3, null, adminUser3,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, adminName3, "secret-pw", null);
-		organisationService.addMember(subOrganisation1, adminIdentity3, OrganisationRoles.user);
-		organisationService.addMember(subOrganisation1_1, adminIdentity3, OrganisationRoles.administrator);
+		organisationService.addMember(subOrganisation1, adminIdentity3, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(subOrganisation1_1, adminIdentity3, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		//create a user
 		String userName = "user" + uuid;
 		User user = userManager.createUser("Us", "er", uuid + "user@openolat.org");
 		Identity userIdentity = securityManager.createAndPersistIdentityAndUser(null, userName, null, user,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, userName, "secret-pw", null);
-		organisationService.addMember(subOrganisation1, userIdentity, OrganisationRoles.user);
+		organisationService.addMember(subOrganisation1, userIdentity, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Leaving group", "But you cannot leave :-(", BusinessGroup.BUSINESS_TYPE,

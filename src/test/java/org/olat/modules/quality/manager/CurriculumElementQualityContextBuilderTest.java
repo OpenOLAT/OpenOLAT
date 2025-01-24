@@ -103,11 +103,11 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
 		
 		Organisation curriculumOrganisation1 = organisationService.createOrganisation("Org-29", UUID.randomUUID().toString(), "", null,
-				null);
+				null, JunitTestHelper.getDefaultActor());
 		Organisation curriculumOrganisation2Parent = organisationService.createOrganisation("Org-30", UUID.randomUUID().toString(), "",
-				null, null);
+				null, null, JunitTestHelper.getDefaultActor());
 		Organisation curriculumOrganisation2 = organisationService.createOrganisation("Org-31", UUID.randomUUID().toString(), "",
-				curriculumOrganisation2Parent, null);
+				curriculumOrganisation2Parent, null, JunitTestHelper.getDefaultActor());
 		
 		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 1", "", false,
 				curriculumOrganisation1);
@@ -197,9 +197,9 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
 		
 		Organisation organisationExecutorAndCurriculum = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorAndCurriculum, executor, OrganisationRoles.user);
+		organisationService.addMember(organisationExecutorAndCurriculum, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
+		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		
 		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "", false,
 				organisationExecutorAndCurriculum);
@@ -232,7 +232,7 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
+		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation organisationCurriculumOnly = qualityTestHelper.createOrganisation();
 		
 		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "", false,
@@ -266,9 +266,9 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
+		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation organisationExecutorAndCurriculumButManager = qualityTestHelper.createOrganisation();
-		organisationService.addMember(organisationExecutorAndCurriculumButManager, executor, OrganisationRoles.usermanager);
+		organisationService.addMember(organisationExecutorAndCurriculumButManager, executor, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		
 		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "", false,
 				organisationExecutorAndCurriculumButManager);

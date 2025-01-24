@@ -59,7 +59,7 @@ public interface OrganisationService {
 	 * @return The persisted organization
 	 */
 	public Organisation createOrganisation(String displayName, String identifier, String description,
-			Organisation parentOrganisation, OrganisationType type);
+			Organisation parentOrganisation, OrganisationType type, Identity doer);
 	
 	/**
 	 * The default organization.
@@ -92,7 +92,7 @@ public interface OrganisationService {
 	 * 
 	 * @param organisation
 	 */
-	public void deleteOrganisation(OrganisationRef organisation, OrganisationRef organisationAlt);
+	public void deleteOrganisation(OrganisationRef organisation, OrganisationRef organisationAlt, Identity doer);
 	
 	/**
 	 * Move an organization to a new place in the organization structure.
@@ -100,7 +100,7 @@ public interface OrganisationService {
 	 * @param organisationToMove The organization to move
 	 * @param newParent The new parent
 	 */
-	public void moveOrganisation(OrganisationRef organisationToMove, OrganisationRef newParent);
+	public void moveOrganisation(OrganisationRef organisationToMove, OrganisationRef newParent, Identity doer);
 	
 	/**
 	 * 
@@ -235,7 +235,7 @@ public interface OrganisationService {
 	 * @param member The identity
 	 * @param role The role in the organization
 	 */
-	public void addMember(Identity member, OrganisationRoles role);
+	public void addMember(Identity member, OrganisationRoles role, Identity doer);
 	
 	/**
 	 * Add a membership on the specified organization. The inheritance mode "root"
@@ -246,7 +246,7 @@ public interface OrganisationService {
 	 * @param member The new member of the organization
 	 * @param role The role in the organization
 	 */
-	public void addMember(Organisation organisation, Identity member, OrganisationRoles role);
+	public void addMember(Organisation organisation, Identity member, OrganisationRoles role, Identity doer);
 	
 	/**
 	 * A method to fine set role. 
@@ -256,7 +256,7 @@ public interface OrganisationService {
 	 * @param role The role in the organization
 	 * @param inheritanceMode The inheritance mode (none, root)
 	 */
-	public void addMember(Organisation organisation, Identity member, OrganisationRoles role, GroupMembershipInheritance inheritanceMode);
+	public void addMember(Organisation organisation, Identity member, OrganisationRoles role, GroupMembershipInheritance inheritanceMode, Identity doer);
 	
 	/**
 	 * Remove the role on the default organisation.
@@ -264,7 +264,7 @@ public interface OrganisationService {
 	 * @param member The user
 	 * @param role The role to remove
 	 */
-	public void removeMember(IdentityRef member, OrganisationRoles role);
+	public void removeMember(IdentityRef member, OrganisationRoles role, Identity doer);
 
 	/**
 	 * Remove all roles the user has from the specified organization. The method
@@ -273,7 +273,7 @@ public interface OrganisationService {
 	 * @param organisation The organization
 	 * @param member The member
 	 */
-	public void removeMember(Organisation organisation, IdentityRef member);
+	public void removeMember(Organisation organisation, IdentityRef member, Identity doer);
 	
 	/**
 	 * Remove the specified user's role from the organization. The method will
@@ -284,9 +284,9 @@ public interface OrganisationService {
 	 * @param role The role to remove
 	 * @param excludeInherited true if you want to ignore inherited membership
 	 */
-	public boolean removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role, boolean excludeInherited);
+	public boolean removeMember(Organisation organisation, IdentityRef member, OrganisationRoles role, boolean excludeInherited, Identity doer);
 	
-	public void setAsGuest(Identity identity);
+	public void setAsGuest(Identity identity, Identity doer);
 	
 	public List<OrganisationMember> getMembers(Organisation organisation, SearchMemberParameters params);
 	
@@ -303,7 +303,7 @@ public interface OrganisationService {
 	 * @param roles
 	 */
 	public void moveMembers(OrganisationRef sourceOrganisation, OrganisationRef targetOrganisation,
-			List<Identity> identities, List<OrganisationRoles> roles);
+			List<Identity> identities, List<OrganisationRoles> roles, Identity doer);
 	
 	/**
 	 * Check if the specified user has the list of roles in the organization.

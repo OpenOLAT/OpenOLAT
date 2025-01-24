@@ -108,7 +108,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	public void initDefaultUnitTestOrganisation() {
 		if(defaultUnitTestOrganisation == null) {
 			defaultUnitTestOrganisation = organisationService
-					.createOrganisation("Org-course-infos-unit-test", "Org-course-infos-unit-test", "", null, null);
+					.createOrganisation("Org-course-infos-unit-test", "Org-course-infos-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
 		}
 	}
 	

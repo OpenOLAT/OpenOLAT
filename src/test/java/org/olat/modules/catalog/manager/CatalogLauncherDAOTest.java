@@ -33,6 +33,7 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.model.CatalogLauncherImpl;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -239,8 +240,10 @@ public class CatalogLauncherDAOTest extends OlatTestCase {
 		CatalogLauncher launcher1 = sut.create(random(), miniRandom());
 		CatalogLauncher launcher2 = sut.create(random(), miniRandom());
 		CatalogLauncher launcherNoOrganisation = sut.create(random(), miniRandom());
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		catalogLauncherToOrganisationDAO.createRelation(launcher1, organisation1);
 		catalogLauncherToOrganisationDAO.createRelation(launcher1, organisation2);
 		catalogLauncherToOrganisationDAO.createRelation(launcher2, organisation2);

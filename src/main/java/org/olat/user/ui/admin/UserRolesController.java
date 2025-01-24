@@ -422,7 +422,7 @@ public class UserRolesController extends FormBasicController {
 	}
 
 	private void doAddIdentityToOrganisation(Organisation organisation) {
-		organisationService.addMember(organisation, editedIdentity, OrganisationRoles.user);
+		organisationService.addMember(organisation, editedIdentity, OrganisationRoles.user, getIdentity());
 		dbInstance.commit();
 		organisations = organisationService.getOrganisations(editedIdentity, OrganisationRoles.values());
 		

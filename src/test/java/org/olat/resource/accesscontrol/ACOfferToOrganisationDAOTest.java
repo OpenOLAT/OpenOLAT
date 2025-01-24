@@ -32,6 +32,7 @@ import org.olat.core.id.Organisation;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.manager.ACOfferToOrganisationDAO;
 import org.olat.resource.accesscontrol.model.OfferToOrganisationImpl;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,7 +58,7 @@ public class ACOfferToOrganisationDAOTest extends OlatTestCase {
 	public void shouldCreateRelation() {
 		Offer offer = acFrontendManager.createOffer(createRandomResource(), random());
 		offer = acFrontendManager.save(offer);
-		Organisation organisation = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null,null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		OfferToOrganisation offerToOrganisation = sut.createRelation(offer, organisation);
@@ -75,8 +76,8 @@ public class ACOfferToOrganisationDAOTest extends OlatTestCase {
 		offer1 = acFrontendManager.save(offer1);
 		Offer offer2 = acFrontendManager.createOffer(createRandomResource(), random());
 		offer2 = acFrontendManager.save(offer2);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null, JunitTestHelper.getDefaultActor());
 		OfferToOrganisation offerToOrganisation11 = sut.createRelation(offer1, organisation1);
 		OfferToOrganisation offerToOrganisation12 = sut.createRelation(offer1, organisation2);
 		sut.createRelation(offer2, organisation2);
@@ -95,8 +96,8 @@ public class ACOfferToOrganisationDAOTest extends OlatTestCase {
 		offer2 = acFrontendManager.save(offer2);
 		Offer offer3 = acFrontendManager.createOffer(createRandomResource(), random());
 		offer3 = acFrontendManager.save(offer3);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		OfferToOrganisation offerToOrganisation11 = sut.createRelation(offer1, organisation1);
 		OfferToOrganisation offerToOrganisation12 = sut.createRelation(offer1, organisation2);
 		OfferToOrganisation offerToOrganisation21 = sut.createRelation(offer2, organisation1);
@@ -118,8 +119,8 @@ public class ACOfferToOrganisationDAOTest extends OlatTestCase {
 		offer1 = acFrontendManager.save(offer1);
 		Offer offer2 = acFrontendManager.createOffer(createRandomResource(), random());
 		offer2 = acFrontendManager.save(offer2);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		sut.createRelation(offer1, organisation1);
 		sut.createRelation(offer1, organisation2);
 		sut.createRelation(offer2, organisation2);
@@ -135,8 +136,8 @@ public class ACOfferToOrganisationDAOTest extends OlatTestCase {
 		offer1 = acFrontendManager.save(offer1);
 		Offer offer2 = acFrontendManager.createOffer(createRandomResource(), random());
 		offer2 = acFrontendManager.save(offer2);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		OfferToOrganisation offerToOrganisation11 = sut.createRelation(offer1, organisation1);
 		OfferToOrganisation offerToOrganisation12 = sut.createRelation(offer1, organisation2);
 		OfferToOrganisation offerToOrganisation21 = sut.createRelation(offer2, organisation2);
@@ -155,8 +156,8 @@ public class ACOfferToOrganisationDAOTest extends OlatTestCase {
 		offer1 = acFrontendManager.save(offer1);
 		Offer offer2 = acFrontendManager.createOffer(createRandomResource(), random());
 		offer2 = acFrontendManager.save(offer2);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null,null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null,null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		sut.createRelation(offer1, organisation1);
 		sut.createRelation(offer1, organisation2);
 		OfferToOrganisation offerToOrganisation21 = sut.createRelation(offer2, organisation2);

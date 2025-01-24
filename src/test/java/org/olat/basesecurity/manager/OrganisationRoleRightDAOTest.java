@@ -30,6 +30,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.RightProvider;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,7 +49,7 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
 
     @Test
     public void loadNotDefinedRights() {
-    	Organisation root = organisationService.createOrganisation("Org-role-rights 1", "Org-role-rights 1", null, null, null);
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 1", "Org-role-rights 1", null, null, null, JunitTestHelper.getDefaultActor());
     	dbInstance.commitAndCloseSession();
     	
         List<RightProvider> rights = organisationService.getGrantedOrganisationRights(root, OrganisationRoles.linemanager);
@@ -58,7 +59,7 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
 
     @Test
     public void setRightsForRole() {
-    	Organisation root = organisationService.createOrganisation("Org-role-rights 2", "Org-role-rights 2", null, null, null);
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 2", "Org-role-rights 2", null, null, null, JunitTestHelper.getDefaultActor());
     	dbInstance.commitAndCloseSession();
     	
         List<RightProvider> allRights = organisationService.getAllOrganisationRights(OrganisationRoles.linemanager);
@@ -73,8 +74,8 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
 
     @Test
     public void getRightsForChildOrganisation() {
-    	Organisation root = organisationService.createOrganisation("Org-role-rights 3", "Org-role-rights 3", null, null, null);
-    	Organisation child = organisationService.createOrganisation("Org-role-rights 3.1", "Org-role-rights 3.1", null, root, null);
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 3", "Org-role-rights 3", null, null, null, JunitTestHelper.getDefaultActor());
+    	Organisation child = organisationService.createOrganisation("Org-role-rights 3.1", "Org-role-rights 3.1", null, root, null, JunitTestHelper.getDefaultActor());
     	dbInstance.commitAndCloseSession();
     	
         List<RightProvider> allRights = organisationService.getAllOrganisationRights(OrganisationRoles.linemanager);
@@ -89,8 +90,8 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
 
     @Test
     public void moveOrganisation() {
-    	Organisation root = organisationService.createOrganisation("Org-role-rights 4.1", "Org-role-rights 4.1", null, null, null);
-    	Organisation rootAlt = organisationService.createOrganisation("Org-role-rights 4.2", "Org-role-rights 4.2", null, null, null);
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 4.1", "Org-role-rights 4.1", null, null, null, JunitTestHelper.getDefaultActor());
+    	Organisation rootAlt = organisationService.createOrganisation("Org-role-rights 4.2", "Org-role-rights 4.2", null, null, null, JunitTestHelper.getDefaultActor());
     	dbInstance.commitAndCloseSession();
     	
         List<RightProvider> allRights = organisationService.getAllOrganisationRights(OrganisationRoles.linemanager);
@@ -98,7 +99,7 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
 
         organisationService.setGrantedOrganisationRights(root, OrganisationRoles.linemanager, selectedRights);
 
-        organisationService.moveOrganisation(root, rootAlt);
+        organisationService.moveOrganisation(root, rootAlt, JunitTestHelper.getDefaultActor());
 
         List<RightProvider> rightsFromOrgRole = organisationService.getGrantedOrganisationRights(rootAlt, OrganisationRoles.linemanager);
 
@@ -108,13 +109,13 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
 
     @Test
     public void deleteOrganisation() {
-    	Organisation root = organisationService.createOrganisation("Org-role-rights 5", "Org-role-rights 5", null, null, null);
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 5", "Org-role-rights 5", null, null, null, JunitTestHelper.getDefaultActor());
         List<RightProvider> allRights = organisationService.getAllOrganisationRights(OrganisationRoles.linemanager);
         Collection<String> selectedRights = allRights.stream().map(RightProvider::getRight).collect(Collectors.toList());
 
         organisationService.setGrantedOrganisationRights(root, OrganisationRoles.linemanager, selectedRights);
 
-        organisationService.deleteOrganisation(root, null);
+        organisationService.deleteOrganisation(root, null, JunitTestHelper.getDefaultActor());
 
         List<RightProvider> rightsFromOrgRole = organisationService.getGrantedOrganisationRights(root, OrganisationRoles.linemanager);
 

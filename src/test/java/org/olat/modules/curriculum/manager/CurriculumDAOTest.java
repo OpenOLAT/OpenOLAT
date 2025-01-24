@@ -209,7 +209,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Curriculum org.", "CUR-5", "", null, null);
 		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for managers", "Managers", "Short desc.", false, organisation);
 		dbInstance.commit();
-		organisationService.addMember(organisation, administrator, OrganisationRoles.administrator);
+		organisationService.addMember(organisation, administrator, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		curriculumService.addMember(curriculum, user, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 		
@@ -253,9 +253,9 @@ public class CurriculumDAOTest extends OlatTestCase {
 	@Test
 	public void searchWithInfos_managerInOrganisation() {
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1b");
-		Organisation organisation = organisationService.createOrganisation("Curriculum-mgmt", "cur-mgmt", "Curriculum management", null, null);
+		Organisation organisation = organisationService.createOrganisation("Curriculum-mgmt", "cur-mgmt", "Curriculum management", null, null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for managers", "Managers", "Short desc.", false, organisation);
-		organisationService.addMember(organisation, manager, OrganisationRoles.curriculummanager);
+		organisationService.addMember(organisation, manager, OrganisationRoles.curriculummanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		// search curriculum for the manager
@@ -272,7 +272,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		Identity administrator = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-administrator-2");
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Curriculum org.", "CUR-6", "", null, null);
 		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for administrators", "Administrators", "Short desc.", false, organisation);
-		organisationService.addMember(organisation, administrator, OrganisationRoles.administrator);
+		organisationService.addMember(organisation, administrator, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		curriculumService.addMember(curriculum, user, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 		
@@ -296,7 +296,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		Identity principal = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-principal-1");
 		Organisation organisation = organisationDao.createAndPersistOrganisation("Curriculum org.", "CUR-7", "", null, null);
 		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for principals", "Principals", "Short desc.", false, organisation);
-		organisationService.addMember(organisation, principal, OrganisationRoles.principal);
+		organisationService.addMember(organisation, principal, OrganisationRoles.principal, JunitTestHelper.getDefaultActor());
 		curriculumService.addMember(curriculum, user, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 		

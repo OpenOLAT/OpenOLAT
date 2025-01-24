@@ -113,7 +113,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void initDefaultUnitTestOrganisation() {
 		if(defaultUnitTestOrganisation == null) {
 			defaultUnitTestOrganisation = organisationService
-					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
 			defaultUnitTestAdministrator = JunitTestHelper
 					.createAndPersistRndAdmin("Cur-Elem-Web", defaultUnitTestOrganisation);
 		}
@@ -383,8 +383,8 @@ public class CourseTest extends OlatRestTestCase {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		//make auth1 and auth2 authors
-		organisationService.addMember(auth1, OrganisationRoles.author);
-		organisationService.addMember(auth2, OrganisationRoles.author);
+		organisationService.addMember(auth1, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(auth2, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		//make auth1 and auth2 owner
@@ -419,8 +419,8 @@ public class CourseTest extends OlatRestTestCase {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		//make auth1 and auth2 authors
-		organisationService.addMember(auth1, OrganisationRoles.author);
-		organisationService.addMember(auth2, OrganisationRoles.author);
+		organisationService.addMember(auth1, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(auth2, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		//make auth1 and auth2 owner

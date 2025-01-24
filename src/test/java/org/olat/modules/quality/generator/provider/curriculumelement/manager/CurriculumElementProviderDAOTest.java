@@ -45,6 +45,7 @@ import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,7 +75,8 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadCurriculumElements() {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
@@ -90,7 +92,8 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByAlreadyCreated() {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
@@ -115,27 +118,29 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByOrganisation() {
-		Organisation organisationSuper = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation organisationSuper = organisationService.createOrganisation(random(), random(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculumSuper = curriculumService.createCurriculum(random(), random(), null, false, organisationSuper);
 		CurriculumElement curriculumElementSuperOrg = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculumSuper);
 
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, organisationSuper,
-				null);
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
 		Organisation organisationSub = organisationService.createOrganisation(random(), random(), null, organisation,
-				null);
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculumSubOrg = curriculumService.createCurriculum(random(), random(), null, false, organisationSub);
 		CurriculumElement curriculumElementSubOrg = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculumSubOrg);
 
-		Organisation otherOrganisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation otherOrganisation = organisationService.createOrganisation(random(), random(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum otherCurriculum = curriculumService.createCurriculum(random(), random(), null, false, otherOrganisation);
 		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
@@ -153,7 +158,8 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByCurriculumElementType() {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
@@ -178,7 +184,8 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByWhiteList() {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
 		dbInstance.commitAndCloseSession();
 
@@ -204,7 +211,8 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByBlackList() {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
 		CurriculumElementType type = curriculumService.createCurriculumElementType(random(), random(), random(), null);
 		dbInstance.commitAndCloseSession();
@@ -232,7 +240,8 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByBeginDate() {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
 		dbInstance.commitAndCloseSession();
 
@@ -262,7 +271,8 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByEndDate() {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
 		dbInstance.commitAndCloseSession();
 
@@ -292,7 +302,8 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterActiveOnly() {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, false, organisation);
 		CurriculumElement active = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,

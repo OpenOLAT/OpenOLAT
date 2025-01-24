@@ -246,7 +246,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 		for(OrganisationUserRow memberToRemove:membersToRemove) {
 			if(OrganisationRoles.isValue(memberToRemove.getRole()) && isAlwaysUser(memberToRemove)) {
 				organisationService.removeMember(organisation, new IdentityRefImpl(memberToRemove.getIdentityKey()),
-						OrganisationRoles.valueOf(memberToRemove.getRole()), false);
+						OrganisationRoles.valueOf(memberToRemove.getRole()), false, getIdentity());
 			} else {
 				warningUser = true;
 			}
@@ -295,7 +295,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 	
 	private void doAddMember(List<Identity> identitiesToAdd, OrganisationRoles role) {
 		for(Identity identityToAdd:identitiesToAdd) {
-			organisationService.addMember(organisation, identityToAdd, role);
+			organisationService.addMember(organisation, identityToAdd, role, getIdentity());
 		}
 		loadModel(true);
 	}

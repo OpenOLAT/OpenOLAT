@@ -257,10 +257,10 @@ public class JunitTestHelper {
 		Identity identity;
 		if(StringHelper.containsNonWhitespace(pwd)) {
 			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
-					BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, pwd, organisation, null);
+					BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, pwd, organisation, null, null);
 		} else {
 			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
-					null, null, null, null, null, organisation, null);
+					null, null, null, null, null, organisation, null, null);
 		}
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
@@ -337,10 +337,10 @@ public class JunitTestHelper {
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		if(StringHelper.containsNonWhitespace(password)) {
 			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, password, organisation, null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, password, organisation, null, null);
 		} else {
 			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
-				null, null, null, null, null, organisation, null);
+				null, null, null, null, null, organisation, null, null);
 		}
 		addToDefaultOrganisation(identity, OrganisationRoles.author);
 		addToDefaultOrganisation(identity, OrganisationRoles.user);
@@ -361,9 +361,9 @@ public class JunitTestHelper {
 		User user = CoreSpringFactory.getImpl(UserManager.class)
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		Identity identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, PWD, organisation, null);
-		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.user);
-		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.administrator);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, PWD, organisation, null, null);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.user, identity);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.administrator, identity);
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return new IdentityWithLogin(identity, login, PWD);
 	}
@@ -395,8 +395,8 @@ public class JunitTestHelper {
 				.createUser("first" + login, "last" + login, login + "@" + maildomain);
 		identity = securityManager.createAndPersistIdentityAndUser(null, login, null, user,
 				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, login, password, null);
-		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.administrator);
-		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.user);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.administrator, identity);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(organisation, identity, OrganisationRoles.user, identity);
 		
 		CoreSpringFactory.getImpl(DB.class).commitAndCloseSession();
 		return identity;
@@ -430,7 +430,7 @@ public class JunitTestHelper {
 	}
 	
 	public static void addToDefaultOrganisation(Identity identity, OrganisationRoles role) {
-		CoreSpringFactory.getImpl(OrganisationService.class).addMember(identity, role);
+		CoreSpringFactory.getImpl(OrganisationService.class).addMember(identity, role, identity);
 	}
 	
 	public static final RepositoryEntry createAndPersistRepositoryEntry() {

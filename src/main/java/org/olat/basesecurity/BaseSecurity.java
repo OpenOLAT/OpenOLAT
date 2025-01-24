@@ -300,7 +300,7 @@ public interface BaseSecurity {
 	 */
 	public Identity createAndPersistIdentityAndUserWithOrganisation(String identityName, String nickName, String externalId,
 			User user, String provider, String issuer, String authenticationExternalId,
-			String authusername, String password, Organisation organisation, Date expirationDate);
+			String authusername, String password, Organisation organisation, Date expirationDate, Identity doer);
 	
 
 	/**

@@ -92,11 +92,11 @@ public class AudiencelessQualityContextBuilderTest extends OlatTestCase {
 		
 		Organisation executorDefaultOrganisation = organisationService.getDefaultOrganisation();
 		Organisation executorOrganisation1 = qualityTestHelper.createOrganisation();
-		organisationService.addMember(executorOrganisation1, executor, OrganisationRoles.user);
+		organisationService.addMember(executorOrganisation1, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation executorOrganisation2 = qualityTestHelper.createOrganisation();
-		organisationService.addMember(executorOrganisation2, executor, OrganisationRoles.user);
+		organisationService.addMember(executorOrganisation2, executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation executorOrganisationManager = qualityTestHelper.createOrganisation();
-		organisationService.addMember(executorOrganisationManager, executor, OrganisationRoles.administrator);
+		organisationService.addMember(executorOrganisationManager, executor, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		QualityContext context = AudiencelessQualityContextBuilder

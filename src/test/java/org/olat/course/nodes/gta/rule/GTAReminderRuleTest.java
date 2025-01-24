@@ -699,7 +699,8 @@ public class GTAReminderRuleTest extends OlatTestCase {
 	private RepositoryEntry deployGTACourse() {
 		try {
 			if(defaultUnitTestOrganisation == null) {
-				defaultUnitTestOrganisation = CoreSpringFactory.getImpl(OrganisationService.class).createOrganisation("GTA organisation", "GTA-org", "", null, null);
+				defaultUnitTestOrganisation = CoreSpringFactory.getImpl(OrganisationService.class).createOrganisation("GTA organisation", "GTA-org", "", null,
+						null, JunitTestHelper.getDefaultActor());
 			}
 			
 			Identity initialAuthor = JunitTestHelper.getDefaultAuthor();

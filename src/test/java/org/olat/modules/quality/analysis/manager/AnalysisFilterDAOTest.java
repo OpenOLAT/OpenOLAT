@@ -113,7 +113,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");
 		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");
 		Identity executor3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");
-		Organisation dcOrganisation = organisationService.createOrganisation("Org-3", "", null, null, null);
+		Organisation dcOrganisation = organisationService.createOrganisation("Org-3", "", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		// Data collection with three participations
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		qualityService.addParticipations(dc1, asList(executor1, executor2, executor3));
@@ -136,7 +137,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsUser("e1");
 		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsUser("e2");
-		Organisation dcOrganisation = organisationService.createOrganisation("Org-4", "", null, null, null);
+		Organisation dcOrganisation = organisationService.createOrganisation("Org-4", "", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		// Data collection with two participations
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, asList(executor1, executor2));
@@ -700,7 +702,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");
 		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
-		organisationService.removeMember(defaultOrganisation, executor);
+		organisationService.removeMember(defaultOrganisation, executor, JunitTestHelper.getDefaultActor());
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
 		Organisation organisation1 = qualityTestHelper.createOrganisation();
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
@@ -975,7 +977,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadMaxSerieIndex() {
 		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
-		Organisation dcOrganisation = organisationService.createOrganisation("Org-5", "", null, null, null);
+		Organisation dcOrganisation = organisationService.createOrganisation("Org-5", "", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), dc1, null, null);
 		QualityDataCollection dc3 = qualityService.createDataCollection(asList(dcOrganisation), dc2, null, null);
@@ -1171,7 +1174,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	public void shouldLoadGroupedStatisticForEveryGroupBy() {
 		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");
-		Organisation dcOrganisation = organisationService.createOrganisation("Org-6", "", null, null, null);
+		Organisation dcOrganisation = organisationService.createOrganisation("Org-6", "", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc1, asList(executor));
 		EvaluationFormParticipation participation = participations.get(0);
@@ -1195,7 +1199,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	public void shouldLoadGroupedStatisticForEveryTemporalGroupBy() {
 		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");
-		Organisation dcOrganisation = organisationService.createOrganisation("Org-7", "", null, null, null);
+		Organisation dcOrganisation = organisationService.createOrganisation("Org-7", "", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc1, asList(executor));
 		EvaluationFormParticipation participation = participations.get(0);
@@ -1402,7 +1407,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Organisation organisation1 = qualityTestHelper.createOrganisation();
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
 		Organisation otherOrganisation = qualityTestHelper.createOrganisation();
-		Organisation childOrganisation = organisationService.createOrganisation("Org-20", "", null, organisation1, null);
+		Organisation childOrganisation = organisationService.createOrganisation("Org-20", "", null, organisation1,
+				null, JunitTestHelper.getDefaultActor());
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		dc1.setTopicOrganisation(organisation1);
 		qualityService.updateDataCollection(dc1);
@@ -1574,7 +1580,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
 		Organisation organisation1 = qualityTestHelper.createOrganisation();
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
-		Organisation subOrganisation = organisationService.createOrganisation("Org-21", "", null, organisation1, null);
+		Organisation subOrganisation = organisationService.createOrganisation("Org-21", "", null, organisation1,
+				null, JunitTestHelper.getDefaultActor());
 		Organisation otherOrganisation = qualityTestHelper.createOrganisation();
 		// Participation with two organisations
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
@@ -1617,7 +1624,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
 		Organisation organisation1 = qualityTestHelper.createOrganisation();
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
-		Organisation subOrganisation = organisationService.createOrganisation("Org-23", "", null, organisation1, null);
+		Organisation subOrganisation = organisationService.createOrganisation("Org-23", "", null, organisation1,
+				null, JunitTestHelper.getDefaultActor());
 		Organisation otherOrganisation = qualityTestHelper.createOrganisation();
 		// Participation with two organisations
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
@@ -1890,7 +1898,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
 		Curriculum curriculum2 = qualityTestHelper.createCurriculum(organisation2);
 		CurriculumElement element2 = qualityTestHelper.createCurriculumElement(curriculum2);
-		Organisation organisationSub = organisationService.createOrganisation("Org-9", "", null, organisation1, null);
+		Organisation organisationSub = organisationService.createOrganisation("Org-9", "", null, organisation1,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculumSub = qualityTestHelper.createCurriculum(organisationSub);
 		CurriculumElement elementSub = qualityTestHelper.createCurriculumElement(curriculumSub);
 		Organisation organisationOther = qualityTestHelper.createOrganisation();
@@ -1936,7 +1945,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
 		Curriculum curriculum2 = qualityTestHelper.createCurriculum(organisation2);
 		CurriculumElement element2 = qualityTestHelper.createCurriculumElement(curriculum2);
-		Organisation organisationSub = organisationService.createOrganisation("Org-24", "", null, organisation1, null);
+		Organisation organisationSub = organisationService.createOrganisation("Org-24", "", null, organisation1,
+				null, JunitTestHelper.getDefaultActor());
 		Curriculum curriculumSub = qualityTestHelper.createCurriculum(organisationSub);
 		CurriculumElement elementSub = qualityTestHelper.createCurriculumElement(curriculumSub);
 		Organisation organisationOther = qualityTestHelper.createOrganisation();
@@ -2114,7 +2124,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterBySerieNumber() {
 		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
-		Organisation dcOrganisation = organisationService.createOrganisation("Org-8", "", null, null, null);
+		Organisation dcOrganisation = organisationService.createOrganisation("Org-8", "", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), dc1, null, null);
 		QualityDataCollection dc3 = qualityService.createDataCollection(asList(dcOrganisation), dc2, null, null);
@@ -2271,7 +2282,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString());
 		// Remove user from all organisations. This test / filter is somewhat
 		// superfluous because a user is always in an organisation
-		organisationService.removeMember(executor, OrganisationRoles.user);
+		organisationService.removeMember(executor, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
 		// Data collection ok
 		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);

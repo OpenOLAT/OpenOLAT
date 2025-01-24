@@ -771,7 +771,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 	
 	@Test
 	public void queryReferencableResourcesLimitType() {
-		Organisation reOrganisation = organisationService.createOrganisation("Repo. org.", "repo-org", null, null, null);
+		Organisation reOrganisation = organisationService.createOrganisation("Repo. org.", "repo-org", null, null,
+				null, JunitTestHelper.getDefaultActor());
 		
 		int ITERATION = 10;
 		

@@ -337,9 +337,9 @@ public class ACOfferManagerTest extends OlatTestCase {
 	public void shouldFilterByOrganisation() {
 		OLATResource testOres = JunitTestHelper.createRandomResource();
 		AccessMethod method = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class).get(0);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
-		Organisation organisationOther = organisationService.createOrganisation(random(), null, random(), organisation1, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null, JunitTestHelper.getDefaultActor());
+		Organisation organisationOther = organisationService.createOrganisation(random(), null, random(), organisation1, null, JunitTestHelper.getDefaultActor());
 		
 		// Offer in organisation
 		Offer offerInOrganisation1 = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
@@ -368,9 +368,9 @@ public class ACOfferManagerTest extends OlatTestCase {
 	
 	@Test
 	public void shouldGetOpenAccessible() {
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
-		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), organisation2, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), organisation2, null, JunitTestHelper.getDefaultActor());
 		List<Organisation> organisations = List.of(organisation1, organisation2);
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		dbInstance.commitAndCloseSession();
@@ -405,7 +405,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 	
 	@Test
 	public void shouldGetOpenAccessible_filterWebPublish() {
-		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null, null, JunitTestHelper.getDefaultActor());
 		OLATResource testOres = JunitTestHelper.createRandomResource();
 		
 		Offer offerWebPublish = acOfferManager.createOffer(testOres, JunitTestHelper.miniRandom());
@@ -482,9 +482,9 @@ public class ACOfferManagerTest extends OlatTestCase {
 	
 	@Test
 	public void shouldGetOpenAccessibleResources_filterOrganisations() {
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null, null);
-		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), null, null, JunitTestHelper.getDefaultActor());
+		Organisation otherOganisation = organisationService.createOrganisation(random(), null, random(), null, null, JunitTestHelper.getDefaultActor());
 		OLATResource resource1 = JunitTestHelper.createRandomResource();
 		OLATResource resource2 = JunitTestHelper.createRandomResource();
 		OLATResource resource3 = JunitTestHelper.createRandomResource();

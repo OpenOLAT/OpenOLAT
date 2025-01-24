@@ -249,7 +249,8 @@ public class QualityTestHelper {
 	}
 	
 	public Organisation createOrganisation(Organisation parent) {
-		return organisationService.createOrganisation(UUID.randomUUID().toString(), UUID.randomUUID().toString(), null, parent, null);
+		return organisationService.createOrganisation(UUID.randomUUID().toString(), UUID.randomUUID().toString(), null, parent,
+				null, JunitTestHelper.getDefaultActor());
 	}
 	
 	public Curriculum createCurriculum() {

@@ -208,21 +208,21 @@ public class UserImportController extends BasicController {
 			String uniqueID = pwd.substring(SHIBBOLETH_MARKER.length());
 			ident = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, login, null, newUser,
 					ShibbolethDispatcher.PROVIDER_SHIB, BaseSecurity.DEFAULT_ISSUER, null,
-					uniqueID, null, preselectedOrganisation, singleUser.getExpirationDate());
+					uniqueID, null, preselectedOrganisation, singleUser.getExpirationDate(), getIdentity());
 			report.incrementCreatedUser();
 			report.incrementUpdatedShibboletAuthentication();
 		} else if(pwd != null && pwd.startsWith(LDAP_MARKER) && ldapModule.isLDAPEnabled()) {
 			String uniqueID = pwd.substring(LDAP_MARKER.length());
 			ident = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, login, null, newUser,
 					LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, null,
-					uniqueID, null,  preselectedOrganisation, singleUser.getExpirationDate());
+					uniqueID, null,  preselectedOrganisation, singleUser.getExpirationDate(), getIdentity());
 			report.incrementCreatedUser();
 			report.incrementUpdatedLdapAuthentication();
 		} else {
 			String provider = StringHelper.containsNonWhitespace(pwd) ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : null;
 			ident = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, login, null, newUser,
 					provider, BaseSecurity.DEFAULT_ISSUER, null,
-					login, pwd,  preselectedOrganisation, singleUser.getExpirationDate());
+					login, pwd,  preselectedOrganisation, singleUser.getExpirationDate(), getIdentity());
 			report.incrementCreatedUser();
 		}
 		return ident;
@@ -272,7 +272,7 @@ public class UserImportController extends BasicController {
 		
 		if(preselectedOrganisation != null
 				&& !organisationservice.hasRole(identity, preselectedOrganisation, OrganisationRoles.user)) {
-			organisationservice.addMember(preselectedOrganisation, identity, OrganisationRoles.user);
+			organisationservice.addMember(preselectedOrganisation, identity, OrganisationRoles.user, getIdentity());
 		}
 
 		return identity;

@@ -136,7 +136,7 @@ public class ExampleData extends OlatTestCase {
 			}
 		}
 		
-		return organisationService.createOrganisation(displayName, identifier, null, input.getParent(), null);
+		return organisationService.createOrganisation(displayName, identifier, null, input.getParent(), null, JunitTestHelper.getDefaultActor());
 	}
 
 	private Curriculum createIfNotExists(CurriculumInput input) {

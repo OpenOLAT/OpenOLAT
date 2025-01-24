@@ -166,8 +166,10 @@ public class ProjProjectDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoad_filter_organisations() {
-		Organisation organisation1 = organisationService.createOrganisation(random(), random(), random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), random(), random(), null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), random(), random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), random(), random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		ProjProject project1 = createRandomProject();
 		projectService.updateProjectOrganisations(project1.getCreator(), project1, List.of(organisation1));
 		ProjProject project2 = createRandomProject();
@@ -185,8 +187,10 @@ public class ProjProjectDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoad_filter_templateOrganisations() {
-		Organisation organisation1 = organisationService.createOrganisation(random(), random(), random(), null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), random(), random(), null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), random(), random(), null,
+				null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), random(), random(), null,
+				null, JunitTestHelper.getDefaultActor());
 		ProjProject project1 = createRandomProject();
 		projectService.updateTemplateOrganisations(project1.getCreator(), project1, List.of(organisation1));
 		ProjProject project2 = createRandomProject();

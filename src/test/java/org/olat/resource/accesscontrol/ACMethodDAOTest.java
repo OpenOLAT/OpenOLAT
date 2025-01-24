@@ -59,9 +59,9 @@ public class ACMethodDAOTest extends OlatTestCase {
 	public void shouldGetAccessMethodForResources_filterByOrganisation_() {
 		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AccessMethod method = sut.getAvailableMethods().get(0);
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, organisation1, null);
-		Organisation organisation4 = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, organisation1, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation4 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		OLATResource olatResource = repositoryEntry.getOlatResource();
 		Offer  offer1 = acService.save(acService.createOffer(olatResource, random()));
 		sut.save(acService.createOfferAccess(offer1, method));

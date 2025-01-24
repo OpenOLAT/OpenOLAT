@@ -72,7 +72,7 @@ public class OrganisationServiceTest extends OlatTestCase {
 	public void initDefaultUnitTestOrganisation() {
 		if(defaultUnitTestOrganisation == null) {
 			defaultUnitTestOrganisation = organisationService
-					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null);
+					.createOrganisation("Org-service-unit-test", "Org-service-unit-test", "", null, null, JunitTestHelper.getDefaultActor());
 		}
 	}
 	
@@ -101,13 +101,13 @@ public class OrganisationServiceTest extends OlatTestCase {
 		
 		Organisation organisation = defaultUnitTestOrganisation;
 		String identifierLevel1 = UUID.randomUUID().toString();
-		Organisation organisationLevel1 = organisationService.createOrganisation("Sub-organisation", identifierLevel1, "", organisation, null);
+		Organisation organisationLevel1 = organisationService.createOrganisation("Sub-organisation", identifierLevel1, "", organisation, null, JunitTestHelper.getDefaultActor());
 		String identifierLevel2 = UUID.randomUUID().toString();
-		Organisation organisationLevel2 = organisationService.createOrganisation("Sub-sub-organisation", identifierLevel2, "", organisationLevel1, null);
+		Organisation organisationLevel2 = organisationService.createOrganisation("Sub-sub-organisation", identifierLevel2, "", organisationLevel1, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		//add membership
-		organisationService.addMember(organisationLevel1, user, OrganisationRoles.user, GroupMembershipInheritance.root);
+		organisationService.addMember(organisationLevel1, user, OrganisationRoles.user, GroupMembershipInheritance.root, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		//check level 1
@@ -128,14 +128,14 @@ public class OrganisationServiceTest extends OlatTestCase {
 		
 		Organisation organisation = defaultUnitTestOrganisation;
 		String identifierLevel1 = UUID.randomUUID().toString();
-		Organisation organisationLevel1 = organisationService.createOrganisation("1. Org.", identifierLevel1, "", organisation, null);
+		Organisation organisationLevel1 = organisationService.createOrganisation("1. Org.", identifierLevel1, "", organisation, null, JunitTestHelper.getDefaultActor());
 		String identifierLevel1_1 = UUID.randomUUID().toString();
-		Organisation organisationLevel1_1 = organisationService.createOrganisation("1.1.", identifierLevel1_1, "", organisationLevel1, null);
+		Organisation organisationLevel1_1 = organisationService.createOrganisation("1.1.", identifierLevel1_1, "", organisationLevel1, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		//add membership
-		organisationService.addMember(organisationLevel1, user, OrganisationRoles.user, GroupMembershipInheritance.root);
-		organisationService.addMember(organisationLevel1_1, user, OrganisationRoles.author, GroupMembershipInheritance.none);
+		organisationService.addMember(organisationLevel1, user, OrganisationRoles.user, GroupMembershipInheritance.root, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisationLevel1_1, user, OrganisationRoles.author, GroupMembershipInheritance.none, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		//check level 1
@@ -150,7 +150,7 @@ public class OrganisationServiceTest extends OlatTestCase {
 		Assert.assertEquals(GroupMembershipInheritance.inherited, membershipLevel2.getInheritanceMode());
 		
 		// remove all the memberships
-		organisationService.removeMember(organisationLevel1, user);
+		organisationService.removeMember(organisationLevel1, user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		// check there is no membership left
@@ -168,13 +168,13 @@ public class OrganisationServiceTest extends OlatTestCase {
 		Identity user = createRandomUser("Org. user");
 		
 		Organisation defOrganisation = defaultUnitTestOrganisation;
-		Organisation organisation = organisationService.createOrganisation("Inherit-organisation", "Top", "", defOrganisation, null);
-		organisationService.addMember(organisation, user, OrganisationRoles.usermanager);
-		organisationService.addMember(organisation, user, OrganisationRoles.user);
+		Organisation organisation = organisationService.createOrganisation("Inherit-organisation", "Top", "", defOrganisation, null, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, user, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, user, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 
-		Organisation subOrganisation = organisationService.createOrganisation("Sub-organisation", "Sub", "", organisation, null);
+		Organisation subOrganisation = organisationService.createOrganisation("Sub-organisation", "Sub", "", organisation, null, JunitTestHelper.getDefaultActor());
 		
 		//check level user role (not inherited)
 		GroupMembership userMembership = groupDao.getMembership(subOrganisation.getGroup(), user, OrganisationRoles.user.name());
@@ -192,14 +192,14 @@ public class OrganisationServiceTest extends OlatTestCase {
 	 */
 	@Test
 	public void moveOrganisation() {
-		Organisation organisation1 = organisationService.createOrganisation("Top 1", "Top 1", "", null, null);
-		Organisation organisation1_1 = organisationService.createOrganisation("Medium 1", "Medium 1", "", organisation1, null);
-		Organisation organisation1_1_1 = organisationService.createOrganisation("Low 1", "Low 1", "", organisation1_1, null);
-		Organisation organisation1_1_2 = organisationService.createOrganisation("Low 2", "Low 2", "", organisation1_1, null);
-		Organisation organisation1_1_3 = organisationService.createOrganisation("Low 3", "Low 3", "", organisation1_1, null);
-		Organisation organisation1_1_3_1 = organisationService.createOrganisation("Underworld 1", "Underworld 1", "", organisation1_1_3, null);
-		Organisation organisation1_1_3_2 = organisationService.createOrganisation("Underworld 2", "Underworld 2", "", organisation1_1_3, null);
-		Organisation organisation2 = organisationService.createOrganisation("Top 2", "Top 2", "", null, null);
+		Organisation organisation1 = organisationService.createOrganisation("Top 1", "Top 1", "", null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation1_1 = organisationService.createOrganisation("Medium 1", "Medium 1", "", organisation1, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation1_1_1 = organisationService.createOrganisation("Low 1", "Low 1", "", organisation1_1, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation1_1_2 = organisationService.createOrganisation("Low 2", "Low 2", "", organisation1_1, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation1_1_3 = organisationService.createOrganisation("Low 3", "Low 3", "", organisation1_1, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation1_1_3_1 = organisationService.createOrganisation("Underworld 1", "Underworld 1", "", organisation1_1_3, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation1_1_3_2 = organisationService.createOrganisation("Underworld 2", "Underworld 2", "", organisation1_1_3, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation("Top 2", "Top 2", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		Identity userManager1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-mgr-1");
@@ -207,14 +207,14 @@ public class OrganisationServiceTest extends OlatTestCase {
 		Identity author1_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("author-1-1");
 		Identity author1_1_3 = JunitTestHelper.createAndPersistIdentityAsRndUser("author-1-1-3");
 		Identity user1_1_2 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-1-1-2");
-		organisationService.addMember(organisation1, userManager1, OrganisationRoles.usermanager);
-		organisationService.addMember(organisation2, userManager2, OrganisationRoles.usermanager);
-		organisationService.addMember(organisation1_1, author1_1, OrganisationRoles.author);
-		organisationService.addMember(organisation1_1_3, author1_1_3, OrganisationRoles.author);
-		organisationService.addMember(organisation1_1_2, user1_1_2, OrganisationRoles.user);
+		organisationService.addMember(organisation1, userManager1, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation2, userManager2, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation1_1, author1_1, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation1_1_3, author1_1_3, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation1_1_2, user1_1_2, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
-		organisationService.moveOrganisation(organisation1_1, organisation2);
+		organisationService.moveOrganisation(organisation1_1, organisation2, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
 		//check descendants
@@ -255,23 +255,23 @@ public class OrganisationServiceTest extends OlatTestCase {
 	@Test
 	public void moveMembers() {
 		Organisation defOrganisation = defaultUnitTestOrganisation;
-		Organisation sourceOrganisation1 = organisationService.createOrganisation("Source 1", "Source 1", "", defOrganisation, null);
-		Organisation sourceOrganisation1_1 = organisationService.createOrganisation("Source 1.1", "Source 1.1", "", sourceOrganisation1, null);
-		Organisation sourceOrganisation1_1_1 = organisationService.createOrganisation("Source 1.1.1", "Source 1.1.1", "", sourceOrganisation1_1, null);
+		Organisation sourceOrganisation1 = organisationService.createOrganisation("Source 1", "Source 1", "", defOrganisation, null, JunitTestHelper.getDefaultActor());
+		Organisation sourceOrganisation1_1 = organisationService.createOrganisation("Source 1.1", "Source 1.1", "", sourceOrganisation1, null, JunitTestHelper.getDefaultActor());
+		Organisation sourceOrganisation1_1_1 = organisationService.createOrganisation("Source 1.1.1", "Source 1.1.1", "", sourceOrganisation1_1, null, JunitTestHelper.getDefaultActor());
 		
-		Organisation targetOrganisation1 = organisationService.createOrganisation("Target 1", "Target 1", "", defOrganisation, null);
-		Organisation targetOrganisation1_1 = organisationService.createOrganisation("Target 1", "Target 1", "", targetOrganisation1, null);
-		Organisation targetOrganisation1_1_1 = organisationService.createOrganisation("Target 1", "Target 1", "", targetOrganisation1_1, null);
+		Organisation targetOrganisation1 = organisationService.createOrganisation("Target 1", "Target 1", "", defOrganisation, null, JunitTestHelper.getDefaultActor());
+		Organisation targetOrganisation1_1 = organisationService.createOrganisation("Target 1", "Target 1", "", targetOrganisation1, null, JunitTestHelper.getDefaultActor());
+		Organisation targetOrganisation1_1_1 = organisationService.createOrganisation("Target 1", "Target 1", "", targetOrganisation1_1, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
 		Identity user1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-1");
-		organisationService.addMember(sourceOrganisation1, user1, OrganisationRoles.user);
+		organisationService.addMember(sourceOrganisation1, user1, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Identity user1_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-1-1");
-		organisationService.addMember(sourceOrganisation1_1, user1_1, OrganisationRoles.user);
+		organisationService.addMember(sourceOrganisation1_1, user1_1, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Identity user1_1_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-1-1-1");
-		organisationService.addMember(sourceOrganisation1_1_1, user1_1_1, OrganisationRoles.user);
+		organisationService.addMember(sourceOrganisation1_1_1, user1_1_1, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		Identity admin1 = JunitTestHelper.createAndPersistIdentityAsRndUser("admin-1");
-		organisationService.addMember(sourceOrganisation1, admin1, OrganisationRoles.administrator);
+		organisationService.addMember(sourceOrganisation1, admin1, OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 
 		// move the user1 and author1 from org. 1 source to target
@@ -282,7 +282,7 @@ public class OrganisationServiceTest extends OlatTestCase {
 		roles.add(OrganisationRoles.administrator);
 		roles.add(OrganisationRoles.author);
 		roles.add(OrganisationRoles.user);
-		organisationService.moveMembers(sourceOrganisation1, targetOrganisation1, identitiesToMove, roles);
+		organisationService.moveMembers(sourceOrganisation1, targetOrganisation1, identitiesToMove, roles, JunitTestHelper.getDefaultActor());
 		
 		// check user 1
 		{
@@ -325,13 +325,13 @@ public class OrganisationServiceTest extends OlatTestCase {
 		User user = userManager.createUser("first" + login, "last" + login, login + "@openolat.com");
 		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
 				null, null, null,
-				null, null, defaultUnitTestOrganisation, null);
+				null, null, defaultUnitTestOrganisation, null, JunitTestHelper.getDefaultActor());
 	}
 	
 	@Test
 	public void shouldGetOrganisationIdentityEmails() {
-		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null);
-		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation1 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+		Organisation organisation2 = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		// Regular users
 		createUser(organisation1, random(), "openolat.org");
 		createUser(organisation1, random(), "openolat.org");
@@ -365,13 +365,13 @@ public class OrganisationServiceTest extends OlatTestCase {
 	private Identity createUser(Organisation organisation, String login, String mailDomain) {
 		User user = userManager.createUser("orged" + login, "orged" + login, login + "@" + mailDomain);
 		return securityManager.createAndPersistIdentityAndUserWithOrganisation(null, login, null, user,
-				null, null, null, null, null, organisation, null);
+				null, null, null, null, null, organisation, null, JunitTestHelper.getDefaultActor());
 	}
 	
 	@Test
 	public void shouldCheckIfEmailDomainAllowed() {
 		// Simple domain
-		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null);
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
 		OrganisationEmailDomain emailDomain = organisationService.createOrganisationEmailDomain(organisation, "openolat.org");
 		List<OrganisationEmailDomain> emailDomains = List.of(emailDomain);
 		dbInstance.commitAndCloseSession();

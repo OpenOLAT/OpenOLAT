@@ -1422,7 +1422,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, "inst" + login + "@openolat.com");
 		Identity id = securityManager.createAndPersistIdentityAndUser(null, login, null, user, "OLAT", BaseSecurity.DEFAULT_ISSUER, null, login, "secret", null);
 		Organisation organisation = organisationService.getDefaultOrganisation();
-		organisationService.addMember(organisation, id, OrganisationRoles.user);
+		organisationService.addMember(organisation, id, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals("inst" + login + "@openolat.com", id.getUser().getInstitutionalEmail());
 		
@@ -1459,8 +1459,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		User user = userManager.createUser(login, login, login + "@openolat.com");
 		Identity id = securityManager.createAndPersistIdentityAndUser(null, login, null, user, "OLAT", BaseSecurity.DEFAULT_ISSUER, null, login, "2change-very-often", null);
 		Organisation organisation = organisationService.getDefaultOrganisation();
-		organisationService.addMember(organisation, id, OrganisationRoles.user);
-		organisationService.addMember(organisation, id, OrganisationRoles.rolesmanager);
+		organisationService.addMember(organisation, id, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
+		organisationService.addMember(organisation, id, OrganisationRoles.rolesmanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 	
 		RestConnection conn = new RestConnection();

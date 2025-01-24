@@ -203,7 +203,8 @@ public class EditOrganisationController extends FormBasicController {
 		if(organisation == null) {
 			//create a new one
 			organisation = organisationService
-					.createOrganisation(displayNameEl.getValue(), identifierEl.getValue(), descriptionEl.getValue(), parentOrganisation, organisationType);
+					.createOrganisation(displayNameEl.getValue(), identifierEl.getValue(), descriptionEl.getValue(), parentOrganisation,
+							organisationType, getIdentity());
 			if (StringHelper.containsNonWhitespace(locationEl.getValue())) {
 				organisation.setLocation(locationEl.getValue());
 				organisation = organisationService.updateOrganisation(organisation);

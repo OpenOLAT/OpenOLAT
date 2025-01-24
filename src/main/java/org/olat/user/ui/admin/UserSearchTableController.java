@@ -872,7 +872,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 					&& userBulkMove.getIdentitiesToMove() != null && !userBulkMove.getIdentitiesToMove().isEmpty();
 			if(hasChanges) {
 				organisationService.moveMembers(userBulkMove.getOrganisation(), userBulkMove.getTargetOrganisation(),
-						userBulkMove.getIdentitiesToMove(), userBulkMove.getRoles());
+						userBulkMove.getIdentitiesToMove(), userBulkMove.getRoles(), getIdentity());
 			}
 			// signal correct completion and tell if changes were made or not.
 			return hasChanges ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
