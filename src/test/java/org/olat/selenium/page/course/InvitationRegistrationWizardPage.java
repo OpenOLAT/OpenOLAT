@@ -96,11 +96,7 @@ public class InvitationRegistrationWizardPage {
 		return this;
 	}
 	
-	public void finalizeRegistration(String username, String password) {
-		By usernameBy = By.cssSelector(".o_sel_registration_login input[type='text']");
-		browser.findElement(usernameBy).clear();
-		browser.findElement(usernameBy).sendKeys(username);
-		
+	public void finalizeRegistration(String password) {
 		By cred1By = By.cssSelector(".o_sel_registration_cred1 input[type='password']");
 		browser.findElement(cred1By).sendKeys(password);
 		By cred2By = By.cssSelector(".o_sel_registration_cred2 input[type='password']");

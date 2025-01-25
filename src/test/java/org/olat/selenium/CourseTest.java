@@ -2079,23 +2079,20 @@ public class CourseTest extends Deployments {
 	throws IOException, URISyntaxException {
 		
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
-		
-		//admin make the confirmation of membership mandatory
-		//for groups created by standard users.
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs(administrator)
 			.resume();
 
 		NavigationPage navBar = NavigationPage.load(browser);
-		//create a course
+		// Create a course
 		String courseTitle = "Cours sur invitation " + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle, true)
 			.clickToolbarBack();
 		
-		//create a course element of type Scorm with the scorm that we create above
+		// Create a course element
 		String infosNodeTitle = "Invitation infos";
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
@@ -2110,14 +2107,13 @@ public class CourseTest extends Deployments {
 			.cleanBlueBox()
 			.clickToolbarBack();
 		
-		String username = "john." + UUID.randomUUID().toString().replace("-", "");
 		String email = "john." + UUID.randomUUID().toString().replace("-", "") + "@openolat.org";
 		
 		CoursePageFragment courseRuntime = new CoursePageFragment(browser);
-		//publish the course
+		// Publish the course
 		courseRuntime
 			.publish();
-		//add Ryomou as a course member
+		// Invite an external user
 		courseRuntime
 			.members()
 			.addInvitation()
@@ -2142,7 +2138,7 @@ public class CourseTest extends Deployments {
 			.nextToDisclaimer()
 			.acknowledgeDisclaimer()
 			.nextToPassword()
-			.finalizeRegistration(username, "2#ChangeSometimes");
+			.finalizeRegistration("2#ChangeSometimes");
 		
 		CoursePageFragment invitationCourse = new CoursePageFragment(browser);
 		invitationCourse
