@@ -87,6 +87,7 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 		
 		Map<Long, List<LectureBlock>> elementKeyToLectureBlocks = lectureBlocks.stream()
+				.filter(lb -> lb.getCurriculumElement() != null)
 				.collect(Collectors.groupingBy(lb -> lb.getCurriculumElement().getKey()));
 		Formatter formatter = Formatter.getInstance(getLocale());
 		List<OutlineRow> outlineRows = new ArrayList<>(rows.size());
