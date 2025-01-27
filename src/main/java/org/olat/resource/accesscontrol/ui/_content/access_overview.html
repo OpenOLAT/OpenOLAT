@@ -17,6 +17,14 @@
 		$internalCatalog
 	</div>
 #end
+#if($publishedGroups)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_publishedgroups">$r.translate("offers.overview.published.groups")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_publishedgroups">
+		$publishedGroups
+	</div>
+#end
 #if($details)
 	<div>
 		<label class="control-label col-sm-3" for="o_ac_details">$detailsLabel</label>

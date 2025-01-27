@@ -96,14 +96,14 @@ public class CurriculumElementOffersController extends BasicController {
 		String editBusinessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + elementRef.getKey() + "][Matadata:0]";
 
 		boolean fullyBooked = false;
-		CatalogInfo catalogInfo = new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
-				translate("offer.available.in.status.curriculum.element"), true, translate("access.taxonomy.level"),
-				details, false, getCatalogStatusEvaluator(element.getElementStatus()), fullyBooked,
-				editBusinessPath, translate("access.open.metadata"),
-				CatalogBCFactory.get(false).getOfferUrl(element.getResource()), 
-				catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(element.getResource()): null,
+		CatalogInfo catalogInfo = new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), false, true, true,
+				translate("access.taxonomy.level"), details, null, false,
+				getCatalogStatusEvaluator(element.getElementStatus()),
+				translate("offer.available.in.status.curriculum.element"), fullyBooked, editBusinessPath,
+				translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
+				catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,
 				taxonomyLevels, true);
-		
+
 		accessConfigCtrl = new AccessConfigurationController(ureq, wControl, element.getResource(),
 				element.getDisplayName(), true, false, false, true, defaultOfferOrganisations, catalogInfo,
 				!secCallback.canEditCurriculumElement(element), false, null);

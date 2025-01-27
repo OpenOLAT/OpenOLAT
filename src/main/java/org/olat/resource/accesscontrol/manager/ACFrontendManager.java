@@ -62,6 +62,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.EnrollState;
@@ -281,6 +282,10 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 		if(roles.contains(GroupRoles.participant.name())) {
 			return new AccessResult(true);
+		}
+		
+		if (BusinessGroupStatusEnum.active != group.getGroupStatus()) {
+			return new AccessResult(false);
 		}
 
 		Date now = dateNow();

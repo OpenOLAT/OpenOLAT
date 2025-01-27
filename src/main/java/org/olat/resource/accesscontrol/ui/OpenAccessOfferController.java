@@ -105,7 +105,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		}
 		
 		// Period
-		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getPeriodStatusOption(), formLayout);
+		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getStatusPeriodOption(), formLayout);
 		
 		uifactory.addSpacerElement("others", formLayout, false);
 		

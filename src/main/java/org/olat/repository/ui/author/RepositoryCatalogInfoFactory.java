@@ -86,13 +86,13 @@ public class RepositoryCatalogInfoFactory {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
 			}
 			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
-					translator.translate("offer.available.in.status.course"), true,
-					translator.translate("access.taxonomy.level"), details, false,
-					getCatalogStatusEvaluator(entry.getEntryStatus()), false, editBusinessPath,
-					translator.translate("access.open.metadata"),
-					CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), 
-					catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()): null,
-					taxonomyLevels, showRQCode);
+					false, true,
+					true, translator.translate("access.taxonomy.level"), details,
+					null, false, getCatalogStatusEvaluator(entry.getEntryStatus()),
+					translator.translate("offer.available.in.status.course"),
+					false, 
+					editBusinessPath,
+					translator.translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()): null, taxonomyLevels, showRQCode);
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
@@ -121,9 +121,9 @@ public class RepositoryCatalogInfoFactory {
 			if (showBusinessPath) {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			}
-			return new CatalogInfo(true, false, translator.translate("offer.available.in.status.course"), true,
-					translator.translate("access.info.catalog.entries"), details, notAvailableEntry, null, false,
-					editBusinessPath, translator.translate("access.open.catalog"), null, null, null, showRQCode);
+			return new CatalogInfo(true, false, false, true, true, translator.translate("access.info.catalog.entries"),
+					details, null, notAvailableEntry, null, translator.translate("offer.available.in.status.course"),
+					false, editBusinessPath, translator.translate("access.open.catalog"), null, null, null, showRQCode);
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}

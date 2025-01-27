@@ -62,18 +62,22 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 	protected void initCustomFormElements(FormItemContainer formLayout) {
 		formLayout.setElementCssClass("o_sel_accesscontrol_free_form");
 		
-		String[] autoValues = new String[]{ translate("auto.booking.value") };
-		autoEl = uifactory.addCheckboxesHorizontal("auto.booking", "auto.booking", formLayout, autoKeys, autoValues);
-		autoEl.setElementCssClass("o_sel_accesscontrol_auto_booking");
-		if(link.getOffer() != null && link.getOffer().getKey() != null) {
-			autoEl.select(autoKeys[0], link.getOffer().isAutoBooking());
-		} else {
-			autoEl.select(autoKeys[0], true);
+		if (catalogInfo.isAutoBookingSupported()) {
+			String[] autoValues = new String[]{ translate("auto.booking.value") };
+			autoEl = uifactory.addCheckboxesHorizontal("auto.booking", "auto.booking", formLayout, autoKeys, autoValues);
+			autoEl.setElementCssClass("o_sel_accesscontrol_auto_booking");
+			if(link.getOffer() != null && link.getOffer().getKey() != null) {
+				autoEl.select(autoKeys[0], link.getOffer().isAutoBooking());
+			} else {
+				autoEl.select(autoKeys[0], true);
+			}
 		}
 	}
 
 	@Override
 	protected void updateCustomChanges() {
-		link.getOffer().setAutoBooking(autoEl.isAtLeastSelected(1));
+		if (autoEl != null) {
+			link.getOffer().setAutoBooking(autoEl.isAtLeastSelected(1));
+		}
 	}
 }

@@ -29,11 +29,13 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.ui.LTI13ResourceAccessController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.CatalogInfo;
+import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,7 +65,7 @@ public class BusinessGroupEditAccessController extends BasicController {
 			boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.bookings);
 			boolean waitingList = businessGroup.getWaitingListEnabled();
 			accessCtrl = new AccessConfigurationController(ureq, getWindowControl(), resource, businessGroup.getName(),
-					!waitingList, false, false, false, null, CatalogInfo.UNSUPPORTED, false, managed,
+					!waitingList, false, false, false, null, createCatalogInfo(businessGroup), false, managed,
 					"manual_user/groups/Group_Administration/#booking");
 			listenTo(accessCtrl);
 			mainVC.put("accessAndBooking", accessCtrl.getInitialComponent());
@@ -79,6 +81,34 @@ public class BusinessGroupEditAccessController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
+	private CatalogInfo createCatalogInfo(BusinessGroup businessGroup) {
+		String periodStatusOption = translate("access.status.option");
+		String customPublishedIn = translate("access.published.in");
+		return new CatalogInfo(false, false, true, false, false, null, null, customPublishedIn,
+				false, new BusinessGroupStatusEvaluator(businessGroup.getGroupStatus()), periodStatusOption, false, null,
+				null, null, null, null, true);
+	}
+	
+	private static final class BusinessGroupStatusEvaluator implements CatalogStatusEvaluator {
+
+		private final BusinessGroupStatusEnum status;
+
+		public BusinessGroupStatusEvaluator(BusinessGroupStatusEnum status) {
+			this.status = status;
+		}
+
+		@Override
+		public boolean isVisibleStatusNoPeriod() {
+			return BusinessGroupStatusEnum.active == status;
+		}
+
+		@Override
+		public boolean isVisibleStatusPeriod() {
+			return BusinessGroupStatusEnum.active == status;
+		}
+		
+	}
+
 	public boolean isPaymentMethodInUse() {
 		return accessCtrl.isPaymentMethodInUse();
 	}

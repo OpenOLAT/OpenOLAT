@@ -75,7 +75,7 @@ public class GuestOfferController extends FormBasicController {
 		catalogEl.select(CATALOG_WEB, offer != null && offer.isCatalogWebPublish());
 		catalogEl.setVisible(catalogInfo.isCatalogSupported() && !catalogEl.getKeys().isEmpty());
 		
-		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getPeriodStatusOption(), formLayout);
+		uifactory.addStaticTextElement("offer.available.in", catalogInfo.getStatusPeriodOption(), formLayout);
 		
 		uifactory.addSpacerElement("others", formLayout, false);
 		

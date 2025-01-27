@@ -598,7 +598,7 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	private void forgeCatalogInfos(FormItemContainer formLayout) {
-		if (catalogInfo.isCatalogSupported()) {
+		if (catalogInfo.isCatalogSupported() || catalogInfo.isPublishedGroupsSupported()) {
 			String overviewPage = velocity_root + "/access_overview.html";
 			overviewContainer = FormLayoutContainer.createCustomFormLayout("overview", getTranslator(), overviewPage);
 			overviewContainer.setRootForm(mainForm);
@@ -627,48 +627,51 @@ public class AccessConfigurationController extends FormBasicController {
 			return;
 		}
 		
-		String internalCatalog = getCatalogStatus(accessInfos);
-		overviewContainer.contextPut("internalCatalog", internalCatalog);
-		
-		if (catalogInfo.isWebCatalogSupported()) {
-			List<AccessInfo> externalCatalogInfos = accessInfos.stream().filter(info -> info.getOffer().isCatalogWebPublish()).toList();
-			String externalCatalog = getCatalogStatus(externalCatalogInfos);
-			overviewContainer.contextPut("externalCatalog", externalCatalog);
+		if (catalogInfo.isCatalogSupported()) {
+			String internalCatalog = getCatalogStatus(accessInfos);
+			overviewContainer.contextPut("internalCatalog", internalCatalog);
+			
+			if (catalogInfo.isWebCatalogSupported()) {
+				List<AccessInfo> externalCatalogInfos = accessInfos.stream().filter(info -> info.getOffer().isCatalogWebPublish()).toList();
+				String externalCatalog = getCatalogStatus(externalCatalogInfos);
+				overviewContainer.contextPut("externalCatalog", externalCatalog);
+			}
+		} else if (catalogInfo.isPublishedGroupsSupported()) {
+			String status = getCatalogStatus(accessInfos);
+			overviewContainer.contextPut("publishedGroups", status);
 		}
 	}
 	
 	private String getCatalogStatus(List<AccessInfo> catalogAccessInfo) {
 		String catalogStatus = null;
-		if (catalogInfo.isCatalogSupported()) {
-			if (!catalogInfo.isNotAvailableEntry()) {
-				boolean atLeastOneActive = catalogAccessInfo.stream().anyMatch(AccessInfo::isActive);
-				if (atLeastOneActive) {
-					if (catalogInfo.isFullyBooked()) {
-						catalogStatus = "<span class=\"o_labeled_light o_ac_offer_fully_booked\"><i class=\"o_icon o_ac_offer_fully_booked_icon\"> </i> "
-										+ translate("offers.overview.fully.booked")
+		if (!catalogInfo.isNotAvailableEntry()) {
+			boolean atLeastOneActive = catalogAccessInfo.stream().anyMatch(AccessInfo::isActive);
+			if (atLeastOneActive) {
+				if (catalogInfo.isFullyBooked()) {
+					catalogStatus = "<span class=\"o_labeled_light o_ac_offer_fully_booked\"><i class=\"o_icon o_ac_offer_fully_booked_icon\"> </i> "
+									+ translate("offers.overview.fully.booked")
+									+ "</span>";
+				} else {
+					boolean statusVisible = catalogAccessInfo.stream().anyMatch(AccessInfo::isWithPeriod)
+							? statusEvaluator.isVisibleStatusPeriod()
+							: statusEvaluator.isVisibleStatusNoPeriod();
+					if (!statusVisible) {
+						catalogStatus = "<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> "
+										+ translate("offers.overview.not.available")
 										+ "</span>";
-					} else {
-						boolean statusVisible = catalogAccessInfo.stream().anyMatch(AccessInfo::isWithPeriod)
-								? statusEvaluator.isVisibleStatusPeriod()
-								: statusEvaluator.isVisibleStatusNoPeriod();
-						if (!statusVisible) {
-							catalogStatus = "<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> "
-											+ translate("offers.overview.not.available")
-											+ "</span>";
-						}
-					}
-					if (!StringHelper.containsNonWhitespace(catalogStatus)) {
-						catalogStatus = "<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> "
-								+ translate("offers.overview.bookable")
-								+ "</span>";
 					}
 				}
+				if (!StringHelper.containsNonWhitespace(catalogStatus)) {
+					catalogStatus = "<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> "
+							+ translate("offers.overview.bookable")
+							+ "</span>";
+				}
 			}
-			if (!StringHelper.containsNonWhitespace(catalogStatus)) {
-				catalogStatus = "<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> "
-								+ translate("offers.overview.not.available")
-								+ "</span>";
-			}
+		}
+		if (!StringHelper.containsNonWhitespace(catalogStatus)) {
+			catalogStatus = "<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> "
+							+ translate("offers.overview.not.available")
+							+ "</span>";
 		}
 		return catalogStatus;
 	}
@@ -1039,7 +1042,7 @@ public class AccessConfigurationController extends FormBasicController {
 				} else {
 					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> " + translate("offers.overview.bookable") + "</span>");
 				}
-				dates = catalogInfo.getPeriodStatusOption();
+				dates = catalogInfo.getStatusPeriodOption();
 				active = true;
 				withPeriod = false;
 			}
@@ -1114,7 +1117,9 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public String getPublishIn() {
 			String publishIn = null;
-			if (offer != null) {
+			if (StringHelper.containsNonWhitespace(catalogInfo.getCustomPublishedIn())) {
+				publishIn = catalogInfo.getCustomPublishedIn();
+			} else if (offer != null) {
 				if (offer.isCatalogPublish()) {
 					publishIn = ICON_CATALOG_INTERN + translate("offer.publish.in.intern");
 					if (offer.isCatalogWebPublish()) {

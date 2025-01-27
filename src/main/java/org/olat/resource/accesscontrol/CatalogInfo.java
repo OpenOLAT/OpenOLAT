@@ -25,17 +25,20 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 
 public class CatalogInfo {
 
-	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, null, false, null, null, true, null, false, null, null, null, null, null, true);
+	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, false, false, null, null, null, true, null, null, false, null, null, null, null, null, true);
 	public static final TrueStatusEvaluator TRUE_STATUS_EVALUATOR = new TrueStatusEvaluator();
 
 	private final boolean catalogSupported;
 	private final boolean webCatalogSupported;
-	private final String periodStatusOption;
+	private final boolean publishedGroupsSupported;
+	private final boolean autoBookingSupported;
 	private final boolean showDetails;
 	private final String detailsLabel;
 	private final String details;
+	private final String customPublishedIn;
 	private final boolean notAvailableEntry;
 	private final CatalogStatusEvaluator statusEvaluator;
+	private final String statusPeriodOption;
 	private final boolean fullyBooked;
 	private final String editBusinessPath;
 	private final String editLabel;
@@ -44,19 +47,22 @@ public class CatalogInfo {
 	private final List<TaxonomyLevel> microsites;
 	private final boolean showQRCode;
 
-	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, String periodStatusOption,
-			boolean showDetails, String detailsLabel, String details, boolean notAvailableEntry,
-			CatalogStatusEvaluator statusEvaluator, boolean fullyBooked, String editBusinessPath, String editLabel,
-			String catalogBusinessPath, String webCatalogBusinessPath, List<TaxonomyLevel> microsites,
-			boolean showQRCode) {
+	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, boolean publishedGroupsSupported,
+			boolean autoBookingSupported, boolean showDetails, String detailsLabel, String details,
+			String customPublishedIn, boolean notAvailableEntry, CatalogStatusEvaluator statusEvaluator,
+			String statusPeriodOption, boolean fullyBooked, String editBusinessPath, String editLabel,
+			String catalogBusinessPath, String webCatalogBusinessPath, List<TaxonomyLevel> microsites, boolean showQRCode) {
 		this.catalogSupported = catalogSupported;
 		this.webCatalogSupported = webCatalogSupported;
-		this.periodStatusOption = periodStatusOption;
+		this.publishedGroupsSupported = publishedGroupsSupported;
+		this.autoBookingSupported = autoBookingSupported;
 		this.showDetails = showDetails;
 		this.detailsLabel = detailsLabel;
 		this.details = details;
+		this.customPublishedIn = customPublishedIn;
 		this.notAvailableEntry = notAvailableEntry;
 		this.statusEvaluator = statusEvaluator;
+		this.statusPeriodOption = statusPeriodOption;
 		this.fullyBooked = fullyBooked;
 		this.editBusinessPath = editBusinessPath;
 		this.editLabel = editLabel;
@@ -74,8 +80,12 @@ public class CatalogInfo {
 		return webCatalogSupported;
 	}
 
-	public String getPeriodStatusOption() {
-		return periodStatusOption;
+	public boolean isPublishedGroupsSupported() {
+		return publishedGroupsSupported;
+	}
+
+	public boolean isAutoBookingSupported() {
+		return autoBookingSupported;
 	}
 
 	public boolean isShowDetails() {
@@ -90,12 +100,20 @@ public class CatalogInfo {
 		return details;
 	}
 
+	public String getCustomPublishedIn() {
+		return customPublishedIn;
+	}
+
 	public boolean isNotAvailableEntry() {
 		return notAvailableEntry;
 	}
 
 	public CatalogStatusEvaluator getStatusEvaluator() {
 		return statusEvaluator;
+	}
+
+	public String getStatusPeriodOption() {
+		return statusPeriodOption;
 	}
 
 	public boolean isFullyBooked() {

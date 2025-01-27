@@ -75,7 +75,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	protected final OfferAccess link;
 	private final boolean offerOrganisationsSupported;
 	private final Collection<Organisation> offerOrganisations;
-	private final CatalogInfo catalogInfo;
+	protected final CatalogInfo catalogInfo;
 	private List<Organisation> organisations;
 	private final boolean edit;
 	
@@ -125,7 +125,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		
 		// Period
 		SelectionValues periodSV = new SelectionValues();
-		periodSV.add(SelectionValues.entry(PERIOD_STATUS, catalogInfo.getPeriodStatusOption()));
+		periodSV.add(SelectionValues.entry(PERIOD_STATUS, catalogInfo.getStatusPeriodOption()));
 		periodSV.add(SelectionValues.entry(PERIOD_DATE, translate("offer.available.in.period")));
 		periodEl = uifactory.addRadiosVertical("offer.available.in", formLayout, periodSV.keys(), periodSV.values());
 		periodEl.addActionListener(FormEvent.ONCHANGE);
