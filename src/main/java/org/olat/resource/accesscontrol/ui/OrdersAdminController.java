@@ -525,7 +525,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			}
 		}
 
-		showInfo("info.order.set.as.paied");
+		showInfo("info.order.set.as.paid");
 		tableEl.deselectAll();
 		tableEl.reloadData();
 	}

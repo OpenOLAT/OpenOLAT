@@ -333,7 +333,7 @@ public class OrderDetailController extends FormBasicController {
 		if(order != null) {
 			acService.changeOrderStatus(order, OrderStatus.PAYED);
 		}
-		showInfo("info.order.set.as.paied");
+		showInfo("info.order.set.as.paid");
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	

@@ -265,7 +265,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		tableEl.deselectAll();
 		tableEl.reloadData();
 		
-		showInfo("info.order.set.as.paied");
+		showInfo("info.order.set.as.paid");
 	}
 	
 	private class ToolsController extends BasicController {
