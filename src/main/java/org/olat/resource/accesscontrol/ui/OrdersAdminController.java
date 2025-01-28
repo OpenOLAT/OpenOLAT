@@ -506,7 +506,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		OrderTableItem order = row.getItem();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey(),
+		detailController = new OrderDetailController(ureq, bwControl, order,
 				avatarMapper, avatarMapperBaseURL, readOnly, mainForm);
 		listenTo(detailController);
 	

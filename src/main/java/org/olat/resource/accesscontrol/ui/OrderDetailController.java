@@ -53,6 +53,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -94,6 +95,7 @@ public class OrderDetailController extends FormBasicController {
 	private Order order;
 	private final Identity delivery;
 	private final boolean readOnly;
+	private final String offerLabel;
 	private final List<AccessMethod> orderMethods;
 	private final UserInfoProfileConfig profileConfig;
 	private Collection<AccessTransaction> transactions;
@@ -108,16 +110,17 @@ public class OrderDetailController extends FormBasicController {
 	@Autowired
 	private UserInfoService userInfoService;
 	
-	public OrderDetailController(UserRequest ureq, WindowControl wControl, Long orderKey,
+	public OrderDetailController(UserRequest ureq, WindowControl wControl, OrderTableItem orderItem,
 			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, boolean readOnly) {
 		super(ureq, wControl, "order");
 		this.readOnly = readOnly;
-		
-		order = acService.loadOrderByKey(orderKey);
+		// Reload to have the last status and transactions
+		order = acService.loadOrderByKey(orderItem.getOrderKey());
 		transactions = acService.findAccessTransactions(order);
-		orderMethods = acService.findAccessMethods(order);
+		orderMethods = orderItem.getMethods();
+		offerLabel = orderItem.getLabel();
 		
-		delivery = order.getDelivery();
+		delivery = this.order.getDelivery();
 		profileConfig = userInfoService.createProfileConfig();
 		profileConfig.setChatEnabled(true);
 		profileConfig.setAvatarMapper(avatarMapper);
@@ -128,14 +131,15 @@ public class OrderDetailController extends FormBasicController {
 		updateUI();
 	}
 	
-	public OrderDetailController(UserRequest ureq, WindowControl wControl, Long orderKey,
+	public OrderDetailController(UserRequest ureq, WindowControl wControl, OrderTableItem orderItem,
 			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, boolean readOnly, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "order", rootForm);
 		this.readOnly = readOnly;
-		
-		order = acService.loadOrderByKey(orderKey);
+		// Reload to have the last status and transactions
+		order = acService.loadOrderByKey(orderItem.getOrderKey());
 		transactions = acService.findAccessTransactions(order);
-		orderMethods = acService.findAccessMethods(order);
+		orderMethods = orderItem.getMethods();
+		offerLabel = orderItem.getLabel();
 		
 		delivery = order.getDelivery();
 		profileConfig = userInfoService.createProfileConfig();
@@ -180,8 +184,9 @@ public class OrderDetailController extends FormBasicController {
 			logError("", e);
 		}
 		
-		//TODO booking
-		uifactory.addStaticTextElement("offer-name", "offer.name", "", formLayout);
+		if(StringHelper.containsNonWhitespace(offerLabel)) {
+			uifactory.addStaticTextElement("offer-name", "offer.name", offerLabel, formLayout);
+		}
 
 		Date creationDate = order.getCreationDate();
 		String creationDateStr = Formatter.getInstance(getLocale()).formatDateAndTime(creationDate);

@@ -243,7 +243,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		OrderTableItem order = row.getItem();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey(),
+		detailController = new OrderDetailController(ureq, bwControl, order,
 				avatarMapper, avatarMapperBaseURL, true);
 		listenTo(detailController);
 		if (stackPanel != null) {
