@@ -66,7 +66,7 @@ public class ReportTemplatesDataModel extends DefaultFlexiTableDataModel<ReportT
 			case category -> row.getCategory();
 			case description -> row.getDescription();
 			case type -> row.getType();
-			case run -> row.getRun();
+			case run -> row.getPlayLink();
 		};
 	}
 

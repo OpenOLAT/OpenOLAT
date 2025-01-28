@@ -389,6 +389,8 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 				reportsCtrl = new ManagerReportsController(ureq, bwControl, content);
 				listenTo(reportsCtrl);
+			} else {
+				reportsCtrl.reload();
 			}
 			selectedCtrl = reportsCtrl;
 		}

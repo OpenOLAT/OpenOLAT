@@ -17,13 +17,10 @@
 	</div>
 	#end
 
-	#if($r.available("generated.reports") && $r.visible("generated.reports"))
 	<div class="o_coach_manager_generated_reports">
-		<fieldset>
-			<legend>$r.translate("generated.reports")</legend>
+		#if($r.available("generated.reports") && $r.visible("generated.reports"))
 			$r.render("generated.reports")
-		</fieldset>
+		#end
 	</div>
-	#end
 
 </div>

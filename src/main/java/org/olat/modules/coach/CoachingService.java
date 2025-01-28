@@ -30,6 +30,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
+import org.olat.modules.coach.model.GeneratedReport;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
@@ -72,4 +73,6 @@ public interface CoachingService {
 	public List<EfficiencyStatementEntry> getEfficencyStatements(Identity student, List<RepositoryEntry> courses, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
 	
 	public List<UserEfficiencyStatement> getEfficencyStatements(Identity student);
+	
+	public List<GeneratedReport> getGeneratedReports(Identity coach);
 }

@@ -30,7 +30,15 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.RelationRole;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementForCoaching;
@@ -40,6 +48,7 @@ import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
+import org.olat.modules.coach.model.GeneratedReport;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
@@ -72,6 +81,8 @@ public class CoachingServiceImpl implements CoachingService {
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
 
+	private static final String GENERATED_REPORT_FOLDER_NAME = "ooo-generated-reports-ooo"; 
+	
 	@Override
 	public CoachingSecurity isCoach(Identity identity) {
 		boolean coach = coachingDao.isCoach(identity);
@@ -216,5 +227,35 @@ public class CoachingServiceImpl implements CoachingService {
 			}
 			return false;
 		}
+	}
+
+	@Override
+	public List<GeneratedReport> getGeneratedReports(Identity coach) {
+		LocalFolderImpl reportsFolder = getGeneratedReportsFolder(coach);
+
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		vfsRepositoryService.getMetadataFor(reportsFolder.getBasefile());
+
+		List<GeneratedReport> generatedReports = new ArrayList<>();
+		for (VFSItem vfsItem : reportsFolder.getItems()) {
+			if (vfsItem instanceof VFSLeaf reportLeaf) {
+				VFSMetadata metadata = vfsRepositoryService.getMetadataFor(reportLeaf);	
+				if (metadata != null) {
+					GeneratedReport report = new GeneratedReport();
+					report.setMetadata(metadata);
+					generatedReports.add(report);
+				}
+			}
+		}
+		
+		return generatedReports;
+	}
+	
+	private LocalFolderImpl getGeneratedReportsFolder(Identity coach) {
+		LocalFolderImpl folder = VFSManager.olatRootContainer(FolderConfig.getUserHome(coach) + "/private/" + GENERATED_REPORT_FOLDER_NAME);
+		if (!folder.exists()) {
+			folder.getBasefile().mkdirs();
+		}
+		return folder;
 	}
 }

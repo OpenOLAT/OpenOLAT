@@ -37,5 +37,13 @@
 			</list>
 		</property>
 	</bean>
+	
+	<!-- Reports -->
+	<bean class="org.olat.modules.coach.reports.AbsencesReportConfiguration">
+		<property name="i18nNameKey" value="report.name.absencesLast4Weeks" />
+		<property name="i18nDescriptionKey" value="report.description.absencesLast4Weeks" />
+		<property name="i18nCategoryKey" value="report.category.absences" />
+		<property name="dynamic" value="false" />
+	</bean>
 </beans>
 	

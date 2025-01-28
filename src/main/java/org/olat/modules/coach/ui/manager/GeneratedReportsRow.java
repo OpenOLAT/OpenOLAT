@@ -19,6 +19,11 @@
  */
 package org.olat.modules.coach.ui.manager;
 
+import java.util.Date;
+
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.util.DateUtils;
+
 /**
  * Initial date: 2025-01-24<br>
  *
@@ -26,6 +31,13 @@ package org.olat.modules.coach.ui.manager;
  */
 public class GeneratedReportsRow {
 	private String name;
+	private Date creationDate;
+	private FormLink downloadLink;
+	private FormLink copyToButton;
+	private FormLink deleteButton;
+	private FormLink downloadButton;
+	private Date expirationDate;
+	private long fileSize;
 
 	public String getName() {
 		return name;
@@ -33,5 +45,73 @@ public class GeneratedReportsRow {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	public FormLink getDownloadLink() {
+		return downloadLink;
+	}
+
+	public void setDownloadLink(FormLink downloadLink) {
+		this.downloadLink = downloadLink;
+	}
+
+	public FormLink getCopyToButton() {
+		return copyToButton;
+	}
+
+	public void setCopyToButton(FormLink copyToButton) {
+		this.copyToButton = copyToButton;
+	}
+
+	public FormLink getDeleteButton() {
+		return deleteButton;
+	}
+
+	public void setDeleteButton(FormLink deleteButton) {
+		this.deleteButton = deleteButton;
+	}
+
+	public FormLink getDownloadButton() {
+		return downloadButton;
+	}
+
+	public void setDownloadButton(FormLink downloadButton) {
+		this.downloadButton = downloadButton;
+	}
+
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
+	}
+
+	public Date getExpirationDate() {
+		return expirationDate;
+	}
+
+	public int getExpirationInDays() {
+		Date expirationDate = getExpirationDate();
+		if (expirationDate == null) {
+			return -1;
+		}
+		int days = (int) DateUtils.countDays(new Date(), expirationDate);
+		if (days < 0L) {
+			days = 0;
+		}
+		return days;
+	}
+
+	public void setFileSize(long fileSize) {
+		this.fileSize = fileSize;
+	}
+
+	public long getFileSize() {
+		return fileSize;
 	}
 }

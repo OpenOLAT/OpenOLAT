@@ -19,23 +19,27 @@
  */
 package org.olat.modules.coach.ui.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.modules.coach.ui.manager.GeneratedReportsDataModel.GeneratedReportsCols;
+import org.olat.modules.coach.reports.ReportConfiguration;
 import org.olat.modules.coach.ui.manager.ReportTemplatesDataModel.ReportTemplateCols;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2025-01-24<br>
@@ -47,21 +51,30 @@ public class ManagerReportsController extends FormBasicController implements Act
 	private final TooledStackedPanel stackedPanel;
 	private FlexiTableElement reportTemplatesTableEl;
 	private ReportTemplatesDataModel reportTemplatesDataModel;
-	private FlexiTableElement generatedReportsTableEl;
-	private GeneratedReportsDataModel generatedReportsDataModel;
+	
+	private GeneratedReportsController generatedReportsController;
+
+	private int count = 0;
+
+	@Autowired
+	private List<ReportConfiguration> reportConfigurations;
 	
 	public ManagerReportsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
 		super(ureq, wControl, "manager_reports");
 		this.stackedPanel = stackedPanel;
 		
 		initForm(ureq);
+
+		generatedReportsController = new GeneratedReportsController(ureq, wControl);
+		listenTo(generatedReportsController);
+		flc.put("generated.reports", generatedReportsController.getInitialComponent());
+
 		loadModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initReportTemplatesTable(formLayout);
-		initGeneratedReportsTable(formLayout);
 	}
 
 	private void initReportTemplatesTable(FormItemContainer formLayout) {
@@ -78,30 +91,33 @@ public class ManagerReportsController extends FormBasicController implements Act
 		reportTemplatesTableEl.setNumOfRowsEnabled(false);
 	}
 
-	private void initGeneratedReportsTable(FormItemContainer formLayout) {
-		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GeneratedReportsCols.name));
+	private void loadModel() {
+		List<ReportTemplatesRow> rows = new ArrayList<>();
+
+		for (ReportConfiguration reportConfiguration : reportConfigurations) {
+			ReportTemplatesRow row = new ReportTemplatesRow();
+			row.setName(reportConfiguration.getName(getLocale()));
+			row.setCategory(reportConfiguration.getCategory(getLocale()));
+			row.setDescription(reportConfiguration.getDescription(getLocale()));
+			row.setType(translate("type." + (reportConfiguration.isDynamic() ? "dynamic" : "static")));
+			row.setRun("Configured");
+			forgeRow(row);
+			rows.add(row);
+		}
 		
-		generatedReportsDataModel = new GeneratedReportsDataModel(columnModel, getLocale());
-		generatedReportsTableEl = uifactory.addTableElement(getWindowControl(), "generated.reports",
-				generatedReportsDataModel, 25, false, getTranslator(), formLayout);
-		generatedReportsTableEl.setNumOfRowsEnabled(false);
+		reportTemplatesDataModel.setObjects(rows);
+		reportTemplatesTableEl.reset();
+		generatedReportsController.reload();
 	}
 
-	private void loadModel() {
-		ReportTemplatesRow reportTemplateRow = new ReportTemplatesRow();
-		reportTemplateRow.setName("Absences - Last 4 weeks");
-		reportTemplateRow.setCategory("Absences");
-		reportTemplateRow.setDescription("This report contains all users' absences for the past 4 weeks.");
-		reportTemplateRow.setType("Static");
-		reportTemplateRow.setRun("Run");
-		reportTemplatesDataModel.setObjects(List.of(reportTemplateRow));
-		reportTemplatesTableEl.reset();
-
-		GeneratedReportsRow generatedReportRow = new GeneratedReportsRow();
-		generatedReportRow.setName("Absences - Last 4 weeks");
-		generatedReportsDataModel.setObjects(List.of(generatedReportRow));
-		generatedReportsTableEl.reset();
+	private void forgeRow(ReportTemplatesRow row) {
+		String playId = "play-" + count++;
+		FormLink playLink = uifactory.addFormLink(playId, "play", "", null, flc, Link.NONTRANSLATED);
+		playLink.setIconLeftCSS("o_icon o_icon-lg o_icon_play");
+		playLink.setUserObject(row);
+		row.setPlayLink(playLink);
+		flc.add(playLink);
+		flc.add(playId, playLink);
 	}
 
 	@Override
@@ -112,5 +128,9 @@ public class ManagerReportsController extends FormBasicController implements Act
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		
+	}
+
+	public void reload() {
+		loadModel();
 	}
 }
