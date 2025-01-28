@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
@@ -51,7 +52,11 @@ public class DestinationAcceptStep extends BasicStep {
 		super(ureq);
 		this.isApprovalEnabled = isApprovalEnabled;
 		setI18nTitleAndDescr("acceptstep.destination.title", "acceptstep.destination.description");
-		setNextStep(new NotificationAcceptStep(ureq));
+		if (isApprovalEnabled) {
+			setNextStep(new NotificationAcceptStep(ureq));
+		} else {
+			setNextStep(Step.NOSTEP);
+		}
 	}
 
 	@Override
