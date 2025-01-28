@@ -75,27 +75,23 @@ public class AccessMethodRenderer implements CustomCellRenderer, FlexiCellRender
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		
-		if(val instanceof AccessTransaction) {
-			AccessTransaction transaction = (AccessTransaction)val;
+		if(val instanceof AccessTransaction transaction) {
 			Set<String> uniqueType = new HashSet<>(3);
 			render(sb, transaction, uniqueType, locale);
 		} else if (val instanceof Collection) {
 			Collection<?> transactions = (Collection<?>)val;
 			Set<String> uniqueType = new HashSet<>((transactions.size() * 2) + 1);
 			for(Object transaction : transactions) {
-				if(transaction instanceof AccessTransaction) {
-					render(sb, (AccessTransaction)transaction, uniqueType, locale);	
-				} else if(transaction instanceof AccessMethod) {
-					render(sb, (AccessMethod)transaction, uniqueType, locale);	
-					
+				if(transaction instanceof AccessTransaction accessTransaction) {
+					render(sb, accessTransaction, uniqueType, locale);	
+				} else if(transaction instanceof AccessMethod accessMethod) {
+					render(sb, accessMethod, uniqueType, locale);	
 				}
-				
 			}
 		}
 	}
 	
-	private void render(StringOutput sb, AccessMethod method, Set<String> uniqueType, Locale locale) {
+	public void render(StringOutput sb, AccessMethod method, Set<String> uniqueType, Locale locale) {
 		String type = method.getType();
 		if(uniqueType.contains(type)) return;
 		uniqueType.add(type);

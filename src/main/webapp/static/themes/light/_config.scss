@@ -593,13 +593,13 @@ $o-ac-offers-border					: $o-coursesite-sidecol-border !default;
 $o-ac-offers-radius					: $o-coursesite-sidecol-radius !default;
 $o-ac-offers-padding				: 15px !default;
 
-$o-ac-order-new-color				: $o-labeled-yellow-color !default;
-$o-ac-order-prepayment-color		: $o-labeled-green-light-color !default;
+$o-ac-order-new-color				: $o-labeled-blue-light-color !default;
+$o-ac-order-prepayment-color		: $o-labeled-yellow-light-color !default;
 $o-ac-order-payed-color				: $o-labeled-green-light-color !default;
 $o-ac-order-canceled-color			: $o-labeled-grey-light-color !default;
 $o-ac-order-error-color				: $o-labeled-red-light-color !default;
-$o-ac-order-warning-color			: $o-labeled-orange-light-color !default;
-$o-ac-order-pending-color			: $o-labeled-grey-light-color !default;
+$o-ac-order-warning-color			: $o-labeled-yellow-light-color !default;
+$o-ac-order-pending-color			: $o-labeled-yellow-light-color !default;
 
 /* Feed (Blog/Podcast) */
 $o-feed-planned-color				: $o-repo-preparation-color;	/* blue */

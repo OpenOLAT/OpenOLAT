@@ -29,6 +29,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.resource.OLATResource;
@@ -44,6 +45,10 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTableRow> {
+	
+	public static final String FILTER_STATUS = "status";
+	public static final String FILTER_METHOD = "method";
+	public static final String FILTER_OFFER = "offer";
 	
 	private ACService acService;
 	
@@ -118,13 +123,16 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 			int firstResult, int maxResults, SortKey... orderBy) {
 		
 		OrderStatus[] states = null;
-		if(filters != null && !filters.isEmpty()) {
-			String filter = filters.get(0).getFilter();
-			states = new OrderStatus[] { OrderStatus.valueOf(filter) };
+		List<OrderStatus> filterStatus = getFilterStatus(filters);
+		if(filterStatus != null && !filterStatus.isEmpty()) {
+			states = filterStatus.toArray(new OrderStatus[filterStatus.size()]);
 		}
+		
+		List<Long> methods = getFilterMethods(filters, FILTER_METHOD);
+		List<Long> offerAccess = getFilterMethods(filters, FILTER_OFFER);
 
 		List<OrderTableItem> items = acService.findOrderItems(resource, delivery, refNo, from, to, states,
-				firstResult, maxResults, userPropertyHandlers, orderBy);
+				methods, offerAccess, firstResult, maxResults, userPropertyHandlers, orderBy);
 		List<OrderTableRow> rows = new ArrayList<>(items.size());
 		for(OrderTableItem item:items) {
 			OrderTableRow row = new OrderTableRow(item);
@@ -155,6 +163,32 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 			case ERROR -> Status.ERROR;
 			default -> null;
 		};
+	}
+	
+	private List<OrderStatus> getFilterStatus(List<FlexiTableFilter> filters) {
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, FILTER_STATUS);
+		if (statusFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				return filterValues.stream()
+						.map(OrderStatus::valueOf)
+						.toList();
+			}
+		}
+		return List.of();
+	}
+	
+	private List<Long> getFilterMethods(List<FlexiTableFilter> filters, String filterName) {
+		FlexiTableFilter longFilter = FlexiTableFilter.getFilter(filters, filterName);
+		if (longFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+			List<String> filterValues = extendedFilter.getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				return filterValues.stream()
+						.map(Long::valueOf)
+						.toList();
+			}
+		}
+		return List.of();
 	}
 	
 	public interface ForgeDelegate {

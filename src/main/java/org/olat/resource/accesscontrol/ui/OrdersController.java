@@ -60,6 +60,7 @@ import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
+import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -85,6 +86,8 @@ public class OrdersController extends FormBasicController implements Activateabl
 	private final Identity identity;
 	private final OLATResource resource;
 	private final OrdersSettings settings;
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final String avatarMapperBaseURL;
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
@@ -103,6 +106,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		this.identity = identity;
 		this.resource = null;
 		this.settings = settings;
+		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		initForm(ureq);
 	}
 	
@@ -112,6 +116,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		this.identity = identity;
 		this.resource = resource;
 		this.settings = settings;
+		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		initForm(ureq);
 	}
 
@@ -238,8 +243,8 @@ public class OrdersController extends FormBasicController implements Activateabl
 		OrderTableItem order = row.getItem();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey());
-		detailController.hideBackLink();
+		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey(),
+				avatarMapper, avatarMapperBaseURL, true);
 		listenTo(detailController);
 		if (stackPanel != null) {
 			stackPanel.pushController(order.getOrderNr(), detailController);
@@ -280,7 +285,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 			detailsLink = addLink("details", "details", "o_icon o_icon-fw o_icon_circle_info", links);
 			
 			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT) {
-				payLink = addLink("set.paied", "set.paied", "o_icon o_icon-fw o_icon_pay", links);
+				payLink = addLink("set.paid", "set.paid", "o_icon o_icon-fw o_icon_pay", links);
 			}
 			
 			mainVC.contextPut("links", links);

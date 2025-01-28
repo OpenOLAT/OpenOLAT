@@ -302,8 +302,8 @@ public class ACOrderDAO {
 	 * @return
 	 */
 	public List<RawOrderItem> findNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
-			Date from, Date to, OrderStatus[] status, int firstResult, int maxResults,
-			List<UserPropertyHandler> userPropertyHandlers,  SortKey... orderBy) {
+			Date from, Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
+			int firstResult, int maxResults, List<UserPropertyHandler> userPropertyHandlers,  SortKey... orderBy) {
 
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
@@ -368,7 +368,28 @@ public class ACOrderDAO {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append("o.order_id=:orderNr");
 		}
-
+		
+		boolean withMethods = (methodsKeys != null && !methodsKeys.isEmpty());
+		boolean withOfferAccess = (offerAccessKeys != null && !offerAccessKeys.isEmpty());
+		if(withMethods || withOfferAccess) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("o.order_id in (select order_part2.fk_order_id from o_ac_order_part order_part2")
+			  .append(" inner join o_ac_order_line order_line2 on (order_part2.order_part_id=order_line2.fk_order_part_id and order_line2.pos=0)")
+			  .append(" inner join o_ac_offer offer2 on (order_line2.fk_offer_id=offer2.offer_id)")
+			  .append(" inner join o_ac_offer_access offer_access2 on (offer_access2.fk_offer_id=offer2.offer_id)")
+			  .append(" where ");
+			if(withMethods) {
+				sb.append(" offer_access2.fk_method_id in (:methodsKeys)");
+			}			
+			if(withOfferAccess) {
+				if(withMethods) {
+					sb.append(" and ");
+				}
+				sb.append(" offer_access2.offer_method_id in (:offerAccessKeys)");	
+			}
+			sb.append(")");
+		}
+		
 		sb.append(" group by o.order_id");
 		if(dbInstance.isOracle()) {
 			sb.append(", o.total_currency_code, o.total_amount, o.creationdate, o.order_status, o.fk_delivery_id");
@@ -424,6 +445,13 @@ public class ACOrderDAO {
 			cal.set(Calendar.SECOND, 59);
 			cal.set(Calendar.MILLISECOND, 0);
 			query.setParameter("to", cal.getTime(), TemporalType.TIMESTAMP);
+		}
+		
+		if(withMethods) {
+			query.setParameter("methodsKeys", methodsKeys);
+		}			
+		if(withOfferAccess) {
+			query.setParameter("offerAccessKeys", offerAccessKeys);
 		}
 
 		if(maxResults > 0) {

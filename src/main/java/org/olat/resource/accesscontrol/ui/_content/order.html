@@ -1,8 +1,27 @@
-#if($r.available("back"))
-	$r.render("back")
-#end
-<div class="o_order_details">
-	$r.render("mainCmp")
+<div class="o_ac_order_details">
+	<div class="o_ac_order_nr">
+		$r.render("order-nr","vertical")
+		<div class="o_ac_order_status">
+			$orderStatus
+			#if($r.available("set.paid"))
+				$r.render("set.paid")
+			#end
+		</div>
+	</div>
+	<div class="o_metadata_horizontal">
+		$r.render("order-methods","vertical")
+		$r.render("offer-name","vertical")
+		$r.render("creation-date","vertical")
+		$r.render("order-total","vertical")
+		#if($r.available("cancellation-fee"))
+			$r.render("cancellation-fee","vertical")
+		#end
+	</div>
+	<div class="">
+		<label>$r.translate("order.details.delivery")</label>
+		$r.render("delivery-profile")
+	</div>
+	
 	$r.render("orderItemList")
 </div>
 

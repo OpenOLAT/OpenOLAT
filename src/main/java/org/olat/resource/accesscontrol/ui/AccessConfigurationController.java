@@ -70,6 +70,7 @@ import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -120,6 +121,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private final CatalogInfo catalogInfo;
 	private final boolean readOnly;
 	private final boolean managedBookings;
+	private final boolean withLinkToOrders;
 	private final String helpUrl;
 	private final Formatter formatter;
 	private List<AccessMethod> methods;
@@ -136,7 +138,7 @@ public class AccessConfigurationController extends FormBasicController {
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
 			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
-			CatalogInfo catalogInfo, boolean readOnly, boolean managedBookings, String helpUrl) {
+			CatalogInfo catalogInfo, boolean readOnly, boolean managedBookings, boolean withLinkToOrders, String helpUrl) {
 		super(ureq, wControl, "access_configuration");
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
@@ -151,6 +153,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.statusEvaluator = catalogInfo.getStatusEvaluator();
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
+		this.withLinkToOrders = withLinkToOrders;
 		this.helpUrl = helpUrl;
 		this.formatter = Formatter.getInstance(getLocale());
 		
@@ -161,7 +164,7 @@ public class AccessConfigurationController extends FormBasicController {
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, Form form, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean openAccessSupported, boolean guestSupported,
 			boolean offerOrganisationsSupported, Collection<Organisation> defaultOfferOrganisations,
-			CatalogInfo catalogInfo, boolean readOnly, boolean managedBookings, String helpUrl) {
+			CatalogInfo catalogInfo, boolean readOnly, boolean managedBookings, boolean withLinkToOrders, String helpUrl) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "access_configuration", form);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
@@ -175,6 +178,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.catalogInfo = catalogInfo;
 		this.readOnly = readOnly;
 		this.managedBookings = managedBookings;
+		this.withLinkToOrders = withLinkToOrders;
 		this.helpUrl = helpUrl;
 		this.formatter = Formatter.getInstance(getLocale());
 		
@@ -377,7 +381,7 @@ public class AccessConfigurationController extends FormBasicController {
 			if(event.equals(Event.DONE_EVENT)) {
 				OfferAccess offerAccess = newMethodCtrl.getOfferAccess();
 				List<Organisation> organisations = newMethodCtrl.getOfferOrganisations();
-				addOffer(offerAccess, organisations);
+				addOffer(offerAccess, organisations, 0);
 				updateCatalogOverviewUI();
 				checkOverlap();
 				offersContainer.setDirty(true);
@@ -441,17 +445,16 @@ public class AccessConfigurationController extends FormBasicController {
 			editGuestOffer(ureq, null);
 		} else if (source == addButton) {
 			doCreateOffer(ureq);
-		} else if (source instanceof FormLink) {
-			FormLink button = (FormLink)source;
+		} else if (source instanceof FormLink button) {
 			String cmd = button.getCmd();
-			if("delete".equals(cmd)) {
-				AccessInfo infos = (AccessInfo)source.getUserObject();
+			if("delete".equals(cmd) && source.getUserObject() instanceof AccessInfo infos) {
 				removeOffer(infos);
 				checkOverlap();
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if("edit".equals(cmd)) {
-				AccessInfo infos = (AccessInfo)source.getUserObject();
+			} else if("edit".equals(cmd) && source.getUserObject() instanceof AccessInfo infos) {
 				editOffer(ureq, infos);
+			} else if("orders".equals(cmd) && source.getUserObject() instanceof OfferAccess access) {
+				doOpenOrders(ureq, access);
 			} else if("catalog".equals(cmd)) {
 				editCatalogInfo(ureq);
 			} else if (cmd.startsWith("create.")) {
@@ -468,19 +471,20 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	private void loadOffers() {
-		List<Offer> offers = acService.findOfferByResource(resource, true, null, null);
+		List<OfferAndAccessInfos> offersAndAccessList = acService.findOfferAndAccessByResource(resource, true);
+		List<Offer> offers = offersAndAccessList.stream()
+				.map(OfferAndAccessInfos::offer)
+				.toList();
 		Map<Long,List<Organisation>> offerKeyToOrganisations = acService.getOfferKeyToOrganisations(offers);
-		for(Offer offer:offers) {
+		for(OfferAndAccessInfos offerAndAccess:offersAndAccessList) {
+			Offer offer = offerAndAccess.offer();
 			Collection<Organisation> offerOrganisations = offerKeyToOrganisations.getOrDefault(offer.getKey(), null);
 			if (offer.isOpenAccess()) {
 				addOpenAccessOffer(offer, offerOrganisations);
 			} else if (offer.isGuestAccess()) {
 				addGuestOffer(offer);
-			} else {
-				List<OfferAccess> offerAccess = acService.getOfferAccess(offer, true);
-				for(OfferAccess access:offerAccess) {
-					addOffer(access, offerOrganisations);
-				}
+			} else if(offerAndAccess.offerAccess() != null) {
+				addOffer(offerAndAccess.offerAccess(), offerOrganisations, offerAndAccess.numOfOrders());
 			}
 		}
 		
@@ -489,23 +493,25 @@ public class AccessConfigurationController extends FormBasicController {
 
 	private void replace(OfferAccess link, Collection<Organisation> offerOrganisations) {
 		boolean updated = false;
+		int currentNumOfOrders = -1;
 		for(AccessInfo accessInfo : accessInfos) {
 			if(accessInfo.getLink() != null && accessInfo.getLink().equals(link)) {
 				accessInfo.setLink(link);
 				accessInfo.setOfferOrganisations(offerOrganisations);
+				currentNumOfOrders = accessInfo.getNumberOfOrders();
 				updated = true;
 			}
 		}
 		
 		if(!updated) {
-			addOffer(link, offerOrganisations);
+			addOffer(link, offerOrganisations, currentNumOfOrders);
 		} else {
 			offersContainer.setDirty(true);
 		}
 		checkOverlap();
 	}
 
-	private void addOffer(OfferAccess link, Collection<Organisation> offerOrganisations) {
+	private void addOffer(OfferAccess link, Collection<Organisation> offerOrganisations, int numOfOrders) {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		
 		IconPanelItem iconPanel = new IconPanelItem("offer_" + counter++);
@@ -514,7 +520,7 @@ public class AccessConfigurationController extends FormBasicController {
 		iconPanel.setTitle(handler.getMethodName(getLocale()));
 		offersContainer.add(iconPanel.getName(), iconPanel);
 		
-		AccessInfo infos = new AccessInfo(iconPanel, link, handler);
+		AccessInfo infos = new AccessInfo(iconPanel, link, handler, numOfOrders);
 		accessInfos.add(infos);
 		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
 		cont.setRootForm(mainForm);
@@ -524,6 +530,7 @@ public class AccessConfigurationController extends FormBasicController {
 		infos.setOfferOrganisations(offerOrganisations);
 		cont.contextPut("offer", infos);
 		
+		forgeLinkToOrders(infos);
 		if (!readOnly && !managedBookings) {
 			forgeLinks(infos);
 		}
@@ -548,7 +555,7 @@ public class AccessConfigurationController extends FormBasicController {
 			iconPanel.setTitle(translate("offer.open.access.name"));
 			offersContainer.add(iconPanel.getName(), iconPanel);
 			
-			AccessInfo infos = new AccessInfo(iconPanel);
+			AccessInfo infos = new AccessInfo(iconPanel, -1);
 			accessInfos.add(infos);
 			FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
 			cont.setRootForm(mainForm);
@@ -580,7 +587,7 @@ public class AccessConfigurationController extends FormBasicController {
 		iconPanel.setTitle(translate("offer.guest.name"));
 		offersContainer.add(iconPanel.getName(), iconPanel);
 		
-		AccessInfo infos = new AccessInfo(iconPanel);
+		AccessInfo infos = new AccessInfo(iconPanel, -1);
 		accessInfos.add(infos);
 		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
 		cont.setRootForm(mainForm);
@@ -631,15 +638,26 @@ public class AccessConfigurationController extends FormBasicController {
 			String internalCatalog = getCatalogStatus(accessInfos);
 			overviewContainer.contextPut("internalCatalog", internalCatalog);
 			
-			if (catalogInfo.isWebCatalogSupported()) {
-				List<AccessInfo> externalCatalogInfos = accessInfos.stream().filter(info -> info.getOffer().isCatalogWebPublish()).toList();
-				String externalCatalog = getCatalogStatus(externalCatalogInfos);
+			String externalCatalog = getExternalCatalogStatus();
+			if (externalCatalog != null) {
 				overviewContainer.contextPut("externalCatalog", externalCatalog);
 			}
 		} else if (catalogInfo.isPublishedGroupsSupported()) {
 			String status = getCatalogStatus(accessInfos);
 			overviewContainer.contextPut("publishedGroups", status);
 		}
+	}
+	
+	public String getInternalCatalogStatus() {
+		return getCatalogStatus(accessInfos);
+	}
+	
+	public String getExternalCatalogStatus() {
+		if (catalogInfo.isWebCatalogSupported()) {
+			List<AccessInfo> externalCatalogInfos = accessInfos.stream().filter(info -> info.getOffer().isCatalogWebPublish()).toList();
+			return getCatalogStatus(externalCatalogInfos);
+		}
+		return null;
 	}
 	
 	private String getCatalogStatus(List<AccessInfo> catalogAccessInfo) {
@@ -694,6 +712,17 @@ public class AccessConfigurationController extends FormBasicController {
 		delLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		offersContainer.add(delLink.getName(), delLink);
 		infos.getIconPanel().addLink(delLink);
+	}
+	
+	private void forgeLinkToOrders(AccessInfo infos) {
+		if(withLinkToOrders && infos.getNumberOfOrders() >= 0) {
+			String id = "orders_" + infos.getLink().getKey();
+			FormLink openOrdersLink = uifactory.addFormLink(id, "orders", "open.in.orders", null, infos.getConfigCont(), Link.LINK);
+			openOrdersLink.setUserObject(infos.getLink());
+			openOrdersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
+			flc.add(id, openOrdersLink);
+			infos.setOpenOrdersLink(openOrdersLink);
+		}
 	}
 
 	private void editOpenAccessOffer(UserRequest ureq, Offer offer) {
@@ -784,7 +813,7 @@ public class AccessConfigurationController extends FormBasicController {
 			cmc.activate();
 			listenTo(cmc);
 		} else {
-			addOffer(link, defaultOfferOrganisations);
+			addOffer(link, defaultOfferOrganisations, 0);
 			checkOverlap();
 		}
 	}
@@ -833,6 +862,10 @@ public class AccessConfigurationController extends FormBasicController {
 		} catch (Exception e) {
 			//
 		}
+	}
+	
+	private void doOpenOrders(UserRequest ureq, OfferAccess access) {
+		fireEvent(ureq, new OpenOrdersEvent(access));
 	}
 	
 	private void doOpenLinks(UserRequest ureq) {
@@ -978,21 +1011,25 @@ public class AccessConfigurationController extends FormBasicController {
 		private Offer offer;
 		private boolean active;
 		private boolean withPeriod;
+		private final int numOfOrders;
 		private String dates;
 		private Collection<Organisation> offerOrganisations;
 		private OfferAccess link;
 		private AccessMethodHandler handler;
 		private FormLayoutContainer configCont;
+		private FormLink openOrdersLink;
 		
-		public AccessInfo(IconPanelItem iconPanel) {
+		public AccessInfo(IconPanelItem iconPanel, int numOfOrders) {
 			this.iconPanel = iconPanel;
+			this.numOfOrders = numOfOrders;
 		}
 
-		public AccessInfo(IconPanelItem iconPanel, OfferAccess link, AccessMethodHandler handler) {
+		public AccessInfo(IconPanelItem iconPanel, OfferAccess link, AccessMethodHandler handler, int numOfOrders) {
 			this.iconPanel = iconPanel;
 			this.offer = link != null? link.getOffer(): null;
 			this.link = link;
 			this.handler = handler;
+			this.numOfOrders = numOfOrders;
 			initDates();
 		}
 
@@ -1059,6 +1096,18 @@ public class AccessConfigurationController extends FormBasicController {
 			return "";
 		}
 		
+		public int getNumberOfOrders() {
+			return numOfOrders;
+		}
+		
+		public FormLink getOpenOrdersLink() {
+			return openOrdersLink;
+		}
+
+		public void setOpenOrdersLink(FormLink openOrdersLink) {
+			this.openOrdersLink = openOrdersLink;
+		}
+
 		public boolean isPaymentMethod() {
 			return handler != null? handler.isPaymentMethod(): false;
 		}

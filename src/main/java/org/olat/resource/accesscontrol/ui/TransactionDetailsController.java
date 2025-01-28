@@ -36,7 +36,6 @@ import org.olat.resource.accesscontrol.AccessTransaction;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.ui.OrderDetailController.OrderItemWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,12 +51,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TransactionDetailsController extends FormBasicController {
 	
 	private final Order order;
-	private final OrderItemWrapper wrapper;
+	private final OrderItemRow wrapper;
 	
 	@Autowired
 	private AccessControlModule acModule;
 	
-	public TransactionDetailsController(UserRequest ureq, WindowControl wControl, Order order, OrderItemWrapper wrapper) {
+	public TransactionDetailsController(UserRequest ureq, WindowControl wControl, Order order, OrderItemRow wrapper) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.order = order;
 		this.wrapper = wrapper;

@@ -40,6 +40,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
+import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -150,6 +151,9 @@ public interface ACService {
 	public List<OLATResource> filterResourceWithGuestAccess(List<OLATResource> resources);
 
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate, List<? extends OrganisationRef> offerOrganisations);
+	
+	public List<OfferAndAccessInfos> findOfferAndAccessByResource(OLATResource resource, boolean valid);
+
 	
 	public List<Offer> getOffers(RepositoryEntry entry, boolean valid, boolean filterByStatus, Date atDate,
 			boolean dateMandatory, Boolean webPublish, List<? extends OrganisationRef> offerOrganisations);
@@ -317,6 +321,8 @@ public interface ACService {
 	public List<Order> findOrders(Identity delivery, OLATResource resource, OrderStatus... status);
 
 	public List<AccessTransaction> findAccessTransactions(Order order);
+	
+	public List<AccessMethod> findAccessMethods(Order order);
 
 	public List<Order> findOrders(OLATResource resource, OrderStatus... status);
 
@@ -324,7 +330,7 @@ public interface ACService {
 			OrderStatus[] statuss);
 
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
-			OrderStatus[] status, int firstResult, int maxResults,
+			OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys, int firstResult, int maxResults,
 			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy);
 	
 	public boolean hasOrder(OfferRef offer);

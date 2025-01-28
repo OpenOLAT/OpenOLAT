@@ -45,6 +45,7 @@ import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.OfferRef;
+import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.AbstractAccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -222,6 +223,22 @@ public class ACMethodDAO {
 				.createQuery(sb.toString(), OfferAccess.class)
 				.setParameter("offersKey", offersKey)
 				.setParameter("valid", valid)
+				.getResultList();
+	}
+	
+	public List<AccessMethod> getAccessMethods(Order order) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select method from acorder order")
+		  .append(" inner join order.parts orderPart")
+		  .append(" inner join orderPart.lines orderLine")
+		  .append(" inner join orderLine.offer offer")
+		  .append(" inner join acofferaccess access on (offer.key=access.offer.key)")
+		  .append(" inner join access.method method")
+		  .append(" where order.key = :orderKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AccessMethod.class)
+				.setParameter("orderKey", order.getKey())
 				.getResultList();
 	}
 

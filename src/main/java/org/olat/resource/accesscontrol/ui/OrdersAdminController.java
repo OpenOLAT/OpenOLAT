@@ -22,6 +22,7 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.calendar.CalendarUtils;
@@ -31,21 +32,31 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModelDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -54,18 +65,25 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.method.AccessMethodHandler;
+import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
+import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,19 +97,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  30 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OrdersAdminController extends FormBasicController implements Activateable2, ForgeDelegate, BreadcrumbPanelAware {
+public class OrdersAdminController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate, ForgeDelegate {
 
 	private static final String CMD_TOOLS = "odtools";
+	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
 	
 	protected static final int USER_PROPS_OFFSET = 500;
 	protected static final String USER_PROPS_ID = OrdersAdminController.class.getCanonicalName();
 	
+	private FlexiFiltersTab allTab;
+	
+	private FormLink exportButton;
+	private FormLink bulkPayButton;
+	private FormLink bulkCancelButton;
 	private FlexiTableElement tableEl;
 	private OrdersDataSource dataSource;
 	private OrdersDataModel dataModel;
-	
-	private BreadcrumbPanel stackPanel;
-	private OrdersSearchForm searchForm;
+	private VelocityContainer detailsVC;
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
@@ -99,8 +121,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private CloseableCalloutWindowController calloutCtrl;
 
 	private int counter = 0;
+	private boolean readOnly;
 	private final OLATResource resource;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+	private final String avatarMapperBaseURL;
 
 	@Autowired
 	private ACService acService;
@@ -118,33 +143,49 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	 * @param wControl
 	 */
 	public OrdersAdminController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null, null);
+		this(ureq, wControl, null, true);
 	}
 	
-	public OrdersAdminController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, OLATResource resource) {
+	public OrdersAdminController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean readOnly) {
 		super(ureq, wControl, "order_list");
 		this.resource = resource;
-		this.stackPanel = stackPanel;
+		this.readOnly = readOnly;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
+		
+		detailsVC = createVelocityContainer("order_details");
 		
 		initForm(ureq);
-	}
-	
-	@Override
-	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
-		this.stackPanel = stackPanel;
+		
+		tableEl.setSelectedFilterTab(ureq, allTab);
+		loadModel();
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("title", translate("orders.admin.my"));
+		}
+		
+		exportButton = uifactory.addFormLink("export.booking.offers", "export.booking.offers", null, formLayout, Link.BUTTON);
+		exportButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		
+		initTableForm(formLayout, ureq);
+	}
+
+	private void initTableForm(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderNr));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.status,
 				new OrderStatusRenderer(getTranslator())));
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.methods,
+				new AccessMethodRenderer(acModule)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offerName));
 
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -158,9 +199,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			columnsModel.addFlexiColumnModel(col);
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.methods,
-				new AccessMethodRenderer(acModule)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offerName));
 		if(resource == null) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
 		}
@@ -169,67 +207,222 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
 		
-		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(OrderCol.tools);
-		toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
-		toolsColumn.setExportable(false);
-		toolsColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsColumn);
+		if(!readOnly) {
+			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(OrderCol.tools);
+			toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
+			toolsColumn.setExportable(false);
+			toolsColumn.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(toolsColumn);
+		}
 
 		dataSource = new OrdersDataSource(acService, resource, null, userPropertyHandlers, this);
 		if(resource == null) {
-			searchForm = new OrdersSearchForm(ureq, getWindowControl(), mainForm);
-			listenTo(searchForm);
-			formLayout.add("searchForm", searchForm.getInitialFormItem());
-			
 			Calendar cal = CalendarUtils.getStartOfDayCalendar(getLocale());
 			cal.add(Calendar.MONTH, -1);
-			searchForm.setFrom(cal.getTime());
 			dataSource.setFrom(cal.getTime());
 		}
 		
 		dataModel = new OrdersDataModel(dataSource, getLocale(), userManager, columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, true, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-
-		List<FlexiTableFilter> filters = new ArrayList<>();
-		filters.add(new FlexiTableFilter(translate("order.status.new"), OrderStatus.NEW.name()));
-		filters.add(new FlexiTableFilter(translate("order.status.prepayment"), OrderStatus.PREPAYMENT.name()));
-		filters.add(new FlexiTableFilter(translate("order.status.payed"), OrderStatus.PAYED.name()));
-		filters.add(new FlexiTableFilter(translate("order.status.canceled"), OrderStatus.CANCELED.name()));
-		filters.add(new FlexiTableFilter(translate("order.status.error"), OrderStatus.ERROR.name()));
-		tableEl.setFilters("", filters, false);
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(OrderCol.creationDate.sortKey(), false));
 		tableEl.setSortSettings(options);
+		tableEl.setExportEnabled(true);
+		tableEl.setSelectAllEnable(true);
+		tableEl.setMultiSelect(true);
+		tableEl.setSearchEnabled(true);
+		
+		tableEl.setDetailsRenderer(detailsVC, this);
+		tableEl.setMultiDetails(true);
 		
 		String id = resource == null ? "orders-admin-list-v2" : "orders-resource-list-v2";
 		tableEl.setAndLoadPersistedPreferences(ureq, id);
-	
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("title", translate("orders.admin.my"));
-			layoutCont.contextPut("description", translate("orders.admin.my.desc"));
+		
+		if(!readOnly) {
+			bulkPayButton = uifactory.addFormLink("bulk.pay", "set.paid", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkPayButton);
+			bulkCancelButton = uifactory.addFormLink("bulk.cancel", "set.cancel", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkCancelButton);
 		}
+		
+		initFilters();
+		initFilterPresets();
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		SelectionValues rolesValues = new SelectionValues();
+		rolesValues.add(SelectionValues.entry(OrderStatus.NEW.name(), translate("order.status.new")));
+		rolesValues.add(SelectionValues.entry(OrderStatus.PREPAYMENT.name(), translate("order.status.prepayment")));
+		rolesValues.add(SelectionValues.entry(OrderStatus.PAYED.name(), translate("order.status.payed")));
+		rolesValues.add(SelectionValues.entry(OrderStatus.CANCELED.name(), translate("order.status.canceled")));
+		rolesValues.add(SelectionValues.entry(OrderStatus.ERROR.name(), translate("order.status.error")));
+		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
+				OrdersDataSource.FILTER_STATUS, rolesValues, true);
+		filters.add(statusFilter);
+		
+		// Offer types / access methods
+		SelectionValues methodsValues = new SelectionValues();
+		List<AccessMethod> methods = acService.getAvailableMethods();
+		for(AccessMethod method:methods) {
+			AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
+			if(handler != null) {
+				methodsValues.add(SelectionValues.entry(method.getKey().toString(), handler.getMethodName(getLocale())));
+			}
+		}
+		FlexiTableMultiSelectionFilter methodFilter = new FlexiTableMultiSelectionFilter(translate("filter.method"),
+				OrdersDataSource.FILTER_METHOD, methodsValues, true);
+		filters.add(methodFilter);
+		
+		// Offers
+		if(resource != null) {
+			SelectionValues offersValues = new SelectionValues();
+			List<Offer> offers = acService.findOfferByResource(resource, true, null, null);
+			for(Offer offer:offers) {
+				List<OfferAccess> offerAccess = acService.getOfferAccess(offer, true);
+				for(OfferAccess access:offerAccess) {
+					AccessMethod method = access.getMethod();
+					if(method != null) {
+						AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
+						if(handler != null) {
+							//TODO booking offer name
+							offersValues.add(SelectionValues.entry(access.getKey().toString(), "[" + access.getKey() + "] \u00B7 " + handler.getMethodName(getLocale())));
+						}
+					}
+				}
+			}
+			FlexiTableMultiSelectionFilter offerFilter = new FlexiTableMultiSelectionFilter(translate("filter.offer"),
+					OrdersDataSource.FILTER_OFFER, offersValues, true);
+			filters.add(offerFilter);
+		}
+
+		tableEl.setFilters(true, filters, false, false);
+	}
+	
+	private void initFilterPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters("all", translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+		
+		FlexiFiltersTab openTab = FlexiFiltersTabFactory.tabWithImplicitFilters("open", translate("filter.order.open"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(OrdersDataSource.FILTER_STATUS,
+						List.of(OrderStatus.NEW.name(), OrderStatus.PREPAYMENT.name()))));
+		openTab.setFiltersExpanded(true);
+		tabs.add(openTab);
+		
+		FlexiFiltersTab paidTab = FlexiFiltersTabFactory.tabWithImplicitFilters("paid", translate("filter.order.paid"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(OrdersDataSource.FILTER_STATUS,
+						List.of(OrderStatus.PAYED.name()))));
+		paidTab.setFiltersExpanded(true);
+		tabs.add(paidTab);
+		
+		FlexiFiltersTab cancelledTab = FlexiFiltersTabFactory.tabWithImplicitFilters("cancelled", translate("filter.order.cancelled"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(OrdersDataSource.FILTER_STATUS,
+						List.of(OrderStatus.CANCELED.name()))));
+		cancelledTab.setFiltersExpanded(true);
+		tabs.add(cancelledTab);
+		
+		FlexiFiltersTab errorTab = FlexiFiltersTabFactory.tabWithImplicitFilters("error", translate("filter.order.error"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(OrdersDataSource.FILTER_STATUS,
+						List.of(OrderStatus.ERROR.name()))));
+		errorTab.setFiltersExpanded(true);
+		tabs.add(errorTab);
+		
+		tableEl.setFilterTabs(true, tabs);
 	}
 
 	@Override
 	public void forge(OrderTableRow row) {
-		String id = Integer.toString(++counter);
-		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
-		toolsLink.setUserObject(row);
-		row.setToolsLink(toolsLink);
+		OrderStatus status = row.getOrderStatus();
+		if(status == OrderStatus.NEW || status == OrderStatus.PREPAYMENT || status == OrderStatus.PAYED) {
+			String id = Integer.toString(++counter);
+			FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setTitle(translate("action.more"));
+			toolsLink.setUserObject(row);
+			row.setToolsLink(toolsLink);
+		}
+	}
+	
+	@Override
+	public boolean isDetailsRow(int row, Object rowObject) {
+		return true;
+	}
+
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		List<Component> components = new ArrayList<>();
+		if(rowObject instanceof OrderTableRow orderRow
+				&& orderRow.getDetailsController() != null) {
+			components.add(orderRow.getDetailsController().getInitialFormItem().getComponent());
+		}
+		return components;
 	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		FlexiFiltersTab tab = tableEl.getFilterTabById(type.toLowerCase());
+		if(tab != null) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			activateFilters(subEntries);
+			loadModel();
+		}
+	}
+	
+	private void activateFilters(List<ContextEntry> entries) {
+		if(entries == null || entries.isEmpty()) return;
+
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("OfferAccess".equalsIgnoreCase(type) || "Link".equalsIgnoreCase(type)) {
+			Long offerAccessKey = entries.get(0).getOLATResourceable().getResourceableId();
+			FlexiTableFilter offerFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), OrdersDataSource.FILTER_OFFER);
+			if (offerFilter instanceof FlexiTableMultiSelectionFilter extendedFilter) {
+				tableEl.setFilterValue(extendedFilter, offerAccessKey.toString());
+			}
+		}
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink link && CMD_TOOLS.equals(link.getCmd())
+		if(bulkPayButton == source) {
+			doBulkSetPaid();
+		} else if(bulkCancelButton == source) {
+			doBulkCancel();
+		} else if(exportButton == source) {
+			doExport(ureq);
+		} else if(tableEl == source) {
+			if(event instanceof SelectionEvent se) {
+				String cmd = se.getCommand();
+				if(TOGGLE_DETAILS_CMD.equals(cmd)) {
+					OrderTableRow row = dataModel.getObject(se.getIndex());
+					if(row.getDetailsController() != null) {
+						doCloseOrderDetails(row);
+						tableEl.collapseDetails(se.getIndex());
+					} else {
+						doOpenOrderDetails(ureq, row);
+						tableEl.expandDetails(se.getIndex());
+					}
+				}
+			} else if(event instanceof DetailsToggleEvent toggleEvent) {
+				OrderTableRow row = dataModel.getObject(toggleEvent.getRowIndex());
+				if(toggleEvent.isVisible()) {
+					doOpenOrderDetails(ureq, row);
+				} else {
+					doCloseOrderDetails(row);
+				}
+			} else if(event instanceof FlexiTableFilterTabEvent) {
+				loadModel();
+			}
+		 } else if(source instanceof FormLink link && CMD_TOOLS.equals(link.getCmd())
 				&& link.getUserObject() instanceof OrderTableRow row) {
 			doOpenTools(ureq, row, link);
 		}
@@ -243,20 +436,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == searchForm) {
-			if(event == Event.DONE_EVENT) {
-				doSearch();
-				addSearchToHistory(ureq);
-			}
-		} else if (source == detailController) {
-			if(event == Event.BACK_EVENT) {
-				if(stackPanel == null) {
-					initialPanel.popContent();
-				} else {
-					stackPanel.popController(detailController);
-				}
-				cleanUp();
-				addSearchToHistory(ureq);
+		if(source instanceof OrderDetailController) {
+			if(event == Event.CHANGED_EVENT) {
+				loadModel();
 			}
 		} else if(toolsCtrl == source) {
 			calloutCtrl.deactivate();
@@ -270,28 +452,16 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		removeAsListenerAndDispose(detailController);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
-		this.removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(cmc);
 		detailController = null;
 		calloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 	}
 	
-	private void doSearch() {
-		dataSource.setFrom(searchForm.getFrom());
-		dataSource.setTo(searchForm.getTo());
-		dataSource.setRefNo(searchForm.getRefNo());
+	private void loadModel() {
 		dataSource.reset();
 		tableEl.reset(true, true, true);
-	}
-	
-	protected void addSearchToHistory(UserRequest ureq) {
-		StateEntry state = searchForm == null ? null : searchForm.getStateEntry(); 
-		ContextEntry currentEntry = getWindowControl().getBusinessControl().getCurrentContextEntry();
-		if(currentEntry != null) {
-			currentEntry.setTransientState(state);
-		}
-		addToHistory(ureq, getWindowControl());
 	}
 	
 	private void doOpenTools(UserRequest ureq, OrderTableRow member, FormLink link) {
@@ -306,27 +476,96 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
-	
-	protected void doOpenDetails(UserRequest ureq, OrderTableRow row) {
-		removeAsListenerAndDispose(detailController);
+
+	private final void doOpenOrderDetails(UserRequest ureq, OrderTableRow row) {
+		if(row == null) return;
+		
+		if(row.getDetailsController() != null) {
+			removeAsListenerAndDispose(row.getDetailsController());
+			flc.remove(row.getDetailsController().getInitialFormItem());
+		}
 		
 		OrderTableItem order = row.getItem();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey());
+		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey(),
+				avatarMapper, avatarMapperBaseURL, readOnly, mainForm);
 		listenTo(detailController);
+	
+		row.setDetailsController(detailController);
+		flc.add(detailController.getInitialFormItem());
+	}
+	
+	private final void doCloseOrderDetails(OrderTableRow row) {
+		if(row.getDetailsController() == null) return;
+		removeAsListenerAndDispose(row.getDetailsController());
+		flc.remove(row.getDetailsController().getInitialFormItem());
+		row.setDetailsController(null);
+	}
+	
+	private void doBulkSetPaid() {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		List<OrderTableRow> selectedRows = dataModel.getObjects(selectedIndex);
+		List<OrderTableRow> rows = selectedRows.stream()
+				.filter(r -> OrderStatus.NEW == r.getOrderStatus() || OrderStatus.PREPAYMENT == r.getOrderStatus())
+				.toList();
 		
-		if(stackPanel == null) {
-			initialPanel.pushContent(detailController.getInitialComponent());
+		if(rows.isEmpty()) {
+			showWarning("warning.no.order.to.pay");
 		} else {
-			detailController.hideBackLink();
-			stackPanel.pushController(order.getOrderNr(), detailController);
+			doSetPaid(rows);
 		}
 	}
 	
+	private void doSetPaid(List<OrderTableRow> rows) {
+		for(OrderTableRow row:rows) {
+			Order order = acService.loadOrderByKey(row.getOrderKey());
+			if(order != null) {
+				acService.changeOrderStatus(order, OrderStatus.PAYED);
+			}
+		}
+
+		showInfo("info.order.set.as.paied");
+		tableEl.deselectAll();
+		tableEl.reloadData();
+	}
+	
+	private void doBulkCancel() {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		List<OrderTableRow> selectedRows = dataModel.getObjects(selectedIndex);
+		List<OrderTableRow> rows = selectedRows.stream()
+				.filter(r -> OrderStatus.NEW == r.getOrderStatus() || OrderStatus.PREPAYMENT == r.getOrderStatus() || OrderStatus.PAYED == r.getOrderStatus())
+				.toList();
+		
+		if(rows.isEmpty()) {
+			showWarning("warning.no.order.to.cancel");
+		} else {
+			doCancelOrder(rows);
+		}
+	}
+	
+	private void doCancelOrder(List<OrderTableRow> rows) {
+		for(OrderTableRow row:rows) {
+			Order order = acService.loadOrderByKey(row.getOrderKey());
+			MailPackage mailing = new MailPackage(false);
+			acService.cancelOrder(order, getIdentity(), null, mailing);
+		}
+		
+		showInfo("info.order.set.as.cancelled");
+		tableEl.deselectAll();
+		tableEl.reloadData();
+	}
+	
+	private void doExport(UserRequest ureq) {
+		ExportableFlexiTableDataModelDelegate delegate = new ExportableFlexiTableDataModelDelegate();
+		MediaResource exportedResource = delegate.export(tableEl.getComponent(), getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(exportedResource);
+	}
+
 	private class ToolsController extends BasicController {
 
-		private Link detailsLink;
+		private Link payLink;
+		private Link cancelLink;
 		private final VelocityContainer mainVC;
 		
 		private final OrderTableRow row;
@@ -337,7 +576,14 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			mainVC = createVelocityContainer("tools");
 			
 			List<String> links = new ArrayList<>();
-			detailsLink = addLink("details", "details", "o_icon o_icon-fw o_icon_circle_info", links);
+			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT) {
+				payLink = addLink("set.paid", "set.paid", "o_icon o_icon-fw o_icon_pay", links);
+			}
+			
+			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT
+					|| row.getOrderStatus() == OrderStatus.PAYED) {
+				cancelLink = addLink("cancel", "set.cancel", "o_icon o_icon-fw o_icon_decline", links);
+			}
 			
 			mainVC.contextPut("links", links);
 			putInitialPanel(mainVC);
@@ -355,9 +601,12 @@ public class OrdersAdminController extends FormBasicController implements Activa
 
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
-			if(detailsLink == source) {
+			if(payLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
-				doOpenDetails(ureq, row);
+				doSetPaid(List.of(row));
+			} else if(cancelLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doCancelOrder(List.of(row));
 			}
 		}
 	}

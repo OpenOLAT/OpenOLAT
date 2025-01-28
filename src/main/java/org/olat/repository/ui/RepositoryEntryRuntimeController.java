@@ -1096,7 +1096,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(!reSecurity.isEntryAdmin()) return;
 
 		WindowControl bwControl = getSubWindowControl("Booking");
-		OrdersAdminController ctrl = new OrdersAdminController(ureq, addToHistory(ureq, bwControl), toolbarPanel, re.getOlatResource());
+		OrdersAdminController ctrl = new OrdersAdminController(ureq, addToHistory(ureq, bwControl), re.getOlatResource(), false);
 		listenTo(ctrl);
 		ordersCtlr = pushController(ureq, translate("details.orders"), ctrl);
 		currentToolCtr = ordersCtlr;

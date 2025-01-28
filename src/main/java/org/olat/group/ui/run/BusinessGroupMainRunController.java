@@ -992,7 +992,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		OLATResource resource = businessGroup.getResource();
-		bgACHistoryCtrl = new OrdersAdminController(ureq, bwControl, toolbarPanel, resource);
+		bgACHistoryCtrl = new OrdersAdminController(ureq, bwControl, resource, readOnly);
 		listenTo(bgACHistoryCtrl);
 		mainPanel.setContent(bgACHistoryCtrl.getInitialComponent());
 		return (Activateable2)bgACHistoryCtrl;

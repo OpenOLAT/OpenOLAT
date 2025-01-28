@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -49,6 +48,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
+import org.olat.resource.accesscontrol.ui.AccessSegmentedOverviewController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,7 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementOffersController extends BasicController {
 	
-	private AccessConfigurationController accessConfigCtrl;
+	private AccessSegmentedOverviewController accessConfigCtrl;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -104,7 +104,7 @@ public class CurriculumElementOffersController extends BasicController {
 				catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,
 				taxonomyLevels, true);
 
-		accessConfigCtrl = new AccessConfigurationController(ureq, wControl, element.getResource(),
+		accessConfigCtrl = new AccessSegmentedOverviewController(ureq, wControl, element.getResource(),
 				element.getDisplayName(), true, false, false, true, defaultOfferOrganisations, catalogInfo,
 				!secCallback.canEditCurriculumElement(element), false, null);
 		listenTo(accessConfigCtrl);
@@ -126,17 +126,6 @@ public class CurriculumElementOffersController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
-	}
-	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == accessConfigCtrl) {
-			if(event == Event.CHANGED_EVENT) {
-				accessConfigCtrl.commitChanges();
-			}
-			fireEvent(ureq, event);
-		}
-		super.event(ureq, source, event);
 	}
 	
 	private static final class CurriculumElementStatusEvaluator implements CatalogStatusEvaluator {

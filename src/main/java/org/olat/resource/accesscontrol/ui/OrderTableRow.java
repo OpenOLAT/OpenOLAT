@@ -42,6 +42,8 @@ public class OrderTableRow {
 	private OrderModificationSummary modificationsSummary;
 	
 	private FormLink toolsLink;
+
+	private OrderDetailController detailsCtrl;
 	
 	public OrderTableRow(OrderTableItem item) {
 		this.item = item;
@@ -117,5 +119,27 @@ public class OrderTableRow {
 
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+	
+	public String getDetailsControllerName() {
+		if(detailsCtrl != null) {
+			return detailsCtrl.getInitialFormItem().getComponent().getComponentName();
+		}
+		return null;
+	}
+	
+	public boolean isDetailsControllerAvailable() {
+		if(detailsCtrl != null) {
+			return detailsCtrl.getInitialFormItem().isVisible();
+		}
+		return false;
+	}
+
+	public OrderDetailController getDetailsController() {
+		return detailsCtrl;
+	}
+
+	public void setDetailsController(OrderDetailController detailsCtrl) {
+		this.detailsCtrl = detailsCtrl;
 	}
 }

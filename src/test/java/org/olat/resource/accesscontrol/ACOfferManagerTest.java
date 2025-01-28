@@ -32,9 +32,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.DateUtils;
 import org.olat.resource.OLATResource;
@@ -42,7 +44,9 @@ import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferToOrganisationDAO;
+import org.olat.resource.accesscontrol.manager.ACOrderDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
@@ -69,6 +73,8 @@ public class ACOfferManagerTest extends OlatTestCase {
 	private ACService acService;
 	@Autowired
 	private ACMethodDAO acMethodManager;
+	@Autowired
+	private ACOrderDAO acOrderManager;
 	@Autowired
 	private ACOfferToOrganisationDAO offerToOrganisationDao;
 	@Autowired
@@ -173,6 +179,38 @@ public class ACOfferManagerTest extends OlatTestCase {
 		assertEquals(Long.valueOf(1), centerKeyToOfferCount.get(center2.getKey()));
 		assertNull(centerKeyToOfferCount.get(center3.getKey()));
 		assertNull(centerKeyToOfferCount.get(center4.getKey()));
+	}
+	
+	@Test
+	public void findOfferAndAccessByResource() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("order");
+		
+		//create a resource and an offer
+		OLATResource randomOres = JunitTestHelper.createRandomResource();
+		Offer offer = acService.createOffer(randomOres, "TestOrderAccess");
+		offer = acService.save(offer);
+		
+		//create a link offer to method
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
+		OfferAccess access = acMethodManager.createOfferAccess(offer, methods.get(0));
+		acMethodManager.save(access);
+		dbInstance.commitAndCloseSession();
+		
+		//create and save an order
+		Order order = acOrderManager.createOrder(id);
+		OrderPart part = acOrderManager.addOrderPart(order);
+		OrderLine item = acOrderManager.addOrderLine(part, offer);
+		Assert.assertNotNull(item);
+		acOrderManager.save(order, OrderStatus.PAYED);
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve the link
+		List<OfferAndAccessInfos> retrievedOfferAccess = acOfferManager.findOfferByResource(randomOres, true);
+		Assert.assertNotNull(retrievedOfferAccess);
+		Assert.assertEquals(1, retrievedOfferAccess.size());
+		Assert.assertEquals(offer, retrievedOfferAccess.get(0).offer());
+		Assert.assertEquals(access, retrievedOfferAccess.get(0).offerAccess());
+		Assert.assertEquals(1, retrievedOfferAccess.get(0).numOfOrders());
 	}
 
 	@Test

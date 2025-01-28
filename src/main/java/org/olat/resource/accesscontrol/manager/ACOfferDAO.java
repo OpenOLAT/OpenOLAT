@@ -33,12 +33,14 @@ import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OrganisationRef;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.CostCenter;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -106,6 +108,40 @@ public class ACOfferDAO {
 			}
 		}
 		
+		return new ArrayList<>(offers);
+	}
+	
+	public List<OfferAndAccessInfos> findOfferByResource(OLATResource resource, boolean valid) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select offer, access,");
+		sb.append("  (select count(order.key) from acorder order")
+		  .append("    inner join order.parts part")
+		  .append("    inner join part.lines orderLine")
+		  .append("    where orderLine.offer.key=offer.key")
+		  .append("  ) as numOfOrders");
+		sb.append("  from acoffer offer");
+		sb.append("  left join acofferaccess access")
+		  .append("    on access.offer.key = offer.key ");
+		sb.append("  left join fetch access.method accessMethod");
+		sb.append("  left join offer.resource resource");
+		sb.and().append("resource.key=:resourceKey");
+		sb.and().append("offer.valid=").append(valid);
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("resourceKey", resource.getKey());
+
+		List<Object[]> loadedObjects = query.getResultList();
+		List<OfferAndAccessInfos> offers = new ArrayList<>(loadedObjects.size());
+		for(Object[] objects:loadedObjects) {
+			Offer offer = (Offer)objects[0];
+			OfferAccess offerAccess = (OfferAccess)objects[1];
+			int numOfOrders = PersistenceHelper.extractPrimitiveInt(objects, 2);
+			if(offerAccess == null || offerAccess.getMethod().isVisibleInGui()) {
+				offers.add(new OfferAndAccessInfos(offer, offerAccess, numOfOrders));
+			}
+			
+		}
 		return new ArrayList<>(offers);
 	}
 

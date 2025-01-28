@@ -1,0 +1,28 @@
+<div class="o_curriculum_metadata_header">
+	<div class="o_curriculum_metadata_header_content">
+		<div class="o_curriculum_metadata_header_values">
+			#if($r.isNotEmpty($externalCatalog))
+			<div class="o_curriculum_metadata_header_key">
+				<div>
+					<strong><i class="o_icon o_icon-fw o_icon_catalog_extern"> </i> $r.translate("access.status.extern")</strong>
+				</div>
+				<div>
+					$externalCatalog
+				</div>
+			</div>
+			#end
+			#if($r.isNotEmpty($internalCatalog))
+			<div class="o_curriculum_metadata_header_key">
+				<div>
+					<strong><i class="o_icon o_icon-fw o_icon_catalog_intern"> </i> $r.translate("access.status.intern")</strong>
+				</div>
+				<div>
+					$internalCatalog
+				</div>
+			</div>
+			#end
+		</div>
+	</div>
+	$r.render("segments")
+</div>
+$r.render("content")

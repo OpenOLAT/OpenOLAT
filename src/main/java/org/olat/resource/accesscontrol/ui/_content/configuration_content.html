@@ -34,6 +34,15 @@
 	</div>
 #end
 
+#if($offer.openOrdersLink)
+	<div>
+		<label class="control-label col-sm-3" for="o_ac_access_${offer.link.key}">$r.translate("access.bookings")</label>
+	</div>
+	<div class="form-control-static col-sm-9" id="o_ac_access_${offer.link.key}">
+		$offer.numberOfOrders $r.render($offer.openOrdersLink)
+	</div>
+#end
+
 #if($offer.descriptionInfo)
 	<div>
 		<label class="control-label col-sm-3" for="o_ac_desc_${offer.link.key}">$r.translate("offer.description")</label>

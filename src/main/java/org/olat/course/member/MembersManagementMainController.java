@@ -295,9 +295,9 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 				selectedCtrl = groupsCtrl;
 			}
 		} else if(CMD_BOOKING.equals(cmd)) {
-			if(acModule.isEnabled() && (entryAdmin ||  principal || memberManagementRight)) {
+			if(acModule.isEnabled() && (entryAdmin || principal || memberManagementRight)) {
 				if(ordersController == null) {
-					ordersController = new OrdersAdminController(ureq, bwControl, toolbarPanel, repoEntry.getOlatResource());
+					ordersController = new OrdersAdminController(ureq, bwControl, repoEntry.getOlatResource(), (!entryAdmin && !memberManagementRight));
 					listenTo(ordersController);
 				}
 				mainVC.put("content", ordersController.getInitialComponent());

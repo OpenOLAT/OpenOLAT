@@ -324,6 +324,23 @@
 		flex-shrink: 0;
 	}
 }
+
+.o_ac_order_details .o_ac_order_nr p {
+	font-size: 2em;
+	font-weight: 900;
+}
+
+.o_ac_order_nr {
+	display: grid;
+	column-gap: 45px;
+	grid-template-columns: auto 1fr;
+	
+	.o_ac_order_status {
+		justify-self: end;
+		padding: 5px 0;
+	}
+}
+
 .o_labeled_light {
 	&.o_ac_offer_pending {
 		@extend %o_labeled_light_blue;
@@ -341,20 +358,42 @@
 		@extend %o_labeled_light_grey;
 	}
 	
-	
+	&.o_ac_order_status_new {
+		@extend %o_labeled_light_blue;
+	}
 	&.o_ac_order_status_pending,
+	&.o_ac_order_status_payed_pending,
+	&.o_ac_order_status_warning {
+		@extend %o_labeled_light_yellow;
+	}
 	&.o_ac_order_status_canceled {
 		@extend %o_labeled_light_grey;
 	}
-	&.o_ac_order_status_payed,
-	&.o_ac_order_status_payed_pending {
+	&.o_ac_order_status_payed {
 		@extend %o_labeled_light_green;
-	}
-	&.o_ac_order_status_warning {
-		@extend %o_labeled_light_orange;
 	}
 	&.o_ac_order_status_error {
 		@extend %o_labeled_light_red;
+	}
+}
+
+.o_labeled {
+	&.o_ac_order_status_new {
+		@extend %o_labeled_blue;
+	}
+	&.o_ac_order_status_pending,
+	&.o_ac_order_status_payed_pending,
+	&.o_ac_order_status_warning {
+		@extend %o_labeled_yellow;
+	}
+	&.o_ac_order_status_canceled {
+		@extend %o_labeled_grey;
+	}
+	&.o_ac_order_status_payed {
+		@extend %o_labeled_green;
+	}
+	&.o_ac_order_status_error {
+		@extend %o_labeled_red;
 	}
 }
 
@@ -363,11 +402,6 @@ tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,
 tr.o_entry_unpublished, tr.o_entry_unpublished td, tr.o_entry_unpublished td span {
 	text-decoration: line-through;
 }
-
-tr.o_entry_deleted {
-
-}
-
 
 /* status element in dropdown menu */
 a.o_repo_tools_status {

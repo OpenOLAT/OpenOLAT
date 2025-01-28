@@ -258,7 +258,7 @@ public class AuthoringEditAccessController extends BasicController {
 			boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 			accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(),
 					entry.getDisplayname(), true, true, guestSupported, true, defaultOfferOrganisations,
-					RepositoryCatalogInfoFactory.createCatalogInfo(entry, getLocale(), true, true), readOnly, managedBookings,
+					RepositoryCatalogInfoFactory.createCatalogInfo(entry, getLocale(), true, true), readOnly, managedBookings, false,
 					"manual_user/learningresources/Access_configuration#offer");
 			listenTo(accessOffersCtrl);
 			vc.put("offers", accessOffersCtrl.getInitialComponent());
