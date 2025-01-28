@@ -180,6 +180,10 @@ public class DestinationAcceptStepController extends StepFormBasicController {
 	private void processToDestinationFolders(Set<String> selection, String relativeSourceFileName) {
 		VFSContainer rootContainer = VFSManager.olatRootContainer("", null);
 
+		// Get the uploadFileEl from the run context and the corresponding file
+		FileElement fileUploadEl = (FileElement) getFromRunContext(MetadataAcceptStepController.STEP_RUN_CONTEXT_FILE_UPLOAD_EL_KEY);
+		File fileToUpload = fileUploadEl.getUploadFile();
+
 		// Iterate through the selected destination folders
 		for (String key : selection) {
 			TreeNode selectedNode = treeModel.getNodeById(key);
@@ -189,10 +193,6 @@ public class DestinationAcceptStepController extends StepFormBasicController {
 
 			// Try to create the target file in the destination directory
 			targetFile = destinationDirectory.createChildLeaf(relativeSourceFileName);
-
-			// Get the uploadFileEl from the run context and the corresponding file
-			FileElement fileUploadEl = (FileElement) getFromRunContext(MetadataAcceptStepController.STEP_RUN_CONTEXT_FILE_UPLOAD_EL_KEY);
-			File fileToUpload = fileUploadEl.getUploadFile();
 
 			if (targetFile == null) {
 				// File already exists... upload anyway with a new filename
@@ -210,12 +210,12 @@ public class DestinationAcceptStepController extends StepFormBasicController {
 				logError("Uploading file failed", e);
 			}
 
-			// Clean up the temporary uploaded file
-			FileUtils.deleteFile(fileToUpload);
-
 			// Update metadata for the copied file
 			updateFileMetadata(targetFile, relativeDestinationDirectoryName, relativeSourceFileName);
 		}
+
+		// Clean up the temporary uploaded file
+		FileUtils.deleteFile(fileToUpload);
 	}
 
 	/**
