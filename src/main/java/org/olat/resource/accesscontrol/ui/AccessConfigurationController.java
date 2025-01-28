@@ -518,6 +518,9 @@ public class AccessConfigurationController extends FormBasicController {
 		iconPanel.setElementCssClass("o_block_bottom o_sel_ac_offer");
 		iconPanel.setIconCssClass("o_icon o_icon-fw " + link.getMethod().getMethodCssClass() + "_icon");
 		iconPanel.setTitle(handler.getMethodName(getLocale()));
+		if(link.getOffer() != null && StringHelper.containsNonWhitespace(link.getOffer().getLabel())) {
+			iconPanel.setTagline(" \u00B7 " + link.getOffer().getLabel());
+		}
 		offersContainer.add(iconPanel.getName(), iconPanel);
 		
 		AccessInfo infos = new AccessInfo(iconPanel, link, handler, numOfOrders);
@@ -1114,6 +1117,13 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		public boolean isOverlapAllowed(AccessInfo info) {
 			return handler != null? handler.isOverlapAllowed(info.handler): false;
+		}
+		
+		public String getLabel() {
+			if (offer != null && StringHelper.containsNonWhitespace(offer.getLabel())) {
+				return offer.getLabel();
+			}
+			return null;
 		}
 		
 		public String getDescriptionInfo() {

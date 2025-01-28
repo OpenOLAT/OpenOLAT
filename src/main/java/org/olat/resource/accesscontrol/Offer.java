@@ -91,6 +91,10 @@ public interface Offer extends OfferRef {
 		return false;
 	}
 	
+	public String getLabel();
+	
+	public void setLabel(String label);
+	
 	public String getDescription();
 	
 	public void setDescription(String description);

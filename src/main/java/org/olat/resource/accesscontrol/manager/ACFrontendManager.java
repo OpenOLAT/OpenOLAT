@@ -1197,17 +1197,31 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 					}
 				}
 			}
+			
+			String offerLabel = deduplicate(rawOrder.getLabel());
+			String resourceDisplayName = deduplicate(rawOrder.getResourceName());
 
-			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(),
-					rawOrder.getTotal(), rawOrder.getCancellationFees(),
-					rawOrder.getCreationDate(), orderStatus, finalStatus,
+			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(), offerLabel, resourceDisplayName,
+					rawOrder.getTotal(), rawOrder.getCancellationFees(), rawOrder.getCreationDate(), orderStatus, finalStatus,
 					rawOrder.getDeliveryKey(), rawOrder.getUsername(), rawOrder.getUserProperties(), orderMethods);
-			item.setResourceDisplayname(rawOrder.getResourceName());
-
 			items.add(item);
 		}
 
 		return items;
+	}
+	
+	private String deduplicate(String string) {
+		if(string != null) {
+			String[] arr = string.split(",");
+			List<String> values = new ArrayList<>(4);
+			for(String str:arr) {
+				if(StringHelper.containsNonWhitespace(str) && !values.contains(str)) {
+					values.add(str);
+				}
+			}
+			string = String.join(", ", values);
+		}
+		return string;
 	}
 
 	private Status getStatus(String orderStatus, String trxStatus, String pspTrxStatus) {

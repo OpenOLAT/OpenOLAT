@@ -125,6 +125,7 @@ alter table o_ac_offer add cancelling_fee_amount number(20,2);
 alter table o_ac_offer add cancelling_fee_currency_code varchar(3 char);
 alter table o_ac_offer add cancelling_fee_deadline_days number(20);
 alter table o_ac_offer add fk_cost_center number(20);
+alter table o_ac_offer add offer_label varchar(128);
 alter table o_ac_order add purchase_order_number varchar(100);
 alter table o_ac_order add order_comment varchar(4000);
 alter table o_ac_order add fk_billing_address number(20);

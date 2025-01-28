@@ -57,6 +57,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -70,6 +71,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.OLATResource;
@@ -185,7 +187,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.methods,
 				new AccessMethodRenderer(acModule)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offerName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offerLabel));
 
 		int i=0;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -284,13 +286,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			for(Offer offer:offers) {
 				List<OfferAccess> offerAccess = acService.getOfferAccess(offer, true);
 				for(OfferAccess access:offerAccess) {
-					AccessMethod method = access.getMethod();
-					if(method != null) {
-						AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
-						if(handler != null) {
-							//TODO booking offer name
-							offersValues.add(SelectionValues.entry(access.getKey().toString(), "[" + access.getKey() + "] \u00B7 " + handler.getMethodName(getLocale())));
-						}
+					SelectionValue val = initOfferFilterValue(offer, access, access.getMethod());
+					if(val != null) {
+						offersValues.add(val);
 					}
 				}
 			}
@@ -300,6 +298,26 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		}
 
 		tableEl.setFilters(true, filters, false, false);
+	}
+	
+	private SelectionValue initOfferFilterValue(Offer offer, OfferAccess access, AccessMethod method) {
+		if(method != null) {
+			AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
+			if(handler != null) {
+				StringBuilder val = new StringBuilder();
+				if(StringHelper.containsNonWhitespace(offer.getLabel())) {
+					val.append(offer.getLabel()).append(" \u00B7 ");
+				}
+				String methodName = handler.getMethodName(getLocale());
+				if(StringHelper.containsNonWhitespace(methodName)) {
+					val.append(methodName);
+				} else {
+					val.append(method.getType());
+				}
+				return SelectionValues.entry(access.getKey().toString(), val.toString());
+			}
+		}
+		return null;
 	}
 	
 	private void initFilterPresets() {

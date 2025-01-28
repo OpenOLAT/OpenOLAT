@@ -50,11 +50,12 @@ public class OrderTableItem {
 	
 	private final Long orderKey;
 	private final String orderNr;
+	private final String label;
 	private final Price total;
 	private final Price cancellationFees;
 	private final Date creationDate;
 	private final OrderStatus orderStatus;
-	private String resourceDisplayname;
+	private final String resourceDisplayname;
 	private Long deliveryKey;
 	
 	private String username;
@@ -63,12 +64,16 @@ public class OrderTableItem {
 	private Status status;
 	private List<AccessMethod> methods;
 	
-	public OrderTableItem(Long orderKey, String orderNr, Price total, Price cancellationFees,
+	public OrderTableItem(Long orderKey, String orderNr,
+			String label, String resourceDisplayname,
+			Price total, Price cancellationFees,
 			Date creationDate, OrderStatus orderStatus, Status status, Long deliveryKey,
 			String username, String[] userProperties, List<AccessMethod> methods) {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
 		this.total = total;
+		this.label = label;
+		this.resourceDisplayname = resourceDisplayname;
 		this.cancellationFees = cancellationFees;
 		this.orderStatus = orderStatus;
 		this.creationDate = creationDate;
@@ -95,6 +100,10 @@ public class OrderTableItem {
 		return orderNr;
 	}
 	
+	public String getLabel() {
+		return label;
+	}
+	
 	public OrderStatus getOrderStatus() {
 		return orderStatus;	
 	}
@@ -109,10 +118,6 @@ public class OrderTableItem {
 	
 	public String getResourceDisplayname() {
 		return resourceDisplayname;
-	}
-
-	public void setResourceDisplayname(String resourceDisplayname) {
-		this.resourceDisplayname = resourceDisplayname;
 	}
 
 	public String getUsername() {

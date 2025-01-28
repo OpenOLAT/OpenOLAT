@@ -81,6 +81,10 @@ public class OrderTableRow {
 		return item.getOrderNr();
 	}
 	
+	public String getOfferLabel() {
+		return item.getLabel();
+	}
+	
 	public Date getCreationDate() {
 		return item.getCreationDate();
 	}

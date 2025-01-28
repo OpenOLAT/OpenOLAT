@@ -991,7 +991,8 @@ create table o_ac_offer (
   cancelling_fee_amount decimal,
   cancelling_fee_currency_code varchar(3),
   cancelling_fee_deadline_days int8,
-  offer_desc VARCHAR(2000),
+  offer_label varchar(128),
+  offer_desc varchar(2000),
   fk_resource_id int8,
   fk_cost_center int8,
   primary key (offer_id)

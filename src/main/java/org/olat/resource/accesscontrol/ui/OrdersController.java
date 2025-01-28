@@ -137,7 +137,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 				new OrderStatusRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.methods,
 				new AccessMethodRenderer(acModule)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offerName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offerLabel));
 		if(resource == null && settings.withResourceDisplayName()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
 		}

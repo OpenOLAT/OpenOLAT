@@ -1041,6 +1041,7 @@ create table o_ac_offer (
   cancelling_fee_amount number(20,2),
   cancelling_fee_currency_code varchar(3 char),
   cancelling_fee_deadline_days number(20),
+  offer_label varchar(128 char),
   offer_desc VARCHAR(2000 char),
   fk_resource_id number(20),
   fk_cost_center number(20),

@@ -65,6 +65,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	private static final String CATALOG_WEB = "web";
 	
 	private TextElement descEl;
+	private TextElement labelEl;
 	private SingleSelection periodEl;
 	private DateChooser datesEl;
 	private MultiSelectionFilterElement organisationsEl;
@@ -100,6 +101,10 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// Label
+		String label = link.getOffer() != null ? link.getOffer().getLabel() : null;
+		labelEl = uifactory.addTextElement("offer.label", "offer.label", 128, label, formLayout);
+		
 		// Catalog
 		SelectionValues catalogSV = new SelectionValues();
 		if (catalogModule.isEnabled()) {
@@ -264,6 +269,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 	
 	public OfferAccess getOfferAccess() {
 		Offer offer = link.getOffer();
+		offer.setLabel(labelEl.getValue());
 		offer.setDescription(descEl.getValue());
 		boolean hasDate = periodEl.isKeySelected(PERIOD_DATE);
 		Date validFrom = hasDate? datesEl.getDate(): null;

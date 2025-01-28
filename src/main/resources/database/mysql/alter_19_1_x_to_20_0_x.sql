@@ -118,6 +118,7 @@ alter table o_ac_offer add column cancelling_fee_amount decimal(12,4);
 alter table o_ac_offer add column cancelling_fee_currency_code varchar(3);
 alter table o_ac_offer add column cancelling_fee_deadline_days int;
 alter table o_ac_offer add column fk_cost_center bigint;
+alter table o_ac_offer add column offer_label varchar(128);
 alter table o_ac_order add column purchase_order_number varchar(100);
 alter table o_ac_order add column order_comment mediumtext;
 alter table o_ac_order add column fk_billing_address bigint;

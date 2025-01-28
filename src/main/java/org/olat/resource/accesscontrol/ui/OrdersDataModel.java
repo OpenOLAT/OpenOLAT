@@ -66,7 +66,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 			case creationDate -> order.getCreationDate();
 			case delivery -> getDelivery(order);
 			case methods -> order.getMethods();
-			case offerName -> "";
+			case offerLabel -> order.getOfferLabel();
 			case total -> getTotal(order);
 			case cancellationFee -> getCancellationFees(order);
 			case summary -> order.getResourceDisplayname();
@@ -135,7 +135,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		creationDate("table.order.creationDate", "creationdate"),
 		delivery("order.delivery", "delivery_id"),
 		methods("table.order.part.payment", "trxMethodIds"),
-		offerName("table.order.offer.name", null),
+		offerLabel("table.order.offer.label", null),
 		total("table.order.total", "total_amount"),
 		cancellationFee("order.cancellation.fee", "cancellation_fee_amount"),
 		summary("order.summary", "resDisplaynames"),

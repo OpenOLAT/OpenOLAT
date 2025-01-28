@@ -315,6 +315,7 @@ public class ACOrderDAO {
 		  .append("  o.order_status as o_status,")
 		  .append("  o.fk_delivery_id as delivery_id,")
 		  .append("  ").appendToArray("offer.resourcedisplayname").append(" as resDisplaynames,")
+		  .append("  ").appendToArray("offer.offer_label").append(" as labels,")
 		  .append("  ").appendToArray("trx.trx_status").append(" as trxStatus,")
 		  .append("  ").appendToArray("trx.fk_method_id").append(" as trxMethodIds,")
 		  .append("  ").appendToArray("pspTrx.trx_status").append(" as pspTrxStatus,")
@@ -473,6 +474,7 @@ public class ACOrderDAO {
 			String orderStatus = (String)order[pos++];
 			Long deliveryKey = ((Number)order[pos++]).longValue();
 			String resourceName = (String)order[pos++];
+			String label = (String)order[pos++];
 			String trxStatus = (String)order[pos++];
 			String trxMethodIds = (String)order[pos++];
 			String pspTrxStatus = (String)order[pos++];
@@ -490,8 +492,8 @@ public class ACOrderDAO {
 					userProperties[i] = (String)order[pos++];
 				}
 			}
-
-			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(),
+			
+			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), label,
 					totalCurrencyCode, totalAmount, cancellationFees,
 					creationDate, orderStatus, deliveryKey, resourceName,
 					trxStatus, trxMethodIds, pspTrxStatus, checkoutTrxStatus, checkoutOrderTrxStatus,

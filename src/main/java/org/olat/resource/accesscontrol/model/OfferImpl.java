@@ -118,6 +118,8 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	@Column(name="resourcedisplayname", nullable=true, insertable=true, updatable=true)
 	private String resourceDisplayName;
 
+	@Column(name="offer_label", nullable=true, insertable=true, updatable=true)
+	private String label;
 	@Column(name="offer_desc", nullable=true, insertable=true, updatable=true)
 	private String description;
 	
@@ -227,7 +229,17 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	public void setResourceDisplayName(String resourceDisplayName) {
 		this.resourceDisplayName = resourceDisplayName;
 	}
-	
+
+	@Override
+	public String getLabel() {
+		return label;
+	}
+
+	@Override
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
 	@Override
 	public String getDescription() {
 		return description;

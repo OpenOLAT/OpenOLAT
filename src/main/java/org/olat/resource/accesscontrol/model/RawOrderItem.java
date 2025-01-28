@@ -36,6 +36,7 @@ public class RawOrderItem {
 	
 	private final Long orderKey;
 	private final String orderNr;
+	private final String label;
 	private final Price total;
 	private final Price cancellationFees;
 	private final Date creationDate;
@@ -52,7 +53,7 @@ public class RawOrderItem {
 	private final String username;
 	private final String[] userProperties;
 	
-	public RawOrderItem(Long orderKey, String orderNr, String totalCurrencyCode,
+	public RawOrderItem(Long orderKey, String orderNr, String label, String totalCurrencyCode,
 			BigDecimal totalAmount, BigDecimal cancellationFees,
 			Date creationDate, String orderStatus, Long deliveryKey, String resourceName,
 			String trxStatus, String trxMethodIds, String pspTrxStatus,
@@ -60,6 +61,7 @@ public class RawOrderItem {
 			String username, String[] userProperties) {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
+		this.label = label;
 		this.total = new PriceImpl(totalAmount, totalCurrencyCode);
 		this.cancellationFees = new PriceImpl(cancellationFees, totalCurrencyCode);
 		this.creationDate = creationDate;
@@ -81,6 +83,10 @@ public class RawOrderItem {
 
 	public String getOrderNr() {
 		return orderNr;
+	}
+	
+	public String getLabel() {
+		return label;
 	}
 
 	public Price getTotal() {

@@ -1073,6 +1073,7 @@ create table  if not exists o_ac_offer (
   cancelling_fee_amount decimal(12,4),
   cancelling_fee_currency_code varchar(3),
   cancelling_fee_deadline_days int,
+  offer_label varchar(128),
   offer_desc VARCHAR(2000),
   fk_resource_id bigint,
   fk_cost_center bigint,
