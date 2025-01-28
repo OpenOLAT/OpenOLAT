@@ -361,7 +361,7 @@ public class MailValidationController extends FormBasicController {
 				return true;
 			}
 		} else if (!registrationModule.getDomainList().isEmpty()) {
-			return registrationModule.getDomainList().stream().anyMatch(domain -> domain.equals(mailDomain));
+			return registrationManager.validateEmailUsername(getEmailAddress());
 		} else {
 			return true;
 		}
