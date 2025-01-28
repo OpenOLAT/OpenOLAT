@@ -26,10 +26,12 @@ import org.olat.core.commons.services.folder.ui.FolderUIFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -38,11 +40,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.GeneratedReport;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +63,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GeneratedReportsController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 
+	private static final String DELETE_CMD = "delete";
+	private static final String DOWNLOAD_CMD = "download";
+	
 	private GeneratedReportsDataModel tableModel;
 	private FlexiTableElement tableEl;
 	private int count = 0;
+
+	private DialogBoxController confirmDeleteCtrl;
 
 	@Autowired
 	private CoachingService coachingService;
@@ -89,6 +103,12 @@ public class GeneratedReportsController extends FormBasicController implements F
 	}
 	
 	private void loadModel() {
+		List<String> componentNamesToCleanUp = flc.getFormComponents().values().stream()
+				.filter(formItem -> formItem.getUserObject() instanceof GeneratedReportsRow)
+				.map(FormItem::getName).toList();
+		for (String componentName : componentNamesToCleanUp) {
+			flc.remove(componentName);
+		}
 		List<GeneratedReportsRow> rows = coachingService.getGeneratedReports(getIdentity()).stream()
 				.map(this::mapToRow).toList();
 		tableModel.setObjects(rows);
@@ -97,6 +117,7 @@ public class GeneratedReportsController extends FormBasicController implements F
 
 	private GeneratedReportsRow mapToRow(GeneratedReport generatedReport) {
 		GeneratedReportsRow row = new GeneratedReportsRow();
+		row.setGeneratedReport(generatedReport);
 		VFSMetadata metadata = generatedReport.getMetadata();
 		row.setCreationDate(metadata.getCreationDate());
 		row.setExpirationDate(metadata.getExpirationDate());
@@ -110,7 +131,7 @@ public class GeneratedReportsController extends FormBasicController implements F
 		String c = Integer.toString(++count);
 		
 		String name = row.getName();
-		FormLink downloadLink = uifactory.addFormLink("download-link-".concat(c), "download", name, 
+		FormLink downloadLink = uifactory.addFormLink("download-link-".concat(c), DOWNLOAD_CMD, name, 
 				null, flc, Link.NONTRANSLATED);
 		row.setDownloadLink(downloadLink);
 		downloadLink.setUserObject(row);
@@ -121,13 +142,13 @@ public class GeneratedReportsController extends FormBasicController implements F
 		row.setCopyToButton(copyToButton);
 		copyToButton.setUserObject(row);
 
-		FormLink deleteButton = uifactory.addFormLink("delete-".concat(c), "delete", "delete", 
+		FormLink deleteButton = uifactory.addFormLink("delete-".concat(c), DELETE_CMD, "delete", 
 				null, flc, Link.BUTTON);
 		deleteButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 		row.setDeleteButton(deleteButton);
 		deleteButton.setUserObject(row);
 
-		FormLink downloadButton = uifactory.addFormLink("download-".concat(c), "download", "download", 
+		FormLink downloadButton = uifactory.addFormLink("download-".concat(c), DOWNLOAD_CMD, "download", 
 				null, flc, Link.BUTTON);
 		downloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		row.setDownloadButton(downloadButton);
@@ -136,7 +157,53 @@ public class GeneratedReportsController extends FormBasicController implements F
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		//
+	}
 
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (confirmDeleteCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) && confirmDeleteCtrl.getUserObject() instanceof GeneratedReportsRow row) {
+				doDelete(ureq, row);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source instanceof FormLink link) {
+			String cmd = link.getCmd();
+			if (DELETE_CMD.equals(cmd) && link.getUserObject() instanceof GeneratedReportsRow row) {
+				doConfirmDelete(ureq, row);
+			} else if (DOWNLOAD_CMD.equals(cmd) && link.getUserObject() instanceof GeneratedReportsRow row) {
+				doDownload(ureq, row);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doConfirmDelete(UserRequest ureq, GeneratedReportsRow row) {
+		String title = translate("delete.report.confirm.title");
+		String text = translate("delete.report.confirm.text");
+		confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
+		confirmDeleteCtrl.setUserObject(row);
+	}
+
+	private void doDownload(UserRequest ureq, GeneratedReportsRow row) {
+		MediaResource mediaResource;
+		VFSLeaf leaf = coachingService.getGeneratedReportLeaf(getIdentity(), row.getGeneratedReport().getMetadata());
+		if (leaf != null) {
+			mediaResource = new VFSMediaResource(leaf);			
+		} else {
+			mediaResource = new NotFoundMediaResource();
+		}
+		ureq.getDispatchResult().setResultingMediaResource(mediaResource);		
+	}
+
+	private void doDelete(UserRequest ureq, GeneratedReportsRow row) {
+		coachingService.deleteGeneratedReport(getIdentity(), row.getGeneratedReport().getMetadata());
+		reload();
 	}
 
 	@Override

@@ -19,118 +19,71 @@
  */
 package org.olat.modules.coach.ui.manager;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.modules.coach.reports.ReportConfiguration;
-import org.olat.modules.coach.ui.manager.ReportTemplatesDataModel.ReportTemplateCols;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2025-01-24<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class ManagerReportsController extends FormBasicController implements Activateable2 {
+public class ManagerReportsController extends BasicController implements Activateable2 {
 
 	private final TooledStackedPanel stackedPanel;
-	private FlexiTableElement reportTemplatesTableEl;
-	private ReportTemplatesDataModel reportTemplatesDataModel;
 	
-	private GeneratedReportsController generatedReportsController;
-
-	private int count = 0;
-
-	@Autowired
-	private List<ReportConfiguration> reportConfigurations;
+	private final VelocityContainer mainVC;
 	
+	private ReportTemplatesController reportTemplatesCtrl;
+	private GeneratedReportsController generatedReportsCtrl;
+
 	public ManagerReportsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel) {
-		super(ureq, wControl, "manager_reports");
+		super(ureq, wControl);
 		this.stackedPanel = stackedPanel;
+
+		mainVC = createVelocityContainer("manager_reports");
 		
-		initForm(ureq);
+		reportTemplatesCtrl = new ReportTemplatesController(ureq, wControl);
+		listenTo(reportTemplatesCtrl);
+		mainVC.put("report.templates", reportTemplatesCtrl.getInitialComponent());
 
-		generatedReportsController = new GeneratedReportsController(ureq, wControl);
-		listenTo(generatedReportsController);
-		flc.put("generated.reports", generatedReportsController.getInitialComponent());
-
-		loadModel();
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		initReportTemplatesTable(formLayout);
-	}
-
-	private void initReportTemplatesTable(FormItemContainer formLayout) {
-		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.name));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.category));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.description));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.type));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportTemplateCols.run));
+		generatedReportsCtrl = new GeneratedReportsController(ureq, wControl);
+		listenTo(generatedReportsCtrl);
+		mainVC.put("generated.reports", generatedReportsCtrl.getInitialComponent());
 		
-		reportTemplatesDataModel = new ReportTemplatesDataModel(columnModel, getLocale());
-		reportTemplatesTableEl = uifactory.addTableElement(getWindowControl(), "report.templates", 
-				reportTemplatesDataModel, 25, false, getTranslator(), formLayout);
-		reportTemplatesTableEl.setNumOfRowsEnabled(false);
-	}
-
-	private void loadModel() {
-		List<ReportTemplatesRow> rows = new ArrayList<>();
-
-		for (ReportConfiguration reportConfiguration : reportConfigurations) {
-			ReportTemplatesRow row = new ReportTemplatesRow();
-			row.setName(reportConfiguration.getName(getLocale()));
-			row.setCategory(reportConfiguration.getCategory(getLocale()));
-			row.setDescription(reportConfiguration.getDescription(getLocale()));
-			row.setType(translate("type." + (reportConfiguration.isDynamic() ? "dynamic" : "static")));
-			row.setRun("Configured");
-			forgeRow(row);
-			rows.add(row);
-		}
-		
-		reportTemplatesDataModel.setObjects(rows);
-		reportTemplatesTableEl.reset();
-		generatedReportsController.reload();
-	}
-
-	private void forgeRow(ReportTemplatesRow row) {
-		String playId = "play-" + count++;
-		FormLink playLink = uifactory.addFormLink(playId, "play", "", null, flc, Link.NONTRANSLATED);
-		playLink.setIconLeftCSS("o_icon o_icon-lg o_icon_play");
-		playLink.setUserObject(row);
-		row.setPlayLink(playLink);
-		flc.add(playLink);
-		flc.add(playId, playLink);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-
+		putInitialPanel(mainVC);
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		
+		//		
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//		
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (reportTemplatesCtrl == source) {
+			generatedReportsCtrl.reload();
+		}
+		super.event(ureq, source, event);
 	}
 
 	public void reload() {
-		loadModel();
+		reportTemplatesCtrl.reload();
+		generatedReportsCtrl.reload();
 	}
 }

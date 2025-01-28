@@ -21,6 +21,7 @@ package org.olat.modules.coach.manager;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +36,7 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -251,11 +253,44 @@ public class CoachingServiceImpl implements CoachingService {
 		return generatedReports;
 	}
 	
-	private LocalFolderImpl getGeneratedReportsFolder(Identity coach) {
+	@Override
+	public LocalFolderImpl getGeneratedReportsFolder(Identity coach) {
 		LocalFolderImpl folder = VFSManager.olatRootContainer(FolderConfig.getUserHome(coach) + "/private/" + GENERATED_REPORT_FOLDER_NAME);
 		if (!folder.exists()) {
 			folder.getBasefile().mkdirs();
 		}
 		return folder;
+	}
+
+	@Override
+	public void setGeneratedReport(Identity coach, String name, String fileName) {
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+
+		LocalFolderImpl folder = getGeneratedReportsFolder(coach);
+		if (folder.resolve(fileName) instanceof VFSLeaf leaf) {
+			VFSMetadata metadata = vfsRepositoryService.getMetadataFor(leaf);
+			if (metadata != null) {
+				metadata.setTitle(name);
+				metadata.setExpirationDate(DateUtils.addDays(new Date(), 10));
+				vfsRepositoryService.updateMetadata(metadata);
+			}
+		}
+	}
+
+	@Override
+	public void deleteGeneratedReport(Identity coach, VFSMetadata vfsMetadata) {
+		String fileName = vfsMetadata.getFilename();
+		LocalFolderImpl folder = getGeneratedReportsFolder(coach);
+		if (folder.resolve(fileName) instanceof VFSLeaf leaf) {
+			leaf.deleteSilently();
+		}
+	}
+	
+	public VFSLeaf getGeneratedReportLeaf(Identity coach, VFSMetadata vfsMetadata) {
+		LocalFolderImpl folder = getGeneratedReportsFolder(coach);
+		if (folder.resolve(vfsMetadata.getFilename()) instanceof VFSLeaf leaf) {
+			return leaf;
+		}
+		return null;
 	}
 }

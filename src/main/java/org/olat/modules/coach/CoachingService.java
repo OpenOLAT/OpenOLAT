@@ -24,7 +24,10 @@ import java.util.Locale;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.RelationRole;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.coach.model.CoachingSecurity;
@@ -75,4 +78,12 @@ public interface CoachingService {
 	public List<UserEfficiencyStatement> getEfficencyStatements(Identity student);
 	
 	public List<GeneratedReport> getGeneratedReports(Identity coach);
+
+	public LocalFolderImpl getGeneratedReportsFolder(Identity coach);
+
+	public void setGeneratedReport(Identity coach, String name, String fileName);
+	
+	public void deleteGeneratedReport(Identity coach, VFSMetadata vfsMetadata);
+
+	public VFSLeaf getGeneratedReportLeaf(Identity identity, VFSMetadata metadata);
 }

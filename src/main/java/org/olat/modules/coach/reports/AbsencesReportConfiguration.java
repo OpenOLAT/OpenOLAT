@@ -19,10 +19,81 @@
  */
 package org.olat.modules.coach.reports;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.modules.coach.CoachingService;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
+import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Initial date: 2025-01-27<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class AbsencesReportConfiguration extends AbstractReportConfiguration {
+
+	private static final Logger log = Tracing.createLoggerFor(AbsencesReportConfiguration.class);
+			
+	@Override
+	public void generateReport(Identity coach, Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
+		Translator translator = Util.createPackageTranslator(AbsencesReportConfiguration.class, locale);
+		CoachingService coachingService = CoreSpringFactory.getImpl(CoachingService.class);
+		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
+		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
+		List<LectureBlockIdentityStatistics> statistics = lectureService.getLecturesStatistics(params, userPropertyHandlers, coach);
+
+		LocalFolderImpl folder = coachingService.getGeneratedReportsFolder(coach);
+		String name = getName(locale);
+		String fileName = StringHelper.transformDisplayNameToFileSystemName(name) + "_" + 
+				Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".xlsx";
+
+		File excelFile = new File(folder.getBasefile(), fileName);
+		try (OutputStream out = new FileOutputStream(excelFile); 
+			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			sheet.setHeaderRows(1);
+			Row header = sheet.newRow();
+			int pos = 0;
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				header.addCell(pos++, translator.translate("export.header." + userPropertyHandler.getName()));
+			}
+			header.addCell(pos++, translator.translate("export.header.absences"));
+			
+			for (LectureBlockIdentityStatistics stats : statistics) {
+				Row row = sheet.newRow();
+				
+				pos = 0;
+				for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+					row.addCell(pos, stats.getIdentityProp(pos));
+					pos++;
+				}
+				header.addCell(pos++, "" + stats.getTotalAbsentLectures());
+			}
+		} catch (IOException e) {
+			log.error("Unable to generate export", e);
+			return;
+		}
+		
+		coachingService.setGeneratedReport(coach, name, fileName);
+	}
 }

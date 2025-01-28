@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.DateUtils;
+import org.olat.modules.coach.model.GeneratedReport;
 
 /**
  * Initial date: 2025-01-24<br>
@@ -38,6 +39,7 @@ public class GeneratedReportsRow {
 	private FormLink downloadButton;
 	private Date expirationDate;
 	private long fileSize;
+	private GeneratedReport generatedReport;
 
 	public String getName() {
 		return name;
@@ -113,5 +115,13 @@ public class GeneratedReportsRow {
 
 	public long getFileSize() {
 		return fileSize;
+	}
+
+	public void setGeneratedReport(GeneratedReport generatedReport) {
+		this.generatedReport = generatedReport;
+	}
+
+	public GeneratedReport getGeneratedReport() {
+		return generatedReport;
 	}
 }

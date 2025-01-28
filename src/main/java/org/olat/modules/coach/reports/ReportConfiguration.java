@@ -19,7 +19,11 @@
  */
 package org.olat.modules.coach.reports;
 
+import java.util.List;
 import java.util.Locale;
+
+import org.olat.core.id.Identity;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Initial date: 2025-01-27<br>
@@ -58,4 +62,6 @@ public interface ReportConfiguration {
 	 * @return True if the report configuration is dynamic, false if it is static.
 	 */
 	boolean isDynamic();
+
+	void generateReport(Identity coach, Locale locale, List<UserPropertyHandler> userPropertyHandlers);
 }

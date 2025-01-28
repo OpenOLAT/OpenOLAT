@@ -19,18 +19,21 @@
  */
 package org.olat.modules.coach.reports;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Initial date: 2025-01-28<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class AbstractReportConfiguration implements ReportConfiguration {
+public abstract class AbstractReportConfiguration implements ReportConfiguration {
 	private Translator translator;
 
 	private String i18nNameKey;
@@ -104,4 +107,7 @@ public class AbstractReportConfiguration implements ReportConfiguration {
 	public void setDynamic(boolean dynamic) {
 		this.dynamic = dynamic;
 	}
+
+	@Override
+	public abstract void generateReport(Identity coach, Locale locale, List<UserPropertyHandler> userPropertyHandlers);
 }

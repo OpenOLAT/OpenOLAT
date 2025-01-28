@@ -20,6 +20,7 @@
 package org.olat.modules.coach.ui.manager;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.coach.reports.ReportConfiguration;
 
 /**
  * Initial date: 2025-01-24<br>
@@ -31,8 +32,8 @@ public class ReportTemplatesRow {
 	private String category;
 	private String description;
 	private String type;
-	private String run;
 	private FormLink playLink;
+	private ReportConfiguration reportConfiguration;
 
 	public String getName() {
 		return name;
@@ -66,19 +67,19 @@ public class ReportTemplatesRow {
 		this.type = type;
 	}
 
-	public String getRun() {
-		return run;
-	}
-
-	public void setRun(String run) {
-		this.run = run;
-	}
-
 	public void setPlayLink(FormLink playLink) {
 		this.playLink = playLink;
 	}
 
 	public FormLink getPlayLink() {
 		return playLink;
+	}
+
+	public void setReportConfiguration(ReportConfiguration reportConfiguration) {
+		this.reportConfiguration = reportConfiguration;
+	}
+
+	public ReportConfiguration getReportConfiguration() {
+		return reportConfiguration;
 	}
 }
