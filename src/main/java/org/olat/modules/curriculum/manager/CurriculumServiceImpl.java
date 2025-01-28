@@ -990,13 +990,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			boolean removed = removeMemberReservation(element, member, role, nextStatus, actor, adminNote);
 			removed |= removeMember(element, member, role, nextStatus, actor, adminNote);
 			if(!removed) {
-				addMemberHistory(element, member, role, nextStatus, actor, adminNote);
+				groupMembershipHistoryDao.createMembershipHistory(element.getGroup(), member, role.name(),
+						nextStatus, inheritanceMode == GroupMembershipInheritance.inherited,
+						null, null, actor, adminNote);
 			}
 		} else if(nextStatus == GroupMembershipStatus.cancel
 				|| nextStatus == GroupMembershipStatus.cancelWithFee) {
 			removeMemberReservation(element, member, role, nextStatus, actor, adminNote);
 			removeMember(element, member, role, nextStatus, actor, adminNote);
-			addMemberHistory(element, member, role, nextStatus, actor, adminNote);
+			groupMembershipHistoryDao.createMembershipHistory(element.getGroup(), member, role.name(),
+					nextStatus, inheritanceMode == GroupMembershipInheritance.inherited,
+					null, null, actor, adminNote);
 		}
 	}
 
@@ -1018,7 +1022,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		dbInstance.commit();
 	}
 	
-	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, GroupMembershipInheritance inheritanceMode,
+	private void addMember(CurriculumElement element, Identity member, CurriculumRoles role, GroupMembershipInheritance inheritanceMode,
 			Identity actor, String adminNote) {
 		if(inheritanceMode == GroupMembershipInheritance.inherited) {
 			throw new AssertException("Inherited are automatic");
@@ -1030,7 +1034,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(membership == null) {
 			groupDao.addMembershipOneWay(elementGroup, member, role.name(), inheritanceMode);
 			groupMembershipHistoryDao.createMembershipHistory(elementGroup, member,
-					role.name(), GroupMembershipStatus.active, null, null, actor, adminNote);
+					role.name(), GroupMembershipStatus.active,
+					inheritanceMode == GroupMembershipInheritance.inherited,
+					null, null, actor, adminNote);
 			events.add(CurriculumElementMembershipEvent.identityAdded(element, member, role));
 		} else if(membership.getInheritanceMode() != inheritanceMode) {
 			groupDao.updateInheritanceMode(membership, inheritanceMode);
@@ -1044,7 +1050,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				if(inheritedMembership == null) {
 					groupDao.addMembershipOneWay(descendantGroup, member, role.name(), GroupMembershipInheritance.inherited);
 					groupMembershipHistoryDao.createMembershipHistory(descendantGroup, member,
-							role.name(), GroupMembershipStatus.active, null, null, actor, adminNote);
+							role.name(), GroupMembershipStatus.active, true, null, null, actor, adminNote);
 					events.add(CurriculumElementMembershipEvent.identityAdded(element, member, role));
 				} else if(inheritedMembership.getInheritanceMode() == GroupMembershipInheritance.none) {
 					groupDao.updateInheritanceMode(inheritedMembership, GroupMembershipInheritance.inherited);
@@ -1064,7 +1070,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		List<GroupMembership> memberships = groupDao.getMemberships(elementGroup, member);
 		groupDao.removeMembership(elementGroup, member);
 		groupMembershipHistoryDao.createMembershipHistory(elementGroup, member,
-				GroupRoles.owner.name(), GroupMembershipStatus.removed, null, null,
+				GroupRoles.owner.name(), GroupMembershipStatus.removed, false, null, null,
 				actor, null);
 		
 		CurriculumElementNode elementNode = null;
@@ -1110,7 +1116,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					|| reason == GroupMembershipStatus.cancelWithFee
 					|| reason == GroupMembershipStatus.declined) {
 				groupMembershipHistoryDao.createMembershipHistory(group, member,
-						role, reason, null, null,
+						role, reason, true, null, null,
 						actor, adminNote);
 			}
 			
@@ -1129,7 +1135,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		int removed = groupDao.removeMembership(elementGroup, member, role.name());
 		if(removed > 0) {
 			groupMembershipHistoryDao.createMembershipHistory(elementGroup, member,
-					role.name(), reason, null, null,
+					role.name(), reason, false, null, null,
 					actor, adminNote);
 			events.add(CurriculumElementMembershipEvent.identityRemoved(element, member, role));
 		}
@@ -1160,7 +1166,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			reservationDao.deleteReservation(reservation);
 			if(reason != null) {
 				groupMembershipHistoryDao.createMembershipHistory(group, member, role.name(),
-					reason, null, null, actor, adminNote);
+					reason, false, null, null, actor, adminNote);
 			}
 			dbInstance.commit();
 		}
@@ -1192,18 +1198,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			Group group = element.getGroup();
 			reservationDao.createReservation(member, "curriculum_" + role, expiration, confirmBy, resource);
 			groupMembershipHistoryDao.createMembershipHistory(group, member, role.name(),
-					GroupMembershipStatus.reservation, null, null, actor, note);
+					GroupMembershipStatus.reservation, false, null, null, actor, note);
 			dbInstance.commit();
 		}
-	}
-	
-	@Override
-	public void addMemberHistory(CurriculumElement element, Identity member, CurriculumRoles role,
-			GroupMembershipStatus status, Identity actor, String note) {
-		Group group = element.getGroup();
-		groupMembershipHistoryDao.createMembershipHistory(group, member, role.name(),
-				status, null, null, actor, note);
-		dbInstance.commit();
 	}
 	
 	@Override

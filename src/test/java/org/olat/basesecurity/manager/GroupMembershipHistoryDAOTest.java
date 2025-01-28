@@ -54,7 +54,7 @@ public class GroupMembershipHistoryDAOTest extends OlatTestCase {
 		Group group = groupDao.createGroup();
 		dbInstance.commit();
 		GroupMembershipHistory point = groupMembershipHistoryDao.createMembershipHistory(group, id,
-				"owner", GroupMembershipStatus.declined, null, null, id, null);
+				"owner", GroupMembershipStatus.declined, false, null, null, id, null);
 		Assert.assertNotNull(point);
 	}
 	
@@ -63,7 +63,7 @@ public class GroupMembershipHistoryDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-2-");
 		Group group = groupDao.createGroup();
 		GroupMembershipHistory point = groupMembershipHistoryDao.createMembershipHistory(group, id,
-				"owner", GroupMembershipStatus.declined, null, null, id, null);
+				"owner", GroupMembershipStatus.declined, true, null, null, id, null);
 		dbInstance.commit();
 		
 		List<GroupMembershipHistory> history = groupMembershipHistoryDao.loadMembershipHistory(group, id);
@@ -77,10 +77,10 @@ public class GroupMembershipHistoryDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3-");
 		Group groupToDelete = groupDao.createGroup();
 		GroupMembershipHistory point1 = groupMembershipHistoryDao.createMembershipHistory(groupToDelete, id,
-				"owner", GroupMembershipStatus.active, null, null, id, null);
+				"owner", GroupMembershipStatus.active, false, null, null, id, null);
 		Group refGroup = groupDao.createGroup();
 		GroupMembershipHistory point2 = groupMembershipHistoryDao.createMembershipHistory(refGroup, id,
-				"owner", GroupMembershipStatus.active, null, null, id, null);
+				"owner", GroupMembershipStatus.active, false, null, null, id, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(point1);
 		Assert.assertNotNull(point2);

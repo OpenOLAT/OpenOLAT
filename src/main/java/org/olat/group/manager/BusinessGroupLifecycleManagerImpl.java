@@ -36,6 +36,7 @@ import jakarta.persistence.TypedQuery;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.manager.GroupMembershipHistoryDAO;
 import org.olat.basesecurity.manager.IdentityDAO;
@@ -664,7 +665,9 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		List<Long> entryKeys = businessGroupRelationDao.getRepositoryEntryKeys(businessGroup);
 
 		// remove members and reservations
+		List<GroupMembership> memberships = businessGroupDao.getMemberships(businessGroup);
 		businessGroupDao.removeMemberships(businessGroup);
+		
 		reservationDao.deleteReservations(resource);
 		// 2) Delete the group areas
 		areaManager.deleteBGtoAreaRelations(businessGroup);
@@ -678,6 +681,10 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		backup.setRepositoryEntryKeys(entryKeys);
 		((BusinessGroupImpl)businessGroup).setDataForRestore(backupToString(backup));
 		businessGroup = businessGroupDao.merge(businessGroup);
+		
+		dbInstance.commitAndCloseSession();
+		groupMembershipHistoryDao.saveMembershipsHistoryOfDeletedResourceAndCommit(businessGroup.getBaseGroup(), memberships, deletedBy);
+		dbInstance.commitAndCloseSession();
 		
 		// log
 		log.info(Tracing.M_AUDIT, "Soft deleted Business Group {}", businessGroup);

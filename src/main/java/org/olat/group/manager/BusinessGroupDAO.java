@@ -315,6 +315,10 @@ public class BusinessGroupDAO {
 		dbInstance.getCurrentEntityManager().remove(group.getBaseGroup());
 	}
 	
+	public List<GroupMembership> getMemberships(BusinessGroup group) {
+		return groupDao.getMemberships(group.getBaseGroup());
+	}
+	
 	public void removeMemberships(BusinessGroup group) {
 		groupDao.removeMemberships(group.getBaseGroup());
 	}

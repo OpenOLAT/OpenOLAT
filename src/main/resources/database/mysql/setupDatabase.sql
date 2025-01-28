@@ -66,6 +66,7 @@ create table o_bs_group_member_history (
   g_status varchar(32) not null,
   g_note varchar(2000),
   g_admin_note varchar(2000),
+  g_inherited bool default false not null,
   fk_transfer_origin_id bigint,
   fk_transfer_destination_id bigint,
   fk_creator_id bigint,

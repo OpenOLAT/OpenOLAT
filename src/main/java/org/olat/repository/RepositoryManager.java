@@ -1494,7 +1494,7 @@ public class RepositoryManager {
 			if (!repositoryEntryRelationDao.hasRole(identity, re, GroupRoles.owner.name())) {
 				repositoryEntryRelationDao.addRole(identity, re, GroupRoles.owner.name());
 				groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-						GroupRoles.owner.name(), GroupMembershipStatus.active, null, null,
+						GroupRoles.owner.name(), GroupMembershipStatus.active, false, null, null,
 						ureqIdentity, null);
 				
 				reallyAddedId.add(identity);
@@ -1555,7 +1555,7 @@ public class RepositoryManager {
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.owner.name());
 		if(rows > 0) {
 			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-					GroupRoles.owner.name(), GroupMembershipStatus.removed, null, null,
+					GroupRoles.owner.name(), GroupMembershipStatus.removed, false, null, null,
 					ureqIdentity, null);
 			
 			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
@@ -1634,7 +1634,7 @@ public class RepositoryManager {
 			Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
 			reservationDao.createReservation(identityToAdd, "repo_tutors", expiration, Boolean.TRUE, re.getOlatResource());
 			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identityToAdd,
-					GroupRoles.coach.name(), GroupMembershipStatus.reservation, null, null,
+					GroupRoles.coach.name(), GroupMembershipStatus.reservation, false, null, null,
 					actor, null);
 			return true;
 		}
@@ -1652,7 +1652,7 @@ public class RepositoryManager {
 		Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
 		repositoryEntryRelationDao.addRole(identity, defaultGroup, GroupRoles.coach.name());
 		groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-				GroupRoles.coach.name(), GroupMembershipStatus.active, null, null,
+				GroupRoles.coach.name(), GroupMembershipStatus.active, false, null, null,
 				ureqIdentity, null);
 
 		reallyAddedId.add(identity);
@@ -1690,7 +1690,7 @@ public class RepositoryManager {
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.coach.name());
 		if(rows > 0) {
 			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-					GroupRoles.coach.name(), GroupMembershipStatus.removed, null, null,
+					GroupRoles.coach.name(), GroupMembershipStatus.removed, false, null, null,
 					ureqIdentity, null);
 			
 			RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
@@ -1758,7 +1758,7 @@ public class RepositoryManager {
 			Group group = repositoryEntryRelationDao.getDefaultGroup(re);
 			reservationDao.createReservation(identity, "repo_participant", expiration, Boolean.TRUE, re.getOlatResource());
 			groupMembershipHistoryDao.createMembershipHistory(group, identity,
-					GroupRoles.participant.name(), GroupMembershipStatus.reservation, null, null,
+					GroupRoles.participant.name(), GroupMembershipStatus.reservation, false, null, null,
 					ureqIdentity, null);
 			
 			dbInstance.commit();
@@ -1779,7 +1779,7 @@ public class RepositoryManager {
 		Group group = repositoryEntryRelationDao.getDefaultGroup(re);
 		repositoryEntryRelationDao.addRole(identity, group, GroupRoles.participant.name());
 		groupMembershipHistoryDao.createMembershipHistory(group, identity,
-				GroupRoles.participant.name(), GroupMembershipStatus.active, null, null,
+				GroupRoles.participant.name(), GroupMembershipStatus.active, false, null, null,
 				ureqIdentity, null);
 		
 		RepositoryEntryMembershipModifiedEvent deferredEvent = RepositoryEntryMembershipModifiedEvent.roleParticipantAdded(identity, re);
@@ -1820,7 +1820,7 @@ public class RepositoryManager {
 		int rows = repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.participant.name());
 		if(rows > 0) {
 			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-					GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null,
+					GroupRoles.participant.name(), GroupMembershipStatus.removed, false, null, null,
 					ureqIdentity, null);
 			
 			if(sendMail) {

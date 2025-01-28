@@ -851,7 +851,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 					Group group = repositoryEntryRelationDao.getDefaultGroup(entry);
 					repositoryEntryRelationDao.addRole(identity, group, GroupRoles.participant.name());
 					groupMembershipHistoryDao.createMembershipHistory(group, identity,
-							GroupRoles.participant.name(), GroupMembershipStatus.active, null, null,
+							GroupRoles.participant.name(), GroupMembershipStatus.active, false, null, null,
 							doer, null);
 					if(offer.isConfirmationEmail()) {
 						MailPackage mailing = new MailPackage(offer.isConfirmationEmail());
@@ -889,7 +889,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				if(businessGroupService.hasRoles(identity, group, GroupRoles.participant.name())) {
 					businessGroupRelationDao.removeRole(identity, group, GroupRoles.participant.name());
 					groupMembershipHistoryDao.createMembershipHistory(group.getBaseGroup(), identity,
-							GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null,
+							GroupRoles.participant.name(), GroupMembershipStatus.removed, false, null, null,
 							doer, null);
 				}
 				return true;
@@ -908,7 +908,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 					Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(entry);
 					repositoryEntryRelationDao.removeRole(identity, entry, GroupRoles.participant.name());
 					groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
-							GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null,
+							GroupRoles.participant.name(), GroupMembershipStatus.removed, false, null, null,
 							doer, null);
 				}
 				return true;

@@ -19,6 +19,7 @@
  */
 package org.olat.repository.manager;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +33,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationDataDeletable;
@@ -548,10 +550,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		//remove from catalog
 		catalogManager.resourceableDeleted(reloadedRe);
 		//remove participant and coach
+		List<GroupMembership> memberships;
 		if(owners) {
-			removeMembers(reloadedRe, GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+			memberships = removeMembersResourceDeleted(reloadedRe, GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
 		} else {
-			removeMembers(reloadedRe, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+			memberships = removeMembersResourceDeleted(reloadedRe, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
 		}
 
 		//delete reservations
@@ -564,7 +567,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 				reToGroupDao.removeRelation(relation);
 			}
 		}
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
+
+		Group defaultGroup = reToGroupDao.getDefaultGroup(re);
+		groupMembershipHistoryDao.saveMembershipsHistoryOfDeletedResourceAndCommit(defaultGroup, memberships, deletedBy);
+		dbInstance.commitAndCloseSession();
 		
 		if(sendNotifications && deletedBy != null) {
 			sendStatusChangedNotifications(ownerList, deletedBy, reloadedRe, RepositoryMailing.Type.deleteSoftEntry);
@@ -577,6 +584,23 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedRe, deletedBy);
 
 		return reloadedRe;
+	}
+	
+	private List<GroupMembership> removeMembersResourceDeleted(RepositoryEntry re, String... roles) {
+		if(roles == null || roles.length == 0) return new ArrayList<>();
+		
+		List<GroupMembership> removedMemberships = new ArrayList<>();
+		
+		Group group = reToGroupDao.getDefaultGroup(re);
+		for(String role:roles) {
+			if(role != null) {
+				List<GroupMembership> memberships = groupDao.getMemberships(group, role, true);
+				removedMemberships.addAll(memberships);
+				reToGroupDao.removeRole(re, role);
+			}
+		}
+		
+		return removedMemberships;
 	}
 	
 	private void sendStatusChangedNotifications(List<Identity> owners, Identity doer, RepositoryEntry entry, RepositoryMailing.Type mailingType) {
@@ -962,16 +986,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public void removeRole(Identity identity, RepositoryEntry re, String role) {
 		reToGroupDao.removeRole(identity, re, role);
-	}
-
-	@Override
-	public void removeMembers(RepositoryEntry re, String... roles) {
-		if(roles == null || roles.length == 0) return;
-		for(String role:roles) {
-			if(role != null) {
-				reToGroupDao.removeRole(re, role);
-			}
-		}
 	}
 
 	@Override

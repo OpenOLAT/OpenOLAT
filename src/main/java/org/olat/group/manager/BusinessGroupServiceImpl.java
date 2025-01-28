@@ -456,20 +456,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			if(owners.isEmpty()) {
 				businessGroupRelationDAO.addRole(identity, newGroup, GroupRoles.coach.name());
 				groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), identity,
-						GroupRoles.coach.name(), GroupMembershipStatus.active, null, null,
+						GroupRoles.coach.name(), GroupMembershipStatus.active, false, null, null,
 						doer, null);
 			} else {
 				for (Identity owner:owners) {
 					businessGroupRelationDAO.addRole(owner, newGroup, GroupRoles.coach.name());
 					groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), owner,
-							GroupRoles.coach.name(), GroupMembershipStatus.active, null, null,
+							GroupRoles.coach.name(), GroupMembershipStatus.active, false, null, null,
 							doer, null);
 				}
 			}
 		} else {
 			businessGroupRelationDAO.addRole(identity, newGroup, GroupRoles.coach.name());
 			groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), identity,
-					GroupRoles.coach.name(), GroupMembershipStatus.active, null, null,
+					GroupRoles.coach.name(), GroupMembershipStatus.active, false, null, null,
 					doer, null);
 		}
 		// 6. copy participants
@@ -478,7 +478,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			for(Identity participant:participants) {
 				businessGroupRelationDAO.addRole(participant, newGroup, GroupRoles.participant.name());
 				groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), participant,
-						GroupRoles.participant.name(), GroupMembershipStatus.active, null, null,
+						GroupRoles.participant.name(), GroupMembershipStatus.active, false, null, null,
 						doer, null);
 			}
 		}
@@ -500,7 +500,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			for (Identity waiting:waitingIdentitiesList) {
 				businessGroupRelationDAO.addRole(waiting, newGroup, GroupRoles.waiting.name());
 				groupMembershipHistoryDao.createMembershipHistory(newGroup.getBaseGroup(), waiting,
-						GroupRoles.waiting.name(), GroupMembershipStatus.reservation, null, null,
+						GroupRoles.waiting.name(), GroupMembershipStatus.reservation, false, null, null,
 						doer, null);
 			}
 		}
@@ -871,7 +871,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		
 		businessGroupRelationDAO.addRole(identityToAdd, group, GroupRoles.coach.name());
 		groupMembershipHistoryDao.createMembershipHistory(group.getBaseGroup(), identityToAdd,
-				GroupRoles.coach.name(), GroupMembershipStatus.active, null, null,
+				GroupRoles.coach.name(), GroupMembershipStatus.active, false, null, null,
 				ureqIdentity, null);
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identityToAdd);
@@ -920,7 +920,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_PARTICIPANT,
 							expiration, Boolean.TRUE, resource);
 			groupMembershipHistoryDao.createMembershipHistory(group, identityToAdd,
-					GroupRoles.participant.name(), GroupMembershipStatus.reservation, null, null,
+					GroupRoles.participant.name(), GroupMembershipStatus.reservation, false, null, null,
 					actor, null);
 
 			BusinessGroupModifiedEvent.Deferred event = BusinessGroupModifiedEvent
@@ -945,7 +945,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		Group group = businessGroupRelationDAO.getGroup(businessGroup);
 		businessGroupRelationDAO.addRole(identityToAdd, businessGroup, GroupRoles.participant.name());
 		groupMembershipHistoryDao.createMembershipHistory(group, identityToAdd,
-				GroupRoles.participant.name(), GroupMembershipStatus.active, null, null,
+				GroupRoles.participant.name(), GroupMembershipStatus.active, false, null, null,
 				ureqIdentity, null);
 
 		// notify currently active users of this business group
@@ -1024,7 +1024,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		boolean removed = businessGroupRelationDAO.removeRole(identity, businessGroup, GroupRoles.participant.name());
 		if(removed) {
 			groupMembershipHistoryDao.createMembershipHistory(group, identity,
-					GroupRoles.participant.name(), GroupMembershipStatus.removed, null, null,
+					GroupRoles.participant.name(), GroupMembershipStatus.removed, false, null, null,
 					ureqIdentity, null);
 			
 			// notify currently active users of this business group
@@ -1270,7 +1270,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 										  List<BusinessGroupModifiedEvent.Deferred> events) {
 		businessGroupRelationDAO.addRole(identity, group, GroupRoles.waiting.name());
 		groupMembershipHistoryDao.createMembershipHistory(group.getBaseGroup(), identity,
-				GroupRoles.participant.name(), GroupMembershipStatus.reservation, null, null,
+				GroupRoles.participant.name(), GroupMembershipStatus.reservation, false, null, null,
 				ureqIdentity, null);
 
 		// notify currently active users of this business group
@@ -1505,7 +1505,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		Group group = businessGroupRelationDAO.getGroup(businessGroup);
 		businessGroupRelationDAO.removeRole(identityToRemove, businessGroup, GroupRoles.coach.name());
 		groupMembershipHistoryDao.createMembershipHistory(group, identityToRemove,
-				GroupRoles.coach.name(), GroupMembershipStatus.removed, null, null,
+				GroupRoles.coach.name(), GroupMembershipStatus.removed, false, null, null,
 				ureqIdentity, null);
 		
 		// notify currently active users of this business group

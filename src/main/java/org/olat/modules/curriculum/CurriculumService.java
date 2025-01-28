@@ -480,9 +480,6 @@ public interface CurriculumService {
 	public void addMemberReservation(CurriculumElement element, Identity member, CurriculumRoles role, Date expirationDate,
 			Boolean userConfirmation, Identity actor, String note);
 	
-	public void addMemberHistory(CurriculumElement element, Identity member, CurriculumRoles role,
-			GroupMembershipStatus status, Identity actor, String note);
-	
 	public Map<Long, Long> getCurriculumElementKeyToNumParticipants(List<CurriculumElement> curriculumElements,
 			boolean countReservations);
 	

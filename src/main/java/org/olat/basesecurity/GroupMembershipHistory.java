@@ -39,6 +39,8 @@ public interface GroupMembershipHistory {
 	public String getRole();
 	
 	public GroupMembershipStatus getStatus();
+	
+	public boolean isInherited();
 
 
 	public OLATResource getTransferOrigin();

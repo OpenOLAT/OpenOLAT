@@ -150,6 +150,24 @@ public class GroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getMembershipsAll() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-1-");
+		Group group = groupDao.createGroup();
+		GroupMembership membership = groupDao.addMembershipTwoWay(group, id, "author");
+		dbInstance.commit();
+		
+		Assert.assertNotNull(membership);
+		dbInstance.getCurrentEntityManager().detach(group);
+		dbInstance.commitAndCloseSession();
+		
+		List<GroupMembership> members = groupDao.getMemberships(group);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+		Assert.assertEquals(id, members.get(0).getIdentity());
+	}
+	
+	@Test
 	public void getMembershipsByGroup() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-30-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-31-");

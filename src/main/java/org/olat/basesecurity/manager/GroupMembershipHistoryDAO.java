@@ -23,7 +23,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipHistory;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.model.GroupMembershipHistoryImpl;
 import org.olat.core.commons.persistence.DB;
@@ -46,7 +48,7 @@ public class GroupMembershipHistoryDAO {
 	
 	
 	public GroupMembershipHistory createMembershipHistory(Group group, Identity identity,
-			String role, GroupMembershipStatus status,
+			String role, GroupMembershipStatus status, boolean inherited,
 			OLATResource origin, OLATResource destination,
 			Identity creator, String adminNote) {
 		GroupMembershipHistoryImpl history = new GroupMembershipHistoryImpl();
@@ -55,6 +57,7 @@ public class GroupMembershipHistoryDAO {
 		history.setStatus(status);
 		history.setGroup(group);
 		history.setIdentity(identity);
+		history.setInherited(inherited);
 		
 		history.setTransferOrigin(origin);
 		history.setTransferDestination(destination);
@@ -64,6 +67,26 @@ public class GroupMembershipHistoryDAO {
 		
 		dbInstance.getCurrentEntityManager().persist(history);
 		return history;
+	}
+	
+	/**
+	 * 
+	 * @param group The group
+	 * @param memberships A list of membership to create an history
+	 * @param doer The actor
+	 */
+	public void saveMembershipsHistoryOfDeletedResourceAndCommit(Group group, List<GroupMembership> memberships, Identity doer) {
+		int count = 0;
+		for(GroupMembership membership:memberships) {
+			boolean inherited = membership.getInheritanceMode() == GroupMembershipInheritance.inherited;
+			createMembershipHistory(group, membership.getIdentity(),
+					membership.getRole(), GroupMembershipStatus.resourceDeleted, inherited,
+					null, null, doer, null);
+			if(count++ % 50 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+		dbInstance.commitAndCloseSession();
 	}
 	
 	public List<GroupMembershipHistory> loadMembershipHistory(Group group, Identity identity) {

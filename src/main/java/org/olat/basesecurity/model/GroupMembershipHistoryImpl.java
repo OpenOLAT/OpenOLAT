@@ -77,6 +77,9 @@ public class GroupMembershipHistoryImpl implements GroupMembershipHistory, Persi
 	@Column(name="g_status", nullable=false, insertable=true, updatable=false)
 	private GroupMembershipStatus status;
 	
+	@Column(name="g_inherited", nullable=false, insertable=true, updatable=false)
+	private boolean inherited;
+	
 	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_transfer_origin_id", nullable=false, insertable=true, updatable=false)
 	private OLATResource transferOrigin;
@@ -153,6 +156,14 @@ public class GroupMembershipHistoryImpl implements GroupMembershipHistory, Persi
 
 	public void setTransferDestination(OLATResource transferDestination) {
 		this.transferDestination = transferDestination;
+	}
+
+	public boolean isInherited() {
+		return inherited;
+	}
+
+	public void setInherited(boolean inherited) {
+		this.inherited = inherited;
 	}
 
 	@Override

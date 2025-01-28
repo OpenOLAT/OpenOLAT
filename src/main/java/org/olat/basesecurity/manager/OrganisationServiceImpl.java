@@ -135,8 +135,9 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 						|| membership.getInheritanceMode() == GroupMembershipInheritance.root) {
 					groupDao.addMembershipOneWay(organisationGroup, membership.getIdentity(), membership.getRole(), GroupMembershipInheritance.inherited);
 					groupMembershipHistoryDao.createMembershipHistory(organisationGroup, membership.getIdentity(),
-							membership.getRole(), GroupMembershipStatus.transfer, null, null,
-							doer, null);
+							membership.getRole(), GroupMembershipStatus.transfer,
+							membership.getInheritanceMode() == GroupMembershipInheritance.inherited,
+							null, null, doer, null);
 					events.add(OrganisationMembershipEvent.identityAdded(organisation, membership.getIdentity()));
 				}
 			}
@@ -213,6 +214,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			addMember(user.getIdentity(), OrganisationRoles.user, doer);
 			events.add(OrganisationMembershipEvent.identityRemoved(reloadedOrganisation, user.getIdentity()));
 		}
+		
+		List<GroupMembership> memberships = groupDao.getMemberships(organisationGroup);
 		groupDao.removeMemberships(organisationGroup);
 		sendDeferredEvents(reloadedOrganisation, events);
 		
@@ -230,11 +233,21 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		if(delete) {
 			organisationDao.delete(reloadedOrganisation);
 		} else {
+			for(GroupMembership membership:memberships) {
+				groupMembershipHistoryDao.createMembershipHistory(organisationGroup, membership.getIdentity(),
+						membership.getRole(), GroupMembershipStatus.resourceDeleted, false, null, null,
+						doer, null);
+			}
+			
 			reloadedOrganisation.setParent(null);
 			reloadedOrganisation.setMaterializedPathKeys("");
 			reloadedOrganisation.setExternalId(null);
 			reloadedOrganisation.setStatus(OrganisationStatus.deleted.name());
 			organisationDao.update(reloadedOrganisation);
+			
+			dbInstance.commitAndCloseSession();
+			groupMembershipHistoryDao.saveMembershipsHistoryOfDeletedResourceAndCommit(organisationGroup, memberships, doer);
+			dbInstance.commitAndCloseSession();
 		}
 		
 		sendDeferredEventOrganisationChangedChannel(OrganisationChangeEvent.organisationDeleted(organisation));
@@ -322,7 +335,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 				groupDao.addMembershipOneWay(group, membershipToPropagate.getIdentity(), membershipToPropagate.getRole(), GroupMembershipInheritance.inherited);
 				events.add(OrganisationMembershipEvent.identityAdded(node.getOrganisation(), membershipToPropagate.getIdentity()));
 				groupMembershipHistoryDao.createMembershipHistory(group, membershipToPropagate.getIdentity(),
-						membershipToPropagate.getRole(), GroupMembershipStatus.transfer, null, null,
+						membershipToPropagate.getRole(), GroupMembershipStatus.transfer, true, null, null,
 						doer, null);
 			} else if(nodeMembership.getInheritanceMode() != GroupMembershipInheritance.inherited)  {
 				groupDao.updateInheritanceMode(nodeMembership, GroupMembershipInheritance.inherited);
@@ -346,7 +359,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 				if(!inheritance.contains(new IdentityToRoleKey(membership))) {
 					groupDao.removeMembership(node.getOrganisation().getGroup(), membership.getIdentity(), membership.getRole());
 					groupMembershipHistoryDao.createMembershipHistory(node.getOrganisation().getGroup(), membership.getIdentity(),
-							membership.getRole(), GroupMembershipStatus.transfer, null, null,
+							membership.getRole(), GroupMembershipStatus.transfer, true, null, null,
 							doer, null);
 					events.add(OrganisationMembershipEvent.identityRemoved(node.getOrganisation(), membership.getIdentity()));
 				}
@@ -635,7 +648,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		if(membership == null) {
 			groupDao.addMembershipOneWay(org.getGroup(), member, role.name(), inheritanceMode);
 			groupMembershipHistoryDao.createMembershipHistory(org.getGroup(), member,
-					role.name(), GroupMembershipStatus.active, null, null,
+					role.name(), GroupMembershipStatus.active, false, null, null,
 					doer, null);
 			events.add(OrganisationMembershipEvent.identityAdded(org, member));
 		} else if(membership.getInheritanceMode() != inheritanceMode) {
@@ -650,7 +663,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 				if(inheritedMembership == null) {
 					groupDao.addMembershipOneWay(orgDescendant.getGroup(), member, role.name(), GroupMembershipInheritance.inherited);
 					groupMembershipHistoryDao.createMembershipHistory(orgDescendant.getGroup(), member,
-							role.name(), GroupMembershipStatus.active, null, null,
+							role.name(), GroupMembershipStatus.active, true, null, null,
 							doer, null);
 					events.add(OrganisationMembershipEvent.identityAdded(org, member));
 				} else if(inheritedMembership.getInheritanceMode() == GroupMembershipInheritance.none) {
@@ -671,14 +684,14 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			if(membership.getInheritanceMode() == GroupMembershipInheritance.none) {
 				groupDao.removeMembership(membership);
 				groupMembershipHistoryDao.createMembershipHistory(membership.getGroup(), membership.getIdentity(),
-						membership.getRole(), GroupMembershipStatus.removed, null, null,
+						membership.getRole(), GroupMembershipStatus.removed, false, null, null,
 						doer, null);
 				sendDeferredEvent(organisation, OrganisationMembershipEvent.identityRemoved(organisation, member));
 			} else if(membership.getInheritanceMode() == GroupMembershipInheritance.root) {
 				String role = membership.getRole();
 				groupDao.removeMembership(membership);
 				groupMembershipHistoryDao.createMembershipHistory(membership.getGroup(), membership.getIdentity(),
-						membership.getRole(), GroupMembershipStatus.removed, null, null,
+						membership.getRole(), GroupMembershipStatus.removed, false, null, null,
 						doer, null);
 				sendDeferredEvent(organisation, OrganisationMembershipEvent.identityRemoved(organisation, member));
 				
@@ -706,7 +719,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		if(membership != null && membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
 			groupDao.removeMembership(membership);
 			groupMembershipHistoryDao.createMembershipHistory(membership.getGroup(), membership.getIdentity(),
-					membership.getRole(), GroupMembershipStatus.removed, null, null,
+					membership.getRole(), GroupMembershipStatus.removed, true, null, null,
 					doer, null);
 			sendDeferredEvent(organisation, OrganisationMembershipEvent.identityRemoved(organisation, member));
 			for(OrganisationNode child:organisationNode.getChildrenNode()) {
@@ -722,8 +735,9 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 				|| membership.getInheritanceMode() == GroupMembershipInheritance.none)) {
 			groupDao.removeMembership(membership);
 			groupMembershipHistoryDao.createMembershipHistory(membership.getGroup(), membership.getIdentity(),
-					membership.getRole(), GroupMembershipStatus.removed, null, null,
-					doer, null);
+					membership.getRole(), GroupMembershipStatus.removed,
+					membership.getInheritanceMode() == GroupMembershipInheritance.inherited,
+					null, null, doer, null);
 			sendDeferredEvent(organisation, OrganisationMembershipEvent.identityRemoved(organisation, member));
 			if(membership.getInheritanceMode() == GroupMembershipInheritance.root
 					|| membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
