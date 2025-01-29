@@ -200,6 +200,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	}
 
 	private void initEmailValidation(UserRequest ureq, TextElement mailEl, FormItemContainer formLayout) {
+		submitBtn.setVisible(false);
 		mailValidationCtrl = new MailValidationController(ureq, getWindowControl(), formLayout.getRootForm(),
 				false, false, null, mailEl);
 		listenTo(mailValidationCtrl);
