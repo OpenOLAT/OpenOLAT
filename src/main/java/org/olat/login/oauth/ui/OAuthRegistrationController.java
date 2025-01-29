@@ -182,12 +182,11 @@ public class OAuthRegistrationController extends FormBasicController {
 		}
 
 		submitBtn = uifactory.addFormSubmitButton("save", formLayout);
+		submitBtn.setVisible(mailValidationCtrl == null && orgSelection == null);
 
 		if (mailEl != null) {
 			initValidationSelection(ureq, mailEl, formLayout);
 		}
-
-		submitBtn.setVisible(mailValidationCtrl == null && orgSelection == null);
 	}
 
 	private void initValidationSelection(UserRequest ureq, TextElement mailEl, FormItemContainer formLayout) {
