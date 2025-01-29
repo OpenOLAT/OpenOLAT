@@ -119,15 +119,12 @@ public class MailValidationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (isRegistrationProcess) {
+		if (isRegistrationProcess && externalMailEl == null) {
 			setFormTitle("reg.title");
+			setFormInfo("reg.desc");
 			formLayout.setElementCssClass("o_sel_registration_email_form");
 		} else {
 			formLayout.setElementCssClass("o_sel_email_form");
-		}
-
-		if (isRegistrationProcess && externalMailEl == null) {
-			setFormInfo("reg.desc");
 		}
 
 		FormLayoutContainer mailCont = FormLayoutContainer.createDefaultFormLayout("mail_cont", getTranslator());

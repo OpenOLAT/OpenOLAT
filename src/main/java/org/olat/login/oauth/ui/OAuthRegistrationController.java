@@ -86,7 +86,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	
 	public static final String USERPROPERTIES_FORM_IDENTIFIER = OAuthRegistrationController.class.getCanonicalName();
 
-	private String initialEmail;
+	private String initialEmail = "";
 	
 	private final OAuthRegistration registration;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -214,17 +214,14 @@ public class OAuthRegistrationController extends FormBasicController {
 			orgContainer.setFormTitle("user.organisation");
 			formLayout.add(orgContainer);
 		}
-
 		orgContainer.setVisible(true);
 
 		String mailDomain = MailHelper.getMailDomain(initialEmail);
 		OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
-		// ensure to only get organisations with matching mailDomains
 		List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
 
+		// ensure to only get organisations with matching mailDomains
 		// retrieve matching domains with the given email and additionally the wildcard domain, if available
-
-
 		for (OrganisationEmailDomain domain : emailDomains) {
 			String pattern = convertDomainPattern(domain.getDomain());
 			if(mailDomain.matches(pattern)) {
@@ -237,7 +234,9 @@ public class OAuthRegistrationController extends FormBasicController {
 			mailEl.setErrorKey("step3.reg.mismatch.form.text", WebappHelper.getMailConfig("mailSupport"));
 		} else {
 			// Extract orgKey as keys
-			matchedDomains = matchedDomains.stream().sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName())).toList();
+			matchedDomains = matchedDomains.stream()
+					.sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName()))
+					.toList();
 			String[] orgKeys = matchedDomains.stream()
 					.map(domain -> domain.getOrganisation().getKey().toString())
 					.toArray(String[]::new);
@@ -260,7 +259,9 @@ public class OAuthRegistrationController extends FormBasicController {
 				orgSelection.enableNoneSelection(translate("user.organisation.select"));
 				orgSelection.setMandatory(true);
 			}
-			submitBtn.setVisible(true);
+			if (submitBtn != null) {
+				submitBtn.setVisible(true);
+			}
 		}
 	}
 
@@ -296,7 +297,6 @@ public class OAuthRegistrationController extends FormBasicController {
 					initOrgSelection(flc, mailEl);
 				} else {
 					flc.add(submitBtn);
-					submitBtn.setVisible(true);
 				}
 			} else if (event == Event.CANCELLED_EVENT && mailValidationCtrl.getTemporaryKey() != null) {
 				deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
