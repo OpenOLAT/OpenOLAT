@@ -2161,7 +2161,9 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 
 	private boolean canEditMedatata(VFSItem vfsItem, VFSMetadata vfsMetadata) {
-		return canEdit(vfsItem) && canEdit(vfsItem.getParentContainer()) && isNotDeleted(vfsMetadata)
+		return canEdit(vfsItem) 
+				&& (vfsItem.getParentContainer() != null? canEdit(vfsItem.getParentContainer()): true)
+				&& isNotDeleted(vfsMetadata)
 				&& !vfsLockManager.isLockedForMe(vfsItem, getIdentity(), VFSLockApplicationType.vfs, null);
 	}
 	
