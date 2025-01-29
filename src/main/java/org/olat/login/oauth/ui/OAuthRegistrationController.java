@@ -19,6 +19,8 @@
  */
 package org.olat.login.oauth.ui;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,10 @@ import java.util.Map;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,16 +40,19 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.model.OAuthRegistration;
@@ -51,9 +60,11 @@ import org.olat.login.oauth.model.OAuthUser;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
 import org.olat.registration.DisclaimerFormController;
+import org.olat.registration.MailValidationController;
 import org.olat.registration.RegistrationPersonalDataController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
+import org.olat.registration.TemporaryKey;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -68,16 +79,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OAuthRegistrationController extends FormBasicController {
 	
 	public static final String USERPROPERTIES_FORM_IDENTIFIER = OAuthRegistrationController.class.getCanonicalName();
+
+	private String initialEmail;
 	
 	private final OAuthRegistration registration;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final SyntaxValidator usernameSyntaxValidator;
+	private FormLayoutContainer orgContainer;
 
 	private TextElement usernameEl;
 	private SingleSelection langEl;
-	private Map<String,FormItem> propFormItems = new HashMap<>();
+	private SingleSelection orgSelection;
+	private FormSubmit submitBtn;
+
+	private final Map<String,FormItem> propFormItems = new HashMap<>();
 	private CloseableModalController cmc;
 	private DisclaimerFormController disclaimerFormCtrl;
+	private MailValidationController mailValidationCtrl;
 	
 	private Identity authenticatedIdentity;
 	
@@ -93,6 +111,10 @@ public class OAuthRegistrationController extends FormBasicController {
 	private RegistrationModule registrationModule;
 	@Autowired
 	private RegistrationManager registrationManager;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	
 	public OAuthRegistrationController(UserRequest ureq, WindowControl wControl, OAuthRegistration registration) {
 		super(ureq, wControl);
@@ -109,8 +131,17 @@ public class OAuthRegistrationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener,	UserRequest ureq) {
+		setFormTitle("registration.form.personal.data.title");
+		setFormInfo("registration.form.personal.data.desc");
 		OAuthUser oauthUser = registration.getOauthUser();
-		
+
+		uifactory.addSpacerElement("lang", formLayout, true);
+		// second the user language
+		Map<String, String> languages = I18nManager.getInstance().getEnabledLanguagesTranslated();
+		String[] langKeys = StringHelper.getMapKeysAsStringArray(languages);
+		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
+		langEl = uifactory.addDropdownSingleselect("user.language", formLayout, langKeys, langValues, null);
+
 		usernameEl = uifactory.addTextElement("username",  "user.login", 128, "", formLayout);
 		usernameEl.setEnabled(oauthLoginModule.isAllowChangeOfUsername());
 		usernameEl.setMandatory(true);
@@ -120,30 +151,115 @@ public class OAuthRegistrationController extends FormBasicController {
 			usernameEl.setValue(oauthUser.getId());
 		}
 
+		TextElement mailEl = null;
+
 		// Add all available user fields to this form
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler != null) {
 				FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, USERPROPERTIES_FORM_IDENTIFIER, false, formLayout);
 				propFormItems.put(userPropertyHandler.getName(), fi);
-				if(fi instanceof TextElement) {
+
+				if (fi instanceof TextElement textElement) {
 					String value = oauthUser.getProperty(userPropertyHandler.getName());
-					if(StringHelper.containsNonWhitespace(value)) {
-						((TextElement)fi).setValue(value);
+
+					if (UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
+						initialEmail = value;
+						mailEl = textElement;
+					}
+
+					if (StringHelper.containsNonWhitespace(value)) {
+						textElement.setValue(value);
 					}
 				}
 			}
 		}
-		
-		uifactory.addSpacerElement("lang", formLayout, true);
-		// second the user language
-		Map<String, String> languages = I18nManager.getInstance().getEnabledLanguagesTranslated();
-		String[] langKeys = StringHelper.getMapKeysAsStringArray(languages);
-		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
-		langEl = uifactory.addDropdownSingleselect("user.language", formLayout, langKeys, langValues, null);
-		
+
+		if (mailEl != null) {
+			initValidationSelection(ureq, mailEl, formLayout);
+		}
+
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("save", buttonLayout);
+		submitBtn = uifactory.addFormSubmitButton("save", buttonLayout);
+		submitBtn.setVisible(mailValidationCtrl == null && orgSelection == null);
+	}
+
+	private void initValidationSelection(UserRequest ureq, TextElement mailEl, FormItemContainer formLayout) {
+		if (mailEl.isEnabled() && !StringHelper.containsNonWhitespace(initialEmail)) {
+			initEmailValidation(ureq, mailEl, formLayout);
+		} else if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+			initOrgSelection(formLayout, mailEl);
+		}
+	}
+
+	private void initEmailValidation(UserRequest ureq, TextElement mailEl, FormItemContainer formLayout) {
+		mailValidationCtrl = new MailValidationController(ureq, getWindowControl(), formLayout.getRootForm(),
+				false, false, null, mailEl);
+		listenTo(mailValidationCtrl);
+		formLayout.add(mailValidationCtrl.getInitialFormItem());
+	}
+
+	private void initOrgSelection(FormItemContainer formLayout, TextElement mailEl) {
+		if (orgContainer == null) {
+			orgContainer = FormLayoutContainer.createDefaultFormLayout("org_selection", getTranslator());
+			orgContainer.setFormTitle("user.organisation");
+			formLayout.add(orgContainer);
+		}
+
+		orgContainer.setVisible(true);
+
+		String mailDomain = MailHelper.getMailDomain(initialEmail);
+		OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+		// ensure to only get organisations with matching mailDomains
+		List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
+
+		// retrieve matching domains with the given email and additionally the wildcard domain, if available
+		List<OrganisationEmailDomain> matchedDomains = new ArrayList<>();
+
+		for (OrganisationEmailDomain domain : emailDomains) {
+			String pattern = convertDomainPattern(domain.getDomain());
+			if(mailDomain.matches(pattern)) {
+				matchedDomains.add(domain);
+			}
+		}
+
+		if (matchedDomains.isEmpty()) {
+			// Show error, that no org match was found
+			mailEl.setErrorKey("step3.reg.mismatch.form.text", WebappHelper.getMailConfig("mailSupport"));
+		} else {
+			// Extract orgKey as keys
+			matchedDomains = matchedDomains.stream().sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName())).toList();
+			String[] orgKeys = matchedDomains.stream()
+					.map(domain -> domain.getOrganisation().getKey().toString())
+					.toArray(String[]::new);
+
+			// Extract concatenated displayName and Location as values
+			String[] orgValues = matchedDomains.stream()
+					.map(domain -> {
+						String displayName = domain.getOrganisation().getDisplayName();
+						String location = domain.getOrganisation().getLocation();
+						return StringHelper.containsNonWhitespace(location) ? displayName + " · " + location : displayName; // location can be null, ignore if it is empty/null
+					})
+					.toArray(String[]::new);
+
+			orgSelection = uifactory.addDropdownSingleselect("user.organisation", orgContainer, orgKeys, orgValues, null);
+
+			if (matchedDomains.size() == 1) {
+				orgSelection.select(orgKeys[0], true);
+				orgSelection.setEnabled(false);
+			} else {
+				orgSelection.enableNoneSelection(translate("user.organisation.select"));
+				orgSelection.setMandatory(true);
+			}
+			submitBtn.setVisible(true);
+		}
+	}
+
+	private String convertDomainPattern(String domain) {
+		if(domain.indexOf('*') >= 0) {
+			domain = domain.replace("*", ".*");
+		}
+		return domain;
 	}
 	
 	@Override
@@ -162,6 +278,19 @@ public class OAuthRegistrationController extends FormBasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if (mailValidationCtrl == source) {
+			if (event == Event.CHANGED_EVENT
+					&& mailValidationCtrl.isOtpSuccessful()) {
+				// success in validation, now check if there is any org mapping (if that module is enabled)
+				TextElement mailEl = (TextElement) flc.getFormComponent(UserConstants.EMAIL);
+				if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+					initOrgSelection(flc, mailEl);
+				} else {
+					submitBtn.setVisible(true);
+				}
+			} else if (event == Event.CANCELLED_EVENT && mailValidationCtrl.getTemporaryKey() != null) {
+				deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -204,43 +333,89 @@ public class OAuthRegistrationController extends FormBasicController {
 				allOk &= false;
 			}
 		}
+
+		if (orgSelection != null) {
+			orgSelection.clearError();
+			if (!orgSelection.isOneSelected()) {
+				orgSelection.setErrorKey("change.org.selection.error");
+				allOk = false;
+			}
+		}
+
 		return allOk;
+	}
+
+	private void deleteTemporaryKeyIfExists(String key) {
+		TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
+		if (tempKey != null) {
+			registrationManager.deleteTemporaryKey(tempKey);
+		}
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		FormItem mailFormItem = flc.getFormComponent(UserConstants.EMAIL);
+		boolean isMailUnchanged = mailFormItem != null && (initialEmail.equals(((TextElement) mailFormItem).getValue()) || mailValidationCtrl != null);
+
+		if (isMailUnchanged) {
+			handleUserRegistration(ureq);
+		} else if (mailFormItem != null) {
+			if (orgContainer != null) {
+				orgContainer.setVisible(false);
+			}
+			initValidationSelection(ureq, (TextElement) mailFormItem, flc);
+		} else {
+			handleUserRegistration(ureq);
+		}
+	}
+
+	private void handleUserRegistration(UserRequest ureq) {
+		if (orgSelection != null && !orgSelection.isOneSelected()) {
+			orgSelection.clearError();
+			orgSelection.setErrorKey("change.org.selection.error");
+			return;
+		}
+
 		String lang = langEl.getSelectedKey();
 		String username = usernameEl.getValue();
 		OAuthUser oauthUser = registration.getOauthUser();
 
-		User newUser = userManager.createUser(null, null, null);
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			FormItem propertyItem = flc.getFormComponent(userPropertyHandler.getName());
-			userPropertyHandler.updateUserFromFormItem(newUser, propertyItem);
-		}
-		
-		// Init preferences
+		User newUser = createUserWithProperties();
 		newUser.getPreferences().setLanguage(lang);
 		newUser.getPreferences().setInformSessionTimeout(true);
-		
-		String id;
-		if(StringHelper.containsNonWhitespace(oauthUser.getId())) {
-			id = oauthUser.getId();
-		} else if(StringHelper.containsNonWhitespace(oauthUser.getEmail())) {
-			id = oauthUser.getEmail();
-		} else {
-			id = username;
-		}
-		authenticatedIdentity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, username, null, newUser,
-				registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER, null, id, null, null, null, null);
-		
-		if(oauthLoginModule.isSkipDisclaimerDialog() || !registrationModule.isDisclaimerEnabled()) {
+
+		String id = determineUserId(oauthUser, username);
+		authenticatedIdentity = securityManager.createAndPersistIdentityAndUserWithOrganisation(
+				null, username, null, newUser, registration.getAuthProvider(),
+				BaseSecurity.DEFAULT_ISSUER, null, id, null, null, null, null);
+
+		if (oauthLoginModule.isSkipDisclaimerDialog() || !registrationModule.isDisclaimerEnabled()) {
 			doLoginAndRegister(authenticatedIdentity, ureq);
 		} else {
 			doOpenDisclaimer(authenticatedIdentity, ureq);
 		}
 	}
-	
+
+	private User createUserWithProperties() {
+		User newUser = userManager.createUser(null, null, null);
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			FormItem propertyItem = flc.getFormComponent(userPropertyHandler.getName());
+			userPropertyHandler.updateUserFromFormItem(newUser, propertyItem);
+		}
+		return newUser;
+	}
+
+	private String determineUserId(OAuthUser oauthUser, String username) {
+		if (StringHelper.containsNonWhitespace(oauthUser.getId())) {
+			return oauthUser.getId();
+		} else if (StringHelper.containsNonWhitespace(oauthUser.getEmail())) {
+			return oauthUser.getEmail();
+		} else {
+			return username;
+		}
+	}
+
+
 	private void doOpenDisclaimer(Identity authIdentity, UserRequest ureq) {
 		removeAsListenerAndDispose(disclaimerFormCtrl);
 		disclaimerFormCtrl = new DisclaimerFormController(ureq, getWindowControl(), authIdentity, false);

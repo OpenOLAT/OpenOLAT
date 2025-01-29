@@ -26,6 +26,7 @@
 package org.olat.registration;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -76,6 +77,7 @@ public class MailValidationController extends FormBasicController {
 	private FormLink resendOtpLink;
 	private FormLink changeMailLink;
 	private TextElement mailEl;
+	private final TextElement externalMailEl;
 	private TextElement otpEl;
 	private StaticTextElement codeNotReceivedStaticText;
 
@@ -98,13 +100,20 @@ public class MailValidationController extends FormBasicController {
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
-	
+
 	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm,
 									boolean isRegistrationProcess, boolean isUserManager, StepsRunContext runContext) {
+		this(ureq, wControl, mainForm, isRegistrationProcess, isUserManager, runContext, null);
+	}
+
+	public MailValidationController(UserRequest ureq, WindowControl wControl, Form mainForm,
+									boolean isRegistrationProcess, boolean isUserManager, StepsRunContext runContext,
+									TextElement externalMailEl) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		this.isRegistrationProcess = isRegistrationProcess;
 		this.isUserManager = isUserManager;
 		this.runContext = runContext;
+		this.externalMailEl = externalMailEl;
 		initForm(ureq);
 	}
 
@@ -120,9 +129,15 @@ public class MailValidationController extends FormBasicController {
 
 		FormLayoutContainer mailCont = FormLayoutContainer.createDefaultFormLayout("mail_cont", getTranslator());
 		formLayout.add(mailCont);
-		mailEl = uifactory.addTextElement("mail", "email.address", 255, "", mailCont);
-		mailEl.setElementCssClass("o_sel_registration_email");
-		mailEl.setMandatory(true);
+
+		if (externalMailEl != null) {
+			mailEl = externalMailEl;
+			mailCont.add(mailEl);
+		} else {
+			mailEl = uifactory.addTextElement("mail", "email.address", 255, "", mailCont);
+			mailEl.setElementCssClass("o_sel_registration_email");
+			mailEl.setMandatory(true);
+		}
 
 		validateMailLink = uifactory.addFormLink("submit.validate", mailCont, Link.BUTTON);
 		validateMailLink.setPrimary(true);
@@ -311,7 +326,7 @@ public class MailValidationController extends FormBasicController {
 				otpEl.setErrorKey("reg.otp.invalid");
 				allOk = false;
 			}
-		} else if (validationCont == null || !validationCont.isVisible()) {
+		} else if ((validationCont == null || !validationCont.isVisible()) && isRegistrationProcess) {
 			mailEl.setErrorKey("email.address.not.validated");
 			allOk = false;
 		} else if (!isUserManager) {
@@ -351,9 +366,15 @@ public class MailValidationController extends FormBasicController {
 			List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
 
 			// retrieve matching domains with the given email and additionally the wildcard domain, if available
-			List<OrganisationEmailDomain> matchedDomains = emailDomains.stream()
-					.filter(domain -> "*".equals(domain.getDomain()) || mailDomain.equalsIgnoreCase(domain.getDomain()))
-					.toList();
+			List<OrganisationEmailDomain> matchedDomains = new ArrayList<>();
+
+			for (OrganisationEmailDomain domain : emailDomains) {
+				String pattern = convertDomainPattern(domain.getDomain());
+				if(mailDomain.matches(pattern)) {
+					matchedDomains.add(domain);
+				}
+			}
+
 			if (matchedDomains.isEmpty()) {
 				return false;
 			} else {
@@ -365,6 +386,13 @@ public class MailValidationController extends FormBasicController {
 		} else {
 			return true;
 		}
+	}
+
+	private String convertDomainPattern(String domain) {
+		if(domain.indexOf('*') >= 0) {
+			domain = domain.replace("*", ".*");
+		}
+		return domain;
 	}
 
 	@Override
