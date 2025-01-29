@@ -181,11 +181,12 @@ public class OAuthRegistrationController extends FormBasicController {
 			}
 		}
 
+		submitBtn = uifactory.addFormSubmitButton("save", formLayout);
+
 		if (mailEl != null) {
 			initValidationSelection(ureq, mailEl, formLayout);
 		}
 
-		submitBtn = uifactory.addFormSubmitButton("save", formLayout);
 		submitBtn.setVisible(mailValidationCtrl == null && orgSelection == null);
 	}
 
@@ -198,7 +199,6 @@ public class OAuthRegistrationController extends FormBasicController {
 	}
 
 	private void initEmailValidation(UserRequest ureq, TextElement mailEl, FormItemContainer formLayout) {
-		submitBtn.setVisible(false);
 		flc.remove(submitBtn);
 		mailValidationCtrl = new MailValidationController(ureq, getWindowControl(), formLayout.getRootForm(),
 				true, false, null, mailEl);
@@ -209,7 +209,8 @@ public class OAuthRegistrationController extends FormBasicController {
 	private void initOrgSelection(FormItemContainer formLayout, TextElement mailEl) {
 		if (orgContainer == null) {
 			orgContainer = FormLayoutContainer.createDefaultFormLayout("org_selection", getTranslator());
-			orgContainer.setFormTitle("user.organisation");
+			orgContainer.setFormTitle(translate("user.organisation"));
+			orgContainer.setFormLayout("default");
 			formLayout.add(orgContainer);
 		}
 		orgContainer.setVisible(true);
@@ -297,6 +298,7 @@ public class OAuthRegistrationController extends FormBasicController {
 					flc.add(submitBtn);
 				}
 			} else if (event == Event.CANCELLED_EVENT && mailValidationCtrl.getTemporaryKey() != null) {
+				cleanUp();
 				deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
 			}
 		}
@@ -304,8 +306,10 @@ public class OAuthRegistrationController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(mailValidationCtrl);
 		removeAsListenerAndDispose(disclaimerFormCtrl);
 		removeAsListenerAndDispose(cmc);
+		mailValidationCtrl = null;
 		disclaimerFormCtrl = null;
 		cmc = null;
 	}
