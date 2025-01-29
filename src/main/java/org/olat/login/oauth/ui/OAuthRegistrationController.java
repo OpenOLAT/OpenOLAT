@@ -201,8 +201,9 @@ public class OAuthRegistrationController extends FormBasicController {
 
 	private void initEmailValidation(UserRequest ureq, TextElement mailEl, FormItemContainer formLayout) {
 		submitBtn.setVisible(false);
+		flc.remove(submitBtn);
 		mailValidationCtrl = new MailValidationController(ureq, getWindowControl(), formLayout.getRootForm(),
-				false, false, null, mailEl);
+				true, false, null, mailEl);
 		listenTo(mailValidationCtrl);
 		formLayout.add(mailValidationCtrl.getInitialFormItem());
 	}
@@ -294,6 +295,7 @@ public class OAuthRegistrationController extends FormBasicController {
 				if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
 					initOrgSelection(flc, mailEl);
 				} else {
+					flc.add(submitBtn);
 					submitBtn.setVisible(true);
 				}
 			} else if (event == Event.CANCELLED_EVENT && mailValidationCtrl.getTemporaryKey() != null) {
