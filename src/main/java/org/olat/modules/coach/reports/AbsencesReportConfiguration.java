@@ -38,7 +38,6 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.course.certificate.CertificationTimeUnit;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
@@ -51,15 +50,12 @@ import org.apache.logging.log4j.Logger;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class AbsencesReportConfiguration extends AbstractReportConfiguration {
+public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 
 	private static final Logger log = Tracing.createLoggerFor(AbsencesReportConfiguration.class);
-	private String duration;
-	private String durationUnit;
 
 	@Override
 	public void generateReport(Identity coach, Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
-		Translator translator = Util.createPackageTranslator(AbsencesReportConfiguration.class, locale);
 		CoachingService coachingService = CoreSpringFactory.getImpl(CoachingService.class);
 		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
@@ -77,22 +73,10 @@ public class AbsencesReportConfiguration extends AbstractReportConfiguration {
 			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 			OpenXMLWorksheet sheet = workbook.nextWorksheet();
 			sheet.setHeaderRows(1);
-			Row header = sheet.newRow();
-			int pos = 0;
-			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-				header.addCell(pos++, translator.translate("export.header." + userPropertyHandler.getName()));
-			}
-			header.addCell(pos++, translator.translate("export.header.absences"));
+			generateHeader(sheet, userPropertyHandlers, locale);
 			
 			for (LectureBlockIdentityStatistics stats : statistics) {
-				Row row = sheet.newRow();
-				
-				pos = 0;
-				for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-					row.addCell(pos, stats.getIdentityProp(pos));
-					pos++;
-				}
-				header.addCell(pos++, "" + stats.getTotalAbsentLectures());
+				generateDataRow(sheet, userPropertyHandlers, stats);
 			}
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
@@ -102,23 +86,24 @@ public class AbsencesReportConfiguration extends AbstractReportConfiguration {
 		coachingService.setGeneratedReport(coach, name, fileName);
 	}
 
-	public void setDuration(String duration) {
-		this.duration = duration;
+	private void generateHeader(OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		Translator translator = Util.createPackageTranslator(AbsencesReportConfiguration.class, locale);
+		
+		Row header = sheet.newRow();
+		int pos = 0;
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			header.addCell(pos++, translator.translate("export.header." + userPropertyHandler.getName()));
+		}
+		header.addCell(pos, translator.translate("export.header.absences"));
 	}
 
-	protected String getDuration() {
-		return duration;
-	}
-
-	public void setDurationUnit(String durationUnit) {
-		this.durationUnit = durationUnit;
-	}
-
-	private String getDurationUnit() {
-		return durationUnit;
-	}
-	
-	protected CertificationTimeUnit getDurationTimeUnit() {
-		return CertificationTimeUnit.valueOf(getDurationUnit());
+	private void generateDataRow(OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, LectureBlockIdentityStatistics stats) {
+		Row row = sheet.newRow();
+		int pos = 0;
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			row.addCell(pos, stats.getIdentityProp(pos));
+			pos++;
+		}
+		row.addCell(pos, "" + stats.getTotalAbsentLectures());
 	}
 }
