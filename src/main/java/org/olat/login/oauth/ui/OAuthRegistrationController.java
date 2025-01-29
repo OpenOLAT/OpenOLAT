@@ -24,7 +24,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
@@ -46,8 +48,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -77,6 +81,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OAuthRegistrationController extends FormBasicController {
+
+	private static final Logger log = Tracing.createLoggerFor(OAuthRegistrationController.class);
 	
 	public static final String USERPROPERTIES_FORM_IDENTIFIER = OAuthRegistrationController.class.getCanonicalName();
 
@@ -85,6 +91,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	private final OAuthRegistration registration;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final SyntaxValidator usernameSyntaxValidator;
+	private List<OrganisationEmailDomain> matchedDomains = new ArrayList<>();
 	private FormLayoutContainer orgContainer;
 
 	private TextElement usernameEl;
@@ -185,7 +192,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	}
 
 	private void initValidationSelection(UserRequest ureq, TextElement mailEl, FormItemContainer formLayout) {
-		if (mailEl.isEnabled() && !StringHelper.containsNonWhitespace(initialEmail)) {
+		if (mailEl.isEnabled() && (!StringHelper.containsNonWhitespace(initialEmail) || !mailEl.getValue().equals(initialEmail))) {
 			initEmailValidation(ureq, mailEl, formLayout);
 		} else if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
 			initOrgSelection(formLayout, mailEl);
@@ -214,7 +221,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
 
 		// retrieve matching domains with the given email and additionally the wildcard domain, if available
-		List<OrganisationEmailDomain> matchedDomains = new ArrayList<>();
+
 
 		for (OrganisationEmailDomain domain : emailDomains) {
 			String pattern = convertDomainPattern(domain.getDomain());
@@ -384,10 +391,24 @@ public class OAuthRegistrationController extends FormBasicController {
 		newUser.getPreferences().setLanguage(lang);
 		newUser.getPreferences().setInformSessionTimeout(true);
 
+		Organisation org = null;
+		if (orgSelection != null) {
+			String selectedKey = orgSelection.getSelectedKey();
+			Optional<OrganisationEmailDomain> selectedDomain = matchedDomains.stream()
+					.filter(domain -> domain.getOrganisation().getKey().toString().equals(selectedKey))
+					.findFirst();
+
+			if (selectedDomain.isPresent()) {
+				OrganisationEmailDomain domain = selectedDomain.get();
+				Organisation organisationEntity = domain.getOrganisation();
+				org = organisationService.getOrganisation(organisationEntity);
+			}
+		}
+
 		String id = determineUserId(oauthUser, username);
 		authenticatedIdentity = securityManager.createAndPersistIdentityAndUserWithOrganisation(
 				null, username, null, newUser, registration.getAuthProvider(),
-				BaseSecurity.DEFAULT_ISSUER, null, id, null, null, null, null);
+				BaseSecurity.DEFAULT_ISSUER, null, id, null, org, null, null);
 
 		if (oauthLoginModule.isSkipDisclaimerDialog() || !registrationModule.isDisclaimerEnabled()) {
 			doLoginAndRegister(authenticatedIdentity, ureq);
