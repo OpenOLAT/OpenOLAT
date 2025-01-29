@@ -443,6 +443,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		map.put(RELEVANT_TAB_ID.toLowerCase(), relevantTab);
 		
 		for(CurriculumElementStatus status:CurriculumElementStatus.visibleAdmin()) {
+			if(status == CurriculumElementStatus.deleted) continue;
+			
 			FlexiFiltersTab statusTab = FlexiFiltersTabFactory.tabWithImplicitFilters(status.name(), translate("filter." + status.name()),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS,
 							List.of(status.name()))));
@@ -848,40 +850,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 	}
 	
-	private void doCopyCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
-		CurriculumElement element = curriculumService.getCurriculumElement(row);
-		if(element == null) {
-			tableEl.reloadData();
-			showWarning("warning.curriculum.element.deleted");
-		} else {
-			copyCtrl = new CopySettingsController(ureq, getWindowControl(), element);
-			listenTo(copyCtrl);
-			
-			String title = translate("copy.element.title", StringHelper.escapeHtml(element.getDisplayName()));
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), copyCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		}
-	}
-	
-	private void doMoveCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
-		CurriculumElement element = curriculumService.getCurriculumElement(row);
-		if(element == null) {
-			tableEl.reloadData();
-			showWarning("warning.curriculum.element.deleted");
-		} else {
-			Curriculum elementsCurriculum = element.getCurriculum();
-			List<CurriculumElement> elementsToMove = List.of(element);
-			moveElementCtrl = new MoveCurriculumElementController(ureq, getWindowControl(), elementsToMove, elementsCurriculum, secCallback);
-			listenTo(moveElementCtrl);
-			
-			String title = translate("move.element.title", StringHelper.escapeHtml(row.getDisplayName()));
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), moveElementCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		}
-	}
-	
 	private void doOpenTools(UserRequest ureq, CurriculumElementRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -1134,8 +1102,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		private final VelocityContainer mainVC;
 		private Link newLink;
 		private Link openLink;
-		private Link moveLink;
-		private Link copyLink;
 		private Link deleteLink;
 		private Link manageMembersLink;
 		
@@ -1153,15 +1119,10 @@ public class CurriculumComposerController extends FormBasicController implements
 			openLink = addLink("open.new.tab", "o_icon_arrow_up_right_from_square", links);
 			openLink.setNewWindow(true, true);
 			
-			if(curriculum != null && secCallback.canEditCurriculumElement(element)) {
+			if(curriculum != null && secCallback.canEditCurriculumElement(element) && element.getParent() != null
+					&& !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
 				links.add("-");
-				copyLink = addLink("copy.element", "o_icon_copy", links);
-				if(element.getParent() != null && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
-					addNewElementLinks(element, links);
-				}
-				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
-					moveLink = addLink("move.element", "o_icon_move", links);
-				}
+				addNewElementLinks(element, links);
 			}
 
 			if(secCallback.canManagerCurriculumElementUsers(element)) {
@@ -1211,18 +1172,12 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(openLink == source) {
 				close();
 				doOpenCurriculumElementInNewWindow(row);
-			} else if(moveLink == source) {
-				close();
-				doMoveCurriculumElement(ureq, row);
 			} else if(deleteLink == source) {
 				close();
 				doConfirmDelete(ureq, row);
 			} else if(newLink == source) {
 				close();
 				doNewSubCurriculumElement(ureq, row, null);
-			} else if(copyLink == source) {
-				close();
-				doCopyCurriculumElement(ureq, row);
 			} else if(manageMembersLink == source) {
 				close();
 				doOpenCurriculumElementUserManagement(ureq, row, null);
