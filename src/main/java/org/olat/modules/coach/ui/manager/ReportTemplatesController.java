@@ -126,7 +126,7 @@ public class ReportTemplatesController extends FormBasicController {
 	}
 
 	private void doRunReport(UserRequest ureq, ReportTemplatesRow row) {
-		row.getReportConfiguration().generateReport(getIdentity(), getLocale(), userPropertyHandlers);
+		row.getReportConfiguration().generateReport(getIdentity(), ureq.getLocale(), userPropertyHandlers);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

@@ -34,8 +34,6 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public abstract class AbstractReportConfiguration implements ReportConfiguration {
-	private Translator translator;
-
 	private String i18nNameKey;
 	private String name;
 	private String i18nDescriptionKey;
@@ -45,10 +43,7 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 	private boolean dynamic;
 
 	protected Translator getTranslator(Locale locale) {
-		if (translator == null) {
-			translator = Util.createPackageTranslator(AbstractReportConfiguration.class, locale);
-		}
-		return translator;
+		return Util.createPackageTranslator(AbstractReportConfiguration.class, locale);
 	}
 	
 	@Override

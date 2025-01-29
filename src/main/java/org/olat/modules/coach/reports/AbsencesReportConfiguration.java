@@ -38,6 +38,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.course.certificate.CertificationTimeUnit;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
@@ -53,13 +54,17 @@ import org.apache.logging.log4j.Logger;
 public class AbsencesReportConfiguration extends AbstractReportConfiguration {
 
 	private static final Logger log = Tracing.createLoggerFor(AbsencesReportConfiguration.class);
-			
+	private String duration;
+	private String durationUnit;
+
 	@Override
 	public void generateReport(Identity coach, Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
 		Translator translator = Util.createPackageTranslator(AbsencesReportConfiguration.class, locale);
 		CoachingService coachingService = CoreSpringFactory.getImpl(CoachingService.class);
 		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
+		params.setEndDate(new Date());
+		params.setStartDate(getDurationTimeUnit().toDate(new Date(), Integer.valueOf(getDuration())));
 		List<LectureBlockIdentityStatistics> statistics = lectureService.getLecturesStatistics(params, userPropertyHandlers, coach);
 
 		LocalFolderImpl folder = coachingService.getGeneratedReportsFolder(coach);
@@ -95,5 +100,25 @@ public class AbsencesReportConfiguration extends AbstractReportConfiguration {
 		}
 		
 		coachingService.setGeneratedReport(coach, name, fileName);
+	}
+
+	public void setDuration(String duration) {
+		this.duration = duration;
+	}
+
+	protected String getDuration() {
+		return duration;
+	}
+
+	public void setDurationUnit(String durationUnit) {
+		this.durationUnit = durationUnit;
+	}
+
+	private String getDurationUnit() {
+		return durationUnit;
+	}
+	
+	protected CertificationTimeUnit getDurationTimeUnit() {
+		return CertificationTimeUnit.valueOf(getDurationUnit());
 	}
 }

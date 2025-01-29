@@ -44,6 +44,18 @@
 		<property name="i18nDescriptionKey" value="report.description.absencesLast4Weeks" />
 		<property name="i18nCategoryKey" value="report.category.absences" />
 		<property name="dynamic" value="false" />
+		<property name="duration" value="4" />
+		<property name="durationUnit" value="week" />
+	</bean>
+
+	<!-- Reports -->
+	<bean class="org.olat.modules.coach.reports.AbsencesReportConfiguration">
+		<property name="i18nNameKey" value="report.name.absencesLast12Months" />
+		<property name="i18nDescriptionKey" value="report.description.absencesLast12Months" />
+		<property name="i18nCategoryKey" value="report.category.absences" />
+		<property name="dynamic" value="false" />
+		<property name="duration" value="12" />
+		<property name="durationUnit" value="month" />
 	</bean>
 </beans>
 	
