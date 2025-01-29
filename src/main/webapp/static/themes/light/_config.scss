@@ -61,7 +61,6 @@ $pagination-disabled-border		: $btn-default-border !default;
 $text-color						: #333 !default;
 $navbar-default-link-color		: #666 !default;
 $badge-bg						: #666 !default;
-$btn-warning-color				: #222 !default;
 $text-muted						: #595959 !default;
 
 /* other general colors, override bootstrap counterparts */
@@ -100,6 +99,10 @@ $o-brand-text					: $brand-primary !default;
 	$o-brand-box-bg 				: rgba($brand-primary, 0.2) !default;
 	$o-brand-text					: darken($brand-primary, 15%) !default;
 }
+/* override primary button to match a11y standards */
+$btn-primary-bg:                 $brand-primary !default;
+$btn-primary-color:              o-a11y-color(#fff, $btn-primary-bg) !default;
+$btn-primary-border:             darken($btn-primary-bg, 5%) !default;
 
 /* ---- OpenOLAT specific configurations ---- */
 $o-images-path : "../light/images/" !default; 
@@ -414,8 +417,8 @@ $o-toggle-on-border-color		: $brand-primary !default;
 $o-toggle-on-text-color			: $gray-lighter !default;
 
 /* Dirty button */
-$o-button-dirty-color			: $btn-warning-color !default;
 $o-button-dirty-bg				: $btn-warning-bg !default; 
+$o-button-dirty-color			: o-a11y-color($btn-warning-color, $o-button-dirty-bg) !default;
 $o-button-dirty-border			: darken($o-button-dirty-bg	, 5%) !default;
 /* Ghost button */
 $o-button-ghost-color					: $link-color !default;
@@ -481,14 +484,14 @@ $o-coursesite-sidecol-bg		: $panel-default-heading-bg !default;
 $o-coursesite-sidecol-border	: $panel-default-border !default;
 $o-coursesite-sidecol-radius	: $border-radius-base !default;
 $o-coursesite-sidecol-padding 	: $panel-body-padding !default;
-$o-coursesite-start-color		: o-a11y-color($btn-primary-color, $btn-primary-bg) !default;
 $o-coursesite-start-bg			: $btn-primary-bg !default;
+$o-coursesite-start-color		: o-a11y-color($btn-primary-color, $o-coursesite-start-bg) !default;
 $o-coursesite-start-border		: darken($o-coursesite-start-bg, 5%) !default;
-$o-coursesite-book-color		: o-a11y-color($btn-warning-color, $btn-warning-bg) !default;
 $o-coursesite-book-bg			: $btn-warning-bg !default;
+$o-coursesite-book-color		: o-a11y-color($btn-warning-color, $o-coursesite-book-bg) !default;
 $o-coursesite-book-border		: darken($o-coursesite-book-bg, 5%) !default;
-$o-coursesite-details-color		: o-a11y-color($btn-success-color, $btn-success-bg) !default;
 $o-coursesite-details-bg		: $btn-success-bg !default;
+$o-coursesite-details-color		: o-a11y-color($btn-success-color, $o-coursesite-details-bg) !default;
 $o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
 $o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
 $o-coursesite-go-xs-bg			: $o-coursesite-start-bg !default;
