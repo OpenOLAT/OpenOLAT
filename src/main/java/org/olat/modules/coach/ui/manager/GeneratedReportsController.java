@@ -22,6 +22,7 @@ package org.olat.modules.coach.ui.manager;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.services.folder.ui.FileBrowserCopyToController;
 import org.olat.core.commons.services.folder.ui.FolderUIFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -65,12 +67,15 @@ public class GeneratedReportsController extends FormBasicController implements F
 
 	private static final String DELETE_CMD = "delete";
 	private static final String DOWNLOAD_CMD = "download";
+	private static final String COPY_TO_CMD = "copy.to";
 	
 	private GeneratedReportsDataModel tableModel;
 	private FlexiTableElement tableEl;
 	private int count = 0;
 
 	private DialogBoxController confirmDeleteCtrl;
+	private FileBrowserCopyToController copyToCtrl;
+	private CloseableModalController cmc;
 
 	@Autowired
 	private CoachingService coachingService;
@@ -136,7 +141,7 @@ public class GeneratedReportsController extends FormBasicController implements F
 		row.setDownloadLink(downloadLink);
 		downloadLink.setUserObject(row);
 
-		FormLink copyToButton = uifactory.addFormLink("copy-to-".concat(c), "copy.to", "browser.copy.to", 
+		FormLink copyToButton = uifactory.addFormLink("copy-to-".concat(c), COPY_TO_CMD, "browser.copy.to", 
 				null, flc, Link.BUTTON);
 		copyToButton.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 		row.setCopyToButton(copyToButton);
@@ -166,8 +171,20 @@ public class GeneratedReportsController extends FormBasicController implements F
 			if (DialogBoxUIFactory.isYesEvent(event) && confirmDeleteCtrl.getUserObject() instanceof GeneratedReportsRow row) {
 				doDelete(ureq, row);
 			}
+		} else if (copyToCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(copyToCtrl);
+		removeAsListenerAndDispose(cmc);
+		copyToCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -178,9 +195,26 @@ public class GeneratedReportsController extends FormBasicController implements F
 				doConfirmDelete(ureq, row);
 			} else if (DOWNLOAD_CMD.equals(cmd) && link.getUserObject() instanceof GeneratedReportsRow row) {
 				doDownload(ureq, row);
+			} else if (COPY_TO_CMD.equals(cmd) && link.getUserObject() instanceof GeneratedReportsRow row) {
+				doCopyTo(ureq, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doCopyTo(UserRequest ureq, GeneratedReportsRow row) {
+		if (guardModalController(copyToCtrl)) {
+			return;
+		}
+
+		VFSLeaf leaf = coachingService.getGeneratedReportLeaf(getIdentity(), row.getGeneratedReport().getMetadata());
+		copyToCtrl = new FileBrowserCopyToController(ureq, getWindowControl(), List.of(leaf));
+		listenTo(copyToCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
+				copyToCtrl.getInitialComponent(), true, translate("browser.copy.to"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doConfirmDelete(UserRequest ureq, GeneratedReportsRow row) {
