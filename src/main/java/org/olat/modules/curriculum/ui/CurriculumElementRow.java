@@ -51,6 +51,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	private final long numOfOwners;
 	private final long numOfCurriculumElementOwners;
 	private final long numOfMasterCoaches;
+	private final long numOfPending;
 	
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
@@ -77,6 +78,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		numOfOwners = 0l;
 		numOfCurriculumElementOwners = 0l;
 		numOfMasterCoaches = 0l;
+		numOfPending = 0l;
 		toolsLink = null;
 		resourcesLink = null;
 		structureLink = null;
@@ -84,7 +86,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	public CurriculumElementRow(CurriculumElement element, long numOfResources,
 			long numOfParticipants, long numOfCoaches, long numOfOwners,
-			long numOfCurriculumElementOwners, long numOfMasterCoaches,
+			long numOfCurriculumElementOwners, long numOfMasterCoaches, long numOfPending,
 			FormLink toolsLink, FormLink resourcesLink, FormLink structureLink) {
 		this.element = element;
 		curriculum = element.getCurriculum();
@@ -95,6 +97,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		this.numOfOwners = numOfOwners;
 		this.numOfCurriculumElementOwners = numOfCurriculumElementOwners;
 		this.numOfMasterCoaches = numOfMasterCoaches;
+		this.numOfPending = numOfPending;
 		this.resourcesLink = resourcesLink;
 		this.structureLink = structureLink;
 		elementType = element.getType();
@@ -268,6 +271,10 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	public long getNumOfMembers() {
 		return numOfOwners + numOfCoaches + numOfParticipants
 				+ numOfMasterCoaches + numOfCurriculumElementOwners;
+	}
+	
+	public long getNumOfPending() {
+		return numOfPending;
 	}
 	
 	@Override

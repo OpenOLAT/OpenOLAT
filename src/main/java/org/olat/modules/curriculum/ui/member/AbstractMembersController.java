@@ -319,7 +319,9 @@ public abstract class AbstractMembersController extends FormBasicController impl
 		resources.add(curriculumElement.getResource());
 		if(allLevelsButton.getComponent().isPrimary()) {
 			for(CurriculumElement element:descendants) {
-				resources.add(element.getResource());
+				if(element.getResource() != null) {
+					resources.add(element.getResource());
+				}
 			}
 		}
 		return resources;

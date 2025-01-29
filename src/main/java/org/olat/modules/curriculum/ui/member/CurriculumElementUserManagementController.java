@@ -105,10 +105,17 @@ public class CurriculumElementUserManagementController extends BasicController i
 		if(entries == null || entries.isEmpty()) return;
 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(ACTIVE_SCOPE.equals(type)) {
+		if(PENDING_SCOPE.equalsIgnoreCase(type)) {
+			Activateable2 ctrl = doOpenPending(ureq);
+			if(ctrl != null) {
+				searchScopes.setSelectedKey(PENDING_SCOPE);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				ctrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
+		} else  if(ACTIVE_SCOPE.equalsIgnoreCase(type)) {
 			Activateable2 ctrl = doOpen(ureq, type);
 			if(ctrl != null) {
-				searchScopes.setSelectedKey(type);
+				searchScopes.setSelectedKey(ACTIVE_SCOPE);
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				ctrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}

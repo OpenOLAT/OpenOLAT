@@ -130,6 +130,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	protected static final String FILTER_STATUS = "Status";
 	protected static final String FILTER_CURRICULUM = "Curriculum";
 	
+	protected static final String CMD_MEMBERS = "members";
+	protected static final String CMD_PENDING = "pending";
 	protected static final String CMD_ADD_ELEMENT = "add-element";
 	protected static final String CMD_SELECT_CURRICULUM = "select-cur";
 
@@ -299,9 +301,11 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
-				ElementCols.numOfMembers, "members"));
+				ElementCols.numOfMembers, CMD_MEMBERS));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isDefaultNumOfParticipants(),
 				ElementCols.numOfParticipants, CurriculumRoles.participant.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isFlat(),
+				ElementCols.numOfPending, CMD_PENDING));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
 				ElementCols.numOfCoaches, CurriculumRoles.coach.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
@@ -369,12 +373,12 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private String getTablePrefsId() {
 		if(rootElement != null) {
-			return "curriculum-composer-v4";
+			return "curriculum-composer-v5";
 		}
 		if(curriculum != null) {
-			return "cur-implementations-v4";
+			return "cur-implementations-v5";
 		}
-		return "cur-otherlist-v4";
+		return "cur-otherlist-v5";
 	}
 	
 	private void initFilters() {
@@ -545,7 +549,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 		CurriculumElementRow row = new CurriculumElementRow(element.curriculumElement(), refs,
 				element.numOfParticipants(), element.numOfCoaches(), element.numOfOwners(),
-				element.numOfCurriculumElementOwners(), element.numOfMasterChoaches(),
+				element.numOfCurriculumElementOwners(), element.numOfMasterChoaches(), element.numOfPending(),
 				toolsLink, resourcesLink, structureLink);
 		toolsLink.setUserObject(row);
 		if(structureLink != null) {
@@ -764,9 +768,12 @@ public class CurriculumComposerController extends FormBasicController implements
 				if("select".equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculumElementOverview(ureq, row);
-				} else if("members".equals(cmd)) {
+				} else if(CMD_MEMBERS.equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculumElementUserManagement(ureq, row, null);
+				} else if(CMD_PENDING.equals(cmd)) {
+					CurriculumElementRow row = tableModel.getObject(se.getIndex());
+					doOpenCurriculumElementUserManagement(ureq, row, CMD_PENDING);
 				} else if(CurriculumRoles.isValueOf(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
 					doOpenCurriculumElementUserManagement(ureq, row, CurriculumRoles.valueOf(cmd).name());
@@ -886,7 +893,9 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private void doOpenCurriculumElementUserManagement(UserRequest ureq, CurriculumElementRow row, String memberType) {
 		String path = "[Members:0]";
-		if(memberType != null) {
+		if(CMD_PENDING.equalsIgnoreCase(memberType)) {
+			path += "[Pending:0][All:0]";
+		} else if(memberType != null) {
 			path += "[" + memberType + ":0]";
 		}
 		List<ContextEntry> overview = BusinessControlFactory.getInstance().createCEListFromString(path);
