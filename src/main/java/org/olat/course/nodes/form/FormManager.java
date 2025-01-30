@@ -20,6 +20,7 @@
 package org.olat.course.nodes.form;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -71,9 +72,13 @@ public interface FormManager {
 
 	public DataStorage loadStorage(RepositoryEntry formEntry);
 
-	public EvaluationFormParticipation loadParticipation(EvaluationFormSurvey survey, Identity identity);
+	public EvaluationFormParticipation loadLastParticipation(EvaluationFormSurvey survey, Identity identity);
+	
+	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurvey survey, Identity identity);
 
 	public EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormSurvey survey, Identity identity);
+	
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity identity, int run);
 
 	public List<EvaluationFormParticipation> getParticipations(EvaluationFormSurvey survey,
 			EvaluationFormParticipationStatus status, boolean fetchExecutor);
@@ -86,13 +91,15 @@ public interface FormManager {
 
 	public EvaluationFormSession getSession(EvaluationFormSurvey survey, Identity identity);
 	
+	public List<EvaluationFormSession> getSessions(Collection<? extends EvaluationFormParticipationRef> participations);
+	
 	public EvaluationFormSession getDoneSession(EvaluationFormSurvey survey, Identity identity);
 	
 	public void onQuickSave(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Double completion);
 
 	public void onExecutionFinished(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 	
-	public List<FormParticipation> getFormParticipations(EvaluationFormSurvey survey, FormParticipationSearchParams searchParams);
+	public List<FormParticipationBundle> getFormParticipationBundles(EvaluationFormSurvey survey, FormParticipationSearchParams searchParams);
 
 	public Long getSessionsCount(SessionFilter filter);
 	

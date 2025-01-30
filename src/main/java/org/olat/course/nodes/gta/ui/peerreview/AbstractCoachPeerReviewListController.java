@@ -59,7 +59,6 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.TaskReviewAssignment;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
-import org.olat.course.nodes.gta.manager.ParticipationsFilter;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.SessionParticipationStatistics;
 import org.olat.course.nodes.gta.model.SessionStatistics;
@@ -74,6 +73,7 @@ import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.model.jpa.ParticipationsFilter;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 

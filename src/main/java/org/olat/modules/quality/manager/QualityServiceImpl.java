@@ -559,7 +559,7 @@ public class QualityServiceImpl
 		for (Identity executor: executors) {
 			EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, executor);
 			if (participation == null) {
-				participation = evaluationFormManager.createParticipation(survey, executor, true);
+				participation = evaluationFormManager.createParticipation(survey, executor, true, 1);
 			}
 			participations.add(participation);
 		}

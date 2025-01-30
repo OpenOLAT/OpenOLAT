@@ -81,7 +81,10 @@ public class EvaluationFormParticipationImpl implements EvaluationFormParticipat
 	@Enumerated(EnumType.STRING)
 	@Column(name="e_status", nullable=false, insertable=true, updatable=true)
 	private EvaluationFormParticipationStatus status;
-
+	@Column(name="e_run", nullable=true, insertable=true, updatable=true)
+	private int run;
+	@Column(name="e_last_run", nullable=true, insertable=true, updatable=true)
+	private boolean lastRun;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_executor", nullable=true, insertable=true, updatable=false)
@@ -149,6 +152,24 @@ public class EvaluationFormParticipationImpl implements EvaluationFormParticipat
 
 	public void setStatus(EvaluationFormParticipationStatus status) {
 		this.status = status;
+	}
+
+	@Override
+	public int getRun() {
+		return run;
+	}
+
+	public void setRun(int run) {
+		this.run = run;
+	}
+
+	@Override
+	public boolean isLastRun() {
+		return lastRun;
+	}
+
+	public void setLastRun(boolean lastRun) {
+		this.lastRun = lastRun;
 	}
 
 	@Override

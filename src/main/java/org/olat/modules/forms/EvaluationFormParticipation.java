@@ -58,6 +58,10 @@ public interface EvaluationFormParticipation extends EvaluationFormParticipation
 	public boolean isAnonymous();
 	
 	public void setAnonymous(boolean anonymous);
+	
+	public int getRun();
+	
+	public boolean isLastRun();
 
 	/**
 	 * The executor of the participation. A participation must not have an executor.

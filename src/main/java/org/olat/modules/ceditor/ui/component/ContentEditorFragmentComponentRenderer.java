@@ -196,8 +196,14 @@ public class ContentEditorFragmentComponentRenderer extends AbstractContentEdito
 		if (collapsible) {
 			sb.append("</div>");
 		}
+		renderAlertScript(sb, cmp);
 		sb.append("</div>");
+	}
 
+	private void renderAlertScript(StringOutput sb, ContentEditorFragmentComponent cmp) {
+		if (!FragmentRendererHelper.needsAbsolutePositionAlertDiv(cmp.getElement())) {
+			return;
+		}
 		sb.append("<script>\n")
 				.append("\"use strict\";\n")
 				.append("jQuery(function() {\n");

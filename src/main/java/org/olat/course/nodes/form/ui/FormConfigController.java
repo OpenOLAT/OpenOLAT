@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -78,6 +79,7 @@ public class FormConfigController extends FormBasicController {
 	private FormLink chooseLink;
 	private FormLink replaceLink;
 	private FormLink editLink;
+	private FormToggle multiExecutionEl;
 	private MultipleSelectionElement relativeDatesEl;
 	private DueDateConfigFormItem participationDeadlineEl;
 	private MultipleSelectionElement confirmationEl;
@@ -133,6 +135,9 @@ public class FormConfigController extends FormBasicController {
 		chooseLink.setElementCssClass("o_sel_form_choose_repofile");
 		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, "btn btn-default o_xsmall");
 		editLink = uifactory.addFormLink("edit.edit", buttonsCont, "btn btn-default o_xsmall");
+		
+		multiExecutionEl = uifactory.addToggleButton("multi.execution", "edit.multi.execution", translate("on"), translate("off"), formLayout);
+		multiExecutionEl.toggle(config.getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION));
 		
 		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", formLayout, ON_KEYS, new String[]{ "" });
 		relativeDatesEl.addActionListener(FormEvent.ONCHANGE);
@@ -344,6 +349,8 @@ public class FormConfigController extends FormBasicController {
 		
 		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
 		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_RELATIVE_DATES, relativeDates);
+		
+		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION, multiExecutionEl.isOn());
 		
 		DueDateConfig dueDateConfig = participationDeadlineEl.getDueDateConfig();
 		config.setIntValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE, dueDateConfig.getNumOfDays());

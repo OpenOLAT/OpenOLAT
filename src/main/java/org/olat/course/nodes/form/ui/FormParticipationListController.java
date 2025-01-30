@@ -77,6 +77,7 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.FormParticipation;
+import org.olat.course.nodes.form.FormParticipationBundle;
 import org.olat.course.nodes.form.FormParticipationSearchParams;
 import org.olat.course.nodes.form.FormSecurityCallback;
 import org.olat.course.nodes.form.ui.FormParticipationTableModel.ParticipationCols;
@@ -90,7 +91,6 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport.UserColumns;
-import org.olat.modules.forms.ui.UserPropertiesColumns;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -202,6 +202,9 @@ public class FormParticipationListController extends FormBasicController impleme
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.status, new ParticipationStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.submissionDate));
+		if (courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipationCols.numSubmissions));
+		}
 		if (secCallback.canReset() || secCallback.canReopen()) {
 			columnsModel.addFlexiColumnModel(new ActionsColumnModel(ParticipationCols.tools));
 		}
@@ -211,7 +214,7 @@ public class FormParticipationListController extends FormBasicController impleme
 		tableEl.setExportEnabled(true);
 		tableEl.setSortSettings(options);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, FormCourseNode.ICON_CSS);
-		tableEl.setAndLoadPersistedPreferences(ureq, "course.element.form");
+		tableEl.setAndLoadPersistedPreferences(ureq, "course.element.form.v2");
 		initFilters();
 	}
 
@@ -274,19 +277,23 @@ public class FormParticipationListController extends FormBasicController impleme
 	}
 
 	public void reload() {
-		List<FormParticipation> formParticipations = formManager.getFormParticipations(survey, getSearchParameters());
+		List<FormParticipationBundle> bundles = formManager.getFormParticipationBundles(survey, getSearchParameters());
 		
-		List<FormParticipationRow> rows = new ArrayList<>(formParticipations.size());
-		for (FormParticipation formParticipation: formParticipations) {
-			FormParticipationRow row = new FormParticipationRow(formParticipation.getIdentity(), userPropertyHandlers, getLocale());
-			if (formParticipation.getEvaluationFormParticipationRef() != null) {
-				row.setStatus(formParticipation.getParticipationStatus());
-				if (EvaluationFormParticipationStatus.done == formParticipation.getParticipationStatus()) {
-					row.setSubmissionDate(formParticipation.getSubmissionDate());
+		List<FormParticipationRow> rows = new ArrayList<>(bundles.size());
+		for (FormParticipationBundle bundle: bundles) {
+			FormParticipationRow row = new FormParticipationRow(bundle.getIdentity(), userPropertyHandlers, getLocale());
+			FormParticipation lastParticipation = bundle.getLastParticipation();
+			if (lastParticipation != null) {
+				row.setStatus(lastParticipation.getParticipationStatus());
+				if (EvaluationFormParticipationStatus.done == lastParticipation.getParticipationStatus()) {
+					row.setSubmissionDate(lastParticipation.getSubmissionDate());
+				}
+				if (bundle.getSubmittedParticipations() != null && !bundle.getSubmittedParticipations().isEmpty()) {
+					row.setNumSubmissions(Integer.valueOf(bundle.getSubmittedParticipations().size()));
 				}
 				
 				FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
-				toolsLink.setUserObject(formParticipation);
+				toolsLink.setUserObject(lastParticipation);
 				row.setToolsLink(toolsLink);
 			}
 			rows.add(row);
@@ -453,7 +460,8 @@ public class FormParticipationListController extends FormBasicController impleme
 	}
 
 	private void doExport(UserRequest ureq) {
-		UserColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, getTranslator());
+		UserColumns userColumns = new FormUserPropertiesColumns(userPropertyHandlers, getTranslator(),
+				courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION));
 		MediaResource mediaResource = formManager.getExport(courseNode, survey.getIdentifier(), userColumns);
 		ureq.getDispatchResult().setResultingMediaResource(mediaResource);
 	}

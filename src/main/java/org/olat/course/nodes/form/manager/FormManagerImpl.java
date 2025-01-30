@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,7 +55,9 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.FormParticipation;
+import org.olat.course.nodes.form.FormParticipationBundle;
 import org.olat.course.nodes.form.FormParticipationSearchParams;
+import org.olat.course.nodes.form.model.FormParticipationBundleImpl;
 import org.olat.course.nodes.form.model.FormParticipationImpl;
 import org.olat.course.nodes.form.ui.FormConfigController;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -176,17 +177,27 @@ public class FormManagerImpl implements FormManager {
 	}
 
 	@Override
-	public EvaluationFormParticipation loadParticipation(EvaluationFormSurvey survey, Identity identity) {
+	public EvaluationFormParticipation loadLastParticipation(EvaluationFormSurvey survey, Identity identity) {
 		return evaluationFormManager.loadParticipationByExecutor(survey, identity);
+	}
+	
+	@Override
+	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurvey survey, Identity identity) {
+		return  evaluationFormManager.loadParticipationsByExecutor(survey, identity);
 	}
 
 	@Override
 	public EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormSurvey survey, Identity identity) {
-		EvaluationFormParticipation loadedParticipation = evaluationFormManager.loadParticipationByExecutor(survey, identity);
+		EvaluationFormParticipation loadedParticipation = loadLastParticipation(survey, identity);
 		if (loadedParticipation == null) {
-			loadedParticipation = evaluationFormManager.createParticipation(survey, identity);
+			loadedParticipation = createParticipation(survey, identity, 1);
 		}
 		return loadedParticipation;
+	}
+	
+	@Override
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity identity, int run) {
+		return evaluationFormManager.createParticipation(survey, identity, false, run);
 	}
 
 	@Override
@@ -240,7 +251,7 @@ public class FormManagerImpl implements FormManager {
 	
 	@Override
 	public EvaluationFormSession getSession(EvaluationFormSurvey survey, Identity identity) {
-		EvaluationFormParticipation participation = loadParticipation(survey, identity);
+		EvaluationFormParticipation participation = loadLastParticipation(survey, identity);
 		if (participation != null) {
 			return evaluationFormManager.loadSessionByParticipation(participation);
 		}
@@ -248,8 +259,14 @@ public class FormManagerImpl implements FormManager {
 	}
 	
 	@Override
+	public List<EvaluationFormSession> getSessions(Collection<? extends EvaluationFormParticipationRef> participations) {
+		SessionFilter filter = SessionFilterFactory.createOfParticipations(participations);
+		return evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
+	}
+	
+	@Override
 	public EvaluationFormSession getDoneSession(EvaluationFormSurvey survey, Identity identity) {
-		EvaluationFormParticipation participation = loadParticipation(survey, identity);
+		EvaluationFormParticipation participation = loadLastParticipation(survey, identity);
 		if (participation != null) {
 			EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 			if (EvaluationFormSessionStatus.done == session.getEvaluationFormSessionStatus()) {
@@ -289,7 +306,7 @@ public class FormManagerImpl implements FormManager {
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentifier(courseNode, courseEntry);
 		EvaluationFormSurvey survey = loadSurvey(surveyIdent);
-		EvaluationFormParticipation participation = loadParticipation(survey, identity);
+		EvaluationFormParticipation participation = loadLastParticipation(survey, identity);
 		EvaluationFormSession session = participation != null? loadOrCreateSession(participation): null;
 		List<ContactList> contactList = new ArrayList<>();
 		ModuleConfiguration moduleConfiguration = courseNode.getModuleConfiguration();
@@ -343,7 +360,7 @@ public class FormManagerImpl implements FormManager {
 	}
 
 	@Override
-	public List<FormParticipation> getFormParticipations(EvaluationFormSurvey survey,
+	public List<FormParticipationBundle> getFormParticipationBundles(EvaluationFormSurvey survey,
 			FormParticipationSearchParams searchParams) {
 		if (survey == null) {
 			return List.of();
@@ -372,11 +389,10 @@ public class FormManagerImpl implements FormManager {
 			}
 		}
 		
-		Map<Long, EvaluationFormParticipation> identityKeyToParticipations = participations
+		Map<Long, List<EvaluationFormParticipation>> identityKeyToParticipations = participations
 				.stream()
-				.collect(Collectors.toMap(
-						participation -> participation.getExecutor().getKey(), 
-						Function.identity()));
+				.collect(Collectors.groupingBy(
+						participation -> participation.getExecutor().getKey()));
 		SessionFilter doneSessionsFilter = SessionFilterFactory.createSelectDone(survey);
 		Map<Long, Date> participationKeyToSubmissionDate = evaluationFormManager.loadSessionsFiltered(doneSessionsFilter, 0, -1)
 				.stream()
@@ -391,28 +407,47 @@ public class FormManagerImpl implements FormManager {
 						.collect(HashMap::new, (m,ae)->m.put(ae.getIdentity().getKey(), extractObligation(ae)), HashMap::putAll)
 				: Collections.emptyMap();
 		
-		List<FormParticipation> formParticipations = new ArrayList<>(coachedIdentities.size());
+		List<FormParticipationBundle> formParticipationBundle = new ArrayList<>(coachedIdentities.size());
 		for (Identity identity : allIdentities) {
 			if (isExcludedByObligation(searchParams.getObligations(), identityKeyToObligation.get(identity.getKey()))) {
 				continue;
 			}
 			
-			EvaluationFormParticipation participation = identityKeyToParticipations.get(identity.getKey());
-			if (isExcludedByStatus(searchParams.getStatus(), participation)) {
+			EvaluationFormParticipation lastParticipation = null;
+			List<EvaluationFormParticipation> identityParticipations = identityKeyToParticipations.get(identity.getKey());
+			if (identityParticipations != null && !identityParticipations.isEmpty()) {
+				if (identityParticipations.size() > 1) {
+					identityParticipations.sort((p1, p2) -> Integer.compare(p1.getRun(), p2.getRun()));
+				}
+				lastParticipation = identityParticipations.get(identityParticipations.size() - 1);
+			}
+			if (isExcludedByStatus(searchParams.getStatus(), lastParticipation)) {
 				continue;
 			}
 			
-			FormParticipationImpl formParticipationImpl = new FormParticipationImpl();
-			formParticipationImpl.setIdentity(identity);
-			if (participation != null) {
-				formParticipationImpl.setEvaluationFormParticipation(participation);
-				if (EvaluationFormParticipationStatus.done == participation.getStatus()) {
-					formParticipationImpl.setSubmissionDate(participationKeyToSubmissionDate.get(participation.getKey()));
-				}
+			FormParticipation lastFormParticipation = null;
+			List<FormParticipation> submittedParticipations = null;
+			if (lastParticipation != null && identityParticipations != null) {
+				lastFormParticipation = toFormParticipation(lastParticipation, participationKeyToSubmissionDate);
+				submittedParticipations = identityParticipations.stream()
+					.filter(participation -> EvaluationFormParticipationStatus.done == participation.getStatus())
+					.map(participation -> toFormParticipation(participation, participationKeyToSubmissionDate))
+					.toList();
 			}
-			formParticipations.add(formParticipationImpl);
+			
+			FormParticipationBundleImpl formParticipationBundleImpl = new FormParticipationBundleImpl(identity,
+					lastFormParticipation, submittedParticipations);
+			formParticipationBundle.add(formParticipationBundleImpl);
 		}
-		return formParticipations;
+		return formParticipationBundle;
+	}
+
+	private FormParticipation toFormParticipation(EvaluationFormParticipation participation,
+			Map<Long, Date> participationKeyToSubmissionDate) {
+		Date submissionDate = EvaluationFormParticipationStatus.done == participation.getStatus()
+				? participationKeyToSubmissionDate.get(participation.getKey())
+				: null;
+		return new FormParticipationImpl(participation, submissionDate);
 	}
 	
 	private boolean isExcludedByStatus(Collection<FormParticipationSearchParams.Status> status, EvaluationFormParticipation participation) {
@@ -493,7 +528,8 @@ public class FormManagerImpl implements FormManager {
 	public MediaResource getExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns) {
 		EvaluationFormSurvey survey = loadSurvey(identifier);
 		Form form = loadForm(survey);
-		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, true);
+		Boolean lastRun = courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION)? null: Boolean.TRUE;
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, lastRun, true);
 		String nodeName = courseNode.getShortName();
 		EvaluationFormExcelExport excelExport = new EvaluationFormExcelExport(form, filter, null, userColumns, nodeName);
 		
@@ -508,7 +544,8 @@ public class FormManagerImpl implements FormManager {
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode,
 			EvaluationFormSurveyIdentifier identifier, UserColumns userColumns) {
 		EvaluationFormSurvey survey = loadSurvey(identifier);
-		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, true);
+		Boolean lastRun = courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION)? null: Boolean.TRUE;
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, lastRun, true);
 		return getExcelExport(courseNode, identifier, filter, userColumns);
 	}
 	

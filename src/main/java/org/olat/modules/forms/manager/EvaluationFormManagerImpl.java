@@ -78,6 +78,7 @@ import org.olat.modules.forms.handler.RubricHandler;
 import org.olat.modules.forms.model.SlidersStepCountsImpl;
 import org.olat.modules.forms.model.StepCountsBuilder;
 import org.olat.modules.forms.model.jpa.CalculatedLong;
+import org.olat.modules.forms.model.jpa.EvaluationFormParticipationImpl;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Container;
@@ -259,26 +260,37 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey) {
-		return evaluationFormParticipationDao.createParticipation(survey, new EvaluationFormParticipationIdentifier(),
-				false, null);
+		return createParticipation(survey, new EvaluationFormParticipationIdentifier(), false, 1, null);
 	}
 
 	@Override
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor) {
-		return evaluationFormParticipationDao.createParticipation(survey, new EvaluationFormParticipationIdentifier(),
-				false, executor);
-	}
-	
-	@Override
-	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor, boolean anonymous) {
-		return evaluationFormParticipationDao.createParticipation(survey, new EvaluationFormParticipationIdentifier(),
-				anonymous, executor);
+		return createParticipation(survey, new EvaluationFormParticipationIdentifier(), false, 1, executor);
 	}
 
 	@Override
-	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
-			EvaluationFormParticipationIdentifier identifier) {
-		return evaluationFormParticipationDao.createParticipation(survey, identifier, false, null);
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor,
+			boolean anonymous, int run) {
+		return createParticipation(survey, new EvaluationFormParticipationIdentifier(), anonymous, run, executor);
+	}
+
+	@Override
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, EvaluationFormParticipationIdentifier identifier) {
+		return createParticipation(survey, identifier, false, 1, null);
+	}
+
+	private EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
+			EvaluationFormParticipationIdentifier identifier, boolean anonymous, int run, Identity executor) {
+		if (run > 1) {
+			evaluationFormParticipationDao.loadByExecutor(survey, executor, Boolean.TRUE).forEach(
+					participation -> {
+						if (participation instanceof EvaluationFormParticipationImpl impl) {
+							impl.setLastRun(false);
+							evaluationFormParticipationDao.updateParticipation(impl);
+						}
+					});
+		}
+		return evaluationFormParticipationDao.createParticipation(survey, identifier, anonymous, run, executor);
 	}
 
 	@Override
@@ -293,7 +305,13 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor) {
-		return evaluationFormParticipationDao.loadByExecutor(surveyRef, executor);
+		List<EvaluationFormParticipation> participations = evaluationFormParticipationDao.loadByExecutor(surveyRef, executor, true);
+		return !participations.isEmpty()? participations.get(0): null;
+	}
+	
+	@Override
+	public List<EvaluationFormParticipation> loadParticipationsByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor) {
+		return evaluationFormParticipationDao.loadByExecutor(surveyRef, executor, false);
 	}
 	
 	@Override

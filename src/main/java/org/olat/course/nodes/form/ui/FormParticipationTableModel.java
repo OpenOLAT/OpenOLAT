@@ -71,6 +71,7 @@ public class FormParticipationTableModel extends DefaultFlexiTableDataModel<Form
 			switch(COLS[col]) {
 				case status: return row.getStatus();
 				case submissionDate: return row.getSubmissionDate();
+				case numSubmissions: return row.getNumSubmissions();
 				case tools: return row.getToolsLink();
 				default: return "ERROR";
 			}
@@ -82,6 +83,7 @@ public class FormParticipationTableModel extends DefaultFlexiTableDataModel<Form
 	public enum ParticipationCols implements FlexiSortableColumnDef {
 		status("table.header.status"),
 		submissionDate("table.header.submission.date"),
+		numSubmissions("table.header.num.submissions"),
 		tools("action.more");
 		
 		private final String i18nKey;
@@ -97,7 +99,7 @@ public class FormParticipationTableModel extends DefaultFlexiTableDataModel<Form
 		
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != tools;
 		}
 
 		@Override

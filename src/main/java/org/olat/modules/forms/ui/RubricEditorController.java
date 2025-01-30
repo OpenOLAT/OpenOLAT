@@ -141,9 +141,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 			addSliderButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 
 			showEndButton = uifactory.addFormLink("show.end", "show.end", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+			showEndButton.setTitle("show.end");
 			showEndButton.setIconLeftCSS("o_icon o_icon_eva_end_show");
 
 			hideEndButton = uifactory.addFormLink("hide.end", "hide.end", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+			hideEndButton.setTitle("hide.end");
 			hideEndButton.setIconLeftCSS("o_icon o_icon_eva_end_hide");
 		}
 		if(formLayout instanceof FormLayoutContainer) {
@@ -251,12 +253,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 		upButton.setDomReplacementWrapperRequired(false);
 		upButton.setIconLeftCSS("o_icon o_icon-lg o_icon_move_up");
 		upButton.setUserObject(row);
+		upButton.setTitle(translate("move.up"));
 		row.setUpButton(upButton);
 		
 		FormLink downButton = uifactory.addFormLink("down.".concat(id), "down", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
 		downButton.setDomReplacementWrapperRequired(false);
 		downButton.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
 		downButton.setUserObject(row);
+		downButton.setTitle(translate("move.down"));
 		row.setDownButton(downButton);
 		
 		if(!restrictedEdit) {
@@ -264,6 +268,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 			deleteButton.setDomReplacementWrapperRequired(false);
 			deleteButton.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 			deleteButton.setUserObject(row);
+			deleteButton.setTitle(translate("delete"));
 			row.setDeleteButton(deleteButton);
 			flc.contextPut("deleteButtons", Boolean.TRUE);
 		}

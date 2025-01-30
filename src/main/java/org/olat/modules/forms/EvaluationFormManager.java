@@ -128,7 +128,7 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor);
 
-	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor, boolean anonymous);
+	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity executor, boolean anonymous, int run);
 	
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
 			EvaluationFormParticipationIdentifier identifier);
@@ -141,6 +141,8 @@ public interface EvaluationFormManager {
 			EvaluationFormParticipationStatus status, boolean fetchExecutor);
 
 	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor);
+	
+	public List<EvaluationFormParticipation> loadParticipationsByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor);
 
 	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier);
 

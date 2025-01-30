@@ -40,6 +40,7 @@ public class FormParticipationRow extends UserPropertiesRow {
 	
 	private EvaluationFormParticipationStatus status;
 	private Date submissionDate;
+	private Integer numSubmissions;
 	private FormLink toolsLink;
 	
 	public FormParticipationRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
@@ -60,6 +61,14 @@ public class FormParticipationRow extends UserPropertiesRow {
 
 	public void setSubmissionDate(Date submissionDate) {
 		this.submissionDate = submissionDate;
+	}
+	
+	public Integer getNumSubmissions() {
+		return numSubmissions;
+	}
+
+	public void setNumSubmissions(Integer numSubmissions) {
+		this.numSubmissions = numSubmissions;
 	}
 
 	public FormLink getToolsLink() {

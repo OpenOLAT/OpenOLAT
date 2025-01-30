@@ -45,14 +45,17 @@ public class SurveysFilter implements SessionFilter {
 	private EvaluationFormSessionStatus status;
 	private boolean fetchExecutor;
 	private EvaluationFormSurveyIdentifier surveyIdentitfier;
+	private Boolean lastRun;
 	
 	public SurveysFilter(Collection<? extends EvaluationFormSurveyRef> surveys) {
-		this(surveys, null, false);
+		this(surveys, null, null, false);
 	}
 
-	public SurveysFilter(Collection<? extends EvaluationFormSurveyRef> surveys, EvaluationFormSessionStatus status, boolean fetchExecutor) {
+	public SurveysFilter(Collection<? extends EvaluationFormSurveyRef> surveys, EvaluationFormSessionStatus status,
+			Boolean lastRun, boolean fetchExecutor) {
 		this.surveys = surveys;
 		this.status = status;
+		this.lastRun = lastRun;
 		this.fetchExecutor = fetchExecutor;
 	}
 	
@@ -70,6 +73,9 @@ public class SurveysFilter implements SessionFilter {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select sessionFilter.key");
 		sb.append("  from evaluationformsession sessionFilter");
+		if (lastRun != null) {
+			sb.append(" inner join sessionFilter.participation participationFilter");
+		}
 		if (status != null) {
 			sb.and().append("sessionFilter.status = '").append(EvaluationFormSessionStatus.done).append("'");
 		}
@@ -85,6 +91,9 @@ public class SurveysFilter implements SessionFilter {
 			if (StringHelper.containsNonWhitespace(surveyIdentitfier.getSubident2())) {
 				sb.and().append("sessionFilter.survey.resSubident2 = :surveyResSubident2");
 			}
+		}
+		if (lastRun != null) {
+			sb.and().append("participationFilter.lastRun = ").append(lastRun);
 		}
 		return sb.toString();
 	}

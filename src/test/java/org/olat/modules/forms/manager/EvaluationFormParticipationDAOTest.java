@@ -20,6 +20,7 @@
 package org.olat.modules.forms.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.model.jpa.EvaluationFormParticipationImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +73,7 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
 		dbInstance.commit();
 		
-		EvaluationFormParticipation participation = sut.createParticipation(survey, identifier, anonymous, executor);
+		EvaluationFormParticipation participation = sut.createParticipation(survey, identifier, anonymous, 1, executor);
 		
 		assertThat(participation).isNotNull();
 		assertThat(participation.getCreationDate()).isNotNull();
@@ -88,7 +90,7 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		String identifierKey = UUID.randomUUID().toString();
 		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,
 				identifierKey);
-		EvaluationFormParticipation participation = sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, null);
+		EvaluationFormParticipation participation = sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, 1, null);
 		dbInstance.commit();
 		
 		EvaluationFormParticipationStatus newStatus = EvaluationFormParticipationStatus.done;
@@ -105,7 +107,7 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		String identifierKey = UUID.randomUUID().toString();
 		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,
 				identifierKey);
-		EvaluationFormParticipation participation = sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, null);
+		EvaluationFormParticipation participation = sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, 1, null);
 		dbInstance.commit();
 		
 		participation.setAnonymous(true);
@@ -121,7 +123,7 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 				identifierKey);
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(identifierKey);
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
-		EvaluationFormParticipationRef participation = sut.createParticipation(survey, identifier, false, executor);
+		EvaluationFormParticipationRef participation = sut.createParticipation(survey, identifier, false, 1, executor);
 		dbInstance.commit();
 		
 		EvaluationFormParticipation loadedParticipation = sut.loadByKey(participation);
@@ -155,12 +157,30 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 				identifierKey);
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(identifierKey);
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
-		EvaluationFormParticipationRef participation = sut.createParticipation(survey, identifier, false, executor);
+		EvaluationFormParticipationRef participation = sut.createParticipation(survey, identifier, false, 1, executor);
 		dbInstance.commit();
 		
-		EvaluationFormParticipation loadedParticipation = sut.loadByExecutor(survey, executor);
+		EvaluationFormParticipation loadedParticipation = sut.loadByExecutor(survey, executor, null).get(0);
 		
 		assertThat(loadedParticipation).isEqualTo(participation);
+	}
+	
+	@Test
+	public void shouldLoadBySurveyAndExecutor_filter_lastRun() {
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormParticipation participation1 = sut.createParticipation(survey, new EvaluationFormParticipationIdentifier(), false, 1, executor);
+		((EvaluationFormParticipationImpl)participation1).setLastRun(false);
+		sut.updateParticipation(participation1);
+		EvaluationFormParticipation participation2 = sut.createParticipation(survey, new EvaluationFormParticipationIdentifier(), false, 2, executor);
+		((EvaluationFormParticipationImpl)participation2).setLastRun(false);
+		sut.updateParticipation(participation2);
+		EvaluationFormParticipation participation3 = sut.createParticipation(survey, new EvaluationFormParticipationIdentifier(), false, 3, executor);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.loadByExecutor(survey, executor, null)).containsExactlyInAnyOrder(participation1, participation2, participation3);
+		assertThat(sut.loadByExecutor(survey, executor, Boolean.TRUE)).containsExactlyInAnyOrder(participation3);
+		assertThat(sut.loadByExecutor(survey, executor, Boolean.FALSE)).containsExactlyInAnyOrder(participation1, participation2);
 	}
 	
 	@Test
@@ -169,7 +189,7 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,
 				identifierKey);
 		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
-		EvaluationFormParticipationRef participation = sut.createParticipation(survey, identifier, false, null);
+		EvaluationFormParticipationRef participation = sut.createParticipation(survey, identifier, false, 1, null);
 		dbInstance.commit();
 		
 		EvaluationFormParticipation loadedParticipation = sut.loadByIdentifier(survey, identifier);
@@ -182,7 +202,7 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		String identifierKey = UUID.randomUUID().toString();
 		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,
 				identifierKey);
-		EvaluationFormParticipationRef participation = sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, null);
+		EvaluationFormParticipationRef participation = sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, 1, null);
 		dbInstance.commit();
 		
 		EvaluationFormParticipation loadedParticipation = sut.loadByIdentifier(identifier);
@@ -195,8 +215,8 @@ public class EvaluationFormParticipationDAOTest extends OlatTestCase {
 		String identifierKey = UUID.randomUUID().toString();
 		EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier(IDENTIFIER_TYPE,
 				identifierKey);
-		sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, null);
-		sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, null);
+		sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, 1, null);
+		sut.createParticipation(evaTestHelper.createSurvey(), identifier, false, 1, null);
 		dbInstance.commit();
 		
 		EvaluationFormParticipation loadedParticipation = sut.loadByIdentifier(identifier);

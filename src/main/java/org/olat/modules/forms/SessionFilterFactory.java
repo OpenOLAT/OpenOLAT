@@ -24,6 +24,7 @@ import static java.util.Collections.singletonList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.olat.modules.forms.model.jpa.ParticipationsFilter;
 import org.olat.modules.forms.model.jpa.SessionRefFilter;
 import org.olat.modules.forms.model.jpa.SurveysFilter;
 
@@ -41,6 +42,10 @@ public class SessionFilterFactory {
 	
 	public static SessionFilter create(Collection<? extends EvaluationFormSessionRef> sessionRefs) {
 		return new SessionRefFilter(sessionRefs);
+	}
+	
+	public static SessionFilter createOfParticipations(Collection<? extends EvaluationFormParticipationRef> participations) {
+		return new ParticipationsFilter(participations);
 	}
 
 	public static SessionFilter create(EvaluationFormSurveyIdentifier surveyIdentitfier) {
@@ -61,10 +66,10 @@ public class SessionFilterFactory {
 	}
 
 	public static SessionFilter createSelectDone(Collection<? extends EvaluationFormSurveyRef> surveys) {
-		return new SurveysFilter(surveys, EvaluationFormSessionStatus.done, false);
+		return new SurveysFilter(surveys, EvaluationFormSessionStatus.done, null, false);
 	}
 	
-	public static SessionFilter createSelectDone(EvaluationFormSurveyRef survey, boolean fetchExecutor) {
-		return new SurveysFilter(Collections.singletonList(survey), EvaluationFormSessionStatus.done, fetchExecutor);
+	public static SessionFilter createSelectDone(EvaluationFormSurveyRef survey, Boolean lastRun, boolean fetchExecutor) {
+		return new SurveysFilter(Collections.singletonList(survey), EvaluationFormSessionStatus.done, lastRun, fetchExecutor);
 	}
 }

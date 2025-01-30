@@ -26,6 +26,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyState;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -53,11 +56,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FormRunController extends BasicController {
 	
+	private final VelocityContainer mainVC;
+	private Link createExecutionLink;
+	
 	private EvaluationFormExecutionController executionCtrl;
 	private MessageController messageCtrl;
 	
 	private final FormCourseNode courseNode;
 	private final UserCourseEnvironment userCourseEnv;
+	private final EvaluationFormSurvey survey;
 
 	@Autowired
 	private FormManager formManager;
@@ -67,9 +74,13 @@ public class FormRunController extends BasicController {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
+		
+		mainVC = createVelocityContainer("run");
+		putInitialPanel(mainVC);
+		
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
-		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdent);
+		survey = formManager.loadSurvey(surveyIdent);
 		if (survey == null || referencedEntry == null
 				|| RepositoryEntryStatusEnum.deleted == referencedEntry.getEntryStatus()
 				|| RepositoryEntryStatusEnum.trash == referencedEntry.getEntryStatus()) {
@@ -80,36 +91,60 @@ public class FormRunController extends BasicController {
 					.build();
 			EmptyState emptyStateCmp = EmptyStateFactory.create("emptyStateCmp", null, this, emptyState);
 			emptyStateCmp.setTranslator(getTranslator());
-			putInitialPanel(emptyStateCmp);
+			mainVC.put("form", emptyStateCmp);
 			return;
 		}
+		
+		createExecutionLink = LinkFactory.createButton("create.execution", "fill.in.again", mainVC, this);
+		
+		initFormExecution(ureq);
+		
+		updateCreateExecutionUI();
+	}
+
+	private void initFormExecution(UserRequest ureq) {
 		if (checkDeadline()) {
 			EvaluationFormParticipation participation = formManager.loadOrCreateParticipation(survey, getIdentity());
 			EvaluationFormSession session = formManager.loadOrCreateSession(participation);
 			executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, FormCourseNode.EMPTY_STATE);
 			listenTo(executionCtrl);
-			putInitialPanel(executionCtrl.getInitialComponent());
+			mainVC.put("form", executionCtrl.getInitialComponent());
 		} else {
 			EvaluationFormSession session = formManager.getDoneSession(survey, getIdentity());
 			if (session != null) {
 				executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, FormCourseNode.EMPTY_STATE);
 				listenTo(executionCtrl);
-				putInitialPanel(executionCtrl.getInitialComponent());
+				mainVC.put("form", executionCtrl.getInitialComponent());
 			} else {
 				String title = translate("participation.deadline.over.title");
 				String text = translate("participation.deadline.over.text");
-				messageCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, text);
+				messageCtrl = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), title, text);
 				listenTo(messageCtrl);
-				putInitialPanel(messageCtrl.getInitialComponent());
+				mainVC.put("form", messageCtrl.getInitialComponent());
 			}
 		}
+	}
+	
+	private void updateCreateExecutionUI() {
+		boolean createExecutionVisible = false;
+		if (courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION)) {
+			if (checkDeadline()) {
+				EvaluationFormSession session = formManager.getDoneSession(survey, getIdentity());
+				if (session != null) {
+					createExecutionVisible = true;
+				}
+			}
+		}
+		createExecutionLink.setVisible(createExecutionVisible);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == createExecutionLink) {
+			doCreateExecution(ureq);
+		}
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == executionCtrl) {
@@ -138,6 +173,17 @@ public class FormRunController extends BasicController {
 	private void doQuickSaved(UserRequest ureq, Double completion) {
 		formManager.onQuickSave(courseNode, userCourseEnv, completion);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doCreateExecution(UserRequest ureq) {
+		if (checkDeadline()) {
+			EvaluationFormSession session = formManager.getDoneSession(survey, getIdentity());
+			if (session != null) {
+				formManager.createParticipation(survey, getIdentity(), session.getParticipation().getRun() + 1);
+				initFormExecution(ureq);
+				updateCreateExecutionUI();
+			}
+		}
 	}
 
 }
