@@ -20,9 +20,15 @@
 package org.olat.modules.coach.reports;
 
 import java.util.List;
-import java.util.Locale;
 
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.resource.accesscontrol.manager.ACOrderDAO;
+import org.olat.resource.accesscontrol.model.UserOrder;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -33,7 +39,32 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class OpenBookingOrdersReportConfiguration extends TimeBoundReportConfiguration {
 
 	@Override
-	public void generateReport(Identity coach, Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
-		
+	protected String getI18nCategoryKey() {
+		return "report.category.bookingOrders";
+	}
+
+	@Override
+	public int generateCustomHeaderColumns(OpenXMLWorksheet.Row header, int pos, Translator translator) {
+		header.addCell(pos++, translator.translate("export.header.creationDate"));
+		return pos;
+	}
+
+	@Override
+	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers) {
+		ACOrderDAO orderDao = CoreSpringFactory.getImpl(ACOrderDAO.class);
+		List<UserOrder> bookings = orderDao.getUserBookingsForOrganizations(coach, OrganisationRoles.educationmanager, userPropertyHandlers);
+		for (UserOrder booking : bookings) {
+			generateDataRow(workbook, sheet, userPropertyHandlers, booking);
+		}
+	}
+
+	private void generateDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, UserOrder booking) {
+		OpenXMLWorksheet.Row row = sheet.newRow();
+		int pos = 0;
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			row.addCell(pos, booking.getIdentityProp(pos));
+			pos++;
+		}
+		row.addCell(pos, "" + booking.getOrder().getCreationDate(), workbook.getStyles().getDateTimeStyle());
 	}
 }
