@@ -407,7 +407,7 @@ public class ProfileFormController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (isAllowedToChangeEmailWithoutVerification(ureq)
+		if (isAllowedToChangeEmailWithoutVerification(ureq) && isAdministrativeUser
 				&& source == changeMailCtrl
 				&& event instanceof ChangeMailEvent cme) {
 			changedEmail = cme.getChangedEmail();
@@ -458,7 +458,7 @@ public class ProfileFormController extends FormBasicController {
 	private void handleChangedEmailEvent(UserRequest ureq, ChangeMailEvent cme) {
 		if (organisationModule.isEnabled()
 				&& organisationModule.isEmailDomainEnabled()
-				&& !isAllowedToChangeEmailWithoutVerification(ureq)) {
+				&& !isAllowedToChangeEmailWithoutVerification(ureq) && isAdministrativeUser) {
 			String newDomain = MailHelper.getMailDomain(cme.getChangedEmail());
 			String currentDomain = MailHelper.getMailDomain(emailEl.getValue());
 
@@ -599,7 +599,7 @@ public class ProfileFormController extends FormBasicController {
 
 	private void doStartChangeMailProcess(UserRequest ureq) {
 		changeMailCtrl = new ChangeMailController(ureq, getWindowControl(),
-				emailEl.getValue(), identityToModify, isAllowedToChangeEmailWithoutVerification(ureq));
+				emailEl.getValue(), identityToModify, (isAllowedToChangeEmailWithoutVerification(ureq) && isAdministrativeUser));
 		listenTo(changeMailCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -765,7 +765,7 @@ public class ProfileFormController extends FormBasicController {
 		logDebug("this servername is " + serverName + " and serverpath is " + serverPath);
 
 		boolean areMailsSent;
-		if (isAllowedToChangeEmailWithoutVerification(ureq)) {
+		if (isAllowedToChangeEmailWithoutVerification(ureq) && isAdministrativeUser) {
 			// An usermanager does not need to verify the new mail and can change it directly
 			areMailsSent = handleDirectEmailChange(ureq);
 		} else {
@@ -889,7 +889,7 @@ public class ProfileFormController extends FormBasicController {
 	}
 
 	private String getNewEmail(UserRequest ureq, User user) {
-		if (isAllowedToChangeEmailWithoutVerification(ureq)) {
+		if (isAllowedToChangeEmailWithoutVerification(ureq) && isAdministrativeUser) {
 			return changedEmail;
 		}
 
