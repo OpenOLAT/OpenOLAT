@@ -192,8 +192,8 @@ public class OAuthRegistrationController extends FormBasicController {
 
 	private void initValidationSelection(UserRequest ureq, TextElement mailEl) {
 		if (mailEl.isEnabled()
-				&& (!StringHelper.containsNonWhitespace(initialEmail)
-				|| (!mailEl.getValue().equals(initialEmail) && mailValidationCtrl == null))) {
+				&& ((!StringHelper.containsNonWhitespace(initialEmail)
+				|| !mailEl.getValue().equals(initialEmail)) && mailValidationCtrl == null)) {
 			initEmailValidation(ureq, mailEl);
 		} else if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
 			initOrgSelection(mailEl);
