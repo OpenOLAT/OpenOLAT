@@ -234,7 +234,9 @@ public class LectureBlockDAO {
 		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join fetch block.entry entry")
 		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join fetch entry.olatResource oRes")
 		  .append(" left join fetch block.teacherGroup tGroup")
-		  .append(" left join block.curriculumElement curEl");
+		  .append(" left join block.curriculumElement curEl")
+		  .append(" left join curEl.curriculum cur")
+		  .append(" left join cur.organisation organis");
 		addSearchParametersToQuery(sb, searchParams);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
@@ -250,7 +252,9 @@ public class LectureBlockDAO {
 		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join fetch block.entry entry")
 		  .append(" ").append("inner", "left", searchParams.isLectureConfiguredRepositoryEntry()).append(" join fetch entry.olatResource oRes")
 		  .append(" left join fetch block.teacherGroup tGroup")
-		  .append(" left join block.curriculumElement curEl");
+		  .append(" left join block.curriculumElement curEl")
+		  .append(" left join curEl.curriculum cur")
+		  .append(" left join cur.organisation organis");
 		addSearchParametersToQuery(sb, searchParams);
 		if(orderAsc != null) {
 			sb.append(" order by block.startDate ").append("asc", "desc", orderAsc.booleanValue());
@@ -271,6 +275,9 @@ public class LectureBlockDAO {
 		sb.append("select distinct block.key from lectureblock block")
 		  .append(" inner join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
 		  .append(" inner join block.entry entry")
+		  .append(" left join block.curriculumElement curEl")
+		  .append(" left join curEl.curriculum cur")
+		  .append(" left join cur.organisation organis")
 		  .append(" left join block.teacherGroup tGroup");
 		addSearchParametersToQuery(sb, searchParams);
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
@@ -645,6 +652,8 @@ public class LectureBlockDAO {
 		  .append(" inner join membership.identity coach")
 		  .append(" inner join fetch coach.user usercoach")
 		  .append(" left join block.curriculumElement curEl")
+		  .append(" left join curEl.curriculum cur")
+		  .append(" left join cur.organisation organis")
 		  .append(" left join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
 		  .append(" inner join lectureentryconfig as config on (config.entry.key=entry.key)")
 		  .where().append(" membership.role='").append("teacher").append("'")
@@ -704,6 +713,8 @@ public class LectureBlockDAO {
 		  .append(" left join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
 		  .append(" left join fetch block.entry entry")
 		  .append(" left join fetch block.curriculumElement curEl")
+		  .append(" left join curEl.curriculum cur")
+		  .append(" left join cur.organisation organis")
 		  .append(" left join lectureentryconfig as config on (config.entry.key=entry.key)");
 		addSearchParametersToQuery(sc, searchParams);
 
@@ -758,14 +769,14 @@ public class LectureBlockDAO {
 		}
 		
 		if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
-			sb.and().append(" (curEl.curriculum.key in (:curriculumKeys) or entry.key in (select crel.entry.key from repoentrytogroup as crel")
+			sb.and().append(" (cur.key in (:curriculumKeys) or entry.key in (select crel.entry.key from repoentrytogroup as crel")
 			  .append(" inner join curriculumelement centryEl on (centryEl.group.key=crel.group.key)")
 			  .append(" where centryEl.curriculum.key in (:curriculumKeys)")
 			  .append("))");
 		}
 		
 		if(searchParams.isInSomeCurriculum()) {
-			sb.and().append(" (curEl.curriculum.key is not null or entry.key in (select screl.entry.key from repoentrytogroup as screl")
+			sb.and().append(" (cur.key is not null or entry.key in (select screl.entry.key from repoentrytogroup as screl")
 			  .append(" inner join curriculumelement scentryEl on (scentryEl.group.key=screl.group.key)")
 			  .append("))");
 		}
@@ -816,10 +827,26 @@ public class LectureBlockDAO {
 		}
 		if(searchParams.getManager() != null) {
 			sb.and()
-			  .append(" exists (select managerMembership.key from repoentrytogroup as rel, bgroupmember as managerMembership")
+			// Course
+			  .append(" (exists (select managerMembership.key from repoentrytogroup as rel, bgroupmember as managerMembership")
 	          .append("   where rel.entry.key=entry.key and rel.group.key=managerMembership.group.key and managerMembership.identity.key=:managerKey")
 	          .append("   and managerMembership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.lecturemanager, GroupRoles.owner.name())
 	          .append(" )");
+			// Curriculum element
+			sb.append(" or exists (select elementOwner.key from bgroupmember as elementOwner")
+	          .append("   where curEl.group.key=elementOwner.group.key and elementOwner.identity.key=:managerKey")
+	          .append("   and elementOwner.role ").in(CurriculumRoles.curriculumelementowner)
+	          .append(" )");
+			// Curriculum
+			sb.append(" or exists (select curriculumOwner.key from bgroupmember as curriculumOwner")
+	          .append("   where cur.group.key=curriculumOwner.group.key and curriculumOwner.identity.key=:managerKey")
+	          .append("   and curriculumOwner.role ").in(CurriculumRoles.curriculumowner)
+	          .append(" )");
+			// Curriculum organisation
+			sb.append(" or exists (select curOrgManager.key from bgroupmember as curOrgManager")
+	          .append("   where organis.group.key=curOrgManager.group.key and curOrgManager.identity.key=:managerKey")
+	          .append("   and curOrgManager.role ").in(OrganisationRoles.curriculummanager, OrganisationRoles.administrator, OrganisationRoles.lecturemanager)
+	          .append(" ))");
 		}
 		if(searchParams.getMasterCoach() != null) {
 			sb.and()

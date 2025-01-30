@@ -379,6 +379,82 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void searchLectureBlocksCurriculumOwner() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rand-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		Identity curriculumOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-owner");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur", "Curriculum with lectures", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(curriculum, curriculumOwner, CurriculumRoles.curriculumowner);
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(null, element);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello curriculum owner");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+
+		// Curriculum owner sees the events
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setManager(curriculumOwner);
+		searchParams.setLectureConfiguredRepositoryEntry(false);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
+		Assertions.assertThat(blocks)
+			.hasSize(1)
+			.containsExactly(lectureBlock);
+		
+		// Random user no
+		LecturesBlockSearchParameters noSearchParams = new LecturesBlockSearchParameters();
+		noSearchParams.setManager(id);
+		noSearchParams.setLectureConfiguredRepositoryEntry(false);
+		List<LectureBlock> noBlocks = lectureBlockDao.searchLectureBlocks(noSearchParams, -1, null);
+		Assertions.assertThat(noBlocks)
+			.isEmpty();
+	}
+	
+	@Test
+	public void searchLectureBlocksCurriculumElementOwner() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rand-2");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
+		Identity curriculumElementOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-owner");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur", "Curriculum with lectures", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, curriculumElementOwner, CurriculumRoles.curriculumelementowner, curriculumElementOwner);
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(null, element);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello element owner");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+
+		// Curriculum owner sees the events
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setManager(curriculumElementOwner);
+		searchParams.setLectureConfiguredRepositoryEntry(false);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams, -1, null);
+		Assertions.assertThat(blocks)
+			.hasSize(1)
+			.containsExactly(lectureBlock);
+		
+		// Random user no
+		LecturesBlockSearchParameters noSearchParams = new LecturesBlockSearchParameters();
+		noSearchParams.setManager(id);
+		noSearchParams.setLectureConfiguredRepositoryEntry(false);
+		List<LectureBlock> noBlocks = lectureBlockDao.searchLectureBlocks(noSearchParams, -1, null);
+		Assertions.assertThat(noBlocks)
+			.isEmpty();
+	}
+	
+	@Test
 	public void getLectureBlocks_all() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry, null);

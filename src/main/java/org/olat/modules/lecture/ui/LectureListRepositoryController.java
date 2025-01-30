@@ -558,15 +558,18 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			searchParams.setCurriculumElementPath(oneLevelOnly ? null : curriculumElement.getMaterializedPathKeys());
 			searchParams.setCurriculumElement(oneLevelOnly ? curriculumElement : null);
 			searchParams.setLectureConfiguredRepositoryEntry(false);
+			searchParams.setManager(getIdentity());
 		} else if(curriculum != null) {
 			searchParams.setCurriculums(List.of(curriculum));
 			searchParams.setLectureConfiguredRepositoryEntry(false);
+			searchParams.setManager(getIdentity());
 		} else if(entry != null) {
 			searchParams.setRepositoryEntry(entry);
 			searchParams.setLectureConfiguredRepositoryEntry(true);
 		} else {
 			searchParams.setInSomeCurriculum(true);
 			searchParams.setLectureConfiguredRepositoryEntry(false);
+			searchParams.setManager(getIdentity());
 		}
 		
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ROLL_CALL_STATUS);

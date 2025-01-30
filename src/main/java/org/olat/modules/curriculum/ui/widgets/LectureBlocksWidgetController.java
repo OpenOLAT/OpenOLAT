@@ -199,6 +199,7 @@ public class LectureBlocksWidgetController extends FormBasicController {
 		LecturesBlockSearchParameters searchParams = getSearchParameters();
 		searchParams.setStartDate(DateUtils.getStartOfDay(now));
 		searchParams.setEndDate(DateUtils.getEndOfDay(now));
+		searchParams.setManager(getIdentity());
 		
 		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
 		long numOfBlocks = lectureBlocks.size();
