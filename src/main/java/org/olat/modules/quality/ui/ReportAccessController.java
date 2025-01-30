@@ -60,6 +60,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityReportAccess;
@@ -121,6 +123,8 @@ public abstract class ReportAccessController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	@Autowired
 	private IdentityRelationshipService identityRelationshipService;
 
@@ -213,6 +217,9 @@ public abstract class ReportAccessController extends FormBasicController {
 		rows.add(createRow(translate("report.access.name.participants.done"), Type.Participants, EvaluationFormParticipationStatus.done.name()));
 		rows.add(createRow(translate("report.access.name.repo.owner"), Type.GroupRoles, GroupRoles.owner.name()));
 		rows.add(createRow(translate("report.access.name.repo.coach"), Type.GroupRoles, GroupRoles.coach.name()));
+		if (curriculumModule.isEnabled()) {
+			rows.add(createRow(translate("report.access.name.repo.master.coach"), Type.GroupRoles, CurriculumRoles.mastercoach.name()));
+		}
 		rows.add(createRow(translate("report.access.name.repo.lrm"), Type.LearnResourceManager, null));
 		
 		String topicIdentityRowName = StringHelper.containsNonWhitespace(topicIdentityName)
