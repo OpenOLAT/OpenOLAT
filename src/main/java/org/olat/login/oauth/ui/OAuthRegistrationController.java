@@ -191,10 +191,12 @@ public class OAuthRegistrationController extends FormBasicController {
 	}
 
 	private void initValidationSelection(UserRequest ureq, TextElement mailEl, FormItemContainer formLayout) {
-		if (mailEl.isEnabled() && (!StringHelper.containsNonWhitespace(initialEmail) || !mailEl.getValue().equals(initialEmail))) {
+		if (mailEl.isEnabled()
+				&& (!StringHelper.containsNonWhitespace(initialEmail)
+				|| (!mailEl.getValue().equals(initialEmail) && mailValidationCtrl != null))) {
 			initEmailValidation(ureq, mailEl, formLayout);
 		} else if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
-			initOrgSelection(formLayout, mailEl);
+			initOrgSelection(mailEl);
 		}
 	}
 
@@ -206,14 +208,13 @@ public class OAuthRegistrationController extends FormBasicController {
 		formLayout.add(mailValidationCtrl.getInitialFormItem());
 	}
 
-	private void initOrgSelection(FormItemContainer formLayout, TextElement mailEl) {
+	private void initOrgSelection(TextElement mailEl) {
 		if (orgContainer == null) {
 			orgContainer = FormLayoutContainer.createDefaultFormLayout("org_selection", getTranslator());
 			orgContainer.setFormTitle(translate("user.organisation"));
 			orgContainer.setFormLayout("default");
-			formLayout.add(orgContainer);
 		}
-		orgContainer.setVisible(true);
+		flc.add(orgContainer);
 
 		String mailDomain = MailHelper.getMailDomain(initialEmail);
 		OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
@@ -292,7 +293,7 @@ public class OAuthRegistrationController extends FormBasicController {
 				// success in validation, now check if there is any org mapping (if that module is enabled)
 				TextElement mailEl = (TextElement) flc.getFormComponent(UserConstants.EMAIL);
 				if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
-					initOrgSelection(flc, mailEl);
+					initOrgSelection(mailEl);
 				} else {
 					flc.add(submitBtn);
 				}
