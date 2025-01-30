@@ -138,10 +138,12 @@
 
 			let fragmentContent = '';
 			let richTextJ = jQuery(el).find('.o_richtext_mce');
-			if (richTextJ.length > 0) {
+			if (richTextJ.length > 0 && typeof tinymce !== 'undefined') {
 				let tinyId = richTextJ.get(0).id.replace('_diw', '');
 				let tiny = tinymce.get(tinyId);
-				fragmentContent = tiny.getContent();
+				if (tiny) {
+					fragmentContent = tiny.getContent();
+				}
 			}
 
 			o_XHREvent(componentUrl, false, false, "_csrf", settings.csrfToken, "cid", "drop_fragment", "fragment", containerId, "dragged", draggedId, "source", draggedId, "target", targetId, "container", containerId, "slot", slotId, "position", position, "content", fragmentContent);
