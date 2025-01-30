@@ -183,6 +183,7 @@ public class OAuthRegistrationController extends FormBasicController {
 
 		submitBtn = uifactory.addFormSubmitButton("save", formLayout);
 		submitBtn.setVisible(mailValidationCtrl == null && orgSelection == null);
+		submitBtn.setFormLayout("default");
 
 		if (mailEl != null) {
 			initValidationSelection(ureq, mailEl, formLayout);
@@ -231,6 +232,7 @@ public class OAuthRegistrationController extends FormBasicController {
 			// Show error, that no org match was found
 			mailEl.setErrorKey("step3.reg.mismatch.form.text", WebappHelper.getMailConfig("mailSupport"));
 		} else {
+			flc.remove(submitBtn);
 			// Extract orgKey as keys
 			matchedDomains = matchedDomains.stream()
 					.sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName()))
@@ -257,9 +259,7 @@ public class OAuthRegistrationController extends FormBasicController {
 				orgSelection.enableNoneSelection(translate("user.organisation.select"));
 				orgSelection.setMandatory(true);
 			}
-			if (submitBtn != null) {
-				submitBtn.setVisible(true);
-			}
+			flc.add(submitBtn);
 		}
 	}
 
@@ -345,7 +345,9 @@ public class OAuthRegistrationController extends FormBasicController {
 			}
 		}
 
-		if (orgSelection != null) {
+		TextElement mailEl = (TextElement) flc.getFormComponent(UserConstants.EMAIL);
+		boolean isMailUnchanged = isMailUnchanged(mailEl);
+		if (orgSelection != null && isMailUnchanged) {
 			orgSelection.clearError();
 			if (!orgSelection.isOneSelected()) {
 				orgSelection.setErrorKey("change.org.selection.error");
@@ -365,19 +367,23 @@ public class OAuthRegistrationController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		FormItem mailFormItem = flc.getFormComponent(UserConstants.EMAIL);
-		boolean isMailUnchanged = mailFormItem != null && (initialEmail.equals(((TextElement) mailFormItem).getValue()) || mailValidationCtrl != null);
+		TextElement mailEl = (TextElement) flc.getFormComponent(UserConstants.EMAIL);
+		boolean isMailUnchanged = isMailUnchanged(mailEl);
 
 		if (isMailUnchanged) {
 			handleUserRegistration(ureq);
-		} else if (mailFormItem != null) {
+		} else if (mailEl != null) {
 			if (orgContainer != null) {
-				orgContainer.setVisible(false);
+				flc.remove(orgContainer);
 			}
-			initValidationSelection(ureq, (TextElement) mailFormItem, flc);
+			initValidationSelection(ureq, mailEl, flc);
 		} else {
 			handleUserRegistration(ureq);
 		}
+	}
+
+	private boolean isMailUnchanged(TextElement mailEl) {
+		return mailEl != null && (initialEmail.equals(mailEl.getValue()) || mailValidationCtrl != null);
 	}
 
 	private void handleUserRegistration(UserRequest ureq) {
