@@ -302,10 +302,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
 				ElementCols.numOfMembers, CMD_MEMBERS));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isDefaultNumOfParticipants(),
-				ElementCols.numOfParticipants, CurriculumRoles.participant.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isFlat(),
 				ElementCols.numOfPending, CMD_PENDING));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(config.isDefaultNumOfParticipants(),
+				ElementCols.numOfParticipants, CurriculumRoles.participant.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
 				ElementCols.numOfCoaches, CurriculumRoles.coach.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,
@@ -373,12 +373,12 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private String getTablePrefsId() {
 		if(rootElement != null) {
-			return "curriculum-composer-v5";
+			return "curriculum-composer-v6";
 		}
 		if(curriculum != null) {
-			return "cur-implementations-v5";
+			return "cur-implementations-v6";
 		}
-		return "cur-otherlist-v5";
+		return "cur-otherlist-v6";
 	}
 	
 	private void initFilters() {
