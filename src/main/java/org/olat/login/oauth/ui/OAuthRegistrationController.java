@@ -91,7 +91,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	private final OAuthRegistration registration;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final SyntaxValidator usernameSyntaxValidator;
-	private List<OrganisationEmailDomain> matchedDomains = new ArrayList<>();
+	private List<OrganisationEmailDomain> matchedDomains;
 	private FormLayoutContainer orgContainer;
 
 	private TextElement usernameEl;
@@ -216,7 +216,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		}
 		flc.add(orgContainer);
 		// in case of that the org selection is being recalled, clear previous entries
-		matchedDomains.clear();
+		matchedDomains = new ArrayList<>();
 
 		String mailDomain = MailHelper.getMailDomain(mailEl.getValue());
 		OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
