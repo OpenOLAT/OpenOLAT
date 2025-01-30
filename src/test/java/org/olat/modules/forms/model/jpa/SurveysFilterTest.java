@@ -21,6 +21,7 @@ package org.olat.modules.forms.model.jpa;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,8 +31,10 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -216,11 +219,36 @@ public class SurveysFilterTest extends OlatTestCase {
 		EvaluationFormSession sessionUnfinished = evaTestHelper.createSession(survey);
 		dbInstance.commitAndCloseSession();
 		
-		SurveysFilter filter = new SurveysFilter(Collections.singletonList(survey), EvaluationFormSessionStatus.done, true);
+		SurveysFilter filter = new SurveysFilter(Collections.singletonList(survey), EvaluationFormSessionStatus.done, null, true);
 		List<EvaluationFormSession> filtered = evaManager.loadSessionsFiltered(filter, 0, -1);
 		
 		assertThat(filtered)
 				.containsExactlyInAnyOrder(sessionFinished1, sessionFinished2)
 				.doesNotContain(sessionUnfinished);
+	}
+	
+	@Test
+	public void shouldFilterByLastRun() {
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormParticipation participation1 = evaManager.createParticipation(survey, executor , false, 1);
+		EvaluationFormSession sessionFinished1 = evaManager.createSession(participation1);
+		EvaluationFormParticipation participation2 = evaManager.createParticipation(survey, executor , false, 2);
+		EvaluationFormSession sessionFinished2 = evaManager.createSession(participation2);
+		EvaluationFormParticipation participation3 = evaManager.createParticipation(survey, executor , false, 3);
+		EvaluationFormSession sessionFinished3 = evaManager.createSession(participation3);
+		dbInstance.commitAndCloseSession();
+		
+		SurveysFilter filter = new SurveysFilter(Collections.singletonList(survey), null, null, false);
+		List<EvaluationFormSession> filtered = evaManager.loadSessionsFiltered(filter, 0, -1);
+		assertThat(filtered).containsExactlyInAnyOrder(sessionFinished1, sessionFinished2, sessionFinished3);
+		
+		filter = new SurveysFilter(Collections.singletonList(survey), null, Boolean.TRUE, false);
+		filtered = evaManager.loadSessionsFiltered(filter, 0, -1);
+		assertThat(filtered).containsExactlyInAnyOrder(sessionFinished3);
+		
+		filter = new SurveysFilter(Collections.singletonList(survey), null, Boolean.FALSE, false);
+		filtered = evaManager.loadSessionsFiltered(filter, 0, -1);
+		assertThat(filtered).containsExactlyInAnyOrder(sessionFinished1, sessionFinished2);
 	}
 }

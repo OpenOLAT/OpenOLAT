@@ -17,12 +17,14 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.gta.manager;
+package org.olat.modules.forms.model.jpa;
 
+import java.util.Collection;
 import java.util.List;
 
 import jakarta.persistence.Query;
 
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.SessionFilter;
 
 /**
@@ -37,6 +39,10 @@ public class ParticipationsFilter implements SessionFilter {
 	
 	public ParticipationsFilter(List<Long> participationsKeys) {
 		this.participationsKeys = participationsKeys;
+	}
+	
+	public ParticipationsFilter(Collection<? extends EvaluationFormParticipationRef> participations) {
+		this.participationsKeys = participations != null? participations.stream().map(EvaluationFormParticipationRef::getKey).toList(): null;
 	}
 
 	@Override

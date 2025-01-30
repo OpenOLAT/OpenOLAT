@@ -19,8 +19,8 @@
  */
 package org.olat.course.nodes.form.rule;
 
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
@@ -33,7 +33,6 @@ import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.ui.FormBeforeDueDateRuleEditor;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.rule.AbstractDueDateRuleSPI;
-import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
@@ -89,19 +88,13 @@ public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI implements 
 	protected List<Identity> getPeopleToRemind(RepositoryEntry courseEntry, CourseNode courseNode) {
 		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
 		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdent);
-		List<Identity> participants = formManager.getParticipations(survey, EvaluationFormParticipationStatus.done, true).stream()
-				.map(EvaluationFormParticipation::getExecutor)
-				.collect(Collectors.toList());
+		Set<Long> participantKeys = formManager.getParticipations(survey, EvaluationFormParticipationStatus.done, false).stream()
+				.map(participation -> participation.getExecutor().getKey())
+				.collect(Collectors.toSet());
 		
 		List<Identity> identities = repositoryEntryRelationDao.getMembers(courseEntry, RepositoryEntryRelationType.all,
 				GroupRoles.participant.name());
-		for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
-			Identity identity = identityIt.next();
-			if(participants.contains(identity)) {
-				identityIt.remove();
-			}
-		}
-		
+		identities.removeIf(identity -> participantKeys.contains(identity.getKey()));
 		return identities;
 	}
 	

@@ -21,7 +21,6 @@ package org.olat.course.nodes.form.model;
 
 import java.util.Date;
 
-import org.olat.core.id.Identity;
 import org.olat.course.nodes.form.FormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
@@ -35,20 +34,16 @@ import org.olat.modules.forms.EvaluationFormParticipationStatus;
  */
 public class FormParticipationImpl implements FormParticipation {
 	
-	private Identity identity;
-	private EvaluationFormParticipationRef evaluationFormParticipationRef;
-	private EvaluationFormParticipationStatus participationStatus;
-	private Date submissionDate;
+	private final EvaluationFormParticipationRef evaluationFormParticipationRef;
+	private final EvaluationFormParticipationStatus participationStatus;
+	private final Date submissionDate;
 	
-	@Override
-	public Identity getIdentity() {
-		return identity;
+	public FormParticipationImpl(EvaluationFormParticipation evaluationFormParticipation, Date submissionDate) {
+		this.evaluationFormParticipationRef = evaluationFormParticipation;
+		this.participationStatus = evaluationFormParticipation.getStatus();
+		this.submissionDate = submissionDate;
 	}
-	
-	public void setIdentity(Identity identity) {
-		this.identity = identity;
-	}
-	
+
 	@Override
 	public EvaluationFormParticipationRef getEvaluationFormParticipationRef() {
 		return evaluationFormParticipationRef;
@@ -59,19 +54,9 @@ public class FormParticipationImpl implements FormParticipation {
 		return participationStatus;
 	}
 	
-	public void setEvaluationFormParticipation(EvaluationFormParticipation evaluationFormParticipation) {
-		this.evaluationFormParticipationRef = evaluationFormParticipation;
-		this.participationStatus = evaluationFormParticipation.getStatus();
-	}
-	
 	@Override
 	public Date getSubmissionDate() {
 		return submissionDate;
 	}
-	
-	public void setSubmissionDate(Date submissionDate) {
-		this.submissionDate = submissionDate;
-	}
-	
 	
 }

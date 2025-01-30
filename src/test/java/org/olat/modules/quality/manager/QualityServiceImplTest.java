@@ -86,7 +86,7 @@ public class QualityServiceImplTest {
 		
 		sut.addParticipations(dataCollectionMock, executors);
 		
-		verify(evaluationFormManagerMock).createParticipation(surveyMock, executorMock, true);
+		verify(evaluationFormManagerMock).createParticipation(surveyMock, executorMock, true, 1);
 	}
 
 	@Test

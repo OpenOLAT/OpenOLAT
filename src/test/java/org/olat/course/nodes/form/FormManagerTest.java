@@ -63,7 +63,81 @@ public class FormManagerTest extends OlatTestCase {
 	private FormManager sut;
 	
 	@Test
-	public void shouldGetFormParticipationsFilterByParticipants() {
+	public void shouldGetFormParticipationBundles() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		RepositoryEntry courseEntry = JunitTestHelper.createRandomRepositoryEntry(owner);
+		Identity memberParticipated = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		
+		repositoryService.addRole(owner, courseEntry, GroupRoles.owner.name());
+		repositoryService.addRole(memberParticipated, courseEntry, GroupRoles.participant.name());
+		
+		CourseNode courseNode = new FormCourseNode();
+		EvaluationFormSurveyIdentifier surveyIdent = sut.getSurveyIdentifier(courseNode, courseEntry);
+		EvaluationFormSurvey survey = sut.createSurvey(surveyIdent, courseEntry);
+		dbInstance.commitAndCloseSession();
+		
+		FormParticipationSearchParams searchParams = new FormParticipationSearchParams();
+		searchParams.setCourseEntry(courseEntry);
+		searchParams.setIdentity(owner);
+		searchParams.setAdmin(true);
+	
+		// Participation 1 started
+		EvaluationFormParticipation participation1 = evaluationFormManager.createParticipation(survey, memberParticipated);
+		dbInstance.commitAndCloseSession();
+		
+		List<FormParticipationBundle> formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
+		assertThat(formParticipationBundles.get(0).getLastParticipation()).isNotNull();
+		assertThat(formParticipationBundles.get(0).getLastParticipation().getParticipationStatus()).isEqualTo(EvaluationFormParticipationStatus.prepared);
+		assertThat(formParticipationBundles.get(0).getSubmittedParticipations()).isNullOrEmpty();
+		
+		// Participation 1 finished
+		EvaluationFormSession session1 = evaluationFormManager.createSession(participation1);
+		evaluationFormManager.finishSession(session1);
+		
+		formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
+		assertThat(formParticipationBundles.get(0).getLastParticipation()).isNotNull();
+		assertThat(formParticipationBundles.get(0).getLastParticipation().getParticipationStatus()).isEqualTo(EvaluationFormParticipationStatus.done);
+		assertThat(formParticipationBundles.get(0).getSubmittedParticipations()).hasSize(1);
+		
+		// Participation 2 started
+		EvaluationFormParticipation participation2 = evaluationFormManager.createParticipation(survey, memberParticipated);
+		dbInstance.commitAndCloseSession();
+		
+		formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
+		assertThat(formParticipationBundles.get(0).getLastParticipation()).isNotNull();
+		assertThat(formParticipationBundles.get(0).getLastParticipation().getParticipationStatus()).isEqualTo(EvaluationFormParticipationStatus.prepared);
+		assertThat(formParticipationBundles.get(0).getSubmittedParticipations()).hasSize(1);
+		
+		// Participation 3 started
+		EvaluationFormParticipation participation3 = evaluationFormManager.createParticipation(survey, memberParticipated);
+		dbInstance.commitAndCloseSession();
+		
+		formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
+		assertThat(formParticipationBundles.get(0).getLastParticipation()).isNotNull();
+		assertThat(formParticipationBundles.get(0).getLastParticipation().getParticipationStatus()).isEqualTo(EvaluationFormParticipationStatus.prepared);
+		assertThat(formParticipationBundles.get(0).getSubmittedParticipations()).hasSize(1);
+		
+		// Participation 2 finished
+		EvaluationFormSession session2 = evaluationFormManager.createSession(participation2);
+		evaluationFormManager.finishSession(session2);
+		
+		formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
+		assertThat(formParticipationBundles.get(0).getLastParticipation()).isNotNull();
+		assertThat(formParticipationBundles.get(0).getLastParticipation().getParticipationStatus()).isEqualTo(EvaluationFormParticipationStatus.prepared);
+		assertThat(formParticipationBundles.get(0).getSubmittedParticipations()).hasSize(2);
+		
+		// Participation 3 finished
+		EvaluationFormSession session3 = evaluationFormManager.createSession(participation3);
+		evaluationFormManager.finishSession(session3);
+		
+		formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
+		assertThat(formParticipationBundles.get(0).getLastParticipation()).isNotNull();
+		assertThat(formParticipationBundles.get(0).getLastParticipation().getParticipationStatus()).isEqualTo(EvaluationFormParticipationStatus.done);
+		assertThat(formParticipationBundles.get(0).getSubmittedParticipations()).hasSize(3);
+	}
+	
+	@Test
+	public void shouldGetFormParticipationBundles_FilterByParticipants() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
 		RepositoryEntry courseEntry = JunitTestHelper.createRandomRepositoryEntry(owner);
@@ -108,33 +182,29 @@ public class FormManagerTest extends OlatTestCase {
 		searchParams.setIdentity(owner);
 		searchParams.setAdmin(true);
 		searchParams.setCoach(false);
-		List<FormParticipation> formParticipations = sut.getFormParticipations(survey, searchParams);
+		List<FormParticipationBundle> formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
 		
-		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
+		assertThat(formParticipationBundles).extracting(FormParticipationBundle::getIdentity)
 				.containsExactlyInAnyOrder(
 						memberParticipated,
 						memberNotParticipated,
 						notMemberParticipated,
 						fakeParticipant);
 		
-		FormParticipation memberParticipation = getFormParticipation(formParticipations, memberParticipated);
-			assertThat(memberParticipation.getEvaluationFormParticipationRef())
+		FormParticipation memberParticipation = getFormParticipation(formParticipationBundles, memberParticipated);
+			assertThat(memberParticipation)
 					.as("Participating member has EvaluationFormParticipationRef").isNotNull();
 			assertThat(memberParticipation.getParticipationStatus())
 					.as("Participating member has status done").isEqualTo(EvaluationFormParticipationStatus.done);
 			assertThat(memberParticipation.getSubmissionDate())
 					.as("Participating member has submission date").isNotNull();
 		
-		FormParticipation memberNotParticipatedParticipation = getFormParticipation(formParticipations, memberNotParticipated);
-			assertThat(memberNotParticipatedParticipation.getEvaluationFormParticipationRef())
+		FormParticipation memberNotParticipatedParticipation = getFormParticipation(formParticipationBundles, memberNotParticipated);
+			assertThat(memberNotParticipatedParticipation)
 					.as("Not participating member has no EvaluationFormParticipationRef").isNull();
-			assertThat(memberNotParticipatedParticipation.getParticipationStatus())
-					.as("Not participating has no status").isNull();
-			assertThat(memberNotParticipatedParticipation.getSubmissionDate())
-					.as("Not participating has no submission date").isNull();
 		
-		FormParticipation notMemberParticipation = getFormParticipation(formParticipations, notMemberParticipated);
-			assertThat(notMemberParticipation.getEvaluationFormParticipationRef())
+		FormParticipation notMemberParticipation = getFormParticipation(formParticipationBundles, notMemberParticipated);
+			assertThat(notMemberParticipation)
 					.as("Participating not member has EvaluationFormParticipationRef").isNotNull();
 			assertThat(notMemberParticipation.getParticipationStatus())
 					.as("Participating not member has status done").isEqualTo(EvaluationFormParticipationStatus.done);
@@ -146,9 +216,9 @@ public class FormManagerTest extends OlatTestCase {
 		searchParams.setAdmin(true);
 		searchParams.setCoach(false);
 		searchParams.setParticipants(Set.of(ParticipantType.member));
-		formParticipations = sut.getFormParticipations(survey, searchParams);
+		formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
 		
-		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
+		assertThat(formParticipationBundles).extracting(FormParticipationBundle::getIdentity)
 				.containsExactlyInAnyOrder(
 						memberParticipated,
 						memberNotParticipated);
@@ -158,9 +228,9 @@ public class FormManagerTest extends OlatTestCase {
 		searchParams.setAdmin(true);
 		searchParams.setCoach(false);
 		searchParams.setParticipants(Set.of(ParticipantType.nonMember));
-		formParticipations = sut.getFormParticipations(survey, searchParams);
+		formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
 		
-		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
+		assertThat(formParticipationBundles).extracting(FormParticipationBundle::getIdentity)
 				.containsExactlyInAnyOrder(
 						notMemberParticipated);
 						
@@ -169,18 +239,18 @@ public class FormManagerTest extends OlatTestCase {
 		searchParams.setAdmin(true);
 		searchParams.setCoach(false);
 		searchParams.setParticipants(Set.of(ParticipantType.fakeParticipant));
-		formParticipations = sut.getFormParticipations(survey, searchParams);
+		formParticipationBundles = sut.getFormParticipationBundles(survey, searchParams);
 		
-		assertThat(formParticipations).extracting(FormParticipation::getIdentity)
+		assertThat(formParticipationBundles).extracting(FormParticipationBundle::getIdentity)
 				.containsExactlyInAnyOrder(
 						fakeParticipant);
 	}
 	
-	private FormParticipation getFormParticipation(List<FormParticipation> formParticipations,
+	private FormParticipation getFormParticipation(List<FormParticipationBundle> formParticipationBundeles,
 			Identity memberParticipated) {
-		for (FormParticipation formParticipation : formParticipations) {
-			if (formParticipation.getIdentity().getKey().equals(memberParticipated.getKey())) {
-				return formParticipation;
+		for (FormParticipationBundle formParticipationBundle : formParticipationBundeles) {
+			if (formParticipationBundle.getIdentity().getKey().equals(memberParticipated.getKey())) {
+				return formParticipationBundle.getLastParticipation();
 			}
 		}
 		return null;

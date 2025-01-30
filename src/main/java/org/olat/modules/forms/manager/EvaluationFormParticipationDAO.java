@@ -55,7 +55,7 @@ class EvaluationFormParticipationDAO {
 	private DB dbInstance;
 
 	EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey,
-			EvaluationFormParticipationIdentifier identifier, boolean anonymous, Identity executor) {
+			EvaluationFormParticipationIdentifier identifier, boolean anonymous, int run, Identity executor) {
 		EvaluationFormParticipationImpl participation = new EvaluationFormParticipationImpl();
 		participation.setCreationDate(new Date());
 		participation.setLastModified(participation.getCreationDate());
@@ -63,6 +63,8 @@ class EvaluationFormParticipationDAO {
 		participation.setIdentifier(identifier);
 		participation.setStatus(EvaluationFormParticipationStatus.prepared);
 		participation.setAnonymous(anonymous);
+		participation.setRun(run);
+		participation.setLastRun(true);
 		participation.setExecutor(executor);
 		dbInstance.getCurrentEntityManager().persist(participation);
 		log.debug("Participation created: " + participation.toString());
@@ -130,21 +132,23 @@ class EvaluationFormParticipationDAO {
 		return typedQuery.getResultList();
 	}
 	
-	EvaluationFormParticipation loadByExecutor(EvaluationFormSurveyRef survey, IdentityRef executor) {
-		if (survey == null || executor == null) return null;
+	List<EvaluationFormParticipation> loadByExecutor(EvaluationFormSurveyRef survey, IdentityRef executor, Boolean lastRun) {
+		if (survey == null || executor == null) return List.of();
 		
 		StringBuilder query = new StringBuilder();
 		query.append("select participation from evaluationformparticipation as participation");
 		query.append("  left join participation.executor executor");
 		query.append(" where participation.survey.key=:surveyKey");
 		query.append("   and participation.executor.key=:executorKey");
+		if (lastRun != null) {
+			query.append(" and participation.lastRun = ").append(lastRun);
+		}
 
-		List<EvaluationFormParticipation> participations = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), EvaluationFormParticipation.class)
 				.setParameter("surveyKey", survey.getKey())
 				.setParameter("executorKey", executor.getKey())
 				.getResultList();
-		return participations.isEmpty() ? null : participations.get(0);
 	}
 
 	EvaluationFormParticipation loadByIdentifier(EvaluationFormParticipationIdentifier identifier) {

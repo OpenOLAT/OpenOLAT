@@ -19,20 +19,31 @@
  */
 package org.olat.course.nodes.form.ui;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
 import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Formatter;
 import org.olat.course.learningpath.ui.CoachedIdentityLargeInfosController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -54,7 +65,10 @@ public class FormParticipationController extends BasicController {
 			.withMessageI18nKey("form.not.filled.in")
 			.build();
 	
-	private CoachedIdentityLargeInfosController coachedIdentityLargeInfosCtrl;
+	private final VelocityContainer mainVC;
+	private Dropdown runsDropdown;
+
+	private final CoachedIdentityLargeInfosController coachedIdentityLargeInfosCtrl;
 	private EvaluationFormExecutionController executionCtrl;
 	
 	@Autowired
@@ -64,7 +78,7 @@ public class FormParticipationController extends BasicController {
 			UserCourseEnvironment coachedCourseEnv) {
 		super(ureq, wControl);
 		
-		VelocityContainer mainVC = createVelocityContainer("participation");
+		mainVC = createVelocityContainer("participation");
 		String courseTitle = coachedCourseEnv.getCourseEnvironment().getCourseTitle();
 		mainVC.contextPut("courseTitle", courseTitle);
 		
@@ -75,25 +89,88 @@ public class FormParticipationController extends BasicController {
 		RepositoryEntry courseEntry = coachedCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
 		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdent);
-		EvaluationFormParticipation participation = formManager.loadParticipation(survey,
-				coachedCourseEnv.getIdentityEnvironment().getIdentity());
-		if (participation != null) {
-			EvaluationFormSession session = formManager.loadOrCreateSession(participation);
-			if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
-				executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false,
-						false, FormCourseNode.EMPTY_STATE);
-				listenTo(executionCtrl);
-				mainVC.put("evaluationForm", executionCtrl.getInitialComponent());
+		
+		List<EvaluationFormParticipation> participations = null;
+		
+		if (courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION)) {
+			participations = formManager.loadParticipations(survey, coachedCourseEnv.getIdentityEnvironment().getIdentity())
+					.stream()
+					.filter(participation -> participation.getStatus() == EvaluationFormParticipationStatus.done)
+					.sorted((p1, p2) -> Integer.compare(p1.getRun(), p2.getRun()))
+					.toList();
+		} else {
+			EvaluationFormParticipation lastParticipation = formManager.loadLastParticipation(survey,
+					coachedCourseEnv.getIdentityEnvironment().getIdentity());
+			participations = lastParticipation != null && lastParticipation.getStatus() == EvaluationFormParticipationStatus.done
+					? List.of(lastParticipation)
+					: List.of();
+		}
+		
+		if (!participations.isEmpty()) {
+			if (participations.size() == 1) {
+				doSelectParticipation(ureq, participations.get(participations.size() - 1));
+			} else {
+				runsDropdown = new Dropdown("runs", null, true, getTranslator());
+				runsDropdown.setButton(true);
+				runsDropdown.setEmbbeded(true);
+				runsDropdown.setOrientation(DropdownOrientation.right);
+				mainVC.put(runsDropdown.getComponentName(), runsDropdown);
+				
+				Map<Long, Date> participationKeyToSubmissionDate = formManager.getSessions(participations)
+						.stream()
+						.collect(Collectors.toMap(
+								session -> session.getParticipation().getKey(),
+								EvaluationFormSession::getSubmissionDate));
+				ParticipationSubmissionDate participationSubmissionDate = null;
+				for (EvaluationFormParticipation participation : participations) {
+					Date submissionDate = participationKeyToSubmissionDate.get(participation.getKey());
+					participationSubmissionDate = new ParticipationSubmissionDate(participation, submissionDate);
+					
+					Link link = LinkFactory.createLink("run." + participation.getRun(), "run", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+					link.setCustomDisplayText(getTranslatedRunName(participationSubmissionDate));
+					link.setUserObject(participationSubmissionDate);
+					runsDropdown.addComponent(link);
+				}
+				doSelectParticipation(ureq, participationSubmissionDate);
 			}
 		} else {
+			EmptyStateFactory.create("emptyState", mainVC, this, EMPTY_STATE);
 		}
-		EmptyStateFactory.create("emptyState", mainVC, this, EMPTY_STATE);
 		
 		putInitialPanel(mainVC);
+	}
+	
+	private String getTranslatedRunName(ParticipationSubmissionDate participationSubmissionDate) {
+		return translate("submission.number",
+				String.valueOf(participationSubmissionDate.participation.getRun()),
+				Formatter.getInstance(getLocale()).formatDate(participationSubmissionDate.submissionDate()));
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source instanceof Link link) {
+			if (link.getUserObject() instanceof ParticipationSubmissionDate participationSubmissionDate) {
+				doSelectParticipation(ureq, participationSubmissionDate);
+			}
+		}
 	}
+	
+	private void doSelectParticipation(UserRequest ureq, ParticipationSubmissionDate participationSubmissionDate) {
+		runsDropdown.setTranslatedLabel(getTranslatedRunName(participationSubmissionDate));
+		
+		doSelectParticipation(ureq, participationSubmissionDate.participation());
+	}
+	
+	private void doSelectParticipation(UserRequest ureq, EvaluationFormParticipation participation) {
+		EvaluationFormSession session = formManager.loadOrCreateSession(participation);
+		if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
+			executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false,
+					false, FormCourseNode.EMPTY_STATE);
+			listenTo(executionCtrl);
+			mainVC.put("evaluationForm", executionCtrl.getInitialComponent());
+		}
+	}
+	
+	private record ParticipationSubmissionDate(EvaluationFormParticipation participation, Date submissionDate) { }
+	
 }

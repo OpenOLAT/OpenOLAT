@@ -2695,6 +2695,8 @@ create table o_eva_form_participation (
    e_identifier_key varchar(50) not null,
    e_status varchar(20) not null,
    e_anonymous bool not null,
+   e_run int8 default 1,
+   e_last_run bool not null default true,
    fk_executor bigint,
    fk_survey bigint not null,
    primary key (id)
@@ -5639,7 +5641,7 @@ create index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname, e_s
 alter table o_eva_form_participation add constraint eva_part_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
 create index idx_eva_part_survey_idx on o_eva_form_participation (fk_survey);
 create unique index idx_eva_part_ident_idx on o_eva_form_participation (e_identifier_key, e_identifier_type, fk_survey);
-create unique index idx_eva_part_executor_idx on o_eva_form_participation (fk_executor, fk_survey) where fk_executor is not null;
+create index idx_eva_part_executor_idx on o_eva_form_participation (fk_executor, fk_survey) where fk_executor is not null;
 
 alter table o_eva_form_session add constraint eva_sess_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
 create index idx_eva_sess_to_surv_idx on o_eva_form_session (fk_survey);

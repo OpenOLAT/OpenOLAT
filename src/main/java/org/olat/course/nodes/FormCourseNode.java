@@ -64,6 +64,7 @@ import org.olat.course.nodes.form.ui.FormEditController;
 import org.olat.course.nodes.form.ui.FormParticipationTableModel;
 import org.olat.course.nodes.form.ui.FormRunCoachController;
 import org.olat.course.nodes.form.ui.FormRunController;
+import org.olat.course.nodes.form.ui.FormUserPropertiesColumns;
 import org.olat.course.nodes.survey.ui.SurveyEditController;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -73,7 +74,6 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.forms.EvaluationFormParticipation;
-import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
@@ -83,10 +83,9 @@ import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport.UserColumns;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
-import org.olat.modules.forms.ui.UserPropertiesColumns;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -114,8 +113,9 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			.withIconCss(FormCourseNode.ICON_CSS)
 			.build();
 
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
+	public static final String CONFIG_KEY_MULTI_PARTICIPATION = "multi.participation";
 	public static final String CONFIG_KEY_RELATIVE_DATES = "rel.dates";
 	public static final String CONFIG_KEY_PARTICIPATION_DEADLINE = "participation.deadline";
 	public static final String CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE = "participation.deadline.relative";
@@ -301,7 +301,8 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 					.getUserPropertyHandlersFor(FormParticipationTableModel.USAGE_IDENTIFIER, true);
 			Translator userPropertyTranslator = userManager
 					.getPropertyHandlerTranslator(Util.createPackageTranslator(FormCourseNode.class, locale));
-			UserColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, userPropertyTranslator);
+			UserColumns userColumns = new FormUserPropertiesColumns(userPropertyHandlers, userPropertyTranslator,
+					getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION));
 			EvaluationFormExcelExport excelExport = formManager.getExcelExport(this, surveyIdentifier, userColumns);
 			excelExport.export(exportStream, archivePath);
 		} catch (IOException e) {
@@ -326,16 +327,24 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			Translator translator = Util.createPackageTranslator(FormCourseNode.class, locale,
 					Util.createPackageTranslator(FormRunController.class, locale));
 			Translator userPropertyTranslator = userManager.getPropertyHandlerTranslator(translator);
-			UserColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, userPropertyTranslator);
+			UserColumns userColumns = new FormUserPropertiesColumns(userPropertyHandlers, userPropertyTranslator,
+					getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION));
 			
 			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			EvaluationFormSurveyIdentifier surveyIdentifier = formManager.getSurveyIdentifier(this, courseEntry);
 
 			EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdentifier);
-			EvaluationFormSession session = formManager.getSession(survey, assessedIdentity);
+			List<EvaluationFormParticipation> participations = null;
+			if (getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_MULTI_PARTICIPATION)) {
+				participations = formManager.loadParticipations(survey, assessedIdentity);
+			} else {
+				EvaluationFormParticipation lastParticipation = formManager.loadLastParticipation(survey, assessedIdentity);
+				participations = lastParticipation != null? List.of(lastParticipation): List.of();
+			}
+			
 			SessionFilter sessionFilter;
-			if(session != null) {
-				sessionFilter = SessionFilterFactory.create(session);
+			if(!participations.isEmpty()) {
+				sessionFilter = SessionFilterFactory.createOfParticipations(participations);
 			} else {
 				sessionFilter = SessionFilterFactory.create(new EvaluationFormSessionRef() {
 					@Override
@@ -360,7 +369,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		EvaluationFormSurveyIdentifier surveyIdentifier = formManager.getSurveyIdentifier(this, courseEntry);
 		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdentifier);
-		EvaluationFormParticipation participation = formManager.loadParticipation(survey, assessedIdentity);
+		EvaluationFormParticipation participation = formManager.loadLastParticipation(survey, assessedIdentity);
 		if(participation != null) {
 			formManager.deleteParticipation(participation, this, assessedUserCourseEnv.getCourseEnvironment());
 		}
@@ -425,6 +434,9 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		if (version < 2) {
 			config.setBooleanEntry(CONFIG_KEY_RELATIVE_DATES, false);
 			config.setStringValue(CONFIG_KEY_CONFIRMATION_EXTERNAL_MAILS, "");
+		}
+		if (version < 3) {
+			config.setBooleanEntry(CONFIG_KEY_MULTI_PARTICIPATION, false);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

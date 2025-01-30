@@ -322,6 +322,16 @@ public class ReportHelperTest {
 		}
 
 		@Override
+		public int getRun() {
+			return 1;
+		}
+
+		@Override
+		public boolean isLastRun() {
+			return true;
+		}
+
+		@Override
 		public Identity getExecutor() {
 			return executor;
 		}
