@@ -186,26 +186,26 @@ public class OAuthRegistrationController extends FormBasicController {
 		submitBtn.setFormLayout("default");
 
 		if (mailEl != null) {
-			initValidationSelection(ureq, mailEl, formLayout);
+			initValidationSelection(ureq, mailEl);
 		}
 	}
 
-	private void initValidationSelection(UserRequest ureq, TextElement mailEl, FormItemContainer formLayout) {
+	private void initValidationSelection(UserRequest ureq, TextElement mailEl) {
 		if (mailEl.isEnabled()
 				&& (!StringHelper.containsNonWhitespace(initialEmail)
-				|| (!mailEl.getValue().equals(initialEmail) && mailValidationCtrl != null))) {
-			initEmailValidation(ureq, mailEl, formLayout);
+				|| (!mailEl.getValue().equals(initialEmail) && mailValidationCtrl == null))) {
+			initEmailValidation(ureq, mailEl);
 		} else if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
 			initOrgSelection(mailEl);
 		}
 	}
 
-	private void initEmailValidation(UserRequest ureq, TextElement mailEl, FormItemContainer formLayout) {
+	private void initEmailValidation(UserRequest ureq, TextElement mailEl) {
 		flc.remove(submitBtn);
-		mailValidationCtrl = new MailValidationController(ureq, getWindowControl(), formLayout.getRootForm(),
+		mailValidationCtrl = new MailValidationController(ureq, getWindowControl(), mainForm,
 				true, false, null, mailEl);
 		listenTo(mailValidationCtrl);
-		formLayout.add(mailValidationCtrl.getInitialFormItem());
+		flc.add(mailValidationCtrl.getInitialFormItem());
 	}
 
 	private void initOrgSelection(TextElement mailEl) {
@@ -377,7 +377,7 @@ public class OAuthRegistrationController extends FormBasicController {
 			if (orgContainer != null) {
 				flc.remove(orgContainer);
 			}
-			initValidationSelection(ureq, mailEl, flc);
+			initValidationSelection(ureq, mailEl);
 		} else {
 			handleUserRegistration(ureq);
 		}
