@@ -362,6 +362,7 @@ public class MailValidationController extends FormBasicController {
 		String mailDomain = MailHelper.getMailDomain(getEmailAddress());
 		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
 			OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+			searchParams.setEnabled(true);
 			// ensure to only get organisations with matching mailDomains
 			List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
 

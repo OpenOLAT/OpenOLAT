@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
@@ -51,7 +50,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -82,8 +80,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OAuthRegistrationController extends FormBasicController {
 
-	private static final Logger log = Tracing.createLoggerFor(OAuthRegistrationController.class);
-	
 	public static final String USERPROPERTIES_FORM_IDENTIFIER = OAuthRegistrationController.class.getCanonicalName();
 
 	private String initialEmail = "";
@@ -191,6 +187,8 @@ public class OAuthRegistrationController extends FormBasicController {
 	}
 
 	private void initValidationSelection(UserRequest ureq, TextElement mailEl) {
+		// mail validation happens only if the mail element is enabled and the mail is empty or mail got changed by user
+		// and it only happens once, hence the ctrl check for null
 		if (mailEl.isEnabled()
 				&& ((!StringHelper.containsNonWhitespace(initialEmail)
 				|| !mailEl.getValue().equals(initialEmail)) && mailValidationCtrl == null)) {
@@ -220,6 +218,7 @@ public class OAuthRegistrationController extends FormBasicController {
 
 		String mailDomain = MailHelper.getMailDomain(mailEl.getValue());
 		OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+		searchParams.setEnabled(true);
 		List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
 
 		// ensure to only get organisations with matching mailDomains
@@ -253,6 +252,8 @@ public class OAuthRegistrationController extends FormBasicController {
 					})
 					.toArray(String[]::new);
 
+			// checking for null, which only happens once (first initialization of the org area)
+			// otherwise just set the newly matching keys and values
 			if (orgSelection == null) {
 				orgSelection = uifactory.addDropdownSingleselect("user.organisation", orgContainer, orgKeys, orgValues, null);
 			} else {
