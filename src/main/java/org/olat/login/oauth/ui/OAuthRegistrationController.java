@@ -91,7 +91,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	private final OAuthRegistration registration;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final SyntaxValidator usernameSyntaxValidator;
-	private List<OrganisationEmailDomain> matchedDomains = new ArrayList<>();
+	private List<OrganisationEmailDomain> matchedDomains;
 	private FormLayoutContainer orgContainer;
 
 	private TextElement usernameEl;
@@ -215,6 +215,7 @@ public class OAuthRegistrationController extends FormBasicController {
 			orgContainer.setFormLayout("default");
 		}
 		flc.add(orgContainer);
+		matchedDomains = new ArrayList<>();
 
 		String mailDomain = MailHelper.getMailDomain(initialEmail);
 		OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
