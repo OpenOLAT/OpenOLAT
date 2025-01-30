@@ -253,9 +253,10 @@ public class OAuthRegistrationController extends FormBasicController {
 					.toArray(String[]::new);
 
 			if (orgSelection == null) {
-				orgSelection = uifactory.addDropdownSingleselect("user.organisation", orgContainer, null, null, null);
+				orgSelection = uifactory.addDropdownSingleselect("user.organisation", orgContainer, orgKeys, orgValues, null);
+			} else {
+				orgSelection.setKeysAndValues(orgKeys, orgValues, null);
 			}
-			orgSelection.setKeysAndValues(orgKeys, orgValues, null);
 
 			if (matchedDomains.size() == 1) {
 				orgSelection.select(orgKeys[0], true);
