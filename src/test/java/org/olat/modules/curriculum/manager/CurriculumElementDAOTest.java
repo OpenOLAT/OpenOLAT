@@ -29,10 +29,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupMembershipHistory;
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -255,12 +257,87 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element, entry2, true);
 		dbInstance.commit();
 		
-		CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(curriculum);
+		CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(null, curriculum);
 		List<CurriculumElementInfos> relations = curriculumElementDao.loadElementsWithInfos(searchParams);
 		Assert.assertEquals(1, relations.size());
 		Assert.assertEquals(element, relations.get(0).curriculumElement());
 		Assert.assertEquals(element.getKey(), relations.get(0).getKey());
 		Assert.assertEquals(2, relations.get(0).numOfResources());
+	}
+	
+	@Test
+	public void loadElementsWithInfosWithCurriculumOwner() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-admin");
+		Identity notManager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-not-admin");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", false, null);
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculumowner);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+
+		CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(manager, curriculum);
+		List<CurriculumElementInfos> elements = curriculumElementDao.loadElementsWithInfos(searchParams);
+		Assertions.assertThat(elements)
+			.hasSize(1)
+			.map(CurriculumElementInfos::curriculumElement)
+			.containsExactly(element);
+		
+		CurriculumElementInfosSearchParams notSearchParams = CurriculumElementInfosSearchParams.searchElementsOf(notManager, curriculum);
+		List<CurriculumElementInfos> notElements = curriculumElementDao.loadElementsWithInfos(notSearchParams);
+		Assertions.assertThat(notElements)
+			.isEmpty();
+	}
+	
+	@Test
+	public void loadElementsWithInfosWithCurriculumElementOwner() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-owner");
+		Identity notOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-not-owner");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element, owner, CurriculumRoles.curriculumelementowner, owner);
+		dbInstance.commit();
+
+		CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(owner, curriculum);
+		List<CurriculumElementInfos> elements = curriculumElementDao.loadElementsWithInfos(searchParams);
+		Assertions.assertThat(elements)
+			.hasSize(1)
+			.map(CurriculumElementInfos::curriculumElement)
+			.containsExactly(element);
+		
+		CurriculumElementInfosSearchParams notSearchParams = CurriculumElementInfosSearchParams.searchElementsOf(notOwner, curriculum);
+		List<CurriculumElementInfos> notElements = curriculumElementDao.loadElementsWithInfos(notSearchParams);
+		Assertions.assertThat(notElements)
+			.isEmpty();
+	}
+	
+	@Test
+	public void loadElementsWithInfosWithCurriculumManager() {
+		// Organisation with curriculum manager
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager");
+		Identity notManager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-not-manager");
+		Organisation organisation = organisationService.createOrganisation("Curriculum Inc.", "curriculum-1-inc", null, null, null, manager);
+		organisationService.addMember(organisation, manager, OrganisationRoles.curriculummanager, manager);
+		// Curriculum with organisation
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", false, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+
+		CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(manager, curriculum);
+		List<CurriculumElementInfos> elements = curriculumElementDao.loadElementsWithInfos(searchParams);
+		Assertions.assertThat(elements)
+			.hasSize(1)
+			.map(CurriculumElementInfos::curriculumElement)
+			.containsExactly(element);
+		
+		CurriculumElementInfosSearchParams notSearchParams = CurriculumElementInfosSearchParams.searchElementsOf(notManager, curriculum);
+		List<CurriculumElementInfos> notElements = curriculumElementDao.loadElementsWithInfos(notSearchParams);
+		Assertions.assertThat(notElements)
+			.isEmpty();
 	}
 	
 	@Test
@@ -445,16 +522,87 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		CurriculumElementSearchParams adminSearchParams = new CurriculumElementSearchParams(curriculumAdmin);
 		adminSearchParams.setElementId(externalId);
 		List<CurriculumElementSearchInfos> elementsByExternalId = curriculumElementDao.searchElements(adminSearchParams);
-		Assert.assertNotNull(elementsByExternalId);
-		Assert.assertEquals(1, elementsByExternalId.size());
-		Assert.assertEquals(element, elementsByExternalId.get(0).curriculumElement());
+		Assertions.assertThat(elementsByExternalId)
+			.hasSize(1)
+			.map(CurriculumElementSearchInfos::curriculumElement)
+			.containsExactly(element);
 		
 		//search by identifier 
 		CurriculumElementSearchParams nobodySearchParams = new CurriculumElementSearchParams(nobody);
 		nobodySearchParams.setElementId(externalId);
 		List<CurriculumElementSearchInfos> noElements = curriculumElementDao.searchElements(nobodySearchParams);
-		Assert.assertNotNull(noElements);
-		Assert.assertTrue(noElements.isEmpty());
+		Assertions.assertThat(noElements)
+			.isEmpty();
+	}
+	
+	@Test
+	public void searchElementsWithParamsCurriculumElementOwner() {
+		Identity nobody = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-not-owner");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-owner");
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element owner", "1 Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element owner", "2 Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element1, owner, CurriculumRoles.curriculumelementowner, owner);
+		dbInstance.commitAndCloseSession();
+
+		//search with owner
+		CurriculumElementSearchParams adminSearchParams = new CurriculumElementSearchParams(owner);
+		List<CurriculumElementSearchInfos> ownedElements = curriculumElementDao.searchElements(adminSearchParams);
+		Assertions.assertThat(ownedElements)
+			.hasSize(1)
+			.map(CurriculumElementSearchInfos::curriculumElement)
+			.containsExactly(element1)
+			.doesNotContain(element2);
+		
+		//search with random user 
+		CurriculumElementSearchParams nobodySearchParams = new CurriculumElementSearchParams(nobody);
+		List<CurriculumElementSearchInfos> noElements = curriculumElementDao.searchElements(nobodySearchParams);
+		Assertions.assertThat(noElements)
+			.isEmpty();
+	}
+	
+	@Test
+	public void searchElementsWithParamsCurriculumManager() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-owner");
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager");
+		Identity notOwner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-not");
+		Organisation organisation = organisationService.createOrganisation("Curriculum management", "Curriculum management", null, null, null, manager);
+		organisationService.addMember(organisation, manager, OrganisationRoles.curriculummanager, manager);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", false, organisation);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element owner", "1 Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element owner", "2 Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addMember(element1, owner, CurriculumRoles.curriculumelementowner, manager);
+		dbInstance.commitAndCloseSession();
+
+		//search by manager
+		CurriculumElementSearchParams adminSearchParams = new CurriculumElementSearchParams(manager);
+		List<CurriculumElementSearchInfos> managedElements = curriculumElementDao.searchElements(adminSearchParams);
+		Assertions.assertThat(managedElements)
+			.hasSize(2)
+			.map(CurriculumElementSearchInfos::curriculumElement)
+			.containsExactlyInAnyOrder(element1, element2);
+		
+		//search by element owner
+		CurriculumElementSearchParams ownerSearchParams = new CurriculumElementSearchParams(owner);
+		List<CurriculumElementSearchInfos> ownedElements = curriculumElementDao.searchElements(ownerSearchParams);
+		Assertions.assertThat(ownedElements)
+			.hasSize(1)
+			.map(CurriculumElementSearchInfos::curriculumElement)
+			.containsExactly(element1);
+		
+		//search with a random user 
+		CurriculumElementSearchParams nobodySearchParams = new CurriculumElementSearchParams(notOwner);
+		List<CurriculumElementSearchInfos> noElements = curriculumElementDao.searchElements(nobodySearchParams);
+		Assertions.assertThat(noElements)
+			.isEmpty();
 	}
 	
 	/**

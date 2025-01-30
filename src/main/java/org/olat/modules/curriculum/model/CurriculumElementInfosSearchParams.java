@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.model;
 
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -44,32 +45,38 @@ public class CurriculumElementInfosSearchParams {
 	private boolean rootElementsOnly;
 	private List<CurriculumElementStatus> statusList;
 	
-	public CurriculumElementInfosSearchParams() {
-		//
+	private final IdentityRef identity;
+	
+	public CurriculumElementInfosSearchParams(IdentityRef identity) {
+		this.identity = identity;
 	}
 	
-	public static final CurriculumElementInfosSearchParams searchDescendantsOf(CurriculumElement parentElement) {
-		CurriculumElementInfosSearchParams params = new CurriculumElementInfosSearchParams();
+	public static final CurriculumElementInfosSearchParams searchDescendantsOf(IdentityRef identity, CurriculumElement parentElement) {
+		CurriculumElementInfosSearchParams params = new CurriculumElementInfosSearchParams(identity);
 		params.setParentElement(parentElement, true);
 		return params;
 	}
 	
-	public static final CurriculumElementInfosSearchParams searchElementsOf(CurriculumRef curriculum) {
-		CurriculumElementInfosSearchParams params = new CurriculumElementInfosSearchParams();
+	public static final CurriculumElementInfosSearchParams searchElementsOf(IdentityRef identity, CurriculumRef curriculum) {
+		CurriculumElementInfosSearchParams params = new CurriculumElementInfosSearchParams(identity);
 		params.setCurriculum(curriculum);
 		return params;
 	}
 	
-	public static final CurriculumElementInfosSearchParams searchElementsOf(RepositoryEntryRef entry) {
-		CurriculumElementInfosSearchParams params = new CurriculumElementInfosSearchParams();
+	public static final CurriculumElementInfosSearchParams searchElementsOf(IdentityRef identity, RepositoryEntryRef entry) {
+		CurriculumElementInfosSearchParams params = new CurriculumElementInfosSearchParams(identity);
 		params.setEntry(entry);
 		return params;
 	}
 	
-	public static final CurriculumElementInfosSearchParams searchElements(List<CurriculumElementRef> elements) {
-		CurriculumElementInfosSearchParams params = new CurriculumElementInfosSearchParams();
+	public static final CurriculumElementInfosSearchParams searchElements(IdentityRef identity, List<CurriculumElementRef> elements) {
+		CurriculumElementInfosSearchParams params = new CurriculumElementInfosSearchParams(identity);
 		params.setCurriculumElements(elements);
 		return params;
+	}
+	
+	public IdentityRef getIdentity() {
+		return identity;
 	}
 
 	public List<? extends CurriculumRef> getCurriculums() {

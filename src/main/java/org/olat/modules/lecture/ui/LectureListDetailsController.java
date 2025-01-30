@@ -320,7 +320,7 @@ public class LectureListDetailsController extends FormBasicController {
 				}
 			}
 			
-			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(repositoryEntry);
+			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams.searchElementsOf(null, repositoryEntry);
 			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
 				boolean included = selectedGroups.contains(elementInfos.curriculumElement().getGroup());
@@ -329,7 +329,7 @@ public class LectureListDetailsController extends FormBasicController {
 		} else if(row.getCurriculumElement() != null && row.getCurriculumElement().key() != null) {
 			CurriculumElementRef curriculumElementRef = new CurriculumElementRefImpl(row.getCurriculumElement().key());
 			CurriculumElementInfosSearchParams searchParams = CurriculumElementInfosSearchParams
-					.searchElements(List.of(curriculumElementRef));
+					.searchElements(null, List.of(curriculumElementRef));
 			List<CurriculumElementInfos> elementsInfos = curriculumService.getCurriculumElementsWithInfos(searchParams);
 			for(CurriculumElementInfos elementInfos:elementsInfos) {
 				boolean excluded = !selectedGroups.contains(elementInfos.curriculumElement().getGroup());

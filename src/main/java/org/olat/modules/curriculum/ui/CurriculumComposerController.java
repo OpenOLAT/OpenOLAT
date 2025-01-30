@@ -506,7 +506,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private CurriculumElementInfosSearchParams getSearchParams() {
-		CurriculumElementInfosSearchParams searchParams = new CurriculumElementInfosSearchParams();
+		CurriculumElementInfosSearchParams searchParams = new CurriculumElementInfosSearchParams(getIdentity());
 		if(curriculum != null) {
 			searchParams.setCurriculum(curriculum);
 		}
@@ -1130,7 +1130,6 @@ public class CurriculumComposerController extends FormBasicController implements
 			
 			if(curriculum != null && secCallback.canEditCurriculumElement(element) && element.getParent() != null
 					&& !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
-				links.add("-");
 				addNewElementLinks(element, links);
 			}
 
@@ -1151,7 +1150,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		private void addNewElementLinks(CurriculumElement parentElement, List<String> links) {
 			CurriculumElementType parentType = parentElement.getType();
 			if(parentType != null && parentType.isSingleElement()) return;
-			
+
+			links.add("-");
 			List<CurriculumElementType> types = curriculumService.getAllowedCurriculumElementType(parentElement, null);
 			if(types.isEmpty()) {
 				newLink = addLink("add.element.under", "o_icon_levels", links);

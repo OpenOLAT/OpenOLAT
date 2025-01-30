@@ -401,7 +401,7 @@ public class CurriculumElementDAO {
 	}
 	
 	public List<CurriculumElementInfos> loadElementsWithInfos(CurriculumElementInfosSearchParams searchParams) {
-		QueryBuilder sb = new QueryBuilder(512);
+		QueryBuilder sb = new QueryBuilder(4096);
 		sb.append("select el, ")
 		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
 		  .append("  where reToGroup.group.key=baseGroup.key")
@@ -432,6 +432,7 @@ public class CurriculumElementDAO {
 		  .append(" inner join fetch el.group baseGroup")
 		  .append(" left join fetch el.type curElementType")
 		  .append(" left join el.parent parentEl")
+		  .append(" left join curriculum.organisation organis")
 		  .where().append(" el.status ").in(CurriculumElementStatus.notDeleted());
 		
 		if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
@@ -457,6 +458,28 @@ public class CurriculumElementDAO {
 			sb.and()
 			  .append("baseGroup.key in (select rel.group.key from repoentrytogroup as rel")
 			  .append(" where rel.entry.key=:entryKey)");
+		}
+		
+		if(searchParams.getIdentity() != null) {
+			// curriculum administrator at level curriculum
+			sb.and()
+			  .append("(curriculum.group.key in (select cGroup.key from bgroupmember as cMembership")
+			  .append("  inner join cMembership.group as cGroup")
+			  .append("  where cMembership.identity.key=:managerKey")
+			  .append("  and cMembership.role ").in(CurriculumRoles.curriculumowner)
+			  .append(" )");
+			
+			sb.append(" or baseGroup.key in (select cGroup.key from bgroupmember as cMembership")
+			  .append("  inner join cMembership.group as cGroup")
+			  .append("  where cMembership.identity.key=:managerKey")
+			  .append("  and cMembership.role ").in(CurriculumRoles.curriculumelementowner)
+			  .append(" )");
+			// curriculum administrator from the organisation
+			sb.append(" or organis.group.key in (select oGroup.key from bgroupmember as oMembership")
+			  .append("  inner join oMembership.group as oGroup")
+			  .append("  where oMembership.identity.key=:managerKey")
+			  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator)
+			  .append(" ))");
 		}
 
 		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
@@ -485,6 +508,9 @@ public class CurriculumElementDAO {
 		}
 		if(searchParams.getEntry() != null) {
 			rawQuery.setParameter("entryKey", searchParams.getEntry().getKey());
+		}
+		if(searchParams.getIdentity() != null) {
+			rawQuery.setParameter("managerKey", searchParams.getIdentity().getKey());
 		}
 		
 		List<Object[]> rawObjects =	rawQuery.getResultList();
@@ -648,33 +674,33 @@ public class CurriculumElementDAO {
 		  .append("  where childEl.parent.key=curEl.key")
 		  .append(" ) as numOfChildren,")
 		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
-		  .append("  where reToGroup.group.key=bGroup.key")
+		  .append("  where reToGroup.group.key=elGroup.key")
 		  .append(" ) as numOfElements,")
 		  .append(" (select count(distinct lblock.key) from lectureblock lblock")
 		  .append("  where lblock.curriculumElement.key=curEl.key")
 		  .append(" ) as numOfLectures,")
 		  .append(" (select count(distinct participants.identity.key) from bgroupmember as participants")
-		  .append("  where participants.group.key=bGroup.key and participants.role='").append(CurriculumRoles.participant.name()).append("'")
+		  .append("  where participants.group.key=elGroup.key and participants.role='").append(CurriculumRoles.participant.name()).append("'")
 		  .append(" ) as numOfParticipants,")
 		  .append(" (select count(distinct coaches.identity.key) from bgroupmember as coaches")
-		  .append("  where coaches.group.key=bGroup.key and coaches.role='").append(CurriculumRoles.coach.name()).append("'")
+		  .append("  where coaches.group.key=elGroup.key and coaches.role='").append(CurriculumRoles.coach.name()).append("'")
 		  .append(" ) as numOfCoaches,")
 		  .append(" (select count(distinct owners.identity.key) from bgroupmember as owners")
-		  .append("  where owners.group.key=bGroup.key and owners.role='").append(CurriculumRoles.owner.name()).append("'")
+		  .append("  where owners.group.key=elGroup.key and owners.role='").append(CurriculumRoles.owner.name()).append("'")
 		  .append(" ) as numOfOwners,")
 		  .append(" (select count(distinct curriculumElementOwners.identity.key) from bgroupmember as curriculumElementOwners")
-		  .append("  where curriculumElementOwners.group.key=bGroup.key and curriculumElementOwners.role='").append(CurriculumRoles.curriculumelementowner.name()).append("'")
+		  .append("  where curriculumElementOwners.group.key=elGroup.key and curriculumElementOwners.role='").append(CurriculumRoles.curriculumelementowner.name()).append("'")
 		  .append(" ) as numOfCurriculumElementOwners,")
 		  .append(" (select count(distinct masterCoaches.identity.key) from bgroupmember as masterCoaches")
-		  .append("  where masterCoaches.group.key=bGroup.key and masterCoaches.role='").append(CurriculumRoles.mastercoach.name()).append("'")
+		  .append("  where masterCoaches.group.key=elGroup.key and masterCoaches.role='").append(CurriculumRoles.mastercoach.name()).append("'")
 		  .append(" ) as numOfMasterCoaches")
 		  .append(" from curriculumelement curEl")
 		  .append(" inner join fetch curEl.curriculum cur")
-		  .append(" inner join fetch cur.group baseGroup")
-		  .append(" inner join fetch curEl.group bGroup")
+		  .append(" inner join fetch cur.group curGroup")
+		  .append(" inner join fetch curEl.group elGroup")
 		  .append(" left join fetch curEl.type elType")
 		  .append(" left join fetch cur.organisation organis")
-		  .append(" left join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		  .append(" left join repoentrytogroup as rel on (elGroup.key=rel.group.key)")
 		  .append(" left join repositoryentry as v on (rel.entry.key=v.key)")
 		  .append(" left join v.olatResource as res");
 
@@ -782,12 +808,25 @@ public class CurriculumElementDAO {
 
 		// permissions
 		if(params.getManagerIdentity() != null) {
+			// curriculum administrator at level curriculum
 			sb.and()
-			  .append("exists (select membership.key from bgroupmember as membership")
-			  .append("  where membership.identity.key=:managerKey")
-			  .append("  and membership.role").in(CurriculumRoles.curriculummanager, CurriculumRoles.owner, OrganisationRoles.administrator)
-			  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
-			  .append(")");
+			  .append("(curGroup.key in (select cGroup.key from bgroupmember as cMembership")
+			  .append("  inner join cMembership.group as cGroup")
+			  .append("  where cMembership.identity.key=:managerKey")
+			  .append("  and cMembership.role ").in(CurriculumRoles.curriculumowner)
+			  .append(" )");
+			
+			sb.append(" or elGroup.key in (select cGroup.key from bgroupmember as cMembership")
+			  .append("  inner join cMembership.group as cGroup")
+			  .append("  where cMembership.identity.key=:managerKey")
+			  .append("  and cMembership.role ").in(CurriculumRoles.curriculumelementowner)
+			  .append(" )");
+			// curriculum administrator from the organisation
+			sb.append(" or organis.group.key in (select oGroup.key from bgroupmember as oMembership")
+			  .append("  inner join oMembership.group as oGroup")
+			  .append("  where oMembership.identity.key=:managerKey")
+			  .append("  and oMembership.role ").in(CurriculumRoles.curriculummanager, OrganisationRoles.administrator)
+			  .append(" ))");
 		}
 		
 		if(params.getCurriculums() != null && !params.getCurriculums().isEmpty()) {

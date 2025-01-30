@@ -205,7 +205,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 			offerOrganisationSelection = OfferOrganisationSelection.valueOf(offerOrgSelectionObj);
 		}
 		
-		String participantsLeftMessagePercentageObj = getStringPropertyValue(AC_OFFER_ORG_SELECTION, true);
+		String participantsLeftMessagePercentageObj = getStringPropertyValue(AC_PARTICIPANTS_LEFT_MESSAGE_PERCENTAGE, true);
 		if(StringHelper.containsNonWhitespace(participantsLeftMessagePercentageObj)) {
 			try {
 				participantsLeftMessagePercentage = Double.valueOf(participantsLeftMessagePercentageObj);

@@ -211,10 +211,10 @@ public class SelectCurriculumElementsAndResourcesController extends StepFormBasi
 		CurriculumElementInfosSearchParams searchParams = null;
 		if(addLecture.getRootElement() != null) {
 			 searchParams = CurriculumElementInfosSearchParams
-					.searchDescendantsOf(addLecture.getCurriculumElement());
+					.searchDescendantsOf(null, addLecture.getCurriculumElement());
 		} else if(addLecture.getCurriculum() != null) {
 			searchParams = CurriculumElementInfosSearchParams
-					.searchElementsOf(addLecture.getCurriculum());
+					.searchElementsOf(null, addLecture.getCurriculum());
 		}
 		
 		if(searchParams != null) {
