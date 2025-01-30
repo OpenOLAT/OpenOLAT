@@ -31,6 +31,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
+import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -71,5 +72,10 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 			pos++;
 		}
 		row.addCell(pos, "" + stats.getTotalAbsentLectures());
+	}
+
+	@Override
+	protected List<UserPropertyHandler> getUserPropertyHandlers() {
+		return CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false);
 	}
 }

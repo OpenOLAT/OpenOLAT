@@ -45,7 +45,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.reports.ReportConfiguration;
 import org.olat.modules.coach.ui.manager.ReportTemplatesDataModel.ReportTemplateCols;
 import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,13 +53,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class ReportTemplatesController extends FormBasicController {
-	private static final String PROPS_IDENTIFIER = ReportTemplatesController.class.getName();
 	private static final String PLAY_CMD = "play";
 	private static final String FILTER_CATEGORY = "filter.category";
 
 	private FlexiTableElement tableEl;
 	private ReportTemplatesDataModel tableModel;
-	private List<UserPropertyHandler> userPropertyHandlers;
 	private int count = 0;
 
 	@Autowired
@@ -70,8 +67,6 @@ public class ReportTemplatesController extends FormBasicController {
 
 	public ReportTemplatesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "report_templates");
-
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, false);
 
 		initForm(ureq);
 		loadModel();
@@ -160,7 +155,7 @@ public class ReportTemplatesController extends FormBasicController {
 	}
 
 	private void doRunReport(UserRequest ureq, ReportTemplatesRow row) {
-		row.getReportConfiguration().generateReport(getIdentity(), ureq.getLocale(), userPropertyHandlers);
+		row.getReportConfiguration().generateReport(getIdentity(), ureq.getLocale());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

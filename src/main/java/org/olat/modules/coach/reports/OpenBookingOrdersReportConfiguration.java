@@ -29,6 +29,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.resource.accesscontrol.manager.ACOrderDAO;
 import org.olat.resource.accesscontrol.model.UserOrder;
+import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -66,5 +67,10 @@ public class OpenBookingOrdersReportConfiguration extends TimeBoundReportConfigu
 			pos++;
 		}
 		row.addCell(pos, "" + booking.getOrder().getCreationDate(), workbook.getStyles().getDateTimeStyle());
+	}
+
+	@Override
+	protected List<UserPropertyHandler> getUserPropertyHandlers() {
+		return CoreSpringFactory.getImpl(UserManager.class).getUserPropertyHandlersFor(PROPS_IDENTIFIER, false);
 	}
 }

@@ -48,7 +48,8 @@ import org.apache.logging.log4j.Logger;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public abstract class AbstractReportConfiguration implements ReportConfiguration {
-	
+	public static final String PROPS_IDENTIFIER = AbstractReportConfiguration.class.getName();
+
 	protected static final Logger log = Tracing.createLoggerFor(AbstractReportConfiguration.class);
 
 	private String i18nNameKey;
@@ -110,8 +111,9 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 	}
 
 	@Override
-	public void generateReport(Identity coach, Locale locale, List<UserPropertyHandler> userPropertyHandlers) {
+	public void generateReport(Identity coach, Locale locale) {
 		CoachingService coachingService = CoreSpringFactory.getImpl(CoachingService.class);
+		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
 
 		LocalFolderImpl folder = coachingService.getGeneratedReportsFolder(coach);
 		String name = getName(locale);
@@ -134,7 +136,7 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 	}
 
 	private void generateHeader(OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		Translator translator = Util.createPackageTranslator(AbsencesReportConfiguration.class, locale);
+		Translator translator = getTranslator(locale);
 
 		Row header = sheet.newRow();
 
@@ -153,4 +155,6 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 	protected abstract int generateCustomHeaderColumns(Row header, int pos, Translator translator);
 	
 	protected abstract void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers);
+
+	protected abstract List<UserPropertyHandler> getUserPropertyHandlers();
 }

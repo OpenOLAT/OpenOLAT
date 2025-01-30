@@ -2400,7 +2400,7 @@
 				</entry>
 
 
-				<entry key="org.olat.modules.coach.ui.manager.ReportTemplatesController">
+				<entry key="org.olat.modules.coach.ui.manager.AbstractReportConfiguration">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Education manager report" />
 						<property name="propertyHandlers">
@@ -2410,7 +2410,6 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
-								<ref bean="userPropertyInstitutionalEmail" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
@@ -2420,7 +2419,6 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
-								<ref bean="userPropertyInstitutionalEmail" />
 							</set>
 						</property>
 					</bean>
