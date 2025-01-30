@@ -296,6 +296,7 @@ public class OAuthRegistrationController extends FormBasicController {
 				// success in validation, now check if there is any org mapping (if that module is enabled)
 				TextElement mailEl = (TextElement) flc.getFormComponent(UserConstants.EMAIL);
 				if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
+					flc.remove(mailValidationCtrl.getInitialFormItem());
 					initOrgSelection(mailEl);
 				} else {
 					flc.add(submitBtn);
