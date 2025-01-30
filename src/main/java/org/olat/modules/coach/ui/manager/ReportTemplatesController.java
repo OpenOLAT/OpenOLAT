@@ -26,16 +26,22 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.reports.ReportConfiguration;
 import org.olat.modules.coach.ui.manager.ReportTemplatesDataModel.ReportTemplateCols;
 import org.olat.user.UserManager;
@@ -50,6 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ReportTemplatesController extends FormBasicController {
 	private static final String PROPS_IDENTIFIER = ReportTemplatesController.class.getName();
 	private static final String PLAY_CMD = "play";
+	private static final String FILTER_CATEGORY = "filter.category";
 
 	private FlexiTableElement tableEl;
 	private ReportTemplatesDataModel tableModel;
@@ -68,6 +75,8 @@ public class ReportTemplatesController extends FormBasicController {
 
 		initForm(ureq);
 		loadModel();
+		
+		initFilters();
 	}
 
 	@Override
@@ -95,12 +104,33 @@ public class ReportTemplatesController extends FormBasicController {
 			row.setCategory(reportConfiguration.getCategory(getLocale()));
 			row.setDescription(reportConfiguration.getDescription(getLocale()));
 			row.setType(translate("type." + (reportConfiguration.isDynamic() ? "dynamic" : "static")));
-			forgeRow(row);
 			rows.add(row);
 		}
 
+		applyFilters(rows);
+
+		for (ReportTemplatesRow row : rows) {
+			forgeRow(row);
+		}
+
 		tableModel.setObjects(rows);
-		tableEl.reset();
+		tableEl.reset(true, true, true);
+	}
+
+	private void applyFilters(List<ReportTemplatesRow> rows) {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters == null || filters.isEmpty()) {
+			return;
+		}
+		
+		for (FlexiTableFilter filter : filters) {
+			if (FILTER_CATEGORY.equals(filter.getFilter())) {
+				List<String> categories = ((FlexiTableMultiSelectionFilter) filter).getValues();
+				if (categories != null && !categories.isEmpty()) {
+					rows.removeIf(row -> row.getCategory() == null || !categories.contains(row.getCategory()));
+				}
+			}
+		}
 	}
 
 	private void forgeRow(ReportTemplatesRow row) {
@@ -121,6 +151,10 @@ public class ReportTemplatesController extends FormBasicController {
 					doRunReport(ureq, row);
 				}
 			}
+		} else if (tableEl == source) {
+			if (event instanceof FlexiTableSearchEvent) {
+				loadModel();
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -137,5 +171,21 @@ public class ReportTemplatesController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+
+		SelectionValues categoryKV = new SelectionValues();
+		tableModel.getObjects().stream().map(ReportTemplatesRow::getCategory)
+				.filter(StringHelper::containsNonWhitespace).distinct()
+				.forEach(category -> categoryKV.add(SelectionValues.entry(category, category)));
+		categoryKV.sort(SelectionValues.VALUE_ASC);
+		if (!categoryKV.isEmpty()) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.category"), FILTER_CATEGORY, 
+					categoryKV, true));
+		}
+		
+		tableEl.setFilters(true, filters, false, true);
 	}
 }
