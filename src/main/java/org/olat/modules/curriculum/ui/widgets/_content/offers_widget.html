@@ -1,0 +1,58 @@
+<div class="o_expand_ctrl">
+
+<div class="o_curriculum_widget">
+	<div class="o_curriculum_widget_title">
+		<h3>$r.render("curriculum.offers")</h3>
+	</div>
+	<div class="o_curriculum_widget_cards o_curriculum_widget_catalog_cards">
+		#if($externalCatalogCss)
+			<div class="o_curriculum_widget_catalog_card o_labeled_light $externalCatalogCss">
+				<div><i class="o_icon o_icon-fw o_icon_catalog_extern"> </i> $r.translate("access.status.extern")</div>
+				<div><i class="o_icon o_icon-fw $externalCatalogIconCss"> </i> $externalCatalogLabelName</div>
+			</div>
+		#end
+		<div class="o_curriculum_widget_catalog_card o_labeled_light $internalCatalogCss">
+			<div><i class="o_icon o_icon-fw o_icon_catalog_intern"> </i> $r.translate("access.status.intern")</div>
+			<div><i class="o_icon o_icon-fw $internalCatalogIconCss"> </i> $internalCatalogLabelName</div>
+		</div>
+	</div>
+	#if($r.isFalse($minimized))
+	<div class="o_curriculum_widget_cards o_curriculum_offer_cards">
+		<div class="o_curriculum_offer_card">
+			<h4 class="o_flex_first_grow">
+				<div>$r.translate("curriculum.offers.offers")</div>
+				<div><i class="o_icon o_icon-fw o_ac_offer_bookable_icon"> </i></div>
+			</h4>
+			<div class="o_curriculum_offers_card_content o_curriculum_offer_card_content">
+				<div>$labelPending</div><div class="o_curriculum_offer_card_num">$numPending</div>
+				<div>$labelBookable</div><div class="o_curriculum_offer_card_num">$numBookable</div>
+				<div>$labelFinished</div><div class="o_curriculum_offer_card_num">$numFinished</div>
+				<div>$labelNotAvailable</div><div class="o_curriculum_offer_card_num">$numNotAvailable</div>
+			</div>
+		</div>
+		#if($taxonomyEnabled)
+			<div class="o_curriculum_offer_card">
+				<h4 class="o_flex_first_grow">
+					<div>$r.translate("curriculum.offers.taxonomy")</div>
+					<div><i class="o_icon o_icon-fw o_icon_tag"> </i></div>
+				</h4>
+				<div class="o_curriculum_offers_card_content o_curriculum_taxonomy_card_content">
+					#if($taxonomyLevels && !$taxonomyLevels.empty)
+						<div class="o_taxonomy_levels">
+							#foreach($taxonomyLevel in $taxonomyLevels)
+							<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomyLevel.materializedPathIdentifiersWithoutSlash)">
+								$r.escapeHtml($taxonomyLevel.displayName)
+							</span>
+							#end
+						</div>
+					#else
+						$r.render("empty.taxonomy")
+					#end
+				</div>
+			</div>
+		#end
+	</div>
+	#end
+</div>
+<div class="o_button_group">$r.render("curriculum.minimize")</div>
+</div>

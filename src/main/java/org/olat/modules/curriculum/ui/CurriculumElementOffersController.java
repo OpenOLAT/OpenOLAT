@@ -19,7 +19,6 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +43,6 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.author.RepositoryCatalogInfoFactory;
-import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
@@ -94,15 +92,15 @@ public class CurriculumElementOffersController extends BasicController {
 			details = RepositoryCatalogInfoFactory.wrapTaxonomyLevels(taxonomyLevelPath);
 		}
 		String editBusinessPath = "[CurriculumAdmin:0][Implementations:0][CurriculumElement:" + elementRef.getKey() + "][Matadata:0]";
-
-		boolean fullyBooked = false;
+		
+		boolean fullyBooked = curriculumService.isMaxParticipantsReached(element);
 		CatalogInfo catalogInfo = new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(), false, true, true,
-				translate("access.taxonomy.level"), details, null, false,
-				getCatalogStatusEvaluator(element.getElementStatus()),
-				translate("offer.available.in.status.curriculum.element"), fullyBooked, editBusinessPath,
-				translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(element.getResource()),
-				catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,
-				taxonomyLevels, true);
+				translate("access.taxonomy.level"), details, null, getStatusEvaluator(element.getElementStatus()),
+				translate("offer.available.in.status.curriculum.element"),
+				fullyBooked, editBusinessPath, translate("access.open.metadata"),
+				CatalogBCFactory.get(false).getOfferUrl(element.getResource()), catalogV2Module.isWebPublishEnabled() ? CatalogBCFactory.get(true).getOfferUrl(element.getResource()) : null,
+				taxonomyLevels,
+				true);
 
 		accessConfigCtrl = new AccessSegmentedOverviewController(ureq, wControl, element.getResource(),
 				element.getDisplayName(), true, false, false, true, defaultOfferOrganisations, catalogInfo,
@@ -113,39 +111,16 @@ public class CurriculumElementOffersController extends BasicController {
 	}
 
 	public void updateStatus(CurriculumElementStatus status) {
-		accessConfigCtrl.setStatusEvaluator(getCatalogStatusEvaluator(status));
+		accessConfigCtrl.setStatusEvaluator(getStatusEvaluator(status));
 	}
-	
-	private CatalogStatusEvaluator getCatalogStatusEvaluator(CurriculumElementStatus status) {
-		if (catalogV2Module.isEnabled()) {
-			return new CurriculumElementStatusEvaluator(status);
-		}
-		return CatalogInfo.TRUE_STATUS_EVALUATOR;
+
+	private CatalogStatusEvaluator getStatusEvaluator(CurriculumElementStatus status) {
+		return CurriculumElementCatalogStatusEvaluator.create(catalogV2Module, status);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
-	}
-	
-	private static final class CurriculumElementStatusEvaluator implements CatalogStatusEvaluator {
-
-		private final CurriculumElementStatus status;
-
-		public CurriculumElementStatusEvaluator(CurriculumElementStatus status) {
-			this.status = status;
-		}
-
-		@Override
-		public boolean isVisibleStatusNoPeriod() {
-			return Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD).contains(status);
-		}
-
-		@Override
-		public boolean isVisibleStatusPeriod() {
-			return Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD_PERIOD).contains(status);
-		}
-		
 	}
 
 }

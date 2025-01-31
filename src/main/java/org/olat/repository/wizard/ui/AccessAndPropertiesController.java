@@ -44,6 +44,7 @@ import org.olat.repository.ui.author.AuthoringEditAccessShareController.StatusEv
 import org.olat.repository.ui.author.RepositoryCatalogInfoFactory;
 import org.olat.repository.wizard.AccessAndProperties;
 import org.olat.resource.accesscontrol.CatalogInfo;
+import org.olat.resource.accesscontrol.CatalogInfo.CatalogStatusEvaluator;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
@@ -104,7 +105,10 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 					accessOffersCtrl.setDefaultOfferOrganisations(accessShareCtrl.getSelectedOrganisations());
 				}
 			} else if (event instanceof StatusEvent se) {
-				accessOffersCtrl.setStatusEvaluator(RepositoryCatalogInfoFactory.getCatalogStatusEvaluator(se.getStatus()));
+				CatalogStatusEvaluator catalogStatusEvaluator = RepositoryCatalogInfoFactory.getCatalogStatusEvaluator(se.getStatus());
+				if (catalogStatusEvaluator != null) {
+					accessOffersCtrl.setStatusEvaluator(catalogStatusEvaluator);
+				}
 			}
 		}
 		super.event(ureq, source, event);

@@ -483,6 +483,8 @@ public interface CurriculumService {
 	public Map<Long, Long> getCurriculumElementKeyToNumParticipants(List<CurriculumElement> curriculumElements,
 			boolean countReservations);
 	
+	public boolean isMaxParticipantsReached(CurriculumElement element);
+	
 	/**
 	 * Remove a member of the curriculum element and discard all its roles.
 	 * 

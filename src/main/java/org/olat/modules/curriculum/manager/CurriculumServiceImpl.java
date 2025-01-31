@@ -1244,6 +1244,19 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
+	public boolean isMaxParticipantsReached(CurriculumElement element) {
+		boolean maxParticipantsReached = false;
+		if (element.getMaxParticipants() != null) {
+			Long numParticipants = getCurriculumElementKeyToNumParticipants(List.of(element), true)
+					.getOrDefault(element.getKey(), Long.valueOf(0));
+			if (element.getMaxParticipants() <= numParticipants) {
+				maxParticipantsReached = true;
+			}
+		}
+		return maxParticipantsReached;
+	}
+	
+	@Override
 	public boolean hasRepositoryEntries(CurriculumElementRef element) {
 		return curriculumRepositoryEntryRelationDao.hasRepositoryEntries(element);
 	}

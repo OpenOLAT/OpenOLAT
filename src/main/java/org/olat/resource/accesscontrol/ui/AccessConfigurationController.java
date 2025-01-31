@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -71,6 +72,7 @@ import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
+import org.olat.resource.accesscontrol.ui.OfferCatalogInfo.OfferCatalogStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -638,7 +640,7 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		
 		if (catalogInfo.isCatalogSupported()) {
-			String internalCatalog = getCatalogStatus(accessInfos);
+			String internalCatalog = getInternalCatalogStatus();
 			overviewContainer.contextPut("internalCatalog", internalCatalog);
 			
 			String externalCatalog = getExternalCatalogStatus();
@@ -646,55 +648,42 @@ public class AccessConfigurationController extends FormBasicController {
 				overviewContainer.contextPut("externalCatalog", externalCatalog);
 			}
 		} else if (catalogInfo.isPublishedGroupsSupported()) {
-			String status = getCatalogStatus(accessInfos);
+			String status = getCatalogStatus();
 			overviewContainer.contextPut("publishedGroups", status);
 		}
 	}
 	
+	private String getCatalogStatus() {
+		List<OfferCatalogInfo> offerCatalogInfos = accessInfos.stream()
+				.map(AccessInfo::getOfferCatalogInfo)
+				.filter(Objects::nonNull)
+				.toList();
+		OfferCatalogStatus catalogStatus = OfferCatalogInfo.getCatalogStatus(offerCatalogInfos, statusEvaluator, catalogInfo.isFullyBooked());
+		return OfferCatalogInfo.getStatusLightLabel(getTranslator(), catalogStatus);
+	}
+	
 	public String getInternalCatalogStatus() {
-		return getCatalogStatus(accessInfos);
+		List<OfferCatalogInfo> offerCatalogInfos = accessInfos.stream()
+				.map(AccessInfo::getOfferCatalogInfo)
+				.filter(Objects::nonNull)
+				.filter(OfferCatalogInfo::isPublished)
+				.toList();
+		OfferCatalogStatus catalogStatus = OfferCatalogInfo.getCatalogStatus(offerCatalogInfos, statusEvaluator, catalogInfo.isFullyBooked());
+		return OfferCatalogInfo.getStatusLightLabel(getTranslator(), catalogStatus);
 	}
 	
 	public String getExternalCatalogStatus() {
 		if (catalogInfo.isWebCatalogSupported()) {
-			List<AccessInfo> externalCatalogInfos = accessInfos.stream().filter(info -> info.getOffer().isCatalogWebPublish()).toList();
-			return getCatalogStatus(externalCatalogInfos);
+			List<OfferCatalogInfo> externalCatalogInfos = accessInfos.stream()
+					.map(AccessInfo::getOfferCatalogInfo)
+					.filter(Objects::nonNull)
+					.filter(OfferCatalogInfo::isPublished)
+					.filter(OfferCatalogInfo::isWebPublished)
+					.toList();
+			OfferCatalogStatus catalogStatus = OfferCatalogInfo.getCatalogStatus(externalCatalogInfos, statusEvaluator, catalogInfo.isFullyBooked());
+			return OfferCatalogInfo.getStatusLightLabel(getTranslator(), catalogStatus);
 		}
 		return null;
-	}
-	
-	private String getCatalogStatus(List<AccessInfo> catalogAccessInfo) {
-		String catalogStatus = null;
-		if (!catalogInfo.isNotAvailableEntry()) {
-			boolean atLeastOneActive = catalogAccessInfo.stream().anyMatch(AccessInfo::isActive);
-			if (atLeastOneActive) {
-				if (catalogInfo.isFullyBooked()) {
-					catalogStatus = "<span class=\"o_labeled_light o_ac_offer_fully_booked\"><i class=\"o_icon o_ac_offer_fully_booked_icon\"> </i> "
-									+ translate("offers.overview.fully.booked")
-									+ "</span>";
-				} else {
-					boolean statusVisible = catalogAccessInfo.stream().anyMatch(AccessInfo::isWithPeriod)
-							? statusEvaluator.isVisibleStatusPeriod()
-							: statusEvaluator.isVisibleStatusNoPeriod();
-					if (!statusVisible) {
-						catalogStatus = "<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> "
-										+ translate("offers.overview.not.available")
-										+ "</span>";
-					}
-				}
-				if (!StringHelper.containsNonWhitespace(catalogStatus)) {
-					catalogStatus = "<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> "
-							+ translate("offers.overview.bookable")
-							+ "</span>";
-				}
-			}
-		}
-		if (!StringHelper.containsNonWhitespace(catalogStatus)) {
-			catalogStatus = "<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> "
-							+ translate("offers.overview.not.available")
-							+ "</span>";
-		}
-		return catalogStatus;
 	}
 
 	protected void forgeLinks(AccessInfo infos) {
@@ -1012,10 +1001,9 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		private final IconPanelItem iconPanel;
 		private Offer offer;
-		private boolean active;
-		private boolean withPeriod;
-		private final int numOfOrders;
+		private OfferCatalogInfo offerCatalogInfo;
 		private String dates;
+		private final int numOfOrders;
 		private Collection<Organisation> offerOrganisations;
 		private OfferAccess link;
 		private AccessMethodHandler handler;
@@ -1029,23 +1017,28 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public AccessInfo(IconPanelItem iconPanel, OfferAccess link, AccessMethodHandler handler, int numOfOrders) {
 			this.iconPanel = iconPanel;
-			this.offer = link != null? link.getOffer(): null;
 			this.link = link;
 			this.handler = handler;
 			this.numOfOrders = numOfOrders;
-			initDates();
+			if (link != null) {
+				setOffer(link.getOffer());
+			}
 		}
 
 		public IconPanelItem getIconPanel() {
 			return iconPanel;
 		}
 
+		public OfferCatalogInfo getOfferCatalogInfo() {
+			return offerCatalogInfo;
+		}
+
 		public boolean isActive() {
-			return active;
+			return offerCatalogInfo != null? offerCatalogInfo.isActive(): false;
 		}
 
 		public boolean isWithPeriod() {
-			return withPeriod;
+			return offerCatalogInfo != null? offerCatalogInfo.isWithPeriod(): false;
 		}
 		
 		public String getDates() {
@@ -1055,39 +1048,23 @@ public class AccessConfigurationController extends FormBasicController {
 		private void initDates() {
 			Date from = offer.getValidFrom();
 			Date to = offer.getValidTo();
-			if (to != null && to.before(new Date())) {
-				iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_finished\"><i class=\"o_icon o_ac_offer_finished_icon\"> </i> " + translate("access.period.finished") + "</span>");
+			if (OfferCatalogInfo.OfferCatalogStatus.finished == offerCatalogInfo.getStatus()) {
 				dates = "<del>" + formatPeriod(from, to) + "</del>";
-				active = false;
-				withPeriod = true;
-			} else if (from != null && from.after(new Date())) {
-				iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_pending\"><i class=\"o_icon o_ac_offer_pending_icon\"> </i> " + translate("access.period.pending") + "</span>");
+			} else if (OfferCatalogInfo.OfferCatalogStatus.pending == offerCatalogInfo.getStatus()) {
 				dates = formatPeriod(from, to)
 					+ " | <strong>" + translate("access.period.starts.in", String.valueOf(DateUtils.countDays(new Date(), from))) + "</strong>";
-				active = false;
-				withPeriod = true;
+			} else if (OfferCatalogInfo.OfferCatalogStatus.bookable == offerCatalogInfo.getStatus()) {
+				iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> " + translate("offer.status.bookable") + "</span>");
+			} else if (OfferCatalogInfo.OfferCatalogStatus.notAvailable == offerCatalogInfo.getStatus()) {
+				iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> " + translate("offer.status.not.available") + "</span>");
 			} else if (to != null && to.after(new Date())) {
-				if (statusEvaluator != null && !statusEvaluator.isVisibleStatusPeriod()) {
-					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> " + translate("offers.overview.not.available") + "</span>");
-				} else {
-					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> " + translate("offers.overview.bookable") + "</span>");
-				}
 				dates = formatPeriod(from, to)
 					+ " | <strong>" + translate("access.period.ends.in", String.valueOf(DateUtils.countDays(new Date(), to))) + "</strong>";
-				active = true;
-				withPeriod = true;
 			} else {
-				if (statusEvaluator != null && !statusEvaluator.isVisibleStatusNoPeriod()) {
-					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> " + translate("offers.overview.not.available") + "</span>");
-				} else {
-					iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> " + translate("offers.overview.bookable") + "</span>");
-				}
 				dates = catalogInfo.getStatusPeriodOption();
-				active = true;
-				withPeriod = false;
 			}
 		}
-		
+
 		private String formatPeriod(Date from, Date to) {
 			if (from != null && to != null) {
 				return translate("access.period.range", formatter.formatDate(from), formatter.formatDate(to));
@@ -1153,9 +1130,11 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public void setOffer(Offer offer) {
 			this.offer = offer;
+			offerCatalogInfo = OfferCatalogInfo.create(offer, statusEvaluator);
+			iconPanel.setTitleLabel(OfferCatalogInfo.getStatusLightLabel(getTranslator(), offerCatalogInfo.getStatus()));
 			initDates();
 		}
-
+		
 		@Override
 		public Collection<Organisation> getOfferOrganisations() {
 			return offerOrganisations;

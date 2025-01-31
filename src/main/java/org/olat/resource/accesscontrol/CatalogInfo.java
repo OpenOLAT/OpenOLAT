@@ -25,7 +25,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 
 public class CatalogInfo {
 
-	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, false, false, null, null, null, true, null, null, false, null, null, null, null, null, true);
+	public static final CatalogInfo UNSUPPORTED = new CatalogInfo(false, false, false, false, false, null, null, null, null, null, false, null, null, null, null, null, true);
 	public static final TrueStatusEvaluator TRUE_STATUS_EVALUATOR = new TrueStatusEvaluator();
 
 	private final boolean catalogSupported;
@@ -36,7 +36,6 @@ public class CatalogInfo {
 	private final String detailsLabel;
 	private final String details;
 	private final String customPublishedIn;
-	private final boolean notAvailableEntry;
 	private final CatalogStatusEvaluator statusEvaluator;
 	private final String statusPeriodOption;
 	private final boolean fullyBooked;
@@ -49,9 +48,9 @@ public class CatalogInfo {
 
 	public CatalogInfo(boolean catalogSupported, boolean webCatalogSupported, boolean publishedGroupsSupported,
 			boolean autoBookingSupported, boolean showDetails, String detailsLabel, String details,
-			String customPublishedIn, boolean notAvailableEntry, CatalogStatusEvaluator statusEvaluator,
-			String statusPeriodOption, boolean fullyBooked, String editBusinessPath, String editLabel,
-			String catalogBusinessPath, String webCatalogBusinessPath, List<TaxonomyLevel> microsites, boolean showQRCode) {
+			String customPublishedIn, CatalogStatusEvaluator statusEvaluator, String statusPeriodOption,
+			boolean fullyBooked, String editBusinessPath, String editLabel, String catalogBusinessPath,
+			String webCatalogBusinessPath, List<TaxonomyLevel> microsites, boolean showQRCode) {
 		this.catalogSupported = catalogSupported;
 		this.webCatalogSupported = webCatalogSupported;
 		this.publishedGroupsSupported = publishedGroupsSupported;
@@ -60,7 +59,6 @@ public class CatalogInfo {
 		this.detailsLabel = detailsLabel;
 		this.details = details;
 		this.customPublishedIn = customPublishedIn;
-		this.notAvailableEntry = notAvailableEntry;
 		this.statusEvaluator = statusEvaluator;
 		this.statusPeriodOption = statusPeriodOption;
 		this.fullyBooked = fullyBooked;
@@ -102,10 +100,6 @@ public class CatalogInfo {
 
 	public String getCustomPublishedIn() {
 		return customPublishedIn;
-	}
-
-	public boolean isNotAvailableEntry() {
-		return notAvailableEntry;
 	}
 
 	public CatalogStatusEvaluator getStatusEvaluator() {

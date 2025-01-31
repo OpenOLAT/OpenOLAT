@@ -76,9 +76,11 @@ import org.olat.modules.curriculum.ui.event.SelectCurriculumElementRowEvent;
 import org.olat.modules.curriculum.ui.member.CurriculumElementUserManagementController;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
+import org.olat.modules.curriculum.ui.widgets.OffersWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -109,6 +111,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private final TooledStackedPanel toolbarPanel;
 	
 	private CloseableModalController cmc;
+	private OffersWidgetController offersWidgetCtrl;
 	private CoursesWidgetController coursesWidgetCtrl;
 	private CurriculumComposerController structureCtrl;
 	private CurriculumDashboardController overviewCtrl;
@@ -133,7 +136,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
-	private CatalogV2Module catalogModule;
+	private AccessControlModule acModule;
+	@Autowired
+	private CatalogV2Module catalogV2Module;
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -478,7 +483,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		});
 		
 		// Offers
-		if (curriculumElement.getParent() == null && catalogModule.isEnabled()) {
+		if (acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null) {
 			offersTab = tabPane.addTab(ureq, translate("tab.offers"), uureq -> {
 				offersCtrl = new CurriculumElementOffersController(uureq, getWindowControl(),
 						curriculumElement, secCallback);
@@ -498,6 +503,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	
 	private CurriculumDashboardController createDashBoard(UserRequest ureq) {
 		removeAsListenerAndDispose(overviewCtrl);
+		removeAsListenerAndDispose(offersWidgetCtrl);
 		removeAsListenerAndDispose(coursesWidgetCtrl);
 		removeAsListenerAndDispose(lectureBlocksWidgetCtrl);
 		
@@ -517,6 +523,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		listenTo(coursesWidgetCtrl);
 		overviewCtrl.addWidget("courses", coursesWidgetCtrl);
 		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
+		
+		if(acModule.isEnabled() && catalogV2Module.isEnabled()) {
+			offersWidgetCtrl = new OffersWidgetController(ureq, getWindowControl(), curriculumElement);
+			listenTo(offersWidgetCtrl);
+			overviewCtrl.addWidget("offers", offersWidgetCtrl);
+		}
 		
 		return overviewCtrl;
 	}
@@ -623,11 +635,14 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(lectureBlocksWidgetCtrl != null) {
 			lectureBlocksWidgetCtrl.loadModel(ureq.getRequestTimestamp());
 		}
+		if(offersWidgetCtrl != null) {
+			offersWidgetCtrl.loadModel();
+		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(structureCtrl == source || coursesWidgetCtrl == source
+		if(structureCtrl == source || coursesWidgetCtrl == source || offersWidgetCtrl == source
 				|| lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
@@ -645,6 +660,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				curriculumElement = statusChangeCtrl.getCurriculumElement();
 				updateStatusDropdown();
 				updateOffersView(curriculumElement.getElementStatus());
+				if (offersWidgetCtrl != null) {
+					offersWidgetCtrl.loadModel();
+				}
 				if (structureCtrl != null) {
 					structureCtrl.loadModel();
 				}
@@ -701,6 +719,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			return;
 		} else if (curriculumElement.getElementStatus() == newStatus) {
 			updateStatusDropdown();
+			if (offersWidgetCtrl != null) {
+				offersWidgetCtrl.loadModel();
+			}
 			return;
 		}
 		

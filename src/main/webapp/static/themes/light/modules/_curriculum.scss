@@ -655,6 +655,72 @@ $o-curriculum-entry-bg							: #CCFFCC;
 			order: 2;
 		}
 	}
+	
+	.o_curriculum_offer_cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		gap: 10px;
+		h4 {
+			margin-top: 5px;
+			margin-bottom: 15px;
+		}
+	}
+	.o_curriculum_widget_catalog_cards {
+		display: grid;
+		gap: 10px;
+			
+		.o_curriculum_widget_catalog_card {
+			display: grid;
+			grid-template-columns: 50% 50%;
+			
+			padding: 10px;
+			font-size: 125%;
+			text-align: left;
+			border-radius: $o-curriculum-widget-card-border-radius;
+			&.o_ac_offer_bookable {
+				@extend %o_labeled_mega_green;
+			}
+			&.o_ac_offer_fully_booked {
+				@extend %o_labeled_mega_yellow;
+			}
+			&.o_ac_offer_not_available {
+				@extend %o_labeled_mega_grey;
+			}
+		}
+	}
+	
+	.o_curriculum_offer_card {
+		padding: 10px;
+		border: $o-curriculum-widget-card-border;
+		border-radius: $o-curriculum-widget-card-border-radius;
+		background-color: #fff;
+	}
+	.o_curriculum_offer_card_content {
+		display: grid;
+		grid-template-columns: max-content auto;
+		row-gap: 5px;
+		.o_labeled_light {
+			margin-right: 15px;
+		}
+		.o_curriculum_offer_card_num {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: baseline;
+			column-gap: 5px;
+		}
+	}
+	.o_curriculum_taxonomy_card_content {
+		.o_tag {
+			display: inline-block;
+		}
+		.o_empty_state {
+			margin: 0;
+		}
+		.o_empty_msg {
+			font-size: 1.2em;
+			margin: 0;
+		}
+	}
 }
 
 .o_curriculum_status_change_status {

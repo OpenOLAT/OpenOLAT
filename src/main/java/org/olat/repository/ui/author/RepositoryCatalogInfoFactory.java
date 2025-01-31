@@ -88,20 +88,19 @@ public class RepositoryCatalogInfoFactory {
 			return new CatalogInfo(true, catalogV2Module.isWebPublishEnabled(),
 					false, true,
 					true, translator.translate("access.taxonomy.level"), details,
-					null, false, getCatalogStatusEvaluator(entry.getEntryStatus()),
-					translator.translate("offer.available.in.status.course"),
-					false, 
-					editBusinessPath,
-					translator.translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()): null, taxonomyLevels, showRQCode);
+					null, getCatalogStatusEvaluator(entry.getEntryStatus()), translator.translate("offer.available.in.status.course"),
+					false,
+					editBusinessPath, 
+					translator.translate("access.open.metadata"),
+					CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()): null, taxonomyLevels, showRQCode);
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
-			String details = null;
-			boolean notAvailableEntry;
 			List<CatalogEntry> catalogEntries = CoreSpringFactory.getImpl(CatalogManager.class).getCatalogCategoriesFor(entry);
+			RepositoryEntryCatalogV1StatusEvaluator statusEvaluator = new RepositoryEntryCatalogV1StatusEvaluator(!catalogEntries.isEmpty());
+			String details = null;
 			if (catalogEntries.isEmpty()) {
 				details = translator.translate("access.no.catalog.entry");
-				notAvailableEntry = true;
 			} else {
 				List<String> catalogEntryPaths = new ArrayList<>(catalogEntries.size());
 				for (CatalogEntry catalogEntry : catalogEntries) {
@@ -115,15 +114,14 @@ public class RepositoryCatalogInfoFactory {
 				details = catalogEntryPaths.stream()
 						.sorted()
 						.collect(Collectors.joining(", "));
-				notAvailableEntry = false;
 			}
 			String editBusinessPath = null;
 			if (showBusinessPath) {
 				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
 			}
 			return new CatalogInfo(true, false, false, true, true, translator.translate("access.info.catalog.entries"),
-					details, null, notAvailableEntry, null, translator.translate("offer.available.in.status.course"),
-					false, editBusinessPath, translator.translate("access.open.catalog"), null, null, null, showRQCode);
+					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), false,
+					editBusinessPath, translator.translate("access.open.catalog"), null, null, null, showRQCode);
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}
@@ -142,7 +140,27 @@ public class RepositoryCatalogInfoFactory {
 		if (CoreSpringFactory.getImpl(CatalogV2Module.class).isEnabled()) {
 			return new RepositoryEntryCatalogV2StatusEvaluator(status);
 		}
-		return CatalogInfo.TRUE_STATUS_EVALUATOR;
+		return null;
+	}
+	
+	private static final class RepositoryEntryCatalogV1StatusEvaluator implements CatalogStatusEvaluator {
+		
+		private final boolean catalogEntryAvailable;
+		
+		public RepositoryEntryCatalogV1StatusEvaluator(boolean catalogEntryAvailable) {
+			this.catalogEntryAvailable = catalogEntryAvailable;
+		}
+
+		@Override
+		public boolean isVisibleStatusNoPeriod() {
+			return catalogEntryAvailable;
+		}
+
+		@Override
+		public boolean isVisibleStatusPeriod() {
+			return catalogEntryAvailable;
+		}
+		
 	}
 	
 	private static final class RepositoryEntryCatalogV2StatusEvaluator implements CatalogStatusEvaluator {
