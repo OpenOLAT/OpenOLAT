@@ -21,6 +21,7 @@ package org.olat.core.gui.components.form.flexible.elements;
 
 import java.util.List;
 
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 
 /**
@@ -36,5 +37,7 @@ public interface StaticListElement extends FormItem {
 	public void setInitialNumValues(int initialNumValues);
 	
 	public void setShowAllI18nKey(String showAllI18nKey);
+
+	public void setEscapeMode(EscapeMode escapeMode);
 
 }

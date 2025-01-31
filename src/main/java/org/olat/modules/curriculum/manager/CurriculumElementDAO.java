@@ -954,19 +954,37 @@ public class CurriculumElementDAO {
 		return elements;
 	}
 	
-	public List<CurriculumElement> getImplementations(Curriculum curriculum) {
-		String sb = """
+	public List<CurriculumElement> getImplementations(Curriculum curriculum, CurriculumElementStatus... status) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("""
 				select el from curriculumelement as el
 				inner join fetch el.curriculum as curriculum
 				inner join fetch el.group as baseGroup
 				left join fetch el.parent as parent
 				left join fetch el.type as type
-				where curriculum.key=:curriculumKey and el.parent.key is null""";
+				where curriculum.key=:curriculumKey and el.parent.key is null""");
+		
+		List<String> statusList = new ArrayList<>();
+		if(status != null && status.length > 0 && status[0] != null) {
+			for(CurriculumElementStatus s:status) {
+				if(s != null) {
+					statusList.add(s.name());
+				}
+			}	
+		}
+		
+		if(!statusList.isEmpty()) {
+			sb.append(" and el.status in (:status)");
+		}
 		  
-		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
-			.createQuery(sb, CurriculumElement.class)
-			.setParameter("curriculumKey", curriculum.getKey())
-			.getResultList();
+		TypedQuery<CurriculumElement> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), CurriculumElement.class)
+			.setParameter("curriculumKey", curriculum.getKey());
+		if(!statusList.isEmpty()) {
+			query.setParameter("status", statusList);
+		}
+		
+		List<CurriculumElement> elements = query.getResultList();
 		Collections.sort(elements, new PathMaterializedPathLengthComparator());
 		return elements;
 	}
@@ -1099,9 +1117,13 @@ public class CurriculumElementDAO {
 		if(elements == null || elements.isEmpty()) return new ArrayList<>();
 		
 		List<Long> elementKeys = elements.stream()
-				.map(CurriculumElementRef::getKey).collect(Collectors.toList());
+				.map(CurriculumElementRef::getKey)
+				.toList();
 		List<String> roleList = CurriculumRoles.toList(roles);
-		
+		return getMemberKeys(elementKeys, roleList);
+	}
+
+	public List<Long> getMemberKeys(List<Long> elementKeys, List<String> roles) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select distinct membership.identity.key from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
@@ -1110,7 +1132,7 @@ public class CurriculumElementDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("elementKeys", elementKeys)
-				.setParameter("roles", roleList)
+				.setParameter("roles", roles)
 				.getResultList();
 	}
 	

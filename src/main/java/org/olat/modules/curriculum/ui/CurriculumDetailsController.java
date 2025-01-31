@@ -50,6 +50,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
@@ -85,7 +86,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private LectureListRepositoryController lectureBlocksCtrl;
 	private CurriculumComposerController implementationsCtrl;
 	private CurriculumUserManagementController userManagementCtrl;
-	private ConfirmCurriculumDeleteController deleteCurriculumCtrl;
+	private ConfirmDeleteCurriculumController deleteCurriculumCtrl;
 	private LectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	
 	private Curriculum curriculum;
@@ -314,14 +315,21 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		if(curriculumToDelete == null || curriculumToDelete.curriculum() == null) {
 			showWarning("warning.curriculum.deleted");
 		} else {
-			deleteCurriculumCtrl = new ConfirmCurriculumDeleteController(ureq, getWindowControl(),
-					curriculumToDelete.curriculum(), curriculumToDelete.implementationsStatistics());
-			listenTo(deleteCurriculumCtrl);
-			
-			String title = translate("delete.curriculum.title", StringHelper.escapeHtml(curriculum.getDisplayName()));
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCurriculumCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
+			List<CurriculumElement> implementations = curriculumService.getImplementations(curriculum, CurriculumElementStatus.notDeleted());
+			if(implementations.isEmpty()) {
+				deleteCurriculumCtrl = new ConfirmDeleteCurriculumController(ureq, getWindowControl(),
+						translate("confirmation.delete.curriculum.text", StringHelper.escapeHtml(curriculum.getDisplayName())),
+						translate("confirmation.delete.curriculum"),
+						translate("delete"), curriculumToDelete.curriculum());
+				listenTo(deleteCurriculumCtrl);
+
+				String title = translate("delete.curriculum.title", StringHelper.escapeHtml(curriculum.getDisplayName()));
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCurriculumCtrl.getInitialComponent(), true, title);
+				listenTo(cmc);
+				cmc.activate();
+			} else {
+				showWarning("warning.curriculum.implementations", StringHelper.escapeHtml(curriculumToDelete.curriculum().getDisplayName()));
+			}
 		}
 	}
 }

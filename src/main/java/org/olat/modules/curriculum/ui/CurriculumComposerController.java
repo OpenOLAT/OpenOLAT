@@ -74,7 +74,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.confirmation.BulkDeleteConfirmationController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.OLATResourceable;
@@ -155,12 +154,12 @@ public class CurriculumComposerController extends FormBasicController implements
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditCurriculumElementMetadataController newSubElementCtrl;
 	private MoveCurriculumElementController moveElementCtrl;
-	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
+	private ConfirmDeleteCurriculumElementController confirmDeleteCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
 	private CurriculumElementPreviewListController qualityPreviewCtrl;
-	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
 	private CurriculumElementLearningPathController learningPathController;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
+	private ConfirmDeleteCurriculumElementListController bulkDeleteConfirmationCtrl;
 	
 	private int counter;
 	private final boolean managed;
@@ -364,7 +363,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		String tablePrefsId = getTablePrefsId();
 		tableEl.setAndLoadPersistedPreferences(ureq, tablePrefsId);
 
-		if(secCallback.canNewCurriculumElement()) {
+		if(secCallback.canNewCurriculumElement() && config.isFlat()) {
 			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkDeleteButton);
 			tableEl.setMultiSelect(true);
@@ -1026,11 +1025,16 @@ public class CurriculumComposerController extends FormBasicController implements
 			showWarning("warning.curriculum.deleted");
 			loadModel();
 		} else {
-			confirmDeleteCtrl = new ConfirmCurriculumElementDeleteController(ureq, getWindowControl(), curriculumElement);
-			listenTo(confirmDeleteCtrl);
+			List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
+			ConfirmDelete confirmDelete = ConfirmDelete.valueOf(curriculumElement, descendants, getTranslator());
 			
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true,
-					translate("confirmation.delete.element.title", row.getDisplayName()));
+			confirmDeleteCtrl = new ConfirmDeleteCurriculumElementController(ureq, getWindowControl(),
+					confirmDelete.message(), confirmDelete.confirmation(), confirmDelete.confirmationButton(),
+					curriculumElement, descendants);
+			listenTo(confirmDeleteCtrl);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(),
+					true, confirmDelete.title());
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -1049,17 +1053,16 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(curriculumElements.isEmpty()) {
 			showWarning("curriculums.elements.bulk.delete.empty.selection");
 		} else {
-			List<String> curriculumsNames = curriculumElements.stream()
-					.map(CurriculumElementRow::getDisplayName)
+			List<CurriculumElement> elements = curriculumElements.stream()
+					.map(CurriculumElementRow::getCurriculumElement)
 					.toList();
 
-			bulkDeleteConfirmationCtrl = new BulkDeleteConfirmationController(ureq, getWindowControl(), 
-					translate("curriculums.elements.bulk.delete.text", String.valueOf(curriculumElements.size())),
-					translate("curriculums.elements.bulk.delete.confirm", String.valueOf(curriculumElements.size())),
-					translate("curriculums.elements.bulk.delete.button"),
-					translate("curriculums.elements.bulk.delete.topics"),
-					curriculumsNames,
-					null);
+			bulkDeleteConfirmationCtrl = new ConfirmDeleteCurriculumElementListController(ureq, getWindowControl(), 
+					translate("curriculums.implementations.bulk.delete.text", String.valueOf(curriculumElements.size())),
+					translate("curriculums.implementations.bulk.delete.confirm", String.valueOf(curriculumElements.size())),
+					translate("curriculums.element.bulk.delete.button"),
+					/* translate("curriculums.elements.bulk.delete.topics"), */
+					elements);
 			
 			bulkDeleteConfirmationCtrl.setUserObject(new ToDelete(curriculumElements));
 			listenTo(bulkDeleteConfirmationCtrl);
@@ -1079,7 +1082,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			for(CurriculumElementRow element:rowsToDelete) {
 				CurriculumElement elementToDelete = curriculumService.getCurriculumElement(element);
 				if(elementToDelete != null) {
-					curriculumService.deleteCurriculumElement(element);
+					curriculumService.deleteSoftlyCurriculumElement(element);
 					dbInstance.commitAndCloseSession();
 				}
 			}

@@ -252,7 +252,7 @@ public class CurriculumsWebService {
 		if(!isManager(curriculum, httpRequest)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		curriculumService.deleteCurriculum(curriculum);
+		curriculumService.deleteSoftlyCurriculum(curriculum);
 		return Response.ok().build();
 	}
 

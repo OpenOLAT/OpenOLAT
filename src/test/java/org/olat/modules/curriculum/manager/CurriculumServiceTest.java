@@ -215,7 +215,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void deleteCurriculum() {
+	public void deleteSoftlyCurriculum() {
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -238,12 +238,13 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(2, myElements.size());
 		
-		curriculumService.deleteCurriculum(curriculum);
+		curriculumService.deleteSoftlyCurriculum(curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		// check
 		Curriculum deletedCurriculum = curriculumService.getCurriculum(curriculum);
-		Assert.assertNull(deletedCurriculum);
+		Assert.assertNotNull(deletedCurriculum);
+		Assert.assertEquals(CurriculumStatus.deleted.name(), deletedCurriculum.getStatus());
 	}
 	
 	@Test
@@ -274,7 +275,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(2, myElements.size());
 		
-		curriculumService.deleteCurriculum(curriculum);
+		curriculumService.deleteSoftlyCurriculum(curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		// check
@@ -315,7 +316,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(3, myElements.size());
 		
-		curriculumService.deleteCurriculum(curriculum);
+		curriculumService.deleteSoftlyCurriculum(curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		// check
@@ -390,7 +391,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		element3 = curriculumService.getCurriculumElement(element3);
 		Assert.assertEquals("3", element3.getNumberImpl());
 		
-		curriculumService.deleteCurriculumElement(element1);
+		curriculumService.deleteSoftlyCurriculumElement(element1);
 		dbInstance.commitAndCloseSession();
 		
 		element = curriculumService.getCurriculumElement(element);
@@ -406,7 +407,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		element1 = curriculumService.getCurriculumElement(element1);
-		Assert.assertNull(element1);
+		Assert.assertNotNull(element1);
+		Assert.assertEquals(CurriculumElementStatus.deleted, element1.getElementStatus());
 		element2 = curriculumService.getCurriculumElement(element2);
 		element3 = curriculumService.getCurriculumElement(element3);
 		element4 = curriculumService.getCurriculumElement(element4);

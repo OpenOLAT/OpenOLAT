@@ -130,7 +130,6 @@ import org.olat.modules.curriculum.ui.member.ResourceToRoleKey;
 import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.manager.LectureBlockDAO;
-import org.olat.modules.lecture.manager.LectureBlockToGroupDAO;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -178,8 +177,6 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumMemberQueries memberQueries;
 	@Autowired
 	private InfoMessageManager infoMessageManager;
-	@Autowired
-	private LectureBlockToGroupDAO lectureBlockToGroupDao;
 	@Autowired
 	private RepositoryEntryMyCourseQueries myCourseQueries;
 	@Autowired
@@ -250,21 +247,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public void deleteCurriculum(CurriculumRef curriculumRef) {
+	public void deleteSoftlyCurriculum(CurriculumRef curriculumRef) {
 		CurriculumImpl curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
-		boolean deleted = true;
-		for(CurriculumElement rootElement:curriculum.getRootElements()) {
-			deleted &= deleteCurriculumElement(rootElement);
-		}
-		dbInstance.commitAndCloseSession();
-		curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
-		if(deleted) {
-			curriculumDao.delete(curriculum);
-		} else {
+		if(curriculum != null) {
+			for(CurriculumElement rootElement:curriculum.getRootElements()) {
+				deleteSoftlyCurriculumElement(rootElement);
+			}
+			dbInstance.commitAndCloseSession();
+			curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
 			curriculumDao.flagAsDelete(curriculum);
+			dbInstance.commit();
 		}
-		
-		dbInstance.commit();
 	}
 
 	@Override
@@ -559,13 +552,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public boolean deleteCurriculumElement(CurriculumElementRef element) {
+	public boolean deleteSoftlyCurriculumElement(CurriculumElementRef element) {
 		if(element == null || element.getKey() == null) return true; // nothing to do
 
 		boolean delete = true;
 		List<CurriculumElement> children = curriculumElementDao.getChildren(element);
 		for(CurriculumElement child:children) {
-			delete &= deleteCurriculumElement(child);
+			delete &= deleteSoftlyCurriculumElement(child);
 		}
 		
 		// remove relations to taxonomy before reloading to clear the set
@@ -573,8 +566,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		dbInstance.commit();
 
 		CurriculumElementImpl reloadedElement = (CurriculumElementImpl)curriculumElementDao.loadByKey(element.getKey());
-		if(reloadedElement == null) {
-			return true;
+		if(reloadedElement == null || reloadedElement.getElementStatus() == CurriculumElementStatus.deleted) {
+			return false;
 		}
 
 		// remove relations to repository entries
@@ -585,31 +578,20 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			}
 		}
 		
-		// remove relations to lecture blocks
-		lectureBlockToGroupDao.deleteLectureBlockToGroup(reloadedElement.getGroup());
-		
 		Map<String,CurriculumDataDeletable> deleteDelegates = CoreSpringFactory.getBeansOfType(CurriculumDataDeletable.class);
 		for(CurriculumDataDeletable deleteDelegate:deleteDelegates.values()) {
 			delete &= deleteDelegate.deleteCurriculumElementData(reloadedElement);
 		}
 		
-		groupMembershipHistoryDao.deleteMembershipHistory(reloadedElement.getGroup());
+		groupDao.removeMemberships(reloadedElement.getGroup());
+		
+		//only flag as deleted
+		reloadedElement.setParent(null);
+		reloadedElement.setExternalId(null);
+		reloadedElement.setMaterializedPathKeys(null);
+		reloadedElement.setElementStatus(CurriculumElementStatus.deleted);
+		curriculumElementDao.update(reloadedElement);
 
-		if(delete) {
-			if(reloadedElement.getParent() instanceof CurriculumElementImpl parentImpl) {
-				parentImpl.getChildren().remove(reloadedElement);
-				curriculumElementDao.update(parentImpl);
-			}
-			curriculumElementDao.deleteCurriculumElement(reloadedElement);
-		} else {
-			groupDao.removeMemberships(reloadedElement.getGroup());
-			//only flag as deleted
-			reloadedElement.setParent(null);
-			reloadedElement.setExternalId(null);
-			reloadedElement.setMaterializedPathKeys(null);
-			reloadedElement.setElementStatus(CurriculumElementStatus.deleted);
-			curriculumElementDao.update(reloadedElement);
-		}
 		return delete;
 	}
 
@@ -1566,8 +1548,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public List<CurriculumElement> getImplementations(Curriculum curriculum) {
-		return this.curriculumElementDao.getImplementations(curriculum);
+	public List<CurriculumElement> getImplementations(Curriculum curriculum, CurriculumElementStatus... status) {
+		return curriculumElementDao.getImplementations(curriculum, status);
 	}
 
 	@Override

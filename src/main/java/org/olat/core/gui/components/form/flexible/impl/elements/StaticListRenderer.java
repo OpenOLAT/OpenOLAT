@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
@@ -48,6 +49,7 @@ public class StaticListRenderer extends DefaultComponentRenderer {
 		StaticListComponent comp = (StaticListComponent)source;
 		String id = comp.getFormDispatchId();
 		List<String> values = comp.getValues();
+		EscapeMode escapeMode = comp.getEscapeMode();
 		
 		boolean showAllVisible = comp.isShowAllVisible();
 		if (showAllVisible) {
@@ -73,7 +75,7 @@ public class StaticListRenderer extends DefaultComponentRenderer {
 		// Show values
 		for (int i = 0; i < showNumValues; i++) {
 			sb.append("<li>");
-			sb.append(StringHelper.escapeHtml(values.get(i)));
+			sb.append(escapeMode.escape(values.get(i)));
 			sb.append("</li>");
 		}
 		
@@ -86,10 +88,10 @@ public class StaticListRenderer extends DefaultComponentRenderer {
 			sb.append(">");
 			String showAllText;
 			if (StringHelper.containsNonWhitespace(comp.getShowAllI18nKey())) {
-				showAllText = translator.translate(comp.getShowAllI18nKey(), new String[] {String.valueOf(showNumAdditionalValues)});
+				showAllText = translator.translate(comp.getShowAllI18nKey(), String.valueOf(showNumAdditionalValues));
 			} else {
 				showAllText = Util.createPackageTranslator(StaticListRenderer.class, translator.getLocale())
-						.translate("static.list.further", new String[] {String.valueOf(showNumAdditionalValues)});
+						.translate("static.list.further", String.valueOf(showNumAdditionalValues));
 			}
 			sb.append(showAllText);
 			sb.append("</a>");

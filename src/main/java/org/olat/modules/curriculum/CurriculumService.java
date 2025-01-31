@@ -87,7 +87,7 @@ public interface CurriculumService {
 	
 	public Curriculum updateCurriculum(Curriculum curriculum);
 
-	public void deleteCurriculum(CurriculumRef curriculum);
+	public void deleteSoftlyCurriculum(CurriculumRef curriculum);
 	
 	
 	public List<Curriculum> getCurriculums(Collection<? extends CurriculumRef> refs);
@@ -284,13 +284,12 @@ public interface CurriculumService {
 	public List<CurriculumElement> getCurriculumElements(Collection<? extends CurriculumElementRef> elementRefs);
 	
 	/**
-	 * The element will deleted from the database if possible
-	 * or flagged as deleted.
+	 * The element will be flagged as deleted.
 	 * 
-	 * @param element The curriculum elemennt to delete
-	 * @return true if the element is deleted, false if it's only flagged as deleted
+	 * @param element The curriculum element to delete
+	 * @return true if the element status is set as deleted, false if already deleted
 	 */
-	public boolean deleteCurriculumElement(CurriculumElementRef element);
+	public boolean deleteSoftlyCurriculumElement(CurriculumElementRef element);
 	
 	/**
 	 * Return all the elements of a curriculum, but flat.
@@ -420,7 +419,7 @@ public interface CurriculumService {
 	 */
 	public CurriculumElement getImplementationOf(CurriculumElement curriculumElement);
 	
-	public List<CurriculumElement> getImplementations(Curriculum curriculum);
+	public List<CurriculumElement> getImplementations(Curriculum curriculum, CurriculumElementStatus... status);
 	
 	public VFSContainer getMediaContainer(CurriculumElement curriculumElement);
 

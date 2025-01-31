@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * List different escaping strategy
  * 
@@ -29,6 +31,14 @@ package org.olat.core.gui.components;
 public enum EscapeMode {
 	none,
 	html,
-	antisamy
-
+	antisamy;
+	
+	public String escape(String str) {
+		if(this == html) {
+			str = StringHelper.escapeHtml(str);
+		} else if(this == antisamy) {
+			str = StringHelper.xssScan(str);
+		}
+		return str;
+	}
 }

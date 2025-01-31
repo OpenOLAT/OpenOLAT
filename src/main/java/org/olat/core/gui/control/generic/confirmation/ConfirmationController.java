@@ -149,7 +149,7 @@ public class ConfirmationController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (confirmLink == source) {
 			if (validateFormLogic(ureq)) {
-				fireEvent(ureq, Event.DONE_EVENT);
+				doAction(ureq);
 			}
 		}
 	}
@@ -157,7 +157,7 @@ public class ConfirmationController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (ButtonType.submitPrimary == confirmButtonType) {
-			fireEvent(ureq, Event.DONE_EVENT);
+			doAction(ureq);
 		}
 	}
 
@@ -165,5 +165,8 @@ public class ConfirmationController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-
+	
+	protected void doAction(UserRequest ureq) {
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
 }

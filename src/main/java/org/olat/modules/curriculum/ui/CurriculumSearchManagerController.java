@@ -20,13 +20,9 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -112,7 +108,6 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	
 	private FlexiFiltersTab allTab;
 	
-	private FormLink bulkDeleteButton;
 	private FlexiTableElement tableEl;
 	private CurriculumElementSearchDataModel tableModel;
 	private final TooledStackedPanel toolbarPanel;
@@ -122,15 +117,13 @@ public class CurriculumSearchManagerController extends FormBasicController {
 	private ReferencesController referencesCtrl;
 	private CurriculumDetailsController detailsCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
+	private ConfirmDeleteCurriculumElementController confirmDeleteCtrl;
 	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
 	
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
 	
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -201,8 +194,6 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSearchEnabled(true);
-		tableEl.setMultiSelect(true);
-		tableEl.setSelectAllEnable(true);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmptyTableSettings("table.search.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-search-manage");
@@ -211,12 +202,6 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		initFiltersPresets();
 		
 		tableEl.setSelectedFilterTab(ureq, allTab);
-		
-		if(secCallback.canNewCurriculumElement()) {
-			bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
-			tableEl.addBatchButton(bulkDeleteButton);
-			tableEl.setMultiSelect(true);
-		}
 	}
 	
 	private void initFilters() {
@@ -313,7 +298,6 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			}
 		} else if(bulkDeleteConfirmationCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				doDeleteCurriculumElements((ToDelete)bulkDeleteConfirmationCtrl.getUserObject());
 				doSearch(tableEl.getQuickSearchString(), tableEl.getFilters());
 			}
 			cmc.deactivate();
@@ -354,9 +338,7 @@ public class CurriculumSearchManagerController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(bulkDeleteButton == source) {
-			doConfirmBulkDelete(ureq);
-		} else if(tableEl == source) {
+		if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if(CMD_SELECT.equals(cmd)) {
@@ -626,72 +608,18 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			showWarning("warning.curriculum.deleted");
 			doSearch(tableEl.getQuickSearchString(), tableEl.getFilters());
 		} else {
-			confirmDeleteCtrl = new ConfirmCurriculumElementDeleteController(ureq, getWindowControl(), curriculumElement);
+			List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
+			ConfirmDelete confirmDelete = ConfirmDelete.valueOf(curriculumElement, descendants, getTranslator());
+			
+			confirmDeleteCtrl = new ConfirmDeleteCurriculumElementController(ureq, getWindowControl(),
+					confirmDelete.message(), confirmDelete.confirmation(), confirmDelete.confirmationButton(),
+					curriculumElement, descendants);
 			listenTo(confirmDeleteCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true,
-					translate("confirmation.delete.element.title", row.getDisplayName()));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(),
+					true, confirmDelete.title());
 			listenTo(cmc);
 			cmc.activate();
-		}
-	}
-	
-	private void doConfirmBulkDelete(UserRequest ureq) {
-		if(guardModalController(bulkDeleteConfirmationCtrl)) return;
-
-		List<CurriculumElementSearchRow> curriculumElements =  tableEl.getMultiSelectedIndex().stream()
-				.map(index  -> tableModel.getObject(index.intValue()))
-				.filter(Objects::nonNull)
-				.filter(element -> secCallback.canEditCurriculumElement(element.getCurriculumElement())
-						&& !CurriculumElementManagedFlag.isManaged(element.getCurriculumElement(), CurriculumElementManagedFlag.delete))
-				.toList();
-		
-		if(curriculumElements.isEmpty()) {
-			showWarning("curriculums.elements.bulk.delete.empty.selection");
-		} else {
-			List<String> curriculumsNames = curriculumElements.stream()
-					.map(CurriculumElementSearchRow::getDisplayName)
-					.toList();
-
-			bulkDeleteConfirmationCtrl = new BulkDeleteConfirmationController(ureq, getWindowControl(), 
-					translate("curriculums.elements.bulk.delete.text", String.valueOf(curriculumElements.size())),
-					translate("curriculums.elements.bulk.delete.confirm", String.valueOf(curriculumElements.size())),
-					translate("curriculums.elements.bulk.delete.button"),
-					translate("curriculums.elements.bulk.delete.topics"),
-					curriculumsNames,
-					null);
-			
-			bulkDeleteConfirmationCtrl.setUserObject(new ToDelete(curriculumElements));
-			listenTo(bulkDeleteConfirmationCtrl);
-			
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkDeleteConfirmationCtrl.getInitialComponent(),
-					true, translate("curriculums.elements.bulk.delete.title"), true);
-			listenTo(cmc);
-			cmc.activate();
-		}
-	}
-	
-	private void doDeleteCurriculumElements(ToDelete toDelete) {
-		Set<CurriculumElement> implementations = new HashSet<>();
-		
-		for(CurriculumElementSearchRow element:toDelete.elements()) {
-			CurriculumElement elementToDelete = curriculumService.getCurriculumElement(element);
-			if(elementToDelete != null) {
-				CurriculumElement implementationElement = curriculumService.getImplementationOf(elementToDelete);
-				if(implementationElement != null) {
-					implementations.add(implementationElement);
-				}
-				curriculumService.deleteCurriculumElement(element);
-				dbInstance.commitAndCloseSession();
-			}
-		}
-		
-		for(CurriculumElement implementation:implementations) {
-			CurriculumElement implementationToNumber = curriculumService.getCurriculumElement(implementation);
-			if(implementationToNumber != null) {
-				curriculumService.numberRootCurriculumElement(implementationToNumber);
-				dbInstance.commitAndCloseSession();
-			}
 		}
 	}
 	
@@ -765,9 +693,5 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
 		}
-	}
-	
-	private record ToDelete(List<CurriculumElementSearchRow> elements) {
-		//
 	}
 }

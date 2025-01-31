@@ -79,6 +79,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -152,7 +153,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private EditCurriculumController newCurriculumCtrl;
 	private ImportCurriculumController importCurriculumCtrl;
 	private CurriculumDetailsController detailsCurriculumCtrl;
-	private ConfirmCurriculumDeleteController deleteCurriculumCtrl;
+	private ConfirmDeleteCurriculumController deleteCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private BulkDeleteConfirmationController bulkDeleteConfirmationCtrl;
 	
@@ -550,6 +551,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		
 		if(curriculums.isEmpty()) {
 			showWarning("curriculums.bulk.delete.empty.selection");
+		} else if(curriculums.size() == 1) {
+			doConfirmDeleteCurriculum(ureq, curriculums.get(0));
 		} else {
 			List<String> curriculumsNames = curriculums.stream()
 					.map(CurriculumRow::getDisplayName)
@@ -575,7 +578,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private void doDeleteCurriculums(ToDelete toDelete) {
 		for(CurriculumRow curriculum:toDelete.curriculums()) {
-			curriculumService.deleteCurriculum(curriculum);
+			curriculumService.deleteSoftlyCurriculum(curriculum);
 		}
 		loadModel(tableEl.getQuickSearchString(), false);
 	}
@@ -588,14 +591,21 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		if(curriculum == null) {
 			showWarning("warning.curriculum.deleted");
 		} else {
-			deleteCurriculumCtrl = new ConfirmCurriculumDeleteController(ureq, getWindowControl(),
-					row.getCurriculum(), row.getImplementationsStatistics());
-			listenTo(deleteCurriculumCtrl);
-			
-			String title = translate("delete.curriculum.title", StringHelper.escapeHtml(row.getDisplayName()));
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCurriculumCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
+			List<CurriculumElement> implementations = curriculumService.getImplementations(curriculum, CurriculumElementStatus.notDeleted());
+			if(implementations.isEmpty()) {
+				deleteCurriculumCtrl = new ConfirmDeleteCurriculumController(ureq, getWindowControl(),
+						translate("confirmation.delete.curriculum.text", StringHelper.escapeHtml(curriculum.getDisplayName())),
+						translate("confirmation.delete.curriculum"),
+						translate("delete"), row.getCurriculum());
+				listenTo(deleteCurriculumCtrl);
+				
+				String title = translate("delete.curriculum.title");
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCurriculumCtrl.getInitialComponent(), true, title);
+				listenTo(cmc);
+				cmc.activate();
+			} else {
+				showWarning("warning.curriculum.implementations", StringHelper.escapeHtml(curriculum.getDisplayName()));
+			}
 		}
 	}
 	

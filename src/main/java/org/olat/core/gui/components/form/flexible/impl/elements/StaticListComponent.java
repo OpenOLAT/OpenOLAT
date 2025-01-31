@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.StaticListElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
@@ -44,6 +45,7 @@ public class StaticListComponent extends FormBaseComponentImpl {
 	private int initialNumValues = 5;
 	private String showAllI18nKey;
 	private boolean showAllVisible = true;
+	private EscapeMode escapeMode = EscapeMode.html;
 
 	public StaticListComponent(String name) {
 		this(name, null);
@@ -103,6 +105,14 @@ public class StaticListComponent extends FormBaseComponentImpl {
 
 	public void setShowAllVisible(boolean showAllVisible) {
 		this.showAllVisible = showAllVisible;
+	}
+
+	public EscapeMode getEscapeMode() {
+		return escapeMode == null ? EscapeMode.html : escapeMode;
+	}
+
+	public void setEscapeMode(EscapeMode escapeMode) {
+		this.escapeMode = escapeMode;
 	}
 
 }

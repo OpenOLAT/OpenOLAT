@@ -30,6 +30,12 @@ public record CurriculumImplementationsStatistics(long numOfRootElements,
 		long numOfConfirmedRootElements, long numOfActiveRootElements,
 		long numOfCancelledRootElements, long numOfFinishedRootElements,
 		long numOfDeletedRootElements) {
+	
+	public long numOfNotDeletedElements() {
+		return numOfPreparationRootElements + numOfProvisionalRootElements
+				+ numOfConfirmedRootElements + numOfActiveRootElements
+				+ numOfCancelledRootElements + numOfFinishedRootElements;
+	}
 
 	public static final CurriculumImplementationsStatistics empty() {
 		return new CurriculumImplementationsStatistics(0l, 0l, 0l, 0l, 0l, 0l, 0l, 0l);

@@ -124,7 +124,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private CurriculumElementStatusChangeController statusChangeCtrl;
 	private CurriculumElementUserManagementController userManagementCtrl;
 	private CurriculumStructureCalloutController curriculumStructureCalloutCtrl;
-	private ConfirmCurriculumElementDeleteController deleteCurriculumElementCtrl;
+	private ConfirmDeleteCurriculumElementController deleteCurriculumElementCtrl;
 	
 	private Curriculum curriculum;
 	private final boolean canChildren;
@@ -748,11 +748,16 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(elementToDelete == null) {
 			showWarning("warning.curriculum.deleted");
 		} else {
-			deleteCurriculumElementCtrl = new ConfirmCurriculumElementDeleteController(ureq, getWindowControl(), elementToDelete);
+			List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
+			ConfirmDelete confirmDelete = ConfirmDelete.valueOf(elementToDelete, descendants, getTranslator());
+			
+			deleteCurriculumElementCtrl = new ConfirmDeleteCurriculumElementController(ureq, getWindowControl(),
+					confirmDelete.message(), confirmDelete.confirmation(), confirmDelete.confirmationButton(),
+					elementToDelete, descendants);
 			listenTo(deleteCurriculumElementCtrl);
 			
-			String title = translate("delete.curriculum.title", StringHelper.escapeHtml(curriculum.getDisplayName()));
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCurriculumElementCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCurriculumElementCtrl.getInitialComponent(),
+					true, confirmDelete.title());
 			listenTo(cmc);
 			cmc.activate();
 		}

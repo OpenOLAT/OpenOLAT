@@ -638,6 +638,48 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getImplementations() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-impl-1", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement implementationElement = curriculumElementDao.createCurriculumElement("Element-impl", "1. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-impl-1.1", "1.1 Element",
+				CurriculumElementStatus.active, null, null, implementationElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		
+		List<CurriculumElement> implementations = curriculumElementDao.getImplementations(curriculum);
+		Assertions.assertThat(implementations)
+			.hasSize(1)
+			.containsExactly(implementationElement)
+			.doesNotContain(element1);
+	}
+	
+	@Test
+	public void getImplementationsWithStatus() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-impl-1", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement implementation1Element = curriculumElementDao.createCurriculumElement("Element-impl", "1. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-impl-1.1", "1.1 Element",
+				CurriculumElementStatus.active, null, null, implementation1Element, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement implementationFinishedElement = curriculumElementDao.createCurriculumElement("Element-impl", "2. Element",
+				CurriculumElementStatus.finished, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement implementationDeletedElement = curriculumElementDao.createCurriculumElement("Element-impl", "3. Element",
+				CurriculumElementStatus.deleted, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		
+		List<CurriculumElement> implementations = curriculumElementDao.getImplementations(curriculum, CurriculumElementStatus.notDeleted());
+		Assertions.assertThat(implementations)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(implementation1Element, implementationFinishedElement)
+			.doesNotContain(element1, implementationDeletedElement);
+	}
+	
+	@Test
 	public void getDescendants() {
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-5", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-5", "5. Element",

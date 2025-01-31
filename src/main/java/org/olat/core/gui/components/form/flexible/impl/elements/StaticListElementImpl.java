@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.elements.StaticListElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 
@@ -74,6 +75,11 @@ public class StaticListElementImpl extends FormItemImpl implements StaticListEle
 	@Override
 	public void setShowAllI18nKey(String showAllI18nKey) {
 		component.setShowAllI18nKey(showAllI18nKey);
+	}
+
+	@Override
+	public void setEscapeMode(EscapeMode escapeMode) {
+		component.setEscapeMode(escapeMode);
 	}
 	
 }
