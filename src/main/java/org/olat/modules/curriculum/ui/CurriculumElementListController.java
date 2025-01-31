@@ -94,6 +94,7 @@ import org.olat.modules.curriculum.ui.component.CurriculumElementViewsRowCompara
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -282,7 +283,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService
-				.getCurriculumElements(assessedIdentity, roles, curriculumList, CurriculumElementStatus.visibleUser());
+				.getCurriculumElements(assessedIdentity, roles, curriculumList, CurriculumElementStatus.visibleUser(),
+						RepositoryEntryRuntimeType.notEmbedded());
 		
 		Set<Long> repoKeys = new HashSet<>(elementsWithViews.size() * 3);
 		List<OLATResource> resourcesWithAC = new ArrayList<>(elementsWithViews.size() * 3);

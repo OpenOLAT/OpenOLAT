@@ -55,6 +55,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ResourceReservation;
 
@@ -644,11 +645,12 @@ public interface CurriculumService {
 	 * @param identity The member of the curriculum
 	 * @param roles The roles
 	 * @param curriculum The curriculum
+	 * @param runtimeTypes Runtime types for the repository entries.   
 	 * @return A list of views
 	 */
-	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles,
-			List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status);
+	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status, RepositoryEntryRuntimeType[] runtimeTypes);
 	
+	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculum, CurriculumElementStatus[] status);
 
 	public List<CurriculumElementWebDAVInfos> getCurriculumElementInfosForWebDAV(IdentityRef identity);
 

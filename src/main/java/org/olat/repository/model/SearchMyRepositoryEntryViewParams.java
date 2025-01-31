@@ -46,7 +46,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private boolean membershipOnly = false;
 	private boolean membershipMandatory = false;
 	private RepositoryEntryStatusEnum[] entryStatus;
-	private RepositoryEntryRuntimeType runtimeType;
+	private RepositoryEntryRuntimeType[] runtimeTypes;
 	
 	private OrderBy orderBy;
 	private boolean asc;
@@ -250,12 +250,16 @@ public class SearchMyRepositoryEntryViewParams {
 		this.entryStatus = entryStatus;
 	}
 
-	public RepositoryEntryRuntimeType getRuntimeType() {
-		return runtimeType;
+	public RepositoryEntryRuntimeType[] getRuntimeTypes() {
+		return runtimeTypes;
+	}
+
+	public void setRuntimeTypes(RepositoryEntryRuntimeType[] runtimeTypes) {
+		this.runtimeTypes = runtimeTypes;
 	}
 
 	public void setRuntimeType(RepositoryEntryRuntimeType runtimeType) {
-		this.runtimeType = runtimeType;
+		this.runtimeTypes = new RepositoryEntryRuntimeType[] { runtimeType };
 	}
 
 	public Boolean getMarked() {

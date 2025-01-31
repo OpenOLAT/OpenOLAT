@@ -53,4 +53,8 @@ public enum RepositoryEntryRuntimeType {
 		}
 		return defaultValue;
 	}
+	
+	public static RepositoryEntryRuntimeType[] notEmbedded() {
+		return new RepositoryEntryRuntimeType[] { curricular, standalone };
+	}
 }
