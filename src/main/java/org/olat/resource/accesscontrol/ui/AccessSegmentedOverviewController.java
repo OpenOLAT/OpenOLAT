@@ -87,6 +87,11 @@ public class AccessSegmentedOverviewController extends BasicController {
 		buttonsGroup.addButton(bookingsLink, false);
 		mainVC.put("segments", buttonsGroup);
 		
+		updateCatalogStatusUI();
+		putInitialPanel(mainVC);
+	}
+
+	private void updateCatalogStatusUI() {
 		String internalCatalog = accessConfigCtrl.getInternalCatalogStatus();
 		if(StringHelper.containsNonWhitespace(internalCatalog)) {
 			mainVC.contextPut("internalCatalog", internalCatalog);
@@ -95,7 +100,6 @@ public class AccessSegmentedOverviewController extends BasicController {
 		if(StringHelper.containsNonWhitespace(externalCatalog)) {
 			mainVC.contextPut("externalCatalog", externalCatalog);
 		}
-		putInitialPanel(mainVC);
 	}
 	
 	public void setStatusEvaluator(CatalogStatusEvaluator statusEvaluator) {
@@ -116,6 +120,7 @@ public class AccessSegmentedOverviewController extends BasicController {
 		if(source == accessConfigCtrl) {
 			if(event == Event.CHANGED_EVENT) {
 				accessConfigCtrl.commitChanges();
+				updateCatalogStatusUI();
 			} else if(event instanceof OpenOrdersEvent ooe) {
 				String path = "[All:0][OfferAccess:" + ooe.getOfferAccess().getKey() + "]";
 				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(path);

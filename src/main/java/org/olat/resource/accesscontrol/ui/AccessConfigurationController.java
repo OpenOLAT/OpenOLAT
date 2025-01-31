@@ -1183,8 +1183,8 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public void setLink(OfferAccess link) {
 			this.link = link;
-			this.offer = link != null? link.getOffer(): null;
-			this.iconPanel.setIconCssClass("o_icon o_icon-fw " + (link != null? link.getMethod().getMethodCssClass() + "_icon": ""));
+			setOffer(link.getOffer());
+			this.iconPanel.setIconCssClass("o_icon o_icon-fw " + (link.getMethod().getMethodCssClass() + "_icon"));
 		}
 
 	}
