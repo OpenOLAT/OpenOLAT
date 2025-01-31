@@ -408,4 +408,53 @@ public class OrganisationServiceTest extends OlatTestCase {
 		Assert.assertTrue(organisationService.isEmailDomainAllowed(emailDomains, "shankar.geeta@frentix.com"));
 	}
 
+	@Test
+	public void shouldGetMatchingEmailDomains() {
+		Organisation organisation = organisationService.createOrganisation(random(), null, null, null, null, JunitTestHelper.getDefaultActor());
+
+		// Case 1: Exact match found
+		OrganisationEmailDomain emailDomain1 = organisationService.createOrganisationEmailDomain(organisation, "example.com");
+		OrganisationEmailDomain emailDomain2 = organisationService.createOrganisationEmailDomain(organisation, "test.com");
+		dbInstance.commitAndCloseSession();
+		List<OrganisationEmailDomain> emailDomains = List.of(emailDomain1, emailDomain2);
+
+		Assert.assertEquals(List.of(emailDomain1), organisationService.getMatchingEmailDomains(emailDomains, "example.com"));
+		Assert.assertEquals(List.of(emailDomain2), organisationService.getMatchingEmailDomains(emailDomains, "test.com"));
+		Assert.assertTrue(organisationService.getMatchingEmailDomains(emailDomains, "nomatch.com").isEmpty());
+
+		// Case 2: Wildcard domain exists, but exact match takes priority
+		OrganisationEmailDomain wildcardDomain = organisationService.createOrganisationEmailDomain(organisation, OrganisationEmailDomain.WILDCARD);
+		dbInstance.commitAndCloseSession();
+		emailDomains = List.of(emailDomain1, wildcardDomain);
+
+		Assert.assertEquals(List.of(emailDomain1), organisationService.getMatchingEmailDomains(emailDomains, "example.com")); // Exact match should be prioritized
+		Assert.assertEquals(List.of(wildcardDomain), organisationService.getMatchingEmailDomains(emailDomains, "random.com")); // No exact match, wildcard applies
+
+		// Case 3: Only wildcard domains exist, should return all wildcard domains
+		OrganisationEmailDomain wildcardDomain2 = organisationService.createOrganisationEmailDomain(organisation, OrganisationEmailDomain.WILDCARD);
+		dbInstance.commitAndCloseSession();
+		emailDomains = List.of(wildcardDomain, wildcardDomain2);
+
+		Assert.assertEquals(List.of(wildcardDomain, wildcardDomain2), organisationService.getMatchingEmailDomains(emailDomains, "anything.com"));
+
+		// Case 4: No matching domain and no wildcard → Return empty list
+		emailDomains = List.of(emailDomain1, emailDomain2);
+		Assert.assertTrue(organisationService.getMatchingEmailDomains(emailDomains, "unknown.com").isEmpty());
+
+		// Case 5: Mixed case handling (case-insensitive match)
+		Assert.assertEquals(List.of(emailDomain1), organisationService.getMatchingEmailDomains(emailDomains, "EXAMPLE.COM"));
+		Assert.assertEquals(List.of(emailDomain2), organisationService.getMatchingEmailDomains(emailDomains, "TEST.COM"));
+
+		// Case 6: Empty input list
+		emailDomains = List.of();
+		Assert.assertTrue(organisationService.getMatchingEmailDomains(emailDomains, "any.com").isEmpty());
+
+		// Case 7: Domains with subdomains allowed
+		emailDomain1.setSubdomainsAllowed(true);
+		emailDomains = List.of(emailDomain1);
+
+		Assert.assertEquals(List.of(emailDomain1), organisationService.getMatchingEmailDomains(emailDomains, "sub.example.com"));
+		Assert.assertEquals(List.of(emailDomain1), organisationService.getMatchingEmailDomains(emailDomains, "deep.sub.example.com"));
+		Assert.assertTrue(organisationService.getMatchingEmailDomains(emailDomains, "random.com").isEmpty());
+	}
 }

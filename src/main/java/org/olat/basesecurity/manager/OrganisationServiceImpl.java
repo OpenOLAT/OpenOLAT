@@ -529,6 +529,26 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 				|| domainLowerCase.equals(organisationDomainLowerCase)
 				|| (emailDomain.isSubdomainsAllowed() && domainLowerCase.endsWith("." + organisationDomainLowerCase));
 	}
+
+	@Override
+	public List<OrganisationEmailDomain> getMatchingEmailDomains(List<OrganisationEmailDomain> emailDomains, String mailDomain) {
+		// Find exact matches and matches where subdomains are allowed
+		List<OrganisationEmailDomain> exactMatches = emailDomains.stream()
+				.filter(domain -> mailDomain.equalsIgnoreCase(domain.getDomain()) ||
+						(domain.isSubdomainsAllowed() && mailDomain.endsWith("." + domain.getDomain())))
+				.toList();
+
+		// If exact or subdomain matches exist, return them
+		if (!exactMatches.isEmpty()) {
+			return exactMatches;
+		}
+
+		// Otherwise, return all wildcard domains
+		List<OrganisationEmailDomain> wildcardMatches = emailDomains.stream()
+				.filter(domain -> OrganisationEmailDomain.WILDCARD.equals(domain.getDomain()))
+				.toList();
+		return wildcardMatches.isEmpty() ? Collections.emptyList() : wildcardMatches;
+	}
 	
 	private String getDomainLowerCase(String emailAddress) {
 		if (!StringHelper.containsNonWhitespace(emailAddress)) {

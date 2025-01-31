@@ -363,18 +363,10 @@ public class MailValidationController extends FormBasicController {
 		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
 			OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
 			searchParams.setEnabled(true);
-			// ensure to only get organisations with matching mailDomains
 			List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
 
-			// retrieve matching domains with the given email and additionally the wildcard domain, if available
-			List<OrganisationEmailDomain> matchedDomains = new ArrayList<>();
-
-			for (OrganisationEmailDomain domain : emailDomains) {
-				String pattern = convertDomainPattern(domain.getDomain());
-				if(mailDomain.matches(pattern)) {
-					matchedDomains.add(domain);
-				}
-			}
+			List<OrganisationEmailDomain> matchedDomains;
+			matchedDomains = organisationService.getMatchingEmailDomains(emailDomains, mailDomain);
 
 			if (matchedDomains.isEmpty()) {
 				return false;
@@ -387,13 +379,6 @@ public class MailValidationController extends FormBasicController {
 		} else {
 			return true;
 		}
-	}
-
-	private String convertDomainPattern(String domain) {
-		if(domain.indexOf('*') >= 0) {
-			domain = domain.replace("*", ".*");
-		}
-		return domain;
 	}
 
 	@Override

@@ -553,20 +553,18 @@ public class ProfileFormController extends FormBasicController {
 		List<OrganisationRef> currentOrgs = roles.getOrganisations();
 
 		// Filter emailDomains
-		List<OrganisationEmailDomain> validDomains = emailDomains.stream()
-				.filter(domain -> isDomainMatching(domain, mailDomain))
-				.toList();
+		List<OrganisationEmailDomain> matchingDomains = organisationService.getMatchingEmailDomains(emailDomains, mailDomain);
 
 		// Check if a match with current orgs exists
-		boolean matchFound = isMatchFound(validDomains, currentOrgs);
+		boolean matchFound = isMatchFound(matchingDomains, currentOrgs);
 
 		// If a match is found, return null, because there is no need for an organisational change
 		if (matchFound) {
 			return null;
-		} else if (validDomains.isEmpty()) {
+		} else if (matchingDomains.isEmpty()) {
 			return Collections.emptyList();
 		} else {
-			return validDomains;
+			return matchingDomains;
 		}
 	}
 
@@ -581,10 +579,6 @@ public class ProfileFormController extends FormBasicController {
 		return emailDomains.stream()
 				.anyMatch(emailDomain -> currentOrgs.stream()
 						.anyMatch(org -> org.getKey().equals(emailDomain.getOrganisation().getKey())));
-	}
-
-	private boolean isDomainMatching(OrganisationEmailDomain domain, String mailDomain) {
-		return "*".equals(domain.getDomain()) || mailDomain.equalsIgnoreCase(domain.getDomain());
 	}
 
 	private void doStartChangeMailDialogAdmin(UserRequest ureq) {

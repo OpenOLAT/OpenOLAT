@@ -213,7 +213,10 @@ public class OAuthRegistrationController extends FormBasicController {
 			orgContainer.setFormLayout("default");
 		}
 		flc.add(orgContainer);
-		// in case of that the org selection is being recalled, clear previous entries
+		// in case of that the org selection is being recalled
+		// clear previous entries by creating a new reference
+		// We need to do so, to prevent false entries from initialMail
+		// which got changed, so new domains could be matching
 		matchedDomains = new ArrayList<>();
 
 		String mailDomain = MailHelper.getMailDomain(mailEl.getValue());
@@ -221,18 +224,12 @@ public class OAuthRegistrationController extends FormBasicController {
 		searchParams.setEnabled(true);
 		List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
 
-		// ensure to only get organisations with matching mailDomains
-		// retrieve matching domains with the given email and additionally the wildcard domain, if available
-		for (OrganisationEmailDomain domain : emailDomains) {
-			String pattern = convertDomainPattern(domain.getDomain());
-			if(mailDomain.matches(pattern)) {
-				matchedDomains.add(domain);
-			}
-		}
+		matchedDomains = organisationService.getMatchingEmailDomains(emailDomains, mailDomain);
 
 		if (matchedDomains.isEmpty()) {
 			// Show error, that no org match was found
 			mailEl.setErrorKey("step3.reg.mismatch.form.text", WebappHelper.getMailConfig("mailSupport"));
+			deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
 		} else {
 			flc.remove(submitBtn);
 			// Extract orgKey as keys
@@ -270,13 +267,6 @@ public class OAuthRegistrationController extends FormBasicController {
 			flc.add(submitBtn);
 		}
 	}
-
-	private String convertDomainPattern(String domain) {
-		if(domain.indexOf('*') >= 0) {
-			domain = domain.replace("*", ".*");
-		}
-		return domain;
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -288,8 +278,9 @@ public class OAuthRegistrationController extends FormBasicController {
 				registrationManager.setHasConfirmedDislaimer(authenticatedIdentity);
 				doLoginAndRegister(authenticatedIdentity, ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
-				// User did not accept, workflow ends here
+				// User did not accept, workflow ends here and user gets redirected to login screen
 				showWarning("disclaimer.form.cancelled");
+				DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 			}
 			cleanUp();
 		} else if(cmc == source) {

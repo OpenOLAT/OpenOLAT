@@ -189,6 +189,22 @@ public interface OrganisationService {
 	public boolean isEmailDomainAllowed(List<OrganisationEmailDomain> emailDomains, String emailAddress);
 
 	/**
+	 * Retrieves a list of matching email domains based on the given mail domain.
+	 * The method follows these rules:
+	 * <ul>
+	 *   <li>First, it checks for exact matches in the provided email domain list.</li>
+	 *   <li>If exact matches exist, they are returned.</li>
+	 *   <li>If no exact match is found, it retrieves all wildcard domains (domains marked as "*").</li>
+	 *   <li>If neither exact matches nor wildcard domains exist, an empty list is returned.</li>
+	 * </ul>
+	 *
+	 * @param emailDomains A list of {@link OrganisationEmailDomain} objects to search within.
+	 * @param mailDomain The email domain to match against the list.
+	 * @return A list of matching {@link OrganisationEmailDomain} objects, or an empty list if no matches are found.
+	 */
+	public List<OrganisationEmailDomain> getMatchingEmailDomains(List<OrganisationEmailDomain> emailDomains, String mailDomain);
+
+	/**
 	 * The list of all organizations where the user has the specified roles,
 	 * with inheritance in the organization structure dependent of the role.
 	 * 
