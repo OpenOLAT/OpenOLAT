@@ -62,6 +62,7 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.modules.curriculum.restapi.CurriculumVO;
@@ -297,11 +298,14 @@ public class CurriculumsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		Curriculum deletedCurriculum = curriculumService.getCurriculum(curriculum);
-		Assert.assertNull(deletedCurriculum);
+		Assert.assertNotNull(deletedCurriculum);
+		Assert.assertEquals(CurriculumStatus.deleted.name(), deletedCurriculum.getStatus());
 		CurriculumElement deletedElement = curriculumService.getCurriculumElement(element);
-		Assert.assertNull(deletedElement);
+		Assert.assertNotNull(deletedElement);
+		Assert.assertEquals(CurriculumElementStatus.deleted, deletedElement.getElementStatus());
 		Curriculum survivingCurriculum = curriculumService.getCurriculum(notDeletedCurriculum);
 		Assert.assertNotNull(survivingCurriculum);
+		Assert.assertEquals(CurriculumStatus.active.name(), survivingCurriculum.getStatus());
 	}
 	
 	@Test
