@@ -162,13 +162,13 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertNotNull(element);
 		dbInstance.commitAndCloseSession();
 		
-		element.setTaughtBys(Set.of(TaughtBy.curriculumOwners, TaughtBy.teachers));
+		element.setTaughtBys(Set.of(TaughtBy.owners, TaughtBy.teachers));
 		curriculumElementDao.update(element);
 		dbInstance.commitAndCloseSession();
 		
 		element = curriculumElementDao.loadByKey(element.getKey());
 		Assert.assertEquals(2, element.getTaughtBys().size());
-		Assert.assertTrue(element.getTaughtBys().contains(TaughtBy.curriculumOwners));
+		Assert.assertTrue(element.getTaughtBys().contains(TaughtBy.owners));
 		Assert.assertTrue(element.getTaughtBys().contains(TaughtBy.teachers));
 	}
 	

@@ -42,6 +42,7 @@ import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.repository.ui.author.MediaContainerFilter;
@@ -76,6 +77,8 @@ public class CurriculumElementInfosController extends BasicController implements
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
 	private LectureService lectureService;
 	@Autowired
 	private ACService acService;
@@ -95,10 +98,13 @@ public class CurriculumElementInfosController extends BasicController implements
 			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(identity)).isEmpty();
 		}
 		
-		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
-		searchParams.setLectureConfiguredRepositoryEntry(false);
-		searchParams.setCurriculumElementPath(element.getMaterializedPathKeys());
-		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
+		List<LectureBlock> lectureBlocks = List.of();
+		if (lectureModule.isEnabled()) {
+			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+			searchParams.setLectureConfiguredRepositoryEntry(false);
+			searchParams.setCurriculumElementPath(element.getMaterializedPathKeys());
+			lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
+		}
 		
 		
 		// Header

@@ -36,10 +36,11 @@ import org.olat.core.util.StringHelper;
 public enum TaughtBy {
 	
 	teachers,
-	curriculumCoaches,
-	curriculumOwners;
+	coaches,
+	owners;
 	
 	public static final List<TaughtBy> ALL = Arrays.asList(TaughtBy.values());
+	public static final List<String> ALL_NAMES = ALL.stream().map(TaughtBy::name).toList();
 	
 	public static final String join(Collection<TaughtBy> taughtBys) {
 		if (taughtBys == null || taughtBys.isEmpty()) {
@@ -50,9 +51,22 @@ public enum TaughtBy {
 	
 	public static final Set<TaughtBy> split(String taughtBys) {
 		if (StringHelper.containsNonWhitespace(taughtBys)) {
-			return Arrays.stream(taughtBys.split(",")).map(TaughtBy::valueOf).collect(Collectors.toSet());
+			return Arrays.stream(taughtBys.split(",")).filter(TaughtBy::isValid).map(TaughtBy::valueOf).collect(Collectors.toSet());
 		}
 		return Set.of();
+	}
+	
+	public static boolean isValid(String string) {
+		boolean allOk = false;
+		if(StringHelper.containsNonWhitespace(string)) {
+			for(String name : ALL_NAMES) {
+				if(name.equals(string)) {
+					allOk = true;
+					break;
+				}
+			}
+		}
+		return allOk;
 	}
 
 }

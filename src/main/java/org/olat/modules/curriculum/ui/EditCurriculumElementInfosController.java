@@ -19,6 +19,9 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,9 +50,14 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.TaughtBy;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.author.MediaContainerFilter;
@@ -88,6 +96,10 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 	
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
+	private LectureService lectureService;
 
 	public EditCurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
 			CurriculumSecurityCallback secCallback) {
@@ -146,10 +158,11 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		authorsEl = uifactory.addTextElement("cif.authors", "cif.authors", 150, element.getTeaser(), formLayout);
 		authorsEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.authors));
 		
+		Map<TaughtBy,Integer> taughtByCounts = getTaughtByCounts();
 		SelectionValues taughtBySV = new SelectionValues();
 		TaughtBy.ALL.forEach(taughtBy -> taughtBySV.add(SelectionValues.entry(
 				taughtBy.name(),
-				translate("curruculum.element.taught.by." + taughtBy.name() + ".num", "???"))));
+				translate("curruculum.element.taught.by." + taughtBy.name() + ".num", String.valueOf(taughtByCounts.getOrDefault(taughtBy, Integer.valueOf(0)))))));
 		taughtByEl = uifactory.addCheckboxesVertical("curruculum.element.taught.by", formLayout, taughtBySV.keys(), taughtBySV.values(), 1);
 		taughtByEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.taughtBy));
 		element.getTaughtBys().forEach(taughtBy -> taughtByEl.select(taughtBy.name(), true));
@@ -301,6 +314,38 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		
 		element = curriculumService.getCurriculumElement(element);
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private Map<TaughtBy, Integer> getTaughtByCounts() {
+		Map<TaughtBy, Integer> taughtByCount = new HashMap<>(TaughtBy.ALL.size());
+		List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(List.of(element));
+		
+		for (CurriculumElementMembership membership : memberships) {
+			if (membership.isCoach()) {
+				incrementTaughtBy(taughtByCount, TaughtBy.coaches);
+			}
+			if (membership.isRepositoryEntryOwner()) {
+				incrementTaughtBy(taughtByCount, TaughtBy.owners);
+			}
+		}
+		
+		Integer taughtByTeachers = Integer.valueOf(0);
+		if (lectureModule.isEnabled()) {
+			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+			searchParams.setLectureConfiguredRepositoryEntry(false);
+			searchParams.setCurriculumElement(element);
+			List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
+			taughtByTeachers = lectureService.getTeachers(lectureBlocks).size();
+		}
+		taughtByCount.put(TaughtBy.teachers, taughtByTeachers);
+		
+		return taughtByCount;
+	}
+	
+	private void incrementTaughtBy(Map<TaughtBy, Integer> taughtByCount, TaughtBy taughtBy) {
+		Integer count = taughtByCount.computeIfAbsent(taughtBy, key -> Integer.valueOf(0));
+		count = count + 1;
+		taughtByCount.put(taughtBy, count);
 	}
 
 }
