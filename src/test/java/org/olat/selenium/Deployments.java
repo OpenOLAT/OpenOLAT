@@ -117,6 +117,7 @@ public class Deployments {
 		for(WebDriver driver:drivers) {
 			driver.quit();
 		}
+		drivers.clear();
 	}
 	
 	protected SimpleSmtpServer getSmtpServer() {

@@ -37,6 +37,20 @@ public class LibraryAdminPage {
 		this.browser = browser;
 	}
 	
+	public LibraryAdminPage needApproval(boolean approval) {
+		By approvalBy = By.cssSelector("fieldset.o_sel_library_configuration .o_sel_library_approval");
+		OOGraphene.waitElement(approvalBy, browser);
+		OOGraphene.toggle("fieldset.o_sel_library_configuration .o_sel_library_approval", approval, false, browser);
+		return this;
+	}
+	
+	public LibraryAdminPage save() {
+		By saveBy = By.cssSelector("fieldset.o_sel_library_configuration button.btn.btn-primary");
+		OOGraphene.waitElement(saveBy, browser);
+		browser.findElement(saveBy).click();
+		return this;
+	}
+	
 	public LibraryAdminPage addSharedFolder(String title) {
 		By chooseBy = By.cssSelector("fieldset a.o_sel_add_shared_folder");
 		OOGraphene.waitElement(chooseBy, browser);
