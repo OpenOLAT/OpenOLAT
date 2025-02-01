@@ -174,7 +174,7 @@ public class OfferCatalogInfo {
 		if (atLeastOneActive) {
 			if (fullyBooked) {
 				catalogStatus = OfferCatalogStatus.fullyBooked;
-			} else {
+			} else if(statusEvaluator != null) {
 				boolean statusVisible = offerCatalogInfos.stream().anyMatch(OfferCatalogInfo::isWithPeriod)
 						? statusEvaluator.isVisibleStatusPeriod()
 						: statusEvaluator.isVisibleStatusNoPeriod();
