@@ -120,7 +120,7 @@ public class LibraryAdminController extends FormBasicController {
 
 		boolean uploadApprovalEnabled = libraryModule.isApprovalEnabled();
 		uploadApproveEnableEl = uifactory.addToggleButton("library.upload.approval.enabled", "library.upload.approval.enabled", translate("on"), translate("off"), formLayout);
-		uploadApproveEnableEl.addActionListener(FormEvent.ONCHANGE);
+		uploadApproveEnableEl.setElementCssClass("o_sel_library_approval");
 		uploadApproveEnableEl.toggle(uploadApprovalEnabled);
 		
 		String mailAfterUpload = libraryModule.getEmailContactsToNotifyAfterUpload();

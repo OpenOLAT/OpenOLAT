@@ -24,6 +24,7 @@ import java.io.File;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -137,6 +138,38 @@ public class LibraryPage {
 		OOGraphene.moveAndClick(saveButtonBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
+	}
+	
+	public LibraryPage directUploadDocumentWizard(File file, String uploadFolder) {
+		By uploadBy = By.cssSelector("div.o_library_overview a.o_sel_upload_document");
+		OOGraphene.waitElement(uploadBy, browser);
+		browser.findElement(uploadBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		// Upload document
+		By inputWrapperBy = By.cssSelector("div.modal-dialog div.o_fileinput");
+		OOGraphene.waitElement(inputWrapperBy, browser);
+		By inputBy = By.cssSelector("div.modal-dialog div.o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputBy, file, browser);
+		By uploadedBy = By.cssSelector("div.modal-dialog div.o_sel_file_uploaded");
+		OOGraphene.waitElementSlowly(uploadedBy, 5, browser);
+		By metadataBy = By.cssSelector("div.modal-dialog .o_sel_metadata_filename");
+		OOGraphene.waitElement(metadataBy, browser);
+		
+		// Next step
+		OOGraphene.nextStep(browser);
+		
+		// Select folder
+		By folderBy = By.xpath("//div[@class='o_wizard_steps_current']//div[contains(@class,'o_tree') and contains(@class,'o_tree_root_visible')]//span[contains(@class,'o_tree_level_label_leaf')][a/span[contains(text(),'" + uploadFolder + "')]]/input[@type='checkbox']");
+		OOGraphene.waitElement(folderBy, browser);
+		WebElement folderCheckEl = browser.findElement(folderBy);
+		OOGraphene.check(folderCheckEl, Boolean.TRUE);
+		OOGraphene.waitBusy(browser);
+		By selectedBy = By.cssSelector("div.o_wizard_steps_current div.o_tree.o_tree_root_visible span.o_tree_link.o_tree_l0.active");
+		OOGraphene.waitElement(selectedBy, browser);
+		
+		OOGraphene.finishStep(browser, true);
 		return this;
 	}
 	

@@ -208,11 +208,13 @@ public class MetaInfoFormController extends FormBasicController {
 		// title
 		String titleVal = (meta != null ? meta.getTitle() : null);
 		title = uifactory.addTextElement("title", "mf.title", -1, titleVal, formLayout);
+		title.setElementCssClass("o_sel_metadata_title");
 		title.setVisible(showTitle);
 		
 		// filename
 		initialFilename = (item == null ? null : item.getName());
 		filename = uifactory.addTextElement("filename", "mf.filename", -1, initialFilename, formLayout);
+		filename.setElementCssClass("o_sel_metadata_filename");
 		filename.setEnabled(item == null || item.canRename() == VFSStatus.YES);
 		filename.setMandatory(true);
 		filename.setVisible(showFilename);

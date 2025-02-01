@@ -39,10 +39,12 @@ import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
+import org.olat.selenium.page.library.LibraryPage;
 import org.olat.selenium.page.project.ProjectPage;
 import org.olat.selenium.page.project.ProjectsPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
+import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.selenium.page.repository.OAIPMHClient;
 import org.olat.selenium.page.repository.RepositorySettingsPage;
 import org.olat.selenium.page.repository.UserAccess;
@@ -189,11 +191,13 @@ public class VariousTest extends Deployments {
 		navigation
 			.openAdministration()
 			.openLibrarySettings()
-			.addSharedFolder(library);
+			.addSharedFolder(library)
+			.save();
 		
 		// A user visits the library
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
-		userLoginPage.loginAs(user.getLogin(), user.getPassword());
+		userLoginPage
+			.loginAs(user.getLogin(), user.getPassword());
 		
 		navigation
 			.openLibrary(browser)
@@ -202,7 +206,6 @@ public class VariousTest extends Deployments {
 			.selectFolder("Positions")
 			.assertOnPdfFile("DocPosition_1.pdf");
 	}
-	
 	
 	/**
 	 * An administrator setup a new shared folder, configures it as
@@ -214,7 +217,7 @@ public class VariousTest extends Deployments {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void libraryWorkflow()
+	public void libraryApprovalWorkflow()
 	throws IOException, URISyntaxException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
@@ -239,7 +242,9 @@ public class VariousTest extends Deployments {
 		navigation
 			.openAdministration()
 			.openLibrarySettings()
-			.addSharedFolder(library);
+			.needApproval(true)
+			.addSharedFolder(library)
+			.save();
 		
 		// A user visits the library
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -271,6 +276,67 @@ public class VariousTest extends Deployments {
 			.assertOnNewDocument("handInTopic1.pdf")
 			.selectFolder("Topics")
 			.assertOnPdfFile("handInTopic1.pdf");
+	}
+	
+	/**
+	 * An administrator setup a new shared folder, configures it as
+	 * library with a folder, disable the approval process. The administrator
+	 * uploads a document, see it as new document and in the selected folder.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void libraryDirectUpload()
+	throws IOException, URISyntaxException {
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs(administrator)
+			.resume();
+		
+		// Administrator setup the library with a folder
+		String library = "Library " + UUID.randomUUID();
+		NavigationPage navigation = NavigationPage.load(browser);
+		navigation
+			.openAuthoringEnvironment()
+			.createSharedFolder(library)
+			.clickToolbarBack();
+		
+		String uploadFolder = "Uploads";
+		
+		new FolderPage(browser)
+			.assertOnFolderTable()
+			.createDirectory(uploadFolder);
+
+		navigation
+			.openAdministration()
+			.openLibrarySettings()
+			.needApproval(false)
+			.addSharedFolder(library)
+			.save();
+		
+		// Reload the library
+		new UserToolsPage(browser)
+			.logout();
+		
+		loginPage
+			.loginAs(administrator)
+			.resume();
+	
+		LibraryPage libraryPage = navigation
+			.openLibrary(browser);
+		
+		URL documentUrl = JunitTestHelper.class.getResource("file_resources/Dissertation.pdf");
+		File documentFile = new File(documentUrl.toURI());
+		libraryPage
+			.directUploadDocumentWizard(documentFile, uploadFolder);
+		
+		libraryPage
+			.assertOnNewDocument("Dissertation.pdf")
+			.selectFolder(uploadFolder)
+			.assertOnPdfFile("Dissertation.pdf");
 	}
 	
 	/**
