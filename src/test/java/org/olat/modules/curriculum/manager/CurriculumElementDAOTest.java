@@ -315,7 +315,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadElementsWithInfosWithCurriculumManager() {
-		// Organisation with curriculum manager
+		// Organisation with curriculum manager / course planner
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager");
 		Identity notManager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-not-manager");
 		Organisation organisation = organisationService.createOrganisation("Curriculum Inc.", "curriculum-1-inc", null, null, null, manager);

@@ -369,14 +369,14 @@ public class CurriculumDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getMembersIdentity() {
-		// add a curriculum manager
+		// add a curriculum manager / course planner
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", false, null);
 		dbInstance.commitAndCloseSession();
 		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		
-		// get curriculum manager
+		// get curriculum manager / course planner
 		List<Identity> managers = curriculumDao.getMembersIdentity(curriculum, CurriculumRoles.curriculummanager.name());
 		Assert.assertNotNull(managers);
 		Assert.assertEquals(1, managers.size());

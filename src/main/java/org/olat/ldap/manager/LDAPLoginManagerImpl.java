@@ -1009,7 +1009,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			List<LDAPGroup> qpoolManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getQpoolManagersGroupBase(), filter);
 			syncRoleIfGroupsNotEmpty(qpoolManagerGroups, OrganisationRoles.poolmanager, ldapUser);
 		}
-		//curriculum managers
+		//curriculum managers / course planners
 		if(syncConfiguration.getCurriculumManagersGroupBase() != null && !syncConfiguration.getCurriculumManagersGroupBase().isEmpty()) {
 			List<LDAPGroup> curriculumManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getCurriculumManagersGroupBase(), filter);
 			syncRoleIfGroupsNotEmpty(curriculumManagerGroups, OrganisationRoles.curriculummanager, ldapUser);

@@ -381,7 +381,7 @@ public class CurriculumsWebService {
 	}
 	
 	/**
-	 * Get all curriculum managers of the specified curriculum.
+	 * Get all curriculum owners of the specified curriculum.
 	 * 
 	 * @param curriculumKey The curriculum primary key
 	 * @param httpRequest The HTTP request
@@ -389,9 +389,9 @@ public class CurriculumsWebService {
 	 */
 	@GET
 	@Path("{curriculumKey}/curriculumowners")
-	@Operation(summary = "Get all curriculum managers",
-		description = "Get all curriculum managers of the specified curriculum")
-	@ApiResponse(responseCode = "200", description = "The array of curriculum managers",
+	@Operation(summary = "Get all curriculum owners",
+		description = "Get all curriculum owners of the specified curriculum")
+	@ApiResponse(responseCode = "200", description = "The array of curriculum owners",
 			content = {
 					@Content(mediaType = "application/json", array  = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
 					@Content(mediaType = "application/xml", array  = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
@@ -420,16 +420,16 @@ public class CurriculumsWebService {
 	}
 	
 	/**
-	 * Make the specified user a curriculum manager of the curriculum.
+	 * Make the specified user a curriculum owner of the curriculum.
 	 * 
 	 * @param curriculumKey The curriculum primary key
-	 * @param identityKey The member to make a curriculum manager of
+	 * @param identityKey The member to make a curriculum owner of
 	 * @return Nothing
 	 */
 	@PUT
 	@Path("{curriculumKey}/curriculumowners/{identityKey}")
-	@Operation(summary = "Make the specified user a curriculum manager of the curriculum",
-		description = "Make the specified user a curriculum manager of the curriculum")
+	@Operation(summary = "Make the specified user a curriculum owner of the curriculum",
+		description = "Make the specified user a curriculum owner of the curriculum")
 	@ApiResponse(responseCode = "200", description = "The membership was added")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")
@@ -456,7 +456,7 @@ public class CurriculumsWebService {
 	}
 	
 	/**
-	 * Remove the curriculum manager membership of the identity from the specified curriculum .
+	 * Remove the curriculum owner membership of the identity from the specified curriculum .
 	 * 
 	 * @param curriculumElementKey The curriculum primary key
 	 * @param identityKey The member to remove
@@ -464,8 +464,8 @@ public class CurriculumsWebService {
 	 */
 	@DELETE
 	@Path("{curriculumKey}/curriculumowners/{identityKey}")
-	@Operation(summary = "Remove the curriculum manager membership",
-		description = "Remove the curriculum manager membership of the identity from the specified curriculum")
+	@Operation(summary = "Remove the curriculum owner membership",
+		description = "Remove the curriculum owner membership of the identity from the specified curriculum")
 	@ApiResponse(responseCode = "200", description = "The membership was removed")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")

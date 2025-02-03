@@ -83,7 +83,7 @@
 		<property name="qpoolManagerRoleAttribute" value="${ldap.qpoolManagerRoleAttribute}"/>
 		<property name="qpoolManagerRoleValue" value="${ldap.qpoolManagerRoleValue}"/>
 				
-		<!-- curriculum managers -->
+		<!-- curriculum managers / course planners -->
 		<property name="curriculumManagersGroupBase" >
     		<list>
     			<value>${ldap.curriculumManagersGroupBases}</value> 
