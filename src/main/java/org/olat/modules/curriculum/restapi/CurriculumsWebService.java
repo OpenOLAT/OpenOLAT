@@ -252,7 +252,8 @@ public class CurriculumsWebService {
 		if(!isManager(curriculum, httpRequest)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		curriculumService.deleteSoftlyCurriculum(curriculum);
+		Identity identity = getIdentity(httpRequest);
+		curriculumService.deleteSoftlyCurriculum(curriculum, identity, false);
 		return Response.ok().build();
 	}
 

@@ -46,6 +46,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -739,6 +740,22 @@ public class RepositoryEntryRelationDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
 			.setParameter("elementKey", curriculumElement.getKey())
+			.getResultList();
+	}
+	
+	public List<RepositoryEntryToGroupRelation> getCurriculumRelations(RepositoryEntryRef re) {
+		if(re == null || re.getKey() == null) return List.of();
+		
+		QueryBuilder sb = new QueryBuilder(1024);
+		sb.append("select rel from repoentrytogroup as rel")
+		  .append(" inner join fetch rel.entry as entry")
+		  .append(" inner join fetch rel.group as baseGroup")
+		  .append(" inner join curriculumelement curEl on (curEl.group.key=baseGroup.key)")
+		  .append(" where curEl.status ").in(CurriculumElementStatus.notDeleted()).append(" and entry.key=:repoKey");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
+			.setParameter("repoKey", re.getKey())
 			.getResultList();
 	}
 	

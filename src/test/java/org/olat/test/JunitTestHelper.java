@@ -189,10 +189,15 @@ public class JunitTestHelper {
 	}
 	
 	public static final RepositoryEntry createRandomRepositoryEntry(Identity author, Organisation organisation) {
+		return createRandomRepositoryEntry(author, RepositoryEntryRuntimeType.embedded, organisation);
+	}
+	
+	public static final RepositoryEntry createRandomRepositoryEntry(Identity author, RepositoryEntryRuntimeType runtimeType,
+			Organisation organisation) {
 		OLATResource resource = OLATResourceManager.getInstance()
 				.createOLATResourceInstance(new ImageFileResource());
 		return CoreSpringFactory.getImpl(RepositoryService.class).create(author, "", "-", "Image - " + resource.getResourceableId(), "",
-				resource, RepositoryEntryStatusEnum.preparation, RepositoryEntryRuntimeType.embedded, organisation);
+				resource, RepositoryEntryStatusEnum.preparation, runtimeType, organisation);
 	}
 	
 	public static final Identity createAndPersistIdentityAsRndUser(String prefixLogin) {

@@ -578,7 +578,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private void doDeleteCurriculums(ToDelete toDelete) {
 		for(CurriculumRow curriculum:toDelete.curriculums()) {
-			curriculumService.deleteSoftlyCurriculum(curriculum);
+			curriculumService.deleteSoftlyCurriculum(curriculum, getIdentity(), false);
 		}
 		loadModel(tableEl.getQuickSearchString(), false);
 	}

@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
@@ -41,6 +42,14 @@ import org.olat.core.id.Organisation;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.manager.CurriculumDAO;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryRuntimeType;
@@ -64,9 +73,13 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
+	private CurriculumDAO curriculumDao;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
@@ -602,7 +615,56 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	    List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getBusinessGroupAndCurriculumRelations(re);
 	    Assert.assertNotNull(relations);
 	    Assert.assertEquals(1, relations.size());
-		Assert.assertTrue(relations.get(0).getEntry().equals(re));
+		Assert.assertEquals(re, relations.get(0).getEntry());
+	}
+	
+	@Test
+	public void getCurriculumRelationsOfRepositoryEntry() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Assert.assertNotNull(element);
+
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.createRelation(element.getGroup(), re);
+		dbInstance.commitAndCloseSession();
+		
+		// Has curriculum elements relations AND business groups
+		List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getCurriculumRelations(re);
+		Assertions.assertThat(relations)
+			.hasSize(1)
+			.map(RepositoryEntryToGroupRelation::getGroup)
+			.containsExactly(element.getGroup());
+	}
+	
+	@Test
+	public void getCurriculumRelationsOfCurriculumElement() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Assert.assertNotNull(element);
+
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.createRelation(element.getGroup(), re);
+		dbInstance.commitAndCloseSession();
+		
+		// Has curriculum elements relations AND business groups
+		List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getCurriculumRelations(element);
+		Assertions.assertThat(relations)
+			.hasSize(1)
+			.map(RepositoryEntryToGroupRelation::getEntry)
+			.containsExactly(re);
+	}
+	
+	@Test
+	public void hasNotBusinessGroupAndCurriculumRelations() {
+		RepositoryEntry standaloneRe = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+	    boolean hasRelations = repositoryEntryRelationDao.hasBusinessGroupAndCurriculumRelations(standaloneRe);
+	    Assert.assertFalse(hasRelations);
 	}
 	
 	@Test

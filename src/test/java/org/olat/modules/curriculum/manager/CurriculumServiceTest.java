@@ -54,6 +54,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +77,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 	private QualityTestHelper qualityTestHelper;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -238,7 +241,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(2, myElements.size());
 		
-		curriculumService.deleteSoftlyCurriculum(curriculum);
+		curriculumService.deleteSoftlyCurriculum(curriculum, null, false);
 		dbInstance.commitAndCloseSession();
 		
 		// check
@@ -249,6 +252,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 	
 	@Test
 	public void deleteCurriculumInQuality() {
+		Identity actor = JunitTestHelper.getDefaultActor();
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", false, null);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -257,7 +261,6 @@ public class CurriculumServiceTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 
-		Identity actor = JunitTestHelper.getDefaultActor();
 		RepositoryEntry entry = qualityTestHelper.createFormEntry();
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		QualityDataCollection dataCollection = qualityService.createDataCollection(List.of(organisation), entry);
@@ -275,7 +278,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(2, myElements.size());
 		
-		curriculumService.deleteSoftlyCurriculum(curriculum);
+		curriculumService.deleteSoftlyCurriculum(curriculum, actor, true);
 		dbInstance.commitAndCloseSession();
 		
 		// check
@@ -316,13 +319,91 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(3, myElements.size());
 		
-		curriculumService.deleteSoftlyCurriculum(curriculum);
+		curriculumService.deleteSoftlyCurriculum(curriculum, actor, false);
 		dbInstance.commitAndCloseSession();
 		
 		// check
 		Curriculum deletedCurriculum = curriculumService.getCurriculum(curriculum);
 		Assert.assertNotNull(deletedCurriculum);
 		Assert.assertEquals(CurriculumStatus.deleted.name(), deletedCurriculum.getStatus());
+	}
+	
+	@Test
+	public void deleteSoftlyCurriculumElementAndCloseEntry() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-10", "Curriculum 10", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		Organisation defOrganisation = JunitTestHelper.getDefaultOrganisation();
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author, RepositoryEntryRuntimeType.curricular, defOrganisation);
+		dbInstance.commit();
+
+		// add the course and a participant to the curriculum
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumElement> myElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.values());
+		Assert.assertNotNull(myElements);
+		Assert.assertEquals(1, myElements.size());
+		
+		curriculumService.deleteSoftlyCurriculumElement(element, null, false);
+		dbInstance.commitAndCloseSession();
+		
+		// Check curriculum element status
+		CurriculumElement deletedElement = curriculumService.getCurriculumElement(element);
+		Assert.assertNotNull(deletedElement);
+		Assert.assertEquals(CurriculumElementStatus.deleted, deletedElement.getElementStatus());
+		
+		// Check repository entry status
+		entry = repositoryService.loadBy(entry);
+		Assert.assertEquals(RepositoryEntryStatusEnum.closed.name(), entry.getStatus());
+	}
+	
+	/**
+	 * Course with are hold by 2 elements aren't closed by deleting one of them.
+	 */
+	@Test
+	public void deleteSoftlyCurriculumElementAndDontCloseEntry() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-11", "Curriculum 11", "Curriculum", false, null);
+		
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		Organisation defOrganisation = JunitTestHelper.getDefaultOrganisation();
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author, RepositoryEntryRuntimeType.curricular, defOrganisation);
+		dbInstance.commit();
+
+		// add the course and a participant to the curriculum
+		curriculumService.addRepositoryEntry(element1, entry, false);
+		curriculumService.addRepositoryEntry(element2, entry, false);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumElement> myElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.values());
+		Assertions.assertThat(myElements)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(element1, element2);
+		
+		curriculumService.deleteSoftlyCurriculumElement(element1, null, false);
+		dbInstance.commitAndCloseSession();
+		
+		// Check curriculum element status
+		CurriculumElement deletedElement = curriculumService.getCurriculumElement(element1);
+		Assert.assertNotNull(deletedElement);
+		Assert.assertEquals(CurriculumElementStatus.deleted, deletedElement.getElementStatus());
+		CurriculumElement otherElement = curriculumService.getCurriculumElement(element2);
+		Assert.assertNotNull(otherElement);
+		Assert.assertEquals(CurriculumElementStatus.active, otherElement.getElementStatus());
+		
+		// Check repository entry status
+		entry = repositoryService.loadBy(entry);
+		Assert.assertEquals(RepositoryEntryStatusEnum.preparation.name(), entry.getStatus());
 	}
 	
 	@Test
@@ -391,7 +472,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		element3 = curriculumService.getCurriculumElement(element3);
 		Assert.assertEquals("3", element3.getNumberImpl());
 		
-		curriculumService.deleteSoftlyCurriculumElement(element1);
+		curriculumService.deleteSoftlyCurriculumElement(element1, null, false);
 		dbInstance.commitAndCloseSession();
 		
 		element = curriculumService.getCurriculumElement(element);

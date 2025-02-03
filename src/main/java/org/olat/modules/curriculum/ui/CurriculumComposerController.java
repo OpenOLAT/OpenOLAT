@@ -30,7 +30,6 @@ import java.util.Objects;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -171,8 +170,6 @@ public class CurriculumComposerController extends FormBasicController implements
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
 	
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -659,7 +656,6 @@ public class CurriculumComposerController extends FormBasicController implements
 			cleanUp();
 		} else if(bulkDeleteConfirmationCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				doDeleteCurriculumElements((ToDelete)bulkDeleteConfirmationCtrl.getUserObject());
 				loadModel();
 			}
 			cmc.deactivate();
@@ -1071,26 +1067,6 @@ public class CurriculumComposerController extends FormBasicController implements
 					true, translate("curriculums.elements.bulk.delete.title"), true);
 			listenTo(cmc);
 			cmc.activate();
-		}
-	}
-	
-	private void doDeleteCurriculumElements(ToDelete toDelete) {
-		List<CurriculumElementRow> rowsToDelete = toDelete.elements();
-		if(rowsToDelete.isEmpty()) {
-			CurriculumElement implementationElement = curriculumService.getImplementationOf(rowsToDelete.get(0).getCurriculumElement());
-			
-			for(CurriculumElementRow element:rowsToDelete) {
-				CurriculumElement elementToDelete = curriculumService.getCurriculumElement(element);
-				if(elementToDelete != null) {
-					curriculumService.deleteSoftlyCurriculumElement(element);
-					dbInstance.commitAndCloseSession();
-				}
-			}
-			
-			if(implementationElement != null) {
-				curriculumService.numberRootCurriculumElement(implementationElement);
-				dbInstance.commitAndCloseSession();
-			}
 		}
 	}
 	

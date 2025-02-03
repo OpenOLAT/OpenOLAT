@@ -247,11 +247,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public void deleteSoftlyCurriculum(CurriculumRef curriculumRef) {
+	public void deleteSoftlyCurriculum(CurriculumRef curriculumRef, Identity doer, boolean sendNotifications) {
 		CurriculumImpl curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
 		if(curriculum != null) {
 			for(CurriculumElement rootElement:curriculum.getRootElements()) {
-				deleteSoftlyCurriculumElement(rootElement);
+				deleteSoftlyCurriculumElement(rootElement, doer, sendNotifications);
 			}
 			dbInstance.commitAndCloseSession();
 			curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
@@ -552,13 +552,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public boolean deleteSoftlyCurriculumElement(CurriculumElementRef element) {
+	public boolean deleteSoftlyCurriculumElement(CurriculumElementRef element, Identity doer, boolean sendNotifications) {
 		if(element == null || element.getKey() == null) return true; // nothing to do
 
 		boolean delete = true;
 		List<CurriculumElement> children = curriculumElementDao.getChildren(element);
 		for(CurriculumElement child:children) {
-			delete &= deleteSoftlyCurriculumElement(child);
+			delete &= deleteSoftlyCurriculumElement(child, doer, sendNotifications);
 		}
 		
 		// remove relations to taxonomy before reloading to clear the set
@@ -571,10 +571,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 
 		// remove relations to repository entries
+		List<RepositoryEntry> entriesToClose = new ArrayList<>();
 		List<RepositoryEntryToGroupRelation> relationsToRepo = repositoryEntryRelationDao.getCurriculumRelations(reloadedElement);
 		for(RepositoryEntryToGroupRelation relationToRepo:relationsToRepo) {
 			if(!relationToRepo.isDefaultGroup()) {// only paranoia
-				repositoryEntryRelationDao.removeRelation(relationToRepo);
+				RepositoryEntry entryToClose = removeRepositoryEntryRelation(reloadedElement, relationToRepo);
+				if(entryToClose != null) {
+					entriesToClose.add(entryToClose);
+				}
 			}
 		}
 		
@@ -591,8 +595,34 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		reloadedElement.setMaterializedPathKeys(null);
 		reloadedElement.setElementStatus(CurriculumElementStatus.deleted);
 		curriculumElementDao.update(reloadedElement);
+		
+		dbInstance.commit();
+		
+		if(!entriesToClose.isEmpty()) {
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			for(RepositoryEntry entryToClose:entriesToClose) {
+				repositoryService.closeRepositoryEntry(entryToClose, doer, delete);
+			}
+		}
 
 		return delete;
+	}
+	
+	private RepositoryEntry removeRepositoryEntryRelation(CurriculumElement element, RepositoryEntryToGroupRelation relationToRepo) {
+		boolean close = true;
+		RepositoryEntry entry = relationToRepo.getEntry();
+		if(entry.getRuntimeType() == RepositoryEntryRuntimeType.curricular) {
+			List<RepositoryEntryToGroupRelation> entryRelations = repositoryEntryRelationDao.getCurriculumRelations(entry);
+			for(RepositoryEntryToGroupRelation entryRelation:entryRelations) {
+				if(!entryRelation.getGroup().equals(element.getGroup())) {
+					close &= false;
+				}
+			}
+		} else {
+			close &= false;
+		}
+		repositoryEntryRelationDao.removeRelation(relationToRepo);
+		return close ? entry : null;
 	}
 
 	@Override

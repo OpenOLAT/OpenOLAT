@@ -112,9 +112,8 @@ public class ConfirmDeleteCurriculumElementListController extends ConfirmationCo
 	@Override
 	protected void doAction(UserRequest ureq) {
 		boolean notify = notifyEl != null && notifyEl.isAtLeastSelected(1);
-		//TODO curriculum
 		for(CurriculumElement curriculumElement:implementations) {
-			curriculumService.deleteSoftlyCurriculumElement(curriculumElement);
+			curriculumService.deleteSoftlyCurriculumElement(curriculumElement, getIdentity(), notify);
 			dbInstance.commitAndCloseSession();
 		}
 		super.doAction(ureq);

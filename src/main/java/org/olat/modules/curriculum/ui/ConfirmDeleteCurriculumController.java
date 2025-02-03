@@ -50,7 +50,7 @@ public class ConfirmDeleteCurriculumController extends ConfirmationController {
 
 	@Override
 	protected void doAction(UserRequest ureq) {
-		curriculumService.deleteSoftlyCurriculum(curriculum);
+		curriculumService.deleteSoftlyCurriculum(curriculum, getIdentity(), false);
 		super.doAction(ureq);
 	}
 }

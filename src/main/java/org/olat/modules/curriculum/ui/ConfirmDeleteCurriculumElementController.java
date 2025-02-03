@@ -116,9 +116,8 @@ public class ConfirmDeleteCurriculumElementController extends ConfirmationContro
 	@Override
 	protected void doAction(UserRequest ureq) {
 		boolean notify = notifyEl != null && notifyEl.isAtLeastSelected(1);
-		//TODO curriculum
 		CurriculumElement rootElement = curriculumService.getImplementationOf(curriculumElement);
-		curriculumService.deleteSoftlyCurriculumElement(curriculumElement);
+		curriculumService.deleteSoftlyCurriculumElement(curriculumElement, getIdentity(), notify);
 		dbInstance.commitAndCloseSession();
 		curriculumService.numberRootCurriculumElement(rootElement);
 		dbInstance.commitAndCloseSession();

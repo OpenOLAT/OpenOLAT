@@ -88,7 +88,7 @@ public interface CurriculumService {
 	
 	public Curriculum updateCurriculum(Curriculum curriculum);
 
-	public void deleteSoftlyCurriculum(CurriculumRef curriculum);
+	public void deleteSoftlyCurriculum(CurriculumRef curriculum, Identity doer, boolean sendNotifications);
 	
 	
 	public List<Curriculum> getCurriculums(Collection<? extends CurriculumRef> refs);
@@ -290,7 +290,7 @@ public interface CurriculumService {
 	 * @param element The curriculum element to delete
 	 * @return true if the element status is set as deleted, false if already deleted
 	 */
-	public boolean deleteSoftlyCurriculumElement(CurriculumElementRef element);
+	public boolean deleteSoftlyCurriculumElement(CurriculumElementRef element, Identity doer, boolean sendNotifications);
 	
 	/**
 	 * Return all the elements of a curriculum, but flat.
