@@ -2400,7 +2400,7 @@
 				</entry>
 
 
-				<entry key="org.olat.modules.coach.ui.manager.AbstractReportConfiguration">
+				<entry key="org.olat.modules.coach.reports.AbstractReportConfiguration">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Education manager report" />
 						<property name="propertyHandlers">

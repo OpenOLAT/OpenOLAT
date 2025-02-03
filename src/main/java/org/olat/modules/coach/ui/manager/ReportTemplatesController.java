@@ -45,7 +45,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.reports.ReportConfiguration;
 import org.olat.modules.coach.ui.manager.ReportTemplatesDataModel.ReportTemplateCols;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,8 +60,6 @@ public class ReportTemplatesController extends FormBasicController {
 	private ReportTemplatesDataModel tableModel;
 	private int count = 0;
 
-	@Autowired
-	private UserManager userManager;
 	@Autowired
 	private List<ReportConfiguration> reportConfigurations;
 
