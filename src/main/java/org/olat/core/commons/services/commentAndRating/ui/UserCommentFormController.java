@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.commons.modules.bc.FolderModule;
@@ -96,6 +97,7 @@ public class UserCommentFormController extends FormBasicController {
 
 	private final String resSubPath;
 	private boolean subscribeOnce = true;
+	private UUID tempFolderUUID;
 
 	private RichTextElement commentElem;
 	private FormSubmit submitButton;
@@ -151,6 +153,9 @@ public class UserCommentFormController extends FormBasicController {
 		this.parentComment = parentComment;
 		this.toBeUpdatedComment = toBeUpdatedComment;
 		this.publishingInformations = publishingInformations;
+		// one tempFolderUUID for a single instance, so each initialization creates a new UUID
+		// reason: To prevent collisions from users uploading files
+		this.tempFolderUUID = UUID.randomUUID();
 		initForm(ureq);
 	}
 
@@ -328,7 +333,7 @@ public class UserCommentFormController extends FormBasicController {
 	 */
 	private void cleanUpTempDir() {
 		if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
-			VFSContainer tempCont = VFSManager.olatRootContainer("/comments/temp/");
+			VFSContainer tempCont = VFSManager.olatRootContainer("/comments/temp/" + tempFolderUUID);
 			VFSManager.deleteContainersAndLeaves(tempCont, true, true, false);
 			flc.contextRemove("uploadedFiles");
 			uploadedFiles.clear();
@@ -377,7 +382,7 @@ public class UserCommentFormController extends FormBasicController {
 	 * @param uploadedFileLeaf The file with a valid name that was uploaded
 	 */
 	private void handleValidFile(UserRequest ureq, VFSLeaf uploadedFileLeaf) {
-		VFSContainer tempCont = VFSManager.olatRootContainer("/comments/temp/");
+		VFSContainer tempCont = VFSManager.olatRootContainer("/comments/temp/" + tempFolderUUID);
 		uploadedFileLeaf = uploadNewFile(uploadedFileLeaf, uploadedFileLeaf.getName(), tempCont, getIdentity());
 
 		if (uploadedFileLeaf != null) {
@@ -484,7 +489,7 @@ public class UserCommentFormController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String commentText = commentElem.getValue();
 		if (StringHelper.containsNonWhitespace(commentText)) {
-			handleSubscription(ureq);
+			handleSubscription();
 
 			if (toBeUpdatedComment == null) {
 				toBeUpdatedComment = handleCommentCreation(commentText, ureq);
@@ -496,7 +501,7 @@ public class UserCommentFormController extends FormBasicController {
 		}
 	}
 
-	private void handleSubscription(UserRequest ureq) {
+	private void handleSubscription() {
 		if (publishingInformations != null) {
 			if (subscribeOnce) {
 				Subscriber subscriber = notificationsManager.getSubscriber(getIdentity(), publishingInformations.getContext());
