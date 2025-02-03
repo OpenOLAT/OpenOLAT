@@ -226,6 +226,7 @@
 	background-color: $o-button-ghost-background-color;
 	border-color: $o-button-ghost-border-color;
 	&:hover {
+		color: $o-button-ghost-hover-color;
 		background-color: $o-button-ghost-hover-background-color;
 		border-color: $o-button-ghost-hover-border-color;
 	}
