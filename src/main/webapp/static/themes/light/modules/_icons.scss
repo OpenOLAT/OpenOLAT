@@ -83,6 +83,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_catalog_intern { @include o-add-icon('book-open');}
 .o_icon_catalog_sub { @include o-add-icon('folder');}
 .o_icon_certificate { @include o-add-icon('certificate');}
+.o_icon_chart_simple { @include o-add-icon('chart-simple');}
 .o_icon_chat { @include o-add-icon('comment', false);}
 .o_icon_chats { @include o-add-icon('comments', false);}
 .o_icon_check { @include o-add-icon('check');}
