@@ -75,17 +75,21 @@ public class Deployments {
 	}
 
 	private static List<WebDriver> drivers = new ArrayList<>();
+	private static WebArchive deployment;
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
-		Map<String,String> overrideSettings = new HashMap<>();
-		if(dumbster != null) {
-			overrideSettings.put("smtp.port", String.valueOf(dumbster.getPort()));
-			overrideSettings.put("smtp.host", "localhost");
-			log.info("Simple smtp server started on port: {}", dumbster.getPort());
+		if(deployment == null) {
+			Map<String,String> overrideSettings = new HashMap<>();
+			if(dumbster != null) {
+				overrideSettings.put("smtp.port", String.valueOf(dumbster.getPort()));
+				overrideSettings.put("smtp.host", "localhost");
+				log.info("Simple smtp server started on port: {}", dumbster.getPort());
+			}
+			//overrideSettings.put("ldap.enable", "false");
+			deployment = ArquillianDeployments.createDeployment(overrideSettings);
 		}
-		//overrideSettings.put("ldap.enable", "false");
-		return ArquillianDeployments.createDeployment(overrideSettings);
+		return deployment;
 	}
 	
 	@ClassRule

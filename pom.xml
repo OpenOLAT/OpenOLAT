@@ -1354,7 +1354,7 @@
 					<encoding>UTF-8</encoding>
 					<skipITs>${skipSeleniumTests}</skipITs>
 					<skipTests>${skipSeleniumTests}</skipTests>
-					<reuseForks>false</reuseForks>
+					<reuseForks>true</reuseForks>
 					<argLine>-Xmx2048m -Xms256m -Djava.awt.headless=true -Djava.security.egd=file:/dev/urandom</argLine>
 					<trimStackTrace>false</trimStackTrace>
 					<systemPropertyVariables>
