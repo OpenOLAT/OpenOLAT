@@ -860,7 +860,6 @@ public class CoursesElementsTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	//fxdiff FXOLAT-122: course management
 	public void testUpdateRootNodeCoursePostWithFile() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		

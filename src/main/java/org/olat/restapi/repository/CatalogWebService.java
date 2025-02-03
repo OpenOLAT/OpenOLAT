@@ -378,7 +378,7 @@ public class CatalogWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updatePostCatalogEntry(@PathParam("path") List<PathSegment> path,
 			@FormParam("name") String name, @FormParam("description") String description,
-			@FormParam("newParentKey") Long newParentKey,//fxdiff FXOLAT-122: course management
+			@FormParam("newParentKey") Long newParentKey,
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
 		
 		CatalogEntryVO entryVo = new CatalogEntryVO();
@@ -410,7 +410,7 @@ public class CatalogWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateCatalogEntry(@PathParam("path") List<PathSegment> path,
 			@QueryParam("name") String name, @QueryParam("description") String description,
-			@QueryParam("newParentKey") Long newParentKey,//fxdiff FXOLAT-122: course management
+			@QueryParam("newParentKey") Long newParentKey,
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
 		
 		CatalogEntryVO entryVo = new CatalogEntryVO();
