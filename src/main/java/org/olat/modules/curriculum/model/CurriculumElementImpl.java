@@ -474,7 +474,6 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 		return null;
 	}
 
-	@Override
 	public void setElementStatus(CurriculumElementStatus status) {
 		if(status == null) {
 			this.status = null;

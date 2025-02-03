@@ -196,7 +196,6 @@ public class CurriculumImportHandler {
 				archivedElement.getDisplayName(), archivedElement.getElementStatus(), archivedElement.getBeginDate(),
 				archivedElement.getEndDate(), parentElement, elementType, archivedElement.getCalendars(),
 				archivedElement.getLectures(), archivedElement.getLearningProgress(), curriculum);
-		element.setElementStatus(archivedElement.getElementStatus());
 		
 		archiveKeyToCurriculumElements.put(archivedElement.getKey(), element);
 		

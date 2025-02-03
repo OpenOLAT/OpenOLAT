@@ -33,6 +33,26 @@ alter table o_cur_curriculum_element add column fk_educational_type bigint;
 alter table o_cur_curriculum_element add constraint cur_el_resource_idx foreign key (fk_resource) references o_olatresource (resource_id);
 alter table o_cur_curriculum_element add constraint cur_el_edutype_idx foreign key (fk_educational_type) references o_re_educational_type (id);
 
+
+create table o_cur_audit_log (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  p_action varchar(64) not null,
+  p_action_target varchar(32) not null,
+  p_before mediumtext,
+  p_after mediumtext,
+  fk_identity bigint,
+  fk_curriculum bigint,
+  fk_curriculum_element bigint,
+  primary key (id)
+);
+alter table o_cur_audit_log ENGINE = InnoDB;
+
+alter table o_cur_audit_log add constraint cur_audit_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_cur_audit_log add constraint cur_audit_log_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
+alter table o_cur_audit_log add constraint cur_audit_log_cur_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
+
+
 -- Organisations
 alter table o_org_organisation add column o_location varchar(255);
 create table o_org_email_domain (

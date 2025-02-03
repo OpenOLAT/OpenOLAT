@@ -29,6 +29,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
+import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -113,7 +114,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 									update = true;
 								}
 								if(element.getElementStatus() == CurriculumElementStatus.inactive) {
-									element.setElementStatus(CurriculumElementStatus.finished);
+									((CurriculumElementImpl)element).setElementStatus(CurriculumElementStatus.finished);
 									update = true;
 								}
 								if(update) {

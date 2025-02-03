@@ -133,7 +133,6 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	
 	public CurriculumElementStatus getElementStatus();
 	
-	public void setElementStatus(CurriculumElementStatus status);
 	
 	public String getMaterializedPathKeys();
 	

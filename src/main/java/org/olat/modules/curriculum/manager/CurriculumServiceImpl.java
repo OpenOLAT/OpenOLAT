@@ -84,6 +84,8 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementAuditLog.Action;
+import org.olat.modules.curriculum.CurriculumElementAuditLog.ActionTarget;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -195,6 +197,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private CurriculumElementTypeDAO curriculumElementTypeDao;
+	@Autowired
+	private CurriculumElementAuditLogDAO curriculumElementAuditLogDao;
 	@Autowired
 	private CurriculumElementTypeToTypeDAO curriculumElementTypeToTypeDao;
 	@Autowired
@@ -639,16 +643,21 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			return element;
 		}
 		
-		element.setElementStatus(newStatus);
+		CurriculumElementStatus currentStatus = element.getElementStatus();
+		((CurriculumElementImpl)element).setElementStatus(newStatus);
 		element = updateCurriculumElement(element);
+		auditLogChangeStatus(currentStatus, newStatus, element, doer);
 		
 		if (updateChildren) {
 			getCurriculumElementsDescendants(element).stream()
 				.filter(childElement -> !childElement.getElementStatus().isCancelledOrClosed())
 				.filter(childElement -> childElement.getElementStatus() != newStatus)
-				.forEach(childElement -> { 
-					childElement.setElementStatus(newStatus);
-					updateCurriculumElement(childElement); });
+				.forEach(childElement -> {
+					CurriculumElementStatus currentChildStatus = childElement.getElementStatus();
+					((CurriculumElementImpl)childElement).setElementStatus(newStatus);
+					childElement = updateCurriculumElement(childElement);
+					auditLogChangeStatus(currentChildStatus, newStatus, childElement, doer);
+				});
 		}
 		
 		dbInstance.commitAndCloseSession();
@@ -660,6 +669,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		
 		return element;
+	}
+	
+	private void auditLogChangeStatus(CurriculumElementStatus currentStatus, CurriculumElementStatus newStatus, CurriculumElement element, Identity doer) {
+		String newStatusStr = newStatus == null ? null : newStatus.name();
+		String currentStatusStr = currentStatus == null ? null : currentStatus.name();
+		curriculumElementAuditLogDao.createAuditLog(Action.CHANGE_STATUS, ActionTarget.CURRICULUM_ELEMENT,
+				currentStatusStr, newStatusStr, element.getCurriculum(), element, doer);
 	}
 	
 	private void sendStatusChangeNotificationsEmail(Identity doer, List<Identity> identities, MailPackage mailing,

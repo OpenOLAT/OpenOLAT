@@ -36,6 +36,28 @@ create index idx_cur_el_resource_idx on o_cur_curriculum_element (fk_resource);
 alter table o_cur_curriculum_element add constraint cur_el_edutype_idx foreign key (fk_educational_type) references o_re_educational_type (id);
 create index idx_cur_el_edutype_idx on o_cur_curriculum_element (fk_educational_type);
 
+
+create table o_cur_audit_log (
+  id number(20) GENERATED ALWAYS AS IDENTITY,
+  creationdate date not null,
+  p_action varchar(64) not null,
+  p_action_target varchar(32) not null,
+  p_before CLOB,
+  p_after CLOB,
+  fk_identity number(20),
+  fk_curriculum number(20),
+  fk_curriculum_element number(20),
+  primary key (id)
+);
+
+alter table o_cur_audit_log add constraint cur_audit_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_cur_audit_log_ident_idx on o_cur_audit_log (fk_identity);
+alter table o_cur_audit_log add constraint cur_audit_log_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
+create index idx_cur_audit_log_cur_idx on o_cur_audit_log (fk_curriculum);
+alter table o_cur_audit_log add constraint cur_audit_log_cur_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
+create index idx_cur_audit_log_cur_el_idx on o_cur_audit_log (fk_curriculum_element);
+
+
 -- Organisations
 alter table o_org_organisation add o_location varchar(255);
 create table o_org_email_domain (

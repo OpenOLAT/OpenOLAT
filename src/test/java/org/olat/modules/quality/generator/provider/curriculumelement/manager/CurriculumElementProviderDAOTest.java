@@ -40,6 +40,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
@@ -313,12 +314,12 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		CurriculumElement inactive = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		inactive.setElementStatus(CurriculumElementStatus.inactive);
+		((CurriculumElementImpl)inactive).setElementStatus(CurriculumElementStatus.inactive);
 		inactive = curriculumService.updateCurriculumElement(inactive);
 		CurriculumElement deleted = curriculumService.createCurriculumElement(random(), random(),
 				CurriculumElementStatus.active, oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
-		deleted.setElementStatus(CurriculumElementStatus.deleted);
+		((CurriculumElementImpl)deleted).setElementStatus(CurriculumElementStatus.deleted);
 		deleted = curriculumService.updateCurriculumElement(deleted);
 		dbInstance.commitAndCloseSession();
 

@@ -58,6 +58,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
+import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.model.CurriculumMember;
@@ -297,7 +298,8 @@ public class CurriculumElementsWebService {
 		elementToSave.setExternalId(curriculumElement.getExternalId());
 		elementToSave.setManagedFlags(CurriculumElementManagedFlag.toEnum(curriculumElement.getManagedFlagsString()));
 		if(StringHelper.containsNonWhitespace(curriculumElement.getStatus())) {
-			elementToSave.setElementStatus(CurriculumElementStatus.valueOf(curriculumElement.getStatus()));
+			// Is it legal?
+			((CurriculumElementImpl)elementToSave).setElementStatus(CurriculumElementStatus.valueOf(curriculumElement.getStatus()));
 		}
 		if(StringHelper.containsNonWhitespace(curriculumElement.getCalendars())) {
 			elementToSave.setCalendars(CurriculumCalendars.valueOf(curriculumElement.getCalendars()));

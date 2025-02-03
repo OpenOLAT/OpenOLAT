@@ -4083,6 +4083,19 @@ create table o_cur_element_to_tax_level (
   primary key (id)
 );
 
+create table o_cur_audit_log (
+  id number(20) GENERATED ALWAYS AS IDENTITY,
+  creationdate date not null,
+  p_action varchar(64) not null,
+  p_action_target varchar(32) not null,
+  p_before CLOB,
+  p_after CLOB,
+  fk_identity number(20),
+  fk_curriculum number(20),
+  fk_curriculum_element number(20),
+  primary key (id)
+);
+
 -- edu-sharing
 create table o_es_usage (
    id number(20) generated always as identity,
@@ -6182,6 +6195,13 @@ alter table o_cur_element_to_tax_level add constraint cur_el_rel_to_cur_el_idx f
 create index idx_cur_el_rel_to_cur_el_idx on o_cur_element_to_tax_level (fk_cur_element);
 alter table o_cur_element_to_tax_level add constraint cur_el_to_tax_level_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
 create index idx_cur_el_to_tax_level_idx on o_cur_element_to_tax_level (fk_taxonomy_level);
+
+alter table o_cur_audit_log add constraint cur_audit_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_cur_audit_log_ident_idx on o_cur_audit_log (fk_identity);
+alter table o_cur_audit_log add constraint cur_audit_log_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
+create index idx_cur_audit_log_cur_idx on o_cur_audit_log (fk_curriculum);
+alter table o_cur_audit_log add constraint cur_audit_log_cur_el_idx foreign key (fk_curriculum_element) references o_cur_curriculum_element (id);
+create index idx_cur_audit_log_cur_el_idx on o_cur_audit_log (fk_curriculum_element);
 
 -- edu-sharing
 create index idx_es_usage_ident_idx on o_es_usage (e_identifier);
