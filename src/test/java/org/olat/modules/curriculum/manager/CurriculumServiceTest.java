@@ -59,6 +59,8 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.dumbster.smtp.SmtpMessage;
+
 /**
  * 
  * Initial date: 18 juin 2018<br>
@@ -340,6 +342,9 @@ public class CurriculumServiceTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author, RepositoryEntryRuntimeType.curricular, defOrganisation);
 		dbInstance.commit();
 
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-part");
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, author);
+		
 		// add the course and a participant to the curriculum
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commitAndCloseSession();
@@ -350,7 +355,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		
 		curriculumService.deleteSoftlyCurriculumElement(element, null, false);
 		dbInstance.commitAndCloseSession();
-		
+
 		// Check curriculum element status
 		CurriculumElement deletedElement = curriculumService.getCurriculumElement(element);
 		Assert.assertNotNull(deletedElement);
@@ -359,6 +364,51 @@ public class CurriculumServiceTest extends OlatTestCase {
 		// Check repository entry status
 		entry = repositoryService.loadBy(entry);
 		Assert.assertEquals(RepositoryEntryStatusEnum.closed.name(), entry.getStatus());
+	}
+	
+	@Test
+	public void deleteSoftlyCurriculumElementNotification() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-12", "Curriculum 12", "Curriculum notifications", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		Organisation defOrganisation = JunitTestHelper.getDefaultOrganisation();
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author, RepositoryEntryRuntimeType.curricular, defOrganisation);
+		dbInstance.commit();
+
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-part");
+		curriculumService.addMember(element, participant, CurriculumRoles.participant, author);
+		
+		// add the course and a participant to the curriculum
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumElement> myElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.values());
+		Assert.assertNotNull(myElements);
+		Assert.assertEquals(1, myElements.size());
+		
+		// Delete with notifications
+		Identity actor = JunitTestHelper.getDefaultActor();
+		curriculumService.deleteSoftlyCurriculumElement(element, actor, true);
+		dbInstance.commitAndCloseSession();
+
+		// Check curriculum element status
+		CurriculumElement deletedElement = curriculumService.getCurriculumElement(element);
+		Assert.assertNotNull(deletedElement);
+		Assert.assertEquals(CurriculumElementStatus.deleted, deletedElement.getElementStatus());
+		
+		// Check repository entry status
+		entry = repositoryService.loadBy(entry);
+		Assert.assertEquals(RepositoryEntryStatusEnum.closed.name(), entry.getStatus());
+		
+		// Check emails for author (closing the course) and participant removed from element
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assertions.assertThat(messages)
+			.hasSizeGreaterThanOrEqualTo(2)
+			.map(message -> message.getHeaderValue("To"))
+			.contains(participant.getUser().getEmail(), author.getUser().getEmail());
 	}
 	
 	/**

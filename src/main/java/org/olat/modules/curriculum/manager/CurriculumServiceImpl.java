@@ -69,6 +69,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -562,7 +563,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		boolean delete = true;
 		List<CurriculumElement> children = curriculumElementDao.getChildren(element);
 		for(CurriculumElement child:children) {
-			delete &= deleteSoftlyCurriculumElement(child, doer, sendNotifications);
+			delete &= deleteSoftlyCurriculumElement(child, doer, false);
 		}
 		
 		// remove relations to taxonomy before reloading to clear the set
@@ -591,6 +592,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			delete &= deleteDelegate.deleteCurriculumElementData(reloadedElement);
 		}
 		
+		List<Identity> membersToNotify = sendNotifications
+				? groupDao.getMembers(reloadedElement.getGroup(), CurriculumRoles.participant.name(), CurriculumRoles.coach.name(),
+						CurriculumRoles.owner.name(), CurriculumRoles.mastercoach.name(), CurriculumRoles.curriculumelementowner.name())
+				: List.of();
+		
 		groupDao.removeMemberships(reloadedElement.getGroup());
 		
 		//only flag as deleted
@@ -605,7 +611,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(!entriesToClose.isEmpty()) {
 			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 			for(RepositoryEntry entryToClose:entriesToClose) {
-				repositoryService.closeRepositoryEntry(entryToClose, doer, delete);
+				repositoryService.closeRepositoryEntry(entryToClose, doer, sendNotifications);
+			}
+		}
+		
+		if(!membersToNotify.isEmpty()) {
+			MailTemplate template = CurriculumMailing.getRemoveMailTemplate(reloadedElement.getCurriculum(), reloadedElement, doer);
+			MailPackage mailing = new MailPackage(template, null, "[CurriculumElement:" + reloadedElement.getKey(), true);
+			for(Identity member:membersToNotify) {
+				CurriculumMailing.sendEmail(doer, member, reloadedElement.getCurriculum(), reloadedElement, mailing);
 			}
 		}
 

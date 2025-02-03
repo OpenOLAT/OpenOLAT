@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Grant;
@@ -248,6 +249,22 @@ public class GroupDAOTest extends OlatTestCase {
 		List<Identity> members = groupDao.getMembers(group, "author");
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
+	}
+	
+	@Test
+	public void getMembersByRoles() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3-");
+		Group group = groupDao.createGroup();
+		GroupMembership membership = groupDao.addMembershipTwoWay(group, id, "curriculumelementowner");
+		dbInstance.commit();
+		
+		Assert.assertNotNull(membership);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> members = groupDao.getMembers(group, "curriculumelementowner", "participant");
+		Assertions.assertThat(members)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(id);
 	}
 	
 	@Test

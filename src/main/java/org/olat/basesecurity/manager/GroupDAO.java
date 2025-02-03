@@ -225,6 +225,35 @@ public class GroupDAO {
 			.getResultList();
 	}
 	
+	/**
+	 * 
+	 * @param group The group
+	 * @param roles The list of roles (mandatory)
+	 * @return A list of members with the specified roles
+	 */
+	public List<Identity> getMembers(Group group, String... roles) {
+		List<String> rolesList = new ArrayList<>();
+		if(roles != null && roles.length > 0) {
+			for(String role:roles) {
+				if(StringHelper.containsNonWhitespace(role)) {
+					rolesList.add(role);
+				}
+			}
+		}
+		
+		if(rolesList.isEmpty()) {
+			return List.of();
+		}
+		
+		return dbInstance.getCurrentEntityManager()
+			.createNamedQuery("membersByGroupAndRoles", Identity.class)
+			.setParameter("groupKey", group.getKey())
+			.setParameter("roles", rolesList)
+			.getResultList();
+	}
+	
+	
+	
 	public List<Identity> getMembers(Collection<Group> group, String role) {
 		List<Long> groupKeys = group.stream().map(Group::getKey).collect(Collectors.toList());
 		return dbInstance.getCurrentEntityManager()
