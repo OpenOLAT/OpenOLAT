@@ -20,6 +20,7 @@
 package org.olat.modules.coach.ui.manager;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -92,7 +93,9 @@ public class ReportTemplatesController extends FormBasicController {
 	private void loadModel() {
 		List<ReportTemplatesRow> rows = new ArrayList<>();
 
-		for (ReportConfiguration reportConfiguration : reportConfigurations) {
+		List<ReportConfiguration> sortedReportConfigurations = reportConfigurations.stream()
+				.sorted(Comparator.comparingInt(ReportConfiguration::getOrder)).toList();
+		for (ReportConfiguration reportConfiguration : sortedReportConfigurations) {
 			ReportTemplatesRow row = new ReportTemplatesRow();
 			row.setReportConfiguration(reportConfiguration);
 			row.setName(reportConfiguration.getName(getLocale()));

@@ -40,6 +40,7 @@
 	
 	<!-- Reports -->
 	<bean class="org.olat.modules.coach.reports.AbsencesReportConfiguration">
+		<property name="order" value="10" />
 		<property name="i18nNameKey" value="report.name.absencesLast4Weeks" />
 		<property name="i18nDescriptionKey" value="report.description.absencesLast4Weeks" />
 		<property name="duration" value="4" />
@@ -47,6 +48,7 @@
 	</bean>
 
 	<bean class="org.olat.modules.coach.reports.AbsencesReportConfiguration">
+		<property name="order" value="20" />
 		<property name="i18nNameKey" value="report.name.absencesLast12Months" />
 		<property name="i18nDescriptionKey" value="report.description.absencesLast12Months" />
 		<property name="duration" value="12" />
@@ -54,6 +56,7 @@
 	</bean>
 
 	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
+		<property name="order" value="30" />
 		<property name="i18nNameKey" value="report.name.openBookingOrdersLast4Weeks" />
 		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast4Weeks" />
 		<property name="duration" value="4" />
@@ -61,6 +64,7 @@
 	</bean>
 
 	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
+		<property name="order" value="40" />
 		<property name="i18nNameKey" value="report.name.openBookingOrdersLast12Months" />
 		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast12Months" />
 		<property name="duration" value="12" />

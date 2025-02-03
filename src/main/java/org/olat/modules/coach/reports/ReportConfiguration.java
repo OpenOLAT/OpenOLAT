@@ -62,4 +62,6 @@ public interface ReportConfiguration {
 	boolean isDynamic();
 
 	void generateReport(Identity coach, Locale locale);
+
+	int getOrder();
 }

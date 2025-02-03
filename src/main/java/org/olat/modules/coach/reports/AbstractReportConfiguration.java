@@ -57,6 +57,7 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 	private String i18nDescriptionKey;
 	private String description;
 	private boolean dynamic;
+	private int order;
 
 	protected Translator getTranslator(Locale locale) {
 		return Util.createPackageTranslator(AbstractReportConfiguration.class, locale);
@@ -157,4 +158,13 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 	protected abstract void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers);
 
 	protected abstract List<UserPropertyHandler> getUserPropertyHandlers();
+
+	public void setOrder(int order) {
+		this.order = order;
+	}
+
+	@Override
+	public int getOrder() {
+		return order;
+	}
 }
