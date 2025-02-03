@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-	                   http://www.springframework.org/schema/beans/spring-beans.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:context="http://www.springframework.org/schema/context" 
+	   xsi:schemaLocation="
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="org.olat.modules.coach"/>
+
+	<import resource="classpath:/org/olat/modules/coach/reports/_spring/reportsContext.xml"/>
 
 	<!-- Admin. -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
@@ -37,38 +45,6 @@
 			</list>
 		</property>
 	</bean>
-	
-	<!-- Reports -->
-	<bean class="org.olat.modules.coach.reports.AbsencesReportConfiguration">
-		<property name="order" value="10" />
-		<property name="i18nNameKey" value="report.name.absencesLast4Weeks" />
-		<property name="i18nDescriptionKey" value="report.description.absencesLast4Weeks" />
-		<property name="duration" value="4" />
-		<property name="durationUnit" value="week" />
-	</bean>
 
-	<bean class="org.olat.modules.coach.reports.AbsencesReportConfiguration">
-		<property name="order" value="20" />
-		<property name="i18nNameKey" value="report.name.absencesLast12Months" />
-		<property name="i18nDescriptionKey" value="report.description.absencesLast12Months" />
-		<property name="duration" value="12" />
-		<property name="durationUnit" value="month" />
-	</bean>
-
-	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
-		<property name="order" value="30" />
-		<property name="i18nNameKey" value="report.name.openBookingOrdersLast4Weeks" />
-		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast4Weeks" />
-		<property name="duration" value="4" />
-		<property name="durationUnit" value="week" />
-	</bean>
-
-	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
-		<property name="order" value="40" />
-		<property name="i18nNameKey" value="report.name.openBookingOrdersLast12Months" />
-		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast12Months" />
-		<property name="duration" value="12" />
-		<property name="durationUnit" value="month" />
-	</bean>
 </beans>
 	
