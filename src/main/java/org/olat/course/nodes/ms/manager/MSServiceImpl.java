@@ -289,14 +289,16 @@ public class MSServiceImpl implements MSService {
 					continue;
 				}
 				
-				float rubricSumMin = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, true))
+				Double dRubricSumMin = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, true))
 						.getTotalStatistic()
-						.getSum().floatValue();
-				float rubricSumMax = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, false))
+						.getSum();
+				Double dRubricSumMax = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, false))
 						.getTotalStatistic()
-						.getSum().floatValue();
+						.getSum();
+				double rubricSumMin = dRubricSumMin == null ? 0.0d : dRubricSumMin.doubleValue();
+				double rubricSumMax = dRubricSumMax == null ? 0.0d : dRubricSumMax.doubleValue();
 				if (rubricSumMin > rubricSumMax) {
-					float temp = rubricSumMin;
+					double temp = rubricSumMin;
 					rubricSumMin = rubricSumMax;
 					rubricSumMax = temp;
 				}
