@@ -1,12 +1,10 @@
 #if ($withBack)
 	$r.render("backLink")
-	<br />
-	<br />	
 #end
 #if ($isGuest)
-	<div class="o_warning" >${r.translate("filtered.first")}${r.render("repo.login")}${r.translate("filtered.second")}</div>
+	<div class="o_warning">${r.translate("filtered.first")}${r.render("repo.login")}${r.translate("filtered.second")}</div>
 #end
 $r.render("repotable")
 #if ($withCancel)
-	<div class="o_button_group">$r.render("cancel")<div>
+	<div class="o_button_group">$r.render("cancel")</div>
 #end
