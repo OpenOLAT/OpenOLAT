@@ -159,6 +159,7 @@ import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.preview.PreviewConfigController;
+import org.olat.course.run.preview.PreviewLayoutController;
 import org.olat.course.run.tools.CourseTool;
 import org.olat.course.run.tools.OpenCourseToolEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -1535,7 +1536,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(popedController != getRunMainController()
 				&& !(popedController instanceof PreviewConfigController)
 				&& !(popedController instanceof OverviewController)
-				&& !(popedController instanceof DocumentRunController)) {
+				&& !(popedController instanceof DocumentRunController)
+				&& !(popedController instanceof PreviewLayoutController)) {
 			RunMainController run = toolControllerDone(ureq, null);
 			if(run != null && entries != null) {
 				run.activate(ureq, entries, null);
