@@ -25,7 +25,6 @@
 
 package org.olat.course.nodes.tu;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -39,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.TUCourseNode;
+import org.olat.course.run.preview.PreviewLayoutController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
@@ -64,7 +64,7 @@ public class TUEditController extends ActivateableTabbableDefaultController {
 	private TUConfigForm tuConfigForm;	
 	private TUCourseNode courseNode;
 	private TabbedPane myTabbedPane;
-	private LayoutMain3ColsController previewLayoutCtr;
+	private PreviewLayoutController previewLayoutCtr;
 	private Link previewButton;
 	private final UserCourseEnvironment euce;
 
@@ -102,7 +102,7 @@ public class TUEditController extends ActivateableTabbableDefaultController {
 			}
 			if (previewLayoutCtr != null) previewLayoutCtr.dispose();
 			// preview layout: only center column (col3) used
-			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), tunnelRunCtr);
+			previewLayoutCtr = new PreviewLayoutController(ureq, getWindowControl(), tunnelRunCtr);
 			stackPanel.pushController(translate("preview"), previewLayoutCtr);
 		}
 	}
