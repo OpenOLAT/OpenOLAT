@@ -109,6 +109,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 					break;
 			}
 			sb.append("</div>");
+			System.out.println(sb);
 		}
 	}
 	
@@ -284,8 +285,8 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			labelTxt = labelTxt + " " + translator.translate("a11y.mandatory");				
 		}
 		labelTxt = labelTxt + ". " + translator.translate("richText.help");
-		sb.append("		 jQuery('#").append(domID).append("_ifr').attr('aria-label', '").append(labelTxt).append("');\n");
-		sb.append("		 jQuery(editor.getBody()).attr('aria-label', '").append(labelTxt).append("')\n");
+		sb.append("		 jQuery('#").append(domID).append("_ifr').attr('aria-label', '").appendHtmlAttributeEscaped(labelTxt).append("');\n");
+		sb.append("		 jQuery(editor.getBody()).attr('aria-label', '").appendHtmlAttributeEscaped(labelTxt).append("')\n");
 		//
 		sb.append("    },\n");
 		
