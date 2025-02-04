@@ -1053,15 +1053,13 @@ public class AccessConfigurationController extends FormBasicController {
 			} else if (OfferCatalogInfo.OfferCatalogStatus.pending == offerCatalogInfo.getStatus()) {
 				dates = formatPeriod(from, to)
 					+ " | <strong>" + translate("access.period.starts.in", String.valueOf(DateUtils.countDays(new Date(), from))) + "</strong>";
-			} else if (OfferCatalogInfo.OfferCatalogStatus.bookable == offerCatalogInfo.getStatus()) {
-				iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_bookable\"><i class=\"o_icon o_ac_offer_bookable_icon\"> </i> " + translate("offer.status.bookable") + "</span>");
 			} else if (OfferCatalogInfo.OfferCatalogStatus.notAvailable == offerCatalogInfo.getStatus()) {
-				iconPanel.setTitleLabel("<span class=\"o_labeled_light o_ac_offer_not_available\"><i class=\"o_icon o_ac_offer_not_available_icon\"> </i> " + translate("offer.status.not.available") + "</span>");
-			} else if (to != null && to.after(new Date())) {
-				dates = formatPeriod(from, to)
-					+ " | <strong>" + translate("access.period.ends.in", String.valueOf(DateUtils.countDays(new Date(), to))) + "</strong>";
-			} else {
 				dates = catalogInfo.getStatusPeriodOption();
+			} else if (OfferCatalogInfo.OfferCatalogStatus.bookable == offerCatalogInfo.getStatus()) {
+				if (to != null && to.after(new Date())) {
+					dates = formatPeriod(from, to)
+						+ " | <strong>" + translate("access.period.ends.in", String.valueOf(DateUtils.countDays(new Date(), to))) + "</strong>";
+				}
 			}
 		}
 

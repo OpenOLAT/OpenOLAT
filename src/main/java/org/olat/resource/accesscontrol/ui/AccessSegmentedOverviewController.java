@@ -104,6 +104,7 @@ public class AccessSegmentedOverviewController extends BasicController {
 	
 	public void setStatusEvaluator(CatalogStatusEvaluator statusEvaluator) {
 		accessConfigCtrl.setStatusEvaluator(statusEvaluator);
+		updateCatalogStatusUI();
 	}
 
 	@Override
