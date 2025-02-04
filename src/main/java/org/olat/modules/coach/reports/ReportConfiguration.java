@@ -61,7 +61,21 @@ public interface ReportConfiguration {
 	 */
 	boolean isDynamic();
 
+	/**
+	 * Generate the report. Implementations are free to decide where and in what format the reports should be.
+
+	 * @param coach Coach who triggered the report generation.
+	 * @param locale The locale to use for localized/translated text.
+	 */
 	void generateReport(Identity coach, Locale locale);
 
+	/**
+	 * Provide a number to be used as a sorting order. This is used to display report configurations in an ordered
+	 * list.
+
+	 * @return A sorting order as integer. 
+	 *         Sorting takes place in ascending order, 
+	 *         so smaller numbers place the element higher up in the list.
+	 */
 	int getOrder();
 }
