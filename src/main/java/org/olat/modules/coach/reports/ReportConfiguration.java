@@ -31,6 +31,21 @@ import org.olat.core.id.Identity;
 public interface ReportConfiguration {
 
 	/**
+	 * Returns true if the given 'secCallback' provides access to this report 
+	 * configuration.
+	 * 
+	 * A person can have access to a report configuration because
+	 * they are owner, coach or manager of courses or curricula, or they have
+	 * an organizational role such as education manager that lets them execute this 
+	 * report type, or some other reason. The set of possible access criteria can
+	 * be queried in the 'secCallback'.
+	 * 
+	 * @param secCallback Callback object to query for access criteria.
+	 * @return True if the person linked to the 'secCallback' has access to this report configuration.
+	 */
+	boolean hasAccess(ReportConfigurationAccessSecurityCallback secCallback);
+
+	/**
 	 * Returns the name of the report configuration. Implementations are encouraged to return a translated value.
 	 * 
 	 * @return The name of the report configuration.

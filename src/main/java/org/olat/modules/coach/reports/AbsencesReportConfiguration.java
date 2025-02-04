@@ -42,6 +42,11 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 
 	@Override
+	public boolean hasAccess(ReportConfigurationAccessSecurityCallback secCallback) {
+		return secCallback.isCoachingContext();
+	}
+
+	@Override
 	protected String getI18nCategoryKey() {
 		return "report.category.absences";
 	}
