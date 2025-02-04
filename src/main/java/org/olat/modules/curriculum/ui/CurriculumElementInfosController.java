@@ -71,6 +71,8 @@ public class CurriculumElementInfosController extends BasicController implements
 	private final String baseUrl;
 	private Boolean descriptionOpen = Boolean.TRUE;
 	private Boolean objectivesOpen = Boolean.TRUE;
+	private Boolean requirementsOpen = Boolean.TRUE;
+	private Boolean creditsOpen = Boolean.TRUE;
 	private Boolean outlineOpen = Boolean.TRUE;
 	private Boolean offersOpen = Boolean.TRUE;
 
@@ -119,17 +121,30 @@ public class CurriculumElementInfosController extends BasicController implements
 			mediaContainer.setDefaultItemFilter(new MediaContainerFilter(mediaContainer));
 		}
 		baseUrl = mediaContainer != null
-				? registerMapper(ureq, new VFSContainerMapper(mediaContainer.getParentContainer()))
+				? registerMapper(ureq, new VFSContainerMapper(mediaContainer))
 						: null;
 		
 		String description = getFormattedText(element.getDescription());
 		if (StringHelper.containsNonWhitespace(description)) {
-			mainVC.contextPut("description", element.getDescription());
+			mainVC.contextPut("description", description);
 			mainVC.contextPut("descriptionOpen",descriptionOpen);
 		}
+		String objectives = getFormattedText(element.getObjectives());
+		if (StringHelper.containsNonWhitespace(objectives)) {
+			mainVC.contextPut("objectives", objectives);
+			mainVC.contextPut("objectivesOpen",objectivesOpen);
+		}
+		String requirements = getFormattedText(element.getRequirements());
+		if (StringHelper.containsNonWhitespace(requirements)) {
+			mainVC.contextPut("requirements", requirements);
+			mainVC.contextPut("requirementsOpen",requirementsOpen);
+		}
+		String credits = getFormattedText(element.getCredits());
+		if (StringHelper.containsNonWhitespace(credits)) {
+			mainVC.contextPut("credits", credits);
+			mainVC.contextPut("creditsOpen",creditsOpen);
+		}
 		
-		mainVC.contextPut("objectives", element.getObjectives());
-		mainVC.contextPut("objectivesOpen", objectivesOpen);
 		
 		// Outline
 		if (element.isShowOutline()) {
@@ -205,6 +220,16 @@ public class CurriculumElementInfosController extends BasicController implements
 			if (StringHelper.containsNonWhitespace(objectivesOpenVal)) {
 				objectivesOpen = Boolean.valueOf(objectivesOpenVal);
 				mainVC.contextPut("objectivesOpen", objectivesOpen);
+			}
+			String requirementsOpenVal = ureq.getParameter("requirementsOpen");
+			if (StringHelper.containsNonWhitespace(requirementsOpenVal)) {
+				requirementsOpen = Boolean.valueOf(requirementsOpenVal);
+				mainVC.contextPut("requirementsOpen", requirementsOpen);
+			}
+			String creditsOpenVal = ureq.getParameter("creditsOpen");
+			if (StringHelper.containsNonWhitespace(creditsOpenVal)) {
+				creditsOpen = Boolean.valueOf(creditsOpenVal);
+				mainVC.contextPut("creditsOpen", creditsOpen);
 			}
 			String outlineOpenVal = ureq.getParameter("outlineOpen");
 			if (StringHelper.containsNonWhitespace(outlineOpenVal)) {
