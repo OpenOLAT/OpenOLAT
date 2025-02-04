@@ -109,7 +109,6 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 					break;
 			}
 			sb.append("</div>");
-			System.out.println(sb);
 		}
 	}
 	
