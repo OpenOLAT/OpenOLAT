@@ -164,6 +164,7 @@ public class WebCatalogDispatcher implements Dispatcher {
 		}
 		
 		ChiefController chiefController = windows.getChiefController(ureq);
+		chiefController.addBodyCssClass("o_dmz_catalog");
 		try {
 			WindowControl wControl = chiefController.getWindowControl();
 			NewControllerFactory.getInstance().launch(ureq, wControl);	

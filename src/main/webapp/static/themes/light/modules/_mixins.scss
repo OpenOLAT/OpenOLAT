@@ -164,7 +164,7 @@
 }
 
 /* Helper to add hover colors if not using standad hover effect */
-@mixin o-add-button-hover($color,$border,$background) {
+@mixin o-add-button-hover($color,$background,$border) {
   &:focus,
   &.focus {
     color: $color;

@@ -577,6 +577,9 @@ $o-cat2-launcher-margin-top-xs			: 40px !default;
 $o-cat2-launcher-margin-top-md			: 55px !default;
 $o-cat2-launcher-title-margin			: 20px 0px !default;
 $o-cat2-tax-launcher-square-font-size	: 14px !default;
+$o-cat2-login-button-bg					: $o-color-important !default;
+$o-cat2-login-button-color				: o-a11y-color($o-color-important-text-bg, $o-color-important) !default;
+$o-cat2-login-button-border				: darken($o-cat2-login-button-bg, 5%) !default;
 
 /* Repository */
 $o-repo-preparation-color			: #4a6785;	/* blue */
