@@ -37,7 +37,6 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
-import org.olat.instantMessaging.model.Presence;
 import org.olat.modules.co.ContactFormController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,7 +56,7 @@ public class UserInfoProfileController extends BasicController {
 	private HomePageDisplayController infoCtrl;
 	private ContactFormController contactCtrl;
 	
-	private final UserInfoProfile profile;
+	private final PortraitUser portraitUser;
 	
 	@Autowired
 	private BaseSecurity securityManager;
@@ -66,32 +65,28 @@ public class UserInfoProfileController extends BasicController {
 	@Autowired
 	private InstantMessagingService imService;
 
-	public UserInfoProfileController(UserRequest ureq, WindowControl wControl, UserInfoProfileConfig profileConfig, UserInfoProfile profile) {
+	public UserInfoProfileController(UserRequest ureq, WindowControl wControl, UserInfoProfileConfig profileConfig, PortraitUser portraitUser) {
 		super(ureq, wControl);
-		this.profile = profile;
+		this.portraitUser = portraitUser;
 		
 		VelocityContainer mainVC = createVelocityContainer("user_info_profile");
 		putInitialPanel(mainVC);
 		
-		mainVC.contextPut("name", StringHelper.escapeHtml(profile.getDisplayName()));
+		mainVC.contextPut("name", StringHelper.escapeHtml(portraitUser.getDisplayName()));
 		
-		mainVC.contextPut("initials", profile.getInitials());
-		mainVC.contextPut("initialsCss", profile.getInitialsCss());
-		mainVC.contextPut("portraitAvailable", profile.isPortraitAvailable());
-		
-		if (profile.isPortraitAvailable()) {
-			UserAvatarMapper mapper = profileConfig.getAvatarMapper();
-			if (mapper == null) {
-				mapper = new UserAvatarMapper(true);
-			}
-			String avatarMapperBaseURL = profileConfig.getAvatarMapperBaseURL();
-			if (!StringHelper.containsNonWhitespace(avatarMapperBaseURL)) {
-				avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", mapper);
-			}
-			mainVC.contextPut("portraitUrl", mapper.createPathFor(avatarMapperBaseURL, () -> profile.getIdentityKey(), profile.getUsername()));
-			mainVC.contextPut("portraitAltText", translate("user.info.profile.portrait.alt", StringHelper.escapeHtml(profile.getDisplayName())));
+		UserAvatarMapper mapper = profileConfig.getAvatarMapper();
+		if (mapper == null) {
+			mapper = new UserAvatarMapper(true);
 		}
-		
+		String avatarMapperBaseURL = profileConfig.getAvatarMapperBaseURL();
+		if (!StringHelper.containsNonWhitespace(avatarMapperBaseURL)) {
+			avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", mapper);
+		}
+		UserPortraitComponent userPortraitComp = UserPortraitFactory.createUserPortrait("user.portrait", mainVC, getLocale(),
+				avatarMapperBaseURL);
+		userPortraitComp.setPortraitUser(portraitUser);
+		userPortraitComp.setDisplayPresence(profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey()));
+
 		visitingCardLink = LinkFactory.createLink("user.info.visiting.card", mainVC, this);
 		visitingCardLink.setIconLeftCSS("o_icon o_icon-fw o_icon_visiting_card");
 		visitingCardLink.setElementCssClass("o_nowrap");
@@ -102,28 +97,11 @@ public class UserInfoProfileController extends BasicController {
 		emailLink.setElementCssClass("o_nowrap");
 		emailLink.setAriaRole("button");
 		
-		if (profileConfig.isChatEnabled() && !profile.getIdentityKey().equals(getIdentity().getKey())) {
+		if (profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey())) {
 			chatLink = LinkFactory.createLink("user.info.chat", mainVC, this);
 			chatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_chat");
 			chatLink.setElementCssClass("o_nowrap");
 			chatLink.setAriaRole("button");
-			
-			String imStatusIconCss;
-			String imStatusText = null;
-			if (Presence.available == profile.getPresence()) {
-				imStatusIconCss = "o_icon o_icon_status_available";
-				imStatusText = translate("user.info.presence.available");
-			} else if (Presence.dnd == profile.getPresence()) {
-				imStatusIconCss = "o_icon o_icon_status_dnd";
-				imStatusText = translate("user.info.presence.dnd");
-			} else if (Presence.unavailable == profile.getPresence()) {
-				imStatusIconCss = "o_icon o_icon_status_unavailable";
-				imStatusText = translate("user.info.presence.unavailable");
-			} else {
-				imStatusIconCss = "o_icon o_icon_status_chat";
-			}
-			mainVC.contextPut("imStatusIconCss", imStatusIconCss);
-			mainVC.contextPut("imStatusText", imStatusText);
 		}
 	}
 
@@ -161,7 +139,7 @@ public class UserInfoProfileController extends BasicController {
 	private void doVisitingCard(UserRequest ureq) {
 		if (guardModalController(infoCtrl)) return;
 		
-		Identity identity = securityManager.loadIdentityByKey(profile.getIdentityKey());
+		Identity identity = securityManager.loadIdentityByKey(portraitUser.getIdentityKey());
 		if (identity == null) {
 			showWarning("error.visiting.card.not.possible");
 			return;
@@ -180,14 +158,14 @@ public class UserInfoProfileController extends BasicController {
 	private void doEmail(UserRequest ureq) {
 		if (guardModalController(contactCtrl)) return;
 		
-		Identity recipeint = securityManager.loadIdentityByKey(profile.getIdentityKey());
+		Identity recipeint = securityManager.loadIdentityByKey(portraitUser.getIdentityKey());
 		if (recipeint == null) {
 			showWarning("error.email.not.possible");
 			return;
 		}
 		
 		ContactMessage cmsg = new ContactMessage(getIdentity());
-		ContactList emailList = new ContactList(profile.getDisplayName());
+		ContactList emailList = new ContactList(portraitUser.getDisplayName());
 		emailList.add(recipeint);
 		cmsg.addEmailTo(emailList);
 		
@@ -201,7 +179,7 @@ public class UserInfoProfileController extends BasicController {
 	}
 
 	private void doChat(UserRequest ureq) {
-		Buddy buddy = imService.getBuddyById(profile.getIdentityKey());
+		Buddy buddy = imService.getBuddyById(portraitUser.getIdentityKey());
 		if (buddy == null) {
 			showWarning("error.chat.not.possible");
 			return;

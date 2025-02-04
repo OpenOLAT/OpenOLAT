@@ -54,7 +54,7 @@ import org.olat.modules.topicbroker.TBTopic;
 import org.olat.modules.topicbroker.TBTopicRef;
 import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBSelectionDataModel.SelectionCols;
-import org.olat.user.UserInfoProfile;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoProfileConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -84,7 +84,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	private TBBroker broker;
 	private final TBParticipant participant;
 	private final UserInfoProfileConfig profileConfig;
-	private final UserInfoProfile profile;
+	private final PortraitUser portraitUser;
 	private final List<TBSelection> selections;
 	private boolean canEditSelections;
 	private boolean canEditParticipant;
@@ -94,7 +94,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	private TopicBrokerService topicBrokerService;
 
 	public TBParticipantSelectionsController(UserRequest ureq, WindowControl wControl, Form mainForm, TBBroker broker,
-			TBParticipant participant, UserInfoProfileConfig profileConfig, UserInfoProfile profile,
+			TBParticipant participant, UserInfoProfileConfig profileConfig, PortraitUser portraitUser,
 			List<TBSelection> selections, boolean canEditSelections) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "participant_selections", mainForm);
 		
@@ -102,7 +102,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 		this.broker = broker;
 		this.participant = participant;
 		this.profileConfig = profileConfig;
-		this.profile = profile;
+		this.portraitUser = portraitUser;
 		this.selections = selections;
 		this.canEditSelections = canEditSelections;
 		this.canEditParticipant = canEditSelections && broker.getEnrollmentStartDate() == null;
@@ -117,7 +117,7 @@ public class TBParticipantSelectionsController extends FormBasicController {
 	@Override
 	public void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		participantCtrl = new TBParticipantController(ureq, getWindowControl(), mainForm, broker, participant,
-				profileConfig, profile, canEditParticipant);
+				profileConfig, portraitUser, canEditParticipant);
 		listenTo(participantCtrl);
 		String participantName = "participant_" + participant.getKey();
 		formLayout.add(participantName, participantCtrl.getInitialFormItem());

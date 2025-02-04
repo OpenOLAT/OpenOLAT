@@ -115,12 +115,13 @@ import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskGroupFactory;
 import org.olat.modules.todo.ui.ToDoUIFactory.Due;
 import org.olat.modules.todo.ui.ToDoUIFactory.VariousDate;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsComponent.PortraitUser;
-import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -186,6 +187,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private MapperService mapperService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 
 	protected ToDoTaskListController(UserRequest ureq, WindowControl wControl, String pageName,
 			MapperKey avatarMapperKey, String createType, Long createOriginId, String createOriginSubPath) {
@@ -934,8 +937,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 
 	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, Set<Identity> members, String ariaI18nKey) {
-		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(members));
-		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(new ArrayList<>(members));
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate(ariaI18nKey));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(10);

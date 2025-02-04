@@ -20,6 +20,7 @@
 package org.olat.user;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -28,6 +29,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Disposable;
+import org.olat.core.util.CodeHelper;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 
 /**
  * 
@@ -39,6 +42,7 @@ public class UsersPortraitsComponent extends AbstractComponent implements Dispos
 	
 	private static final ComponentRenderer RENDERER = new UsersPortraitsRenderer();
 	
+	private final Locale locale;
 	private UserAvatarMapper avatarMapper;
 	private final MapperKey mapperKey;
 	private final boolean sharedMapper;
@@ -46,10 +50,11 @@ public class UsersPortraitsComponent extends AbstractComponent implements Dispos
 	private PortraitSize size = PortraitSize.medium;
 	private PortraitLayout layout = PortraitLayout.overlappingPortraits;
 	private int maxUsersVisible = 10;
-	private List<PortraitUser> users;
+	private List<UserPortraitComponent> userComps;
 
 	UsersPortraitsComponent(UserRequest ureq, String name, MapperKey mapperKey) {
 		super(name);
+		locale = ureq.getLocale();
 		
 		if (mapperKey != null) {
 			this.mapperKey = mapperKey;
@@ -122,29 +127,26 @@ public class UsersPortraitsComponent extends AbstractComponent implements Dispos
 		setDirty(true);
 	}
 
-	public List<PortraitUser> getUsers() {
-		return users;
+	List<UserPortraitComponent> getUserComps() {
+		return userComps;
 	}
 
 	public void setUsers(List<PortraitUser> users) {
-		this.users = users;
+		this.userComps = users.stream()
+				.map(this::createPortraitUserComponent)
+				.toList();
 		setDirty(true);
 	}
-	
-	public enum PortraitSize { xsmall, small, medium, large }
+
+	private UserPortraitComponent createPortraitUserComponent(PortraitUser portraitUser) {
+		UserPortraitComponent userPortraitComp = UserPortraitFactory
+				.createUserPortrait("o_" + CodeHelper.getRAMUniqueID(), null, locale, mapperKey.getUrl());
+		userPortraitComp.setPortraitUser(portraitUser);
+		userPortraitComp.setDisplayPresence(false);
+		userPortraitComp.setSize(size);
+		return userPortraitComp;
+	}
 
 	public enum PortraitLayout { overlappingPortraits, verticalPortraitsDisplayName }
-
-	public interface PortraitUser {
-		
-		public Long getIdentityKey();
-		
-		public boolean isPortraitAvailable();
-		
-		public String getPortraitCssClass();
-		
-		public String getDisplayName();
-		
-	}
 
 }

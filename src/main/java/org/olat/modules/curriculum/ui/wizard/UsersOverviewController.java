@@ -64,8 +64,8 @@ import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.modules.curriculum.ui.wizard.UsersOverviewTableModel.UserOverviewCols;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
-import org.olat.user.UserInfoService;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -91,11 +91,11 @@ public class UsersOverviewController extends StepFormBasicController implements 
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private UserInfoService userInfoService;
-	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	public UsersOverviewController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, MembersContext membersContext) {
@@ -300,8 +300,7 @@ public class UsersOverviewController extends StepFormBasicController implements 
 	}
 	
 	private final UserInfoProfileConfig createProfilConfig() {
-		UserInfoProfileConfig profileConfig = userInfoService.createProfileConfig();
-		profileConfig.setChatEnabled(true);
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		return profileConfig;

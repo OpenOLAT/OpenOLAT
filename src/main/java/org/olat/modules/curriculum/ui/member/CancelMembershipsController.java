@@ -80,8 +80,8 @@ import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.ui.OrderModification;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
-import org.olat.user.UserInfoService;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -122,11 +122,11 @@ public class CancelMembershipsController extends FormBasicController implements 
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private UserInfoService userInfoService;
-	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	public CancelMembershipsController(UserRequest ureq, WindowControl wControl, Curriculum curriculum,
 			CurriculumElement selectedCurriculumElement, List<CurriculumElement> curriculumElements,
@@ -495,8 +495,7 @@ public class CancelMembershipsController extends FormBasicController implements 
 	}
 	
 	private final UserInfoProfileConfig createProfilConfig() {
-		UserInfoProfileConfig profileConfig = userInfoService.createProfileConfig();
-		profileConfig.setChatEnabled(true);
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		return profileConfig;

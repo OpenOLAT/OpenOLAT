@@ -93,8 +93,8 @@ import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
-import org.olat.user.UserInfoService;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -135,11 +135,11 @@ public class CNSParticipantListController extends FormBasicController implements
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private UserInfoService userInfoService;
-	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	@Autowired
@@ -163,7 +163,7 @@ public class CNSParticipantListController extends FormBasicController implements
 		
 		requiredSelections = Integer.valueOf(courseNode.getModuleConfiguration().getStringValue(CNSCourseNode.CONFIG_KEY_REQUIRED_SELECTIONS));
 		
-		profileConfig = userInfoService.createProfileConfig();
+		profileConfig = userPortraitService.createProfileConfig();
 		UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
 		profileConfig.setAvatarMapper(avatarMapper);
 		String avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
@@ -594,7 +594,7 @@ public class CNSParticipantListController extends FormBasicController implements
 	
 	private void doShowDetails(UserRequest ureq, CNSParticipantRow row) {
 		CNSParticipantDetailsController detailsCtrl = new CNSParticipantDetailsController(ureq, getWindowControl(),
-				mainForm, row.getIdentity(), profileConfig, userInfoService.createProfile(row.getIdentity()),
+				mainForm, row.getIdentity(), profileConfig, userPortraitService.createPortraitUser(row.getIdentity()),
 				coachCourseEnv.getCourseEnvironment(), courseEntry, childNodes, row.getSelectedEntries());
 		listenTo(detailsCtrl);
 		detailCtrls.add(detailsCtrl);

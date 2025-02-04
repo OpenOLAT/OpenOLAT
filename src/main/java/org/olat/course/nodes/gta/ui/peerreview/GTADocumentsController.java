@@ -66,11 +66,12 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.nodes.gta.ui.GTAParticipantController;
 import org.olat.course.nodes.gta.ui.peerreview.GTADocumentsTableModel.DocumentCols;
 import org.olat.modules.audiovideorecording.AVModule;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsComponent.PortraitUser;
-import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -103,6 +104,8 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 	private FolderModule folderModule;
 	@Autowired
 	private DocEditorService docEditorService;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
@@ -252,8 +255,8 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 	}
 	
 	private void forgeUsersPortraits(UserRequest ureq, GTADocumentRow row, Identity initializedBy) {
-		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(List.of(initializedBy));
-		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + (++count), flc.getFormItemComponent(), null, avatarMapperKey);
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(List.of(initializedBy));
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + (++count), flc.getFormItemComponent(), null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);

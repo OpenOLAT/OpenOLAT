@@ -36,11 +36,12 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.TaskReviewAssignmentStatus;
 import org.olat.course.nodes.gta.ui.GTAParticipantController;
 import org.olat.course.nodes.gta.ui.component.TaskReviewAssignmentStatusCellRenderer;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsComponent.PortraitUser;
-import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,6 +61,8 @@ public class GTAAssessedIdentityInformationsController extends FormBasicControll
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	GTAAssessedIdentityInformationsController(UserRequest ureq, WindowControl wControl, MapperKey avatarMapperKey,
 			TaskReviewAssignmentStatus assignmentStatus, GTACourseNode gtaNode, Identity user, String placeholderName, boolean anonym) {
@@ -85,8 +88,8 @@ public class GTAAssessedIdentityInformationsController extends FormBasicControll
 			
 			// Portrait
 			Identity userToPortrait = anonym ? new TransientIdentity() : user;
-			List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(List.of(userToPortrait));
-			UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_id", flc.getFormItemComponent(), null, avatarMapperKey);
+			List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(List.of(userToPortrait));
+			UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_id", flc.getFormItemComponent(), null, avatarMapperKey);
 			usersPortraitCmp.setAriaLabel(placeholderName);
 			usersPortraitCmp.setSize(PortraitSize.large);
 			usersPortraitCmp.setMaxUsersVisible(5);

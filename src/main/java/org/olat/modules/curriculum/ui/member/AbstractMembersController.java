@@ -82,8 +82,8 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
-import org.olat.user.UserInfoService;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -130,8 +130,6 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	@Autowired
 	protected BaseSecurity securityManager;
 	@Autowired
-	private UserInfoService userInfoService;
-	@Autowired
 	protected InstantMessagingModule imModule;
 	@Autowired
 	protected InstantMessagingService imService;
@@ -141,6 +139,8 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	protected BaseSecurityModule securityModule;
 	@Autowired
 	protected CurriculumService curriculumService;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	public AbstractMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, String page,
 			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback,
@@ -567,8 +567,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	}
 	
 	protected final UserInfoProfileConfig createProfilConfig() {
-		UserInfoProfileConfig profileConfig = userInfoService.createProfileConfig();
-		profileConfig.setChatEnabled(true);
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		return profileConfig;

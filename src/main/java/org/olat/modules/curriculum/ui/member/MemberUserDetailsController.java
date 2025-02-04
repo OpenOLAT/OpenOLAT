@@ -37,8 +37,8 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.ui.CurriculumManagerRootController;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoController;
-import org.olat.user.UserInfoProfile;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -66,8 +66,8 @@ public class MemberUserDetailsController extends UserInfoController {
 	private OrganisationService organisationService;
 
 	public MemberUserDetailsController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			Identity member, UserInfoProfileConfig profileConfig, UserInfoProfile profile) {
-		super(ureq, wControl, mainForm, profileConfig, profile);
+			Identity member, UserInfoProfileConfig profileConfig, PortraitUser portraitUser) {
+		super(ureq, wControl, mainForm, profileConfig, portraitUser);
 		setTranslator(Util.createPackageTranslator(CurriculumManagerRootController.class, getLocale(),
 				userManager.getPropertyHandlerTranslator(getTranslator())));
 		this.member = member;

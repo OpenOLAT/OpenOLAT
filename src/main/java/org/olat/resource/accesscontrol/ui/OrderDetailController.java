@@ -69,11 +69,11 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
 import org.olat.resource.accesscontrol.ui.OrderItemsDataModel.OrderItemCol;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
-import org.olat.user.UserInfoProfile;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoProfileController;
-import org.olat.user.UserInfoService;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -108,7 +108,7 @@ public class OrderDetailController extends FormBasicController {
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
-	private UserInfoService userInfoService;
+	private UserPortraitService userPortraitService;
 	
 	public OrderDetailController(UserRequest ureq, WindowControl wControl, OrderTableItem orderItem,
 			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, boolean readOnly) {
@@ -121,8 +121,7 @@ public class OrderDetailController extends FormBasicController {
 		offerLabel = orderItem.getLabel();
 		
 		delivery = this.order.getDelivery();
-		profileConfig = userInfoService.createProfileConfig();
-		profileConfig.setChatEnabled(true);
+		profileConfig = userPortraitService.createProfileConfig();
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
@@ -142,8 +141,7 @@ public class OrderDetailController extends FormBasicController {
 		offerLabel = orderItem.getLabel();
 		
 		delivery = order.getDelivery();
-		profileConfig = userInfoService.createProfileConfig();
-		profileConfig.setChatEnabled(true);
+		profileConfig = userPortraitService.createProfileConfig();
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
@@ -222,8 +220,8 @@ public class OrderDetailController extends FormBasicController {
 
 	private void initDeliveryForm(FormItemContainer formLayout, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			UserInfoProfile teacherProfile = userInfoService.createProfile(delivery);
-			UserInfoProfileController profile = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, teacherProfile);
+			PortraitUser teacherPortraitUser = userPortraitService.createPortraitUser(delivery);
+			UserInfoProfileController profile = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, teacherPortraitUser);
 			listenTo(profile);
 			layoutCont.put("delivery-profile", profile.getInitialComponent());
 		}

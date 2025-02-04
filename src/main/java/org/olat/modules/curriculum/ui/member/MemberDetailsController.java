@@ -52,8 +52,8 @@ import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.ui.OrderModification;
 import org.olat.resource.accesscontrol.ui.OrdersController;
 import org.olat.resource.accesscontrol.ui.OrdersSettings;
-import org.olat.user.UserInfoProfile;
-import org.olat.user.UserInfoService;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,7 +87,7 @@ public class MemberDetailsController extends FormBasicController {
 	@Autowired
 	private ACService acService;
 	@Autowired
-	private UserInfoService userInfoService;
+	private UserPortraitService userPortraitService;
 	
 	public MemberDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			Curriculum curriculum, CurriculumElement selectedCurriculumElement, List<CurriculumElement> elements,
@@ -148,9 +148,9 @@ public class MemberDetailsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			// Profile
-			UserInfoProfile memberConfig = userInfoService.createProfile(member);
+			PortraitUser memberPortraitUser = userPortraitService.createPortraitUser(member);
 			MemberUserDetailsController profile = new MemberUserDetailsController(ureq, getWindowControl(), mainForm,
-					member, config.profileConfig(), memberConfig);
+					member, config.profileConfig(), memberPortraitUser);
 			listenTo(profile);
 			layoutCont.put("profil", profile.getInitialComponent());
 			

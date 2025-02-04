@@ -78,9 +78,9 @@ import org.olat.modules.curriculum.ui.member.EditMemberCurriculumElementTableMod
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
-import org.olat.user.UserInfoProfile;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoProfileConfig;
-import org.olat.user.UserInfoService;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -127,9 +127,9 @@ public class EditMemberController extends FormBasicController {
 	@Autowired
 	private ACService acService;
 	@Autowired
-	private UserInfoService userInfoService;
-	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	public EditMemberController(UserRequest ureq, WindowControl wControl,
 			Curriculum curriculum, List<CurriculumElement> curriculumElements,
@@ -161,9 +161,9 @@ public class EditMemberController extends FormBasicController {
 		}
 
 		// Profile
-		UserInfoProfile memberConfig = userInfoService.createProfile(member);
+		PortraitUser memberPortraitUser = userPortraitService.createPortraitUser(member);
 		MemberUserDetailsController profile = new MemberUserDetailsController(ureq, getWindowControl(), mainForm,
-				member, profileConfig, memberConfig);
+				member, profileConfig, memberPortraitUser);
 		listenTo(profile);
 		formLayout.add("profil", profile.getInitialFormItem());
 		

@@ -1,3 +1,166 @@
+/* User portrait: avtar or initials */
+
+@mixin o-user_portrait_size($size, $initials-font-size, $im-margin-size, $im-scale) {
+	width: $size;
+	height: $size;
+	.o_user_portrait_avatar {
+		width: $size;
+		height: $size;
+		.o_user_portrait_image {
+			img {
+				width: $size;
+				height: $size;
+			}
+		}
+		.o_user_portrait_initials {
+			font-size: $initials-font-size;
+		}
+	}
+	.o_user_portrait_im {
+		margin-bottom: $im-margin-size;
+		margin-right: $im-margin-size;
+		transform: scale($im-scale);
+	}
+}
+
+.o_user_portrait {
+	&.o_user_portrait_xsmall {
+		@include o-user_portrait_size(math.div($o-portrait-small-size, 2), $o-user-portrait-initials-font-size-xsmall, $o-user-portrait-im-margin-size-xsmall, $o-user-portrait-im-scale-xsmall);
+	}
+	&.o_user_portrait_small {
+		@include o-user_portrait_size($o-portrait-small-size, $o-user-portrait-initials-font-size-small, $o-user-portrait-im-margin-size-small, $o-user-portrait-im-scale-small);
+	}
+	&.o_user_portrait_medium {
+		@include o-user_portrait_size(math.div($o-portrait-size, 2), $o-user-portrait-initials-font-size-medium, $o-user-portrait-im-margin-size-medium, $o-user-portrait-im-scale-medium);
+	}
+	&.o_user_portrait_large {
+		@include o-user_portrait_size($o-portrait-size, $o-user-portrait-initials-font-size-large, $o-user-portrait-im-margin-size-large, $o-user-portrait-im-scale-large);
+	}
+	
+	display: grid;
+	>div {
+		grid-area: container;
+	}
+	
+	.o_user_portrait_avatar {
+		display: grid;
+		align-items: stretch;
+		justify-items: stretch;
+		
+		.o_user_portrait_image {
+			background-color: white;
+			border-radius: 50%;
+			object-fit: cover;
+		}
+		.o_user_portrait_initials {
+			border-radius: 50%;
+			-webkit-user-select: none; /* Safari */
+ 			user-select: none;
+			
+			display: grid;
+			align-items: center;
+			justify-content: center;
+		}
+	}
+	.o_user_portrait_border {
+		border-radius: 50%;
+		border: $o-user-info-portrait-border	;
+		box-shadow: $o-user-info-portrait-box-shadow	;
+	}
+	.o_user_portrait_im {
+		place-self: end end;
+		
+		border-radius: 50%;
+		line-height: 12px;
+		border: solid 1px white;
+		background-color: white;
+	}
+}
+
+.o_user_initials {
+	color: $o-user-initials-color;
+	&.o_user_initials_dark_blue {
+		background-color: $o-proj-avatar-dark-blue-bg-color;
+	}
+	&.o_user_initials_light_blue {
+		background-color: $o-proj-avatar-light-blue-bg-color;
+	}
+	&.o_user_initials_purple {
+		background-color: $o-proj-avatar-purple-bg-color;
+	}
+	&.o_user_initials_red {
+		background-color: $o-proj-avatar-red-bg-color;
+	}
+	&.o_user_initials_orange {
+		background-color: $o-proj-avatar-orange-bg-color;
+	}
+	&.o_user_initials_yellow {
+		background-color: $o-proj-avatar-yellow-bg-color;
+		color: $o-proj-avatar-yellow-color;
+	}
+	&.o_user_initials_dark_green {
+		background-color: $o-proj-avatar-dark_green-bg-color;
+	}
+	&.o_user_initials_light_green {
+		background-color: $o-proj-avatar-light_green-bg-color;
+	}
+}
+
+
+/* Users portraits */
+@mixin o-users_portrait_offset($size){
+	.o_portrait_user {
+		&:not(:first-child) {
+			margin-left: -$o-users-portrait-overlap * $size;
+		}
+	}
+}
+
+.o_users_portraits {
+	.o_portrait_user_not_visible {
+		margin-left: 5px;
+	}
+	&.o_users_portraits_overlapping_portraits {
+		display: flex;
+		align-items: center;
+		ul {
+			margin-bottom: 0;
+			display: flex;
+			.o_portrait_user {
+				&:not(:first-child) {
+					margin-left: -60px;
+				}
+			}
+		}
+		&.o_users_portraits_xsmall {
+			@include o-users_portrait_offset(math.div($o-portrait-small-size, 2));
+		}
+		&.o_users_portraits_small {
+			@include o-users_portrait_offset($o-portrait-small-size);
+		}
+		&.o_users_portraits_medium {
+			@include o-users_portrait_offset(math.div($o-portrait-size, 2));
+		}
+		&.o_users_portraits_large {
+			@include o-users_portrait_offset($o-portrait-size);
+		}
+	}
+	&.o_users_portraits_vertical_displayname {
+		ul {
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+		}
+		.o_portrait_user {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+	}
+}
+
+
+/* User infos */
 .o_user_infos {
 	position:relative;
 	min-height:100px;
@@ -29,54 +192,6 @@
 	align-items: center;
 	
 	.o_user_info_profile_portrait_wrapper {
-		display: grid;
-		grid-template-areas: "user-info-profile-portrait-wrapper";
-		.o_user_info_profile_portrait {
-			grid-area: user-info-profile-portrait-wrapper;
-		}
-		.o_user_info_im {
-			grid-area: user-info-profile-portrait-wrapper;
-			place-self: end end;
-			margin-bottom: -2px;
-			margin-right: -2px;
-			
-			border-radius: 50%;
-			line-height: 12px;
-			border: solid 1px white;
-			background-color: white;
-		}
-	}
-	.o_user_info_profile_portrait {
-		width: $o-user-info-portrait-size;
-		height: $o-user-info-portrait-size;
-		
-		display: grid;
-		align-items: stretch;
-		justify-items: stretch;
-		
-		.o_user_info_profile_portrait_image {
-			border-radius: 50%;
-			border: $o-user-info-portrait-border	;
-			box-shadow: $o-user-info-portrait-box-shadow	;
-			
-			width: $o-user-info-portrait-size;
-			height: $o-user-info-portrait-size;
-			object-fit: cover;
-		}
-		.o_user_initials {
-			border-radius: 50%;
-			border: $o-user-info-portrait-border	;
-			font-size: $o-user-info-initials-font-size;
-			box-shadow: $o-user-info-portrait-box-shadow	;
-			-webkit-user-select: none; /* Safari */
- 			user-select: none;
-			
-			display: grid;
-			align-items: center;
-			justify-content: center;
-		}
-	}
-	.o_user_info_profile_name_wrapper {
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
@@ -89,34 +204,6 @@
 			column-gap: 10px;
 		}
 	}	
-}
-.o_user_initials {
-	color: $o-user-initials-color;
-	&.o_user_initials_dark_blue {
-		background-color: $o-proj-avatar-dark-blue-bg-color;
-	}
-	&.o_user_initials_light_blue {
-		background-color: $o-proj-avatar-light-blue-bg-color;
-	}
-	&.o_user_initials_purple {
-		background-color: $o-proj-avatar-purple-bg-color;
-	}
-	&.o_user_initials_red {
-		background-color: $o-proj-avatar-red-bg-color;
-	}
-	&.o_user_initials_orange {
-		background-color: $o-proj-avatar-orange-bg-color;
-	}
-	&.o_user_initials_yellow {
-		background-color: $o-proj-avatar-yellow-bg-color;
-		color: $o-proj-avatar-yellow-color;
-	}
-	&.o_user_initials_dark_green {
-		background-color: $o-proj-avatar-dark_green-bg-color;
-	}
-	&.o_user_initials_light_green {
-		background-color: $o-proj-avatar-light_green-bg-color;
-	}
 }
 .o_user_info {
 	border: $o-user-info-border;

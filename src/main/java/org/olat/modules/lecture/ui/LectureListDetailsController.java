@@ -84,11 +84,11 @@ import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
-import org.olat.user.UserInfoProfile;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoProfileController;
-import org.olat.user.UserInfoService;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -125,13 +125,13 @@ public class LectureListDetailsController extends FormBasicController {
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
-	private UserInfoService userInfoService;
-	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -142,8 +142,7 @@ public class LectureListDetailsController extends FormBasicController {
 		this.row = row;
 		this.secCallback = secCallback;
 		this.lectureManagementManaged = lectureManagementManaged;
-		profileConfig = userInfoService.createProfileConfig();
-		profileConfig.setChatEnabled(true);
+		profileConfig = userPortraitService.createProfileConfig();
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		
@@ -243,8 +242,8 @@ public class LectureListDetailsController extends FormBasicController {
 		} else {
 			List<Identity> teachers = row.getTeachersList();
 			for(Identity teacher:teachers) {
-				UserInfoProfile teacherProfile = userInfoService.createProfile(teacher);
-				UserInfoProfileController profile = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, teacherProfile);
+				PortraitUser teacherPortraitUser = userPortraitService.createPortraitUser(teacher);
+				UserInfoProfileController profile = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, teacherPortraitUser);
 				listenTo(profile);
 				
 				String profileId = "profile_" + teacher.getKey();

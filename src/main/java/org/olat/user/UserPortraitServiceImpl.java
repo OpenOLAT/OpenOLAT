@@ -19,6 +19,9 @@
  */
 package org.olat.user;
 
+import java.io.File;
+import java.util.List;
+
 import org.olat.core.id.Identity;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -28,12 +31,12 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 15 Aug 2024<br>
+ * Initial date: Feb 3, 2025<br>
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 @Service
-public class UserInfoService {
+public class UserPortraitServiceImpl implements UserPortraitService {
 	
 	@Autowired
 	private UserManager userManager;
@@ -44,6 +47,7 @@ public class UserInfoService {
 	@Autowired
 	private InstantMessagingService imService;
 	
+	@Override
 	public UserInfoProfileConfig createProfileConfig() {
 		UserInfoProfileConfig profileConfig = new UserInfoProfileConfig();
 		boolean chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
@@ -51,11 +55,24 @@ public class UserInfoService {
 		return profileConfig;
 	}
 	
-	public UserInfoProfile createProfile(Identity identity) {
+	@Override
+	public PortraitUser createPortraitUser(Long identityKey, String username, boolean portraitAvailable,
+			String portraitCacheIdentifier, String initials, String initialsCss, String displayName,
+			Presence presence) {
+		return new PortraitUserImpl(identityKey, username, portraitAvailable, portraitCacheIdentifier, initials,
+				initialsCss, displayName, presence);
+	}
+	
+	@Override
+	public PortraitUser createPortraitUser(Identity identity) {
 		String displayName = userManager.getUserDisplayName(identity);
 		String initials = userManager.getInitials(identity.getUser());
 		String initialsCss = userManager.getInitialsColorCss(identity.getKey());
-		boolean portraitAvailable = portraitManager.hasPortrait(identity);
+		
+		File portraitFile = portraitManager.getMasterPortrait(identity);
+		boolean portraitAvailable = portraitFile != null;
+		String portraitCacheIdentifier= portraitFile != null? String.valueOf(portraitFile.lastModified()): null;
+
 		Presence presence = null;
 		if (imModule.isEnabled() && imModule.isPrivateEnabled()) {
 			if (imModule.isOnlineStatusEnabled()) {
@@ -73,45 +90,36 @@ public class UserInfoService {
 			}
 		}
 		
-		return new UserInfoProfileImpl(identity.getKey(), identity.getName(), displayName, initials, initialsCss,
-				portraitAvailable, presence);
+		return createPortraitUser(identity.getKey(), identity.getName(), portraitAvailable, portraitCacheIdentifier,
+				initials, initialsCss, displayName, presence);
+	}
+
+	@Override
+	public List<PortraitUser> createPortraitUsers(List<Identity> identities) {
+		return identities.stream().map(this::createPortraitUser).toList();
 	}
 	
-	public UserInfoProfile create(Long identityKey, String username, String displayName, String initials,
-			String initialsCss, boolean portraitAvailable, Presence presence) {
-		return new UserInfoProfileImpl(identityKey, username, displayName, initials, initialsCss, portraitAvailable,
-				presence);
-	}
-	
-	public UserInfoProfile copyOf(UserInfoProfile profile) {
-		return create(profile.getIdentityKey(),
-				profile.getUsername(),
-				profile.getDisplayName(),
-				profile.getInitials(),
-				profile.getInitialsCss(),
-				profile.isPortraitAvailable(),
-				profile.getPresence()
-			);
-	}
-	
-	private final static class UserInfoProfileImpl implements UserInfoProfile {
+	private static final class PortraitUserImpl implements PortraitUser {
 		
 		private final Long identityKey;
 		private final String username;
-		private final String displayName;
+		private final boolean portraitAvailable;
+		private final String portraitCacheIdentifier;
 		private final String initials;
 		private final String initialsCss;
-		private final boolean portraitAvailable;
+		private final String displayName;
 		private final Presence presence;
 		
-		public UserInfoProfileImpl(Long identityKey, String username, String displayName, String initials,
-				String initialsCss, boolean portraitAvailable, Presence presence) {
+		private PortraitUserImpl(Long identityKey, String username, boolean portraitAvailable,
+				String portraitCacheIdentifier, String initials, String initialsCss, String displayName,
+				Presence presence) {
 			this.identityKey = identityKey;
 			this.username = username;
-			this.displayName = displayName;
+			this.portraitAvailable = portraitAvailable;
+			this.portraitCacheIdentifier = portraitCacheIdentifier;
 			this.initials = initials;
 			this.initialsCss = initialsCss;
-			this.portraitAvailable = portraitAvailable;
+			this.displayName = displayName;
 			this.presence = presence;
 		}
 
@@ -119,15 +127,20 @@ public class UserInfoService {
 		public Long getIdentityKey() {
 			return identityKey;
 		}
-
+		
 		@Override
 		public String getUsername() {
 			return username;
 		}
 
 		@Override
-		public String getDisplayName() {
-			return displayName;
+		public boolean isPortraitAvailable() {
+			return portraitAvailable;
+		}
+
+		@Override
+		public String getPortraitCacheIdentifier() {
+			return portraitCacheIdentifier;
 		}
 
 		@Override
@@ -141,8 +154,8 @@ public class UserInfoService {
 		}
 
 		@Override
-		public boolean isPortraitAvailable() {
-			return portraitAvailable;
+		public String getDisplayName() {
+			return displayName;
 		}
 
 		@Override

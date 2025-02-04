@@ -55,11 +55,12 @@ import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsComponent.PortraitUser;
-import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -91,6 +92,8 @@ public class ProjNoteController extends FormBasicController {
 	private ProjectService projectService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 
 	public ProjNoteController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
 			ProjProjectSecurityCallback secCallback, ProjNoteInfo noteInfo, boolean edit, MapperKey avatarMapperKey) {
@@ -141,8 +144,8 @@ public class ProjNoteController extends FormBasicController {
 	}
 	
 	private void updateHeaderUI(UserRequest ureq) {
-		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(noteInfo.getMembers()));
-		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "members", null, null, avatarMapperKey);
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(new ArrayList<>(noteInfo.getMembers()));
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "members", null, null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);

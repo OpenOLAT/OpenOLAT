@@ -24,8 +24,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoController;
-import org.olat.user.UserInfoProfile;
 import org.olat.user.UserInfoProfileConfig;
 
 /**
@@ -37,8 +37,8 @@ import org.olat.user.UserInfoProfileConfig;
 public class GuiDemoUserInfoController extends UserInfoController {
 
 	public GuiDemoUserInfoController(UserRequest ureq, WindowControl wControl,
-			UserInfoProfileConfig profileConfig, UserInfoProfile profile) {
-		super(ureq, wControl, profileConfig, profile);
+			UserInfoProfileConfig profileConfig, PortraitUser portraitUser) {
+		super(ureq, wControl, profileConfig, portraitUser);
 		initForm(ureq);
 	}
 

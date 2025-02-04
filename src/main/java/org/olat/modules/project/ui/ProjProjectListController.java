@@ -108,12 +108,13 @@ import org.olat.modules.project.ui.ProjProjectDataModel.ProjectCols;
 import org.olat.modules.project.ui.component.ProjAvatarComponent;
 import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsComponent.PortraitUser;
-import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -194,6 +195,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private ProjectCopyService projectCopyService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -680,10 +683,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			return;
 		}
 		
-		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(members);
-		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(members);
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
-		usersPortraitCmp.setSize(PortraitSize.small);
+		usersPortraitCmp.setSize(UserPortraitComponent.PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);
 		usersPortraitCmp.setUsers(portraitUsers);
 		row.setUserPortraits(usersPortraitCmp);

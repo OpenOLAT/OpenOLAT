@@ -21,26 +21,22 @@ package org.olat.user;
 
 import org.olat.instantMessaging.model.Presence;
 
-/**
- * 
- * Initial date: 15 Aug 2024<br>
- * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
- *
- */
-public interface UserInfoProfile {
+public interface PortraitUser {
 	
 	public Long getIdentityKey();
 	
 	public String getUsername();
 	
-	public String getDisplayName();
+	public boolean isPortraitAvailable();
+	
+	public String getPortraitCacheIdentifier();
 	
 	public String getInitials();
 	
 	public String getInitialsCss();
 	
-	public boolean isPortraitAvailable();
+	public String getDisplayName();
 	
 	public Presence getPresence();
-
+	
 }

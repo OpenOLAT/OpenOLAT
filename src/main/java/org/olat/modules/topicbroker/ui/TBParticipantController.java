@@ -32,8 +32,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.topicbroker.TBBroker;
 import org.olat.modules.topicbroker.TBParticipant;
 import org.olat.modules.topicbroker.TopicBrokerService;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoController;
-import org.olat.user.UserInfoProfile;
 import org.olat.user.UserInfoProfileConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,9 +56,9 @@ public class TBParticipantController extends UserInfoController {
 	private TopicBrokerService topicBrokerService;
 
 	public TBParticipantController(UserRequest ureq, WindowControl wControl, Form mainForm, TBBroker broker,
-			TBParticipant participant, UserInfoProfileConfig profileConfig, UserInfoProfile profile,
+			TBParticipant participant, UserInfoProfileConfig profileConfig, PortraitUser portraitUser,
 			boolean canEditParticipant) {
-		super(ureq, wControl, mainForm, profileConfig, profile);
+		super(ureq, wControl, mainForm, profileConfig, portraitUser);
 		this.broker = broker;
 		this.participant = participant;
 		this.canEditParticipant = canEditParticipant;

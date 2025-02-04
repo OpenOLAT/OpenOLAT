@@ -37,18 +37,18 @@ import org.olat.core.util.Util;
 public abstract class UserInfoController extends FormBasicController {
 
 	private final UserInfoProfileConfig profileConfig;
-	private final UserInfoProfile profile;
+	private final PortraitUser portraitUser;
 
-	public UserInfoController(UserRequest ureq, WindowControl wControl, UserInfoProfileConfig profileConfig, UserInfoProfile profile) {
+	public UserInfoController(UserRequest ureq, WindowControl wControl, UserInfoProfileConfig profileConfig, PortraitUser portraitUser) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.profileConfig = profileConfig;
-		this.profile = profile;
+		this.portraitUser = portraitUser;
 	}
 	
-	public UserInfoController(UserRequest ureq, WindowControl wControl, Form mainForm, UserInfoProfileConfig profileConfig, UserInfoProfile profile) {
+	public UserInfoController(UserRequest ureq, WindowControl wControl, Form mainForm, UserInfoProfileConfig profileConfig, PortraitUser portraitUser) {
 		super(ureq, wControl, LAYOUT_BAREBONE, null, mainForm);
 		this.profileConfig = profileConfig;
-		this.profile = profile;
+		this.portraitUser = portraitUser;
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public abstract class UserInfoController extends FormBasicController {
 		infoCont.setRootForm(mainForm);
 		formLayout.add(infoCont);
 		
-		UserInfoProfileController profileCtrl = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, profile);
+		UserInfoProfileController profileCtrl = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, portraitUser);
 		listenTo(profileCtrl);
 		infoCont.put("profile", profileCtrl.getInitialComponent());
 		

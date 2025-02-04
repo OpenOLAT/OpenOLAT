@@ -120,11 +120,12 @@ import org.olat.modules.project.ui.event.AppointmentEditEvent;
 import org.olat.modules.project.ui.event.MilestoneDeleteEvent;
 import org.olat.modules.project.ui.event.MilestoneEditEvent;
 import org.olat.modules.project.ui.event.MilestoneStatusEvent;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsComponent.PortraitUser;
-import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -186,7 +187,8 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private CalendarManager calendarManager;
 	@Autowired
 	private UserManager userManager;
-	
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	public ProjCalendarAllController(UserRequest ureq, WindowControl wControl, ProjectBCFactory bcFactory,
 			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate,
@@ -636,8 +638,8 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	}
 	
 	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, Set<Identity> members) {
-		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(members));
-		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(new ArrayList<>(members));
+		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("involved"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(10);

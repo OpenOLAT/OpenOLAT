@@ -72,8 +72,8 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
-import org.olat.user.UserInfoService;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -107,17 +107,17 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private UserInfoService userInfoService;
-	@Autowired
 	protected BaseSecurityModule securityModule;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	public ReviewEditedMembershipsController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
 			EditMembersContext membersContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "review_memberships");
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, getLocale(),
-				userManager.getPropertyHandlerTranslator(getTranslator())));;
+				userManager.getPropertyHandlerTranslator(getTranslator())));
 		
 		rolesToReview = membersContext.getRoles();
 		this.membersContext = membersContext;
@@ -393,8 +393,7 @@ public class ReviewEditedMembershipsController extends StepFormBasicController i
 	}
 	
 	private final UserInfoProfileConfig createProfilConfig() {
-		UserInfoProfileConfig profileConfig = userInfoService.createProfileConfig();
-		profileConfig.setChatEnabled(true);
+		UserInfoProfileConfig profileConfig = userPortraitService.createProfileConfig();
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		return profileConfig;

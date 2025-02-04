@@ -36,15 +36,17 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.user.DisplayPortraitController;
-import org.olat.user.UserInfoProfile;
+import org.olat.user.PortraitUser;
+import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoProfileController;
-import org.olat.user.UserInfoService;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersAvatarController;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitLayout;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,10 +58,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GuiDemoUserController extends BasicController {
 	
 	@Autowired
-	private UserInfoService userInfoService;
+	private UserPortraitService userPortraitService;
 
 	public GuiDemoUserController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
+		String avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
+		
 		VelocityContainer mainVC = createVelocityContainer("guidemo-users");
 		putInitialPanel(mainVC);
 		
@@ -89,16 +95,16 @@ public class GuiDemoUserController extends BasicController {
 		UserInfoProfileConfig profileConfig = new UserInfoProfileConfig();
 		profileConfig.setChatEnabled(true);
 		
-		UserInfoProfile profile = userInfoService.createProfile(getIdentity());
-		UserInfoProfileController infoProfileCtrl1 = new UserInfoProfileController(ureq, wControl, profileConfig, profile);
+		PortraitUser portraitUser = userPortraitService.createPortraitUser(getIdentity());
+		UserInfoProfileController infoProfileCtrl1 = new UserInfoProfileController(ureq, wControl, profileConfig, portraitUser);
 		listenTo(infoProfileCtrl1);
 		mainVC.put("info-1", infoProfileCtrl1.getInitialComponent());
 		
-		UserInfoProfile profile3 = userInfoService.createProfile(identity3);
-		profile3 = userInfoService.create(profile3.getIdentityKey(), profile3.getUsername(),
-				profile3.getDisplayName(), profile3.getInitials(), profile3.getInitialsCss(),
-				profile3.isPortraitAvailable(), Presence.dnd);
-		GuiDemoUserInfoController infoCtrl2 = new GuiDemoUserInfoController(ureq, getWindowControl(), profileConfig, profile3);
+		PortraitUser portraitUser3 = userPortraitService.createPortraitUser(identity3);
+		portraitUser3 = userPortraitService.createPortraitUser(portraitUser3.getIdentityKey(),
+				portraitUser3.getUsername(), portraitUser3.isPortraitAvailable(), null, portraitUser3.getInitials(),
+				portraitUser3.getInitialsCss(), portraitUser3.getDisplayName(), Presence.dnd);
+		GuiDemoUserInfoController infoCtrl2 = new GuiDemoUserInfoController(ureq, getWindowControl(), profileConfig, portraitUser3);
 		listenTo(infoCtrl2);
 		mainVC.put("info-2", infoCtrl2.getInitialComponent());
 
@@ -121,61 +127,79 @@ public class GuiDemoUserController extends BasicController {
 		mainVC.put("avatars-1", avatar1Ctrl.getInitialComponent());
 		
 		
+		// User portrait
+		UserPortraitComponent userPortrait1 = UserPortraitFactory.createUserPortrait("user-portrait-1", mainVC, getLocale(), avatarMapperBaseURL);
+		userPortrait1.setSize(PortraitSize.xsmall);
+		userPortrait1.setPortraitUser(userPortraitService.createPortraitUser(identities.get(0)));
+		
+		UserPortraitComponent userPortrait2 = UserPortraitFactory.createUserPortrait("user-portrait-2", mainVC, getLocale(), avatarMapperBaseURL);
+		userPortrait2.setSize(PortraitSize.small);
+		userPortrait2.setPortraitUser(userPortraitService.createPortraitUser(identities.get(1)));
+		
+		UserPortraitComponent userPortrait3 = UserPortraitFactory.createUserPortrait("user-portrait-3", mainVC, getLocale(), avatarMapperBaseURL);
+		userPortrait3.setSize(PortraitSize.medium);
+		userPortrait3.setPortraitUser(userPortraitService.createPortraitUser(identities.get(2)));
+		
+		UserPortraitComponent userPortrait4 = UserPortraitFactory.createUserPortrait("user-portrait-4", mainVC, getLocale(), avatarMapperBaseURL);
+		userPortrait4.setSize(PortraitSize.large);
+		userPortrait4.setPortraitUser(userPortraitService.createPortraitUser(identities.get(3)));
+		
+		
 		// User portraits
-		UsersPortraitsComponent assigneesCmp1 = UsersPortraitsFactory.create(ureq, "user-portraits-1", mainVC);
+		UsersPortraitsComponent assigneesCmp1 = UserPortraitFactory.createUsersPortraits(ureq, "user-portraits-1", mainVC);
 		assigneesCmp1.setAriaLabel(translate("user.portraits"));
 		assigneesCmp1.setLPortraitLayout(PortraitLayout.verticalPortraitsDisplayName);
 		assigneesCmp1.setSize(PortraitSize.xsmall);
-		assigneesCmp1.setUsers(UsersPortraitsFactory.createPortraitUsers(identities));
+		assigneesCmp1.setUsers(userPortraitService.createPortraitUsers(identities));
 	
-		UsersPortraitsComponent assigneesCmp2 = UsersPortraitsFactory.create(ureq, "user-portraits-2", mainVC);
+		UsersPortraitsComponent assigneesCmp2 = UserPortraitFactory.createUsersPortraits(ureq, "user-portraits-2", mainVC);
 		assigneesCmp2.setAriaLabel(translate("user.portraits"));
 		assigneesCmp2.setLPortraitLayout(PortraitLayout.verticalPortraitsDisplayName);
 		assigneesCmp2.setSize(PortraitSize.small);
-		assigneesCmp2.setUsers(UsersPortraitsFactory.createPortraitUsers(identities));
+		assigneesCmp2.setUsers(userPortraitService.createPortraitUsers(identities));
 		
-		UsersPortraitsComponent assigneesCmp3 = UsersPortraitsFactory.create(ureq, "user-portraits-3", mainVC);
+		UsersPortraitsComponent assigneesCmp3 = UserPortraitFactory.createUsersPortraits(ureq, "user-portraits-3", mainVC);
 		assigneesCmp3.setAriaLabel(translate("user.portraits"));
 		assigneesCmp3.setLPortraitLayout(PortraitLayout.verticalPortraitsDisplayName);
 		assigneesCmp3.setSize(PortraitSize.medium);
-		assigneesCmp3.setUsers(UsersPortraitsFactory.createPortraitUsers(identities));
+		assigneesCmp3.setUsers(userPortraitService.createPortraitUsers(identities));
 	
-		UsersPortraitsComponent assigneesCmp4 = UsersPortraitsFactory.create(ureq, "user-portraits-4", mainVC);
+		UsersPortraitsComponent assigneesCmp4 = UserPortraitFactory.createUsersPortraits(ureq, "user-portraits-4", mainVC);
 		assigneesCmp4.setAriaLabel(translate("user.portraits"));
 		assigneesCmp4.setLPortraitLayout(PortraitLayout.verticalPortraitsDisplayName);
 		assigneesCmp4.setSize(PortraitSize.large);
-		assigneesCmp4.setUsers(UsersPortraitsFactory.createPortraitUsers(identities));
+		assigneesCmp4.setUsers(userPortraitService.createPortraitUsers(identities));
 	
-		UsersPortraitsComponent assigneesCmp5 = UsersPortraitsFactory.create(ureq, "user-portraits-5", mainVC);
+		UsersPortraitsComponent assigneesCmp5 = UserPortraitFactory.createUsersPortraits(ureq, "user-portraits-5", mainVC);
 		assigneesCmp5.setAriaLabel(translate("user.portraits"));
 		assigneesCmp5.setLPortraitLayout(PortraitLayout.overlappingPortraits);
 		assigneesCmp5.setSize(PortraitSize.xsmall);
-		assigneesCmp5.setUsers(UsersPortraitsFactory.createPortraitUsers(identities));
+		assigneesCmp5.setUsers(userPortraitService.createPortraitUsers(identities));
 	
-		UsersPortraitsComponent assigneesCmp6 = UsersPortraitsFactory.create(ureq, "user-portraits-6", mainVC);
+		UsersPortraitsComponent assigneesCmp6 = UserPortraitFactory.createUsersPortraits(ureq, "user-portraits-6", mainVC);
 		assigneesCmp6.setAriaLabel(translate("user.portraits"));
 		assigneesCmp6.setLPortraitLayout(PortraitLayout.overlappingPortraits);
 		assigneesCmp6.setSize(PortraitSize.small);
-		assigneesCmp6.setUsers(UsersPortraitsFactory.createPortraitUsers(identities));
+		assigneesCmp6.setUsers(userPortraitService.createPortraitUsers(identities));
 	
-		UsersPortraitsComponent assigneesCmp7 = UsersPortraitsFactory.create(ureq, "user-portraits-7", mainVC);
+		UsersPortraitsComponent assigneesCmp7 = UserPortraitFactory.createUsersPortraits(ureq, "user-portraits-7", mainVC);
 		assigneesCmp7.setAriaLabel(translate("user.portraits"));
 		assigneesCmp7.setLPortraitLayout(PortraitLayout.overlappingPortraits);
 		assigneesCmp7.setSize(PortraitSize.medium);
-		assigneesCmp7.setUsers(UsersPortraitsFactory.createPortraitUsers(identities));
+		assigneesCmp7.setUsers(userPortraitService.createPortraitUsers(identities));
 	
-		UsersPortraitsComponent assigneesCmp8 = UsersPortraitsFactory.create(ureq, "user-portraits-8", mainVC);
+		UsersPortraitsComponent assigneesCmp8 = UserPortraitFactory.createUsersPortraits(ureq, "user-portraits-8", mainVC);
 		assigneesCmp8.setAriaLabel(translate("user.portraits"));
 		assigneesCmp8.setLPortraitLayout(PortraitLayout.overlappingPortraits);
 		assigneesCmp8.setSize(PortraitSize.large);
-		assigneesCmp8.setUsers(UsersPortraitsFactory.createPortraitUsers(identities));
+		assigneesCmp8.setUsers(userPortraitService.createPortraitUsers(identities));
 	
-		UsersPortraitsComponent assigneesCmp9 = UsersPortraitsFactory.create(ureq, "user-portraits-9", mainVC);
+		UsersPortraitsComponent assigneesCmp9 = UserPortraitFactory.createUsersPortraits(ureq, "user-portraits-9", mainVC);
 		assigneesCmp9.setAriaLabel(translate("user.portraits"));
 		assigneesCmp9.setLPortraitLayout(PortraitLayout.overlappingPortraits);
 		assigneesCmp9.setSize(PortraitSize.medium);
 		assigneesCmp9.setMaxUsersVisible(2);
-		assigneesCmp9.setUsers(UsersPortraitsFactory.createPortraitUsers(identities));
+		assigneesCmp9.setUsers(userPortraitService.createPortraitUsers(identities));
 	}
 
 	@Override

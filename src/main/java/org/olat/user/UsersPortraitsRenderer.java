@@ -27,9 +27,8 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.UsersPortraitsComponent.PortraitLayout;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsComponent.PortraitUser;
 
 /**
  * 
@@ -55,27 +54,15 @@ public class UsersPortraitsRenderer extends DefaultComponentRenderer {
 			sb.append(" aria-label=\"").append(opc.getAriaLabel()).append("\"");
 		}
 		sb.append(">");
-		int numUsersVisible = opc.getMaxUsersVisible() < opc.getUsers().size()? opc.getMaxUsersVisible(): opc.getUsers().size();
-		int numUsersNotVisible = opc.getUsers().size() - numUsersVisible;
+		int numUsersVisible = opc.getMaxUsersVisible() < opc.getUserComps().size()? opc.getMaxUsersVisible(): opc.getUserComps().size();
+		int numUsersNotVisible = opc.getUserComps().size() - numUsersVisible;
 		for (int i = 0; i < numUsersVisible; i++) {
-			PortraitUser portraitUser = opc.getUsers().get(i);
+			UserPortraitComponent userPortraitComp = opc.getUserComps().get(i);
 			sb.append("<li class=\"o_portrait_user\">");
-			sb.append("<div class=\"o_portrait\">");
-			sb.append("<img ");
-			sb.append(" src=\"");
-			Renderer.renderStaticURI(sb, "images/transparent.gif");
-			sb.append("\"");
-			sb.append(" class=\"").append(portraitUser.getPortraitCssClass()).append("\"");
-			if (portraitUser.isPortraitAvailable()) {
-				sb.append(" style=\"background-image: url('").append(opc.getMapperKey().getUrl()).append("/").append(portraitUser.getIdentityKey()).append("/portrait.jpg') !important;\"");
-			}
-			sb.append(" alt=\"").append(StringHelper.escapeHtml(portraitUser.getDisplayName())).append("\"");
-			sb.append(" title=\"").append(StringHelper.escapeHtml(portraitUser.getDisplayName())).append("\"");
-			sb.append(">");
-			sb.append("</div>");
+			userPortraitComp.getHTMLRendererSingleton().render(renderer, sb, userPortraitComp, ubu, translator, renderResult, args);
 			if (PortraitLayout.verticalPortraitsDisplayName == opc.getPortraitLayout()) {
 				sb.append("<div class=\"o_displayname\">");
-				sb.append(StringHelper.escapeHtml(portraitUser.getDisplayName()));
+				sb.append(StringHelper.escapeHtml(userPortraitComp.getPortraitUser().getDisplayName()));
 				sb.append("</div>");
 			}
 			sb.append("</li>");

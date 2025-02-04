@@ -30,11 +30,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsComponent.PortraitUser;
-import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,6 +53,8 @@ public class GTAReviewerIdentityInformationsController extends FormBasicControll
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	
 	GTAReviewerIdentityInformationsController(UserRequest ureq, WindowControl wControl, MapperKey avatarMapperKey,
 			Identity user, String placeholderName, boolean anonym) {
@@ -70,8 +73,8 @@ public class GTAReviewerIdentityInformationsController extends FormBasicControll
 			layoutCont.contextPut("fullName", fullName);
 			
 			Identity userToPortrait = anonym ? new TransientIdentity() : user;
-			List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(List.of(userToPortrait));
-			UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_id", flc.getFormItemComponent(), null, avatarMapperKey);
+			List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(List.of(userToPortrait));
+			UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_id", flc.getFormItemComponent(), null, avatarMapperKey);
 			usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 			usersPortraitCmp.setSize(PortraitSize.large);
 			usersPortraitCmp.setMaxUsersVisible(5);

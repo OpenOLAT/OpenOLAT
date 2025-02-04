@@ -97,9 +97,10 @@ import org.olat.modules.project.ui.event.QuickStartEvents;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -156,6 +157,8 @@ public class ProjTimelineController extends FormBasicController
 	private ProjectService projectService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private CalendarManager calendarManager;
 
@@ -742,8 +745,8 @@ public class ProjTimelineController extends FormBasicController
 
 	@Override
 	public void addAvatarIcon(UserRequest ureq, ProjTimelineRow row, Identity member) {
-		UsersPortraitsComponent portraitComp = UsersPortraitsFactory.create(ureq, "portrair_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
-		portraitComp.setUsers(UsersPortraitsFactory.createPortraitUsers(List.of(member)));
+		UsersPortraitsComponent portraitComp = UserPortraitFactory.createUsersPortraits(ureq, "portrair_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
+		portraitComp.setUsers(userPortraitService.createPortraitUsers(List.of(member)));
 		portraitComp.setSize(PortraitSize.small);
 		row.setIconItem(new ComponentWrapperElement(portraitComp));
 	}

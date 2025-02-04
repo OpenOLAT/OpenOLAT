@@ -77,18 +77,13 @@ public class UserAvatarMapper implements Mapper {
 		return rsrc;
 	}
 	
-	public String createPathFor(String mapperPath, IdentityRef identity, String username) {
-		Long lastModified = getLastModified(username);
-		return createPathFor(mapperPath, identity, lastModified);
-	}
-	
 	public String createPathFor(String mapperPath, Identity identity) {
 		Long lastModified = getLastModified(identity.getName());
-		return createPathFor(mapperPath, identity, lastModified);
+		return createPathFor(mapperPath, identity, String.valueOf(lastModified), useLarge);
 	}
 	
-	private String createPathFor(String mapperPath, IdentityRef identity, Long lastModified) {
-		return mapperPath + "/" + identity.getKey() + "/" + lastModified + (useLarge ? POSTFIX_LARGE : POSTFIX_SMALL); 
+	public static String createPathFor(String mapperPath, IdentityRef identity, String cachePart, boolean large) {
+		return mapperPath + "/" + identity.getKey() + "/" + cachePart + (large ? POSTFIX_LARGE : POSTFIX_SMALL); 
 	}
 	
 	private Long getLastModified(String username) {

@@ -93,8 +93,8 @@ import org.olat.modules.topicbroker.TopicBrokerService;
 import org.olat.modules.topicbroker.ui.TBParticipantDataModel.TBParticipantCols;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
-import org.olat.user.UserInfoService;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -150,7 +150,7 @@ public class TBParticipantListController extends FormBasicController implements 
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private UserInfoService userInfoService;
+	private UserPortraitService userPortraitService;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
@@ -169,7 +169,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(TBParticipantDataModel.USAGE_IDENTIFIER,
 				isAdministrativeUser);
 		
-		profileConfig = userInfoService.createProfileConfig();
+		profileConfig = userPortraitService.createProfileConfig();
 		UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
 		profileConfig.setAvatarMapper(avatarMapper);
 		String avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
@@ -506,7 +506,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		}
 		
 		TBParticipantSelectionsController detailsCtrl = new TBParticipantSelectionsController(ureq, getWindowControl(),
-				mainForm, broker, participant, profileConfig, userInfoService.createProfile(participant.getIdentity()),
+				mainForm, broker, participant, profileConfig, userPortraitService.createPortraitUser(participant.getIdentity()),
 				row.getSelections(), secCallback.canEditSelections());
 		listenTo(detailsCtrl);
 		detailCtrls.add(detailsCtrl);

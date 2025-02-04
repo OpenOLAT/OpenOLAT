@@ -65,7 +65,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.assessment.ui.component.EvaluationLearningProgressCellRenderer;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserInfoProfile;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserInfoProfileController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,7 +89,7 @@ public class CNSParticipantDetailsController extends FormBasicController {
 
 	private final UserCourseEnvironmentImpl coachedCourseEnv;
 	private final UserInfoProfileConfig profileConfig;
-	private final UserInfoProfile profile;
+	private final PortraitUser portraitUser;
 	private final RepositoryEntry courseEntry;
 	private final List<CourseNode> childNodes;
 	private final List<AssessmentEntry> selectedEntries;
@@ -100,13 +100,13 @@ public class CNSParticipantDetailsController extends FormBasicController {
 	private CourseAssessmentService courseAssessmentService;
 
 	public CNSParticipantDetailsController(UserRequest ureq, WindowControl wControl, Form mainForm, Identity coachedIdentity,
-			UserInfoProfileConfig profileConfig, UserInfoProfile profile, CourseEnvironment courseEnvironment,
+			UserInfoProfileConfig profileConfig, PortraitUser portraitUser, CourseEnvironment courseEnvironment,
 			RepositoryEntry courseEntry, List<CourseNode> childNodes, List<AssessmentEntry> selectedEntries) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "participant_details", mainForm);
 		setTranslator(Util.createPackageTranslator(LearningPathListController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.profileConfig = profileConfig;
-		this.profile = profile;
+		this.portraitUser = portraitUser;
 		this.courseEntry = courseEntry;
 		this.childNodes = childNodes;
 		this.selectedEntries = selectedEntries;
@@ -124,9 +124,9 @@ public class CNSParticipantDetailsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		profileCtrl = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, profile);
+		profileCtrl = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, portraitUser);
 		listenTo(profileCtrl);
-		String profileName = "o_cns_detailu_" + profile.getIdentityKey();
+		String profileName = "o_cns_detailu_" + portraitUser.getIdentityKey();
 		flc.put(profileName, profileCtrl.getInitialComponent());
 		flc.contextPut("profileName", profileName);
 		
@@ -142,7 +142,7 @@ public class CNSParticipantDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CNSParticipantDetailsCols.obligation));
 		
 		dataModel = new CNSParticipantDetailsDataModel(columnsModel);
-		String tableName = "o_cns_detailt_" + profile.getIdentityKey();
+		String tableName = "o_cns_detailt_" + portraitUser.getIdentityKey();
 		flc.contextPut("tableName", tableName);
 		tableEl = uifactory.addTableElement(getWindowControl(), tableName, dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(false);

@@ -74,10 +74,11 @@ import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.project.ui.event.OpenNoteEvent;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
 import org.olat.modules.project.ui.event.QuickStartEvents;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
-import org.olat.user.UsersPortraitsComponent.PortraitUser;
-import org.olat.user.UsersPortraitsFactory;
+import org.olat.user.UserPortraitFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -146,6 +147,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 	@Autowired
 	private ProjectService projectService;
 	@Autowired
+	private UserPortraitService userPortraitService;
+	@Autowired
 	private MapperService mapperService;
 	@Autowired
 	private DrawioModule drawioModule;
@@ -213,8 +216,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 		updateCmdsUI();
 		
 		List<Identity> members = projectService.getMembers(project, ProjectRole.PROJECT_ROLES);
-		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(members);
-		usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users", mainVC, null, avatarMapperKey);
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(members);
+		usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users", mainVC, null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setUsers(portraitUsers);
 		

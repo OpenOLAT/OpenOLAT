@@ -51,10 +51,11 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ui.ToDoUIFactory.Due;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitLayout;
-import org.olat.user.UsersPortraitsComponent.PortraitSize;
-import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,6 +80,8 @@ public class ToDoTaskDetailsController extends FormBasicController {
 	private ToDoService toDoService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private UserPortraitService userPortraitService;
 
 	public ToDoTaskDetailsController(UserRequest ureq, WindowControl wControl, Form mainForm, ToDoTaskSecurityCallback secCallback,
 			ToDoTask toDoTask, List<Tag> tags, Identity creator, Identity modifier, Set<Identity> assignees, Set<Identity> delegatees) {
@@ -113,18 +116,18 @@ public class ToDoTaskDetailsController extends FormBasicController {
 		String modified = translate("date.by", modifiedDate, modifiedBy);
 		flc.contextPut("modified", modified);
 		
-		UsersPortraitsComponent assigneesCmp = UsersPortraitsFactory.create(ureq, "assignees", flc.getFormItemComponent());
+		UsersPortraitsComponent assigneesCmp = UserPortraitFactory.createUsersPortraits(ureq, "assignees", flc.getFormItemComponent());
 		assigneesCmp.setAriaLabel(translate("task.assigned"));
 		assigneesCmp.setLPortraitLayout(PortraitLayout.verticalPortraitsDisplayName);
 		assigneesCmp.setSize(PortraitSize.small);
-		assigneesCmp.setUsers(UsersPortraitsFactory.createPortraitUsers(List.copyOf(assignees)));
+		assigneesCmp.setUsers(userPortraitService.createPortraitUsers(List.copyOf(assignees)));
 		
 		if (!delegatees.isEmpty()) {
-			UsersPortraitsComponent delegateesCmp = UsersPortraitsFactory.create(ureq, "delegatees", flc.getFormItemComponent());
+			UsersPortraitsComponent delegateesCmp = UserPortraitFactory.createUsersPortraits(ureq, "delegatees", flc.getFormItemComponent());
 			delegateesCmp.setAriaLabel(translate("task.delegated"));
 			delegateesCmp.setLPortraitLayout(PortraitLayout.verticalPortraitsDisplayName);
 			delegateesCmp.setSize(PortraitSize.small);
-			delegateesCmp.setUsers(UsersPortraitsFactory.createPortraitUsers(List.copyOf(delegatees)));
+			delegateesCmp.setUsers(userPortraitService.createPortraitUsers(List.copyOf(delegatees)));
 		}
 		
 		flc.contextPut("startDate", ToDoUIFactory.getDateOrAnytime(getTranslator(), toDoTask.getStartDate()));
