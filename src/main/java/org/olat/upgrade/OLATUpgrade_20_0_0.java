@@ -23,13 +23,17 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,6 +58,8 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OLATResourceManager olatResourceManager;
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 
@@ -159,12 +165,9 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 					if(!elements.isEmpty()) {
 						for(int i=0; i<elements.size(); i++) {
 							CurriculumElement element = elements.get(i);
-							if(element.getResource() == null) {
-								curriculumElementDao.createResource(element);
-								curriculumService.updateCurriculumElement(element);
+							if(updateCurriculumElementResource(element)) {
 								newResources++;
 							}
-							
 							if(i % 25 == 0) {
 								dbInstance.commitAndCloseSession();
 							}
@@ -186,6 +189,20 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
+	}
+
+	private boolean updateCurriculumElementResource(CurriculumElement element) {
+		if(element.getResource() != null) return false;
+			
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey());
+		OLATResource resource = olatResourceManager.findResourceable(ores);
+		if(resource == null) {
+			curriculumElementDao.createResource(element);
+		} else {
+			((CurriculumElementImpl)element).setResource(resource);
+		}
+		curriculumService.updateCurriculumElement(element);
+		return true;
 	}
 	
 	private List<CurriculumElement> getCurriculumElements(int offset, int maxResults) {
