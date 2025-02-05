@@ -20,6 +20,7 @@
 package org.olat.course.certificate.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.course.certificate.Certificate;
@@ -36,6 +37,7 @@ public class CertificateIdentityConfig {
 	private Long entryKey;
 	private List<String> identityProps;
 	private RepositoryEntryCertificateConfiguration certificateConfig;
+	private Date initialLaunchDate;
 
 	public void setCertificate(Certificate certificate) {
 		this.certificate = certificate;
@@ -92,5 +94,13 @@ public class CertificateIdentityConfig {
 
 	public RepositoryEntryCertificateConfiguration getConfig() {
 		return certificateConfig;
+	}
+
+	public void setInitialLaunchDate(Date initialLaunchDate) {
+		this.initialLaunchDate = initialLaunchDate;
+	}
+
+	public Date getInitialLaunchDate() {
+		return initialLaunchDate;
 	}
 }

@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.coach.reports.DefaultReportConfigurationAccessSecurityCallback;
 import org.olat.modules.coach.reports.ReportConfiguration;
 import org.olat.modules.coach.ui.manager.ReportTemplatesDataModel.ReportTemplateCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ReportTemplatesController extends FormBasicController {
 	private static final String PLAY_CMD = "play";
 	private static final String FILTER_CATEGORY = "filter.category";
+	private final DefaultReportConfigurationAccessSecurityCallback secContext;
 
 	private FlexiTableElement tableEl;
 	private ReportTemplatesDataModel tableModel;
@@ -66,6 +68,9 @@ public class ReportTemplatesController extends FormBasicController {
 
 	public ReportTemplatesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "report_templates");
+		
+		secContext = new DefaultReportConfigurationAccessSecurityCallback(getIdentity(), 
+				ureq.getUserSession().getRoles(), true, false);
 
 		initForm(ureq);
 		loadModel();
@@ -75,6 +80,9 @@ public class ReportTemplatesController extends FormBasicController {
 	
 	public ReportTemplatesController(UserRequest ureq, WindowControl wControl, Translator translator) {
 		super(ureq, wControl, "report_templates", translator);
+
+		secContext = new DefaultReportConfigurationAccessSecurityCallback(getIdentity(),
+				ureq.getUserSession().getRoles(), false, true);
 
 		initForm(ureq);
 		loadModel();
@@ -101,6 +109,7 @@ public class ReportTemplatesController extends FormBasicController {
 		List<ReportTemplatesRow> rows = new ArrayList<>();
 
 		List<ReportConfiguration> sortedReportConfigurations = reportConfigurations.stream()
+				.filter(reportConfiguration -> reportConfiguration.hasAccess(secContext))
 				.sorted(Comparator.comparingInt(ReportConfiguration::getOrder)).toList();
 		for (ReportConfiguration reportConfiguration : sortedReportConfigurations) {
 			ReportTemplatesRow row = new ReportTemplatesRow();

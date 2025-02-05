@@ -21,7 +21,6 @@ package org.olat.modules.coach.ui.em;
 
 import java.util.List;
 
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -101,7 +100,7 @@ public class CertificatesController extends FormBasicController implements Activ
 
 	private void loadData() {
 		List<CertificateRow> certificates = certificatesManager
-				.getCertificatesForOrganizations(getIdentity(), OrganisationRoles.educationmanager, userPropertyHandlers)
+				.getCertificatesForOrganizations(getIdentity(), userPropertyHandlers, null, null)
 				.stream()
 				.map(CertificateRow::new).toList();
 		tableModel.setObjects(certificates);
@@ -132,7 +131,7 @@ public class CertificatesController extends FormBasicController implements Activ
 	@Override
 	public MediaResource export(FlexiTableComponent ftC) {
 		List<CertificateIdentityConfig> certificates = certificatesManager
-				.getCertificatesForOrganizations(getIdentity(), OrganisationRoles.educationmanager, userPropertyHandlers);
+				.getCertificatesForOrganizations(getIdentity(), userPropertyHandlers, null, null);
 		return new CertificatesExport(certificates, userPropertyHandlers, getTranslator());
 	}
 }

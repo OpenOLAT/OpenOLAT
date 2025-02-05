@@ -684,9 +684,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
-	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, OrganisationRoles organisationRole, List<UserPropertyHandler> userPropertyHandlers) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct cer, config ");
+	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, 
+																		   List<UserPropertyHandler> userPropertyHandlers, 
+																		   Date from, Date to) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct cer, config, infos.initialLaunch ");
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
 		}
@@ -697,15 +699,26 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		sb.append(" inner join certificate cer on cer.identity = userMembership.identity");
 		sb.append(" inner join cer.identity.user user");
 		sb.append(" left join cer.olatResource res");
+		sb.append(" left join usercourseinfos infos on (infos.identity = cer.identity and infos.resource = res)");
 		sb.append(" left join certificateentryconfig config on config.entry.olatResource = res");
 		sb.append(" where mgmtMembership.identity.key = :identityKey ");
-		sb.append(" and mgmtMembership.role = '").append(organisationRole.name()).append("'");
+		sb.append(" and mgmtMembership.role").in(OrganisationRoles.educationmanager, OrganisationRoles.linemanager);
 		sb.append(" and userMembership.role = 'user'");
+		
+		if (from != null && to != null) {
+			sb.append(" and cer.creationDate between :from and :to");
+		}
 
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
-				.setParameter("identityKey", identity.getKey())
-				.getResultList().stream()
+		TypedQuery<Object[]> typedQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		typedQuery.setParameter("identityKey", identity.getKey());
+		
+		if (from != null && to != null) {
+			typedQuery.setParameter("from", from);
+			typedQuery.setParameter("to", to);
+		}
+		
+		return typedQuery.getResultList().stream()
 				.map(objects -> mapToCertificateIdentityConfig(objects, userPropertyHandlers))
 				.toList();
 	}
@@ -718,6 +731,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 		if (objects[srcIdx++] instanceof RepositoryEntryCertificateConfiguration config) {
 			certificateIdentityConfig.setConfig(config);
+		}
+		if (objects[srcIdx++] instanceof Date initialLaunchDate) {
+			certificateIdentityConfig.setInitialLaunchDate(initialLaunchDate);
 		}
 		for (int dstIdx = 0; dstIdx < userPropertyHandlers.size() && srcIdx < objects.length; dstIdx++, srcIdx++) {
 			if (objects[srcIdx] instanceof String sourceString) {

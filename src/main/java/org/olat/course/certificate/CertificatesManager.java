@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
@@ -182,7 +181,7 @@ public interface CertificatesManager {
 	
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource);
 
-	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, OrganisationRoles organisationRole, List<UserPropertyHandler> userPropertyHandlers);
+	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Date from, Date to);
 
 	/**
 	 * Check if certification is allowed and check if a certificate was

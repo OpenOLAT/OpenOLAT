@@ -2379,21 +2379,21 @@
 					</bean>
 				</entry>
 
-				<entry key="org.olat.modules.coach.ui.em.EducationManagerReportsController">
+				<entry key="org.olat.modules.coach.reports.CertificatesReportConfiguration">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="description" value="Education manager report" />
+						<property name="description" value="Certificates report" />
 						<property name="propertyHandlers">
 							<list>
-								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyEmail" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
-								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyEmail" />
 							</set>
 						</property>
 					</bean>
@@ -2402,7 +2402,7 @@
 
 				<entry key="org.olat.modules.coach.reports.AbstractReportConfiguration">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="description" value="Education manager report" />
+						<property name="description" value="Coaching report report" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyUserNickName" />
