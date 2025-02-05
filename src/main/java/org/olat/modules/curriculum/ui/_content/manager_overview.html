@@ -1,10 +1,13 @@
 <h2><i class="o_icon o_icon_curriculum" aria-hidden="true"> </i> $r.translate("curriculum.management")</h2>
 $r.render("searchField")
-<ul class="o_mega_buttons o_mega_buttons_3_centered">
+<ul class="o_mega_buttons #if($r.visible("curriculum.reports")) o_mega_buttons_4_centered #else o_mega_buttons_3_centered #end">
 	<li aria-hidden="true"></li>
 	<li>$r.render("curriculum.browser")</li>
 	<li>$r.render("curriculum.implementations")</li>
 	<li>$r.render("curriculum.lectures")</li>
+	#if($r.visible("curriculum.reports"))
+	<li>$r.render("curriculum.reports")</li>
+	#end
 	<li aria-hidden="true"></li>
 </ul>
 #if($r.available("dashboard"))

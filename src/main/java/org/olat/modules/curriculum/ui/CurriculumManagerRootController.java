@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -32,16 +33,23 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
+import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,14 +60,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumManagerRootController extends BasicController implements Activateable2 {
 
-	private final Link lecturesBlocksLink;
+	private final Link reportsLink;
 	private final Link curriculumsLink;
+	private final Link lecturesBlocksLink;
 	private final Link implementationsLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
-
+	
+	private CurriculumReportsController reportsCtrl;
 	private CurriculumDashboardController overviewCtrl;
 	private LectureListRepositoryController lecturesCtrl;
 	private CurriculumSearchManagerController searchCtrl;
@@ -70,6 +80,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	public CurriculumManagerRootController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumSecurityCallback secCallback, LecturesSecurityCallback lecturesSecCallback) {
@@ -96,6 +108,11 @@ public class CurriculumManagerRootController extends BasicController implements 
 		lecturesBlocksLink.setIconLeftCSS("o_icon o_icon-xl o_icon_calendar_day");
 		lecturesBlocksLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_lectures");
 		
+		reportsLink = LinkFactory.createLink("curriculum.reports", "reports", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		reportsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_radar_chart");
+		reportsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_reports");
+		reportsLink.setVisible(secCallback.canCurriculumsReports());
+
 		initDashboard(ureq);
 		putInitialPanel(mainVC);
 	}
@@ -136,6 +153,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 				subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
 			}
 			doOpenLecturesBlocks(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("Reports".equalsIgnoreCase(type)) {
+			doOpenReports(ureq);
 		}
 	}
 
@@ -161,6 +180,8 @@ public class CurriculumManagerRootController extends BasicController implements 
 		} else if (source == lecturesBlocksLink) {
 			List<ContextEntry> relevant = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
 			doOpenLecturesBlocks(ureq).activate(ureq, relevant, null);
+		} else if(source == reportsLink) {
+			doOpenReports(ureq);
 		}
 	}
 	
@@ -215,5 +236,22 @@ public class CurriculumManagerRootController extends BasicController implements 
 		listenTo(lecturesCtrl);
 		toolbarPanel.pushController(translate("curriculum.lectures"), lecturesCtrl);
 		return lecturesCtrl;
+	}
+	
+	private CurriculumReportsController doOpenReports(UserRequest ureq) {
+		toolbarPanel.popUpToRootController(ureq);
+		removeAsListenerAndDispose(lecturesCtrl);
+		
+		CurriculumSearchParameters params = new CurriculumSearchParameters();
+		params.setCurriculumAdmin(getIdentity());
+		List<Curriculum> ownedCurriculums = curriculumService.getCurriculums(params);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Reports", 0L);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		reportsCtrl = new CurriculumReportsController(ureq, bwControl, ownedCurriculums, null, null, ArchiveType.COURSEPLANNER, 2);
+		listenTo(reportsCtrl);
+		toolbarPanel.pushController(translate("curriculum.reports"), reportsCtrl);
+		return reportsCtrl;
 	}
 }

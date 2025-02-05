@@ -40,6 +40,7 @@ import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,7 +62,8 @@ public class ArchivesController extends ExportsListController {
 	
 	public ArchivesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, CourseArchiveListController.COURSE_ARCHIVE_SUB_IDENT,
-				false, new ExportsListSettings(false), "my_export_list");
+				false, new ExportsListSettings(false), "my_export_list", Util
+				.createPackageTranslator(ArchivesController.class, ureq.getLocale()));
 	}
 
 	@Override
@@ -106,11 +108,11 @@ public class ArchivesController extends ExportsListController {
 			params.setOnlyAdministrators(Boolean.FALSE);
 			boolean hasAuthor  = roles.hasSomeRoles(OrganisationRoles.author);
 			if(hasAuthor) {
-				params.setHasAuthor(getIdentity());
+				params.setHasRepositoryEntryAuthor(getIdentity());
 			}
 		} else {
 			params.setOnlyAdministrators(null);
-			params.setHasAdministrator(getIdentity());
+			params.setHasRepositoryEntryAdministrator(getIdentity());
 		}
 		
 		String selectedKey = archiveScopes.getSelectedKey();

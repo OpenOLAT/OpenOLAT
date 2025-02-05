@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.export;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -27,6 +28,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -68,6 +70,8 @@ public interface ExportMetadata extends ModifiedInfo, CreateInfo {
 
 	RepositoryEntry getEntry();
 	
+	OLATResource getResource();
+	
 	String getSubIdent();
 
 	PersistentTask getTask();
@@ -77,5 +81,11 @@ public interface ExportMetadata extends ModifiedInfo, CreateInfo {
 	VFSMetadata getMetadata();
 
 	void setMetadata(VFSMetadata metadata);
+	
+	Set<ExportMetadataToOrganisation> getOrganisations();
+	
+	Set<ExportMetadataToCurriculum> getCurriculums();
+	
+	Set<ExportMetadataToCurriculumElement> getCurriculumElements();
 
 }

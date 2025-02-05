@@ -19,7 +19,6 @@
  */
 package org.olat.modules.curriculum;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,7 +41,7 @@ public class CurriculumSecurityCallbackFactory {
 	 * @return A security callback without any administration permissions.
 	 */
 	public static final CurriculumSecurityCallback createDefaultCallback() {
-		return new DefaultCurriculumSecurityCallback(false, Collections.emptyList());
+		return new DefaultCurriculumSecurityCallback(false, List.of(), List.of());
 	}
 	
 	/**
@@ -53,19 +52,15 @@ public class CurriculumSecurityCallbackFactory {
 		return new UserLookCurriculumSecurityCallback();
 	}
 	
-	public static final CurriculumSecurityCallback createCallback(Roles roles) {
+	public static final CurriculumSecurityCallback createCallback(Roles roles, List<Curriculum> ownedCurriculums) {
 		boolean admin = roles.isCurriculumManager() || roles.isAdministrator();
-		return new DefaultCurriculumSecurityCallback(admin, Collections.emptyList());
-	}
-	
-	public static final CurriculumSecurityCallback createCallback(boolean canManage, List<CurriculumElementRef> ownedRefs) {
-		return new DefaultCurriculumSecurityCallback(canManage, ownedRefs);
+		return new DefaultCurriculumSecurityCallback(admin, ownedCurriculums, List.of());
 	}
 	
 	private static class UserLookCurriculumSecurityCallback extends DefaultCurriculumSecurityCallback {
 
 		public UserLookCurriculumSecurityCallback() {
-			super(false, Collections.emptyList());
+			super(false, List.of(), List.of());
 		}
 
 		@Override
@@ -87,10 +82,14 @@ public class CurriculumSecurityCallbackFactory {
 	private static class DefaultCurriculumSecurityCallback implements CurriculumSecurityCallback {
 		
 		private final boolean admin;
+		private final Set<Long> ownedCurriculumKeys;
 		private final Set<Long> ownedElementKeys;
 		
-		public DefaultCurriculumSecurityCallback(boolean admin, List<CurriculumElementRef> ownedElementRefs) {
+		public DefaultCurriculumSecurityCallback(boolean admin, List<Curriculum> ownedCurriculums, List<CurriculumElementRef> ownedElementRefs) {
 			this.admin = admin;
+			ownedCurriculumKeys = ownedCurriculums.stream()
+					.map(Curriculum::getKey)
+					.collect(Collectors.toSet());
 			ownedElementKeys = ownedElementRefs.stream()
 					.map(CurriculumElementRef::getKey)
 					.collect(Collectors.toSet());
@@ -172,6 +171,16 @@ public class CurriculumSecurityCallbackFactory {
 		@Override
 		public boolean canViewAllLearningProgress() {
 			return admin;
+		}
+
+		@Override
+		public boolean canCurriculumsReports() {
+			return admin;
+		}
+
+		@Override
+		public boolean canCurriculumReports(Curriculum curriculum) {
+			return ownedCurriculumKeys.contains(curriculum.getKey());
 		}
 	}
 }

@@ -363,12 +363,14 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 	@Test
 	public void deleteTask_withExportMetadata() {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		OLATResource resource = re.getOlatResource();
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsUser("extask-1-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
 		
 		String taskName = UUID.randomUUID().toString();
 		PersistentTask task = persistentTaskDao.createTask(taskName, new DummyTask(), creator, re.getOlatResource(), "test", null);
-		ExportMetadata metadata = exportMetadataDao.createMetadata(taskName, null, null, ArchiveType.PARTIAL, null, false, re, "some-id", creator, task);
+		ExportMetadata metadata = exportMetadataDao.createMetadata(taskName, null, null, ArchiveType.PARTIAL, null, false,
+				re, resource, "some-id", creator, task);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(task);
 		Assert.assertNotNull(metadata);

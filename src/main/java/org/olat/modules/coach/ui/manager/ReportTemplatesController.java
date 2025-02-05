@@ -42,6 +42,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.reports.ReportConfiguration;
 import org.olat.modules.coach.ui.manager.ReportTemplatesDataModel.ReportTemplateCols;
@@ -65,6 +66,15 @@ public class ReportTemplatesController extends FormBasicController {
 
 	public ReportTemplatesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "report_templates");
+
+		initForm(ureq);
+		loadModel();
+		
+		initFilters();
+	}
+	
+	public ReportTemplatesController(UserRequest ureq, WindowControl wControl, Translator translator) {
+		super(ureq, wControl, "report_templates", translator);
 
 		initForm(ureq);
 		loadModel();
@@ -154,7 +164,7 @@ public class ReportTemplatesController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private void doRunReport(UserRequest ureq, ReportTemplatesRow row) {
+	protected void doRunReport(UserRequest ureq, ReportTemplatesRow row) {
 		row.getReportConfiguration().generateReport(getIdentity(), ureq.getLocale());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

@@ -44,6 +44,9 @@
 		<class>org.olat.core.commons.services.doceditor.model.AccessImpl</class>
 		<class>org.olat.core.commons.services.doceditor.model.UserInfoImpl</class>
 		<class>org.olat.core.commons.services.export.model.ExportMetadataImpl</class>
+		<class>org.olat.core.commons.services.export.model.ExportMetadataToOrganisationImpl</class>
+		<class>org.olat.core.commons.services.export.model.ExportMetadataToCurriculumImpl</class>
+		<class>org.olat.core.commons.services.export.model.ExportMetadataToCurriculumElementImpl</class>
 		<class>org.olat.core.commons.services.license.model.LicenseTypeActivation</class>
 		<class>org.olat.core.commons.services.license.model.LicenseTypeImpl</class>
 		<class>org.olat.core.commons.services.license.model.ResourceLicenseImpl</class>

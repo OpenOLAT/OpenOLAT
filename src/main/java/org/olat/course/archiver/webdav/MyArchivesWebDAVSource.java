@@ -123,9 +123,9 @@ public class MyArchivesWebDAVSource extends MergeSource {
 				boolean isAuthor = roles.hasRole(OrganisationRoles.author);
 				
 				if(hasAdministrativeRoles) {
-					params.setHasAdministrator(identityEnv.getIdentity());
+					params.setHasRepositoryEntryAdministrator(identityEnv.getIdentity());
 				} else if(isAuthor) {
-					params.setHasAuthor(identityEnv.getIdentity());
+					params.setHasRepositoryEntryAuthor(identityEnv.getIdentity());
 					params.setOnlyAdministrators(Boolean.FALSE);
 				} else {
 					return new ArrayList<>();

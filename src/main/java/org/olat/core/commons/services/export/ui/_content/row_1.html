@@ -7,7 +7,7 @@
 #set($expirationInDays = $row.expirationInDays)
 <div class="o_export_card">
 	<div class="o_export_type">
-		<span><i class="o_icon o_filetype_zip"> </i></span>
+		<span><i class="o_icon ${row.getArchiveIconCssClass()}"> </i></span>
 	</div>
 	<div class="o_export_meta">
 		#if($r.isTrue($row.taskRunning) || $r.isTrue($row.taskNew) || $r.isTrue($row.taskCancelled))
@@ -25,7 +25,7 @@
 			#end
 			</div>
 			<h5>$r.render($row.downloadLink)#if(${row.isOnlyAdministrators()}) <i class="o_icon o_icon_locked"> </i>#end</h5>
-			<span>$r.translate("row.zip") | $r.formatBytes($row.archiveSize) #if($r.isNotEmpty($row.type)) | ${row.type}#end | $creationDate - $r.translate("row.created.by", $creatorFullName)</span>
+			<span>${row.getArchiveFileType()} | $r.formatBytes($row.archiveSize) #if($r.isNotEmpty($row.type)) | ${row.type}#end | $creationDate - $r.translate("row.created.by", $creatorFullName)</span>
 		#end
 	</div>
 	<div class="o_export_actions">

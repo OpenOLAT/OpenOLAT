@@ -28,7 +28,9 @@ import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -123,7 +125,7 @@ public class ExportRow {
 	}
 	
 	public boolean isOnlyAdministrators() {
-		return metadata == null ? false : metadata.isOnlyAdministrators();
+		return metadata != null && metadata.isOnlyAdministrators();
 	}
 	
 	public String getType() {
@@ -188,6 +190,20 @@ public class ExportRow {
 			return export.getZipLeaf();
 		}
 		return null;
+	}
+	
+	public String getArchiveFileType() {
+		VFSLeaf archive = getArchive();
+		String fileType = null;
+		if(archive != null) {
+			fileType = FileUtils.getFileSuffix(archive.getName());
+		}
+		return fileType == null ? "???" : fileType.toUpperCase();
+	}
+	
+	public String getArchiveIconCssClass() {
+		VFSLeaf archive = getArchive();
+		return archive == null ? "o_filetype_file" : CSSHelper.createFiletypeIconCssClassFor(archive.getName());
 	}
 
 	public String getMonth() {

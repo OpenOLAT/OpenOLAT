@@ -111,7 +111,8 @@ public class ExportInfosController extends FormBasicController {
 		}
 		uifactory.addStaticTextElement("available.until", expirationDate + " - " + expirationDays, formLayout);
 
-		uifactory.addStaticTextElement("file.type", translate("row.zip"), formLayout);
+		String fileType = exportRow.getArchiveFileType();
+		uifactory.addStaticTextElement("file.type", fileType, formLayout);
 		
 		String size = Formatter.formatBytes(exportRow.getArchiveSize());
 		uifactory.addStaticTextElement("file.size", size, formLayout);

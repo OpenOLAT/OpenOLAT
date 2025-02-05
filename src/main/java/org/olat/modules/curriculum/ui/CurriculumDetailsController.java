@@ -26,6 +26,7 @@ import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CON
 
 import java.util.List;
 
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -57,6 +58,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.member.CurriculumUserManagementController;
+import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
@@ -71,6 +73,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumDetailsController extends BasicController implements Activateable2 {
 
+	private static final int TITLE_SIZE = 3;
+	
 	private int lecturesTab;
 	private int overviewTab;
 	private int implementationsTab;
@@ -81,6 +85,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 	private final TooledStackedPanel toolbarPanel;
 	
 	private CloseableModalController cmc;
+	private CurriculumReportsController reportsCtrl;
 	private EditCurriculumController editMetadataCtrl;
 	private CurriculumDashboardController overviewCtrl;
 	private LectureListRepositoryController lectureBlocksCtrl;
@@ -158,7 +163,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		// Implementations
 		implementationsTab = tabPane.addTab(ureq, translate("curriculum.implementations"), uureq -> {
 			CurriculumComposerConfig config = CurriculumComposerConfig.curriculumView();
-			config.setTitle(translate("curriculum.implementations"), 3, "o_icon_curriculum_implementations");
+			config.setTitle(translate("curriculum.implementations"), TITLE_SIZE, "o_icon_curriculum_implementations");
 			config.setDefaultNumOfParticipants(true);
 			config.setRootElementsOnly(true);
 			config.setFlat(true);
@@ -187,6 +192,13 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			});
 		}
 		
+		// User management
+		tabPane.addTab(ureq, translate("tab.user.management"), uureq -> {
+			userManagementCtrl = new CurriculumUserManagementController(uureq, getWindowControl(), curriculum, secCallback);
+			listenTo(userManagementCtrl);
+			return userManagementCtrl.getInitialComponent();
+		});
+		
 		// Metadata
 		tabPane.addTab(ureq, translate("curriculum.metadata"), uureq -> {
 			editMetadataCtrl = new EditCurriculumController(uureq, getWindowControl(), curriculum, secCallback);
@@ -194,12 +206,14 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			return editMetadataCtrl.getInitialComponent();
 		});
 		
-		// User management
-		tabPane.addTab(ureq, translate("tab.user.management"), uureq -> {
-			userManagementCtrl = new CurriculumUserManagementController(uureq, getWindowControl(), curriculum, secCallback);
-			listenTo(userManagementCtrl);
-			return userManagementCtrl.getInitialComponent();
-		});
+		// Reports
+		if(secCallback.canCurriculumReports(curriculum)) {
+			tabPane.addTab(ureq, translate("curriculum.reports"), uureq -> {
+				reportsCtrl = new CurriculumReportsController(uureq, getWindowControl(), null, curriculum, null, ArchiveType.CURRICULUM, TITLE_SIZE);
+				listenTo(reportsCtrl);
+				return reportsCtrl.getInitialComponent();
+			});
+		}
 	}
 	
 	private CurriculumDashboardController createDashboard(UserRequest ureq) {

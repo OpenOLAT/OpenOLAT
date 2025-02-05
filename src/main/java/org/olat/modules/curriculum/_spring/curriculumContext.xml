@@ -28,6 +28,13 @@
 		</property>
 	</bean>
 	
-	<alias alias="curriculumIdentifierGenerator" name="curriculumIdentifierGenerator.${curriculum.identifier.generator}"/>	
+	<alias alias="curriculumIdentifierGenerator" name="curriculumIdentifierGenerator.${curriculum.identifier.generator}"/>
+	
+	<!-- Reports -->
+	<bean class="org.olat.modules.curriculum.reports.DummyBookingReportConfiguration">
+		<property name="order" value="10" />
+		<property name="i18nNameKey" value="report.booking.dummy" />
+		<property name="i18nDescriptionKey" value="report.booking.dummy.desc" />
+	</bean>
 	
 </beans>

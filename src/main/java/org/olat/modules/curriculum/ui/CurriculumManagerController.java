@@ -31,11 +31,15 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The root controller of the curriculum mamangement site
@@ -54,11 +58,18 @@ public class CurriculumManagerController extends BasicController implements Acti
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
 	
+	@Autowired
+	private CurriculumService curriculumService;
+	
 	public CurriculumManagerController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		UserSession usess = ureq.getUserSession();
-		secCallback = CurriculumSecurityCallbackFactory.createCallback(usess.getRoles());
+		
+		CurriculumSearchParameters params = new CurriculumSearchParameters();
+		params.setCurriculumAdmin(getIdentity());
+		List<Curriculum> ownedCurriculums = curriculumService.getCurriculums(params);
+		secCallback = CurriculumSecurityCallbackFactory.createCallback(usess.getRoles(), ownedCurriculums);
 		lecturesSecCallback = LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager);
 
 		toolbarPanel = new TooledStackedPanel("categoriesStackPanel", getTranslator(), this);

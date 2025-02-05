@@ -3453,11 +3453,36 @@ create table o_ex_export_metadata (
    e_only_administrators bool default false,
    e_expiration_date datetime,
    fk_entry bigint,
+   fk_resource bigint,
    e_sub_ident varchar(2048),
    fk_task bigint,
    fk_creator bigint,
    fk_metadata bigint,
    primary key (id)
+);
+
+create table o_ex_export_metadata_to_org (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_metadata bigint not null,
+  fk_organisation bigint not null,
+  primary key (id)
+);
+
+create table o_ex_export_metadata_to_cur (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_metadata bigint not null,
+  fk_curriculum bigint not null,
+  primary key (id)
+);
+
+create table o_ex_export_metadata_to_cur_el (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_metadata bigint not null,
+  fk_element bigint not null,
+  primary key (id)
 );
 
 -- sms
@@ -4997,6 +5022,9 @@ alter table o_im_preferences ENGINE = InnoDB;
 alter table o_ex_task ENGINE = InnoDB;
 alter table o_ex_task_modifier ENGINE = InnoDB;
 alter table o_ex_export_metadata ENGINE = InnoDB;
+alter table o_ex_export_metadata_to_org ENGINE = InnoDB;
+alter table o_ex_export_metadata_to_cur ENGINE = InnoDB;
+alter table o_ex_export_metadata_to_cur_el ENGINE = InnoDB;
 alter table o_checklist ENGINE = InnoDB;
 alter table o_cl_checkbox ENGINE = InnoDB;
 alter table o_cl_check ENGINE = InnoDB;
@@ -5390,6 +5418,16 @@ alter table o_ex_export_metadata add constraint export_to_entry_idx foreign key 
 alter table o_ex_export_metadata add constraint export_to_creator_idx foreign key (fk_creator) references o_bs_identity (id);
 alter table o_ex_export_metadata add constraint export_to_task_idx foreign key (fk_task) references o_ex_task (id);
 alter table o_ex_export_metadata add constraint export_to_vfsdata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
+alter table o_ex_export_metadata add constraint exp_meta_to_rsrc_idx foreign key (fk_resource) references o_olatresource (resource_id);
+
+alter table o_ex_export_metadata_to_org add constraint exp_meta_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+alter table o_ex_export_metadata_to_org add constraint exp_meta_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+
+alter table o_ex_export_metadata_to_cur add constraint exp_meta_to_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
+alter table o_ex_export_metadata_to_cur add constraint exp_meta_cur_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+
+alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_to_cur_el_idx foreign key (fk_element) references o_cur_curriculum_element (id);
+alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_curel_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
 
 -- checklist
 alter table o_cl_check add constraint check_identity_ctx foreign key (fk_identity_id) references o_bs_identity (id);

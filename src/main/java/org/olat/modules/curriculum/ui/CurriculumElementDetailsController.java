@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -74,6 +75,7 @@ import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.event.CurriculumElementEvent;
 import org.olat.modules.curriculum.ui.event.SelectCurriculumElementRowEvent;
 import org.olat.modules.curriculum.ui.member.CurriculumElementUserManagementController;
+import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.curriculum.ui.widgets.OffersWidgetController;
@@ -91,6 +93,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementDetailsController extends BasicController implements Activateable2 {
 
+	private static final int TITLE_SIZE = 3;
+	
 	private int overviewTab;
 	private int lecturesTab;
 	private int resourcesTab;
@@ -111,6 +115,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private final TooledStackedPanel toolbarPanel;
 	
 	private CloseableModalController cmc;
+	private CurriculumReportsController reportsCtrl;
 	private OffersWidgetController offersWidgetCtrl;
 	private CoursesWidgetController coursesWidgetCtrl;
 	private CurriculumComposerController structureCtrl;
@@ -430,7 +435,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		if(canChildren) {
 			structuresTab = tabPane.addTab(ureq, translate("curriculum.structure"), uureq -> {
 				CurriculumComposerConfig config = new CurriculumComposerConfig();
-				config.setTitle(translate("curriculum.structure"), 3, "o_icon_curriculum_structure");
+				config.setTitle(translate("curriculum.structure"), TITLE_SIZE, "o_icon_curriculum_structure");
 				config.setDefaultNumOfParticipants(true);
 				config.setRootElementsOnly(false);
 				config.setFlat(false);
@@ -499,6 +504,16 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			listenTo(editMetadataCtrl);
 			return editMetadataCtrl.getInitialComponent();
 		});
+		
+		// Reports
+		if(secCallback.canCurriculumReports(curriculum)) {	
+			tabPane.addTab(ureq, translate("curriculum.reports"), uureq -> {
+				reportsCtrl = new CurriculumReportsController(uureq, getWindowControl(),
+						null, curriculum, curriculumElement, ArchiveType.CURRICULUMELEMENT, TITLE_SIZE);
+				listenTo(reportsCtrl);
+				return reportsCtrl.getInitialComponent();
+			});
+		}
 	}
 	
 	private CurriculumDashboardController createDashBoard(UserRequest ureq) {

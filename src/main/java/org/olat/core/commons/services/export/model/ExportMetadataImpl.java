@@ -20,7 +20,9 @@
 package org.olat.core.commons.services.export.model;
 
 import java.util.Date;
+import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,6 +33,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -38,12 +41,17 @@ import jakarta.persistence.TemporalType;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportMetadata;
+import org.olat.core.commons.services.export.ExportMetadataToCurriculum;
+import org.olat.core.commons.services.export.ExportMetadataToCurriculumElement;
+import org.olat.core.commons.services.export.ExportMetadataToOrganisation;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 
 /**
  * 
@@ -92,6 +100,10 @@ public class ExportMetadataImpl implements ExportMetadata, Persistable {
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_entry", nullable=true, insertable=true, updatable=false)
 	private RepositoryEntry entry;
+	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_resource", nullable=true, insertable=true, updatable=false)
+	private OLATResource resource;
+	
 	@Column(name="e_sub_ident", nullable=true, insertable=true, updatable=false)
 	private String subIdent;
 	
@@ -106,6 +118,22 @@ public class ExportMetadataImpl implements ExportMetadata, Persistable {
 	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_metadata", nullable=true, insertable=true, updatable=true)
 	private VFSMetadata metadata;
+	
+	@OneToMany(targetEntity=ExportMetadataToOrganisationImpl.class, fetch=FetchType.LAZY,
+			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
+	@JoinColumn(name="fk_metadata")
+	private Set<ExportMetadataToOrganisation> organisations;
+	
+	@OneToMany(targetEntity=ExportMetadataToCurriculumImpl.class, fetch=FetchType.LAZY,
+			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
+	@JoinColumn(name="fk_metadata")
+	private Set<ExportMetadataToCurriculum> curriculums;
+	
+	@OneToMany(targetEntity=ExportMetadataToCurriculumElementImpl.class, fetch=FetchType.LAZY,
+			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
+	@JoinColumn(name="fk_metadata")
+	private Set<ExportMetadataToCurriculumElement> curriculumElements;
+	
 	
 	public ExportMetadataImpl() {
 		//
@@ -219,6 +247,15 @@ public class ExportMetadataImpl implements ExportMetadata, Persistable {
 	}
 
 	@Override
+	public OLATResource getResource() {
+		return resource;
+	}
+
+	public void setResource(OLATResource resource) {
+		this.resource = resource;
+	}
+
+	@Override
 	public String getSubIdent() {
 		return subIdent;
 	}
@@ -253,6 +290,33 @@ public class ExportMetadataImpl implements ExportMetadata, Persistable {
 	@Override
 	public void setMetadata(VFSMetadata metadata) {
 		this.metadata = metadata;
+	}
+
+	@Override
+	public Set<ExportMetadataToOrganisation> getOrganisations() {
+		return organisations;
+	}
+
+	public void setOrganisations(Set<ExportMetadataToOrganisation> organisations) {
+		this.organisations = organisations;
+	}
+
+	@Override
+	public Set<ExportMetadataToCurriculum> getCurriculums() {
+		return curriculums;
+	}
+
+	public void setCurriculums(Set<ExportMetadataToCurriculum> curriculums) {
+		this.curriculums = curriculums;
+	}
+
+	@Override
+	public Set<ExportMetadataToCurriculumElement> getCurriculumElements() {
+		return curriculumElements;
+	}
+
+	public void setCurriculumElements(Set<ExportMetadataToCurriculumElement> curriculumElements) {
+		this.curriculumElements = curriculumElements;
 	}
 
 	@Override

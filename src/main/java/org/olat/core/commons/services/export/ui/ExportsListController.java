@@ -66,6 +66,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -119,14 +120,14 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	protected TaskExecutorManager taskExecutorManager;
 	
 	public ExportsListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent, boolean admin,
-			ExportsListSettings options) {
-		this(ureq, wControl, entry, subIdent, admin, options, "export_list");
+			ExportsListSettings options, Translator translator) {
+		this(ureq, wControl, entry, subIdent, admin, options, "export_list", translator);
 	}
 
 	public ExportsListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent, boolean admin,
-			ExportsListSettings options, String pageName) {
+			ExportsListSettings options, String pageName, Translator translator) {
 		super(ureq, wControl, pageName, Util.createPackageTranslator(ExportsListController.class, ureq.getLocale(),
-				Util.createPackageTranslator(FolderUIFactory.class, ureq.getLocale())));
+				Util.createPackageTranslator(FolderUIFactory.class, ureq.getLocale(), translator)));
 		this.admin = admin;
 		this.entry = entry;
 		this.options = options;
@@ -137,7 +138,6 @@ public class ExportsListController extends FormBasicController implements FlexiT
 				.hasSomeRoles(OrganisationRoles.administrator);
 
 		initForm(ureq);
-		loadModel();
 		
 		coordinatorManager.getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), TaskExecutorManager.TASK_EVENTS);

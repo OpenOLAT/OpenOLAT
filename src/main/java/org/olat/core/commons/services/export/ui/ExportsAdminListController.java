@@ -90,7 +90,6 @@ public class ExportsAdminListController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private ExportsListDataModel tableModel;
 	
-	private int counter = 0;
 	private final String subIdent;
 	
 	private ToolsController toolsCtrl;

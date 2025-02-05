@@ -159,3 +159,45 @@ alter table o_ac_billing_address add constraint ac_billing_to_ident_idx foreign 
 
 alter table o_ac_order add constraint ord_billing_idx foreign key (fk_billing_address) references o_ac_billing_address (id);
 
+-- Export
+alter table o_ex_export_metadata add column fk_resource bigint;
+
+alter table o_ex_export_metadata add constraint exp_meta_to_rsrc_idx foreign key (fk_resource) references o_olatresource (resource_id);
+
+create table o_ex_export_metadata_to_org (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_metadata bigint not null,
+  fk_organisation bigint not null,
+  primary key (id)
+);
+alter table o_ex_export_metadata_to_org ENGINE = InnoDB;
+
+alter table o_ex_export_metadata_to_org add constraint exp_meta_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+alter table o_ex_export_metadata_to_org add constraint exp_meta_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+
+
+create table o_ex_export_metadata_to_cur (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_metadata bigint not null,
+  fk_curriculum bigint not null,
+  primary key (id)
+);
+alter table o_ex_export_metadata_to_cur ENGINE = InnoDB;
+
+alter table o_ex_export_metadata_to_cur add constraint exp_meta_to_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
+alter table o_ex_export_metadata_to_cur add constraint exp_meta_cur_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+
+create table o_ex_export_metadata_to_cur_el (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_metadata bigint not null,
+  fk_element bigint not null,
+  primary key (id)
+);
+alter table o_ex_export_metadata_to_cur_el ENGINE = InnoDB;
+
+alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_to_cur_el_idx foreign key (fk_element) references o_cur_curriculum_element (id);
+alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_curel_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+

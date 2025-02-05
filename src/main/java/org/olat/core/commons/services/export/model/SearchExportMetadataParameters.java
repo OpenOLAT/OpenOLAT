@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -34,14 +35,21 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public class SearchExportMetadataParameters {
 	
-	private IdentityRef hasAuthor;
-	private IdentityRef hasAdministrator;
+	private IdentityRef hasRepositoryEntryAuthor;
+	private IdentityRef hasRepositoryEntryAdministrator;
 	private List<RepositoryEntryRef> repositoryEntries;
+	
+	private CurriculumReportBlocParameters reportSubParameters;
+	
+	private List<OrganisationRoles> organisationRoles;
+	private IdentityRef organisationIdentity;
 	
 	private String resSubPath;
 	private List<ArchiveType> archiveTypes;
 	private boolean ongoingExport;
 	private Boolean onlyAdministrators;
+	
+	private List<String> roles;
 	
 	public SearchExportMetadataParameters(List<ArchiveType> archiveTypes) {
 		this.archiveTypes = archiveTypes;
@@ -68,20 +76,41 @@ public class SearchExportMetadataParameters {
 		this.repositoryEntries = repositoryEntries;
 	}
 
-	public IdentityRef getHasAuthor() {
-		return hasAuthor;
+	public IdentityRef getHasRepositoryEntryAuthor() {
+		return hasRepositoryEntryAuthor;
 	}
 
-	public void setHasAuthor(IdentityRef hasAuthor) {
-		this.hasAuthor = hasAuthor;
+	public void setHasRepositoryEntryAuthor(IdentityRef hasAuthor) {
+		this.hasRepositoryEntryAuthor = hasAuthor;
 	}
 
-	public IdentityRef getHasAdministrator() {
-		return hasAdministrator;
+	public IdentityRef getHasRepositoryEntryAdministrator() {
+		return hasRepositoryEntryAdministrator;
 	}
 
-	public void setHasAdministrator(IdentityRef hasAdministrator) {
-		this.hasAdministrator = hasAdministrator;
+	public void setHasRepositoryEntryAdministrator(IdentityRef hasAdministrator) {
+		this.hasRepositoryEntryAdministrator = hasAdministrator;
+	}
+
+	public IdentityRef getOrganisationIdentity() {
+		return organisationIdentity;
+	}
+
+	public List<OrganisationRoles> getOrganisationRoles() {
+		return organisationRoles;
+	}
+
+	public void setOrganisationRoles(IdentityRef organisationIdentity, List<OrganisationRoles> organisationRoles) {
+		this.organisationRoles = organisationRoles;
+		this.organisationIdentity = organisationIdentity;
+	}
+
+	public CurriculumReportBlocParameters getReportSubParameters() {
+		return reportSubParameters;
+	}
+
+	public void setReportSubParameters(CurriculumReportBlocParameters reportSubParameters) {
+		this.reportSubParameters = reportSubParameters;
 	}
 
 	public String getResSubPath() {
@@ -118,5 +147,13 @@ public class SearchExportMetadataParameters {
 
 	public void setOnlyAdministrators(Boolean onlyAdministrators) {
 		this.onlyAdministrators = onlyAdministrators;
+	}
+
+	public List<String> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<String> roles) {
+		this.roles = roles;
 	}
 }

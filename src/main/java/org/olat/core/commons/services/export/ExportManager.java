@@ -26,8 +26,12 @@ import org.olat.core.commons.services.export.model.ExportInfos;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  * Only support course for the moment<br>
@@ -54,9 +58,40 @@ public interface ExportManager {
 	
 	ExportMetadata updateMetadata(ExportMetadata metadata);
 	
+	/**
+	 * Link some organisations
+	 * 
+	 * @param metadata The metadata to enrich
+	 * @param organisations A list of organisations to link to the metadata
+	 * @return The merged metadata
+	 */
+	ExportMetadata addMetadataOrganisations(ExportMetadata metadata, List<Organisation> organisations);
+	
+	/**
+	 * Link some curriculums
+	 * 
+	 * @param metadata The metadata to enrich
+	 * @param curriculums A list of curriculums to link to the metadata
+	 * @return The merged metadata
+	 */
+	ExportMetadata addMetadataCurriculums(ExportMetadata metadata, List<Curriculum> curriculums);
+	
+	/**
+	 * Link some curriculums elements
+	 * 
+	 * @param metadata The metadata to enrich
+	 * @param curriculums A list of curriculums elements to link to the metadata
+	 * @return The merged metadata
+	 */
+	ExportMetadata addMetadataCurriculumElements(ExportMetadata metadata, List<CurriculumElement> curriculumElements);
+	
 	ExportMetadata startExport(ExportTask task, String title, String description,
 			String filename, ArchiveType type, Date expirationDate, boolean onlyAdministrators,
 			RepositoryEntry entry, String resSubPath, Identity creator);
+	
+	ExportMetadata startExport(ExportTask task, String title, String description,
+			String filename, ArchiveType type, Date expirationDate, boolean onlyAdministrators,
+			OLATResource resource, String resSubPath, Identity creator);
 	
 	void cancelExport(ExportInfos export, RepositoryEntry entry, String resSubPath);
 	

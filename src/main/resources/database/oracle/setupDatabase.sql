@@ -3508,11 +3508,36 @@ create table o_ex_export_metadata (
    e_only_administrators number default 0,
    e_expiration_date date,
    fk_entry number(20),
+   fk_resource number(20),
    e_sub_ident varchar(2048),
    fk_task number(20),
    fk_creator number(20),
    fk_metadata number(20),
    primary key (id)
+);
+
+create table o_ex_export_metadata_to_org (
+  id number(20) GENERATED ALWAYS AS IDENTITY,
+  creationdate date not null,
+  fk_metadata number(20) not null,
+  fk_organisation number(20) not null,
+  primary key (id)
+);
+
+create table o_ex_export_metadata_to_cur (
+  id number(20) GENERATED ALWAYS AS IDENTITY,
+  creationdate date not null,
+  fk_metadata number(20) not null,
+  fk_curriculum number(20) not null,
+  primary key (id)
+);
+
+create table o_ex_export_metadata_to_cur_el (
+  id number(20) GENERATED ALWAYS AS IDENTITY,
+  creationdate date not null,
+  fk_metadata number(20) not null,
+  fk_element number(20) not null,
+  primary key (id)
 );
 
 --
@@ -5249,6 +5274,23 @@ create index idx_export_to_task_idx on o_ex_export_metadata(fk_task);
 create index idx_export_sub_ident_idx on o_ex_export_metadata(e_sub_ident);
 alter table o_ex_export_metadata add constraint export_to_vfsdata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
 create index idx_export_to_vfsdata_idx on o_ex_export_metadata(fk_metadata);
+alter table o_ex_export_metadata add constraint exp_meta_to_rsrc_idx foreign key (fk_resource) references o_olatresource (resource_id);
+create index idx_exp_meta_to_rsrc_idx on o_ex_export_metadata (fk_resource);
+
+alter table o_ex_export_metadata_to_org add constraint exp_meta_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_exp_meta_to_org_idx on o_ex_export_metadata_to_org (fk_organisation);
+alter table o_ex_export_metadata_to_org add constraint exp_meta_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+create index idx_exp_meta_to_meta_idx on o_ex_export_metadata_to_org (fk_metadata);
+
+alter table o_ex_export_metadata_to_cur add constraint exp_meta_to_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
+create index idx_exp_meta_to_cur_idx on o_ex_export_metadata_to_cur (fk_curriculum);
+alter table o_ex_export_metadata_to_cur add constraint exp_meta_cur_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+create index idx_exp_meta_cur_to_meta_idx on o_ex_export_metadata_to_cur (fk_metadata);
+
+alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_to_cur_el_idx foreign key (fk_element) references o_cur_curriculum_element (id);
+create index idx_exp_meta_to_cur_el_idx on o_ex_export_metadata_to_cur_el (fk_element);
+alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_curel_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+create index idx_exp_meta_cur_el_to_meta_idx on o_ex_export_metadata_to_cur_el (fk_metadata);
 
 -- checklist
 alter table o_cl_check add constraint check_identity_ctx foreign key (fk_identity_id) references o_bs_identity (id);

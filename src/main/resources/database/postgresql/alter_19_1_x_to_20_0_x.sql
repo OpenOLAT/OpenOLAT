@@ -169,6 +169,53 @@ create index idx_ac_billing_to_ident_idx on o_ac_billing_address (fk_identity);
 alter table o_ac_order add constraint ord_billing_idx foreign key (fk_billing_address) references o_ac_billing_address (id);
 create index idx_ord_billing_idx on o_ac_order (fk_billing_address);
 
+-- Export
+alter table o_ex_export_metadata add column fk_resource int8;
+
+alter table o_ex_export_metadata add constraint exp_meta_to_rsrc_idx foreign key (fk_resource) references o_olatresource (resource_id);
+create index idx_exp_meta_to_rsrc_idx on o_ex_export_metadata (fk_resource);
+
+create table o_ex_export_metadata_to_org (
+  id bigserial,
+  creationdate timestamp not null,
+  fk_metadata int8 not null,
+  fk_organisation int8 not null,
+  primary key (id)
+);
+
+alter table o_ex_export_metadata_to_org add constraint exp_meta_to_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+create index idx_exp_meta_to_org_idx on o_ex_export_metadata_to_org (fk_organisation);
+alter table o_ex_export_metadata_to_org add constraint exp_meta_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+create index idx_exp_meta_to_meta_idx on o_ex_export_metadata_to_org (fk_metadata);
+
+create table o_ex_export_metadata_to_cur (
+  id bigserial,
+  creationdate timestamp not null,
+  fk_metadata int8 not null,
+  fk_curriculum int8 not null,
+  primary key (id)
+);
+
+alter table o_ex_export_metadata_to_cur add constraint exp_meta_to_cur_idx foreign key (fk_curriculum) references o_cur_curriculum (id);
+create index idx_exp_meta_to_cur_idx on o_ex_export_metadata_to_cur (fk_curriculum);
+alter table o_ex_export_metadata_to_cur add constraint exp_meta_cur_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+create index idx_exp_meta_cur_to_meta_idx on o_ex_export_metadata_to_cur (fk_metadata);
+
+create table o_ex_export_metadata_to_cur_el (
+  id bigserial,
+  creationdate timestamp not null,
+  fk_metadata int8 not null,
+  fk_element int8 not null,
+  primary key (id)
+);
+
+alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_to_cur_el_idx foreign key (fk_element) references o_cur_curriculum_element (id);
+create index idx_exp_meta_to_cur_el_idx on o_ex_export_metadata_to_cur_el (fk_element);
+alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_curel_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
+create index idx_exp_meta_cur_el_to_meta_idx on o_ex_export_metadata_to_cur_el (fk_metadata);
+
+
+
 
     
 

@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.course.archiver.wizard.CourseArchiveContext;
 import org.olat.course.archiver.wizard.CourseArchiveFinishStepCallback;
@@ -89,8 +90,10 @@ public class CourseArchiveListController extends ExportsListController implement
 	private RepositoryService repositoryService;
 	
 	public CourseArchiveListController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,  boolean admin) {
-		super(ureq, wControl, entry, COURSE_ARCHIVE_SUB_IDENT, admin, new ExportsListSettings(false));
+		super(ureq, wControl, entry, COURSE_ARCHIVE_SUB_IDENT, admin, new ExportsListSettings(false), Util
+				.createPackageTranslator(CourseArchiveListController.class, ureq.getLocale()));
 		this.entry = entry;
+		loadModel();
 	}
 	
 	@Override

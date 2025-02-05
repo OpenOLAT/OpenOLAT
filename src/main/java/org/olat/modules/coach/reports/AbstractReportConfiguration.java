@@ -136,7 +136,7 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 		coachingService.setGeneratedReport(coach, name, fileName);
 	}
 
-	private void generateHeader(OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	protected void generateHeader(OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		Translator translator = getTranslator(locale);
 
 		Row header = sheet.newRow();

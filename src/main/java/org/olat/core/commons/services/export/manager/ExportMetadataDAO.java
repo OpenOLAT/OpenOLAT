@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.export.manager;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportMetadata;
+import org.olat.core.commons.services.export.model.CurriculumReportBlocParameters;
 import org.olat.core.commons.services.export.model.ExportMetadataImpl;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
@@ -40,8 +42,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +64,7 @@ public class ExportMetadataDAO {
 	
 	public ExportMetadata createMetadata(String title, String description,
 			String filename, ArchiveType type, Date expirationDate, boolean onlyAdministrators,
-			RepositoryEntry entry, String resSubPath, Identity creator, PersistentTask task) {
+			RepositoryEntry entry, OLATResource resource, String resSubPath, Identity creator, PersistentTask task) {
 		ExportMetadataImpl metadata = new ExportMetadataImpl();
 		metadata.setCreationDate(new Date());
 		metadata.setLastModified(metadata.getCreationDate());
@@ -76,7 +81,11 @@ public class ExportMetadataDAO {
 		metadata.setCreator(creator);
 		metadata.setTask(task);
 		metadata.setEntry(entry);
+		metadata.setResource(resource);
 		metadata.setSubIdent(resSubPath);
+		metadata.setOrganisations(new HashSet<>());
+		metadata.setCurriculums(new HashSet<>());
+		metadata.setCurriculumElements(new HashSet<>());
 		dbInstance.getCurrentEntityManager().persist(metadata);
 		return metadata;
 	}
@@ -149,7 +158,7 @@ public class ExportMetadataDAO {
 				.getResultList();
 		return used != null && !used.isEmpty() && used.get(0) != null && used.get(0).longValue() > 0l;
 	}
-	
+
 	public void deleteMetadata(ExportMetadata metadata) {
 		ExportMetadata metadataRef = dbInstance.getCurrentEntityManager()
 				.getReference(ExportMetadataImpl.class, metadata.getKey());
@@ -180,21 +189,79 @@ public class ExportMetadataDAO {
 			sb.and().append("exp.onlyAdministrators=:onlyAdministrators");
 		}
 		
-		if(params.getHasAdministrator() != null || params.getHasAuthor() != null) {
+		if(params.getHasRepositoryEntryAdministrator() != null || params.getHasRepositoryEntryAuthor() != null) {
 			sb.and().append("(exists (select relpart from repoentrytogroup as relpart, bgroupmember as repoOwner")
 		      .append("   where relpart.entry.key=v.key and repoOwner.group.key=relpart.group.key")
 		      .append("   and repoOwner.role='").append(GroupRoles.owner.name()).append("'")
 		      .append("   and repoOwner.identity.key=:identityKey")
 		      .append(" )");
-			if(params.getHasAdministrator() != null) {
+			if(params.getHasRepositoryEntryAdministrator() != null) {
 				sb.append(" or exp.creator.key=:identityKey");
 				sb.append(")");
-			} else if(params.getHasAuthor() != null) {
+			} else if(params.getHasRepositoryEntryAuthor() != null) {
 				sb.append(")");
 				if(params.getOnlyAdministrators() == null) {
 					sb.and().append("exp.onlyAdministrators=false");
 				}
 			}
+		}
+		
+		if(params.getOrganisationRoles() != null && !params.getOrganisationRoles().isEmpty()
+				&& params.getOrganisationIdentity() != null) {
+			sb.and().append("(exists (select relOrgMember.key from exportmetadatatoorg as relToOrg")
+			  .append("   inner join relToOrg.organisation relOrg")
+			  .append("   inner join relOrg.group relOrgGroup")
+			  .append("   inner join relOrgGroup.members relOrgMember")
+			  .append("   where relToOrg.metadata.key=exp.key")
+			  .append("   and relOrgMember.role ").in(params.getOrganisationRoles())
+		      .append("   and relOrgMember.identity.key=:rolesIdentityKey")
+			  .append(" )")
+			  .append(" or exp.creator.key=:rolesIdentityKey")
+			  .append(")");
+		}
+		
+		if(params.getReportSubParameters() != null) {
+			CurriculumReportBlocParameters subParams = params.getReportSubParameters();
+			sb.and().append("(");
+			
+			boolean need = false;
+			if(subParams.exclusiveCurriculums() != null && !subParams.exclusiveCurriculums().isEmpty()) {
+				sb.append("(not exists (select relToNotCur.key from exportmetadatatocurriculum as relToNotCur")
+				  .append("   where relToNotCur.metadata.key=exp.key and relToNotCur.curriculum.key not in (:exclusiveCurriculumKeys)")
+				  .append(" )");
+				sb.append(" and exists (select relToCur.key from exportmetadatatocurriculum as relToCur")
+				  .append("   where relToCur.metadata.key=exp.key and relToCur.curriculum.key in (:exclusiveCurriculumKeys)")
+				  .append(" ))");
+				need = true;
+			}
+			
+			if(subParams.exclusiveCurriculumElements() != null && !subParams.exclusiveCurriculumElements().isEmpty()) {
+				if(need) {
+					sb.append(" and ");
+				}
+				sb.append("(not exists (select relToNotCurEl.key from exportmetadatatocurriculumelement as relToNotCurEl")
+				  .append("   where relToNotCurEl.metadata.key=exp.key and relToNotCurEl.curriculumElement.key not in (:exclusiveCurriculumElementKeys)")
+				  .append(" )");
+				sb.append(" and exists (select relToCurEl.key from exportmetadatatocurriculumelement as relToCurEl")
+				  .append("   where relToCurEl.metadata.key=exp.key and relToCurEl.curriculumElement.key in (:exclusiveCurriculumElementKeys)")
+				  .append(" ))");
+				need = true;
+			}
+			
+			if(subParams.identity() != null) {
+				if(need) {
+					sb.append(" or ");
+				}
+				sb.append("(exp.creator.key=:curriculumIdentityKey")
+				  .append(" and not exists (select relToNotCurEl.key from exportmetadatatocurriculumelement as relToNotCurEl")
+				  .append("   where relToNotCurEl.metadata.key=exp.key")
+				  .append(" )")
+				  .append(" and not exists (select relToNotCur.key from exportmetadatatocurriculum as relToNotCur")
+				  .append("   where relToNotCur.metadata.key=exp.key")
+				  .append(" ))");
+			}
+			
+			sb.append(")");
 		}
 
 		TypedQuery<ExportMetadata> query = dbInstance.getCurrentEntityManager()
@@ -211,12 +278,36 @@ public class ExportMetadataDAO {
 		if(params.getOnlyAdministrators() != null) {
 			query.setParameter("onlyAdministrators", params.getOnlyAdministrators());
 		}
-		if(params.getHasAdministrator() != null ) {
-			query.setParameter("identityKey", params.getHasAdministrator().getKey());
-		} else if(params.getHasAuthor() != null) {
-			query.setParameter("identityKey", params.getHasAuthor().getKey());
+		if(params.getHasRepositoryEntryAdministrator() != null ) {
+			query.setParameter("identityKey", params.getHasRepositoryEntryAdministrator().getKey());
+		} else if(params.getHasRepositoryEntryAuthor() != null) {
+			query.setParameter("identityKey", params.getHasRepositoryEntryAuthor().getKey());
 		}
+		
+		if(params.getOrganisationRoles() != null && !params.getOrganisationRoles().isEmpty()
+				&& params.getOrganisationIdentity() != null) {
+			query.setParameter("rolesIdentityKey", params.getOrganisationIdentity().getKey());
+		}
+		
+		if(params.getReportSubParameters() != null) {
+			CurriculumReportBlocParameters subParams = params.getReportSubParameters();
+			if(subParams.exclusiveCurriculums() != null && !subParams.exclusiveCurriculums().isEmpty()) {
+				List<Long> exclusiveCurriculumKeys = subParams.exclusiveCurriculums().stream()
+						.map(Curriculum::getKey)
+						.toList();
+				query.setParameter("exclusiveCurriculumKeys", exclusiveCurriculumKeys);
+			}
+			if(subParams.exclusiveCurriculumElements() != null && !subParams.exclusiveCurriculumElements().isEmpty()) {
+				List<Long> exclusiveCurriculumKeys = subParams.exclusiveCurriculumElements().stream()
+						.map(CurriculumElement::getKey)
+						.toList();
+				query.setParameter("exclusiveCurriculumElementKeys", exclusiveCurriculumKeys);
+			}
+			if(subParams.identity() != null) {
+				query.setParameter("curriculumIdentityKey", subParams.identity().getKey());
+			}
+		}
+		
 		return query.getResultList();
 	}
-
 }

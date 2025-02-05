@@ -29,6 +29,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.export.ArchiveType;
 import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.export.ExportMetadata;
+import org.olat.core.commons.services.export.ExportMetadataToCurriculum;
+import org.olat.core.commons.services.export.ExportMetadataToCurriculumElement;
+import org.olat.core.commons.services.export.ExportMetadataToOrganisation;
 import org.olat.core.commons.services.export.ExportTask;
 import org.olat.core.commons.services.export.model.ExportInfos;
 import org.olat.core.commons.services.export.model.SearchExportMetadataParameters;
@@ -39,6 +42,7 @@ import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -48,6 +52,8 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +76,12 @@ public class ExportManagerImpl implements ExportManager {
 	private TaskExecutorManager taskExecutorManager;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private ExportMetadataToCurriculumDAO exportMetadataToCurriculumDao;
+	@Autowired
+	private ExportMetadataToOrganisationDAO exportMetadataToOrganisationDao;
+	@Autowired
+	private ExportMetadataToCurriculumElementDAO exportMetadataToCurriculumElementDao;
 	
 	@Override
 	public VFSContainer getExportContainer(RepositoryEntry entry, String resSubPath) {
@@ -96,15 +108,81 @@ public class ExportManagerImpl implements ExportManager {
 	public ExportMetadata updateMetadata(ExportMetadata metadata) {
 		return exportMetadataDao.updateMetadata(metadata);
 	}
-	
+
+	@Override
+	public ExportMetadata addMetadataOrganisations(ExportMetadata metadata, List<Organisation> organisations) {
+		Set<ExportMetadataToOrganisation> currentRelations = metadata.getOrganisations();
+		List<Organisation> currentOrganisations = currentRelations.stream()
+				.map(ExportMetadataToOrganisation::getOrganisation)
+				.toList();
+		
+		boolean needMerge = false;
+		for(Organisation organisation:organisations) {
+			if(!currentOrganisations.contains(organisation)) {
+				ExportMetadataToOrganisation rel = exportMetadataToOrganisationDao.createMetadataToOrganisation(metadata, organisation);
+				currentRelations.add(rel);
+				needMerge = true;
+			}
+		}
+		
+		return needMerge ? updateMetadata(metadata) : metadata;
+	}
+
+	@Override
+	public ExportMetadata addMetadataCurriculums(ExportMetadata metadata, List<Curriculum> curriculums) {
+		Set<ExportMetadataToCurriculum> currentRelations = metadata.getCurriculums();
+		List<Curriculum> currentCurriculums = currentRelations.stream()
+				.map(ExportMetadataToCurriculum::getCurriculum)
+				.toList();
+		
+		boolean needMerge = false;
+		for(Curriculum curriculum:curriculums) {
+			if(!currentCurriculums.contains(curriculum)) {
+				ExportMetadataToCurriculum rel = exportMetadataToCurriculumDao.createMetadataToCurriculum(metadata, curriculum);
+				currentRelations.add(rel);
+				needMerge = true;
+			}
+		}
+		
+		return needMerge ? updateMetadata(metadata) : metadata;
+	}
+
+	@Override
+	public ExportMetadata addMetadataCurriculumElements(ExportMetadata metadata, List<CurriculumElement> curriculumElements) {
+		Set<ExportMetadataToCurriculumElement> currentRelations = metadata.getCurriculumElements();
+		List<CurriculumElement> currentCurriculums = currentRelations.stream()
+				.map(ExportMetadataToCurriculumElement::getCurriculumElement)
+				.toList();
+		
+		boolean needMerge = false;
+		for(CurriculumElement curriculumElement:curriculumElements) {
+			if(!currentCurriculums.contains(curriculumElement)) {
+				ExportMetadataToCurriculumElement rel = exportMetadataToCurriculumElementDao.createMetadataToCurriculumElement(metadata, curriculumElement);
+				currentRelations.add(rel);
+				needMerge = true;
+			}
+		}
+		
+		return needMerge ? updateMetadata(metadata) : metadata;
+	}
+
 	@Override
 	public ExportMetadata startExport(ExportTask task, String title, String description, 
 			String filename, ArchiveType type, Date expirationDate, boolean onlyAdministrators,
 			RepositoryEntry entry, String resSubPath, Identity creator) {
-		final OLATResource resource = entry.getOlatResource();
+		final OLATResource resource = entry == null ? null : entry.getOlatResource();
 		return taskExecutorManager.execute(task, creator, resource, resSubPath, null,
 				(id, persistentTask) -> exportMetadataDao.createMetadata(title, description, filename, type,
-						expirationDate, onlyAdministrators, entry, resSubPath, id, persistentTask));
+						expirationDate, onlyAdministrators, entry, resource, resSubPath, id, persistentTask));
+	}
+	
+	@Override
+	public ExportMetadata startExport(ExportTask task, String title, String description, 
+			String filename, ArchiveType type, Date expirationDate, boolean onlyAdministrators,
+			OLATResource resource, String resSubPath, Identity creator) {
+		return taskExecutorManager.execute(task, creator, resource, resSubPath, null,
+				(id, persistentTask) -> exportMetadataDao.createMetadata(title, description, filename, type,
+						expirationDate, onlyAdministrators, null, resource, resSubPath, id, persistentTask));
 	}
 
 	@Override
