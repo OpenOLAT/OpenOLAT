@@ -64,7 +64,7 @@ public class CurriculumElementInfosController extends BasicController implements
 	private final VelocityContainer mainVC;
 	private CurriculumElementInfosHeaderController headerCtrl;
 	private CurriculumElementInfosOutlineController outlineCtrl;
-	private CurriculumElementInfoCoachesController coachesCtrl;
+	private CurriculumElementInfoTaughtByController taughtByCtrl;
 	private OffersController offersCtrl;
 	private CurriculumElementInfosOverviewController overviewCtrl;
 
@@ -76,7 +76,7 @@ public class CurriculumElementInfosController extends BasicController implements
 	private Boolean requirementsOpen = Boolean.TRUE;
 	private Boolean creditsOpen = Boolean.TRUE;
 	private Boolean outlineOpen = Boolean.TRUE;
-	private Boolean coachesOpen = Boolean.TRUE;
+	private Boolean taughtbyOpen = Boolean.TRUE;
 	private Boolean offersOpen = Boolean.TRUE;
 
 	@Autowired
@@ -160,12 +160,12 @@ public class CurriculumElementInfosController extends BasicController implements
 			}
 		}
 		
-		// Coaches
-		coachesCtrl = new CurriculumElementInfoCoachesController(ureq, getWindowControl(), element);
-		listenTo(coachesCtrl);
-		if (!coachesCtrl.isEmpty()) {
-			mainVC.put("coaches", coachesCtrl.getInitialComponent());
-			mainVC.contextPut("coachesOpen", coachesOpen);
+		// Taught by
+		taughtByCtrl = new CurriculumElementInfoTaughtByController(ureq, getWindowControl(), element, lectureBlocks);
+		listenTo(taughtByCtrl);
+		if (!taughtByCtrl.isEmpty()) {
+			mainVC.put("taughtby", taughtByCtrl.getInitialComponent());
+			mainVC.contextPut("taughtbyOpen", taughtbyOpen);
 		}
 		
 		// Offers
@@ -254,10 +254,10 @@ public class CurriculumElementInfosController extends BasicController implements
 				outlineOpen = Boolean.valueOf(outlineOpenVal);
 				mainVC.contextPut("outlineOpen", outlineOpen);
 			}
-			String coachesOpenVal = ureq.getParameter("coachesOpen");
-			if (StringHelper.containsNonWhitespace(coachesOpenVal)) {
-				coachesOpen = Boolean.valueOf(coachesOpenVal);
-				mainVC.contextPut("coachesOpen", coachesOpen);
+			String taughtbyOpenVal = ureq.getParameter("taughtbyOpen");
+			if (StringHelper.containsNonWhitespace(taughtbyOpenVal)) {
+				taughtbyOpen = Boolean.valueOf(taughtbyOpenVal);
+				mainVC.contextPut("taughtbyOpen", taughtbyOpen);
 			}
 			String offersOpenVal = ureq.getParameter("offersOpen");
 			if (StringHelper.containsNonWhitespace(offersOpenVal)) {

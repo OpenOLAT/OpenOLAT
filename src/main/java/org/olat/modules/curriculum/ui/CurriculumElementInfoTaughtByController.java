@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,8 +48,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.TaughtBy;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.user.AboutMeController;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
@@ -68,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class CurriculumElementInfoCoachesController extends BasicController {
+public class CurriculumElementInfoTaughtByController extends BasicController {
 	
 	private final static String CMD_VISITING_CARD = "visiting.card";
 	private final static String CMD_ABOUT_ME = "about.me";
@@ -81,10 +85,12 @@ public class CurriculumElementInfoCoachesController extends BasicController {
 	private AboutMeController aboutMeCtrl;
 	
 	private final String avatarMaperBaseUrl;
-	private final List<CoachRow> coachRows;
+	private final List<TaughtByRow> taughtByRows;
 
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private UserModule userModule;
 	@Autowired
@@ -94,95 +100,115 @@ public class CurriculumElementInfoCoachesController extends BasicController {
 	@Autowired
 	private HomePageConfigManager homePageConfigManager;
 
-	public CurriculumElementInfoCoachesController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement) {
+	public CurriculumElementInfoTaughtByController(UserRequest ureq, WindowControl wControl,
+			CurriculumElement curriculumElement, List<LectureBlock> lectureBlocks) {
 		super(ureq, wControl);
 		avatarMaperBaseUrl = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper(true));
 		
-		mainVC = createVelocityContainer("curriculum_element_coaches");
+		mainVC = createVelocityContainer("curriculum_element_taught_by");
 		putInitialPanel(mainVC);
 		
-		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElementsDescendants(curriculumElement);
-		curriculumElements.add(curriculumElement);
-		SearchMemberParameters searchParams = new SearchMemberParameters(curriculumElements);
-		searchParams.setRoles(List.of(CurriculumRoles.coach));
-		Set<Identity> coaches = curriculumService.getCurriculumElementsMembers(searchParams)
-				.stream()
-				.map(CurriculumMember::getIdentity)
-				.collect(Collectors.toSet());
-		
-		Map<Long, PortraitUser> identityKeyToPortraitUser = userPortraitService.createPortraitUsers(coaches)
+		Set<Identity> taughtBys = loadTaughtBys(curriculumElement, lectureBlocks);
+		Map<Long, PortraitUser> identityKeyToPortraitUser = userPortraitService.createPortraitUsers(taughtBys)
 				.stream()
 				.collect(Collectors.toMap(PortraitUser::getIdentityKey, Function.identity()));
 		
-		coachRows = new ArrayList<>(coaches.size());
-		for (Identity coach : coaches) {
-			CoachRow coachRow = new CoachRow();
-			coachRow.setDisplayName(userManager.getUserDisplayName(coach));
+		taughtByRows = new ArrayList<>(taughtBys.size());
+		for (Identity taughtBy : taughtBys) {
+			TaughtByRow taughtByRow = new TaughtByRow();
+			taughtByRow.setDisplayName(userManager.getUserDisplayName(taughtBy));
 			
-			forgePortrait(coachRow, identityKeyToPortraitUser.get(coach.getKey()));
-			forgeVisitingCardLink(coachRow, coach);
-			forgeLinkedInLink(coachRow, coach);
-			forgeAboutMeLink(coachRow, coach);
+			forgePortrait(taughtByRow, identityKeyToPortraitUser.get(taughtBy.getKey()));
+			forgeVisitingCardLink(taughtByRow, taughtBy);
+			forgeLinkedInLink(taughtByRow, taughtBy);
+			forgeAboutMeLink(taughtByRow, taughtBy);
 			
-			coachRows.add(coachRow);
+			taughtByRows.add(taughtByRow);
 		}
 		Collator collator = Collator.getInstance(getLocale());
-		Collections.sort(coachRows, (r1, r2) -> collator.compare(r1.getDisplayName(), r2.getDisplayName()));
+		Collections.sort(taughtByRows, (r1, r2) -> collator.compare(r1.getDisplayName(), r2.getDisplayName()));
 		
-		mainVC.contextPut("rows", coachRows);
+		mainVC.contextPut("rows", taughtByRows);
+	}
+
+	private Set<Identity> loadTaughtBys(CurriculumElement curriculumElement, List<LectureBlock> lectureBlocks) {
+		Set<Identity> taughtBys = new HashSet<>();
+		
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElementsDescendants(curriculumElement);
+		curriculumElements.add(curriculumElement);
+		List<CurriculumRoles> roles = new ArrayList<>(1);
+		if (curriculumElement.getTaughtBys().contains(TaughtBy.coaches)) {
+			roles.add(CurriculumRoles.coach);
+		}
+		if (curriculumElement.getTaughtBys().contains(TaughtBy.owners)) {
+			roles.add(CurriculumRoles.owner);
+		}
+		if (!roles.isEmpty()) {
+			SearchMemberParameters searchParams = new SearchMemberParameters(curriculumElements);
+			searchParams.setRoles(roles);
+			curriculumService.getCurriculumElementsMembers(searchParams)
+					.stream()
+					.map(CurriculumMember::getIdentity)
+					.forEach(taughtBy -> taughtBys.add(taughtBy));
+		}
+		
+		if (curriculumElement.getTaughtBys().contains(TaughtBy.teachers) && lectureBlocks != null && !lectureBlocks.isEmpty()) {
+			lectureService.getTeachers(lectureBlocks).forEach(taughtBy -> taughtBys.add(taughtBy));
+		}
+		return taughtBys;
 	}
 	
-	private void forgePortrait(CoachRow coachRow, PortraitUser portraitUser) {
+	private void forgePortrait(TaughtByRow taughtByRow, PortraitUser portraitUser) {
 		UserPortraitComponent portraitComp = UserPortraitFactory
 				.createUserPortrait("up_" + portraitUser.getIdentityKey(), mainVC, getLocale(), avatarMaperBaseUrl);
 		portraitComp.setPortraitUser(portraitUser);
 		portraitComp.setDisplayPresence(false);
-		coachRow.setPortraitComp(portraitComp);
+		taughtByRow.setPortraitComp(portraitComp);
 	}
 
-	private void forgeVisitingCardLink(CoachRow coachRow, Identity coach) {
-		Link link = LinkFactory.createCustomLink("vc_" + coach.getKey(), CMD_VISITING_CARD, "infos.coaches.visiting.card", Link.LINK, mainVC, this);
+	private void forgeVisitingCardLink(TaughtByRow taughtByRow, Identity taughtBy) {
+		Link link = LinkFactory.createCustomLink("vc_" + taughtBy.getKey(), CMD_VISITING_CARD, "infos.taughtby.visiting.card", Link.LINK, mainVC, this);
 		link.setElementCssClass("o_nowrap");
 		link.setAriaRole("button");
-		link.setUserObject(coach);
-		link.setUrl(Settings.getServerContextPathURI() + "/url/HomeSite/" + coach.getKey());
-		coachRow.setVisitingCardLink(link);
+		link.setUserObject(taughtBy);
+		link.setUrl(Settings.getServerContextPathURI() + "/url/HomeSite/" + taughtBy.getKey());
+		taughtByRow.setVisitingCardLink(link);
 	}
 	
-	private void forgeLinkedInLink(CoachRow coachRow, Identity coach) {
-		String linkedInUrl = coach.getUser().getProperty(UserConstants.LINKED_IN);
+	private void forgeLinkedInLink(TaughtByRow taughtByRow, Identity taughtBy) {
+		String linkedInUrl = taughtBy.getUser().getProperty(UserConstants.LINKED_IN);
 		if (!StringHelper.containsNonWhitespace(linkedInUrl)) {
 			return;
 		}
 		
-		ExternalLink link = new ExternalLink("li_" + coach.getKey(), linkedInUrl);
-		link.setName(translate("infos.coaches.linkedin"));
+		ExternalLink link = new ExternalLink("li_" + taughtBy.getKey(), linkedInUrl);
+		link.setName(translate("infos.taughtby.linkedin"));
 		link.setUrl(linkedInUrl);
 		link.setTarget("_blank");
 		link.setElementCssClass("o_nowrap");
 		mainVC.put(link.getComponentName(), link);
-		coachRow.setLinkedInLink(link);
+		taughtByRow.setLinkedInLink(link);
 	}
 	
-	private void forgeAboutMeLink(CoachRow coachRow, Identity coach) {
-		if (coachRow.getLinkedInLink() != null || !userModule.isUserAboutMeEnabled()) {
+	private void forgeAboutMeLink(TaughtByRow taughtByRow, Identity taughtBy) {
+		if (taughtByRow.getLinkedInLink() != null || !userModule.isUserAboutMeEnabled()) {
 			return;
 		}
 		
-		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(coach);
+		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(taughtBy);
 		if (homePageConfig == null || !StringHelper.containsNonWhitespace(homePageConfig.getTextAboutMe())) {
 			return;
 		}
 		
-		Link link = LinkFactory.createCustomLink("am_" + coach.getKey(), CMD_ABOUT_ME, "infos.coaches.about.me", Link.LINK, mainVC, this);
+		Link link = LinkFactory.createCustomLink("am_" + taughtBy.getKey(), CMD_ABOUT_ME, "infos.taughtby.about.me", Link.LINK, mainVC, this);
 		link.setElementCssClass("o_nowrap");
 		link.setAriaRole("button");
-		link.setUserObject(coach);
-		coachRow.setAboutMeLink(link);
+		link.setUserObject(taughtBy);
+		taughtByRow.setAboutMeLink(link);
 	}
 
 	public boolean isEmpty() {
-		return coachRows.isEmpty();
+		return taughtByRows.isEmpty();
 	}
 	
 	@Override
@@ -209,35 +235,35 @@ public class CurriculumElementInfoCoachesController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link link) {
-			if (CMD_VISITING_CARD.equals(link.getCommand()) && link.getUserObject() instanceof Identity coach) {
-				doOpenVisitingCard(ureq, coach);
-			} else if (CMD_ABOUT_ME.equals(link.getCommand()) && link.getUserObject() instanceof Identity coach) {
-				doOpenAboutMe(ureq, coach);
+			if (CMD_VISITING_CARD.equals(link.getCommand()) && link.getUserObject() instanceof Identity taughtBy) {
+				doOpenVisitingCard(ureq, taughtBy);
+			} else if (CMD_ABOUT_ME.equals(link.getCommand()) && link.getUserObject() instanceof Identity taughtBy) {
+				doOpenAboutMe(ureq, taughtBy);
 			}
 		}
 	}
 	
-	private void doOpenVisitingCard(UserRequest ureq, Identity coach) {
+	private void doOpenVisitingCard(UserRequest ureq, Identity taughtBy) {
 		if (guardModalController(infoCtrl)) return;
 		
-		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(coach);
-		infoCtrl = new HomePageDisplayController(ureq, getWindowControl(), coach, homePageConfig);
+		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(taughtBy);
+		infoCtrl = new HomePageDisplayController(ureq, getWindowControl(), taughtBy, homePageConfig);
 		infoCtrl.setOnlineStatusVisible(getIdentity() != null); // Hide in web catalog
 		listenTo(infoCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), infoCtrl.getInitialComponent(),
-				true, translate("infos.coaches.visiting.card.title"));
+				true, translate("infos.taughtby.visiting.card.title"));
 		listenTo(cmc);
 		cmc.activate();
 	}
 
-	private void doOpenAboutMe(UserRequest ureq, Identity coach) {
+	private void doOpenAboutMe(UserRequest ureq, Identity taughtBy) {
 		if (guardModalController(aboutMeCtrl)) return;
 		
 		removeAsListenerAndDispose(aboutMeCtrl);
 		removeAsListenerAndDispose(lightboxCtrl);
 		
-		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(coach);
+		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(taughtBy);
 		aboutMeCtrl = new AboutMeController(ureq, getWindowControl(), homePageConfig);
 		listenTo(aboutMeCtrl);
 		
@@ -246,7 +272,7 @@ public class CurriculumElementInfoCoachesController extends BasicController {
 		lightboxCtrl.activate();
 	}
 
-	public static final class CoachRow {
+	public static final class TaughtByRow {
 		
 		private String displayName;
 		private UserPortraitComponent portraitComp;

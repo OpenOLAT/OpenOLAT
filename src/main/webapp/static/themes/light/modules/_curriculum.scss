@@ -920,27 +920,27 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	}
 }
 
-.o_curriculum_element_coaches {
+.o_curriculum_element_taughtbys {
 	display: flex;
 	flex-direction: column;
 	gap: 15px;
 
-	.o_curriculum_element_coach {
+	.o_curriculum_element_taughtby {
 		display: flex;
 		gap: 10px;
 		align-items: center;
 		
-		.o_curriculum_element_coach_info {
+		.o_curriculum_element_taughtby_info {
 			display: flex;
 			flex-direction: column;
 			
-			.o_curriculum_element_coach_name {
+			.o_curriculum_element_taughtby_name {
 				font-size: 120%
 			}
-			.o_curriculum_element_coach_links {
+			.o_curriculum_element_taughtby_links {
 				display: flex;
 				gap: 10px;
-				.o_curriculum_element_coach_delimiter:before {
+				.o_curriculum_element_taughtby_delimiter:before {
 					content: "⸱";
 					color: $link-color;
 				}
