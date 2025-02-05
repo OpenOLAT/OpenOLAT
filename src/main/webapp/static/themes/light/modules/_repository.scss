@@ -171,6 +171,7 @@
     	display: inline-block;
     }
 }
+.o_repo_info_panel.o_lightbox_modal_form:is(.basicLightbox *),  // Hack to keep the background in lightbox
 .o_repo_info_panel {
 	border: 1px solid $o-coursesite-sidecol-border;
 	border-radius: $o-coursesite-sidecol-radius;

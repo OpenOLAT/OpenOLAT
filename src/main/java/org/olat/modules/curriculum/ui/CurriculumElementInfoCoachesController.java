@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -48,6 +49,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.user.AboutMeController;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageDisplayController;
@@ -75,6 +77,8 @@ public class CurriculumElementInfoCoachesController extends BasicController {
 	
 	private CloseableModalController cmc;
 	private HomePageDisplayController infoCtrl;
+	private LightboxController lightboxCtrl;
+	private AboutMeController aboutMeCtrl;
 	
 	private final String avatarMaperBaseUrl;
 	private final List<CoachRow> coachRows;
@@ -185,13 +189,19 @@ public class CurriculumElementInfoCoachesController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
 			cleanUp();
+		} else if (source == lightboxCtrl) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(aboutMeCtrl);
+		removeAsListenerAndDispose(lightboxCtrl);
 		removeAsListenerAndDispose(infoCtrl);
 		removeAsListenerAndDispose(cmc);
+		aboutMeCtrl = null;
+		lightboxCtrl = null;
 		infoCtrl = null;
 		cmc = null;
 	}
@@ -222,7 +232,18 @@ public class CurriculumElementInfoCoachesController extends BasicController {
 	}
 
 	private void doOpenAboutMe(UserRequest ureq, Identity coach) {
-		//
+		if (guardModalController(aboutMeCtrl)) return;
+		
+		removeAsListenerAndDispose(aboutMeCtrl);
+		removeAsListenerAndDispose(lightboxCtrl);
+		
+		HomePageConfig homePageConfig = homePageConfigManager.loadConfigFor(coach);
+		aboutMeCtrl = new AboutMeController(ureq, getWindowControl(), homePageConfig);
+		listenTo(aboutMeCtrl);
+		
+		lightboxCtrl = new LightboxController(ureq, getWindowControl(), aboutMeCtrl);
+		listenTo(lightboxCtrl);
+		lightboxCtrl.activate();
 	}
 
 	public static final class CoachRow {
