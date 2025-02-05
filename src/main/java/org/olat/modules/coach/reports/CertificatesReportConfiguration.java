@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -158,8 +159,12 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 			to = new Date();
 			from = getDurationTimeUnit().toDate(to, - Integer.valueOf(getDuration()));
 		}
-		List<CertificateIdentityConfig> certificates = 
+
+		List<CertificateIdentityConfig> groupCertificates = 
+				certificatesManager.getCertificatesForGroups(identity, userPropertyHandlers, from, to);
+		List<CertificateIdentityConfig> orgCertificates = 
 				certificatesManager.getCertificatesForOrganizations(identity, userPropertyHandlers, from, to);
+		List<CertificateIdentityConfig> certificates = Stream.concat(groupCertificates.stream(), orgCertificates.stream()).toList();
 		
 		certificates.forEach(cert -> {
 			Row row = coursesWorksheet.newRow();
@@ -169,7 +174,11 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 			row.addCell(pos++, cert.getCertificate().getCourseTitle());
 			
 			// ext. ref.
-			row.addCell(pos++, cert.getCertificate().getExternalId());
+			if (cert.getEntry() != null) {
+				row.addCell(pos++, cert.getEntry().getExternalRef());
+			} else {
+				row.addCell(pos++, "");
+			}
 
 			// last name, first name, e-mail
 			for (int i = 0; i < userPropertyHandlers.size(); i++) {

@@ -572,7 +572,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			root.addChild(search);
 		}
 		
-		if (showEducationManagerView || showLineManagerView) {
+		if (coachingSec.isCoach() || showEducationManagerView || showLineManagerView) {
 			GenericTreeNode reports = new GenericTreeNode();
 			reports.setUserObject("Reports");
 			reports.setTitle(translate("reports.menu.title"));

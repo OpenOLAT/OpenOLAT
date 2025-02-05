@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2025-01-13<br>
@@ -34,10 +35,10 @@ import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 public class CertificateIdentityConfig {
 	private Certificate certificate;
 	private Long identityKey;
-	private Long entryKey;
 	private List<String> identityProps;
 	private RepositoryEntryCertificateConfiguration certificateConfig;
 	private Date initialLaunchDate;
+	private RepositoryEntry entry;
 
 	public void setCertificate(Certificate certificate) {
 		this.certificate = certificate;
@@ -53,14 +54,6 @@ public class CertificateIdentityConfig {
 
 	public Long getIdentityKey() {
 		return identityKey;
-	}
-
-	public void setEntryKey(Long entryKey) {
-		this.entryKey = entryKey;
-	}
-
-	public Long getEntryKey() {
-		return entryKey;
 	}
 
 	public void setIdentityProp(int index, String value) {
@@ -102,5 +95,13 @@ public class CertificateIdentityConfig {
 
 	public Date getInitialLaunchDate() {
 		return initialLaunchDate;
+	}
+
+	public void setEntry(RepositoryEntry entry) {
+		this.entry = entry;
+	}
+
+	public RepositoryEntry getEntry() {
+		return entry;
 	}
 }

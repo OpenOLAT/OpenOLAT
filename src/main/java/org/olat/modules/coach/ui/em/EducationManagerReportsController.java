@@ -63,11 +63,9 @@ public class EducationManagerReportsController extends BasicController implement
 	private final TooledStackedPanel stackPanel;
 	
 	private final Link attendanceReportsLink;
-	private final Link certificatesLink;
 	private final Link ordersLink;
 
 	private LecturesListController lecturesListCtrl;
-	private CertificatesController certificatesCtrl;
 	
 	private OrdersController ordersCtrl;
 
@@ -95,10 +93,6 @@ public class EducationManagerReportsController extends BasicController implement
 		segmentView.addSegment(attendanceReportsLink, true);
 		doOpenAttendanceReports(ureq);
 
-		certificatesLink = LinkFactory.createLink("link.certificates", mainVC, this);
-		certificatesLink.setVisible(true);
-		segmentView.addSegment(certificatesLink, false);
-
 		ordersLink = LinkFactory.createLink("link.orders", mainVC, this);
 		ordersLink.setVisible(true);
 		segmentView.addSegment(ordersLink, false);
@@ -122,9 +116,6 @@ public class EducationManagerReportsController extends BasicController implement
 		if ("AttendanceReports".equals(type)) {
 			doOpenAttendanceReports(ureq);
 			segmentView.select(attendanceReportsLink);
-		} else if ("Certificates".equals(type)) {
-			doOpenCertificates(ureq).activate(ureq, entries.subList(1, entries.size()), nextState);
-			segmentView.select(certificatesLink);
 		} else if ("Bookings".equals(type)) {
 			doOpenOrders(ureq);
 			segmentView.select(ordersLink);
@@ -146,19 +137,6 @@ public class EducationManagerReportsController extends BasicController implement
 		mainVC.put("segmentCmp", lecturesListCtrl.getInitialComponent());
 	}
 
-	private Activateable2 doOpenCertificates(UserRequest ureq) {
-		if (certificatesCtrl == null) {
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Certificates"), null);
-			certificatesCtrl = new CertificatesController(ureq, swControl, userPropertyHandlers, PROPS_IDENTIFIER);
-			listenTo(certificatesCtrl);
-		} else {
-			certificatesCtrl.reload();
-		}
-		addToHistory(ureq, certificatesCtrl);
-		mainVC.put("segmentCmp", certificatesCtrl.getInitialComponent());
-		return certificatesCtrl;
-	}
-	
 	private void doOpenOrders(UserRequest ureq) {
 		List<UserOrder> orders = acOrderDAO.getUserBookingsForOrganizations(getIdentity(), OrganisationRoles.educationmanager, userPropertyHandlers);
 		if (ordersCtrl == null) {
@@ -180,8 +158,6 @@ public class EducationManagerReportsController extends BasicController implement
 				Component segmentComponent = mainVC.getComponent(segmentComponentName);
 				if (segmentComponent == attendanceReportsLink) {
 					doOpenAttendanceReports(ureq);
-				} else if (segmentComponent == certificatesLink) {
-					doOpenCertificates(ureq);
 				} else if (segmentComponent == ordersLink) {
 					doOpenOrders(ureq);
 				}

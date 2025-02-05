@@ -181,7 +181,13 @@ public interface CertificatesManager {
 	
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource);
 
-	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Date from, Date to);
+	public List<CertificateIdentityConfig> getCertificatesForGroups(Identity identity, 
+																	List<UserPropertyHandler> userPropertyHandlers, 
+																	Date from, Date to);
+
+	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, 
+																		   List<UserPropertyHandler> userPropertyHandlers, 
+																		   Date from, Date to);
 
 	/**
 	 * Check if certification is allowed and check if a certificate was
