@@ -45,6 +45,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.lecture.ui.LectureBlocksTimelineController;
 import org.olat.repository.ui.author.MediaContainerFilter;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
@@ -86,6 +87,7 @@ public class CurriculumElementInfosController extends BasicController implements
 	private LectureService lectureService;
 	@Autowired
 	private ACService acService;
+	private LectureBlocksTimelineController lectureBlocksCtrl;
 
 	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element, 
 											boolean scrollToOffers, Identity identity) {
@@ -184,6 +186,12 @@ public class CurriculumElementInfosController extends BasicController implements
 		overviewCtrl = new CurriculumElementInfosOverviewController(ureq, getWindowControl(), element, lectureBlocks.size());
 		listenTo(overviewCtrl);
 		mainVC.put("overview", overviewCtrl.getInitialComponent());
+		
+		if (!lectureBlocks.isEmpty()) {
+			lectureBlocksCtrl = new LectureBlocksTimelineController(ureq, getWindowControl(), lectureBlocks, true);
+			listenTo(lectureBlocksCtrl);
+			mainVC.put("lectures", lectureBlocksCtrl.getInitialComponent());
+		}
 		
 		if (scrollToOffers) {
 			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#offers"));

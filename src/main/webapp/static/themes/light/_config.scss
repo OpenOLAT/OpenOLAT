@@ -1075,6 +1075,16 @@ $o-lm-status-active-color							: $o-repo-published-color !default;
 $o-lm-status-done-color								: $o-repo-closed-color !default;
 $o-lm-status-cancelled-color						: $o-repo-trash-color !default;
 
+$o-lm-timeline-rows-gap								: 5px !default;
+$o-lm-timeline-row-bg								: white !default;
+$o-lm-timeline-row-border-radius						: $border-radius-base !default;
+$o-lm-timeline-row-padding							: 15px !default;
+$o-lm-timeline-day-width								: 90px !default;
+$o-lm-timeline-path-width							: 30px !default;
+$o-lm-timeline-path-color							: $o-coursesite-sidecol-border !default;
+$o-lm-timeline-path-stroke-width						: 0.3rem !default;
+$o-lm-timeline-path-top-height						: $o-lm-timeline-row-padding !default;
+
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fefefe !default;
 $o-dialog-window-bar-bg			: #eee !default;

@@ -799,6 +799,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		>div {
 			display: grid;
 			gap: 15px;
+			align-content: start;
 		}
 	}
 }
