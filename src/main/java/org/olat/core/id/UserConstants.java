@@ -60,6 +60,7 @@ public class UserConstants {
 	public static final String ICQ = "icq";
 	/** XING user field identifier. */
 	public static final String XING = "xing";
+	public static final String LINKED_IN = "linkedin";
 	/** INSTITUTIONALUSERIDENTIFIER user field identifier. */
 	public static final String INSTITUTIONALUSERIDENTIFIER = "institutionalUserIdentifier";
 	/** INSTITUTIONALNAME user field identifier. */

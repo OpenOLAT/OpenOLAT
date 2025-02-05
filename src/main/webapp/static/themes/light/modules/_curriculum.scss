@@ -919,6 +919,35 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	}
 }
 
+.o_curriculum_element_coaches {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+
+	.o_curriculum_element_coach {
+		display: flex;
+		gap: 10px;
+		align-items: center;
+		
+		.o_curriculum_element_coach_info {
+			display: flex;
+			flex-direction: column;
+			
+			.o_curriculum_element_coach_name {
+				font-size: 120%
+			}
+			.o_curriculum_element_coach_links {
+				display: flex;
+				gap: 10px;
+				.o_curriculum_element_coach_delimiter:before {
+					content: "⸱";
+					color: $link-color;
+				}
+			}
+		}
+	}
+}
+
 .o_curriculum_element_overview {
 	.o_tag {
 		 display: inline-block;

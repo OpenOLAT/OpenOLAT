@@ -57,6 +57,29 @@ jQuery(function() {
 </script>
 #end
 
+#if($r.available("coaches"))
+<div class="o_curriculum_element_infos_coaches">
+	<fieldset><legend>
+	<h4 onclick="jQuery('#collapse_coaches_${r.getCId()}').collapse('toggle')">
+		<i id="collapse_coaches_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($coachesOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.coaches")
+	</h4>
+	</fieldset></legend>
+	<div id="collapse_coaches_${r.getCId()}" class="collapse #if($coachesOpen) in #end">$r.render("coaches")</div>
+</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_coaches_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_coaches_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.openFfXHREvent(false, false, true), "coachesOpen","false");
+	})
+	jQuery('#collapse_coaches_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_coaches_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.openFfXHREvent(false, false, true), "coachesOpen","true");
+	})
+});
+</script>
+#end
+
 #if($r.isNotEmpty($objectives))
 <div class="o_curriculum_element_infos_objectives">
 	<fieldset><legend>

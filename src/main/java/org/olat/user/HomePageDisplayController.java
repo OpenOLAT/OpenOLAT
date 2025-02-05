@@ -85,11 +85,6 @@ public class HomePageDisplayController extends BasicController {
 	@Autowired
 	private DisplayPortraitManager displayPortraitManager;
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param hpc
-	 */
 	public HomePageDisplayController(UserRequest ureq, WindowControl wControl, Identity homeIdentity, HomePageConfig hpc) {
 		super(ureq, wControl);
 		
@@ -187,6 +182,12 @@ public class HomePageDisplayController extends BasicController {
 				imLink.setIconLeftCSS(css);
 				imLink.setUserObject(buddy);
 			}
+		}
+	}
+	
+	public void setOnlineStatusVisible(boolean visible) {
+		if (imLink != null) {
+			imLink.setVisible(visible);
 		}
 	}
 	

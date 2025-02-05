@@ -63,6 +63,7 @@ public class CurriculumElementInfosController extends BasicController implements
 	private final VelocityContainer mainVC;
 	private CurriculumElementInfosHeaderController headerCtrl;
 	private CurriculumElementInfosOutlineController outlineCtrl;
+	private CurriculumElementInfoCoachesController coachesCtrl;
 	private OffersController offersCtrl;
 	private CurriculumElementInfosOverviewController overviewCtrl;
 
@@ -74,6 +75,7 @@ public class CurriculumElementInfosController extends BasicController implements
 	private Boolean requirementsOpen = Boolean.TRUE;
 	private Boolean creditsOpen = Boolean.TRUE;
 	private Boolean outlineOpen = Boolean.TRUE;
+	private Boolean coachesOpen = Boolean.TRUE;
 	private Boolean offersOpen = Boolean.TRUE;
 
 	@Autowired
@@ -156,6 +158,14 @@ public class CurriculumElementInfosController extends BasicController implements
 			}
 		}
 		
+		// Coaches
+		coachesCtrl = new CurriculumElementInfoCoachesController(ureq, getWindowControl(), element);
+		listenTo(coachesCtrl);
+		if (!coachesCtrl.isEmpty()) {
+			mainVC.put("coaches", coachesCtrl.getInitialComponent());
+			mainVC.contextPut("coachesOpen", coachesOpen);
+		}
+		
 		// Offers
 		AccessResult acResult = acService.isAccessible(element, identity, isMember, false, webPublish, false);
 		if (acResult.isAccessible()) {
@@ -235,6 +245,11 @@ public class CurriculumElementInfosController extends BasicController implements
 			if (StringHelper.containsNonWhitespace(outlineOpenVal)) {
 				outlineOpen = Boolean.valueOf(outlineOpenVal);
 				mainVC.contextPut("outlineOpen", outlineOpen);
+			}
+			String coachesOpenVal = ureq.getParameter("coachesOpen");
+			if (StringHelper.containsNonWhitespace(coachesOpenVal)) {
+				coachesOpen = Boolean.valueOf(coachesOpenVal);
+				mainVC.contextPut("coachesOpen", coachesOpen);
 			}
 			String offersOpenVal = ureq.getParameter("offersOpen");
 			if (StringHelper.containsNonWhitespace(offersOpenVal)) {

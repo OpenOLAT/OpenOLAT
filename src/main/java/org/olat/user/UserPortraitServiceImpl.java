@@ -20,6 +20,7 @@
 package org.olat.user;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -95,7 +96,7 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 	}
 
 	@Override
-	public List<PortraitUser> createPortraitUsers(List<Identity> identities) {
+	public List<PortraitUser> createPortraitUsers(Collection<Identity> identities) {
 		return identities.stream().map(this::createPortraitUser).toList();
 	}
 	

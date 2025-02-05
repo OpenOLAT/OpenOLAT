@@ -1,0 +1,27 @@
+<div class="o_curriculum_element_coaches">
+	#foreach($row in $rows)
+		<div class="o_curriculum_element_coach">
+			<div class="o_curriculum_element_coach_portrait">
+				$r.render($row.getPortraitCompName())
+			</div>
+			<div class="o_curriculum_element_coach_info">
+				<div class="o_curriculum_element_coach_name">
+					$r.escapeHtml($row.getDisplayName())
+				</div>
+				<div class="o_curriculum_element_coach_links">
+					#if($r.available($row.getVisitingCardLinkName()))
+						$r.render($row.getVisitingCardLinkName())
+					#end
+					#if($r.available($row.getLinkedInLinkName()))
+						<span class="o_curriculum_element_coach_delimiter"></span>
+						$r.render($row.getLinkedInLinkName())
+					#end
+					#if($r.available($row.getAboutMeLinkName()))
+						<span class="o_curriculum_element_coach_delimiter"></span>
+						$r.render($row.getAboutMeLinkName())
+					#end
+				</div>
+			</div>
+		</div>
+	#end
+</div>

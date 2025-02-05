@@ -16,7 +16,7 @@
 			#end
 		</div>
 		<table class="table table-condensed table-striped">
-			#if($r.available("im.link"))
+			#if($r.available("im.link") && $r.visible("im.link"))
 			<tr class="o_im_status">
 				<th scope="row">$r.translate("status")</th>
 				<td colspan="3"><div id="o_im_buddy">$r.render("im.link")</div></td>

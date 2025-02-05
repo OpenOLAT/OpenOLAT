@@ -19,6 +19,7 @@
  */
 package org.olat.user;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -39,6 +40,6 @@ public interface UserPortraitService {
 	
 	public PortraitUser createPortraitUser(Identity identity);
 	
-	public List<PortraitUser> createPortraitUsers(List<Identity> identities);
+	public List<PortraitUser> createPortraitUsers(Collection<Identity> identities);
 
 }
