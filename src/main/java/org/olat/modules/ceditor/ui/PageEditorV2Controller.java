@@ -795,6 +795,7 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private void doDrop(UserRequest ureq, DropToEditorEvent dropEvent) {
 		if(editorCmp == null || editorCmp != dropEvent.getTargetComponent()) return;
+		doCloseAllInspectorsEvent(ureq);
 
 		String fragmentCmpId = dropEvent.getSourceComponentId();
 		ContentEditorFragment source = getContentEditorFragmentById(ureq, fragmentCmpId);
@@ -827,6 +828,7 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private void doDrop(UserRequest ureq, DropToPageElementEvent dropEvent) {
 		if(editorCmp == null) return;
+		doCloseAllInspectorsEvent(ureq);
 		
 		String fragmentCmpId = dropEvent.getSourceComponentId();
 		ContentEditorFragment target = dropEvent.getTargetComponent();
@@ -903,7 +905,8 @@ public class PageEditorV2Controller extends BasicController {
 	
 	private void doDropCanceled(UserRequest ureq, DropCanceledEvent dropEvent) {
 		if(editorCmp == null) return;
-
+		doCloseAllInspectorsEvent(ureq);
+		editorCmp.setDirty(true);
 		String fragmentCmpId = dropEvent.getSourceComponentId();
 		ContentEditorFragment source = getContentEditorFragmentById(ureq, fragmentCmpId);
 		if(source == null) {
