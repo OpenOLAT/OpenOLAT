@@ -553,6 +553,7 @@ public class CurriculumElementDAO {
 				inner join fetch el.group bGroup
 				inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)
 				left join fetch curriculum.organisation org
+				left join fetch el.type elementType
 				left join fetch el.parent parentEl
 				where rel.entry.key=:entryKey""";
 		return dbInstance.getCurrentEntityManager()

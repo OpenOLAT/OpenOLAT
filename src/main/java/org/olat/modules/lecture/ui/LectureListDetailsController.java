@@ -204,7 +204,7 @@ public class LectureListDetailsController extends FormBasicController {
 	
 	private void initFormReferencedCourses(FormLayoutContainer formLayout) {
 		if(repositoryEntry == null) {		
-			EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("course.empty", "lecture.course", formLayout);
+			EmptyPanelItem emptyTeachersList = uifactory.addEmptyPanel("course.empty", null, formLayout);
 			emptyTeachersList.setTitle(translate("lecture.no.course.assigned.title"));
 			emptyTeachersList.setIconCssClass("o_icon o_icon-lg o_CourseModule_icon");
 		} else {
