@@ -344,7 +344,9 @@ public class CancelMembershipsController extends FormBasicController implements 
 	}
 	
 	private void doCustomizeNotifications(UserRequest ureq) {
-		MailTemplate template = CurriculumMailing.getMembershipCancelledTemplate(curriculum, selectedCurriculumElement, getIdentity());
+		Map<Long,Price> cancellationFees = getCancellationFees();
+		MailTemplate template = CurriculumMailing.getMembershipCancelledTemplate(curriculum, selectedCurriculumElement,
+				cancellationFees, getIdentity());
 		customizeNotificationsCtrl = new CustomizeNotificationController(ureq, getWindowControl(), template);
 		listenTo(customizeNotificationsCtrl);
 		
@@ -356,7 +358,9 @@ public class CancelMembershipsController extends FormBasicController implements 
 	
 	private void doApplyWithNotification() {
 		MailerResult result = new MailerResult();
-		MailTemplate template = CurriculumMailing.getMembershipCancelledTemplate(curriculum, selectedCurriculumElement, getIdentity());
+		Map<Long,Price> cancellationFees = getCancellationFees();
+		MailTemplate template = CurriculumMailing.getMembershipCancelledTemplate(curriculum, selectedCurriculumElement,
+				cancellationFees, getIdentity());
 		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
 		doCancelMemberships(mailing);
 	}
@@ -365,6 +369,20 @@ public class CancelMembershipsController extends FormBasicController implements 
 		MailerResult result = new MailerResult();
 		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
 		doCancelMemberships(mailing);
+	}
+	
+	private Map<Long,Price> getCancellationFees() {
+		Map<Long,Price> fees = new HashMap<>();
+		
+		List<CancelMembershipRow> rows = tableModel.getObjects();
+		for(CancelMembershipRow row:rows) {
+			Price fee = row.getCancellationFee();
+			if(fee != null) {
+				fees.put(row.getIdentityKey(), fee);
+			}
+		}
+		
+		return fees;
 	}
 	
 	private void doCancelMemberships(MailPackage mailing) {

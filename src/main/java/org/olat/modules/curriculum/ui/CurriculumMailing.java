@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
@@ -50,6 +51,8 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
+import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
 
 /**
@@ -81,7 +84,7 @@ public class CurriculumMailing {
 			case booking, parentBooking, reservation -> getMembershipBookedByAdminTemplate(curriculum, curriculumElement, actor);
 			case active -> getMembershipAcceptedTemplate(curriculum, curriculumElement, actor);
 			case declined -> getMembershipDeclinedTemplate(curriculum, curriculumElement, actor);
-			case cancel, cancelWithFee -> getMembershipCancelledTemplate(curriculum, curriculumElement, actor);
+			case cancel, cancelWithFee -> getMembershipCancelledTemplate(curriculum, curriculumElement, Map.of(), actor);
 			case removed -> getMembershipRemovedTemplate(curriculum, curriculumElement, actor);
 			default -> CurriculumMailing.getMembershipChangedTemplate(curriculum, curriculumElement, actor);
 		};
@@ -151,10 +154,13 @@ public class CurriculumMailing {
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
-	public static MailTemplate getMembershipCancelledTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+	public static MailTemplate getMembershipCancelledTemplate(Curriculum curriculum, CurriculumElement curriculumElement,
+			Map<Long,Price> cancellationFees, Identity actor) {
 		String subjectKey = "notification.mail.member.cancelled.subject";
 		String bodyKey = "notification.mail.member.cancelled.body";
-		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+		CurriculumMailTemplate template = createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+		template.setCancellationFees(cancellationFees);
+		return template;
 	}
 	
 	public static MailTemplate getMembershipRemovedTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
@@ -188,32 +194,9 @@ public class CurriculumMailing {
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
-	private static MailTemplate createMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement,
+	private static CurriculumMailTemplate createMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement,
 			Identity actor, String subjectKey, String bodyKey) {
-		// build learning resources as list of url as string
-		final String curriculumName = curriculum.getDisplayName();
-		final String curriculumDescription = (StringHelper.containsNonWhitespace(curriculum.getDescription())
-				? FilterFactory.getHtmlTagAndDescapingFilter().filter(curriculum.getDescription()) : ""); 
-		final String curriculumUrl = Settings.getServerContextPathURI() + "/url/MyCoursesSite/0/Curriculum/0/Curriculum/" + curriculum.getKey();
-		
-		final String curriculumElementName;
-		final String curriculumElementDescription;
-		final String curriculumElementIdentifier;
-		final String curriculumElementTypeName;
-		if(curriculumElement == null) {
-			curriculumElementName = "";
-			curriculumElementDescription = "";
-			curriculumElementIdentifier = "";
-			curriculumElementTypeName = "";
-		} else {
-			curriculumElementName = curriculumElement.getDisplayName();
-			curriculumElementDescription = (StringHelper.containsNonWhitespace(curriculumElement.getDescription())
-					? FilterFactory.getHtmlTagAndDescapingFilter().filter(curriculumElement.getDescription()) : ""); 
-			curriculumElementIdentifier = curriculumElement.getIdentifier();
-			curriculumElementTypeName = curriculumElement.getType() == null ? null : curriculumElement.getType().getDisplayName();
-		}
-		
-		// get some data about the actor and fetch the translated subject / body via i18n module
+		// Get some data about the actor and fetch the translated subject / body via i18n module
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
 		String[] bodyArgs = new String[] {
 				actor.getUser().getProperty(UserConstants.FIRSTNAME, null),		// 0
@@ -227,54 +210,8 @@ public class CurriculumMailing {
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey, bodyArgs);
 		
-		// create a mail template which all these data
-		return new MailTemplate(subject, body, null) {
-			
-			private static final String LOGIN = "login";
-			private static final String CURRICULUM_NAME = "curriculumName";
-			private static final String CURRICULUM_DESCRIPTION = "curriculumDescription";
-			private static final String CURRICULUM_URL = "curriculumUrl";
-			private static final String CURRICULUM_ELEMENT_NAME = "curriculumElementName";
-			private static final String CURRICULUM_ELEMENT_DESCRIPTION = "curriculumElementDescription";
-			private static final String CURRICULUM_ELEMENT_IDENTIFIER = "curriculumElementIdentifier";
-			private static final String CURRICULUM_ELEMENT_TYPE_NAME = "curriculumElementTypeName";
-			
-			@Override
-			public Collection<String> getVariableNames() {
-				Set<String> variableNames = new HashSet<>();
-				variableNames.addAll(getStandardIdentityVariableNames());
-				variableNames.add(LOGIN);
-				variableNames.add(CURRICULUM_NAME);
-				variableNames.add(CURRICULUM_DESCRIPTION);
-				variableNames.add(CURRICULUM_URL);
-				variableNames.add(CURRICULUM_ELEMENT_NAME);
-				variableNames.add(CURRICULUM_ELEMENT_DESCRIPTION);
-				variableNames.add(CURRICULUM_ELEMENT_IDENTIFIER);
-				variableNames.add(CURRICULUM_ELEMENT_TYPE_NAME);
-				return variableNames;
-			}
-
-			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-				// Put user variables into velocity context
-				fillContextWithStandardIdentityValues(context, identity, locale);
-				if(identity != null) {
-					User user = identity.getUser();
-					context.put(LOGIN, UserManager.getInstance().getUserDisplayEmail(user, locale));
-				}
-				// Put variables from greater context
-				putVariablesInMailContext(context, CURRICULUM_NAME, curriculumName);
-				putVariablesInMailContext(context, CURRICULUM_DESCRIPTION, curriculumDescription);
-				putVariablesInMailContext(context, CURRICULUM_URL, curriculumUrl);
-				
-				putVariablesInMailContext(context, CURRICULUM_ELEMENT_NAME, curriculumElementName);
-				putVariablesInMailContext(context, CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);
-				putVariablesInMailContext(context, CURRICULUM_ELEMENT_IDENTIFIER, curriculumElementIdentifier);
-				putVariablesInMailContext(context, CURRICULUM_ELEMENT_TYPE_NAME, curriculumElementTypeName);
-				// Backwards compatibility
-				putVariablesInMailContext(context, "curriculumTypeName", curriculumElementTypeName);
-			}
-		};
+		// Create a mail template which all these data
+		return new CurriculumMailTemplate(curriculum, curriculumElement, subject, body, locale);
 	}
 	
 	public static void sendEmail(Identity ureqIdentity, Identity identity, Curriculum curriculum, CurriculumElement curriculumElement, MailPackage mailing) {
@@ -300,5 +237,107 @@ public class CurriculumMailing {
 			mailService.sendMessage(bundle);
 		}
 		mailing.appendResult(result);
+	}
+	
+	public static class CurriculumMailTemplate extends MailTemplate {
+		
+		private static final String LOGIN = "login";
+		private static final String CURRICULUM_NAME = "curriculumName";
+		private static final String CURRICULUM_DESCRIPTION = "curriculumDescription";
+		private static final String CURRICULUM_URL = "curriculumUrl";
+		private static final String CURRICULUM_ELEMENT_NAME = "curriculumElementName";
+		private static final String CURRICULUM_ELEMENT_DESCRIPTION = "curriculumElementDescription";
+		private static final String CURRICULUM_ELEMENT_IDENTIFIER = "curriculumElementIdentifier";
+		private static final String CURRICULUM_ELEMENT_TYPE_NAME = "curriculumElementTypeName";
+		private static final String FEE = "fee";
+		
+		private final Locale locale;
+		private final Curriculum curriculum;
+		private final CurriculumElement curriculumElement;
+		
+		private Map<Long,Price> cancellationFees;
+		
+		public CurriculumMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement,
+				String subject, String body, Locale locale) {
+			super(subject, body, null);
+			this.locale = locale;
+			this.curriculum = curriculum;
+			this.curriculumElement = curriculumElement;
+		}
+		
+		public Map<Long, Price> getCancellationFees() {
+			return cancellationFees;
+		}
+
+		public void setCancellationFees(Map<Long, Price> cancellationFees) {
+			this.cancellationFees = cancellationFees;
+		}
+
+		@Override
+		public Collection<String> getVariableNames() {
+			Set<String> variableNames = new HashSet<>();
+			variableNames.addAll(getStandardIdentityVariableNames());
+			variableNames.add(LOGIN);
+			variableNames.add(CURRICULUM_NAME);
+			variableNames.add(CURRICULUM_DESCRIPTION);
+			variableNames.add(CURRICULUM_URL);
+			variableNames.add(CURRICULUM_ELEMENT_NAME);
+			variableNames.add(CURRICULUM_ELEMENT_DESCRIPTION);
+			variableNames.add(CURRICULUM_ELEMENT_IDENTIFIER);
+			variableNames.add(CURRICULUM_ELEMENT_TYPE_NAME);
+			variableNames.add(FEE);
+			return variableNames;
+		}
+
+		@Override
+		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			// build learning resources as list of url as string
+			final String curriculumName = curriculum.getDisplayName();
+			final String curriculumDescription = (StringHelper.containsNonWhitespace(curriculum.getDescription())
+					? FilterFactory.getHtmlTagAndDescapingFilter().filter(curriculum.getDescription()) : ""); 
+			final String curriculumUrl = Settings.getServerContextPathURI() + "/url/MyCoursesSite/0/Curriculum/0/Curriculum/" + curriculum.getKey();
+			
+			final String curriculumElementName;
+			final String curriculumElementDescription;
+			final String curriculumElementIdentifier;
+			final String curriculumElementTypeName;
+			if(curriculumElement == null) {
+				curriculumElementName = "";
+				curriculumElementDescription = "";
+				curriculumElementIdentifier = "";
+				curriculumElementTypeName = "";
+			} else {
+				curriculumElementName = curriculumElement.getDisplayName();
+				curriculumElementDescription = (StringHelper.containsNonWhitespace(curriculumElement.getDescription())
+						? FilterFactory.getHtmlTagAndDescapingFilter().filter(curriculumElement.getDescription()) : ""); 
+				curriculumElementIdentifier = curriculumElement.getIdentifier();
+				curriculumElementTypeName = curriculumElement.getType() == null ? null : curriculumElement.getType().getDisplayName();
+			}
+			
+			// Put user variables into velocity context
+			fillContextWithStandardIdentityValues(context, identity, locale);
+			if(identity != null) {
+				User user = identity.getUser();
+				context.put(LOGIN, UserManager.getInstance().getUserDisplayEmail(user, locale));
+			}
+			// Put variables from greater context
+			putVariablesInMailContext(context, CURRICULUM_NAME, curriculumName);
+			putVariablesInMailContext(context, CURRICULUM_DESCRIPTION, curriculumDescription);
+			putVariablesInMailContext(context, CURRICULUM_URL, curriculumUrl);
+			
+			putVariablesInMailContext(context, CURRICULUM_ELEMENT_NAME, curriculumElementName);
+			putVariablesInMailContext(context, CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);
+			putVariablesInMailContext(context, CURRICULUM_ELEMENT_IDENTIFIER, curriculumElementIdentifier);
+			putVariablesInMailContext(context, CURRICULUM_ELEMENT_TYPE_NAME, curriculumElementTypeName);
+			// Backwards compatibility
+			putVariablesInMailContext(context, "curriculumTypeName", curriculumElementTypeName);
+			
+			if(identity != null && cancellationFees != null
+					&& cancellationFees.containsKey(identity.getKey())) {
+				Price fee = cancellationFees.get(identity.getKey());
+				String feeStr = PriceFormat.fullFormat(fee);
+				putVariablesInMailContext(context, FEE, feeStr);
+			}
+		}
 	}
 }
