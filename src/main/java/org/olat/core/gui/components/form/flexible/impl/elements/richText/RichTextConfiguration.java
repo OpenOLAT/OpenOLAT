@@ -1289,7 +1289,7 @@ public class RichTextConfiguration implements Disposable {
 		}
 
 		sb.append("  o_info.mediaServerMode = 'configure';\n");
-		sb.append("  o_info.mediaServerRestrictedWarning = '").append(translator.translate("error.media.restricted")).append("';\n");
+		sb.append("  o_info.mediaServerRestrictedWarning = '").appendHtmlAttributeEscaped(translator.translate("error.media.restricted")).append("';\n");
 		sb.append("  o_info.mediaServers = [").append(mediaServerModule.getMediaServerUrlsString()).append("];\n");
 	}
 }
