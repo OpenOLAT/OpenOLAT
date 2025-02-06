@@ -344,7 +344,7 @@ public class CancelMembershipsController extends FormBasicController implements 
 	}
 	
 	private void doCustomizeNotifications(UserRequest ureq) {
-		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		MailTemplate template = CurriculumMailing.getMembershipCancelledTemplate(curriculum, selectedCurriculumElement, getIdentity());
 		customizeNotificationsCtrl = new CustomizeNotificationController(ureq, getWindowControl(), template);
 		listenTo(customizeNotificationsCtrl);
 		
@@ -356,7 +356,7 @@ public class CancelMembershipsController extends FormBasicController implements 
 	
 	private void doApplyWithNotification() {
 		MailerResult result = new MailerResult();
-		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		MailTemplate template = CurriculumMailing.getMembershipCancelledTemplate(curriculum, selectedCurriculumElement, getIdentity());
 		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
 		doCancelMemberships(mailing);
 	}

@@ -61,19 +61,21 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 		final List<Identity> identities = membersContext.getSelectedIdentities();
 		AccessInfos offer = membersContext.getSelectedOffer();
+		
+		MailerResult result = new MailerResult();
+		MailTemplate template = membersContext.getMailTemplate();
+		MailPackage mailPackage = new MailPackage(template, result, (MailContext)null, template != null);
+		
 		if(offer != null) {
 			for(Identity identity:identities) {
 				OrderAdditionalInfos orderInfos = membersContext.createOrderInfos();
-				acService.accessResource(identity, offer.offerAccess(), OrderStatus.PREPAYMENT, orderInfos, ureq.getIdentity());
+				acService.accessResource(identity, offer.offerAccess(), OrderStatus.PREPAYMENT, orderInfos, mailPackage, ureq.getIdentity());
 			}
 		} else {
 			List<MembershipModification> modifications = membersContext.getModifications();
 			List<CurriculumElement> curriculumElements = membersContext.getAllCurriculumElements();
 			List<CurriculumElementMembershipChange> changes = applyModification(identities, curriculumElements, modifications);
 			if(!changes.isEmpty()) {
-				MailerResult result = new MailerResult();
-				MailTemplate template = membersContext.getMailTemplate();
-				MailPackage mailPackage = new MailPackage(template, result, (MailContext)null, template != null);
 				curriculumService.updateCurriculumElementMemberships(ureq.getIdentity(), ureq.getUserSession().getRoles(), changes, mailPackage);
 			}
 		}

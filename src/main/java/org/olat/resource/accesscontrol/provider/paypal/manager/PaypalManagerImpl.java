@@ -38,6 +38,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessTransaction;
@@ -459,7 +460,8 @@ public class PaypalManagerImpl  implements PaypalManager {
 					AccessTransaction transaction = transactionManager.createTransaction(order, part, method);
 					transaction = transactionManager.save(transaction);
 					for(OrderLine line:part.getOrderLines()) {
-						if(acService.allowAccesToResource(identity, line.getOffer(), method, identity)) {
+						MailPackage mailing = new MailPackage(line.getOffer().isConfirmationEmail());
+						if(acService.allowAccesToResource(identity, line.getOffer(), method, mailing, identity)) {
 							log.info(Tracing.M_AUDIT, "Paypal payed access granted for: {} to {}", buildLogMessage(line, method), identity);
 							transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 						} else {

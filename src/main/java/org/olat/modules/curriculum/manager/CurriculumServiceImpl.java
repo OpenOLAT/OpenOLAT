@@ -996,9 +996,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		for(CurriculumElementMembershipChange additionToNotifiy:changesToNotifiy.values()) {
 			CurriculumElement curriculumElement = additionToNotifiy.getCurriculumElement();
 			Curriculum curriculum = curriculumElement.getCurriculum();
+			
+			MailPackage mailingWithTemplate = mailing;
+			if(mailingWithTemplate.getTemplate() == null) {
+				MailTemplate template = CurriculumMailing.findBestMailTemplate(additionToNotifiy, doer);
+				mailingWithTemplate = mailingWithTemplate.copyWithTemplate(template);
+			}
 			CurriculumMailing.sendEmail(doer, additionToNotifiy.getMember(), curriculum, curriculumElement, mailing);
 		}
 	}
+	
+
 	
 	private void updateCurriculumElementMembership(CurriculumElementMembershipChange changes, Identity actor) {
 		final CurriculumElement element = changes.getCurriculumElement();

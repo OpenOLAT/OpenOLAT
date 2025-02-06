@@ -470,7 +470,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// Book the curriculum
-		AccessResult result = acService.accessResource(id, offerAccess, OrderStatus.PREPAYMENT, null, doer);
+		AccessResult result = acService.accessResource(id, offerAccess, OrderStatus.PREPAYMENT, null, null, doer);
 		Assert.assertTrue(result.isAccessible());
 		dbInstance.commitAndCloseSession();
 		

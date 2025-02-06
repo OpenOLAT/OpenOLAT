@@ -303,7 +303,7 @@ public class RemoveMembershipsController extends FormBasicController implements 
 	}
 	
 	private void doCustomizeNotifications(UserRequest ureq) {
-		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		MailTemplate template = CurriculumMailing.getMembershipRemovedTemplate(curriculum, selectedCurriculumElement, getIdentity());
 		customizeNotificationsCtrl = new CustomizeNotificationController(ureq, getWindowControl(), template);
 		listenTo(customizeNotificationsCtrl);
 		
@@ -321,7 +321,7 @@ public class RemoveMembershipsController extends FormBasicController implements 
 	
 	private void doRemoveWithNotification(UserRequest ureq) {
 		MailerResult result = new MailerResult();
-		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		MailTemplate template = CurriculumMailing.getMembershipRemovedTemplate(curriculum, selectedCurriculumElement, getIdentity());
 		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
 		doRemove(ureq, mailing);
 	}

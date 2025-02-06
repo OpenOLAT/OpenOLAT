@@ -22,10 +22,12 @@ package org.olat.modules.curriculum.ui;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -46,6 +48,8 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.user.UserManager;
 
 /**
@@ -65,6 +69,103 @@ public class CurriculumMailing {
 	public static MailTemplate getStatusCancelledMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
 		String subjectKey = "notification.mail.status.cancelled.subject";
 		String bodyKey = "notification.mail.status.cancelled.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	public static MailTemplate getMembershipByStatusTemplate(GroupMembershipStatus nextStatus,
+			Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		if(nextStatus == null) {
+			return CurriculumMailing.getMembershipChangedTemplate(curriculum, curriculumElement, actor);
+		}
+		return switch(nextStatus) {
+			case booking, parentBooking, reservation -> getMembershipBookedByAdminTemplate(curriculum, curriculumElement, actor);
+			case active -> getMembershipAcceptedTemplate(curriculum, curriculumElement, actor);
+			case declined -> getMembershipDeclinedTemplate(curriculum, curriculumElement, actor);
+			case cancel, cancelWithFee -> getMembershipCancelledTemplate(curriculum, curriculumElement, actor);
+			case removed -> getMembershipRemovedTemplate(curriculum, curriculumElement, actor);
+			default -> CurriculumMailing.getMembershipChangedTemplate(curriculum, curriculumElement, actor);
+		};
+	}
+
+	public static MailTemplate findBestMailTemplate(List<CurriculumElementMembershipChange> changes, Identity doer) {
+		if(changes == null || changes.isEmpty()) return null;
+		
+		if(changes.size() == 1) {
+			return findBestMailTemplate(changes.get(0), doer);
+		}
+		
+		Set<GroupMembershipStatus> nextStatus = new HashSet<>();
+		Set<CurriculumElement> curriculumElements = new HashSet<>();
+		for(CurriculumElementMembershipChange change:changes) {
+			nextStatus.addAll(change.getNextStatusList());
+			curriculumElements.add(change.getCurriculumElement());
+		}
+		
+		CurriculumElementMembershipChange firstChange = changes.get(0);
+		Curriculum curriculum = firstChange.getCurriculumElement().getCurriculum();
+		CurriculumElement curriculumElement = curriculumElements.size() == 1
+				? curriculumElements.iterator().next()
+				: null;
+		if(nextStatus.size() == 1) {
+			return getMembershipByStatusTemplate(nextStatus.iterator().next(), curriculum, curriculumElement, doer);
+		}
+
+		return getMembershipChangedTemplate(curriculum, curriculumElement, doer);
+	}
+	
+	public static MailTemplate findBestMailTemplate(CurriculumElementMembershipChange change, Identity doer) {
+		CurriculumElement curriculumElement = change.getCurriculumElement();
+		Curriculum curriculum = curriculumElement.getCurriculum();
+		
+		GroupMembershipStatus nextStatus = change.getNextStatus(CurriculumRoles.participant);
+		if(nextStatus != null) {
+			if(nextStatus == GroupMembershipStatus.reservation && change.getMember().equals(doer)) {
+				return getMembershipBookedByParticipantTemplate(curriculum, curriculumElement, doer);
+			}
+			return getMembershipByStatusTemplate(nextStatus, curriculum, curriculumElement, doer);
+		}
+		return null;
+	}
+	
+	public static MailTemplate getMembershipBookedByAdminTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.booked.by.admin.subject";
+		String bodyKey = "notification.mail.member.booked.by.admin.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	public static MailTemplate getMembershipBookedByParticipantTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.booked.by.participant.subject";
+		String bodyKey = "notification.mail.member.booked.by.participant.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	public static MailTemplate getMembershipAcceptedTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.accepted.subject";
+		String bodyKey = "notification.mail.member.accepted.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	public static MailTemplate getMembershipDeclinedTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.declined.subject";
+		String bodyKey = "notification.mail.member.declined.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	public static MailTemplate getMembershipCancelledTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.cancelled.subject";
+		String bodyKey = "notification.mail.member.cancelled.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	public static MailTemplate getMembershipRemovedTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.removed.subject";
+		String bodyKey = "notification.mail.member.removed.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	public static MailTemplate getMembershipChangedTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.changed.subject";
+		String bodyKey = "notification.mail.member.changed.body";
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 
@@ -98,18 +199,18 @@ public class CurriculumMailing {
 		final String curriculumElementName;
 		final String curriculumElementDescription;
 		final String curriculumElementIdentifier;
-		final String curriculumTypeName;
+		final String curriculumElementTypeName;
 		if(curriculumElement == null) {
 			curriculumElementName = "";
 			curriculumElementDescription = "";
 			curriculumElementIdentifier = "";
-			curriculumTypeName = "";
+			curriculumElementTypeName = "";
 		} else {
 			curriculumElementName = curriculumElement.getDisplayName();
 			curriculumElementDescription = (StringHelper.containsNonWhitespace(curriculumElement.getDescription())
 					? FilterFactory.getHtmlTagAndDescapingFilter().filter(curriculumElement.getDescription()) : ""); 
 			curriculumElementIdentifier = curriculumElement.getIdentifier();
-			curriculumTypeName = curriculumElement.getType() == null ? null : curriculumElement.getType().getDisplayName();
+			curriculumElementTypeName = curriculumElement.getType() == null ? null : curriculumElement.getType().getDisplayName();
 		}
 		
 		// get some data about the actor and fetch the translated subject / body via i18n module
@@ -118,7 +219,7 @@ public class CurriculumMailing {
 				actor.getUser().getProperty(UserConstants.FIRSTNAME, null),		// 0
 				actor.getUser().getProperty(UserConstants.LASTNAME, null),		// 1
 				UserManager.getInstance().getUserDisplayEmail(actor, locale),	// 2
-				UserManager.getInstance().getUserDisplayEmail(actor, locale),	// 3 (2x for compatibility with old i18m properties)
+				UserManager.getInstance().getUserDisplayEmail(actor, locale),	// 3 (2x for compatibility with old i18n properties)
 				Formatter.getInstance(locale).formatDate(new Date())			// 4
 			};
 		
@@ -136,7 +237,7 @@ public class CurriculumMailing {
 			private static final String CURRICULUM_ELEMENT_NAME = "curriculumElementName";
 			private static final String CURRICULUM_ELEMENT_DESCRIPTION = "curriculumElementDescription";
 			private static final String CURRICULUM_ELEMENT_IDENTIFIER = "curriculumElementIdentifier";
-			private static final String CURRICULUM_TYPE_NAME = "curriculumTypeName";
+			private static final String CURRICULUM_ELEMENT_TYPE_NAME = "curriculumElementTypeName";
 			
 			@Override
 			public Collection<String> getVariableNames() {
@@ -149,7 +250,7 @@ public class CurriculumMailing {
 				variableNames.add(CURRICULUM_ELEMENT_NAME);
 				variableNames.add(CURRICULUM_ELEMENT_DESCRIPTION);
 				variableNames.add(CURRICULUM_ELEMENT_IDENTIFIER);
-				variableNames.add(CURRICULUM_TYPE_NAME);
+				variableNames.add(CURRICULUM_ELEMENT_TYPE_NAME);
 				return variableNames;
 			}
 
@@ -169,8 +270,9 @@ public class CurriculumMailing {
 				putVariablesInMailContext(context, CURRICULUM_ELEMENT_NAME, curriculumElementName);
 				putVariablesInMailContext(context, CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);
 				putVariablesInMailContext(context, CURRICULUM_ELEMENT_IDENTIFIER, curriculumElementIdentifier);
-				
-				putVariablesInMailContext(context, CURRICULUM_TYPE_NAME, curriculumTypeName);
+				putVariablesInMailContext(context, CURRICULUM_ELEMENT_TYPE_NAME, curriculumElementTypeName);
+				// Backwards compatibility
+				putVariablesInMailContext(context, "curriculumTypeName", curriculumElementTypeName);
 			}
 		};
 	}

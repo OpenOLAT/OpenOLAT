@@ -555,11 +555,19 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 	@Override
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument, Identity doer) {
-		return accessResource(identity, link, OrderStatus.PAYED, argument, doer);
+		if(link == null || link.getOffer() == null || link.getMethod() == null) {
+			log.info(Tracing.M_AUDIT, "Access refused (no offer) to: {} for {}", link, identity);
+			return new AccessResult(false);
+		}
+		
+		MailPackage mailing = new MailPackage(link.getOffer().isConfirmationEmail());
+		return accessResource(identity, link, OrderStatus.PAYED, argument, mailing, doer);
 	}
 
 	@Override
-	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus, Object argument, Identity doer) {
+	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus,
+			Object argument, MailPackage mailing, Identity doer) {
+		
 		if(link == null || link.getOffer() == null || link.getMethod() == null) {
 			log.info(Tracing.M_AUDIT, "Access refused (no offer) to: {} for {}", link, identity);
 			return new AccessResult(false);
@@ -572,7 +580,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 
 		if(handler.checkArgument(link, argument)) {
-			if(allowAccesToResource(identity, link.getOffer(), link.getMethod(), doer)) {
+			if(allowAccesToResource(identity, link.getOffer(), link.getMethod(), mailing, doer)) {
 				String purchaseOrderNumber = (argument instanceof OrderAdditionalInfos infos) ? infos.purchaseOrderNumber() : null;
 				String comment = (argument instanceof OrderAdditionalInfos infos) ? infos.comment() : null;
 				BillingAddress billingAddress = (argument instanceof OrderAdditionalInfos infos) ? infos.billingAddress() : null;
@@ -808,7 +816,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method, Identity doer) {
+	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method, MailPackage mailing, Identity doer) {
 		//check if offer is ok: key is stupid but further check as date, validity...
 		if(offer.getKey() == null) {
 			return false;
@@ -828,7 +836,6 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		if("BusinessGroup".equals(resourceType)) {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
-				MailPackage mailing = new MailPackage(offer.isConfirmationEmail());
 				EnrollState result = businessGroupService.enroll(doer, null, identity, group, mailing);
 				return !result.isFailed();
 			}
@@ -840,7 +847,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				if (!isParticipant) {
 					List<CurriculumElementMembershipChange> changes = List.of(CurriculumElementMembershipChange
 							.addMembership(identity, curriculumElement, true, CurriculumRoles.participant));
-					curriculumService.updateCurriculumElementMemberships(doer, null, changes, null);
+					curriculumService.updateCurriculumElementMemberships(doer, null, changes, mailing);
 					return true;
 				}
 			}
@@ -853,8 +860,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 					groupMembershipHistoryDao.createMembershipHistory(group, identity,
 							GroupRoles.participant.name(), GroupMembershipStatus.active, false, null, null,
 							doer, null);
-					if(offer.isConfirmationEmail()) {
-						MailPackage mailing = new MailPackage(offer.isConfirmationEmail());
+					if(mailing != null && mailing.isSendEmail()) {
 						RepositoryMailing.sendEmail(doer, identity, entry, RepositoryMailing.Type.addParticipantItself, mailing);
 					}
 				}

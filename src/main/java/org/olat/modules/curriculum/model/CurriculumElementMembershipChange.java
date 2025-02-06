@@ -90,6 +90,10 @@ public class CurriculumElementMembershipChange extends Event {
 		return member;
 	}
 	
+	public List<GroupMembershipStatus> getNextStatusList() {
+		return new ArrayList<>(modifications.values());
+	}
+	
 	public GroupMembershipStatus getNextStatus(CurriculumRoles role) {
 		return modifications.get(role);
 	}

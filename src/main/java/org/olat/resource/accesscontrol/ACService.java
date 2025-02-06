@@ -190,9 +190,11 @@ public interface ACService {
 
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument, Identity doer);
 	
-	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus, Object argument, Identity doer);
+	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus,
+			Object argument, MailPackage mailing, Identity doer);
 
-	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method, Identity doer);
+	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method,
+			MailPackage mailing, Identity doer);
 
 	public boolean denyAccesToResource(Identity identity, Offer offer);
 	

@@ -296,7 +296,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	}
 	
 	private void doCustomizeNotifications(UserRequest ureq) {
-		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		MailTemplate template = CurriculumMailing.getMembershipByStatusTemplate(nextStatus, curriculum, selectedCurriculumElement, getIdentity());
 		customizeNotificationsCtrl = new CustomizeNotificationController(ureq, getWindowControl(), template);
 		listenTo(customizeNotificationsCtrl);
 		
@@ -308,7 +308,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 	
 	private void doApplyWithNotification(UserRequest ureq) {
 		MailerResult result = new MailerResult();
-		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		MailTemplate template = CurriculumMailing.getMembershipByStatusTemplate(nextStatus, curriculum, selectedCurriculumElement, getIdentity());
 		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
 		doApply(ureq, mailing);
 	}

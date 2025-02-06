@@ -31,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessTransaction;
@@ -378,7 +379,8 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 	
 	private void allowAccessToResource(Identity identity, OrderPart part, AccessTransaction transaction, PaypalCheckoutAccessMethod method) {
 		for(OrderLine line:part.getOrderLines()) {
-			if(acService.allowAccesToResource(identity, line.getOffer(), method, identity)) {
+			MailPackage mailing = new MailPackage(line.getOffer().isConfirmationEmail());
+			if(acService.allowAccesToResource(identity, line.getOffer(), method, mailing, identity)) {
 				log.info(Tracing.M_AUDIT, "Paypal Checkout payed access granted for: {} to {}", buildLogMessage(line, method), identity);
 				transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 			} else {

@@ -470,7 +470,7 @@ public class EditMemberController extends FormBasicController {
 	}
 	
 	private void doCustomizeNotifications(UserRequest ureq) {
-		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		MailTemplate template = findBestTemplate();
 		customizeNotificationsCtrl = new CustomizeNotificationController(ureq, getWindowControl(), template);
 		listenTo(customizeNotificationsCtrl);
 		
@@ -496,12 +496,26 @@ public class EditMemberController extends FormBasicController {
 	
 	private void doApplyWithNotifications(UserRequest ureq) {
 		MailerResult result = new MailerResult();
-		MailTemplate template = CurriculumMailing.getDefaultMailTemplate(curriculum, null, getIdentity());
+		MailTemplate template = findBestTemplate();
 		MailPackage mailing = new MailPackage(template, result, (MailContext)null, template != null);
 		doApply(ureq, mailing);
 	}
+	
+	private MailTemplate findBestTemplate() {
+		List<CurriculumElementMembershipChange> changes = collectChanges();
+		return CurriculumMailing.findBestMailTemplate(changes, member);
+	}
 
 	private void doApply(UserRequest ureq, MailPackage mailPackage) {
+		List<CurriculumElementMembershipChange> changes = collectChanges();
+		curriculumService.updateCurriculumElementMemberships(member, ureq.getUserSession().getRoles(), changes, mailPackage);
+		
+		loadModel();
+		fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, Event.CLOSE_EVENT);
+	}
+	
+	private List<CurriculumElementMembershipChange> collectChanges() {
 		List<EditMemberCurriculumElementRow> rows = tableModel.getObjects();
 		List<MembershipModification> allModifications = new ArrayList<>();
 		for(EditMemberCurriculumElementRow row:rows) {
@@ -512,12 +526,7 @@ public class EditMemberController extends FormBasicController {
 		for(MembershipModification modification:allModifications) {
 			changes.add(getModification(modification));
 		}
-		
-		curriculumService.updateCurriculumElementMemberships(member, ureq.getUserSession().getRoles(), changes, mailPackage);
-		
-		loadModel();
-		fireEvent(ureq, Event.CHANGED_EVENT);
-		fireEvent(ureq, Event.CLOSE_EVENT);
+		return changes;
 	}
 	
 	private CurriculumElementMembershipChange getModification(MembershipModification modification) {

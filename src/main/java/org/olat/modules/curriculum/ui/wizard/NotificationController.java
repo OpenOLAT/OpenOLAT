@@ -19,6 +19,9 @@
  */
 package org.olat.modules.curriculum.ui.wizard;
 
+import java.util.List;
+
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -34,6 +37,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
+import org.olat.modules.curriculum.ui.member.MembershipModification;
 
 /**
  * 
@@ -54,12 +58,31 @@ public class NotificationController extends StepFormBasicController {
 		this.membersContext = membersContext;
 		
 		boolean mandatoryEmail = false;
-		CurriculumElement curriculumElement = membersContext.getCurriculumElement();
-		Curriculum curriculum = curriculumElement.getCurriculum();
-		mailTemplate = CurriculumMailing.getDefaultMailTemplate(curriculum, curriculumElement, getIdentity());
+		mailTemplate = findBestMailTemplate(membersContext);
 		mailTemplateForm = new BGMailTemplateController(ureq, wControl, mailTemplate, false, true, false, mandatoryEmail, rootForm);
 		
 		initForm(ureq);
+	}
+	
+	private MailTemplate findBestMailTemplate(MembersContext context) {
+		CurriculumElement curriculumElement = context.getCurriculumElement();
+		Curriculum curriculum = curriculumElement.getCurriculum();
+		
+		GroupMembershipStatus nextStatus = null;
+		List<MembershipModification> modifications = membersContext.getModifications();
+		if(modifications != null && !modifications.isEmpty()) {
+			nextStatus = modifications.get(0).nextStatus();
+		}
+		
+		MailTemplate template = null;
+		if(nextStatus == GroupMembershipStatus.active) {
+			template = CurriculumMailing.getMembershipAcceptedTemplate(curriculum, curriculumElement, getIdentity());
+		} else if(context.getSelectedOffer() != null || nextStatus == GroupMembershipStatus.reservation) {
+			template = CurriculumMailing.getMembershipBookedByAdminTemplate(curriculum, curriculumElement, getIdentity());
+		} else {
+			template = CurriculumMailing.getMembershipAcceptedTemplate(curriculum, curriculumElement, getIdentity());
+		}
+		return template;
 	}
 
 	@Override

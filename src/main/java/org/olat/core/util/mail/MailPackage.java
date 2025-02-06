@@ -62,13 +62,20 @@ public class MailPackage {
 	}
 	
 	public MailPackage(MailTemplate template, MailerResult result, MailContext context, boolean sendMail) {
+		this(template, result, context, sendMail, UUID.randomUUID().toString());
+	}
+	
+	private MailPackage(MailTemplate template, MailerResult result, MailContext context, boolean sendMail, String uuid) {
 		this.sendEmail = sendMail;
 		this.template = template;
 		this.context = context;
 		this.result = result;
-		this.uuid = UUID.randomUUID().toString();
-	} 
-
+		this.uuid = uuid;
+	}
+	
+	public MailPackage copyWithTemplate(MailTemplate newTemplate) {
+		return new MailPackage(newTemplate, result, context, sendEmail, uuid);
+	}
 
 	/**
 	 * Default is true, you want to send mails. But in rare case, this flag
