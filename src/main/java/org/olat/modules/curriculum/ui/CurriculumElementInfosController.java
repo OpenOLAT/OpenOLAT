@@ -161,11 +161,13 @@ public class CurriculumElementInfosController extends BasicController implements
 		}
 		
 		// Taught by
-		taughtByCtrl = new CurriculumElementInfoTaughtByController(ureq, getWindowControl(), element, lectureBlocks);
-		listenTo(taughtByCtrl);
-		if (!taughtByCtrl.isEmpty()) {
-			mainVC.put("taughtby", taughtByCtrl.getInitialComponent());
-			mainVC.contextPut("taughtbyOpen", taughtbyOpen);
+		if (!element.getTaughtBys().isEmpty()) {
+			taughtByCtrl = new CurriculumElementInfoTaughtByController(ureq, getWindowControl(), element, lectureBlocks);
+			listenTo(taughtByCtrl);
+			if (!taughtByCtrl.isEmpty()) {
+				mainVC.put("taughtby", taughtByCtrl.getInitialComponent());
+				mainVC.contextPut("taughtbyOpen", taughtbyOpen);
+			}
 		}
 		
 		// Offers
@@ -187,7 +189,7 @@ public class CurriculumElementInfosController extends BasicController implements
 		listenTo(overviewCtrl);
 		mainVC.put("overview", overviewCtrl.getInitialComponent());
 		
-		if (!lectureBlocks.isEmpty()) {
+		if (element.isShowLectures() && !lectureBlocks.isEmpty()) {
 			lectureBlocksCtrl = new LectureBlocksTimelineController(ureq, getWindowControl(), lectureBlocks, true);
 			listenTo(lectureBlocksCtrl);
 			mainVC.put("lectures", lectureBlocksCtrl.getInitialComponent());
