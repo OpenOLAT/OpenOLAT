@@ -148,6 +148,12 @@ public class CurriculumMailing {
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
+	public static MailTemplate getMembershipAddTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.invited.subject";
+		String bodyKey = "notification.mail.member.invited.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
 	public static MailTemplate getMembershipDeclinedTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
 		String subjectKey = "notification.mail.member.declined.subject";
 		String bodyKey = "notification.mail.member.declined.body";

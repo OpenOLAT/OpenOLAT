@@ -76,7 +76,7 @@ public class NotificationController extends StepFormBasicController {
 		
 		MailTemplate template = null;
 		if(nextStatus == GroupMembershipStatus.active) {
-			template = CurriculumMailing.getMembershipAcceptedTemplate(curriculum, curriculumElement, getIdentity());
+			template = CurriculumMailing.getMembershipAddTemplate(curriculum, curriculumElement, getIdentity());
 		} else if(context.getSelectedOffer() != null || nextStatus == GroupMembershipStatus.reservation) {
 			template = CurriculumMailing.getMembershipBookedByAdminTemplate(curriculum, curriculumElement, getIdentity());
 		} else {
