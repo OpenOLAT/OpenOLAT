@@ -577,8 +577,9 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 				doOpenTranscoding(ureq, link, filename);
 			} else if ("download".equalsIgnoreCase(link.getCmd())) {
 				doDownload(ureq, (VFSLeaf) link.getUserObject());
-			} else if ("tools".equalsIgnoreCase(link.getCmd())) {
-				doOpenTools(ureq, link);
+			} else if ("tools".equalsIgnoreCase(link.getCmd())
+					&& link.getUserObject() instanceof SubmittedSolution solution) {
+				doOpenTools(ureq, link, solution);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -594,8 +595,8 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 		ureq.getDispatchResult().setResultingMediaResource(vdr);
 	}
 
-	private void doOpenTools(UserRequest ureq, FormLink link) {
-		toolsCtrl = new ToolsController(ureq, getWindowControl(), (SubmittedSolution) link.getUserObject());
+	private void doOpenTools(UserRequest ureq, FormLink link, SubmittedSolution solution) {
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), solution);
 		listenTo(toolsCtrl);
 
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -861,6 +862,8 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 	
 	private static class DocumentTableModel extends DefaultFlexiTableDataModel<SubmittedSolution>  {
 		
+		private static final DocCols[] COLS = DocCols.values();
+		
 		public DocumentTableModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
 		}
@@ -868,28 +871,20 @@ public class SubmitDocumentsController extends FormBasicController implements Ge
 		@Override
 		public Object getValueAt(int row, int col) {
 			SubmittedSolution solution = getObject(row);
-			switch (DocCols.values()[col]) {
-				case document -> {
-					return solution.getDocumentLink();
-				}
-				case date -> {
-					Calendar cal = Calendar.getInstance();
-					cal.setTimeInMillis(solution.getFile().lastModified());
-					return cal.getTime();
-				}
-				case createdBy -> {
-					return solution.getCreatedBy();
-				}
-				case download -> {
-					return solution.getDownloadLink();
-				}
-				case toolsLink -> {
-					return solution.getToolsLink();
-				}
-				default -> {
-					return "ERROR";
-				}
-			}
+			return switch (COLS[col]) {
+				case document -> solution.getDocumentLink();
+				case date -> lastModified(solution);
+				case createdBy ->  solution.getCreatedBy();
+				case download -> solution.getDownloadLink();
+				case toolsLink -> solution.getToolsLink();
+				default -> "ERROR";
+			};
+		}
+		
+		private Date lastModified(SubmittedSolution solution) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(solution.getFile().lastModified());
+			return cal.getTime();
 		}
 	}
 
