@@ -792,8 +792,9 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		@media (min-width: $screen-md-max) {
 			flex-direction: row;
 			.o_curriculum_element_infos_right {
-				min-width: 400px;
-				max-width: 400px;
+				// align with teaser image: o_repo_details o_media 
+				min-width: floor(570px * 0.75);
+				max-width: floor(570px * 0.75);
 			}
 		}
 		>div {
