@@ -135,11 +135,9 @@ public class CourseListController extends FormBasicController implements Activat
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == stackPanel) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
-				if(pe.getController() == courseCtrl && hasChanged) {
-					reloadModel();
-				}
+			if(event instanceof PopEvent pe
+					&& pe.getController() == courseCtrl && hasChanged) {
+				reloadModel();
 			}
 		}
 		super.event(ureq, source, event);
@@ -153,8 +151,7 @@ public class CourseListController extends FormBasicController implements Activat
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if("select".equals(se.getCommand())) {
 					CourseStatEntry courseStat = tableModel.getObject(se.getIndex());
 					selectCourse(ureq, courseStat);
@@ -232,7 +229,6 @@ public class CourseListController extends FormBasicController implements Activat
 			int index = tableModel.getIndexOfObject(courseStat);
 			courseCtrl = new CourseController(ureq, bwControl, stackPanel, re, courseStat, index, tableModel.getRowCount());
 			listenTo(courseCtrl);
-			stackPanel.popUpToRootController(ureq);
 			stackPanel.pushController(re.getDisplayname(), courseCtrl);
 		}
 	}

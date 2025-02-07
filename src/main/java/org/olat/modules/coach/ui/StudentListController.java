@@ -262,7 +262,6 @@ public class StudentListController extends FormBasicController implements Activa
 		studentCtrl = new StudentCoursesController(ureq, bwControl, stackPanel, studentStat, student, index, model.getRowCount(), false);
 		listenTo(studentCtrl);
 		
-		stackPanel.popUpToRootController(ureq);
 		String displayName = userManager.getUserDisplayName(student);
 		stackPanel.pushController(displayName, studentCtrl);
 		return studentCtrl;

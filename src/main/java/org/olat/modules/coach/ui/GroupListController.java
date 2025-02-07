@@ -116,11 +116,9 @@ public class GroupListController extends BasicController implements Activateable
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == stackPanel) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
-				if(pe.getController() == groupCtrl && hasChanged) {
-					reloadModel();
-				}
+			if(event instanceof PopEvent pe
+					&& pe.getController() == groupCtrl && hasChanged) {
+				reloadModel();
 			}
 		}
 	}
@@ -128,8 +126,7 @@ public class GroupListController extends BasicController implements Activateable
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == tableCtr) {
-			if(event instanceof TableEvent) {
-				TableEvent e = (TableEvent) event;
+			if(event instanceof TableEvent e) {
 				if("select".equals(e.getActionId())) {
 					GroupStatEntry groupStatistic = (GroupStatEntry)tableCtr.getTableDataModel().getObject(e.getRowId());
 					selectGroup(ureq, groupStatistic);
@@ -195,7 +192,6 @@ public class GroupListController extends BasicController implements Activateable
 		int index = tableCtr.getIndexOfSortedObject(groupStatistic);
 		groupCtrl = new GroupController(ureq, bwControl, stackPanel, groupStatistic, index, tableCtr.getRowCount());
 		listenTo(groupCtrl);
-		stackPanel.popUpToRootController(ureq);
 		stackPanel.pushController(groupStatistic.getGroupName(), groupCtrl);
 	}
 }
