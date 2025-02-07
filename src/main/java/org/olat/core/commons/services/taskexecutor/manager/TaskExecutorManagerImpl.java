@@ -283,13 +283,14 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 		return persistentTaskDao.returnTaskAfterEdition(task.getKey(), wishedStatus);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends Runnable> T getPersistedRunnableTask(Task task, Class<T> type) {
-		if(task instanceof PersistentTask) {
-			PersistentTask ptask = (PersistentTask)task;
-			@SuppressWarnings("unchecked")
-			T runnable = (T)persistentTaskDao.deserializeTask(ptask);
-			return runnable;
+		if(task instanceof PersistentTask ptask) {
+			Object deserializedTask = persistentTaskDao.deserializeTask(ptask);
+			if(deserializedTask.getClass().isAssignableFrom(type)) {
+				return (T)deserializedTask;
+			}
 		}
 		return null;
 	}

@@ -51,7 +51,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -134,17 +133,19 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		Structure structure = course.getRunStructure();
 		
 		for(Task task:tasks) {
-			String fullName = null;
-			if(task.getCreator() != null) {
-				fullName = userManager.getUserDisplayName(task.getCreator());
-			}
 			BulkAssessmentTask runnable = taskManager.getPersistedRunnableTask(task, BulkAssessmentTask.class);
-			CourseNode courseNode = structure.getNode(runnable.getCourseNodeIdent());
-			taskDatas.add(new TaskData(task, runnable, courseNode, fullName));
+			if(runnable != null) {
+				String fullName = null;
+				if(task.getCreator() != null) {
+					fullName = userManager.getUserDisplayName(task.getCreator());
+				}
+				CourseNode courseNode = structure.getNode(runnable.getCourseNodeIdent());
+				taskDatas.add(new TaskData(task, runnable, courseNode, fullName));
+			}
 		}
 		taskModel.setObjects(taskDatas);
 		taskListEl.reset();
-		flc.contextPut("hasScheduledTasks", Boolean.valueOf(taskDatas.size()>0));
+		flc.contextPut("hasScheduledTasks", Boolean.valueOf(!taskDatas.isEmpty()));
 	}
 	
 	@Override
@@ -160,8 +161,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		if(newButton == source) {
 			doNewBulkAssessment(ureq);
 		} else if(taskListEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				switch(se.getCommand()) {
 					case "edit": {
 						TaskData data = taskModel.getObject(se.getIndex());
@@ -238,7 +238,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 				String text = BulkAssessmentTask.renderFeedback(feedbacks, getTranslator());
 				List<String> buttonLabels = Collections.singletonList(translate("ok"));
 				String title = translate("bulk.assessment.error.title");
-				String translatedText = translate("bulk.assessment.error.feedback", new String[]{ text });
+				String translatedText = translate("bulk.assessment.error.feedback", text);
 				errorCtrl = activateGenericDialog(ureq, title, translatedText, buttonLabels, errorCtrl);
 			}
 		} else {
@@ -263,16 +263,13 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 			return;
 		}
 
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				Date scheduledDate = (Date)runContext.get("scheduledDate");
-				CourseNode courseNode = (CourseNode)runContext.get("courseNode");
-				BulkAssessmentDatas datas = (BulkAssessmentDatas)runContext.get("datas");
-				Feedback feedback = doBulkAssessment(courseNode, scheduledDate, datas);
-				runContext.put("feedback", feedback);
-				return StepsMainRunController.DONE_MODIFIED;
-			}
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			Date scheduledDate = (Date)runContext.get("scheduledDate");
+			CourseNode courseNode = (CourseNode)runContext.get("courseNode");
+			BulkAssessmentDatas datas = (BulkAssessmentDatas)runContext.get("datas");
+			Feedback feedback = doBulkAssessment(courseNode, scheduledDate, datas);
+			runContext.put("feedback", feedback);
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		bulkAssessmentCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
@@ -297,27 +294,21 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 			BulkAssessmentDatas datas = runnable.getDatas();
 			
 			Step start = new BulkAssessment_2_DatasStep(ureq, courseEntry, courseNode, datas, editableTask, canEditUserVisibility);
-			StepRunnerCallback finish = new StepRunnerCallback() {
-				@Override
-				public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-					Task task = (Task)runContext.get("task");
-					Date scheduledDate = (Date)runContext.get("scheduledDate");
-					CourseNode assessableCourseNode = (CourseNode)runContext.get("courseNode");
-					BulkAssessmentDatas bulkDatas = (BulkAssessmentDatas)runContext.get("datas");
-					Feedback feedback = doUpdateBulkAssessment(task, assessableCourseNode, scheduledDate, bulkDatas);
-					runContext.put("feedback", feedback);
-					editedTask = null;
-					return StepsMainRunController.DONE_MODIFIED;
-				}
+			StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+				Task task = (Task)runContext.get("task");
+				Date scheduledDate = (Date)runContext.get("scheduledDate");
+				CourseNode assessableCourseNode = (CourseNode)runContext.get("courseNode");
+				BulkAssessmentDatas bulkDatas = (BulkAssessmentDatas)runContext.get("datas");
+				Feedback feedback = doUpdateBulkAssessment(task, assessableCourseNode, scheduledDate, bulkDatas);
+				runContext.put("feedback", feedback);
+				editedTask = null;
+				return StepsMainRunController.DONE_MODIFIED;
 			};
 			
-			StepRunnerCallback cancel = new StepRunnerCallback() {
-				@Override
-				public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-					taskManager.returnTaskAfterEdition(editableTask, null);
-					editedTask = null;
-					return Step.NOSTEP;
-				}
+			StepRunnerCallback cancel = (uureq, wControl, runContext) -> {
+				taskManager.returnTaskAfterEdition(editableTask, null);
+				editedTask = null;
+				return Step.NOSTEP;
 			};
 			
 			bulkAssessmentCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, cancel,
