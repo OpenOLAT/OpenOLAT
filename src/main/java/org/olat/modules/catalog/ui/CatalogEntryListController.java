@@ -343,7 +343,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		rows.forEach(this::forgeLinks);
 		
 		dataModel.setObjects(rows);
-		tableEl.reset(false, false, true);
+		tableEl.reset(true, true, true);
 	}
 	
 	private void applySearch(List<CatalogEntryRow> rows) {
