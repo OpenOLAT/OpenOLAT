@@ -4,7 +4,7 @@
 		#foreach($year in $years)
 			<div class="o_lectures_timeline_row">
 				<div class="o_lectures_timeline_day"></div>
-				<div class="o_lectures_timeline_year">$year.getYear()</div>
+				<div class="o_lectures_timeline_year"><h5>$year.getYear()</h5></div>
 			</div>
 			#foreach($day in $year.getDays())
 			<div class="o_lectures_timeline_row">

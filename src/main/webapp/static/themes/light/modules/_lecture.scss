@@ -345,8 +345,10 @@
 			.o_lectures_timeline_year {
 				display: flex;
 				align-items: center;
-				font-size: 120%;
-				font-weight: bold;
+				h5 {
+					font-size: $font-size-h4;
+					font-weight: bold;
+				}
 			}
 			.o_lectures_timeline_day {
 				padding: $o-lm-timeline-row-padding;
@@ -358,17 +360,19 @@
 				justify-content: center;
 				
 				.o_lectures_timeline_day_name {
+					font-size: 14px;
+					font-weight: 500;
 					line-height: 1;
-					font-size: 85%;
 				}
 				.o_lectures_timeline_day_number {
+					font-size: 36px;
+					font-weight: 500;
 					line-height: 1;
-					font-size: 250%;
-					font-weight: bold;
 				}
 				.o_lectures_timeline_month_name {
+					font-size: 14px;
+					font-weight: 500;
 					line-height: 1;
-					font-size: 85%;
 					text-transform: uppercase;
 				}
 			}
@@ -407,7 +411,7 @@
 				.o_lectures_timeline_path_top {
 					height: $o-lm-timeline-path-top-height;
 				}
-				.o_lectures_timeline_path_center	{
+				.o_lectures_timeline_path_center 	{
 					border: $o-lm-timeline-path-stroke-width solid $o-lm-timeline-path-color;
 					border-radius: 99999px; // circle
 					width: 2rem;
@@ -429,13 +433,13 @@
 					height: ($o-lm-timeline-path-top-height - 2px);
 				}
 				.o_lectures_timeline_title {
-					font-size: 120%;
+					font-size: 18px;
+					line-height: 1.5;
 				}
-				.o_lectures_timeline_day_time {
-					font-size: 90%;
-				}
+				.o_lectures_timeline_day_time,
 				.o_lectures_timeline_location {
-					font-size: 90%;
+					font-size: 14px;
+					line-height: 1.5;
 				}
 			}
 		}
