@@ -37,7 +37,10 @@ import org.olat.modules.coach.reports.ReportConfigurationAccessSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumReportConfiguration;
+import org.olat.modules.curriculum.manager.BookingOrder;
+import org.olat.modules.curriculum.manager.CurriculumAccountingDAO;
 import org.olat.modules.curriculum.ui.CurriculumManagerRootController;
+import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -90,8 +93,6 @@ public class AccountingReportConfiguration extends AbstractReportConfiguration i
 		header.addCell(pos++, translator.translate("report.header.account"));
 		header.addCell(pos++, translator.translate("report.header.po.number"));
 		header.addCell(pos++, translator.translate("report.header.order.comment"));
-		header.addCell(pos++, translator.translate("report.header.org.id"));
-		header.addCell(pos++, translator.translate("report.header.organisation"));
 		header.addCell(pos++, translator.translate("report.header.order.date"));
 		header.addCell(pos++, translator.translate("report.header.price"));
 		header.addCell(pos++, translator.translate("report.header.cancellation.fee"));
@@ -114,7 +115,55 @@ public class AccountingReportConfiguration extends AbstractReportConfiguration i
 	@Override
 	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, 
 								List<UserPropertyHandler> userPropertyHandlers) {
+		CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
+		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(coach, userPropertyHandlers);
+		for (BookingOrder bookingOrder : bookingOrders) {
+			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder);
+		}		
+	}
 
+	private void generateDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet, 
+								 List<UserPropertyHandler> userPropertyHandlers, BookingOrder bookingOrder) {
+		OpenXMLWorksheet.Row row = sheet.newRow();
+		int pos = 0;
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			row.addCell(pos, bookingOrder.getIdentityProp(pos));
+			pos++;
+		}
+		row.addCell(pos++, bookingOrder.getCurriculumName());
+		row.addCell(pos++, bookingOrder.getCurriculumIdentifier());
+		row.addCell(pos++, bookingOrder.getOrgId());
+		row.addCell(pos++, bookingOrder.getOrgName());
+		row.addCell(pos++, bookingOrder.getImplementationName());
+		row.addCell(pos++, bookingOrder.getImplementationIdentifier());
+		row.addCell(pos++, bookingOrder.getImplementationType());
+		row.addCell(pos++, bookingOrder.getImplementationStatus());
+		row.addCell(pos++, bookingOrder.getImplementationFormat());
+		row.addCell(pos++, "" + bookingOrder.getBeginDate(), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, "" + bookingOrder.getEndDate(), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, "" + bookingOrder.getOrder().getKey());
+		row.addCell(pos++, bookingOrder.getOrder().getOrderStatus().name());
+		row.addCell(pos++, bookingOrder.getOfferName());
+		row.addCell(pos++, bookingOrder.getOfferType());
+		row.addCell(pos++, bookingOrder.getOfferCostCenter());
+		row.addCell(pos++, bookingOrder.getOfferAccount());
+		row.addCell(pos++, bookingOrder.getOrder().getPurchaseOrderNumber());
+		row.addCell(pos++, bookingOrder.getOrder().getComment());
+		row.addCell(pos++, "" + bookingOrder.getOrder().getCreationDate(), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, PriceFormat.fullFormat(bookingOrder.getOrder().getTotal()));
+		row.addCell(pos++, PriceFormat.fullFormat(bookingOrder.getOrder().getCancellationFees()));
+		row.addCell(pos++, bookingOrder.getBillingAddress().getIdentifier());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getNameLine1());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getNameLine2());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getAddressLine1());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getAddressLine2());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getAddressLine3());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getAddressLine4());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getPoBox());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getRegion());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getZip());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getCity());
+		row.addCell(pos++, bookingOrder.getBillingAddress().getCountry());
 	}
 
 	@Override
