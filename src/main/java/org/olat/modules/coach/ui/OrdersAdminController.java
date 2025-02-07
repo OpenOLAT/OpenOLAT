@@ -77,7 +77,7 @@ public class OrdersAdminController extends BasicController implements Activateab
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		
-		mainVC = createVelocityContainer("segments");
+		mainVC = createVelocityContainer("orders_admin");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		

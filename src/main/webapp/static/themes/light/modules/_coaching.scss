@@ -3,6 +3,34 @@
 	margin-top: 0px;
 }
 
+.o_coaching_search_header {
+	display: flex;
+	justify-content: center;
+}
+
+.o_coaching_overview {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 20px;
+	row-gap: 10px;
+	
+	.o_mega_buttons {
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		
+		.btn.o_button_mega i.o_icon {
+			width: 25px;
+			min-width: 25px;
+			max-width: 25px;
+		}
+	}
+}
+
+@media (max-width: $screen-xs-max) {
+	.o_coaching_overview {
+		grid-template-columns: 1fr;
+	}
+}
+
 .o_eff_statement_details .o_user_infos {
 	margin-top:20px;
 }

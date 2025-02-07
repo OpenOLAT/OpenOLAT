@@ -28,6 +28,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.StudentStatEntry;
@@ -62,8 +63,10 @@ public class UserRelationListController extends AbstactCoachListController {
     protected void loadModel() {
         List<StudentStatEntry> students = coachingService.getUserStatistics(getIdentity(), relationRole, userPropertyHandlers, getLocale());
         model.setObjects(students);
-        tableEl.reset();
-        tableEl.reloadData();
+        if(StringHelper.containsNonWhitespace(tableEl.getQuickSearchString())) {
+    		model.search(tableEl.getQuickSearchString());
+    	}
+        tableEl.reset(true, true, true);
     }
 
     protected UserOverviewController selectStudent(UserRequest ureq, StudentStatEntry studentStat) {

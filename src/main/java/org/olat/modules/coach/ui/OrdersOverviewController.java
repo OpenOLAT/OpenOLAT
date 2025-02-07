@@ -37,6 +37,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.ui.tool.AssessmentApplyGradeListController;
 import org.olat.course.assessment.ui.tool.AssessmentCoachingListOptions;
@@ -74,7 +75,8 @@ public class OrdersOverviewController extends BasicController implements Activat
 	private final GradingSecurityCallback secCallback;
 	
 	public OrdersOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, CoachingSecurity coachingSec, GradingSecurityCallback gradingSec) {
+			RepositoryEntry courseEntry, CoachingSecurity coachingSec, GradingSecurityCallback gradingSec,
+			String title) {
 		
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
@@ -82,7 +84,11 @@ public class OrdersOverviewController extends BasicController implements Activat
 		this.secCallback = gradingSec;
 		this.courseEntry = courseEntry;
 		
-		mainVC = createVelocityContainer("segments");
+		mainVC = createVelocityContainer("orders");
+		if(StringHelper.containsNonWhitespace(title)) {
+			mainVC.contextPut("title", title);
+		}
+		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		

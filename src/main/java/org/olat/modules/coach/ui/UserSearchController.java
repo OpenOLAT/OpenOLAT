@@ -27,6 +27,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -48,6 +49,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserSearchController extends BasicController implements Activateable2 {
 	
+	private final VelocityContainer mainVC;
+	
 	private UserListController userListCtrl;
 	private final UserSearchForm searchForm;
 	private final TooledStackedPanel stackPanel;
@@ -68,11 +71,14 @@ public class UserSearchController extends BasicController implements Activateabl
 		} else {
 			searcheableOrganisations = null;
 		}
+		
+		mainVC = createVelocityContainer("user_search");
 
 		//search form
 		searchForm = new UserSearchForm(ureq, getWindowControl());
 		listenTo(searchForm);
-		putInitialPanel(searchForm.getInitialComponent());
+		mainVC.put("searchForm", searchForm.getInitialComponent());
+		putInitialPanel(mainVC);
 	}
 	
 	@Override
@@ -109,11 +115,8 @@ public class UserSearchController extends BasicController implements Activateabl
 		userListCtrl.search(params);
 		if(userListCtrl.size() == 1) {
 			userListCtrl.selectUniqueStudent(ureq);
-			stackPanel.pushController("Result", userListCtrl);
-		} else {
-
-			stackPanel.pushController("Results", userListCtrl);
 		}
+		stackPanel.pushController(translate("results"), userListCtrl);
 	}
 	
 	private void doSearch(UserRequest ureq) {
@@ -132,7 +135,6 @@ public class UserSearchController extends BasicController implements Activateabl
 		userListCtrl = new UserListController(ureq, getWindowControl(), stackPanel);
 		userListCtrl.search(params);
 		listenTo(userListCtrl);
-		stackPanel.popUpToRootController(ureq);
 		stackPanel.pushController(translate("results"), userListCtrl);
 	}
 }

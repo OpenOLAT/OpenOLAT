@@ -126,6 +126,12 @@ public abstract class AbstactCoachListController extends FormBasicController imp
         if (autoCompleteAllowed) {
             tableEl.setSearchEnabled(new StudentListProvider(model, userManager), usess);
         }
+        
+        initFilters();
+    }
+    
+    protected void initFilters() {
+    	//
     }
 
     @Override
@@ -142,19 +148,13 @@ public abstract class AbstactCoachListController extends FormBasicController imp
     @Override
     protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
         if (tableEl == source) {
-            if (event instanceof SelectionEvent) {
-                SelectionEvent se = (SelectionEvent) event;
-                String cmd = se.getCommand();
-                StudentStatEntry selectedRow = model.getObject(se.getIndex());
-                if ("select".equals(cmd)) {
+            if (event instanceof SelectionEvent se) {
+                if ("select".equals(se.getCommand())) {
+                	StudentStatEntry selectedRow = model.getObject(se.getIndex());
                     selectStudent(ureq, selectedRow);
                 }
             } else if (event instanceof FlexiTableSearchEvent) {
-                FlexiTableSearchEvent ftse = (FlexiTableSearchEvent) event;
-                String searchString = ftse.getSearch();
-                model.search(searchString);
-                tableEl.reset();
-                tableEl.reloadData();
+            	loadModel();
             }
         }
         super.formInnerEvent(ureq, source, event);
@@ -186,10 +186,8 @@ public abstract class AbstactCoachListController extends FormBasicController imp
     @Override
     public void event(UserRequest ureq, Component source, Event event) {
         if (stackPanel == source) {
-            if (event instanceof PopEvent pe) {
-                if (pe.getController() == this.userCtrl && hasChanged) {
-                    reloadModel();
-                }
+            if (event instanceof PopEvent pe && pe.getController() == userCtrl && hasChanged) {
+            	reloadModel();
             }
         }
         super.event(ureq, source, event);

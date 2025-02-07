@@ -162,12 +162,10 @@ public class LecturesCoachingController extends BasicController implements Activ
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == cockpitController) {
-			if(event instanceof OpenRepositoryEntryEvent) {
-				OpenRepositoryEntryEvent oree = (OpenRepositoryEntryEvent)event;
+			if(event instanceof OpenRepositoryEntryEvent oree) {
 				doOpenLectures(ureq, oree.getEntry());
 				segmentView.select(lecturesLink);
-			} else if(event instanceof SelectLectureIdentityEvent) {
-				SelectLectureIdentityEvent oree = (SelectLectureIdentityEvent)event;
+			} else if(event instanceof SelectLectureIdentityEvent oree) {
 				doOpenLecturesSearchForIdentity(ureq, oree.getIdentityKey());
 				segmentView.select(lecturesSearchLink);
 			}
@@ -178,8 +176,7 @@ public class LecturesCoachingController extends BasicController implements Activ
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == cockpitLink) {

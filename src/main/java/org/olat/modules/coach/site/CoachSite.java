@@ -23,8 +23,8 @@ import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
@@ -84,7 +84,7 @@ public class CoachSite extends AbstractSiteInstance {
 	}
 
 	@Override
-	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(coachOres));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, coachOres, new StateSite(this), wControl, true);

@@ -1,0 +1,11 @@
+#if($r.isNotEmpty($title))
+<h2><i class="o_icon o_icon-fw o_icon_assessment_tool"> </i> $r.escapeHtml($title)</h2>
+#end
+$r.render("segments")
+<div class="o_segments_content clearfix">
+#if($r.visible("segmentCmp"))
+	$r.render("segmentCmp")
+#else
+	$r.render("emptyStateCmp")
+#end
+</div>

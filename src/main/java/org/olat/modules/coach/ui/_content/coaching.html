@@ -1,0 +1,47 @@
+<h2><i class="o_icon o_icon_coaching_tool" aria-hidden="true"> </i> $r.translate("coaching.title")</h2>
+$r.render("searchField")
+
+<div class="o_coaching_overview">
+	#if($r.visible("students.menu.title") || $r.visible("courses.menu.title") || $r.visible("groups.menu.title"))
+	<fieldset>
+		<legend>$r.translate("coaching.title")</legend>
+		<ul class="o_mega_buttons">
+			#if($r.visible("students.menu.title"))
+				<li>$r.render("students.menu.title")</li>
+			#end
+			#if($r.visible("courses.menu.title"))
+				<li>$r.render("courses.menu.title")</li>
+			#end
+			#if($r.visible("groups.menu.title"))
+				<li>$r.render("groups.menu.title")</li>
+			#end
+		</ul>
+	</fieldset>
+	#end
+	
+	#if($r.visible("lectures.menu.title") || $r.visible("orders.menu.title") || $r.visible("reports.menu.title"))
+	<fieldset>
+		<legend>$r.translate("coaching.assignments.title")</legend>
+		<ul class="o_mega_buttons">
+			#if($r.visible("lectures.menu.title"))
+				<li>$r.render("lectures.menu.title")</li>
+			#end
+			#if($r.visible("orders.menu.title"))
+				<li>$r.render("orders.menu.title")</li>
+			#end
+			#if($r.visible("reports.menu.title"))
+				<li>$r.render("reports.menu.title")</li>
+			#end
+		</ul>
+	</fieldset>
+	#end
+	
+	#if($r.visible("orders.admin.menu.title"))
+	<fieldset>
+		<legend>$r.translate("coaching.administration.title")</legend>
+		<ul class="o_mega_buttons">
+			<li>$r.render("orders.admin.menu.title")</li>
+		</ul>
+	</fieldset>
+	#end
+</div>

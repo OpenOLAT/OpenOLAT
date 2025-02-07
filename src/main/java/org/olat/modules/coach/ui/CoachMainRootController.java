@@ -1,0 +1,344 @@
+/**
+ * <a href="https://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, https://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.coach.ui;
+
+import java.util.List;
+
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.coach.model.CoachingSecurity;
+import org.olat.modules.coach.ui.component.SearchEvent;
+import org.olat.modules.coach.ui.manager.ManagerReportsController;
+import org.olat.modules.grading.GradingModule;
+import org.olat.modules.grading.GradingSecurityCallback;
+import org.olat.modules.grading.GradingSecurityCallbackFactory;
+import org.olat.modules.grading.model.GradingSecurity;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * 
+ * Initial date: 6 févr. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
+ *
+ */
+public class CoachMainRootController extends BasicController implements Activateable2 {
+	
+	private Link peopleButton;
+	private Link ordersButton;
+	private Link coursesButton;
+	private Link reportsButton;
+	private Link lecturesButton;
+	private Link ordersAdminButton;
+	private Link businessGroupsButton;
+	
+	private final VelocityContainer mainVC;
+	private final TooledStackedPanel content;
+	
+	private GradingSecurity gradingSec;
+	private CoachingSecurity coachingSec;
+	private final boolean showLineManagerView;
+	private final boolean showEducationManagerView;
+	private final boolean coachAssignmentsAvailable;
+	
+	private GroupListController groupListCtrl;
+	private LecturesMainController lecturesCtrl;
+	private UserSearchController userSearchCtrl;
+	private CourseListController courseListCtrl;
+	private ManagerReportsController reportsCtrl;
+	private CoachPeopleController peopleListCtrl;
+	private OrdersAdminController ordersAdminCtrl;
+	private StudentListController quickSearchCtrl;
+	private OrdersOverviewController ordersOverviewCtrl;
+	private final CoachMainSearchHeaderController searchFieldCtrl;
+	
+	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
+	private GradingModule gradingModule;
+	@Autowired
+	private OrganisationModule organisationModule;
+	
+	public CoachMainRootController(UserRequest ureq, WindowControl wControl, TooledStackedPanel content,
+			CoachingSecurity coachingSec, GradingSecurity gradingSec) {
+		super(ureq, wControl);
+		this.content = content;
+		this.gradingSec = gradingSec;
+		this.coachingSec = coachingSec;
+
+		Roles roles = ureq.getUserSession().getRoles();
+		coachAssignmentsAvailable = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal() || roles.isAuthor();
+		showLineManagerView = organisationModule.isEnabled() && roles.isLineManager();
+		showEducationManagerView = organisationModule.isEnabled() && roles.isEducationManager();
+		
+		mainVC = createVelocityContainer("coaching");
+		
+		searchFieldCtrl = new CoachMainSearchHeaderController(ureq, getWindowControl());
+		listenTo(searchFieldCtrl);
+		mainVC.put("searchField", searchFieldCtrl.getInitialComponent());
+		
+		putInitialPanel(mainVC);
+		initButtons();
+	}
+	
+	private void initButtons() {
+		lecturesButton = LinkFactory.createLink("lectures.menu.title", "lectures.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		lecturesButton.setIconLeftCSS("o_icon o_icon-xl o_icon_calendar_day");
+		lecturesButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_lectures");
+		lecturesButton.setVisible(lectureModule.isEnabled() && (coachingSec.isTeacher() || coachingSec.isMasterCoachForLectures()));
+		
+		ordersButton = LinkFactory.createLink("orders.menu.title", "orders.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		ordersButton.setIconLeftCSS("o_icon o_icon-xl o_icon_assessment_tool");
+		ordersButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_orders");
+		ordersButton.setVisible(coachingSec.isCoach() || (gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager())));
+	
+		ordersAdminButton = LinkFactory.createLink("orders.admin.menu.title", "orders.admin.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		ordersAdminButton.setIconLeftCSS("o_icon o_icon-xl o_icon_courselog");
+		ordersAdminButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_orders_admin");
+		ordersAdminButton.setVisible((gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) || coachAssignmentsAvailable);
+		
+		reportsButton = LinkFactory.createLink("reports.menu.title", "reports.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		reportsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_chart_simple");
+		reportsButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_reports");
+		reportsButton.setVisible(coachingSec.isCoach() || showEducationManagerView || showLineManagerView);
+
+		peopleButton = LinkFactory.createLink("students.menu.title", "students.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		peopleButton.setIconLeftCSS("o_icon o_icon-xl o_icon_user");
+		peopleButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_people");
+		
+		coursesButton = LinkFactory.createLink("courses.menu.title", "courses.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		coursesButton.setIconLeftCSS("o_icon o_icon-xl o_CourseModule_icon");
+		coursesButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_courses");
+		coursesButton.setVisible(coachingSec.isTeacher());
+	
+		businessGroupsButton = LinkFactory.createLink("groups.menu.title", "groups.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
+		businessGroupsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_group");
+		businessGroupsButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_groups");
+		businessGroupsButton.setVisible(coachingSec.isTeacher());	
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("People".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doPeople(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("Events".equalsIgnoreCase(type) || "Lectures".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doLectures(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("Groups".equalsIgnoreCase(type)) {
+			doBusinessGroups(ureq);
+		} else if("Courses".equalsIgnoreCase(type)) {
+			doCourses(ureq);
+		} else if("Orders".equalsIgnoreCase(type)) {
+			doAssignmentOrders(ureq);
+		} else if("OrdersAdmin".equalsIgnoreCase(type)) {
+			doAdminAssignmentOrders(ureq);
+		} else if("Reports".equalsIgnoreCase(type)) {
+			doReport(ureq);
+		} else if("UserSearch".equalsIgnoreCase(type) || "UsersSearch".equalsIgnoreCase(type)) {
+			doUserSearch(ureq);
+		}  
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(peopleButton == source) {
+			doPeople(ureq);
+		} else if(ordersButton == source) {
+			doAssignmentOrders(ureq);
+		} else if(coursesButton == source) {
+			doCourses(ureq);
+		} else if(reportsButton == source) {
+			doReport(ureq);
+		} else if(ordersAdminButton == source) {
+			doAdminAssignmentOrders(ureq);
+		} else if(businessGroupsButton == source) {
+			doBusinessGroups(ureq);
+		} else if(lecturesButton == source) {
+			doLectures(ureq);
+		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(searchFieldCtrl == source) {
+			if(event instanceof SearchEvent se) {
+				if(SearchEvent.SEARCH_USERS.equals(se.getCommand())) {
+					doUserSearch(ureq);
+				} else if(SearchEvent.SEARCH.equals(se.getCommand())) {
+					doQuickSearch(ureq, se.getSearchString());
+				}
+			}
+		}
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(ordersOverviewCtrl);
+		removeAsListenerAndDispose(ordersAdminCtrl);
+		removeAsListenerAndDispose(quickSearchCtrl);
+		removeAsListenerAndDispose(peopleListCtrl);
+		removeAsListenerAndDispose(userSearchCtrl);
+		removeAsListenerAndDispose(groupListCtrl);
+		removeAsListenerAndDispose(courseListCtrl);
+		removeAsListenerAndDispose(lecturesCtrl);
+		removeAsListenerAndDispose(reportsCtrl);
+		ordersOverviewCtrl = null;
+		ordersAdminCtrl = null;
+		quickSearchCtrl = null;
+		peopleListCtrl = null;
+		courseListCtrl = null;
+		userSearchCtrl = null;
+		groupListCtrl = null;
+		lecturesCtrl = null;
+		reportsCtrl = null;
+	}
+	
+	private CoachPeopleController doPeople(UserRequest ureq) {
+		content.popUpToController(this);
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("People", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		peopleListCtrl = new CoachPeopleController(ureq, bwControl, content, coachingSec);
+		listenTo(peopleListCtrl);
+		content.pushController(translate("students.menu.title"), peopleListCtrl);
+		return peopleListCtrl;
+	}
+	
+	private void doQuickSearch(UserRequest ureq, String searchString) {
+		content.popUpToController(this);
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("QuickSearch", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		quickSearchCtrl = new StudentListController(ureq, bwControl, content, searchString);
+		listenTo(quickSearchCtrl);
+		content.pushController(translate("students.menu.title"), quickSearchCtrl);
+	}
+	
+	private void doBusinessGroups(UserRequest ureq) {
+		content.popUpToController(this);
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Groups", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		groupListCtrl = new GroupListController(ureq, bwControl, content);
+		listenTo(groupListCtrl);
+		content.pushController(translate("groups.menu.title"), groupListCtrl);
+	}
+	
+	private void doCourses(UserRequest ureq) {
+		content.popUpToController(this);
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Courses", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		courseListCtrl = new CourseListController(ureq, bwControl, content);
+		listenTo(courseListCtrl);
+		content.pushController(translate("courses.menu.title"), courseListCtrl);
+	}
+	
+	private LecturesMainController doLectures(UserRequest ureq) {
+		content.popUpToController(this);
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Events", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		lecturesCtrl = new LecturesMainController(ureq, bwControl, content, coachingSec);
+		listenTo(lecturesCtrl);
+		content.pushController(translate("lectures.title"), lecturesCtrl);
+		return lecturesCtrl;
+	}
+	
+	private void doAssignmentOrders(UserRequest ureq) {
+		content.popUpToController(this);
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Orders", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getSecurityCalllback(getIdentity(), gradingSec);
+		ordersOverviewCtrl = new OrdersOverviewController(ureq, bwControl, content, null, coachingSec, secCallback, translate("orders.menu.title"));
+		listenTo(ordersOverviewCtrl);
+		content.pushController(translate("orders.menu.title"), ordersOverviewCtrl);
+	}
+	
+	private void doAdminAssignmentOrders(UserRequest ureq) {
+		content.popUpToController(this);
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("OrdersAdmin", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getSecurityCalllback(getIdentity(), gradingSec);
+		ordersAdminCtrl = new OrdersAdminController(ureq, bwControl, content, secCallback, gradingSec);
+		listenTo(ordersAdminCtrl);
+		content.pushController(translate("orders.admin.menu.title"), ordersAdminCtrl);
+	}
+	
+	private void doReport(UserRequest ureq) {
+		content.popUpToController(this);
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Reports", 0L);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		reportsCtrl = new ManagerReportsController(ureq, bwControl, content);
+		listenTo(reportsCtrl);
+		content.pushController(translate("reports.menu.title"), reportsCtrl);
+	}
+
+	private void doUserSearch(UserRequest ureq) {
+		content.popUpToController(this);
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("UsersSearch", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		userSearchCtrl = new UserSearchController(ureq, bwControl, content);
+		listenTo(userSearchCtrl);
+		content.pushController(translate("search.menu.title"), userSearchCtrl);
+	}
+}

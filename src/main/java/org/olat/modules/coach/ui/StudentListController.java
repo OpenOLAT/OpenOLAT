@@ -64,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * <P>
  * Initial Date:  8 févr. 2012 <br>
  *
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class StudentListController extends FormBasicController implements Activateable2 {
 	
@@ -99,6 +99,20 @@ public class StudentListController extends FormBasicController implements Activa
 		initForm(ureq);
 		loadModel();
 	}
+	
+	public StudentListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, String searchString) {
+		super(ureq, wControl, "user_search_results");
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
+
+		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
+		
+		initForm(ureq);
+		loadModel();
+		tableEl.quickSearch(ureq, searchString);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -118,7 +132,7 @@ public class StudentListController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new ProgressOfCellRenderer()));
 		
 		model = new StudentsTableDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 25, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, "o_icon_user");
 		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentListController-v2");
@@ -127,6 +141,8 @@ public class StudentListController extends FormBasicController implements Activa
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(usess.getRoles());
 		if(autoCompleteAllowed) {
 			tableEl.setSearchEnabled(new StudentListProvider(model, userManager), usess);
+		} else {
+			tableEl.setSearchEnabled(true);
 		}
 	}
 	
@@ -144,15 +160,13 @@ public class StudentListController extends FormBasicController implements Activa
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				StudentStatEntry selectedRow = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
 					selectStudent(ureq, selectedRow);
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
-				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
+			} else if(event instanceof FlexiTableSearchEvent ftse) {
 				String searchString = ftse.getSearch();
 				model.search(searchString);
 				tableEl.reset();
@@ -193,11 +207,9 @@ public class StudentListController extends FormBasicController implements Activa
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(stackPanel == source) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
-				if(pe.getController() == this.studentCtrl && hasChanged) {
-					reloadModel();
-				}
+			if(event instanceof PopEvent pe
+					&& pe.getController() == studentCtrl && hasChanged) {
+				reloadModel();
 			}
 		}
 		super.event(ureq, source, event);

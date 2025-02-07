@@ -87,7 +87,7 @@ public class UserListController extends FormBasicController implements Activatea
 	private CoachingService coachingService;
 	
 	public UserListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "user_search_results");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);

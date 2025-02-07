@@ -112,6 +112,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_code { @include o-add-icon('code');}
 .o_icon_code_branch { @include o-add-icon('code-branch');}
 .o_icon_coach { @include o-add-icon('graduation-cap');}
+.o_icon_coaching_tool { @include o-add-icon('chalkboard-user');}
 .o_icon_color_picker { @include o-add-icon('tint');}
 .o_icon_column { @include o-add-icon('align-justify');}
 .o_icon_columns { @include o-add-icon('columns');}
@@ -299,6 +300,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_objectives { @include o-add-icon('bullseye');}
 .o_icon_order { @include o-add-icon('arrows-v');}
 .o_icon_overriden { @include o-add-icon('pencil');}
+.o_icon_manager { @include o-add-icon('user-tie');}
 .o_icon_modified { @include o-add-icon('angle-double-down');}
 .o_icon_move_down { @include o-add-icon('angle-double-down');}
 .o_icon_move_left { @include o-add-icon('angle-double-left');}
@@ -454,6 +456,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_revision { @include o-add-icon('thumbs-down');}
 .o_icon_revoke { @include o-add-icon('rotate-left');}
 .o_icon_right { @include o-add-icon('arrow-circle-right');}
+.o_icon_right_left { @include o-add-icon('right-left');}
 .o_icon_rss { @include o-add-icon('rss');}
 .o_icon_rss_unsubscribe { @include o-add-icon('rss'); color: #996633;}
 .o_icon_role { @include o-add-icon('exchange');}

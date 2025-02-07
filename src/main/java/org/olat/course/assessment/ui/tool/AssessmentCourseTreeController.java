@@ -499,7 +499,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		CoachingSecurity coachingSecurity = new CoachingSecurity(false, true, false, false);
 		GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getManagerCalllback(getIdentity(), ureq.getUserSession().getRoles());
 		
-		ordersCtrl = new OrdersOverviewController(ureq, bwControl, stackPanel, courseEntry, coachingSecurity, secCallback);
+		ordersCtrl = new OrdersOverviewController(ureq, bwControl, stackPanel, courseEntry, coachingSecurity, secCallback, null);
 		listenTo(ordersCtrl);
 		addToHistory(ureq, ordersCtrl);
 		mainVC.put("overview", ordersCtrl.getInitialComponent());

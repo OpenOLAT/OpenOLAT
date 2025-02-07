@@ -70,9 +70,9 @@ public class CourseListController extends FormBasicController implements Activat
 	private CoursesTableDataModel tableModel;
 	private final TooledStackedPanel stackPanel;
 
-	private CourseController courseCtrl;
-	
 	private boolean hasChanged = false;
+	
+	private CourseController courseCtrl;
 
 	@Autowired
 	private CoachingService coachingService;
