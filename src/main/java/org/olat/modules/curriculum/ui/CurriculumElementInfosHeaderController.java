@@ -115,7 +115,15 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		} else if (isMember) {
 			startCtrl.getInitialComponent().setVisible(true);
 		} else {
-			initOffers(ureq, null);
+			if (acService.isAccessToResourcePending(element.getResource(), bookedIdentity) 
+					|| acService.getReservation(bookedIdentity, element.getResource()) != null) {
+				startCtrl.getInitialComponent().setVisible(true);
+				startCtrl.getStartLink().setEnabled(false);
+				
+				showInfoMessage(translate("access.denied.not.accepted.yet"));
+			} else {
+				initOffers(ureq, null);
+			}
 		}
 	}
 

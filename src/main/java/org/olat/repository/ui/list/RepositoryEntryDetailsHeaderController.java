@@ -157,7 +157,8 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 			} else if(inviteeOnly) {
 				showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 			} else if (!isMember && entry.isPublicVisible()) {
-				if (acService.isAccessToResourcePending(entry.getOlatResource(), getIdentity())) {
+				if (acService.isAccessToResourcePending(entry.getOlatResource(), getIdentity())
+						|| acService.getReservation(getIdentity(), entry.getOlatResource()) != null) {
 					startCtrl.getInitialComponent().setVisible(true);
 					startCtrl.getStartLink().setEnabled(false);
 					
