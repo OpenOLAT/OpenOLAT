@@ -625,7 +625,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		}
 		
 		.o_visual_not_available {
-			background-image:url('#{$o-images-path}no_preview.png');
+			background: $o-not-available-bg;
 			background-repeat:no-repeat;
 			background-position:50% 50%;		
 			background-size: contain;

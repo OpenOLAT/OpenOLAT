@@ -577,8 +577,8 @@ $o-cat2-launcher-margin-top-xs			: 40px !default;
 $o-cat2-launcher-margin-top-md			: 55px !default;
 $o-cat2-launcher-title-margin			: 20px 0px !default;
 $o-cat2-tax-launcher-square-font-size	: 14px !default;
-$o-cat2-login-button-bg					: $o-color-important !default;
-$o-cat2-login-button-color				: o-a11y-color($o-color-important-text-bg, $o-color-important) !default;
+$o-cat2-login-button-bg					: $o-color-warning !default;
+$o-cat2-login-button-color				: o-a11y-color($o-color-warning-text-bg, $brand-warning) !default;
 $o-cat2-login-button-border				: darken($o-cat2-login-button-bg, 5%) !default;
 
 /* Repository */
@@ -1804,3 +1804,6 @@ $o-tb-priority-fillin-color					: $text-muted !default;
 /* Course node selection */
 $o-cns-status-selected-color					: brown !default;
 $o-cns-status-done-color						: $brand-success !default;
+
+/* Not available visual */
+$o-not-available-bg: 		linear-gradient(40deg, rgba($brand-primary,1), rgba(#fff, 0.5) 90%), linear-gradient(160deg, rgba(#000,1), rgba($brand-primary, 0.3) 40%), linear-gradient(280deg, rgba($brand-primary,0.7), rgba(#000, 0.6) 80%);
