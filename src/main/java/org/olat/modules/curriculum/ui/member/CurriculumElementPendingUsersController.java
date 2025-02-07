@@ -139,10 +139,10 @@ public class CurriculumElementPendingUsersController extends AbstractMembersCont
 				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role,
 				new RolesFlexiCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.pending));
 		NumOfCellRenderer numOfRenderer = new NumOfCellRenderer(descendants.size() + 1);	
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.asParticipant,
 				numOfRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.pending));
 	}
 
 	@Override

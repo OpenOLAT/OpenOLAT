@@ -109,7 +109,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		lecturesBlocksLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_lectures");
 		
 		reportsLink = LinkFactory.createLink("curriculum.reports", "reports", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
-		reportsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_radar_chart");
+		reportsLink.setIconLeftCSS("o_icon o_icon-xl o_icon_chart_simple");
 		reportsLink.setElementCssClass("btn btn-default o_button_mega o_sel_cur_reports");
 		reportsLink.setVisible(secCallback.canCurriculumsReports());
 
