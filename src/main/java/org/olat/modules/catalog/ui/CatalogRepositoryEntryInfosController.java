@@ -26,8 +26,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
-import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.course.CorruptedCourseException;
 import org.olat.login.LoginProcessController;
 import org.olat.login.LoginProcessEvent;
@@ -53,15 +51,9 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	protected ACService acService;
 
 	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbedStackedPanel stackPanel, RepositoryEntry entry, boolean scrollToOffers, boolean webCatalog) {
-		super(ureq, wControl, entry, false, false, webCatalog);
+			BreadcrumbedStackedPanel stackPanel, RepositoryEntry entry) {
+		super(ureq, wControl, entry, false, false);
 		this.stackPanel = stackPanel;
-		
-		if (scrollToOffers) {
-			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#offers"));
-		} else {
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
-		}
 	}
 	
 	@Override

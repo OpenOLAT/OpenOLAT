@@ -48,7 +48,7 @@ import org.olat.resource.accesscontrol.model.DefaultACSecurityCallback;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.token.ui.TokenAccessConfigurationController;
-import org.olat.resource.accesscontrol.provider.token.ui.TokenAccessController;
+import org.olat.resource.accesscontrol.provider.token.ui.TokenSubmitController;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
 
@@ -78,13 +78,13 @@ public class TokenAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public String getMethodName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(TokenAccessController.class, locale);
+		Translator translator = Util.createPackageTranslator(TokenSubmitController.class, locale);
 		return translator.translate("token.method");
 	}
 
 	@Override
 	public String getDescription(Locale locale) {
-		Translator translator = Util.createPackageTranslator(TokenAccessController.class, locale);
+		Translator translator = Util.createPackageTranslator(TokenSubmitController.class, locale);
 		return translator.translate("token.method.desc");
 	}
 	
@@ -94,8 +94,8 @@ public class TokenAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
-		return new TokenAccessController(ureq, wControl, link, identity);
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
+		return new TokenSubmitController(ureq, wControl, link, bookedIdentity);
 	}
 
 	@Override

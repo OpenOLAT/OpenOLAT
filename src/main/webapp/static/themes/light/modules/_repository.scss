@@ -2,6 +2,7 @@
 	position: relative;
 	
 	.o_header {
+		padding-bottom: $o-coursesite-meta-header-padding-bottom	;
 		border-bottom: $o-coursesite-meta-header-border-width solid $o-coursesite-meta-header-border;
 		
 		.o_lead {
@@ -17,7 +18,6 @@
 			.o_media  {
 				order: 2;
 				margin-left: 2em;
-				margin-bottom: 2em;
 				max-width: floor(570px * 0.75); //570x380
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
 					max-width: floor(570px * 0.5); //570x380	
@@ -31,7 +31,10 @@
 					}
 				}
 			}
-			.o_meta {
+			.o_meta_wrapper {
+				display: flex;
+				flex-direction: column;
+				
 				flex-grow: 1;
 				flex-shrink: 1;
 				width: 100%;
@@ -65,33 +68,29 @@
 				line-height: normal;
 			}
 			
-			.o_author{
+			.o_author {
 				color: $o-coursesite-meta-author-color;
 				white-space: normal;
 			}
 			
-			.o_price {
-				font-size: $o-coursesite-meta-price-font-size;
-				font-weight: $o-coursesite-meta-price-font-weight;
+			.o_header_offers {
+				max-width: math.div($o-page-width-max, 3);
+				margin-top: auto;
 			}
 			
-			.o_start_message {
-				width: 30%;
-				margin-top: 5px;
-				@media (max-width: $screen-xs-max) {
-					width: 100%;
-				}
-			}
-		
 			.o_start_wrapper {
-				margin: 2em 0 2em 0;
 				.o_start_inner {
+					width: 100%;
+					>.o_button_call_to_action {
+						flex-grow: 2;
+					}
+				
 					display: flex;
 					gap: 20px;
 					flex-wrap: wrap;
 					align-items: center;
 					
-					@media (max-width: $screen-xs-max) {
+					@media (max-width: math.div($o-page-width-max, 3)) {
 						justify-content: center;
 						.o_button_call_to_action {
 							width: 100%;
@@ -257,63 +256,29 @@
 		padding: 0px;
 	}
 }
+.o_ac_offers_container {
+	max-width: $o-ac-offers-container-max-width;
+}
 .o_ac_offers {
-	border: 1px solid $o-ac-offers-border;
-	border-radius: $o-ac-offers-radius;
-	background: $o-ac-offers-bg;
-	padding: $o-ac-offers-padding;
-	
-	display: grid;
-	gap: 2em;
-	
-	.o_ac_method {
-		display:flex;
-		gap: 10px;
+	.o_ac_offer_details {
+		display: flex;
+		flex-direction: column;
 		
-		.o_ac_method_details {
-			h3 {
-				margin-top: 0;
-			}
-			
-			margin-left: auto;
-		
-			display: flex;
-			>div {
-				width: 100%;
-			}
-			button {
-				width: 100%;
-			}
-		}
-		.o_ac_method_price_ammount {
-			font-size: 200%;
+		.o_ac_offer_price_ammount {
+			font-size: 180%;
 			font-weight: bold;
 		}
-	}
-	
-	/* method is on the same line as the selection if only one method available */
-	&.o_ac_one_offer {
-		grid-template-columns: 180px 1fr;
-		.form-group.o_radios_invisible {
-			margin: 0;
+		.o_ac_offer_details_description {
+			margin-top: 10px;
 		}
 	}
-	
-	/* info and details alignment  */
-	container-name: o-offers-cont;
-	container-type: inline-size;
-	.o_ac_method {
-		flex-direction: row;
-		.o_ac_method_details {
-			width: 50%;
-		}
+	.o_ac_offer_message {
+		width: 100%;
+		margin: 0px 5px;
 	}
-	@container o-offers-cont (width < 640px) {
-		.o_ac_method {
-			flex-direction: column;
-			.o_ac_method_details {
-				width: 100%;
-			}
+	.o_ac_offer_custom {
+		button {
+			width: 100%;
 		}
 	}
 }

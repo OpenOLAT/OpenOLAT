@@ -22,7 +22,6 @@ package org.olat.modules.curriculum.ui;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -45,9 +44,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 
 	private final CurriculumElement element;
 	private final boolean isMember;
-	private String startLinkWarning;
-	private String startLinkError;
-	private final Identity identity;
+	private final Identity bookedIdentity;
 
 	@Autowired
 	private CurriculumService curriculumService;
@@ -55,13 +52,13 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	private AccessControlModule acModule;
 
 	public CurriculumElementInfosHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-												  boolean isMember, Identity identity) {
+			boolean isMember, Identity bookedIdentity) {
 		super(ureq, wControl);
 		this.element = element;
 		this.isMember = isMember;
-		this.identity = identity;
-
-		initForm(ureq);
+		this.bookedIdentity = bookedIdentity;
+		
+		init(ureq);
 	}
 
 	@Override
@@ -105,89 +102,100 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	}
 
 	@Override
-	protected void initAccess(UserRequest ureq, FormLayoutContainer layoutCont) {
+	protected void initAccess(UserRequest ureq) {
 		if (ureq.getUserSession().getRoles() == null) {
-			initOffers(layoutCont, Boolean.TRUE);
+			initOffers(ureq, Boolean.TRUE);
 			return;
 		}
 		
-		if (isMember && acService.isAccessRefusedByStatus(element, identity)) {
-			layoutCont.contextPut("warning", translate("access.denied.not.published"));
-			layoutCont.contextPut("warningHint", translate("access.denied.not.published.hint"));
-			
-			startLink = createStartLink(layoutCont);
-			startLink.setEnabled(false);
+		if (isMember && acService.isAccessRefusedByStatus(element, bookedIdentity)) {
+			startCtrl.getInitialComponent().setVisible(true);
+			startCtrl.getStartLink().setEnabled(false);
+			setWarning(translate("access.denied.not.published"), translate("access.denied.not.published.hint"));
 		} else if (isMember) {
-			startLink = createStartLink(layoutCont);
+			startCtrl.getInitialComponent().setVisible(true);
 		} else {
-			initOffers(layoutCont, null);
+			initOffers(ureq, null);
 		}
 	}
 
-	private void initOffers(FormLayoutContainer layoutCont, Boolean webPublish) {
-		AccessResult acResult = acService.isAccessible(element, identity, isMember, false, webPublish, false);
+	private void initOffers(UserRequest ureq, Boolean webPublish) {
+		AccessResult acResult = acService.isAccessible(element, bookedIdentity, isMember, false, webPublish, false);
 		if (acResult.isAccessible()) {
-			startLink = createStartLink(layoutCont);
+			startCtrl.getInitialComponent().setVisible(true);
 		} else if (!acResult.getAvailableMethods().isEmpty()) {
-			updateAccessMaxParticipants();
+			ParticipantsLeftResult result = updateAccessMaxParticipants();
+			if (result.left == ParticipantsLeft.fullyBooked) {
+				startCtrl.getInitialComponent().setVisible(true);
+				startCtrl.getStartLink().setEnabled(false);
+				startCtrl.getStartLink().setIconRightCSS(null);
+				startCtrl.getStartLink().setCustomDisplayText(translate("book"));
+				startCtrl.setError(result.message);
+				return;
+			}
 			
 			if (acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
-				startLink = createStartLink(layoutCont, true);
+				startCtrl.getInitialComponent().setVisible(true);
+				startCtrl.setAutoBooking(true);
+				if (result.left == ParticipantsLeft.almostFullyBooked) {
+					startCtrl.setWarning(result.message);
+				}
 			} else {
-				formatPrice(acResult);
-				createGoToOffersLink(layoutCont, false);
-			}
-		}
-	}
-	
-	private void updateAccessMaxParticipants() {
-		if (isMember || element.getMaxParticipants() == null) {
-			return;
-		}
-		
-		Long numParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(List.of(element), true).get(element.getKey());
-		if (numParticipants != null) {
-			if (numParticipants >= element.getMaxParticipants()) {
-				startLinkError = "<i class=\"o_icon o_ac_offer_fully_booked_icon\"> </i> " + translate("book.fully.booked.unfortunately");
-			} else {
-				Double participantsLeftMessagePercentage = acModule.getParticipantsLeftMessagePercentage();
-				if (participantsLeftMessagePercentage != null) {
-					long leftParticipants = element.getMaxParticipants() - numParticipants;
-					double leftParticipantsPercentage = leftParticipants * 100l / element.getMaxParticipants();
-					if (leftParticipants == 1) {
-						startLinkWarning = "<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.single");
-					} else if (leftParticipantsPercentage < participantsLeftMessagePercentage) {
-						startLinkWarning = "<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.multi", String.valueOf(leftParticipants));
+				showOffers(ureq, acResult.getAvailableMethods(), false, webPublish != null && webPublish, bookedIdentity);
+				if (result.left == ParticipantsLeft.almostFullyBooked) {
+					if (offersCtrl != null) {
+						offersCtrl.setWarning(result.message);
 					}
 				}
 			}
 		}
 	}
 	
+	private ParticipantsLeftResult updateAccessMaxParticipants() {
+		if (isMember || element.getMaxParticipants() == null) {
+			return new ParticipantsLeftResult(ParticipantsLeft.many, null);
+		}
+		
+		Long numParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(List.of(element), true).get(element.getKey());
+		if (numParticipants != null) {
+			if (numParticipants >= element.getMaxParticipants()) {
+				return new ParticipantsLeftResult(ParticipantsLeft.fullyBooked,
+						"<i class=\"o_icon o_ac_offer_fully_booked_icon\"> </i> " + translate("book.fully.booked.unfortunately"));
+			}
+			Double participantsLeftMessagePercentage = acModule.getParticipantsLeftMessagePercentage();
+			if (participantsLeftMessagePercentage != null) {
+				long leftParticipants = element.getMaxParticipants() - numParticipants;
+				double leftParticipantsPercentage = leftParticipants * 100l / element.getMaxParticipants();
+				if (leftParticipants == 1) {
+					return new ParticipantsLeftResult(ParticipantsLeft.almostFullyBooked,
+							"<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.single"));
+				} else if (leftParticipantsPercentage < participantsLeftMessagePercentage) {
+					return new ParticipantsLeftResult(ParticipantsLeft.almostFullyBooked,
+							"<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.multi", String.valueOf(leftParticipants)));
+				}
+			}
+		}
+		
+		return new ParticipantsLeftResult(ParticipantsLeft.many, null);
+	}
+	
+	private record ParticipantsLeftResult(ParticipantsLeft left, String message) {}
+	private enum ParticipantsLeft { fullyBooked, almostFullyBooked, many }
+
 	@Override
 	protected String getStartLinkText() {
 		return translate("open.with.type", element.getType().getDisplayName());
 	}
 
 	@Override
-	protected String getStartLinkWarning() {
-		return startLinkWarning;
-	}
-
-	@Override
-	protected String getStartLinkError() {
-		return startLinkError;
-	}
-
-	@Override
 	protected boolean tryAutoBooking(UserRequest ureq) {
-		AccessResult acResult = acService.isAccessible(element, identity, null, false, null, false);
-		return acService.tryAutoBooking(identity, element, acResult);
+		AccessResult acResult = acService.isAccessible(element, bookedIdentity, null, false, null, false);
+		return acService.tryAutoBooking(bookedIdentity, element, acResult);
 	}
 
 	@Override
 	protected Long getResourceKey() {
 		return element.getResource().getKey();
 	}
-
+	
 }

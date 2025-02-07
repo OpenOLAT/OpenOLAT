@@ -24,12 +24,6 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.ExternalLinkItem;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -85,7 +79,7 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 		this.isMember = isMember;
 		this.closeTabOnLeave = closeTabOnLeave;
 		
-		initForm(ureq);
+		init(ureq);
 	}
 
 	@Override
@@ -129,9 +123,9 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	}
 	
 	@Override
-	protected void initAccess(UserRequest ureq, FormLayoutContainer layoutCont) {
+	protected void initAccess(UserRequest ureq) {
 		if (ureq.getUserSession().getRoles() == null) {
-			initOffers(ureq, layoutCont, false, Boolean.TRUE);
+			initOffers(ureq, false, Boolean.TRUE);
 			return;
 		}
 		
@@ -139,37 +133,37 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 		boolean guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		boolean inviteeOnly  = ureq.getUserSession().getRoles().isInviteeOnly();
 		
-		leaveLink = createLeaveLink(layoutCont, guestOnly, reSecurity.isParticipant());
+		if (!guestOnly && reSecurity.isParticipant() && repositoryService.isParticipantAllowedToLeave(entry)) {
+			startCtrl.getLeaveLink().setVisible(true);
+		}
 		
 		if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) {
-			startLink = createStartLink(layoutCont);
+			startCtrl.getInitialComponent().setVisible(true);
 		} else {
 			if (reSecurity.canLaunch()) {
-				startLink = createStartLink(layoutCont);
+				startCtrl.getInitialComponent().setVisible(true);
 			} else if (isMember && acService.isAccessRefusedByStatus(entry, getIdentity())) {
-				AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage(ureq, entry);
-				layoutCont.contextPut("warning", translate(accessDeniedMessage.messageI18nKey()));
-				layoutCont.contextPut("warningHint", translate(accessDeniedMessage.hintI18nKey(), accessDeniedMessage.hintArgs()));
+				startCtrl.getInitialComponent().setVisible(true);
+				startCtrl.getStartLink().setEnabled(false);
 				
-				startLink = createStartLink(layoutCont);
-				startLink.setEnabled(false);
+				AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage(ureq, entry);
+				setWarning(translate(accessDeniedMessage.messageI18nKey()), translate(accessDeniedMessage.hintI18nKey(), accessDeniedMessage.hintArgs()));
 			} else if (isMember || reSecurity.isMasterCoach()) {
-				AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage(ureq, entry);
-				layoutCont.contextPut("warning", translate(accessDeniedMessage.messageI18nKey()));
-				layoutCont.contextPut("warningHint", translate(accessDeniedMessage.hintI18nKey(), accessDeniedMessage.hintArgs()));
+				startCtrl.getInitialComponent().setVisible(true);
+				startCtrl.getStartLink().setEnabled(false);
 				
-				startLink = createStartLink(layoutCont);
-				startLink.setEnabled(false);
+				AccessDeniedMessage accessDeniedMessage = AccessDeniedFactory.createRepositoryEntryStatusNotPublishedMessage(ureq, entry);
+				setWarning(translate(accessDeniedMessage.messageI18nKey()), translate(accessDeniedMessage.hintI18nKey(), accessDeniedMessage.hintArgs()));
 			} else if(inviteeOnly) {
 				showAccessDenied(AccessDeniedFactory.createNoAccess(ureq, getWindowControl()));
 			} else if (!isMember && entry.isPublicVisible()) {
 				if (acService.isAccessToResourcePending(entry.getOlatResource(), getIdentity())) {
-					layoutCont.contextPut("info", translate("access.denied.not.accepted.yet"));
+					startCtrl.getInitialComponent().setVisible(true);
+					startCtrl.getStartLink().setEnabled(false);
 					
-					startLink = createStartLink(layoutCont);
-					startLink.setEnabled(false);
+					showInfoMessage(translate("access.denied.not.accepted.yet"));
 				} else {
-					initOffers(ureq, layoutCont, guestOnly, null);
+					initOffers(ureq, guestOnly, null);
 				}
 			} else if (guestOnly) {
 				showAccessDenied(AccessDeniedFactory.createNoGuestAccess(ureq, getWindowControl()));
@@ -183,9 +177,9 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 		}
 	}
 
-	private void initOffers(UserRequest ureq, FormLayoutContainer layoutCont, boolean guestOnly, Boolean webPublish) {
+	private void initOffers(UserRequest ureq, boolean guestOnly, Boolean webPublish) {
 		if (webPublish != null && webPublish.booleanValue()) {
-			boolean created = initGuestLink(layoutCont);
+			boolean created = showGuestStartLink();
 			if (created) {
 				return;
 			}
@@ -193,13 +187,13 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 		
 		AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, guestOnly, webPublish, false);
 		if (acResult.isAccessible()) {
-			startLink = createStartLink(layoutCont);
+			startCtrl.getInitialComponent().setVisible(true);
 		} else if (!acResult.getAvailableMethods().isEmpty()) {
 			if (acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
-				startLink = createStartLink(layoutCont, true);
+				startCtrl.getInitialComponent().setVisible(true);
+				startCtrl.setAutoBooking(true);
 			} else {
-				formatPrice(acResult);
-				createGoToOffersLink(layoutCont, guestOnly);
+				showOffers(ureq, acResult.getAvailableMethods(), false, webPublish != null && webPublish, getIdentity());
 			}
 		} else if (!getOffersNowNotInRange(entry, getIdentity()).isEmpty()) {
 			showAccessDenied(AccessDeniedFactory.createOfferNotNow(ureq, getWindowControl(), getOffersNowNotInRange(entry, getIdentity())));
@@ -213,43 +207,23 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 		return CoreSpringFactory.getImpl(ACService.class).getOffers(re, true, false, null, true, null, offerOrganisations);
 	}
 	
-	private boolean initGuestLink(FormLayoutContainer layoutCont) {
+	private boolean showGuestStartLink() {
 		if (acService.isGuestAccessible(entry, true)) {
 			String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
 			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath) + "?guest=true";
-			ExternalLinkItem guestLink = uifactory.addExternalLink("start.guest", url, "_self", layoutCont);
-			guestLink.setCssClass("btn btn-default");
-			guestLink.setName(translate("start.guest"));
+			
+			startCtrl.getInitialComponent().setVisible(true);
+			startCtrl.getStartLink().setVisible(false);
+			startCtrl.getGuestStartLink().setVisible(true);
+			startCtrl.getGuestStartLink().setUrl(url);
 			return true;
 		}
 		return false;
 	}
 	
-	private FormLink createLeaveLink(FormLayoutContainer layoutCont, boolean guestOnly, boolean isParticipant) {
-		if (!guestOnly && isParticipant && repositoryService.isParticipantAllowedToLeave(entry)) {
-			FormLink link = uifactory.addFormLink("leave", "leave", translate("sign.out"), null, layoutCont, Link.NONTRANSLATED);
-			link.setElementCssClass("o_sign_out");
-			link.setIconLeftCSS("o_icon o_icon_sign_out");
-			link.setGhost(true);
-			return link;
-		}
-		
-		return null;
-	}
-	
 	@Override
 	protected String getStartLinkText() {
 		return translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-	}
-
-	@Override
-	protected String getStartLinkWarning() {
-		return null;
-	}
-
-	@Override
-	protected String getStartLinkError() {
-		return null;
 	}
 
 	@Override
@@ -265,7 +239,11 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(leaveDialogBox == source) {
+		if (source == startCtrl) {
+			if (event == LEAVE_EVENT) {
+				doConfirmLeave(ureq);
+			}
+		} else if (leaveDialogBox == source) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				doLeave(ureq);
 				if (!closeTabOnLeave) {
@@ -274,14 +252,6 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 			}
 		}
 		super.event(ureq, source, event);
-	}
-	
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == leaveLink) {
-			doConfirmLeave(ureq);
-		}
-		super.formInnerEvent(ureq, source, event);
 	}
 	
 	private void doConfirmLeave(UserRequest ureq) {

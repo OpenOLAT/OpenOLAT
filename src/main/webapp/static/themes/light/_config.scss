@@ -550,8 +550,7 @@ $o-coursesite-meta-author-color	: $state-success-text !default;
 $o-coursesite-meta-title-font-size	: ceil(($font-size-base * 2.6)) !default; /* same as h1 default size: 36px */
 $o-coursesite-meta-header-border 	: $panel-default-border !default;
 $o-coursesite-meta-header-border-width	: 1px !default; 
-$o-coursesite-meta-price-font-size		: 130% !default;
-$o-coursesite-meta-price-font-weight		: bold !default;
+$o-coursesite-meta-header-padding-bottom	: 2em !default;
 $o-coursesite-sidecol-bg		: $panel-default-heading-bg !default;
 $o-coursesite-sidecol-border	: $panel-default-border !default;
 $o-coursesite-sidecol-radius	: $border-radius-base !default;
@@ -593,13 +592,9 @@ $o-repo-status-color-bright			: #fff;
 $o-repo-access-denied-cross-fill		: $brand-primary  !default;
 
 /* Access control */
+$o-ac-offers-container-max-width		: math.div($o-page-width-max, 3) !default;
 $o-ac-offer-active-color			: #3c763d !default;
 $o-ac-offer-inactive-color			: #8A6D40 !default;
-$o-ac-offers-bg						: $o-coursesite-sidecol-bg !default;
-$o-ac-offers-border					: $o-coursesite-sidecol-border !default;
-$o-ac-offers-radius					: $o-coursesite-sidecol-radius !default;
-$o-ac-offers-padding				: 15px !default;
-
 $o-ac-order-new-color				: $o-labeled-blue-light-color !default;
 $o-ac-order-prepayment-color		: $o-labeled-yellow-light-color !default;
 $o-ac-order-payed-color				: $o-labeled-green-light-color !default;

@@ -48,35 +48,40 @@ public class OffersController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	
-	private final OfferSelectionController offerSelectionCtrl;
+	private OfferSelectionController offerSelectionCtrl;
+	private OfferDetailsController detailsCtrl;
 	private Controller accessCtrl;
-	private Identity identity;
+	private Identity bookedIdentity;
 
 	private final boolean webCatalog;
 	
 	@Autowired
 	private AccessControlModule acModule;
 
-	public OffersController(UserRequest ureq, WindowControl wControl, List<OfferAccess> offers, boolean withTitle, boolean webCatalog) {
-		this(ureq, wControl, offers, withTitle, webCatalog, ureq.getIdentity());
-	}
-
-	public OffersController(UserRequest ureq, WindowControl wControl, List<OfferAccess> offers, boolean withTitle, boolean webCatalog, Identity identity) {
+	public OffersController(UserRequest ureq, WindowControl wControl, List<OfferAccess> offers, boolean withTitle, boolean webCatalog, Identity bookedIdentity) {
 		super(ureq, wControl);
 		this.webCatalog = webCatalog;
-		this.identity = identity;
+		this.bookedIdentity = bookedIdentity;
 		mainVC = createVelocityContainer("offers");
 		putInitialPanel(mainVC);
 		
 		mainVC.contextPut("title", Boolean.valueOf(withTitle));
 		
-		offerSelectionCtrl = new OfferSelectionController(ureq, wControl, offers);
-		listenTo(offerSelectionCtrl);
-		mainVC.put("offerSelection", offerSelectionCtrl.getInitialComponent());
-		
-		mainVC.contextPut("oneOfferOnly", offers.size() == 1);
+		if (offers.size() > 1) {
+			offerSelectionCtrl = new OfferSelectionController(ureq, wControl, offers);
+			listenTo(offerSelectionCtrl);
+			mainVC.put("offerSelection", offerSelectionCtrl.getInitialComponent());
+		}
 		
 		updateOfferUI(ureq, offers.get(0));
+	}
+	
+	public void setWarning(String warning) {
+		mainVC.contextPut("warning", warning);
+	}
+	
+	public void setError(String error) {
+		mainVC.contextPut("error", error);
 	}
 
 	@Override
@@ -108,14 +113,19 @@ public class OffersController extends BasicController {
 		super.event(ureq, source, event);
 	}
 
-	private void updateOfferUI(UserRequest ureq, OfferAccess offer) {
+	private void updateOfferUI(UserRequest ureq, OfferAccess offerAccess) {
+		removeAsListenerAndDispose(detailsCtrl);
 		removeAsListenerAndDispose(accessCtrl);
 		
+		detailsCtrl = new OfferDetailsController(ureq, getWindowControl(), offerAccess);
+		listenTo(detailsCtrl);
+		mainVC.put("details", detailsCtrl.getInitialComponent());
+		
 		if (webCatalog) {
-			accessCtrl = new OfferLoginController(ureq, getWindowControl(), offer);
+			accessCtrl = new LoginOrRegisterController(ureq, getWindowControl());
 		} else {
-			AccessMethodHandler handler = acModule.getAccessMethodHandler(offer.getMethod().getType());
-			accessCtrl = handler.createAccessController(ureq, getWindowControl(), offer, identity);
+			AccessMethodHandler handler = acModule.getAccessMethodHandler(offerAccess.getMethod().getType());
+			accessCtrl = handler.createAccessController(ureq, getWindowControl(), offerAccess, bookedIdentity);
 		}
 		listenTo(accessCtrl);
 		mainVC.put("offer", accessCtrl.getInitialComponent());

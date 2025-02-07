@@ -47,7 +47,6 @@ import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalAccessConfigurationController;
-import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalAccessController;
 import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalSubmitController;
 import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalTransactionDetailsController;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
@@ -100,8 +99,8 @@ public class PaypalAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
-		return new PaypalAccessController(ureq, wControl, link);
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
+		return new PaypalSubmitController(ureq, wControl, link);
 	}
 
 	@Override

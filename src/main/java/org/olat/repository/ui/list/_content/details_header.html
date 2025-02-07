@@ -5,76 +5,56 @@
 				$r.render("thumbnail")
 			</div>
 		#end
-		<div class="o_meta">
-			#if($externalRef)
-				<div class="o_ext_ref o_nowrap">
-					$r.escapeHtml($externalRef)
-				</div>
-			#end
-			<h2>
-				<i class="o_icon o_icon-lg $iconCssClass"> </i>
-				$r.escapeHtml($title)
-			</h2>
-			
-			#if($r.isNotEmpty($teaser))
-				<p class="o_teaser">$r.escapeHtml($teaser)</p>
-			#end
-			
-			#if($educationalType)
-				<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
-					<span>$educationalType</span>
-				</span>
-			#end
-			
-			#if($authors)
-				<div class="o_author">
-					<span class="text-muted">$r.translate("course.made.by")</span> 
-					$r.escapeHtml($authors)
-				</div>
-			#end
-			
-			#if($r.isNotEmpty($info))
-				<div class="o_info_with_icon">
-					<div class="o_multi_line">$info</div>
-				</div>
-			#end
-			
-			#if($r.isNotEmpty($warning))
-				<div class="o_warning_with_icon">
-					<h4 class="o_multi_line">$warning</h4>
-					<div class="o_multi_line">$warningHint</div>
-				</div>
-			#end
-			
-			#if($r.available("start") || $r.available("start.guest"))
-				<div class="o_start_wrapper">
-					#if($r.isNotEmpty($price))
-						<div class="o_price">
-							$price
-						</div>
-					#end
-					#if($r.isNotEmpty($startLinkWarning))
-						<div class="o_start_message o_warning_line">
-							$startLinkWarning
-						</div>
-					#end
-					#if($r.isNotEmpty($startLinkError))
-						<div class="o_start_message o_error_line">
-							$startLinkError
-						</div>
-					#end
-					<div class="o_start_inner">
-						#if($r.available("start"))
-							$r.render("start")
-						#else
-							$r.render("start.guest")
-						#end
-						#if($r.available("leave"))
-							$r.render("leave")
-						#end
+		<div class="o_meta_wrapper">
+			<div class="o_meta">
+				#if($externalRef)
+					<div class="o_ext_ref o_nowrap">
+						$r.escapeHtml($externalRef)
 					</div>
-				</div>
-			#end
+				#end
+				<h2>
+					<i class="o_icon o_icon-lg $iconCssClass"> </i>
+					$r.escapeHtml($title)
+				</h2>
+				
+				#if($r.isNotEmpty($teaser))
+					<p class="o_teaser">$r.escapeHtml($teaser)</p>
+				#end
+				
+				#if($educationalType)
+					<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
+						<span>$educationalType</span>
+					</span>
+				#end
+				
+				#if($authors)
+					<div class="o_author">
+						<span class="text-muted">$r.translate("course.made.by")</span> 
+						$r.escapeHtml($authors)
+					</div>
+				#end
+				
+				#if($r.isNotEmpty($info))
+					<div class="o_info_with_icon">
+						<div class="o_multi_line">$info</div>
+					</div>
+				#end
+				
+				#if($r.isNotEmpty($warning))
+					<div class="o_warning_with_icon">
+						<h4 class="o_multi_line">$warning</h4>
+						<div class="o_multi_line">$warningHint</div>
+					</div>
+				#end
+			</div>
+			
+			<div class="o_header_offers">
+				#if($r.available("offers") && $r.visible("offers"))
+					$r.render("offers")
+				#elseif($r.available("start") && $r.visible("start"))
+					$r.render("start")
+				#end
+			</div>
 		</div>
 	</div>
 	#if($r.available("access.refused"))

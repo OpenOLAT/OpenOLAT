@@ -17,34 +17,29 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.resource.accesscontrol.provider.invoice.ui;
+package org.olat.resource.accesscontrol.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
-import org.olat.resource.accesscontrol.OfferAccess;
-import org.olat.resource.accesscontrol.ui.AbstractAccessController;
 
-/**
- * 
- * Initial date: 5 Nov 2024<br>
- * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
- *
- */
-public class InvoiceAccessController extends AbstractAccessController {
+public class LoginOrRegisterController extends FormBasicController implements FormController {
 
-	private final Identity identity;
-
-	public InvoiceAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
-		super(ureq, wControl, link);
-		this.identity = identity;
-		init(ureq);
+	public LoginOrRegisterController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "offer_login_button");
+		
+		initForm(ureq);
 	}
 
 	@Override
-	protected Controller createDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new InvoiceSubmitController(ureq, wControl, link, identity);
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		uifactory.addFormSubmitButton("login.or.register", formLayout);
 	}
 
+	@Override
+	protected void formOK(UserRequest ureq) {
+		fireEvent(ureq, OffersController.LOGIN_EVENT);
+	}
 }

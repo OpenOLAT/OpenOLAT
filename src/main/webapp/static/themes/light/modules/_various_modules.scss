@@ -1143,8 +1143,10 @@ div.o_reminder_custom_email {
 			margin-right: 5px;
 		}
 		display: flex;
+		align-items: baseline;
 		.o_icon_panel_title_label {
 			margin-left: auto;
+			align-self: start;
 		}
 	}
 	

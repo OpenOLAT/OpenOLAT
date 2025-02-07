@@ -45,7 +45,6 @@ import org.olat.resource.accesscontrol.model.AccessMethodSecurityCallback;
 import org.olat.resource.accesscontrol.model.DefaultACSecurityCallback;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.free.ui.FreeAccessConfigurationController;
-import org.olat.resource.accesscontrol.provider.free.ui.FreeAccessController;
 import org.olat.resource.accesscontrol.provider.free.ui.FreeSubmitController;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
@@ -97,8 +96,8 @@ public class FreeAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
-		return new FreeAccessController(ureq, wControl, link, identity);
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
+		return new FreeSubmitController(ureq, wControl, link, bookedIdentity);
 	}
 
 	@Override

@@ -18,11 +18,6 @@
 		$r.render("metadata")
 	</div>	
 	<div class="o_repo_footer #if($hasDescription) o_repo_column #end">
-		#if($r.available("offers"))
-			<div id="offers">
-				$r.render("offers")
-			</div>
-		#end
 		$r.render("link")
 		#if($r.available("comments"))
 			$r.render("comments")

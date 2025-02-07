@@ -21,17 +21,16 @@ package org.olat.resource.accesscontrol.provider.token.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,57 +40,62 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TokenSubmitController extends FormBasicController implements Controller {
 	
-	private TextElement tokenEl;
+	private CloseableModalController cmc;
+	private TokenSubmitDetailsController detailsCtrl;
 
 	private final OfferAccess link;
-	private final Identity identity;
+	private final Identity bookedIdentity;
 
-	@Autowired
-	private ACService acService;
-
-	public TokenSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
+	public TokenSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
 		super(ureq, wControl, "submit");
 		this.link = link;
-		this.identity = identity;
+		this.bookedIdentity = bookedIdentity;
 
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer elementCont = FormLayoutContainer.createVerticalFormLayout("elements", getTranslator());
-		elementCont.setRootForm(mainForm);
-		formLayout.add(elementCont);
-		
-		tokenEl = uifactory.addTextElement("token", "accesscontrol.token", 255, "", elementCont);
-		tokenEl.setElementCssClass("o_sel_accesscontrol_token_entry");
-		
-		uifactory.addFormSubmitButton("access.button", formLayout);
+		FormSubmit submitButton = uifactory.addFormSubmitButton("access.button", formLayout);
+		submitButton.setElementCssClass("o_button_call_to_action");
 	}
+	
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
-		
-		String token = tokenEl.getValue();
-		tokenEl.clearError();
-		if (token == null || token.length() < 2) {
-			tokenEl.setErrorKey("invalid.token.format");
-			allOk = false;
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (detailsCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+			if (event instanceof AccessEvent) {
+				fireEvent(ureq, event);
+			}
+		} else if(cmc == source) {
+			cleanUp();
 		}
-		
-		return allOk && super.validateFormLogic(ureq);
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(detailsCtrl);
+		removeAsListenerAndDispose(cmc);
+		detailsCtrl = null;
+		cmc = null;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String token = tokenEl.getValue();
-		AccessResult result = acService.accessResource(identity, link, token, getIdentity());
-		
-		if (result.isAccessible()) {
-			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);
-		} else {
-			String msg = translate("invalid.token");
-			fireEvent(ureq, new AccessEvent(AccessEvent.ACCESS_FAILED, msg));
-		}
+		doOpenDetailsSubmit(ureq);
 	}
+
+	private void doOpenDetailsSubmit(UserRequest ureq) {
+		if (guardModalController(detailsCtrl)) return;
+		
+		detailsCtrl = new TokenSubmitDetailsController(ureq, getWindowControl(), link, bookedIdentity);
+		listenTo(detailsCtrl);
+		
+		String title = translate("token.details.title", StringHelper.escapeHtml(link.getOffer().getResourceDisplayName()));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), detailsCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 }

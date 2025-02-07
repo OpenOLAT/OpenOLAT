@@ -73,17 +73,17 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	private BillingAddressController editCtrl;
 
 	private final OfferAccess link;
-	private final Identity identity;
+	private final Identity bookedIdentity;
 	private BillingAddress billingAddress;
 	
 	@Autowired
 	private ACService acService;
 
-	protected InvoiceSubmitDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
+	protected InvoiceSubmitDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(BillingAddressController.class, getLocale(), getTranslator()));
 		this.link = link;
-		this.identity = identity;
+		this.bookedIdentity = bookedIdentity;
 		
 		initForm(ureq);
 	}
@@ -127,7 +127,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		
 		BillingAddressSearchParams searchParams = new BillingAddressSearchParams();
 		searchParams.setEnabled(Boolean.TRUE);
-		searchParams.setIdentityKeys(List.of(identity));
+		searchParams.setIdentityKeys(List.of(bookedIdentity));
 		acService.getBillingAddresses(searchParams).forEach(
 				address -> billingAddressSV.add(SelectionValues.entry(
 						address.getKey().toString(),
@@ -209,7 +209,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		AccessResult result = acService.accessResource(identity, link, null, getIdentity());
+		AccessResult result = acService.accessResource(bookedIdentity, link, null, getIdentity());
 		
 		if (result.isAccessible()) {
 			Order order = result.getOrder();
@@ -233,7 +233,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	private void doCreateBillingAddress(UserRequest ureq) {
 		if (guardModalController(editCtrl)) return;
 		
-		editCtrl = new BillingAddressController(ureq, getWindowControl(), null, null, identity);
+		editCtrl = new BillingAddressController(ureq, getWindowControl(), null, null, bookedIdentity);
 		listenTo(editCtrl);
 		
 		String title = translate("billing.address.create");

@@ -45,8 +45,6 @@ import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.OffersController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +66,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	private RepositoryEntryResourceInfoDetailsHeaderController resourceInfoHeaderCtrl;
 	private final RepositoryEntryDetailsDescriptionController descriptionCtrl;
 	private final RepositoryEntryDetailsMetadataController metadataCtrl;
-	private OffersController offersCtrl;
 	private final RepositoryEntryDetailsLinkController linkCtrl;
 	private RepositoryEntryDetailsTechnicalController technicalDetailsCtrl;
 
@@ -81,12 +78,10 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	private RepositoryModule repositoryModule;
 
 	@Autowired
-	private ACService acService;
-	@Autowired
 	private CourseModule courseModule;
 
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean isResourceInfoView, boolean closeTabOnLeave, boolean webCatalog) {
+			boolean isResourceInfoView, boolean closeTabOnLeave) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
@@ -118,21 +113,6 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		listenTo(descriptionCtrl);
 		mainVC.put("description", descriptionCtrl.getInitialComponent());
 		mainVC.contextPut("hasDescription", Boolean.valueOf(descriptionCtrl.hasDescription()));
-		
-		if (!isMember) {
-			AccessResult acResult = ureq.getUserSession().getRoles() == null
-					? acService.isAccessible(entry, null, Boolean.FALSE, false, Boolean.TRUE, false)
-					: acService.isAccessible(entry, getIdentity(), null, ureq.getUserSession().getRoles().isGuestOnly(), null, false);
-			if (acResult.isAccessible()) {
-				fireEvent(ureq, new BookedEvent(entry));
-			} else if (!acResult.getAvailableMethods().isEmpty()) {
-				if (acResult.getAvailableMethods().size() > 1 || !acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
-					offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false, webCatalog);
-					listenTo(offersCtrl);
-					mainVC.put("offers", offersCtrl.getInitialComponent());
-				}
-			}
-		}
 		
 		linkCtrl = new RepositoryEntryDetailsLinkController(ureq, wControl, entry);
 		listenTo(linkCtrl);
@@ -197,19 +177,15 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 				fireEvent(ureq, event);
 			} else if (event instanceof LeavingEvent) {
 				fireEvent(ureq, event);
+			} else if (event == AccessEvent.ACCESS_OK_EVENT) {
+				doStart(ureq);
+				fireEvent(ureq, new BookedEvent(entry));
+			} else if (event == OffersController.LOGIN_EVENT) {
+				fireEvent(ureq, new BookEvent(entry.getOlatResource().getKey()));
 			}
 		} else if (source == resourceInfoHeaderCtrl) {
 			if (event == RepositoryEntryResourceInfoDetailsHeaderController.START_EVENT) {
 				doStart(ureq);
-			}
-		} else if (source == offersCtrl) {
-			if (event instanceof AccessEvent aeEvent) {
-				if (event.equals(AccessEvent.ACCESS_OK_EVENT)) {
-					doStart(ureq);
-					fireEvent(ureq, new BookedEvent(entry));
-				}
-			} else if (event == OffersController.LOGIN_EVENT) {
-				fireEvent(ureq, new BookEvent(entry.getOlatResource().getKey()));
 			}
 		}
 		super.event(ureq, source, event);

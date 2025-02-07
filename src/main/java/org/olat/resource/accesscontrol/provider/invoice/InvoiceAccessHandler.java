@@ -47,7 +47,7 @@ import org.olat.resource.accesscontrol.model.DefaultACSecurityCallback;
 import org.olat.resource.accesscontrol.model.NotAvailableACSecurityCallback;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.invoice.ui.InvoiceAccessConfigurationController;
-import org.olat.resource.accesscontrol.provider.invoice.ui.InvoiceAccessController;
+import org.olat.resource.accesscontrol.provider.invoice.ui.InvoiceSubmitController;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
 
@@ -78,13 +78,13 @@ public class InvoiceAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public String getMethodName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(InvoiceAccessController.class, locale);
+		Translator translator = Util.createPackageTranslator(InvoiceSubmitController.class, locale);
 		return translator.translate("invoice.method");
 	}
 
 	@Override
 	public String getDescription(Locale locale) {
-		Translator translator = Util.createPackageTranslator(InvoiceAccessController.class, locale);
+		Translator translator = Util.createPackageTranslator(InvoiceSubmitController.class, locale);
 		return translator.translate("invoice.method.desc");
 	}
 	
@@ -96,8 +96,8 @@ public class InvoiceAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
-		return new InvoiceAccessController(ureq, wControl, link, identity);
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
+		return new InvoiceSubmitController(ureq, wControl, link, bookedIdentity);
 	}
 
 	@Override

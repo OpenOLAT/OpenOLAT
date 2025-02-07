@@ -1,0 +1,26 @@
+<div class="o_header_start o_block_top">
+	#if($r.visible("start") || $r.visible("start.guest"))
+		<div class="o_start_wrapper">
+			#if($r.isNotEmpty($warning))
+				<div class="o_start_message o_warning_line">
+					$warning
+				</div>
+			#end
+			#if($r.isNotEmpty($error))
+				<div class="o_start_message o_error_line">
+					$error
+				</div>
+			#end
+			<div class="o_start_inner">
+				#if($r.available("start") && $r.visible("start"))
+					$r.render("start")
+				#elseif($r.available("start.guest") && $r.visible("start.guest"))
+					$r.render("start.guest")
+				#end
+				#if($r.available("leave") && $r.visible("leave"))
+					$r.render("leave")
+				#end
+			</div>
+		</div>
+	#end
+</div>

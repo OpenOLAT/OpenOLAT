@@ -29,8 +29,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.CommandFactory;
-import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -47,8 +45,6 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureBlocksTimelineController;
 import org.olat.repository.ui.author.MediaContainerFilter;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.OffersController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,8 +61,8 @@ public class CurriculumElementInfosController extends BasicController implements
 	private CurriculumElementInfosHeaderController headerCtrl;
 	private CurriculumElementInfosOutlineController outlineCtrl;
 	private CurriculumElementInfoTaughtByController taughtByCtrl;
-	private OffersController offersCtrl;
 	private CurriculumElementInfosOverviewController overviewCtrl;
+	private LectureBlocksTimelineController lectureBlocksCtrl;
 
 	private final CurriculumElement element;
 	private VFSContainer mediaContainer;
@@ -77,7 +73,6 @@ public class CurriculumElementInfosController extends BasicController implements
 	private Boolean creditsOpen = Boolean.TRUE;
 	private Boolean outlineOpen = Boolean.TRUE;
 	private Boolean taughtbyOpen = Boolean.TRUE;
-	private Boolean offersOpen = Boolean.TRUE;
 
 	@Autowired
 	private CurriculumService curriculumService;
@@ -85,23 +80,18 @@ public class CurriculumElementInfosController extends BasicController implements
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
-	@Autowired
-	private ACService acService;
-	private LectureBlocksTimelineController lectureBlocksCtrl;
 
-	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element, 
-											boolean scrollToOffers, Identity identity) {
+	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
+			Identity bookedIdentity) {
 		super(ureq, wControl);
 		this.element = element;
 		mainVC = createVelocityContainer("curriculum_element_infos");
 		putInitialPanel(mainVC);
 		
-		Boolean webPublish = Boolean.TRUE;
 		Boolean isMember = Boolean.FALSE;
-		identity = identity != null ? identity : getIdentity();
-		if (identity != null) {
-			webPublish = null;
-			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(identity)).isEmpty();
+		bookedIdentity = bookedIdentity != null ? bookedIdentity : getIdentity();
+		if (bookedIdentity != null) {
+			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(bookedIdentity)).isEmpty();
 		}
 		
 		List<LectureBlock> lectureBlocks = List.of();
@@ -114,7 +104,7 @@ public class CurriculumElementInfosController extends BasicController implements
 		
 		
 		// Header
-		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, isMember, identity);
+		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, isMember, bookedIdentity);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
@@ -170,20 +160,6 @@ public class CurriculumElementInfosController extends BasicController implements
 			}
 		}
 		
-		// Offers
-		AccessResult acResult = acService.isAccessible(element, identity, isMember, false, webPublish, false);
-		if (acResult.isAccessible()) {
-			fireEvent(ureq, new BookedEvent(element));
-		} else if (!StringHelper.containsNonWhitespace(headerCtrl.getStartLinkError()) && !acResult.getAvailableMethods().isEmpty()) {
-			if (acResult.getAvailableMethods().size() > 1 || !acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
-				boolean webCatalog = webPublish != null? webPublish.booleanValue(): false;
-				offersCtrl = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), false, webCatalog, identity);
-				listenTo(offersCtrl);
-				mainVC.put("offers", offersCtrl.getInitialComponent());
-				mainVC.contextPut("offersOpen", offersOpen);
-			}
-		}
-		
 		// Overview and lecture blocks	
 		overviewCtrl = new CurriculumElementInfosOverviewController(ureq, getWindowControl(), element, lectureBlocks.size());
 		listenTo(overviewCtrl);
@@ -193,12 +169,6 @@ public class CurriculumElementInfosController extends BasicController implements
 			lectureBlocksCtrl = new LectureBlocksTimelineController(ureq, getWindowControl(), lectureBlocks, true);
 			listenTo(lectureBlocksCtrl);
 			mainVC.put("lectures", lectureBlocksCtrl.getInitialComponent());
-		}
-		
-		if (scrollToOffers) {
-			getWindowControl().getWindowBackOffice().sendCommandTo(FunctionCommand.scrollToElemId("#offers"));
-		} else {
-			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		}
 	}
 	
@@ -217,9 +187,7 @@ public class CurriculumElementInfosController extends BasicController implements
 		if (source == headerCtrl) {
 			if (event instanceof BookEvent) {
 				fireEvent(ureq, event);
-			}
-		} else if (source == offersCtrl) {
-			if (event == AccessEvent.ACCESS_OK_EVENT) {
+			} else if (event == AccessEvent.ACCESS_OK_EVENT) {
 				fireEvent(ureq, new BookedEvent(element));
 			} else if (event == OffersController.LOGIN_EVENT) {
 				fireEvent(ureq, new BookEvent(element.getResource().getKey()));
@@ -260,11 +228,6 @@ public class CurriculumElementInfosController extends BasicController implements
 			if (StringHelper.containsNonWhitespace(taughtbyOpenVal)) {
 				taughtbyOpen = Boolean.valueOf(taughtbyOpenVal);
 				mainVC.contextPut("taughtbyOpen", taughtbyOpen);
-			}
-			String offersOpenVal = ureq.getParameter("offersOpen");
-			if (StringHelper.containsNonWhitespace(offersOpenVal)) {
-				offersOpen = Boolean.valueOf(offersOpenVal);
-				mainVC.contextPut("offersOpen", offersOpen);
 			}
 		}
 	}

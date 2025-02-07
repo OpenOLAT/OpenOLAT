@@ -45,9 +45,9 @@ import org.olat.resource.accesscontrol.model.AuthorACSecurityCallback;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalSubmitController;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutAccessConfigurationController;
-import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutAccessController;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutSubmitController;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutTransactionDetailsController;
-import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalSmartButtonAccessController;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalSmartButtonPaymentController;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
 
@@ -84,7 +84,7 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public String getMethodName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(PaypalCheckoutAccessController.class, locale);
+		Translator translator = Util.createPackageTranslator(PaypalCheckoutSubmitController.class, locale);
 		return translator.translate("paypal.checkout.method");
 	}
 
@@ -100,12 +100,12 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
 		PaypalCheckoutModule paypalModule = CoreSpringFactory.getImpl(PaypalCheckoutModule.class);
 		if(paypalModule.isSmartButtons()) {
-			return new PaypalSmartButtonAccessController(ureq, wControl, link);
+			return new PaypalSmartButtonPaymentController(ureq, wControl, link);
 		}
-		return new PaypalCheckoutAccessController(ureq, wControl, link);
+		return new PaypalCheckoutSubmitController(ureq, wControl, link);
 	}
 
 	@Override

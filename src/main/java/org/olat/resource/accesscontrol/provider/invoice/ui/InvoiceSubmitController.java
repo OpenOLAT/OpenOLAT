@@ -22,17 +22,15 @@ package org.olat.resource.accesscontrol.provider.invoice.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
-import org.olat.resource.accesscontrol.ui.PriceFormat;
 
 /**
  * 
@@ -46,36 +44,19 @@ public class InvoiceSubmitController extends FormBasicController implements Cont
 	private InvoiceSubmitDetailsController detailsCtrl;
 
 	private OfferAccess link;
-	private final Identity identity;
+	private final Identity bookedIdentity;
 
-	protected InvoiceSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity identity) {
+	public InvoiceSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
 		super(ureq, wControl, "submit");
 		this.link = link;
-		this.identity = identity;
+		this.bookedIdentity = bookedIdentity;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		Offer offer = link.getOffer();
-		
-		FormLayoutContainer elementCont = FormLayoutContainer.createVerticalFormLayout("elements", getTranslator());
-		elementCont.setRootForm(mainForm);
-		formLayout.add(elementCont);
-		
-		if (offer.getCancellingFee() != null) {
-			String cancellingFee = PriceFormat.fullFormat(offer.getCancellingFee());
-			if (offer.getCancellingFeeDeadlineDays() != null) {
-				if (offer.getCancellingFeeDeadlineDays() == 1) {
-					cancellingFee += " (" + translate("cancelling.fee.addon.one") + ")";
-				} else {
-					cancellingFee += " (" + translate("cancelling.fee.addon", offer.getCancellingFeeDeadlineDays().toString()) + ")";
-				}
-			}
-			uifactory.addStaticTextElement("cancelling.fee", cancellingFee, elementCont);
-		}
-		
-		uifactory.addFormSubmitButton("access.button", formLayout);
+		FormSubmit submitButton = uifactory.addFormSubmitButton("access.button", formLayout);
+		submitButton.setElementCssClass("o_button_call_to_action");
 	}
 	
 	@Override
@@ -107,7 +88,7 @@ public class InvoiceSubmitController extends FormBasicController implements Cont
 	private void doOpenDetailsSubmit(UserRequest ureq) {
 		if (guardModalController(detailsCtrl)) return;
 		
-		detailsCtrl = new InvoiceSubmitDetailsController(ureq, getWindowControl(), link, identity);
+		detailsCtrl = new InvoiceSubmitDetailsController(ureq, getWindowControl(), link, bookedIdentity);
 		listenTo(detailsCtrl);
 		
 		String title = translate("access.invoice.details.title", StringHelper.escapeHtml(link.getOffer().getResourceDisplayName()));

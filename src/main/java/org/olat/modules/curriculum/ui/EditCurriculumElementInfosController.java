@@ -160,7 +160,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 			
 			uifactory.addSpacerElement("spacer1", formLayout, false);
 			
-			authorsEl = uifactory.addTextElement("cif.authors", "cif.authors", 150, element.getTeaser(), formLayout);
+			authorsEl = uifactory.addTextElement("cif.authors", "cif.authors", 150, element.getAuthors(), formLayout);
 			authorsEl.setEnabled(canEdit && !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.authors));
 			
 			Map<TaughtBy,Integer> taughtByCounts = getTaughtByCounts();

@@ -1,4 +1,4 @@
-:<div class="o_curriculum_element_infos">
+<div class="o_curriculum_element_infos">
 
 ## classes to look like the learning resource header
 <div class="o_repo_details">
@@ -144,29 +144,6 @@ jQuery(function() {
 	jQuery('#collapse_credits_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_credits_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 		$f.openFfXHREvent(false, false, true), "creditsOpen","true");
-	})
-});
-</script>
-#end
-
-#if($r.available("offers"))
-<div id="offers" class="o_curriculum_element_infos_offers">
-	<fieldset><legend>
-	<h4 onclick="jQuery('#collapse_offers_${r.getCId()}').collapse('toggle')">
-		<i id="collapse_offers_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($offersOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("infos.offers")
-	</h4>
-	</fieldset></legend>
-	<div id="collapse_offers_${r.getCId()}" class="collapse #if($offersOpen) in #end">$r.render("offers")</div>
-</div>
-<script>
-jQuery(function() {
-	jQuery('#collapse_offers_${r.getCId()}').on('hide.bs.collapse', function () {
-		jQuery('#collapse_offers_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, true), "offersOpen","false");
-	})
-	jQuery('#collapse_offers_${r.getCId()}').on('show.bs.collapse', function () {
-		jQuery('#collapse_offers_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, true), "offersOpen","true");
 	})
 });
 </script>

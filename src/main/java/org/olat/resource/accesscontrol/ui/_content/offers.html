@@ -1,9 +1,30 @@
-#if($title)
-	<h3>
-		<i class="o_icon o_icon-fw o_icon_booking"></i> $r.translate("access.title")
-	</h3>
-#end
-<div class="o_ac_offers #if($oneOfferOnly)o_ac_one_offer #end">
-	$r.render("offerSelection")
-	$r.render("offer")
+<div class="o_ac_offers_container">
+	#if($title)
+		<h3>
+			<i class="o_icon o_icon-fw o_icon_booking"></i> $r.translate("access.title")
+		</h3>
+	#end
+	<div class="o_ac_offers">
+		<div class="o_block_bottom">
+			$r.render("details")
+		</div>
+		#if($r.available("offerSelection"))
+			<div class="o_ac_offer_selection">
+				$r.render("offerSelection")
+			</div>
+		#end
+		#if($r.isNotEmpty($warning))
+			<div class="o_ac_offer_message o_warning_line">
+				$warning
+			</div>
+		#end
+		#if($r.isNotEmpty($error))
+			<div class="o_ac_offer_message o_error_line">
+				$error
+			</div>
+		#end
+		<div class="o_ac_offer_custom">
+			$r.render("offer")
+		</div>
+	</div>
 </div>
