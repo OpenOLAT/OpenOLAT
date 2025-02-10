@@ -143,7 +143,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				if(businessPath != null) {
 					usess.putEntryInNonClearedStore(AUTHDISPATCHER_BUSINESSPATH, businessPath);
 				}
-				DispatcherModule.forwardToDefault(request, response);
+				forwardToDefaultDispatcher(request, response);
 				return;
 			} else if (guestAccess.equals(TRUE)) {
 				// try to log in as anonymous
@@ -164,7 +164,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 					if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 						DispatcherModule.redirectToServiceNotAvailable(response);
 					}
-					redirectToDefaultDispatcher(request, response); // error, redirect to login screen
+					forwardToDefaultDispatcher(request, response); // error, redirect to login screen
 					return;
 				}
 				// else now logged in as anonymous user, continue
@@ -176,13 +176,13 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			//kill session if not secured via SSL
 			if (forceSecureAccessOnly && !request.isSecure()) {
 				invalidateSession(usess);
-				redirectToDefaultDispatcher(request, response);
+				forwardToDefaultDispatcher(request, response);
 				return;
 			}
 			
 			SessionInfo sessionInfo = usess.getSessionInfo();
 			if (sessionInfo == null) {
-				redirectToDefaultDispatcher(request,response);
+				forwardToDefaultDispatcher(request,response);
 				return;
 			}
 			
@@ -277,7 +277,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			ws = Windows.getWindows(ureq);
 		} catch (IllegalStateException e) {
 			log.error("", e);// session was invalidate, return to login screen
-			redirectToDefaultDispatcher(request, response);
+			forwardToDefaultDispatcher(request, response);
 			return;
 		}
 		ws.disposeClosedWindows(ureq);
@@ -286,7 +286,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			if(request.getPathInfo() != null && request.getPathInfo().contains("close-window")) {
 				DispatcherModule.setNotContent(request.getPathInfo(), response);
 			} else if(usess.isSavedSession() && !usess.getHistoryStack().isEmpty()) {
-				redirectToDefaultDispatcher(request, response);
+				forwardToDefaultDispatcher(request, response);
 			} else {
 				DispatcherModule.sendNotFound(request.getRequestURI(), response);
 			}
@@ -309,7 +309,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		}
 	}
 	
-	private boolean redirectToDefaultDispatcher(HttpServletRequest request, HttpServletResponse response) {
+	private boolean forwardToDefaultDispatcher(HttpServletRequest request, HttpServletResponse response) {
 		if(ServletUtil.acceptJson(request)) {
 			try {
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
@@ -368,7 +368,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		Windows windows = Windows.getWindows(ureq);
 		ChiefController chiefController = windows.getChiefController(ureq);
 		if(chiefController == null && !usess.isAuthenticated()) {
-			redirectToDefaultDispatcher(ureq.getHttpReq(), ureq.getHttpResp());
+			forwardToDefaultDispatcher(ureq.getHttpReq(), ureq.getHttpResp());
 			return;
 		}
 		
@@ -460,7 +460,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 					Window w = windowBackOffice.getWindow();
 					w.dispatchRequest(ureq, true); // renderOnly
 				} catch (Exception e1) {
-					redirectToDefaultDispatcher(ureq.getHttpReq(), ureq.getHttpResp());
+					forwardToDefaultDispatcher(ureq.getHttpReq(), ureq.getHttpResp());
 				}
 				log.error("", e);
 			}
