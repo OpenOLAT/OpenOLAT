@@ -69,6 +69,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
 import org.olat.resource.accesscontrol.ui.OrderItemsDataModel.OrderItemCol;
+import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
@@ -116,6 +117,7 @@ public class OrderDetailController extends FormBasicController {
 		this.readOnly = readOnly;
 		// Reload to have the last status and transactions
 		order = acService.loadOrderByKey(orderItem.getOrderKey());
+
 		transactions = acService.findAccessTransactions(order);
 		orderMethods = orderItem.getMethods();
 		offerLabel = orderItem.getLabel();
@@ -156,6 +158,9 @@ public class OrderDetailController extends FormBasicController {
 		initMetadataForm(formLayout);
 		initDeliveryForm(formLayout, ureq);
 		initItemsForm(formLayout);
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			initStatus(layoutCont);
+		}
 	}
 
 	private void initButtonsForm(FormItemContainer formLayout) {
@@ -206,15 +211,22 @@ public class OrderDetailController extends FormBasicController {
 			String fee = PriceFormat.fullFormat(cancellationFee);
 			uifactory.addStaticTextElement("cancellation-fee", "order.cancellation.fee", fee, formLayout);
 		}
-		
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			try(StringOutput status = new StringOutput()) {
-				OrderStatusRenderer statusRenderer = new OrderStatusRenderer(getTranslator());
-				statusRenderer.renderStatus(status, "o_labeled", order.getOrderStatus());
-				layoutCont.contextPut("orderStatus", status.toString());
-			} catch(Exception e) {
-				logError("", e);
+	}
+	
+	private void initStatus(FormLayoutContainer layoutCont) {
+		try(StringOutput status = new StringOutput()) {
+			OrderStatusRenderer statusRenderer = new OrderStatusRenderer(getTranslator());
+			List<OrderTableItem> items = acService.findOrderItems(null, delivery, order.getKey(), null, null, OrderStatus.values(), null, null, 0, 1, null);
+			Status consolidatedStatus; 
+			if(items.size() == 1) {
+				consolidatedStatus = items.get(0).getStatus();
+			} else {
+				consolidatedStatus = Status.getStatus(order.getOrderStatus().name(), "", "", orderMethods);
 			}
+			statusRenderer.renderStatus(status, consolidatedStatus);
+			layoutCont.contextPut("orderStatus", status.toString());
+		} catch(Exception e) {
+			logError("", e);
 		}
 	}
 

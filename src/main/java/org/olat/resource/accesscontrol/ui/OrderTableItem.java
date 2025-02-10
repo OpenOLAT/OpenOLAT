@@ -26,11 +26,15 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessTransaction;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
+import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutStatus;
 
 /**
  * 
@@ -152,9 +156,90 @@ public class OrderTableItem {
 		ERROR,
 		WARNING,
 		OK,
+		/**
+		 * Same as OK but for a process with some payment
+		 */
+		PAYED,
+		/**
+		 * Especially PayPal, user has payed, but we wait for the confirmation
+		 */
 		OK_PENDING,
+		/**
+		 * Especially for PayPal, user is currently in PayPal
+		 */
+		IN_PROCESS,
 		PENDING,
-		CANCELED,
+		CANCELED;
+		
+		public static final Status getStatus(String orderStatus, String trxStatus, String pspTrxStatus, List<AccessMethod> orderMethods) {
+			boolean warning = false;
+			boolean error = false;
+			boolean canceled = false;
+			boolean pending = false;
+			boolean okPending = false;
+			boolean inProcess = false;
+
+			if(OrderStatus.CANCELED.name().equals(orderStatus)) {
+				canceled = true;
+			} else if(OrderStatus.ERROR.name().equals(orderStatus)) {
+				error = true;
+			} else if(OrderStatus.PREPAYMENT.name().equals(orderStatus)) {
+				if((trxStatus != null && trxStatus.contains(PaypalCheckoutStatus.PENDING.name()))
+						|| (pspTrxStatus != null && pspTrxStatus.contains(PaypalCheckoutStatus.PENDING.name()))) {
+					pending = true;
+				} else if((trxStatus != null && trxStatus.contains("SUCCESS"))
+						&& (pspTrxStatus != null && pspTrxStatus.contains("INPROCESS"))) {
+					okPending = true;
+				} else if(!StringHelper.containsNonWhitespace(trxStatus) 
+						&& (pspTrxStatus != null && pspTrxStatus.contains("INPROCESS"))) {
+					inProcess = true;
+				} else {
+					warning = true;
+				}
+			}
+			
+			if(trxStatus != null) {
+				if(trxStatus.contains(AccessTransactionStatus.SUCCESS.name())) {
+					//has high prio
+				} else if(trxStatus.contains(AccessTransactionStatus.CANCELED.name())) {
+					canceled = true;
+				} else if(trxStatus.contains(AccessTransactionStatus.ERROR.name())) {
+					error = true;
+				}
+			}
+
+			if(pspTrxStatus != null) {
+				if(pspTrxStatus.contains(PSPTransactionStatus.ERROR.name())) {
+					error = true;
+				} else if(pspTrxStatus.contains(PSPTransactionStatus.WARNING.name())) {
+					warning = true;
+				}
+			}
+
+			if(okPending) {
+				return Status.OK_PENDING;
+			}
+			if(inProcess) {
+				return Status.IN_PROCESS;
+			}
+			if(pending) {
+				return Status.PENDING;
+			}
+			if(error) {
+				return Status.ERROR;
+			}
+			if (warning) {
+				return Status.WARNING;
+			}
+			if(canceled) {
+				return Status.CANCELED;
+			} 
+			
+			if(!orderMethods.isEmpty() && orderMethods.get(0).isPaymentMethod()) {
+				return Status.PAYED;
+			}
+			return Status.OK;
+		}
 	}
 	
 	public static class OrderTableItemStatusComparator implements Comparator<OrderTableItem> {

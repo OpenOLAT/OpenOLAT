@@ -112,10 +112,8 @@ import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
-import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
-import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutStatus;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
@@ -1192,7 +1190,6 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				pspTrxStatus = rawOrder.getCheckoutTrxStatus();
 			}
 			
-			Status finalStatus = getStatus(orderStatusStr,  rawOrder.getTrxStatus(), pspTrxStatus);
 			String methodIds = rawOrder.getTrxMethodIds();
 			List<AccessMethod> orderMethods = new ArrayList<>(2);
 			if(StringHelper.containsNonWhitespace(methodIds)) {
@@ -1204,6 +1201,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				}
 			}
 			
+			Status finalStatus = Status.getStatus(orderStatusStr,  rawOrder.getTrxStatus(), pspTrxStatus, orderMethods);
 			String offerLabel = deduplicate(rawOrder.getLabel());
 			String resourceDisplayName = deduplicate(rawOrder.getResourceName());
 
@@ -1230,64 +1228,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		return string;
 	}
 
-	private Status getStatus(String orderStatus, String trxStatus, String pspTrxStatus) {
-		boolean warning = false;
-		boolean error = false;
-		boolean canceled = false;
-		boolean pending = false;
-		boolean okPending = false;
 
-		if(OrderStatus.CANCELED.name().equals(orderStatus)) {
-			canceled = true;
-		} else if(OrderStatus.ERROR.name().equals(orderStatus)) {
-			error = true;
-		} else if(OrderStatus.PREPAYMENT.name().equals(orderStatus)) {
-			if((trxStatus != null && trxStatus.contains(PaypalCheckoutStatus.PENDING.name()))
-					|| (pspTrxStatus != null && pspTrxStatus.contains(PaypalCheckoutStatus.PENDING.name()))) {
-				pending = true;
-			} else if((trxStatus != null && trxStatus.contains("SUCCESS"))
-					&& (pspTrxStatus != null && pspTrxStatus.contains("INPROCESS"))) {
-				okPending = true;
-			} else {
-				warning = true;
-			}
-		}
-
-		if(StringHelper.containsNonWhitespace(trxStatus)) {
-			if(trxStatus.contains(AccessTransactionStatus.SUCCESS.name())) {
-				//has high prio
-			} else if(trxStatus.contains(AccessTransactionStatus.CANCELED.name())) {
-				canceled = true;
-			} else if(trxStatus.contains(AccessTransactionStatus.ERROR.name())) {
-				error = true;
-			}
-		}
-
-		if(StringHelper.containsNonWhitespace(pspTrxStatus)) {
-			if(pspTrxStatus.contains(PSPTransactionStatus.ERROR.name())) {
-				error = true;
-			} else if(pspTrxStatus.contains(PSPTransactionStatus.WARNING.name())) {
-				warning = true;
-			}
-		}
-
-		if(okPending) {
-			return Status.OK_PENDING;
-		}
-		if(pending) {
-			return Status.PENDING;
-		}
-		if(error) {
-			return Status.ERROR;
-		}
-		if (warning) {
-			return Status.WARNING;
-		}
-		if(canceled) {
-			return Status.CANCELED;
-		} 
-		return Status.OK;
-	}
 
 	/**
 	 * @return The current date without time

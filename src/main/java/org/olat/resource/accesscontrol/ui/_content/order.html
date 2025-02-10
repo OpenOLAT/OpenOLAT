@@ -10,7 +10,9 @@
 	</div>
 	<div class="o_metadata_horizontal">
 		$r.render("order-methods","vertical")
-		$r.render("offer-name","vertical")
+		#if($r.available("offer-name"))
+			$r.render("offer-name","vertical")
+		#end
 		$r.render("creation-date","vertical")
 		$r.render("order-total","vertical")
 		#if($r.available("cancellation-fee"))

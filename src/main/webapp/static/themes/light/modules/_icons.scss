@@ -941,6 +941,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_order_status_payed_icon { @include o-add-icon('circle-check'); }
 .o_ac_order_status_canceled_icon { @include o-add-icon('circle-xmark'); }
 .o_ac_order_status_error_icon { @include o-add-icon('circle-xmark');}
+.o_ac_order_status_inprocess_icon { @include o-add-icon('hourglass-half', false);}
 .o_ac_order_status_warning_icon { @include o-add-icon('exclamation-triangle');}
 .o_ac_order_status_pending_icon { @include o-add-icon('hourglass-half', false);}
 

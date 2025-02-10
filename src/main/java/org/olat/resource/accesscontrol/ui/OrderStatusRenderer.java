@@ -25,7 +25,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 
 /**
@@ -50,39 +49,15 @@ public class OrderStatusRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator trans) {
 		if(val instanceof Status status) {
 			renderStatusLight(sb, status);
-		} else if(val instanceof OrderStatus orderStatus) {
-			renderStatusLight(sb, orderStatus);
 		}
 	}
-
-	protected void renderStatusLight(StringOutput sb, OrderStatus status) {
-		renderStatus(sb, "o_labeled_light", status);
+	
+	protected void renderStatus(StringOutput sb, Status status) {
+		renderStatus(sb, "o_labeled", status);
 	}
 	
 	protected void renderStatusLight(StringOutput sb, Status status) {
 		renderStatus(sb, "o_labeled_light", status);
-	}
-	
-	protected void renderStatus(StringOutput sb, String labelCss, OrderStatus status) {
-		switch(status) {
-			case NEW:
-				render(sb, "order.status.new", "o_ac_order_status_new_icon", labelCss, "o_ac_order_status_new");
-				break;
-			case ERROR:
-				render(sb, "order.status.error", "o_ac_order_status_error_icon", labelCss, "o_ac_order_status_error");
-				break;
-			case PREPAYMENT:
-				render(sb, "order.status.pending", "o_ac_order_status_pending_icon", labelCss, "o_ac_order_status_pending");
-				break;	
-			case CANCELED:
-				render(sb, "order.status.canceled", "o_ac_order_status_canceled_icon", labelCss, "o_ac_order_status_canceled");
-				break;
-			case PAYED:
-				render(sb, "order.status.payed", "o_ac_order_status_payed_icon", labelCss, "o_ac_order_status_payed");
-				break;	
-			default:
-				break;
-		}
 	}
 	
 	protected void renderStatus(StringOutput sb, String labelCss, Status status) {
@@ -99,11 +74,19 @@ public class OrderStatusRenderer implements FlexiCellRenderer {
 			case CANCELED:
 				render(sb, "order.status.canceled", "o_ac_order_status_canceled_icon", labelCss, "o_ac_order_status_canceled");
 				break;
+			case IN_PROCESS:
+				render(sb, "order.status.in.process", "o_ac_order_status_inprocess_icon", labelCss, "o_ac_order_status_in_process");
+				break;
 			case OK_PENDING:
 				render(sb, "order.status.ok.pending", "o_ac_order_status_pending_icon", labelCss, "o_ac_order_status_payed_pending");
+				break;
+			case PAYED:
+				render(sb, "order.status.payed", "o_ac_order_status_payed_icon", labelCss, "o_ac_order_status_payed");
+				break;	
+			case OK:
+				render(sb, "order.status.ok", "o_ac_order_status_payed_icon", labelCss, "o_ac_order_status_payed");
 				break;	
 			default:
-				render(sb, "order.status.payed", "o_ac_order_status_payed_icon", labelCss, "o_ac_order_status_payed");
 		}
 	}
 	
