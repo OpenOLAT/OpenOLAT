@@ -185,12 +185,18 @@ public class BookingPage {
 	}
 	
 	public void bookToken(String token) {
+		By bookBy = By.cssSelector("button.o_button_call_to_action");
+		OOGraphene.waitElement(bookBy, browser);
+		browser.findElement(bookBy).click();
+		
+		OOGraphene.waitModalDialog(browser);
+		
 		By tokenEntryBy = By.cssSelector(".o_sel_accesscontrol_token_entry input[type='text']");
 		browser.findElement(tokenEntryBy).sendKeys(token);
 		
-		By submitBy = By.cssSelector(".o_method_token button.btn-primary");
+		By submitBy = By.cssSelector(".modal-dialog .o_method_token button.btn-primary");
 		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 	}
 	
 	/**

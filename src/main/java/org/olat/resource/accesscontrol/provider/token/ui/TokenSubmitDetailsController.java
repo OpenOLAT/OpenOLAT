@@ -58,6 +58,8 @@ public class TokenSubmitDetailsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_method_token");
+		
 		tokenEl = uifactory.addTextElement("token", "accesscontrol.token", 255, "", formLayout);
 		tokenEl.setElementCssClass("o_sel_accesscontrol_token_entry");
 		
