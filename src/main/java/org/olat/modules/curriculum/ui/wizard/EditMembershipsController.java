@@ -81,8 +81,7 @@ public class EditMembershipsController extends StepFormBasicController {
 			GroupMembershipStatus.declined, GroupMembershipStatus.removed
 		};
 	private static final GroupMembershipStatus[] MODIFIABLE_OTHERS = new GroupMembershipStatus[] {
-			GroupMembershipStatus.active, GroupMembershipStatus.declined,
-			GroupMembershipStatus.removed
+			GroupMembershipStatus.active, GroupMembershipStatus.removed
 		};
 	
 	private static final String CMD_NOTE = "note";

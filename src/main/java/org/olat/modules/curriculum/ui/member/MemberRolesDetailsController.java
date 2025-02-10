@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -176,6 +177,7 @@ public class MemberRolesDetailsController extends FormBasicController {
 				columnsModel.addFlexiColumnModel(byCol);
 				
 				DefaultFlexiColumnModel untilCol = new DefaultFlexiColumnModel("table.header.confirmation.until", role.ordinal() + CONFIRMATION_UNTIL_OFFSET, false, null);
+				untilCol.setCellRenderer(new DateFlexiCellRenderer(getLocale()));
 				untilCol.setDefaultVisible(true);
 				untilCol.setAlwaysVisible(false);
 				columnsModel.addFlexiColumnModel(untilCol);

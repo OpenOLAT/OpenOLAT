@@ -854,6 +854,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, businessGroup.getResource());
 		if(olderReservation == null) {
 			Date expiration = DateUtils.addMonth(new Date(), 6);
+			expiration = DateUtils.getEndOfDay(expiration);
 			ResourceReservation reservation =
 					reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_COACH, expiration, Boolean.TRUE, businessGroup.getResource());
 			if(reservation != null) {
@@ -916,6 +917,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, resource);
 		if(olderReservation == null) {
 			Date expiration = DateUtils.addMonth(new Date(), 6);
+			expiration = DateUtils.getEndOfDay(expiration);
 			Group group = businessGroupRelationDAO.getGroup(businesGroup);
 			reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_PARTICIPANT,
 							expiration, Boolean.TRUE, resource);

@@ -1631,6 +1631,7 @@ public class RepositoryManager {
 		ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, re.getOlatResource());
 		if(olderReservation == null) {
 			Date expiration =  DateUtils.addMonth(new Date(), 6);
+			expiration = DateUtils.getEndOfDay(expiration);
 			Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(re);
 			reservationDao.createReservation(identityToAdd, "repo_tutors", expiration, Boolean.TRUE, re.getOlatResource());
 			groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identityToAdd,
@@ -1755,6 +1756,7 @@ public class RepositoryManager {
 		ResourceReservation reservation = reservationDao.loadReservation(identity, resource);
 		if(reservation == null) {
 			Date expiration = DateUtils.addMonth(new Date(), 6);
+			expiration = DateUtils.getEndOfDay(expiration);
 			Group group = repositoryEntryRelationDao.getDefaultGroup(re);
 			reservationDao.createReservation(identity, "repo_participant", expiration, Boolean.TRUE, re.getOlatResource());
 			groupMembershipHistoryDao.createMembershipHistory(group, identity,
