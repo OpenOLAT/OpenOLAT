@@ -47,7 +47,6 @@ public class BulkAssessment_4_ScheduleStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
-		ScheduleStepForm ctrl = new ScheduleStepForm(ureq, wControl, context, form);
-		return ctrl;
+		return new ScheduleStepForm(ureq, wControl, context, form);
 	}
 }

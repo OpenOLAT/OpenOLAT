@@ -230,8 +230,9 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append(" var containerSelector =  null;")
 			  .append(" const dialogParent = jQuery('#").append(receiverId).append("').parents('.modal-dialog');\n")
-			  .append(" if(dialogParent.length == 1 && dialogParent.height() < 400) {\n")
+			  .append(" if(dialogParent.length == 1) {\n")
 			  .append("   containerSelector = '#' + dialogParent.get(0).getAttribute('id');\n")
+			  .append("   console.log('Container dialog');")
 			  .append(" }\n");
 		}
 		
@@ -240,7 +241,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("  autohide: true,\n")
 		  .append("  todayHighlight : true,\n")
 		  .append("  todayButton : true,\n")
-		  .append("  orientation: 'auto',\n")
+		  .append("  orientation: '").append(jsdci.getOrientation().name()).append("',\n")
 		  .append("  container: containerSelector,\n")
 		  .append("  format: '").append(format).append("',\n")
 		  .append("  language: '").append(locale.getLanguage()).append("'\n")
