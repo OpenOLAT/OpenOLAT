@@ -175,6 +175,13 @@ public interface DateChooser extends TextElement {
 	public void setButtonsEnabled(boolean enable);
 	
 	/**
+	 * Force the orientation to top or bottom (default is auto).
+	 * 
+	 * @param orientation The orientation
+	 */
+	public void setOrientation(DateChooserOrientation orientation);
+	
+	/**
 	 * Fine grain control of the action event, especially the onchange
 	 * event on the hours and minutes fields.
 	 * 

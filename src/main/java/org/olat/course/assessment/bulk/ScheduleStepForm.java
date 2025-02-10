@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.DateChooserOrientation;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -88,6 +89,7 @@ public class ScheduleStepForm extends StepFormBasicController {
 		scheduleDateChooser = uifactory.addDateChooser("scheduleDateChooser", "schedule.date", scheduleDate, formLayout);
 		scheduleDateChooser.setValidDateCheck("schedule.error.past");
 		scheduleDateChooser.setDateChooserTimeEnabled(true);
+		scheduleDateChooser.setOrientation(DateChooserOrientation.top);
 
 		scheduleTypeEl.select(delayed ? typeKeys[1]: typeKeys[0], true);
 		scheduleDateChooser.setVisible(delayed);

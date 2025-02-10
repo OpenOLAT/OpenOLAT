@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.DateChooserOrientation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -78,6 +79,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	private DateChooser copyDateValueTo;
 	private Date initialDate;
 	private String containerId;
+	private DateChooserOrientation orientation;
 	
 	public JSDateChooser(String name, Locale locale) {
 		this(null, name, null, locale);
@@ -455,6 +457,15 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	@Override
 	public void setSameDay(boolean sameDay) {
 		this.sameDay = sameDay;
+	}
+	
+	public DateChooserOrientation getOrientation() {
+		return orientation == null ? DateChooserOrientation.auto : orientation;
+	}
+
+	@Override
+	public void setOrientation(DateChooserOrientation orientation) {
+		this.orientation = orientation;
 	}
 
 	public String getDateChooserDateFormat() {
