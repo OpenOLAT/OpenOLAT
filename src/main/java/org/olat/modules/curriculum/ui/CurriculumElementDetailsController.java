@@ -539,7 +539,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		overviewCtrl.addWidget("courses", coursesWidgetCtrl);
 		coursesWidgetCtrl.getInitialComponent().setVisible(canRepositoryEntries);
 		
-		if(acModule.isEnabled() && catalogV2Module.isEnabled()) {
+		if(acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null) {
 			offersWidgetCtrl = new OffersWidgetController(ureq, getWindowControl(), curriculumElement);
 			listenTo(offersWidgetCtrl);
 			overviewCtrl.addWidget("offers", offersWidgetCtrl);
