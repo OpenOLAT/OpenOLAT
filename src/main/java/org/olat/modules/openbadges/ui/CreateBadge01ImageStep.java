@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
@@ -58,14 +60,11 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
-
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -115,8 +114,6 @@ public class CreateBadge01ImageStep extends BasicStep {
 
 		@Autowired
 		OpenBadgesManager openBadgesManager;
-		@Autowired
-		I18nManager i18nManager;
 
 		public CreateBadgeImageForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "image_step");
