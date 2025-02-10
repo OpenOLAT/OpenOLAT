@@ -256,6 +256,9 @@ public class CreateBadge04DetailsStep extends BasicStep {
 			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
 				descriptionEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
+			} else if (descriptionEl.getValue().length() > 1000) {
+				descriptionEl.setErrorKey("form.error.toolong", Integer.toString(1000));
+				allOk &= false;
 			}
 
 			if (!StringHelper.containsNonWhitespace(issuerNameEl.getValue())) {
