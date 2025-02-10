@@ -63,6 +63,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.virtualauthenticator.VirtualAuthenticator;
 
 import com.dumbster.smtp.SmtpMessage;
 
@@ -373,9 +374,10 @@ public class UserTest extends Deployments {
 				.enablePasskeyLevel(PasskeyLevels.level2);
 
 		// Generate the passkey
+		VirtualAuthenticator authenticator = LoginPage.registerAuthenticator(userBrowser);
 		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
-		PasskeyInformations passkeyInfos = userLoginPage
-			.loginWithRegistrationToPasskey(user.getLogin(), user.getPassword());
+		userLoginPage
+			.loginWithRegistrationToPasskey(user.getLogin(), user.getPassword(), authenticator);
 		
 		//Log out
 		new UserToolsPage(userBrowser)
@@ -384,7 +386,7 @@ public class UserTest extends Deployments {
 		// Log in with passkey
 		userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
 		userLoginPage
-			.loginWithPasskey(user.getLogin(), passkeyInfos.credentials());
+			.loginWithPasskey(user.getLogin());
 		
 		passkeyAdminPage.enablePasskey(false);
 	}
@@ -426,15 +428,17 @@ public class UserTest extends Deployments {
 				.enablePasskeyLevel(PasskeyLevels.level2);
 
 		// Generate the passkey
+		VirtualAuthenticator authenticator = LoginPage.registerAuthenticator(userBrowser);
 		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
 		PasskeyInformations passkeyInfos = userLoginPage
-			.loginWithRegistrationToPasskey(user.getLogin(), user.getPassword());
+			.loginWithRegistrationToPasskey(user.getLogin(), user.getPassword(), authenticator);
 		
 		//Log out
 		new UserToolsPage(userBrowser)
 			.logout();
 
-		// Log in with passkey
+		// Log in with recovery key (remove the virtual authenticator first)
+		LoginPage.deregisterAuthenticator(userBrowser, authenticator);
 		userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
 		userLoginPage
 			.loginWithPasskeyButRecovery(user.getLogin(), passkeyInfos);

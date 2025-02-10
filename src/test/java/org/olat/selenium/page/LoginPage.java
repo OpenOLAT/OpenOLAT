@@ -61,6 +61,11 @@ public class LoginPage {
 	
 	public static final By maintenanceMessageBy = By.cssSelector("#o_msg_sticky p");
 	
+	/**
+	 * Chrome accepts only one authenticator.
+	 */
+	private static VirtualAuthenticator virtualAuthenticator;
+	
 	private final WebDriver browser;
 	
 	public LoginPage(WebDriver browser) {
@@ -229,22 +234,34 @@ public class LoginPage {
 		return this;
 	}
 	
-	public VirtualAuthenticator registerAuthenticator() {
+	public static VirtualAuthenticator registerAuthenticator(WebDriver driver) {
+		if(virtualAuthenticator != null) return virtualAuthenticator;
+		
 		VirtualAuthenticatorOptions options = new VirtualAuthenticatorOptions();
 		options.setTransport(Transport.INTERNAL)
+			   .setProtocol(VirtualAuthenticatorOptions.Protocol.CTAP2)
 		       .setHasUserVerification(true)
+		       .setHasResidentKey(false)
 		       .setIsUserVerified(true)
 		       .setIsUserConsenting(true);
-		return ((HasVirtualAuthenticator)browser).addVirtualAuthenticator(options);
+		virtualAuthenticator = ((HasVirtualAuthenticator)driver).addVirtualAuthenticator(options);
+		return virtualAuthenticator;
 	}
 	
-	public PasskeyInformations loginWithRegistrationToPasskey(String username, String password) {
+	public static void deregisterAuthenticator(WebDriver driver, VirtualAuthenticator authenticator) {
+		((HasVirtualAuthenticator)driver).removeVirtualAuthenticator(authenticator);
+		if(virtualAuthenticator == authenticator) {
+			virtualAuthenticator = null;
+		}
+	}
+	
+	public PasskeyInformations loginWithRegistrationToPasskey(String username, String password, VirtualAuthenticator authenticator) {
 		By footerUserBy = By.cssSelector("#o_footer_user #o_username");
-		return loginWithRegistrationToPasskey(username, password, footerUserBy);
+		return loginWithRegistrationToPasskey(username, password, footerUserBy, authenticator);
 	}
 	
-	public PasskeyInformations loginWithRegistrationToPasskey(String username, String password, By landingPointBy) {
-		VirtualAuthenticator authenticator = registerAuthenticator();
+	public PasskeyInformations loginWithRegistrationToPasskey(String username, String password,
+			By landingPointBy, VirtualAuthenticator authenticator) {
 		
 		// 1. Username
 		By usernameId = By.id("o_fiooolat_login_name");
@@ -292,17 +309,12 @@ public class LoginPage {
 		return recoveryKeys;
 	}
 	
-	public LoginPage loginWithPasskey(String username, List<Credential> credentials) {
+	public LoginPage loginWithPasskey(String username) {
 		By footerUserBy = By.cssSelector("#o_footer_user #o_username");
-		return loginWithPasskey(username, footerUserBy, credentials);
+		return loginWithPasskey(username, footerUserBy);
 	}
 	
-	public LoginPage loginWithPasskey(String username, By landingPointBy, List<Credential> credentials) {
-		VirtualAuthenticator authenticator = registerAuthenticator();
-		for(Credential credential:credentials) {
-			authenticator.addCredential(Credential.createNonResidentCredential(credential.getId(), "localhost", credential.getPrivateKey(), credential.getSignCount()));
-		}
-		
+	public LoginPage loginWithPasskey(String username, By landingPointBy) {
 		// 1. Username
 		By usernameId = By.id("o_fiooolat_login_name");
 		OOGraphene.waitElement(usernameId, browser);//wait the login page
@@ -319,8 +331,6 @@ public class LoginPage {
 	}
 	
 	public LoginPage loginWithPasskeyButRecovery(String username, By landingPointBy, PasskeyInformations passkeyInfos) {
-		((HasVirtualAuthenticator)browser).removeVirtualAuthenticator(passkeyInfos.authenticator());
-		
 		// 1. Username
 		By usernameId = By.id("o_fiooolat_login_name");
 		OOGraphene.waitElement(usernameId, browser);//wait the login page

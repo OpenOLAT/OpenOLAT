@@ -155,7 +155,8 @@ public class Deployments {
 			FirefoxProfile profile = new FirefoxProfile();
 			profile.setPreference("fission.webContentIsolationStrategy", Integer.valueOf(0));
 			profile.setPreference("fission.bfcacheInParent", Boolean.FALSE);
-			
+			profile.setPreference("remote.events.async.enabled", Boolean.FALSE);
+
 			options.setProfile(profile);
 			driver = new FirefoxDriver(GeckoDriverService.createDefaultService(), options);
 		} else {
