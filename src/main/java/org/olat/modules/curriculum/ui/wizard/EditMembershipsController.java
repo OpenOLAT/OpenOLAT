@@ -276,7 +276,7 @@ public class EditMembershipsController extends StepFormBasicController {
 			for(int i=index+1; i<numOfRows; i++) {
 				EditMemberCurriculumElementRow obj = tableModel.getObject(i);
 				if(tableModel.isParentOf(row, obj)) {
-					obj.addModification(modification.role(), modification);
+					obj.addModification(modification.role(), modification.copyFor(obj.getCurriculumElement()));
 					updateLink(obj, modification);
 				}
 			}
