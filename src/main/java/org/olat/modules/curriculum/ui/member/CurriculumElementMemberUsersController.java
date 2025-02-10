@@ -400,10 +400,10 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
 		List<Offer> offers = getAvailableOffers();
-		MembersContext membersContex = new MembersContext(role, curriculum, curriculumElement, descendants, offers);
-		
-		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContex);
-		AddMemberFinishCallback finish = new AddMemberFinishCallback(membersContex);
+		MembersContext membersContext = new MembersContext(role, curriculum, curriculumElement, descendants, offers);
+
+		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContext);
+		AddMemberFinishCallback finish = new AddMemberFinishCallback(membersContext);
 		
 		removeAsListenerAndDispose(addMemberCtrl);
 		String title = translate("wizard.add." + role.name());

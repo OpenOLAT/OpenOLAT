@@ -330,7 +330,8 @@
 	&.o_ac_order_status_pending,
 	&.o_ac_order_status_payed_pending,
 	&.o_ac_order_status_warning,
-	&.o_ac_order_status_in_process {
+	&.o_ac_order_status_in_process,
+	&.o_ac_order_status_open {
 		@extend %o_labeled_light_yellow;
 	}
 	&.o_ac_order_status_canceled {
@@ -351,7 +352,8 @@
 	&.o_ac_order_status_pending,
 	&.o_ac_order_status_payed_pending,
 	&.o_ac_order_status_warning,
-	&.o_ac_order_status_in_process {
+	&.o_ac_order_status_in_process,
+	&.o_ac_order_status_open {
 		@extend %o_labeled_yellow;
 	}
 	&.o_ac_order_status_canceled {

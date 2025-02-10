@@ -71,6 +71,9 @@ public class OrderStatusRenderer implements FlexiCellRenderer {
 			case PENDING:
 				render(sb, "order.status.pending", "o_ac_order_status_pending_icon", labelCss, "o_ac_order_status_pending");
 				break;	
+			case OPEN:
+				render(sb, "order.status.open", "o_ac_order_status_open_icon", labelCss, "o_ac_order_status_open");
+				break;
 			case CANCELED:
 				render(sb, "order.status.canceled", "o_ac_order_status_canceled_icon", labelCss, "o_ac_order_status_canceled");
 				break;

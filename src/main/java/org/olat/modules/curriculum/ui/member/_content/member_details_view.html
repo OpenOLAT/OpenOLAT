@@ -19,7 +19,7 @@ $r.render("profil")
 
 $r.render("roles")
 
-#if($r.available("orders"))
+#if($r.visible("orders"))
 <fieldset class="o_block_large_top">
 	<legend>$r.translate("booking.orders")</legend>
 	$r.render("orders")

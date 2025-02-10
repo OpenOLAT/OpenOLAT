@@ -34,6 +34,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
+import org.olat.resource.accesscontrol.provider.invoice.model.InvoiceAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutStatus;
 
 /**
@@ -169,6 +170,10 @@ public class OrderTableItem {
 		 */
 		IN_PROCESS,
 		PENDING,
+		/**
+		 * Especially for invoices, invoice sent but not payed
+		 */
+		OPEN,
 		CANCELED;
 		
 		public static final Status getStatus(String orderStatus, String trxStatus, String pspTrxStatus, List<AccessMethod> orderMethods) {
@@ -223,6 +228,9 @@ public class OrderTableItem {
 				return Status.IN_PROCESS;
 			}
 			if(pending) {
+				if(!orderMethods.isEmpty() && orderMethods.get(0) instanceof InvoiceAccessMethod) {
+					return Status.OPEN;
+				}
 				return Status.PENDING;
 			}
 			if(error) {

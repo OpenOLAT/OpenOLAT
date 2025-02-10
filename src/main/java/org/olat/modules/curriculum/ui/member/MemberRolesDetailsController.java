@@ -145,6 +145,16 @@ public class MemberRolesDetailsController extends FormBasicController {
 		}
 		return false;
 	}
+	
+	public boolean hasRoleParticipant() {
+		List<MemberRolesDetailsRow> rows = tableModel.getObjects();
+		for(MemberRolesDetailsRow row:rows) {
+			if(row.getStatus(CurriculumRoles.participant) != null) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

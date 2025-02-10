@@ -29,6 +29,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
 
 /**
@@ -52,7 +53,7 @@ public class AddMember1SearchStep extends BasicStep {
 		stepCollection.setTitle(getTranslator(), "wizard.user.search");
 		setStepCollection(stepCollection);
 		
-		Step nextStep = membersContext.isOffersAvailable()
+		Step nextStep = membersContext.isOffersAvailable() && membersContext.getRoleToModify() == CurriculumRoles.participant
 				? new AddMember2OffersStep(ureq, membersContext)
 				: new AddMember3RightsStep(ureq, membersContext);
 		setNextStep(new UserSearchOverviewStep(ureq, membersContext, stepCollection, nextStep));

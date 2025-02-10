@@ -77,8 +77,8 @@ public class MemberDetailsController extends FormBasicController {
 	
 	private Object userObject;
 
-	private OrdersController ordersCtrl;
 	private CloseableModalController cmc;
+	private final OrdersController ordersCtrl;
 	private CancelMembershipsController cancelCtrl;
 	private AcceptDeclineMembershipsController acceptCtrl;
 	private MemberHistoryDetailsController historyDetailsCtrl;
@@ -105,14 +105,13 @@ public class MemberDetailsController extends FormBasicController {
 				curriculum, selectedCurriculumElement, elements, member, config);
 		listenTo(rolesDetailsCtrl);
 		
-		if(config.withOrders()) {
-			OrdersSettings settings = OrdersSettings.valueOf(config.withActivityColumns(),
-					config.withOrdersDetails(), false, config.canPayOrder());
-			ordersCtrl = new OrdersController(ureq, getWindowControl(), identity, selectedCurriculumElement.getResource(),
-					settings, rootForm);
-			listenTo(ordersCtrl);
-		}
-		
+		OrdersSettings settings = OrdersSettings.valueOf(config.withActivityColumns(),
+				config.withOrdersDetails(), false, config.canPayOrder());
+		ordersCtrl = new OrdersController(ureq, getWindowControl(), identity, selectedCurriculumElement.getResource(),
+				settings, rootForm);
+		listenTo(ordersCtrl);
+		ordersCtrl.getInitialFormItem().setVisible(config.withOrders() && rolesDetailsCtrl.hasRoleParticipant());
+
 		if(config.withHistory()) {
 			historyDetailsCtrl = new MemberHistoryDetailsController(ureq, getWindowControl(), rootForm,
 					selectedCurriculumElement, member);
@@ -128,6 +127,7 @@ public class MemberDetailsController extends FormBasicController {
 	
 	public void setModifications(List<MembershipModification> modifications) {
 		rolesDetailsCtrl.setModifications(modifications);
+		ordersCtrl.getInitialFormItem().setVisible(config.withOrders() && rolesDetailsCtrl.hasRoleParticipant());
 	}
 	
 	public void setOrderModifications(List<OrderModification> orderModifications) {
