@@ -28,6 +28,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.ui.member.ConfirmationMembershipEnum;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.BillingAddress;
@@ -174,6 +175,17 @@ public class MembersContext {
 
 	public boolean hasModifications() {
 		return modifications != null && !modifications.isEmpty();
+	}
+	
+	public boolean hasModificationsWithConfirmation() {
+		if(modifications != null && !modifications.isEmpty()) {
+			for(MembershipModification modification:modifications) {
+				if(modification.confirmation() == ConfirmationMembershipEnum.WITH) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public List<MembershipModification> getModifications() {
