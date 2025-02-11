@@ -38,6 +38,19 @@ public class CoachingPage {
 		this.browser = browser;
 	}
 	
+	public CoachingPage assertOnOverview() {
+		By coachingBy = By.className("o_coaching_overview");
+		OOGraphene.waitElement(coachingBy, browser);
+		return this;
+	}
+	
+	public CoachingPage openAssessment() {
+		By assessmentBy = By.cssSelector(".o_coaching_overview a.o_button_mega.o_sel_coaching_orders");
+		OOGraphene.waitElement(assessmentBy, browser);
+		browser.findElement(assessmentBy).click();
+		return this;
+	}
+	
 	public CoachingPage assertOnGrading() {
 		By gradingBy = By.cssSelector("fieldset.o_sel_grading_assignments");
 		OOGraphene.waitElement(gradingBy, browser);

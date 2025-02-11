@@ -1453,6 +1453,8 @@ public class ImsQTI21Test extends Deployments {
 		NavigationPage graderNavBar = NavigationPage.load(graderBrowser);
 		graderNavBar
 			.openCoaching()
+			.assertOnOverview()
+			.openAssessment()
 			.assertOnGrading()
 			.startGrading(testNodeTitle)
 			.assertOnAssessmentItemNotCorrected("Essay", 0)
@@ -1640,6 +1642,8 @@ public class ImsQTI21Test extends Deployments {
 		NavigationPage graderNavBar = NavigationPage.load(graderBrowser);
 		graderNavBar
 			.openCoaching()
+			.assertOnOverview()
+			.openAssessment()
 			.assertOnGrading()
 			.startGrading(testNodeTitle)
 			.assertOnAssessmentItemNotCorrected("Essay", 0)

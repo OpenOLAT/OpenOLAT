@@ -138,8 +138,8 @@ public class CalendarPage {
 		By untilAltBy = By.cssSelector("div.o_sel_cal_entry_form div.o_sel_cal_until span.input-group-addon");
 		OOGraphene.waitElement(untilAltBy, browser);
 		browser.findElement(untilAltBy).click();
-
-		By datePickerBy = By.cssSelector("div.datepicker-dropdown.active");
+		
+		By datePickerBy = By.cssSelector("div.o_sel_cal_until div.datepicker-dropdown.active");
 		OOGraphene.waitElement(datePickerBy, browser);
 		OOGraphene.selectDayInDatePicker(day, browser);
 		return this;
