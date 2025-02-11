@@ -36,6 +36,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder.Status;
@@ -246,7 +247,7 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 
 	private void makeOrder(OfferAccess offerAccess, AdvanceOrder advanceOrder) {
 		Identity identity = advanceOrder.getIdentity();
-		acService.accessResource(identity, offerAccess, null, identity);
+		acService.accessResource(identity, offerAccess, OrderStatus.PAYED, null, identity);
 	}
 
 	@Override

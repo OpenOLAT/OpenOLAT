@@ -58,6 +58,11 @@ public class InvoiceAccessMethod extends AbstractAccessMethod {
 	}
 
 	@Override
+	public boolean isNeedBillingAddress() {
+		return true;
+	}
+
+	@Override
 	public boolean isVisibleInGui() {
 		return true;
 	}

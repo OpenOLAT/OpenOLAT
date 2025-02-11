@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.FormController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +69,7 @@ public class FreeSubmitController extends FormBasicController implements FormCon
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		AccessResult result = acService.accessResource(bookedIdentity, link, null, getIdentity());
+		AccessResult result = acService.accessResource(bookedIdentity, link, OrderStatus.PAYED, null, getIdentity());
 		
 		if(result.isAccessible()) {
 			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);

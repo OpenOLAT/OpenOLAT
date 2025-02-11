@@ -105,6 +105,10 @@ public class PendingEnrollmentController extends FormBasicController implements 
 			List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(curriculumElementKeys);
 			
 			for(ResourceReservation reservation: resourceReservations) {
+				if(Boolean.FALSE.equals(reservation.getUserConfirmable())) {
+					continue;
+				}
+				
 				OLATResource resource = reservation.getResource();
 				ReservationWrapper wrapper = new ReservationWrapper(reservation);
 				reservations.add(wrapper);

@@ -382,8 +382,17 @@ public class RightsController extends StepFormBasicController {
 		AccessInfos offer = membersContext.getSelectedOffer();
 		boolean participant = roleToModify == CurriculumRoles.participant;
 		ConfirmationMembershipEnum confirmation = ConfirmationMembershipEnum.valueOf(confirmationTypeEl.getSelectedKey());
-		return (participant && (offer != null || confirmation == ConfirmationMembershipEnum.WITH))
-				? GroupMembershipStatus.reservation : GroupMembershipStatus.active;
+		if(participant) {
+			if(offer != null) {
+				return offer.offer().isConfirmationByManagerRequired()
+						? GroupMembershipStatus.reservation
+						: GroupMembershipStatus.active;
+			}
+			return confirmation == ConfirmationMembershipEnum.WITH
+					? GroupMembershipStatus.reservation
+					: GroupMembershipStatus.active;
+		}
+		return GroupMembershipStatus.active;
 	}
 	
 	@Override

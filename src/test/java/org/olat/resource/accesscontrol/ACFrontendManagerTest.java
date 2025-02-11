@@ -172,7 +172,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//access it
-		AccessResult result = acService.accessResource(id, offerAccess, null, id);
+		AccessResult result = acService.accessResource(id, offerAccess, OrderStatus.PAYED, null, id);
 		Assert.assertNotNull(result);
 		Assert.assertTrue(result.isAccessible());
 		dbInstance.commitAndCloseSession();
@@ -205,7 +205,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//access it
-		AccessResult result = acService.accessResource(id3, offerAccess, null, id3);
+		AccessResult result = acService.accessResource(id3, offerAccess, OrderStatus.PAYED, null, id3);
 		Assert.assertNotNull(result);
 		Assert.assertFalse(result.isAccessible());
 		dbInstance.commitAndCloseSession();
@@ -235,7 +235,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//access it
-		AccessResult result = acService.accessResource(id, offerAccess, null, id);
+		AccessResult result = acService.accessResource(id, offerAccess, OrderStatus.PAYED, null, id);
 		Assert.assertNotNull(result);
 		Assert.assertTrue(result.isAccessible());
 		dbInstance.commitAndCloseSession();
@@ -270,7 +270,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//access it
-		AccessResult result = acService.accessResource(id3, offerAccess, null, id3);
+		AccessResult result = acService.accessResource(id3, offerAccess, OrderStatus.PAYED, null, id3);
 		Assert.assertNotNull(result);
 		Assert.assertTrue(result.isAccessible());
 		dbInstance.commitAndCloseSession();
@@ -322,7 +322,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//id1 finish the process
-		AccessResult result = acService.accessResource(id1, offerAccess, null, id1);
+		AccessResult result = acService.accessResource(id1, offerAccess, OrderStatus.PAYED, null, id1);
 		Assert.assertNotNull(result);
 		Assert.assertTrue(result.isAccessible());
 		dbInstance.commitAndCloseSession();

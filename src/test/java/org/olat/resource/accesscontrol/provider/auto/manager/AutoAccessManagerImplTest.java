@@ -53,6 +53,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder.Status;
@@ -198,7 +199,7 @@ public class AutoAccessManagerImplTest {
 
 		verify(acServiceMock, never()).createOffer(any(OLATResource.class), anyString());
 		verify(acServiceMock, never()).createOfferAccess(any(Offer.class), any(AccessMethod.class));
-		verify(acServiceMock, never()).accessResource(any(Identity.class), any(OfferAccess.class), isNull(), any(Identity.class));
+		verify(acServiceMock, never()).accessResource(any(Identity.class), any(OfferAccess.class), OrderStatus.PAYED, isNull(), any(Identity.class));
 	}
 
 	@Test
@@ -240,7 +241,7 @@ public class AutoAccessManagerImplTest {
 
 		sut.grantAccess(getPendingAdvanceOrders());
 
-		verify(acServiceMock, times(2)).accessResource(IDENTITY, offerAccessDummy, null, IDENTITY);
+		verify(acServiceMock, times(2)).accessResource(IDENTITY, offerAccessDummy, OrderStatus.PAYED, null, IDENTITY);
 	}
 
 	@Test
@@ -250,7 +251,7 @@ public class AutoAccessManagerImplTest {
 
 		sut.grantAccess(getPendingAdvanceOrders());
 
-		verify(acServiceMock, never()).accessResource(any(Identity.class), any(OfferAccess.class), isNull(), any(Identity.class));
+		verify(acServiceMock, never()).accessResource(any(Identity.class), any(OfferAccess.class), OrderStatus.PAYED, isNull(), any(Identity.class));
 	}
 
 	@Test

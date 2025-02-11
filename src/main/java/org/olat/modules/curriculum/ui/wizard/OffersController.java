@@ -27,14 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -52,7 +49,6 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -85,7 +81,6 @@ public class OffersController extends StepFormBasicController {
 	private static final String NO_BOOKING  = "nob";
 	
 	private TextElement commentEl;
-	private SpacerElement spacerEl;
 	private SingleSelection bookingsEl;
 	private StaticTextElement priceEl;
 	private TextElement purchaseOrderNumberEl;
@@ -107,8 +102,6 @@ public class OffersController extends StepFormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private AccessControlModule acModule;
-	@Autowired
-	private BaseSecurity securityManager;
 	
 	public OffersController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
 			MembersContext membersContext) {
@@ -124,8 +117,7 @@ public class OffersController extends StepFormBasicController {
 		List<Identity> identities = membersContext.getSelectedIdentities();
 		List<OrganisationRef> organisations = null;
 		for(Identity identity:identities) {
-			Roles roles = securityManager.getRoles(identity);
-			List<OrganisationRef> organisationsRefs = roles.getOrganisationsWithRole(OrganisationRoles.user);
+			List<OrganisationRef> organisationsRefs = acService.getOfferOrganisations(identity);
 			if(organisations == null) {
 				organisations = new ArrayList<>(organisationsRefs);
 			} else {
@@ -198,7 +190,7 @@ public class OffersController extends StepFormBasicController {
 		bookingsEl.addActionListener(FormEvent.ONCHANGE);
 		bookingsEl.select(bookingPK.keys()[0], true);
 		
-		spacerEl = uifactory.addSpacerElement("after-booking", formLayout, false);
+		uifactory.addSpacerElement("after-booking", formLayout, false);
 		
 		SelectionValues addressPK = forgeBillingAddress();
 		billingAdressEl = uifactory.addDropdownSingleselect("booking.billing.address", formLayout,
@@ -328,26 +320,30 @@ public class OffersController extends StepFormBasicController {
 	
 	private void updateUI() {
 		boolean selected = bookingsEl.isOneSelected() && !NO_BOOKING.equals(bookingsEl.getSelectedKey());
-		spacerEl.setVisible(selected);
-		
 		if(selected) {
 			AccessInfos infos = getAccessInfos(bookingsEl.getSelectedKey());
+			AccessMethod method = infos.offerAccess().getMethod();
+			boolean withPayment = method.isPaymentMethod();
+			
 			String price = PriceFormat.fullFormat(infos.offer().getPrice());
 			priceEl.setValue(price);
-			priceEl.setVisible(StringHelper.containsNonWhitespace(price));
+			priceEl.setVisible(StringHelper.containsNonWhitespace(price) && withPayment);
 			
 			String cancellationFee = PriceFormat.fullFormat(infos.offer().getCancellingFee());
 			cancellationFeeEl.setValue(cancellationFee);
-			cancellationFeeEl.setVisible(StringHelper.containsNonWhitespace(cancellationFee));
+			cancellationFeeEl.setVisible(StringHelper.containsNonWhitespace(cancellationFee) && withPayment);
+			
+			boolean withBillingAddress = method.isNeedBillingAddress();
+			createBillingAdresseButton.setVisible(withBillingAddress);
+			purchaseOrderNumberEl.setVisible(withBillingAddress);
+			billingAdressEl.setVisible(withBillingAddress);
 		} else {
 			priceEl.setVisible(false);
 			cancellationFeeEl.setVisible(false);
+			createBillingAdresseButton.setVisible(false);
+			purchaseOrderNumberEl.setVisible(false);
+			billingAdressEl.setVisible(false);
 		}
-		
-		createBillingAdresseButton.setVisible(selected);
-		purchaseOrderNumberEl.setVisible(selected);
-		billingAdressEl.setVisible(selected);
-		commentEl.setVisible(selected);
 	}
 	
 	@Override

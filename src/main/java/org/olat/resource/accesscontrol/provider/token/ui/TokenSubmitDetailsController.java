@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,7 +84,7 @@ public class TokenSubmitDetailsController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String token = tokenEl.getValue();
-		AccessResult result = acService.accessResource(bookedIdentity, link, token, getIdentity());
+		AccessResult result = acService.accessResource(bookedIdentity, link, OrderStatus.PAYED, token, getIdentity());
 		
 		if (result.isAccessible()) {
 			fireEvent(ureq, AccessEvent.ACCESS_OK_EVENT);

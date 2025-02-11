@@ -51,6 +51,7 @@ import org.olat.resource.accesscontrol.BillingAddressSearchParams;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.BillingAddressController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
@@ -209,7 +210,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		AccessResult result = acService.accessResource(bookedIdentity, link, null, getIdentity());
+		AccessResult result = acService.accessResource(bookedIdentity, link, OrderStatus.PREPAYMENT, null, getIdentity());
 		
 		if (result.isAccessible()) {
 			Order order = result.getOrder();

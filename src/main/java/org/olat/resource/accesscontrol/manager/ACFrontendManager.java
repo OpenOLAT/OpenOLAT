@@ -311,7 +311,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			//is it a method without user interaction as the free access?
 			OfferAccess link = offerAccess.get(0);
 			if(!link.getMethod().isNeedUserInteraction() && link.getOffer().isAutoBooking()) {
-				return accessResource(identity, link, null, identity);
+				return accessResource(identity, link, OrderStatus.PAYED, null, identity);
 			}
 		}
 		return new AccessResult(false, offerAccess);
@@ -552,14 +552,14 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument, Identity doer) {
+	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus, Object argument, Identity doer) {
 		if(link == null || link.getOffer() == null || link.getMethod() == null) {
 			log.info(Tracing.M_AUDIT, "Access refused (no offer) to: {} for {}", link, identity);
 			return new AccessResult(false);
 		}
 		
 		MailPackage mailing = new MailPackage(link.getOffer().isConfirmationEmail());
-		return accessResource(identity, link, OrderStatus.PAYED, argument, mailing, doer);
+		return accessResource(identity, link, orderStatus, argument, mailing, doer);
 	}
 
 	@Override
@@ -941,7 +941,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		if (identity != null && acResult.getAvailableMethods().size() == 1) {
 			OfferAccess offerAccess = acResult.getAvailableMethods().get(0);
 			if (offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
-				return accessResource(identity, offerAccess, null, identity).isAccessible();
+				return accessResource(identity, offerAccess, OrderStatus.PAYED, null, identity).isAccessible();
 			}
 		}
 		return false;

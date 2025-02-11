@@ -104,6 +104,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.OffersController;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
@@ -1167,7 +1168,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(acResult.getAvailableMethods().size() == 1) {
 			OfferAccess offerAccess = acResult.getAvailableMethods().get(0);
 			if(offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
-				acResult = acService.accessResource(getIdentity(), offerAccess, null, getIdentity());
+				acResult = acService.accessResource(getIdentity(), offerAccess, OrderStatus.PAYED, null, getIdentity());
 				 if(acResult.isAccessible()) {
 					 reloadSecurity(ureq);
 				 }

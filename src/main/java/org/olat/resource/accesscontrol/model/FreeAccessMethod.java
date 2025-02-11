@@ -60,6 +60,11 @@ public class FreeAccessMethod extends AbstractAccessMethod {
 	public boolean isPaymentMethod() {
 		return false;
 	}
+	
+	@Override
+	public boolean isNeedBillingAddress() {
+		return false;
+	}
 
 	@Override
 	public boolean isVisibleInGui() {

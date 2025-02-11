@@ -61,6 +61,11 @@ public class PaypalAccessMethod extends AbstractAccessMethod {
 	public boolean isPaymentMethod() {
 		return true;
 	}
+	
+	@Override
+	public boolean isNeedBillingAddress() {
+		return false;
+	}
 
 	@Override
 	public boolean isVisibleInGui() {

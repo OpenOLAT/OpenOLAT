@@ -188,7 +188,8 @@ public interface ACService {
 
 	public OfferAccess saveOfferAccess(OfferAccess link);
 
-	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument, Identity doer);
+	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus,
+			Object argument, Identity doer);
 	
 	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus,
 			Object argument, MailPackage mailing, Identity doer);
