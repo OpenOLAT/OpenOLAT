@@ -505,11 +505,13 @@ public class ACOrderDAO {
 
 	public List<Order> findOrdersByResource(OLATResource resource, OrderStatus... status) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct(o) from ").append(OrderImpl.class.getName()).append(" o")
-			.append(" inner join o.parts orderPart ")
-			.append(" inner join orderPart.lines orderLine ")
-			.append(" inner join orderLine.offer offer ")
-			.append(" inner join offer.resource rsrc ")
+		sb.append("select distinct(o) from acorder o")
+			.append(" inner join o.parts orderPart")
+			.append(" inner join orderPart.lines orderLine")
+			.append(" inner join orderLine.offer offer")
+			.append(" inner join offer.resource rsrc")
+			.append(" left join fetch o.delivery delivery")
+			.append(" left join fetch delivery.user deliveryUser")
 			.append(" where rsrc.key=:resourceKey");
 		if(status != null && status.length > 0) {
 			sb.append(" and o.orderStatus in (:status)");

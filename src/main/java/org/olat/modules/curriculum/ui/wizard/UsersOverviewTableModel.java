@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui.wizard;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -28,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.ui.member.AbstractMembersController;
 import org.olat.modules.curriculum.ui.member.DualNumber;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
@@ -45,10 +47,12 @@ implements SortableFlexiTableDataModel<UserRow> {
 	private static final UserOverviewCols[] COLS = UserOverviewCols.values();
 	
 	private final Locale locale;
+	private final Set<Identity> excludedIdentities;
 	
-	public UsersOverviewTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public UsersOverviewTableModel(FlexiTableColumnModel columnModel, Set<Identity> excludedIdentities, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+		this.excludedIdentities = excludedIdentities;
 	}
 	
 	@Override
@@ -57,6 +61,15 @@ implements SortableFlexiTableDataModel<UserRow> {
 			SortableFlexiTableModelDelegate<UserRow> sort = new SortableFlexiTableModelDelegate<>(orderBy, this, locale);
 			super.setObjects(sort.sort());
 		}
+	}
+
+	@Override
+	public boolean isSelectable(int row) {
+		UserRow memberRow = getObject(row);
+		if(excludedIdentities != null && excludedIdentities.contains(memberRow.getIdentity())) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override

@@ -133,7 +133,10 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserOverviewCols.role));
 		
-		tableModel = new UsersOverviewTableModel(columnsModel, getLocale());
+		Set<Identity> excludedIdentities = membersContext.getExcludedIdentities() == null
+				? Set.of()
+				: Set.copyOf(membersContext.getExcludedIdentities());		
+		tableModel = new UsersOverviewTableModel(columnsModel, excludedIdentities, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
@@ -153,7 +156,9 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-		if(rows.size() == 1) {
+		if(rows.size() == 1
+				&& (membersContext.getExcludedIdentities() == null
+					|| !membersContext.getExcludedIdentities().contains(rows.get(0).getIdentity()))) {
 			tableEl.setMultiSelectedIndex(Set.of(Integer.valueOf(0)));
 		}
 	}

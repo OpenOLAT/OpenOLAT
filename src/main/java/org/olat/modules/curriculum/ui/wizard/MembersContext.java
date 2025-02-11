@@ -46,6 +46,7 @@ public class MembersContext {
 	
 	private List<Identity> searchedIdentities;
 	private List<Identity> selectedIdentities;
+	private List<Identity> excludedIdentities;
 	
 	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
@@ -91,6 +92,14 @@ public class MembersContext {
 
 	public void setSelectedIdentities(List<Identity> selectedIdentities) {
 		this.selectedIdentities = selectedIdentities;
+	}
+
+	public List<Identity> getExcludedIdentities() {
+		return excludedIdentities;
+	}
+
+	public void setExcludedIdentities(List<Identity> excludedIdentities) {
+		this.excludedIdentities = excludedIdentities;
 	}
 
 	public Curriculum getCurriculum() {
