@@ -157,11 +157,10 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(jsdci.getContainerId())) {
 			sb.append(" const containerSelector = '#o_c").append(jsdci.getContainerId()).append("';\n");
 		} else {
-			sb.append(" var containerSelector =  null;")
+			sb.append(" let containerSelector =  null;")
 			  .append(" const dialogParent = jQuery('#").append(receiverId).append("').parents('.modal-dialog');\n")
-			  .append(" if(dialogParent.length == 1) {\n")
+			  .append(" if(dialogParent.length == 1 && dialogParent.height() < 400) {\n")
 			  .append("   containerSelector = '#' + dialogParent.get(0).getAttribute('id');\n")
-			  .append("   console.log('Container dialog');")
 			  .append(" }\n");
 		}
 		
@@ -208,7 +207,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			sb.append("   const pushEl = document.getElementById('").append(pushId).append("');\n")
 			  .append("   const val = jQuery(pushEl).val();\n")
 			  .append("   if(val == null || val === '') {\n")
-			  .append("     var cDate = datepicker.getDate();\n")
+			  .append("     let cDate = datepicker.getDate();\n")
 			  .append("     pushEl.datepicker.setDate(cDate);\n")
 			  .append("   }\n");
 		}
