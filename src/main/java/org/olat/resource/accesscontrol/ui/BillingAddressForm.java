@@ -21,7 +21,6 @@ package org.olat.resource.accesscontrol.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -53,7 +52,6 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 	private TextElement zipEl;
 	private TextElement cityEl;
 	private TextElement countryEl;
-	private FormToggle enabledEl;
 	
 	private final BillingAddress billingAddress;
 	private final Organisation addressOrganisation;
@@ -124,12 +122,6 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 		String country = billingAddress != null? billingAddress.getCountry(): null;
 		countryEl = uifactory.addTextElement("billing.address.country", 255, country, formLayout);
 		countryEl.setMandatory(true);
-		
-		enabledEl = uifactory.addToggleButton("enabled", "billing.address.enabled", translate("on"), translate("off"), formLayout);
-		enabledEl.setEnabled(billingAddress == null);
-		if (billingAddress == null || billingAddress.isEnabled()) {
-			enabledEl.toggleOn();
-		}
 	}
 
 	@Override
@@ -215,14 +207,6 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 		return countryEl.getValue();
 	}
 	
-	public boolean isEnabled() {
-		return enabledEl.isOn();
-	}
-	
-	public void setEnabledVisibility(boolean visible) {
-		enabledEl.setVisible(visible);
-	}
-	
 	public TransientBillingAddress getTransientBillingAddress() {
 		TransientBillingAddress transientAddress = new TransientBillingAddress();
 		transientAddress.setIdentifier(getIdentifier());
@@ -237,7 +221,6 @@ public class BillingAddressForm extends FormBasicController implements Controlle
 		transientAddress.setZip(getZip());
 		transientAddress.setCity(getCity());
 		transientAddress.setCountry(getCountry());
-		transientAddress.setEnabled(isEnabled());
 		transientAddress.setOrganisation(addressOrganisation);
 		transientAddress.setIdentity(addressIdentitiy);
 		return transientAddress;

@@ -100,7 +100,6 @@ public class BillingAddressController extends FormBasicController implements Con
 		billingAddress.setZip(billingAddressForm.getZip());
 		billingAddress.setCity(billingAddressForm.getCity());
 		billingAddress.setCountry(billingAddressForm.getCountry());
-		billingAddress.setEnabled(billingAddressForm.isEnabled());
 		
 		billingAddress = acService.updateBillingAddress(billingAddress);
 		

@@ -74,7 +74,7 @@ implements SortableFlexiTableDataModel<BillingAddressRow> {
 			case zip: return row.getBillingAddress().getZip();
 			case city: return row.getBillingAddress().getCity();
 			case country: return row.getBillingAddress().getCountry();
-			case enabled: return Boolean.valueOf(row.getBillingAddress().isEnabled());
+			case status: return Boolean.valueOf(row.getBillingAddress().isEnabled());
 			case numOrders: return row.getNumOrders();
 			case tools: return row.getToolsLink();
 			default: return null;
@@ -95,7 +95,7 @@ implements SortableFlexiTableDataModel<BillingAddressRow> {
 		zip("billing.address.zip"),
 		city("billing.address.city"),
 		country("billing.address.country"),
-		enabled("billing.address.enabled"),
+		status("billing.address.status"),
 		numOrders("billing.address.num.orders"),
 		tools("tools");
 		

@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.BillingAddress;
 
@@ -64,6 +65,36 @@ public class BillingAddressUIFactory {
 			}
 		}
 		return line;
+	}
+	
+	public static String getEnabledLabel(Translator translator, Boolean enabled) {
+		if (enabled != null) {
+			return enabled
+					? translator.translate("billing.address.status.active")
+					: translator.translate("billing.address.status.inactive");
+		}
+		return null;
+	}
+	
+	public static String getEnabledIconCss(Boolean enabled) {
+		if (enabled != null) {
+			return enabled? "o_ac_billing_address_active_icon": "o_ac_billing_address_inactive_icon";
+		}
+		return null;
+	}
+	
+	public static String getEnabledLabelCss(Boolean enabled) {
+		if (enabled != null) {
+			return enabled? "o_ac_billing_address_active": "o_ac_billing_address_inactive";
+		}
+		return null;
+	}
+	
+	public static String getEnabledLabelLightCss(Boolean enabled) {
+		if (enabled != null) {
+			return enabled? "o_ac_billing_address_active_light": "o_ac_billing_address_inactive_light";
+		}
+		return null;
 	}
 
 }

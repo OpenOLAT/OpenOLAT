@@ -390,6 +390,17 @@
 		background-color: $o-ac-ba-no-ident-bg-color;
 	}
 }
+.o_labeled_light {
+	&.o_ac_billing_address_active_light {
+		font-weight: normal;
+		@extend %o_labeled_light_green;
+	}
+	&.o_ac_billing_address_inactive_light {
+		font-weight: normal;
+		@extend %o_labeled_light_grey;
+	}
+}
+
 
 tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,
 tr.o_entry_unpublished, tr.o_entry_unpublished td, tr.o_entry_unpublished td span {

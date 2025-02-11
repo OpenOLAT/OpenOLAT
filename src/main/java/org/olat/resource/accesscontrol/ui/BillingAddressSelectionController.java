@@ -116,7 +116,6 @@ public class BillingAddressSelectionController extends FormBasicController {
 					organisationAddressForm = new BillingAddressForm(ureq, getWindowControl(), mainForm, null, null);
 				}
 				organisationAddressForm.setIdentifierVisible(false);
-				organisationAddressForm.setEnabledVisibility(false);
 				listenTo(organisationAddressForm);
 				formLayout.add("organsiation.address", organisationAddressForm.getInitialFormItem());
 			}
@@ -147,7 +146,6 @@ public class BillingAddressSelectionController extends FormBasicController {
 		} else {
 			userAddressForm = new BillingAddressForm(ureq, getWindowControl(), mainForm, null, bookedIdentity);
 		}
-		userAddressForm.setEnabledVisibility(false);
 		listenTo(userAddressForm);
 		formLayout.add("user.address", userAddressForm.getInitialFormItem());
 		

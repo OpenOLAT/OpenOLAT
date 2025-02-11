@@ -191,7 +191,6 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 					billingAddress.setZip(newAddress.getZip());
 					billingAddress.setCity(newAddress.getCity());
 					billingAddress.setCountry(newAddress.getCountry());
-					billingAddress.setEnabled(newAddress.isEnabled());
 					billingAddress = acService.updateBillingAddress(billingAddress);
 				}
 				
