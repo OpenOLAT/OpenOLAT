@@ -737,6 +737,10 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
 		if (entry != null) {
 			if(!repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.participant.name())) {
+				Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(entry);
+				groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
+						GroupRoles.participant.name(), GroupMembershipStatus.reservation, true, null, null,
+						identity, null);
 				reservationDao.createReservation(identity, "repo_participant", null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
 			}
 			return true;
@@ -751,6 +755,9 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			boolean isParticipant = curriculumService.getCurriculumElementMemberships(List.of(curriculumElement), identity).stream()
 					.anyMatch(CurriculumElementMembership::isParticipant);
 			if(!isParticipant) {
+				groupMembershipHistoryDao.createMembershipHistory(curriculumElement.getGroup(), identity,
+						GroupRoles.participant.name(), GroupMembershipStatus.reservation, true, null, null,
+						identity, null);
 				reservationDao.createReservation(identity, CurriculumService.RESERVATION_PREFIX.concat("participant"),
 						null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
 			}
@@ -774,6 +781,9 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			int currentCount = businessGroupService.countMembers(reloadedGroup, GroupRoles.participant.name());
 			int reservations = reservationDao.countReservations(resource, BusinessGroupService.GROUP_PARTICIPANT);
 			if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
+				groupMembershipHistoryDao.createMembershipHistory(group.getBaseGroup(), identity,
+						GroupRoles.participant.name(), GroupMembershipStatus.reservation, true, null, null,
+						identity, null);
 				reservationDao.createReservation(identity, method.getType(), null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
 				reserved = true;
 			}
