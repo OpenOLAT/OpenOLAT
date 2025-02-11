@@ -367,6 +367,29 @@
 	}
 }
 
+.o_ac_billing_address {
+	border: $o-ac-ba-border;
+	border-radius: $o-ac-ba-border-radius;
+	padding: $o-ac-ba-padding;
+	max-width: max-content;
+	
+	.o_ac_billing_address_inner {
+		display: flex;
+	}
+	.o_ac_billing_address_icon {
+		width: $o-ac-ba-icon-width;
+		font-size: $o-ac-ba-icon-font-size;
+		display: grid;
+		place-items: center;
+	}
+	.o_ac_billing_address_identifier {
+		font-weight: bold;
+		margin-bottom: .5em;
+	}
+	&.o_ac_billing_address_temporary {
+		background-color: $o-ac-ba-no-ident-bg-color;
+	}
+}
 
 tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,
 tr.o_entry_unpublished, tr.o_entry_unpublished td, tr.o_entry_unpublished td span {

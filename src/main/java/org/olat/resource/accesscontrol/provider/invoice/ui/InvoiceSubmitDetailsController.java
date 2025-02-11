@@ -19,41 +19,35 @@
  */
 package org.olat.resource.accesscontrol.provider.invoice.ui;
 
-import static org.olat.core.util.ArrayHelper.emptyStrings;
-
-import java.util.List;
-
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.BillingAddress;
-import org.olat.resource.accesscontrol.BillingAddressSearchParams;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
+import org.olat.resource.accesscontrol.ui.BillingAddressComponent;
 import org.olat.resource.accesscontrol.ui.BillingAddressController;
+import org.olat.resource.accesscontrol.ui.BillingAddressSelectionController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,13 +59,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InvoiceSubmitDetailsController extends FormBasicController {
 	
-	private SingleSelection billingAddressEl;
+	private FormLayoutContainer billingAddressCont;
+	private BillingAddressComponent billingAddressComp;
 	private TextElement purchseNumberEl;
 	private FormLink billingAddressLink;
 	private TextAreaElement commentEl;
 	
 	private CloseableModalController cmc;
-	private BillingAddressController editCtrl;
+	private BillingAddressSelectionController addressSelectionCtrl;
 
 	private final OfferAccess link;
 	private final Identity bookedIdentity;
@@ -105,16 +100,18 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 			uifactory.addStaticTextElement("cancelling.fee", cancellingFee, formLayout);
 		}
 		
-		billingAddressEl = uifactory.addDropdownSingleselect("billing.address", formLayout, emptyStrings(), emptyStrings());
-		billingAddressEl.setMandatory(true);
-		billingAddressEl.enableNoneSelection(translate("billing.address.select"));
-		loadBillingAddresses(ureq);
+		billingAddressCont = FormLayoutContainer.createCustomFormLayout("billingAddress", getTranslator(), velocity_root + "/billing_address.html");
+		billingAddressCont.setLabel("billing.address", null);
+		billingAddressCont.setMandatory(true);
+		billingAddressCont.setRootForm(mainForm);
+		formLayout.add(billingAddressCont);
 		
-		FormLayoutContainer billingAddressButtonsCont = FormLayoutContainer.createButtonLayout("billingAddressButtons", getTranslator());
-		billingAddressButtonsCont.setRootForm(mainForm);
-		formLayout.add(billingAddressButtonsCont);
+		billingAddressComp = new BillingAddressComponent("billing.address", getLocale());
+		billingAddressComp.setTemporaryAddressWarning(false);
+		billingAddressCont.add(billingAddressComp.getComponentName(), new ComponentWrapperElement(billingAddressComp));
+		updateBillingAddress(billingAddress);
 		
-		billingAddressLink = uifactory.addFormLink("billing.address.create", billingAddressButtonsCont, Link.BUTTON);
+		billingAddressLink = uifactory.addFormLink("billing.address.select", billingAddressCont, Link.BUTTON);
 		
 		purchseNumberEl = uifactory.addTextElement("purchase.number", 100, null, formLayout);
 		
@@ -123,43 +120,18 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		uifactory.addFormSubmitButton("access.button.fee", formLayout);
 	}
 
-	private void loadBillingAddresses(UserRequest ureq) {
-		SelectionValues billingAddressSV = new SelectionValues();
-		
-		BillingAddressSearchParams searchParams = new BillingAddressSearchParams();
-		searchParams.setEnabled(Boolean.TRUE);
-		searchParams.setIdentityKeys(List.of(bookedIdentity));
-		acService.getBillingAddresses(searchParams).forEach(
-				address -> billingAddressSV.add(SelectionValues.entry(
-						address.getKey().toString(),
-						address.getIdentifier())));
-		
-		
-		List<OrganisationRef> userOrganisations = ureq.getUserSession().getRoles().getOrganisationsWithRole(OrganisationRoles.user);
-		if (userOrganisations != null && !userOrganisations.isEmpty()) {
-			searchParams = new BillingAddressSearchParams();
-			searchParams.setEnabled(Boolean.TRUE);
-			searchParams.setOrganisations(userOrganisations);
-			acService.getBillingAddresses(searchParams).forEach(
-					address -> billingAddressSV.add(SelectionValues.entry(
-							address.getKey().toString(),
-							address.getIdentifier())));
-		}
-		
-		billingAddressSV.sort(SelectionValues.VALUE_ASC);
-		billingAddressEl.setKeysAndValues(billingAddressSV.keys(), billingAddressSV.values(), null);
+	private void updateBillingAddress(BillingAddress billingAddress) {
+		this.billingAddress = billingAddress;
+		billingAddressComp.setBillingAddress(billingAddress);
+		billingAddressComp.setVisible(billingAddress != null);
+		billingAddressCont.setDirty(true);
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (editCtrl == source) {
-			if (event == Event.CHANGED_EVENT) {
-				loadBillingAddresses(ureq);
-				String key = editCtrl.getBillingAddress().getKey().toString();
-				if (billingAddressEl.containsKey(key)) {
-					billingAddressEl.select(key, true);
-					billingAddressEl.clearError();
-				}
+		if (addressSelectionCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				updateBillingAddress(addressSelectionCtrl.getBillingAddress());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -170,16 +142,16 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(editCtrl);
+		removeAsListenerAndDispose(addressSelectionCtrl);
 		removeAsListenerAndDispose(cmc);
-		editCtrl = null;
+		addressSelectionCtrl = null;
 		cmc = null;
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == billingAddressLink) {
-			doCreateBillingAddress(ureq);
+			doSelectBillingAddress(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -188,21 +160,10 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		billingAddressEl.clearError();
-		if (!billingAddressEl.isOneSelected()) {
-			billingAddressEl.setErrorKey("form.legende.mandatory");
+		billingAddressCont.clearError();
+		if (billingAddress == null) {
+			billingAddressCont.setErrorKey("form.legende.mandatory");
 			allOk = false;
-		} else {
-			BillingAddressSearchParams searchParams = new BillingAddressSearchParams();
-			searchParams.setBillingAddressKeys(List.of(Long.valueOf(billingAddressEl.getSelectedKey())));
-			List<BillingAddress> billingAddresses = acService.getBillingAddresses(searchParams);
-			if (billingAddresses.isEmpty()) {
-				loadBillingAddresses(ureq);
-				billingAddressEl.setErrorKey("form.legende.mandatory");
-				allOk = false;
-			} else {
-				billingAddress = billingAddresses.get(0);
-			}
 		}
 		
 		return allOk;
@@ -215,6 +176,25 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		if (result.isAccessible()) {
 			Order order = result.getOrder();
 			if (order != null) {
+				if (billingAddress.getKey() == null) {
+					BillingAddress newAddress = billingAddress;
+					billingAddress = acService.createBillingAddress(billingAddress.getOrganisation(), billingAddress.getIdentity());
+					billingAddress.setIdentifier(newAddress.getIdentifier());
+					billingAddress.setNameLine1(newAddress.getNameLine1());
+					billingAddress.setNameLine2(newAddress.getNameLine2());
+					billingAddress.setAddressLine1(newAddress.getAddressLine1());
+					billingAddress.setAddressLine2(newAddress.getAddressLine2());
+					billingAddress.setAddressLine3(newAddress.getAddressLine3());
+					billingAddress.setAddressLine4(newAddress.getAddressLine4());
+					billingAddress.setPoBox(newAddress.getPoBox());
+					billingAddress.setRegion(newAddress.getRegion());
+					billingAddress.setZip(newAddress.getZip());
+					billingAddress.setCity(newAddress.getCity());
+					billingAddress.setCountry(newAddress.getCountry());
+					billingAddress.setEnabled(newAddress.isEnabled());
+					billingAddress = acService.updateBillingAddress(billingAddress);
+				}
+				
 				order = acService.addBillingAddress(order, billingAddress);
 				
 				if (StringHelper.containsNonWhitespace(purchseNumberEl.getValue())) {
@@ -231,14 +211,15 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		}
 	}
 
-	private void doCreateBillingAddress(UserRequest ureq) {
-		if (guardModalController(editCtrl)) return;
+	private void doSelectBillingAddress(UserRequest ureq) {
+		if (guardModalController(addressSelectionCtrl)) return;
 		
-		editCtrl = new BillingAddressController(ureq, getWindowControl(), null, null, bookedIdentity);
-		listenTo(editCtrl);
+		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), bookedIdentity, billingAddress);
+		listenTo(addressSelectionCtrl);
 		
-		String title = translate("billing.address.create");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
+		String title = translate("billing.address.select");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				addressSelectionCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

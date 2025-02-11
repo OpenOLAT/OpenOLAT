@@ -602,6 +602,12 @@ $o-ac-order-canceled-color			: $o-labeled-grey-light-color !default;
 $o-ac-order-error-color				: $o-labeled-red-light-color !default;
 $o-ac-order-warning-color			: $o-labeled-yellow-light-color !default;
 $o-ac-order-pending-color			: $o-labeled-yellow-light-color !default;
+$o-ac-ba-border						: 1px solid #cccccc !default;
+$o-ac-ba-border-radius				: 4px !default;
+$o-ac-ba-padding					: 10px 15px 10px 0px !default;
+$o-ac-ba-icon-width					: 65px !default;
+$o-ac-ba-icon-font-size				: 28px !default;
+$o-ac-ba-no-ident-bg-color			: $o-color-warning-text-bg !default;
 
 /* Feed (Blog/Podcast) */
 $o-feed-planned-color				: $o-repo-preparation-color;	/* blue */
