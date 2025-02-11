@@ -6,12 +6,6 @@
 	.o_user_portrait_avatar {
 		width: $size;
 		height: $size;
-		.o_user_portrait_image {
-			img {
-				width: $size;
-				height: $size;
-			}
-		}
 		.o_user_portrait_initials {
 			font-size: $initials-font-size;
 		}
@@ -51,6 +45,8 @@
 			background-color: white;
 			border-radius: 50%;
 			object-fit: cover;
+			max-width: 100%;
+			aspect-ratio: 1;
 		}
 		.o_user_portrait_initials {
 			border-radius: 50%;
