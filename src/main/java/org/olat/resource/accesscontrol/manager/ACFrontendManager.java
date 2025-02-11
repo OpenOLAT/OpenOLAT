@@ -853,8 +853,13 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				boolean isParticipant = curriculumService.getCurriculumElementMemberships(List.of(curriculumElement), identity).stream()
 						.anyMatch(CurriculumElementMembership::isParticipant);
 				if (!isParticipant) {
-					List<CurriculumElementMembershipChange> changes = List.of(CurriculumElementMembershipChange
-							.addMembership(identity, curriculumElement, true, CurriculumRoles.participant));
+					List<CurriculumElementMembershipChange> changes = new ArrayList<>();		
+					changes.add(CurriculumElementMembershipChange.addMembership(identity, curriculumElement, true, CurriculumRoles.participant));
+					
+					List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
+					for(CurriculumElement descendant:descendants) {
+						changes.add(CurriculumElementMembershipChange.addMembership(identity, descendant, false, CurriculumRoles.participant));
+					}
 					curriculumService.updateCurriculumElementMemberships(doer, null, changes, mailing);
 					return true;
 				}

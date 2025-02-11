@@ -57,6 +57,7 @@ import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
+import org.olat.modules.curriculum.model.CurriculumElementNode;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
@@ -707,6 +708,50 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertTrue(descendants.contains(element1));
 		Assert.assertTrue(descendants.contains(element1_1));
 		Assert.assertTrue(descendants.contains(element2));
+	}
+	
+	@Test
+	public void getDescendantsTree() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-35", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-35", "1. Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		// save 3 children
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-35-1", "1.1 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		CurriculumElement element11 = curriculumElementDao.createCurriculumElement("Element-35-1-1", "1.1.1 Element",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-35-2", "1.2 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// load descendants of the root element
+		CurriculumElementNode rootNode = curriculumElementDao.getDescendantTree(rootElement);
+		Assert.assertNotNull(rootNode);
+		Assert.assertEquals(rootElement, rootNode.getElement());
+		
+		List<CurriculumElementNode> elements = rootNode.getChildrenNode();
+		Assertions.assertThat(elements)
+			.hasSize(2)
+			.map(CurriculumElementNode::getElement)
+			.containsExactlyInAnyOrder(element1, element2);
+
+		CurriculumElementNode node1 = elements.stream()
+				.filter(el -> element1.equals(el.getElement()))
+				.findFirst().orElse(null);
+		Assert.assertNotNull(node1);
+		
+		List<CurriculumElementNode> element1Children = node1.getChildrenNode();
+		Assertions.assertThat(element1Children)
+			.hasSize(1)
+			.map(CurriculumElementNode::getElement)
+			.containsExactlyInAnyOrder(element11);
 	}
 	
 	@Test

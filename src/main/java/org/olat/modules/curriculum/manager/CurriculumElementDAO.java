@@ -1054,7 +1054,7 @@ public class CurriculumElementDAO {
 	}
 	
 	public CurriculumElementNode getDescendantTree(CurriculumElement rootElement) {
-		List<CurriculumElement> descendants = getChildren(rootElement);
+		List<CurriculumElement> descendants = getDescendants(rootElement);
 		CurriculumElementNode rootNode = new CurriculumElementNode(rootElement);
 		
 		Map<Long,CurriculumElementNode> keyToOrganisations = new HashMap<>();
@@ -1083,13 +1083,13 @@ public class CurriculumElementDAO {
 	}
 	
 	public List<Identity> getMembersIdentity(CurriculumElementRef element, String role) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select ident from curriculumelement el")
-		  .append(" inner join el.group baseGroup")
-		  .append(" inner join baseGroup.members membership")
-		  .append(" inner join membership.identity ident")
-		  .append(" inner join fetch ident.user identUser")
-		  .append(" where el.key=:elementKey and membership.role=:role");
+		String sb = """
+				select ident from curriculumelement el
+				inner join el.group baseGroup
+				inner join baseGroup.members membership
+				inner join membership.identity ident
+				inner join fetch ident.user identUser
+				where el.key=:elementKey and membership.role=:role""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("elementKey", element.getKey())
@@ -1100,13 +1100,13 @@ public class CurriculumElementDAO {
 	public List<Identity> getMembersIdentity(List<Long> elementKeys, String role) {
 		if(role == null || elementKeys == null || elementKeys.isEmpty()) return new ArrayList<>();
 		
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select ident from curriculumelement el")
-		  .append(" inner join el.group baseGroup")
-		  .append(" inner join baseGroup.members membership")
-		  .append(" inner join membership.identity ident")
-		  .append(" inner join fetch ident.user identUser")
-		  .append(" where el.key in (:elementKeys) and membership.role=:role");
+		String sb = """
+				select ident from curriculumelement el
+				inner join el.group baseGroup
+				inner join baseGroup.members membership
+				inner join membership.identity ident
+				inner join fetch ident.user identUser
+				where el.key in (:elementKeys) and membership.role=:role""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("elementKeys", elementKeys)

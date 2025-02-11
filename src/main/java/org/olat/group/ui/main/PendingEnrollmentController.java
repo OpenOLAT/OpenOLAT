@@ -137,8 +137,7 @@ public class PendingEnrollmentController extends FormBasicController implements 
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("reservations", reservations);
 		}
 		
@@ -153,7 +152,6 @@ public class PendingEnrollmentController extends FormBasicController implements 
 			formLayout.add(rejectLink.getName(), rejectLink);
 		}
 
-		
 		// Button layout
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);

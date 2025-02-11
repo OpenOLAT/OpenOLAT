@@ -944,8 +944,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public void acceptPendingParticipation(ResourceReservation reservation, Identity identity, Identity actor) {
 		CurriculumRoles roles = ResourceToRoleKey.reservationToRole(reservation.getType());
 		CurriculumElement curriculumElement = curriculumElementDao.loadElementByResource(reservation.getResource());
-		CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(identity, curriculumElement);
-		change.setNextStatus(roles, GroupMembershipStatus.active);
+		List<CurriculumElement> descendants = curriculumElementDao.getDescendants(curriculumElement);
+		
+		List<CurriculumElementMembershipChange> changes = new ArrayList<>();
+		CurriculumElementMembershipChange change = CurriculumElementMembershipChange.addMembership(actor, curriculumElement, !descendants.isEmpty(), roles);
+		changes.add(change);
+		
+		for(CurriculumElement descendant:descendants) {
+			CurriculumElementMembershipChange descendantChange = CurriculumElementMembershipChange.addMembership(actor, descendant, false, roles);
+			changes.add(descendantChange);
+		}
+		
 		updateCurriculumElementMemberships(actor, null, List.of(change), null);
 	}
 
@@ -1137,43 +1146,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					elementNode = curriculumElementDao.getDescendantTree(element);
 				}
 				for(CurriculumElementNode child:elementNode.getChildrenNode()) {
-					removeInherithedMembership(child, member, role, GroupMembershipStatus.removed, actor, null, events);
+					removeInheritedMembership(child, member, role, GroupMembershipStatus.removed, actor, null, false, events);
 				}
 			}
 		}
 		dbInstance.commitAndCloseSession();
 		sendDeferredEvents(events);
-	}
-	
-	/**
-	 * The method will recursively delete the inherithed membership. If it
-	 * found a mebership marked as "root" or "none". It will stop.
-	 * 
-	 * @param elementNode The organization node
-	 * @param member The user to remove
-	 * @param role The role
-	 * @param events 
-	 */
-	private void removeInherithedMembership(CurriculumElementNode elementNode, Identity member, String role,
-			GroupMembershipStatus reason, Identity actor, String adminNote, List<CurriculumElementMembershipEvent> events) {
-		Group group = elementNode.getElement().getGroup();
-		GroupMembership membership = groupDao.getMembership(group, member, role);
-		if(membership != null && membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
-			groupDao.removeMembership(membership);
-			events.add(CurriculumElementMembershipEvent.identityRemoved(elementNode.getElement(), member, membership.getRole()));
-			
-			if(reason == GroupMembershipStatus.cancel
-					|| reason == GroupMembershipStatus.cancelWithFee
-					|| reason == GroupMembershipStatus.declined) {
-				groupMembershipHistoryDao.createMembershipHistory(group, member,
-						role, reason, true, null, null,
-						actor, adminNote);
-			}
-			
-			for(CurriculumElementNode child:elementNode.getChildrenNode()) {
-				removeInherithedMembership(child, member, role, reason,  actor, adminNote, events);
-			}
-		}
 	}
 
 	@Override
@@ -1192,18 +1170,46 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		if(membership != null && (membership.getInheritanceMode() == GroupMembershipInheritance.root
 				|| membership.getInheritanceMode() == GroupMembershipInheritance.none)) {
-			groupDao.removeMembership(membership);
-			if(membership.getInheritanceMode() == GroupMembershipInheritance.root
-					|| membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
-				CurriculumElementNode elementNode = curriculumElementDao.getDescendantTree(element);
-				for(CurriculumElementNode child:elementNode.getChildrenNode()) {
-					removeInherithedMembership(child, member, role.name(), reason, actor, adminNote, events);
-				}
+			CurriculumElementNode elementNode = curriculumElementDao.getDescendantTree(element);
+			for(CurriculumElementNode child:elementNode.getChildrenNode()) {
+				removeInheritedMembership(child, member, role.name(), reason, actor, adminNote, true, events);
 			}
 		}
 		dbInstance.commitAndCloseSession();
 		sendDeferredEvents(events);
 		return removed > 0;
+	}
+	
+	/**
+	 * The method will recursively delete the inherithed membership. If it
+	 * found a mebership marked as "root" or "none". It will stop.
+	 * 
+	 * @param elementNode The organization node
+	 * @param member The user to remove
+	 * @param role The role
+	 * @param events 
+	 */
+	private void removeInheritedMembership(CurriculumElementNode elementNode, Identity member,
+			String role, GroupMembershipStatus reason, Identity actor, String adminNote,
+			boolean force, List<CurriculumElementMembershipEvent> events) {
+		Group group = elementNode.getElement().getGroup();
+		GroupMembership membership = groupDao.getMembership(group, member, role);
+		if(membership != null && (force || membership.getInheritanceMode() == GroupMembershipInheritance.inherited)) {
+			groupDao.removeMembership(membership);
+			events.add(CurriculumElementMembershipEvent.identityRemoved(elementNode.getElement(), member, membership.getRole()));
+			
+			if(reason == GroupMembershipStatus.cancel
+					|| reason == GroupMembershipStatus.cancelWithFee
+					|| reason == GroupMembershipStatus.declined) {
+				groupMembershipHistoryDao.createMembershipHistory(group, member,
+						role, reason, true, null, null,
+						actor, adminNote);
+			}
+			
+			for(CurriculumElementNode child:elementNode.getChildrenNode()) {
+				removeInheritedMembership(child, member, role, reason,  actor, adminNote, force, events);
+			}
+		}
 	}
 
 	@Override

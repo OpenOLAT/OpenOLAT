@@ -65,6 +65,13 @@ public class CurriculumElementMembershipChange extends Event {
 		return new CurriculumElementMembershipChange(member, curriculumElement, false);
 	}
 	
+	public static final CurriculumElementMembershipChange valueOf(Identity member, CurriculumElement curriculumElement,
+			boolean applyToDescendants, CurriculumRoles role, GroupMembershipStatus status) {
+		CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, curriculumElement, applyToDescendants);
+		change.modifications.put(role, status);
+		return change;
+	}
+	
 	public static final CurriculumElementMembershipChange copy(Identity member, CurriculumElementMembershipChange origin) {
 		CurriculumElementMembershipChange change = new CurriculumElementMembershipChange(member, origin.getCurriculumElement(), false);
 		change.modifications.putAll(origin.modifications);

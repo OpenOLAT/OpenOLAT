@@ -495,11 +495,15 @@ public interface CurriculumService {
 	
 	/**
 	 * Remove the membership of a user with the specified role. The remove operation
-	 * happens to the element and the inherited memberships.
+	 * happens to the element and the descendants elements.
 	 * 
 	 * @param element The curriculum element
 	 * @param member The identity which loose the membership
 	 * @param role The role
+	 * @param reason The new status
+	 * @param actor The doer
+	 * @param adminNote An optional administrative note
+	 * 
 	 */
 	public boolean removeMember(CurriculumElement element, Identity member, CurriculumRoles role,
 			GroupMembershipStatus reason, Identity actor, String adminNote);

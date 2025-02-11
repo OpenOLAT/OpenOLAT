@@ -331,15 +331,40 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 			CurriculumRoles role = ResourceToRoleKey.reservationToRole(reservation.getType());
 			CurriculumElement curriculumElement = resourceToCurriculumElements.get(reservation.getResource());
 			if(role != null && curriculumElement != null) {
-				CurriculumElementMembershipChange change = CurriculumElementMembershipChange
-						.valueOf(member, curriculumElement);
-				change.setNextStatus(role, nextStatus);
-				change.setAdminNote(role, adminNote);
-				changes.add(change);
+				if(nextStatus == GroupMembershipStatus.active) {
+					buildRecursive(member, curriculumElement, role, adminNote, changes);
+				} else {
+					buildChange(member, curriculumElement, role, adminNote, changes);
+				}
 			}
 		}
 		
 		curriculumService.updateCurriculumElementMemberships(getIdentity(), ureq.getUserSession().getRoles(), changes, mailing);
+	}
+	
+	private void buildChange(Identity member, CurriculumElement curriculumElement, CurriculumRoles role, String adminNote,
+			List<CurriculumElementMembershipChange> changes) {
+		CurriculumElementMembershipChange change = CurriculumElementMembershipChange
+				.valueOf(member, curriculumElement);
+		change.setNextStatus(role, nextStatus);
+		change.setAdminNote(role, adminNote);
+		changes.add(change);
+	}
+	
+	private void buildRecursive(Identity member, CurriculumElement curriculumElement, CurriculumRoles role, String adminNote,
+			List<CurriculumElementMembershipChange> changes) {
+		List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
+		CurriculumElementMembershipChange change = CurriculumElementMembershipChange
+				.valueOf(member, curriculumElement, !descendants.isEmpty(), role, nextStatus);
+		change.setAdminNote(role, adminNote);
+		changes.add(change);
+
+		for(CurriculumElement descendant:descendants) {
+			CurriculumElementMembershipChange descendantChange = CurriculumElementMembershipChange
+					.valueOf(member, descendant, false, role, nextStatus);
+			descendantChange.setAdminNote(role, adminNote);
+			changes.add(descendantChange);
+		}
 	}
 	
 	private final void doOpenMemberDetails(UserRequest ureq, AcceptDeclineMembershipRow row) {
@@ -387,6 +412,13 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 				MembershipModification modification = new MembershipModification(role, curriculumElement, nextStatus,
 						null, null, confirmationUntil, false, null);
 				modifications.add(modification);
+				
+				List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curriculumElement);
+				for(CurriculumElement descendant:descendants) {
+					MembershipModification dmodification = new MembershipModification(role, descendant, nextStatus,
+							null, null, confirmationUntil, false, null);
+					modifications.add(dmodification);
+				}
 			}
 		}
 		
