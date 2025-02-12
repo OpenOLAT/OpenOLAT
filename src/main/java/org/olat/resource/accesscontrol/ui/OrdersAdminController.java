@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModelDelegate;
@@ -48,7 +49,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -122,7 +122,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private OrderDetailController detailController;
 	private CloseableCalloutWindowController calloutCtrl;
 
-	private int counter = 0;
 	private boolean readOnly;
 	private final OLATResource resource;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -210,12 +209,14 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier));
 		
 		if(!readOnly) {
-			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(OrderCol.tools);
-			toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
-			toolsColumn.setExportable(false);
-			toolsColumn.setAlwaysVisible(true);
+			ActionsColumnModel toolsColumn = new ActionsColumnModel(OrderCol.tools);
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 
@@ -228,6 +229,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		
 		dataModel = new OrdersDataModel(dataSource, getLocale(), userManager, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, false, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_ac_order_details_container");
 		tableEl.setExportEnabled(true);
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
@@ -367,10 +369,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	public void forge(OrderTableRow row) {
 		OrderStatus status = row.getOrderStatus();
 		if(status == OrderStatus.NEW || status == OrderStatus.PREPAYMENT || status == OrderStatus.PAYED) {
-			String id = Integer.toString(++counter);
-			FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-			toolsLink.setTitle(translate("action.more"));
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), CMD_TOOLS);
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}

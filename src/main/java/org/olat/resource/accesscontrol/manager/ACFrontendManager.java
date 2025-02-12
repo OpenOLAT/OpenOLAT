@@ -1230,10 +1230,14 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			Status finalStatus = Status.getStatus(orderStatusStr,  rawOrder.getTrxStatus(), pspTrxStatus, orderMethods);
 			String offerLabel = deduplicate(rawOrder.getLabel());
 			String resourceDisplayName = deduplicate(rawOrder.getResourceName());
-
-			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(), offerLabel, resourceDisplayName,
-					rawOrder.getTotal(), rawOrder.getCancellationFees(), rawOrder.getCreationDate(), orderStatus, finalStatus,
-					rawOrder.getDeliveryKey(), rawOrder.getUsername(), rawOrder.getUserProperties(), orderMethods);
+			String costCenteryName = deduplicate(rawOrder.getCostCenterName());
+			String costCenteryAccount = deduplicate(rawOrder.getCostCenterAccount());
+			
+			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(), offerLabel,
+					rawOrder.getTotal(), rawOrder.getCancellationFees(), rawOrder.getBillingAddressIdentifier(),
+					rawOrder.getPurchaseOrderNumber(), rawOrder.getComment(), rawOrder.getCreationDate(), orderStatus,
+					finalStatus, rawOrder.getDeliveryKey(), resourceDisplayName, costCenteryName, costCenteryAccount,
+					rawOrder.getUsername(), rawOrder.getUserProperties(), orderMethods);
 			items.add(item);
 		}
 

@@ -97,6 +97,8 @@ public class OrderDetailController extends FormBasicController {
 	private final Identity delivery;
 	private final boolean readOnly;
 	private final String offerLabel;
+	private final String costCenterName;
+	private final String costCenterAccount;
 	private final List<AccessMethod> orderMethods;
 	private final UserInfoProfileConfig profileConfig;
 	private Collection<AccessTransaction> transactions;
@@ -110,7 +112,7 @@ public class OrderDetailController extends FormBasicController {
 	private AccessControlModule acModule;
 	@Autowired
 	private UserPortraitService userPortraitService;
-	
+
 	public OrderDetailController(UserRequest ureq, WindowControl wControl, OrderTableItem orderItem,
 			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, boolean readOnly) {
 		super(ureq, wControl, "order");
@@ -121,6 +123,8 @@ public class OrderDetailController extends FormBasicController {
 		transactions = acService.findAccessTransactions(order);
 		orderMethods = orderItem.getMethods();
 		offerLabel = orderItem.getLabel();
+		costCenterName = orderItem.getCostCenterName();
+		costCenterAccount = orderItem.getCostCenterAccount();
 		
 		delivery = order.getDelivery();
 		profileConfig = userPortraitService.createProfileConfig();
@@ -141,6 +145,8 @@ public class OrderDetailController extends FormBasicController {
 		transactions = acService.findAccessTransactions(order);
 		orderMethods = orderItem.getMethods();
 		offerLabel = orderItem.getLabel();
+		costCenterName = orderItem.getCostCenterName();
+		costCenterAccount = orderItem.getCostCenterAccount();
 		
 		delivery = order.getDelivery();
 		profileConfig = userPortraitService.createProfileConfig();
@@ -188,7 +194,7 @@ public class OrderDetailController extends FormBasicController {
 		}
 		
 		if(StringHelper.containsNonWhitespace(offerLabel)) {
-			uifactory.addStaticTextElement("offer-name", "offer.name", offerLabel, formLayout);
+			uifactory.addStaticTextElement("offer-name", "offer.name", StringHelper.escapeHtml(offerLabel), formLayout);
 		}
 
 		Date creationDate = order.getCreationDate();
@@ -210,6 +216,26 @@ public class OrderDetailController extends FormBasicController {
 		if(cancellationFee != null && cancellationFee.getAmount() != null && BigDecimal.ZERO.compareTo(cancellationFee.getAmount()) < 0) {
 			String fee = PriceFormat.fullFormat(cancellationFee);
 			uifactory.addStaticTextElement("cancellation-fee", "order.cancellation.fee", fee, formLayout);
+		}
+		
+		if(StringHelper.containsNonWhitespace(costCenterName)) {
+			uifactory.addStaticTextElement("cost-center-name", "cost.center", StringHelper.escapeHtml(costCenterName), formLayout);
+		}
+		if(StringHelper.containsNonWhitespace(costCenterAccount)) {
+			uifactory.addStaticTextElement("cost-center-account", "cost.center.account", StringHelper.escapeHtml(costCenterAccount), formLayout);
+		}
+		if(StringHelper.containsNonWhitespace(order.getPurchaseOrderNumber())) {
+			uifactory.addStaticTextElement("order-po-number", "order.purchase.number", StringHelper.escapeHtml(order.getPurchaseOrderNumber()), formLayout);
+		}
+		if(StringHelper.containsNonWhitespace(order.getComment())) {
+			uifactory.addStaticTextElement("order-comment", "order.comment", StringHelper.escapeHtml(order.getComment()), formLayout);
+		}
+		
+		if (order.getBillingAddress() != null) {
+			BillingAddressItem billingAddressItem = new BillingAddressItem("billing-address", getLocale());
+			billingAddressItem.setBillingAddress(order.getBillingAddress());
+			billingAddressItem.setLabel("billing.address", null);
+			formLayout.add("billing-address", billingAddressItem);
 		}
 	}
 	
@@ -250,6 +276,7 @@ public class OrderDetailController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderItemList", dataModel, 25, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableSettings(translate("orders.empty"), null, "o_ac_order_status_prepayment_icon");
 		tableEl.setCustomizeColumns(false);
+		tableEl.setNumOfRowsEnabled(false);
 	}
 	
 	private void loadModel() {

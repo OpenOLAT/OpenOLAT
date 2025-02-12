@@ -32,10 +32,10 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -82,7 +82,6 @@ public class OrdersController extends FormBasicController implements Activateabl
 	private OrdersDataModel dataModel;
 	private BreadcrumbPanel stackPanel;
 
-	private int counter = 0;
 	private final Identity identity;
 	private final OLATResource resource;
 	private final OrdersSettings settings;
@@ -91,6 +90,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	//TODO uh container
 	private OrderDetailController detailController;
 	private CloseableCalloutWindowController calloutCtrl;
 
@@ -144,11 +144,14 @@ public class OrdersController extends FormBasicController implements Activateabl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier));
 		if(settings.withTools()) {
-			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(OrderCol.tools);
-			toolsColumn.setIconHeader("o_icon o_icon-lg o_icon_actions");
-			toolsColumn.setExportable(false);
-			toolsColumn.setAlwaysVisible(true);
+			ActionsColumnModel toolsColumn = new ActionsColumnModel(OrderCol.tools);
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 
@@ -161,10 +164,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 
 	@Override
 	public void forge(OrderTableRow row) {
-		String id = Integer.toString(++counter);
-		FormLink toolsLink = uifactory.addFormLink("tools_".concat(id), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		toolsLink.setTitle(translate("action.more"));
+		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), CMD_TOOLS);
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

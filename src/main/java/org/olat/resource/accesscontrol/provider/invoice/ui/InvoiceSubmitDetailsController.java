@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -45,8 +44,8 @@ import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
-import org.olat.resource.accesscontrol.ui.BillingAddressComponent;
 import org.olat.resource.accesscontrol.ui.BillingAddressController;
+import org.olat.resource.accesscontrol.ui.BillingAddressItem;
 import org.olat.resource.accesscontrol.ui.BillingAddressSelectionController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class InvoiceSubmitDetailsController extends FormBasicController {
 	
 	private FormLayoutContainer billingAddressCont;
-	private BillingAddressComponent billingAddressComp;
+	private BillingAddressItem billingAddressItem;
 	private TextElement purchseNumberEl;
 	private FormLink billingAddressLink;
 	private TextAreaElement commentEl;
@@ -106,24 +105,24 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		billingAddressCont.setRootForm(mainForm);
 		formLayout.add(billingAddressCont);
 		
-		billingAddressComp = new BillingAddressComponent("billing.address", getLocale());
-		billingAddressComp.setTemporaryAddressWarning(false);
-		billingAddressCont.add(billingAddressComp.getComponentName(), new ComponentWrapperElement(billingAddressComp));
+		billingAddressItem = new BillingAddressItem("billing.address", getLocale());
+		billingAddressItem.setTemporaryAddressWarning(false);
+		billingAddressCont.add(billingAddressItem.getName(), billingAddressItem);
 		updateBillingAddress(billingAddress);
 		
 		billingAddressLink = uifactory.addFormLink("billing.address.select", billingAddressCont, Link.BUTTON);
 		
-		purchseNumberEl = uifactory.addTextElement("purchase.number", 100, null, formLayout);
+		purchseNumberEl = uifactory.addTextElement("order.purchase.number", 100, null, formLayout);
 		
-		commentEl = uifactory.addTextAreaElement("comment", 4, 72, null, formLayout);
+		commentEl = uifactory.addTextAreaElement("order.comment", 4, 72, null, formLayout);
 		
 		uifactory.addFormSubmitButton("access.button.fee", formLayout);
 	}
 
 	private void updateBillingAddress(BillingAddress billingAddress) {
 		this.billingAddress = billingAddress;
-		billingAddressComp.setBillingAddress(billingAddress);
-		billingAddressComp.setVisible(billingAddress != null);
+		billingAddressItem.setBillingAddress(billingAddress);
+		billingAddressItem.setVisible(billingAddress != null);
 		billingAddressCont.setDirty(true);
 	}
 	

@@ -311,11 +311,16 @@ public class ACOrderDAO {
 		  .append("  o.total_currency_code as total_currency_code,")
 		  .append("  o.total_amount as total_amount,")
 		  .append("  o.cancellation_fee_amount as cancellation_fee_amount,")
+		  .append("  billingAddress.a_identifier as billing_address_identifier,")
+		  .append("  o.purchase_order_number as purchase_order_number,")
+		  .append("  o.order_comment as comment,")
 		  .append("  o.creationdate as creationdate,")
 		  .append("  o.order_status as o_status,")
 		  .append("  o.fk_delivery_id as delivery_id,")
 		  .append("  ").appendToArray("offer.resourcedisplayname").append(" as resDisplaynames,")
 		  .append("  ").appendToArray("offer.offer_label").append(" as labels,")
+		  .append("  ").appendToArray("costCenter.a_name").append(" as cost_center_names,")
+		  .append("  ").appendToArray("costCenter.a_account").append(" as cost_center_names,")
 		  .append("  ").appendToArray("trx.trx_status").append(" as trxStatus,")
 		  .append("  ").appendToArray("trx.fk_method_id").append(" as trxMethodIds,")
 		  .append("  ").appendToArray("pspTrx.trx_status").append(" as pspTrxStatus,")
@@ -340,6 +345,8 @@ public class ACOrderDAO {
 			sb.append(" inner join o_bs_identity delivery on (delivery.id=o.fk_delivery_id)")
 			  .append(" inner join o_user delivery_user on (delivery_user.fk_identity=delivery.id)");
 		}
+		sb.append(" left join o_ac_billing_address billingAddress on (o.fk_billing_address = billingAddress.id)");
+		sb.append(" left join o_ac_cost_center costCenter on (offer.fk_cost_center = costCenter.id)");
 		sb.append(" left join o_ac_paypal_transaction pspTrx on (o.order_id = pspTrx.order_id)")
 		  .append(" left join o_ac_checkout_transaction checkoutTrx on (o.order_id = checkoutTrx.p_order_id)")
 		  .append(" left join o_ac_transaction trx on (o.order_id = trx.fk_order_id)");
@@ -391,9 +398,9 @@ public class ACOrderDAO {
 			sb.append(")");
 		}
 		
-		sb.append(" group by o.order_id");
+		sb.append(" group by o.order_id, billingAddress.a_identifier");
 		if(dbInstance.isOracle()) {
-			sb.append(", o.total_currency_code, o.total_amount, o.creationdate, o.order_status, o.fk_delivery_id");
+			sb.append(", o.total_currency_code, o.total_amount, o.cancellation_fee_amount, o.purchase_order_number ,o.creationdate, o.order_status, o.fk_delivery_id");
 		}
 		if(delivery == null) {
 			sb.append(", delivery.id, delivery_user.user_id");
@@ -470,11 +477,16 @@ public class ACOrderDAO {
 			String totalCurrencyCode = (String)order[pos++];
 			BigDecimal totalAmount = (BigDecimal)order[pos++];
 			BigDecimal cancellationFees = (BigDecimal)order[pos++];
+			String billingAddressIdentifier = (String)order[pos++];
+			String purchseOrderNumber = (String)order[pos++];
+			String comment = (String)order[pos++];
 			Date creationDate = (Date)order[pos++];
 			String orderStatus = (String)order[pos++];
 			Long deliveryKey = ((Number)order[pos++]).longValue();
 			String resourceName = (String)order[pos++];
 			String label = (String)order[pos++];
+			String costCenterName = (String)order[pos++];
+			String costCenterAccount = (String)order[pos++];
 			String trxStatus = (String)order[pos++];
 			String trxMethodIds = (String)order[pos++];
 			String pspTrxStatus = (String)order[pos++];
@@ -493,11 +505,10 @@ public class ACOrderDAO {
 				}
 			}
 			
-			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), label,
-					totalCurrencyCode, totalAmount, cancellationFees,
-					creationDate, orderStatus, deliveryKey, resourceName,
-					trxStatus, trxMethodIds, pspTrxStatus, checkoutTrxStatus, checkoutOrderTrxStatus,
-					username, userProperties);
+			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), label, totalCurrencyCode, totalAmount,
+					cancellationFees, billingAddressIdentifier, purchseOrderNumber, comment, creationDate,
+					orderStatus, deliveryKey, resourceName, costCenterName, costCenterAccount, trxStatus, trxMethodIds,
+					pspTrxStatus, checkoutTrxStatus, checkoutOrderTrxStatus, username, userProperties);
 			items.add(item);
 		}
 		return items;

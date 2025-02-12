@@ -39,10 +39,15 @@ public class RawOrderItem {
 	private final String label;
 	private final Price total;
 	private final Price cancellationFees;
+	private final String billingAddressIdentifier;
+	private final String purchaseOrderNumber;
+	private final String comment;
 	private final Date creationDate;
 	private final String orderStatus;
 	private final Long deliveryKey;
 	private final String resourceName;
+	private final String costCenterName;
+	private final String costCenterAccount;
 	
 	private final String trxStatus;
 	private final String trxMethodIds;
@@ -53,21 +58,25 @@ public class RawOrderItem {
 	private final String username;
 	private final String[] userProperties;
 	
-	public RawOrderItem(Long orderKey, String orderNr, String label, String totalCurrencyCode,
-			BigDecimal totalAmount, BigDecimal cancellationFees,
-			Date creationDate, String orderStatus, Long deliveryKey, String resourceName,
-			String trxStatus, String trxMethodIds, String pspTrxStatus,
-			String checkoutTrxStatus, String checkoutOrderTrxStatus,
-			String username, String[] userProperties) {
+	public RawOrderItem(Long orderKey, String orderNr, String label, String totalCurrencyCode, BigDecimal totalAmount,
+			BigDecimal cancellationFees, String billingAddressIdentifier, String purchaseOrderNumber,
+			String comment, Date creationDate, String orderStatus, Long deliveryKey, String resourceName,
+			String costCenterName, String costCenterAccount, String trxStatus, String trxMethodIds, String pspTrxStatus,
+			String checkoutTrxStatus, String checkoutOrderTrxStatus, String username, String[] userProperties) {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
 		this.label = label;
 		this.total = new PriceImpl(totalAmount, totalCurrencyCode);
 		this.cancellationFees = new PriceImpl(cancellationFees, totalCurrencyCode);
+		this.billingAddressIdentifier = billingAddressIdentifier;
+		this.purchaseOrderNumber = purchaseOrderNumber;
+		this.comment = comment;
 		this.creationDate = creationDate;
 		this.orderStatus = orderStatus;
 		this.deliveryKey = deliveryKey;
 		this.resourceName = resourceName;
+		this.costCenterName = costCenterName;
+		this.costCenterAccount = costCenterAccount;
 		this.trxStatus = trxStatus;
 		this.trxMethodIds = trxMethodIds;
 		this.pspTrxStatus = pspTrxStatus;
@@ -96,6 +105,18 @@ public class RawOrderItem {
 	public Price getCancellationFees() {
 		return cancellationFees;
 	}
+	
+	public String getBillingAddressIdentifier() {
+		return billingAddressIdentifier;
+	}
+
+	public String getPurchaseOrderNumber() {
+		return purchaseOrderNumber;
+	}
+
+	public String getComment() {
+		return comment;
+	}
 
 	public Date getCreationDate() {
 		return creationDate;
@@ -111,6 +132,14 @@ public class RawOrderItem {
 
 	public String getResourceName() {
 		return resourceName;
+	}
+
+	public String getCostCenterName() {
+		return costCenterName;
+	}
+
+	public String getCostCenterAccount() {
+		return costCenterAccount;
 	}
 
 	public String getTrxStatus() {

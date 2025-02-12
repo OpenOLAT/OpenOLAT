@@ -1,29 +1,51 @@
 <div class="o_ac_order_details">
-	<div class="o_ac_order_nr">
+	<div class="o_ac_order_header">
 		$r.render("order-nr","vertical")
 		<div class="o_ac_order_status">
 			$orderStatus
+		</div>
+		<div class="o_ac_order_cmds">
 			#if($r.available("set.paid"))
 				$r.render("set.paid")
 			#end
 		</div>
 	</div>
-	<div class="o_metadata_horizontal">
-		$r.render("order-methods","vertical")
-		#if($r.available("offer-name"))
-			$r.render("offer-name","vertical")
-		#end
-		$r.render("creation-date","vertical")
-		$r.render("order-total","vertical")
-		#if($r.available("cancellation-fee"))
-			$r.render("cancellation-fee","vertical")
-		#end
+	<div class="o_ac_order_details_content">
+		<div class="o_ac_order_details_content_left">
+			<div class="o_ac_order_metadata">
+				$r.render("order-methods","vertical")
+				#if($r.available("offer-name"))
+					$r.render("offer-name","vertical")
+				#end
+				$r.render("creation-date","vertical")
+				$r.render("order-total","vertical")
+				#if($r.available("cancellation-fee"))
+					$r.render("cancellation-fee","vertical")
+				#end
+				#if($r.available("cost-center-name"))
+					$r.render("cost-center-name","vertical")
+				#end
+				#if($r.available("cost-center-account"))
+					$r.render("cost-center-account","vertical")
+				#end
+				#if($r.available("order-po-number"))
+					$r.render("order-po-number","vertical")
+				#end
+			</div>
+			#if($r.available("order-comment"))
+				$r.render("order-comment","vertical")
+			#end
+			#if($r.available("billing-address"))
+				$r.render("billing-address","vertical")
+			#end
+			$r.render("orderItemList")
+		</div>
+		<div class="o_ac_order_details_content_right">
+			<div class="">
+				<label>$r.translate("order.details.delivery")</label>
+				$r.render("delivery-profile")
+			</div>
+		</div>
 	</div>
-	<div class="">
-		<label>$r.translate("order.details.delivery")</label>
-		$r.render("delivery-profile")
-	</div>
-	
-	$r.render("orderItemList")
 </div>
 

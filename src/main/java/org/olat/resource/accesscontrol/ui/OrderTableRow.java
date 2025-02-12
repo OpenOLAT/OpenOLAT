@@ -104,6 +104,26 @@ public class OrderTableRow {
 	public Price getCancellationFees() {
 		return item.getCancellationFees();
 	}
+	
+	public String getCostCenterName() {
+		return item.getCostCenterName();
+	}
+
+	public String getCostCenterAccount() {
+		return item.getCostCenterAccount();
+	}
+	
+	public String getBillingAddressIdentifier() {
+		return item.getBillingAddressIdentifier();
+	}
+
+	public String getPurchaseOrderNumber() {
+		return item.getPurchaseOrderNumber();
+	}
+
+	public String getComment() {
+		return item.getComment();
+	}
 
 	public OrderModificationSummary getModificationsSummary() {
 		return modificationsSummary;

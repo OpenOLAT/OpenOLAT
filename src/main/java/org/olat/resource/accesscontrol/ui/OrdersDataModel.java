@@ -69,6 +69,11 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 			case offerLabel -> order.getOfferLabel();
 			case total -> getTotal(order);
 			case cancellationFee -> getCancellationFees(order);
+			case costCenterName -> order.getCostCenterName();
+			case costCenterAccount -> order.getCostCenterAccount();
+			case purchaseOrderNumber -> order.getPurchaseOrderNumber();
+			case comment -> order.getComment();
+			case billingAddressIdentifier -> order.getBillingAddressIdentifier();
 			case summary -> order.getResourceDisplayname();
 			case tools -> order.getToolsLink();
 			default -> order;
@@ -138,6 +143,11 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		offerLabel("table.order.offer.label", null),
 		total("table.order.total", "total_amount"),
 		cancellationFee("order.cancellation.fee", "cancellation_fee_amount"),
+		costCenterName("cost.center", "cost_center_names"),
+		costCenterAccount("cost.center.account", "cost_center_accounts"),
+		purchaseOrderNumber("order.purchase.number", "purchase_order_number"),
+		comment("order.comment", "comment"),
+		billingAddressIdentifier("billing.address", "billing_address_identifier"),
 		summary("order.summary", "resDisplaynames"),
 		status("order.status", "o_status"),
 		tools("table.header.tools", null);

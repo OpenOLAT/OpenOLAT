@@ -22,8 +22,9 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.resource.accesscontrol.BillingAddress;
@@ -34,17 +35,28 @@ import org.olat.resource.accesscontrol.BillingAddress;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class BillingAddressComponent extends AbstractComponent {
+public class BillingAddressComponent extends FormBaseComponentImpl {
 
 	private static final BillingAddressRenderer RENDERER = new BillingAddressRenderer();
 	
 	private final Translator compTranslator;
+	private final FormItem formItem;
 	private BillingAddress billingAddress;
 	private boolean temporaryAddressWarning = true;
 
 	public BillingAddressComponent(String name, Locale locale) {
+		this(name, locale, null);
+	}
+	
+	BillingAddressComponent(String name, Locale locale, FormItem formItem) {
 		super(name);
+		this.formItem = formItem;
 		this.compTranslator = Util.createPackageTranslator(BillingAddressRenderer.class, locale);
+	}
+
+	@Override
+	public FormItem getFormItem() {
+		return formItem;
 	}
 
 	@Override

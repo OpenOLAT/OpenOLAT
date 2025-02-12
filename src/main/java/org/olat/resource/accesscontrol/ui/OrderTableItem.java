@@ -58,9 +58,14 @@ public class OrderTableItem {
 	private final String label;
 	private final Price total;
 	private final Price cancellationFees;
+	private final String billingAddressIdentifier;
+	private final String purchaseOrderNumber;
+	private final String comment;
 	private final Date creationDate;
 	private final OrderStatus orderStatus;
 	private final String resourceDisplayname;
+	private final String costCenterName;
+	private final String costCenterAccount;
 	private Long deliveryKey;
 	
 	private String username;
@@ -69,21 +74,25 @@ public class OrderTableItem {
 	private Status status;
 	private List<AccessMethod> methods;
 	
-	public OrderTableItem(Long orderKey, String orderNr,
-			String label, String resourceDisplayname,
-			Price total, Price cancellationFees,
-			Date creationDate, OrderStatus orderStatus, Status status, Long deliveryKey,
-			String username, String[] userProperties, List<AccessMethod> methods) {
+	public OrderTableItem(Long orderKey, String orderNr, String label, Price total, Price cancellationFees,
+			String billingAddressIdentifier, String purchaseOrderNumber, String comment, Date creationDate,
+			OrderStatus orderStatus, Status status, Long deliveryKey, String resourceDisplayname, String costCenterName,
+			String costCenterAccount, String username, String[] userProperties, List<AccessMethod> methods) {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
 		this.total = total;
 		this.label = label;
-		this.resourceDisplayname = resourceDisplayname;
 		this.cancellationFees = cancellationFees;
+		this.billingAddressIdentifier = billingAddressIdentifier;
+		this.purchaseOrderNumber = purchaseOrderNumber;
+		this.comment = comment;
 		this.orderStatus = orderStatus;
 		this.creationDate = creationDate;
 		this.status = status;
 		this.deliveryKey = deliveryKey;
+		this.resourceDisplayname = resourceDisplayname;
+		this.costCenterName = costCenterName;
+		this.costCenterAccount = costCenterAccount;
 		this.methods = methods;
 		this.username = username;
 		this.userProperties = userProperties;
@@ -120,9 +129,29 @@ public class OrderTableItem {
 	public Price getCancellationFees() {
 		return cancellationFees;
 	}
-	
+
+	public String getBillingAddressIdentifier() {
+		return billingAddressIdentifier;
+	}
+
+	public String getPurchaseOrderNumber() {
+		return purchaseOrderNumber;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
 	public String getResourceDisplayname() {
 		return resourceDisplayname;
+	}
+
+	public String getCostCenterName() {
+		return costCenterName;
+	}
+
+	public String getCostCenterAccount() {
+		return costCenterAccount;
 	}
 
 	public String getUsername() {
