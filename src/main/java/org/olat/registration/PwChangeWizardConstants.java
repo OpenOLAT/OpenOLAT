@@ -17,21 +17,22 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.login;
-
-import org.olat.core.gui.control.Event;
+package org.olat.registration;
 
 /**
- * Initial date: Nov 26, 2024
+ * Initial date: Jan 31, 2025
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class LoginProcessEvent extends Event {
+public class PwChangeWizardConstants {
 
-	public static final LoginProcessEvent REGISTER_EVENT = new LoginProcessEvent("register");
-	public static final LoginProcessEvent PWCHANGE_EVENT = new LoginProcessEvent("pwchange");
+	public static final String INITIALMAIL = "initialmail";
+	public static final String EMAILORUSERNAME = "emailorusername";
+	public static final String IDENTITY = "identity";
+	public static final String VALTYPE = "valtype";
 
-	public LoginProcessEvent(String command) {
-		super(command);
-	}
+	/**
+	 * private constructor to hide the implicit public one
+	 */
+	private PwChangeWizardConstants() {}
 }

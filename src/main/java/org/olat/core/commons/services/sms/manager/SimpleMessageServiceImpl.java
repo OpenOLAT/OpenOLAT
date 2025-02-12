@@ -67,7 +67,7 @@ public class SimpleMessageServiceImpl implements SimpleMessageService {
 
 	@Override
 	public String generateToken() {
-		return PasswordGenerator.generateNumericalCode(6);
+		return PasswordGenerator.generateNumericalCode(8);
 	}
 
 	@Override

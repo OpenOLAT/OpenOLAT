@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.login.ui;
@@ -38,7 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 16 avr. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class PasswordPolicyController extends FormBasicController {
@@ -48,7 +48,6 @@ public class PasswordPolicyController extends FormBasicController {
 	private MultipleSelectionElement changeOnceEl;
 	
 	private TextElement validUntilGuiEl;
-	private TextElement validUntilRestEl;
 	private TextElement maxAgeEl;
 	private TextElement maxAgeAuthorEl;
 	private TextElement maxAgeGroupManagerEl;
@@ -81,8 +80,6 @@ public class PasswordPolicyController extends FormBasicController {
 		
 		validUntilGuiEl = uifactory.addTextElement("password.change.valid.until.gui", 20, loginModule.getValidUntilHoursGui().toString(), formLayout);
 		validUntilGuiEl.setMandatory(true);
-		validUntilRestEl = uifactory.addTextElement("password.change.valid.until.rest", 20, loginModule.getValidUntilHoursRest().toString(), formLayout);
-		validUntilRestEl.setMandatory(true);
 
 		String[] onValues = new String[] { translate("on") };
 		changeOnceEl = uifactory.addCheckboxesHorizontal("change.once", "change.once", formLayout, onKeys, onValues);
@@ -156,7 +153,6 @@ public class PasswordPolicyController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateInteger(validUntilGuiEl, 1);
-		allOk &= validateInteger(validUntilRestEl, 1);
 		allOk &= validateMaxAgeEl(maxAgeEl);
 		allOk &= validateMaxAgeEl(maxAgeAuthorEl);
 		allOk &= validateMaxAgeEl(maxAgeGroupManagerEl);
@@ -195,9 +191,7 @@ public class PasswordPolicyController extends FormBasicController {
 		
 		Integer validUntilHoursGui = Integer.parseInt(validUntilGuiEl.getValue());
 		loginModule.setValidUntilHoursGui(validUntilHoursGui);
-		Integer validUntilHoursRest = Integer.parseInt(validUntilRestEl.getValue());
-		loginModule.setValidUntilHoursRest(validUntilHoursRest);
-		
+
 		loginModule.setPasswordMaxAge(getMaxAge(maxAgeEl));
 		loginModule.setPasswordMaxAgeFor(OrganisationRoles.author, getMaxAge(maxAgeAuthorEl));
 		loginModule.setPasswordMaxAgeFor(OrganisationRoles.groupmanager, getMaxAge(maxAgeGroupManagerEl));

@@ -55,11 +55,11 @@ public class RegistrationPasskeyListController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private PasskeyListTableModel tableModel;
 
-	public RegistrationPasskeyListController(UserRequest ureq, WindowControl wControl, Identity identityToChange) {
-		super(ureq, wControl, "passkey_list_registration");
+	public RegistrationPasskeyListController(UserRequest ureq, WindowControl wControl, Identity identityToChange, Form rootForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "passkey_list_registration", rootForm);
 		this.identityToChange = identityToChange;
 		initForm(ureq);
-		
+
 		flc.setFormTitle(translate("passkey.new.title"));
 		flc.setFormDescription(translate("passkey.new.desc"));
 	}

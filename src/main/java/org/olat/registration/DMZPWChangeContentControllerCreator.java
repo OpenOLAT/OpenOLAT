@@ -28,7 +28,6 @@ import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.login.DmzBFWCParts;
 
@@ -42,8 +41,7 @@ public class DMZPWChangeContentControllerCreator implements ControllerCreator {
 	public Controller createController(UserRequest lureq, WindowControl lwControl) {
 		DmzBFWCParts dmzSitesAndNav = new DmzBFWCParts();
 		dmzSitesAndNav.showTopNav(false);
-		AutoCreator contentControllerCreator = new AutoCreator();
-		contentControllerCreator.setClassName(PwChangeController.class.getName());
+		ControllerCreator contentControllerCreator = PwChangeController::new;
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
 		return new BaseFullWebappController(lureq, dmzSitesAndNav);
 	}

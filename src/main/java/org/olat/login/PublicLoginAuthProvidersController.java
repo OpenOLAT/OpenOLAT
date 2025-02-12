@@ -49,7 +49,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
@@ -228,7 +227,7 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		if (source == registerLink) {
 			fireEvent(ureq, LoginProcessEvent.REGISTER_EVENT);
 		} else if (source == changePasswordLink) {
-			openChangePassword(ureq);
+			fireEvent(ureq, LoginProcessEvent.PWCHANGE_EVENT);
 		}
 	}
 
@@ -294,24 +293,6 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 
 		if(changePasswordLink != null) {
 			changePasswordLink.setVisible(!loginModule.isOlatProviderLoginButton());
-		}
-	}
-
-	private void openChangePassword(UserRequest ureq) {
-		// double-check if allowed first
-		if (userModule.isAnyPasswordChangeAllowed()) {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose(pwChangeCtrl);
-
-			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), null, true);
-			listenTo(pwChangeCtrl);
-
-			String title = pwChangeCtrl.getWizardTitle();
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), pwChangeCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		} else {
-			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
 		}
 	}
 

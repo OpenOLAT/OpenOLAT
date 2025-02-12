@@ -65,6 +65,8 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 				LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), stackPanel, null);
 				if (event == LoginProcessEvent.REGISTER_EVENT) {
 					loginProcessEventCtrl.doOpenRegistration(ureq);
+				} else if (event == LoginProcessEvent.PWCHANGE_EVENT) {
+					loginProcessEventCtrl.doOpenChangePassword(ureq, null);
 				}
 			}
 		} else if (lightboxCtrl == source) {

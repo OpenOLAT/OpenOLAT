@@ -118,7 +118,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogEntryListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
 	
-	private BreadcrumbedStackedPanel stackPanel;
+	private final BreadcrumbedStackedPanel stackPanel;
 	private FlexiTableElement tableEl;
 	private CatalogEntryDataModel dataModel;
 	private final CatalogEntrySearchParams searchParams;
@@ -691,6 +691,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 				LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), stackPanel, null);
 				if (event == LoginProcessEvent.REGISTER_EVENT) {
 					loginProcessEventCtrl.doOpenRegistration(ureq);
+				} else if (event == LoginProcessEvent.PWCHANGE_EVENT) {
+					loginProcessEventCtrl.doOpenChangePassword(ureq, null);
 				}
 			}
 		} else if (lightboxCtrl == source) {

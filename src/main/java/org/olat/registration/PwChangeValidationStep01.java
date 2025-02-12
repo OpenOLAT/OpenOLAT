@@ -20,20 +20,34 @@
 package org.olat.registration;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.wizard.BasicStep;
+import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.StepFormController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
- * Initial date: Nov 29, 2024
+ * Initial date: Jan 31, 2025
  *
  * @author skapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-@FunctionalInterface
-public interface RegistrationStepsListener {
+public class PwChangeValidationStep01 extends BasicStep {
 
-	/**
-	 * let the basic step know, that step sequence changed
-	 * @param ureq
-	 * @param isConditionFulfilled based on the user selection
-	 */
-	void onStepsChanged(UserRequest ureq, Boolean isConditionFulfilled);
+	public PwChangeValidationStep01(UserRequest ureq) {
+		super(ureq);
 
+		setI18nTitleAndDescr("step2.pw.title", "step2.pw.text");
+		setNextStep(new PwChangeSetNewStep02(ureq));
+	}
+
+	@Override
+	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
+		return new PrevNextFinishConfig(true, true, false);
+	}
+
+	@Override
+	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
+		return new PwChangeValidationStep01Controller(ureq, wControl, form, runContext);
+	}
 }

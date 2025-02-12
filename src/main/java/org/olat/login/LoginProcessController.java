@@ -36,8 +36,11 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.WebappHelper;
+import org.olat.registration.PwChangeController;
 import org.olat.registration.RegWizardConstants;
 import org.olat.registration.RegisterFinishCallback;
 import org.olat.registration.RegistrationAdditionalPersonalDataController;
@@ -45,7 +48,9 @@ import org.olat.registration.RegistrationLangStep00;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
 import org.olat.registration.TemporaryKey;
+import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,9 +65,15 @@ public class LoginProcessController extends BasicController {
 	private final Invitation invitation;
 
 	private StepsMainRunController registrationWizardCtrl;
+	private StepsMainRunController pwChangeWizardCtrl;
+	private PwChangeController pwChangeCtrl;
 
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private LoginModule loginModule;
 	@Autowired
 	private RegistrationModule registrationModule;
 
@@ -80,13 +91,44 @@ public class LoginProcessController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == registrationWizardCtrl) {
-			if (stackPanel instanceof BreadcrumbedStackedPanel breadcrumbedStackedPanel) {
+ 			if (stackPanel instanceof BreadcrumbedStackedPanel breadcrumbedStackedPanel) {
 				breadcrumbedStackedPanel.popController(registrationWizardCtrl);
 			} else if (event == StepsEvent.RELOAD) {
 				fireEvent(ureq, event);
 			} else {
 				stackPanel.popContent();
 			}
+		} else if (source == pwChangeCtrl) {
+			if (event == Event.CANCELLED_EVENT
+					&& loginModule.getAuthenticationProvider(ShibbolethDispatcher.PROVIDER_SHIB) != null) {
+				// Redirect to context path to prevent Javascript error when using Shibboleth provider
+				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
+			}
+
+			if (stackPanel instanceof BreadcrumbedStackedPanel breadcrumbedStackedPanel) {
+				breadcrumbedStackedPanel.popController(pwChangeWizardCtrl);
+			} else {
+				stackPanel.popContent();
+			}
+		}
+	}
+
+	public void doOpenChangePassword(UserRequest ureq, String initialEmail) {
+		// double-check if allowed first
+		if (userModule.isAnyPasswordChangeAllowed()) {
+			removeAsListenerAndDispose(pwChangeCtrl);
+
+			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), initialEmail, false);
+			listenTo(pwChangeCtrl);
+			pwChangeWizardCtrl = pwChangeCtrl.doOpenPasswordChange(ureq);
+
+			if (stackPanel instanceof BreadcrumbedStackedPanel breadcrumbedStackedPanel) {
+				breadcrumbedStackedPanel.pushController(translate("pwchange.wizard.title"), pwChangeWizardCtrl);
+			} else {
+				stackPanel.pushContent(pwChangeWizardCtrl.getInitialComponent());
+			}
+		} else {
+			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
 		}
 	}
 

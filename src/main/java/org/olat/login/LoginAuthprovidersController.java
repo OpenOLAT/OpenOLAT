@@ -54,7 +54,6 @@ import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
-import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
@@ -71,9 +70,7 @@ import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.WebCatalogDispatcher;
-import org.olat.registration.PwChangeController;
 import org.olat.registration.RegistrationModule;
-import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -94,11 +91,10 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private final List<Controller> authenticationCtrlList = new ArrayList<>();
 
 	private Link registerLink;
-	private VelocityContainer content;
+	private final VelocityContainer content;
 	private Component changePasswordLink;
 
 	private CloseableModalController cmc;
-	private PwChangeController pwChangeCtrl;
 	private LoginProcessController loginProcessCtrl;
 
 	@Autowired
@@ -387,23 +383,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(pwChangeCtrl == source) {
-			if (event == Event.CANCELLED_EVENT) {
-				if (loginModule.getAuthenticationProvider(ShibbolethDispatcher.PROVIDER_SHIB) != null) {
-					// Redirect to context path to prevent Javascript error when using Shibboleth provider
-					ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
-				} else {
-					// is a Form cancelled, show Login Form
-					content = initLoginContent(ureq);
-					initChangePassword(content);
-					dmzPanel.setContent(content);
-				}
-			}
-			if (pwChangeCtrl == source) {
-				cmc.deactivate();
-			}
-			cleanUp();
-		} else if (event == StepsEvent.RELOAD) {
+		if (event == StepsEvent.RELOAD) {
 			dmzPanel.popContent();
 			cleanUp();
 			doOpenRegistration(ureq);
@@ -420,10 +400,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(loginProcessCtrl);
-		removeAsListenerAndDispose(pwChangeCtrl);
 		removeAsListenerAndDispose(cmc);
 		loginProcessCtrl = null;
-		pwChangeCtrl = null;
 		cmc = null;
 	}
 
@@ -524,20 +502,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	}
 
 	private void openChangePassword(UserRequest ureq, String initialEmail) {
-		// double-check if allowed first
-		if (userModule.isAnyPasswordChangeAllowed()) {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose(pwChangeCtrl);
-
-			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
-			listenTo(pwChangeCtrl);
-
-			String title = pwChangeCtrl.getWizardTitle();
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), pwChangeCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		} else {
-			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
-		}
+		loginProcessCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, invitation);
+		listenTo(loginProcessCtrl);
+		loginProcessCtrl.doOpenChangePassword(ureq, initialEmail);
 	}
 }

@@ -142,8 +142,6 @@ public class LoginModule extends AbstractSpringModule {
 
 	@Value("${password.change.valid.hours.gui}")
 	private Integer validUntilHoursGui;
-	@Value("${password.change.valid.hours.rest}")
-	private Integer validUntilHoursRest;
 	
 	@Value("${password.change.once:false}")
 	private boolean passwordChangeOnce;
@@ -473,11 +471,6 @@ public class LoginModule extends AbstractSpringModule {
 			validUntilHoursGui = validUntilHoursGuiInt;
 		}
 		
-		int validUntilHoursRestInt = getIntPropertyValue("password.change.valid.hours.rest");
-		if (validUntilHoursRestInt > 0) {
-			validUntilHoursRest = validUntilHoursRestInt;
-		}
-		
 		passwordMaxAge = getAgeValue(MAX_AGE, passwordMaxAge);
 		passwordMaxAgeAuthor = getAgeValue(MAX_AGE_AUTHOR, passwordMaxAgeAuthor);
 		passwordMaxAgeGroupManager = getAgeValue(MAX_AGE_GROUPMANAGER, passwordMaxAgeGroupManager);
@@ -759,15 +752,6 @@ public class LoginModule extends AbstractSpringModule {
 	public void setValidUntilHoursGui(Integer validUntilHoursGui) {
 		this.validUntilHoursGui = validUntilHoursGui;
 		setIntProperty("password.change.valid.hours.gui", validUntilHoursGui, true);
-	}
-
-	public Integer getValidUntilHoursRest() {
-		return validUntilHoursRest;
-	}
-
-	public void setValidUntilHoursRest(Integer validUntilHoursRest) {
-		this.validUntilHoursRest = validUntilHoursRest;
-		setIntProperty("password.change.valid.hours.rest", validUntilHoursRest, true);
 	}
 
 	public boolean isPasswordChangeOnce() {
