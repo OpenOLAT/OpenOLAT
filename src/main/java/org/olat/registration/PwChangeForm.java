@@ -117,8 +117,10 @@ public class PwChangeForm extends FormBasicController {
 		setFormInfo("step3.pw.text");
 		
 		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
+		newpass1.setElementCssClass("o_sel_new_password");
 		newpass1.setAutocomplete("new-password");
 		newpass2 = uifactory.addPasswordElement("newpass2",  "form.password.new2", 5000, "", formLayout);
+		newpass2.setElementCssClass("o_sel_password_confirmation");
 		newpass2.setAutocomplete("new-password");
 	}
 }

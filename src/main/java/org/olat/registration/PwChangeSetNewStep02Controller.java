@@ -74,6 +74,7 @@ public class PwChangeSetNewStep02Controller extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
+		setFormStyle("o_sel_new_password_form");
 
 		Roles roles = securityManager.getRoles(recipientIdentity);
 		PasskeyLevels requiredLevel = loginModule.getPasskeyLevel(roles);

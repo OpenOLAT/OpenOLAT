@@ -100,7 +100,7 @@ public class RegistrationPage {
 		return this;
 	}
 	
-	public String extractOtp(SmtpMessage message) {
+	public static String extractOtp(SmtpMessage message) {
 		String body = message.getBody();
 		int index = body.indexOf("'otp'>");
 		if(index >= 0) {

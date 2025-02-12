@@ -43,6 +43,7 @@ public class PwChangeConfirmationStep03Controller extends StepFormBasicControlle
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormStyle("o_sel_changed_confirmation");
 		setFormTitle("step4.pw.title");
 		setFormInfo("step4.pw.text");
 

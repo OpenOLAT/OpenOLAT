@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.core.util.StringHelper;
+import org.olat.selenium.page.core.LoginPasswordForgottenPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -371,6 +372,15 @@ public class LoginPage {
 		By reservationBy = By.xpath("//div[contains(@class,'o_reservation')]");
 		OOGraphene.waitElementDisappears(reservationBy, 5, browser);
 		return this;
+	}
+	
+	public LoginPasswordForgottenPage passwordForgotten() {
+		By passwordForgottenBy = By.cssSelector(".o_login_help a.o_login_pwd");
+		OOGraphene.waitElement(passwordForgottenBy, browser);
+		browser.findElement(passwordForgottenBy).click();
+		By modalBy = By.cssSelector("#o_main_center dialog div.modal-body");
+		OOGraphene.waitElement(modalBy, browser);
+		return new LoginPasswordForgottenPage(browser);
 	}
 	
 	public record PasskeyInformations(List<Credential> credentials, List<String> recoveryKeys, VirtualAuthenticator authenticator) {

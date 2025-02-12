@@ -38,6 +38,7 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.core.AdministrationMessagesPage;
+import org.olat.selenium.page.core.LoginPasswordForgottenPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.user.PasswordAndAuthenticationAdminPage;
 import org.olat.selenium.page.user.RegistrationPage;
@@ -290,7 +291,7 @@ public class LoginTest extends Deployments {
 		Assert.assertEquals(1, messages.size());
 
 		String registrationLink = registration.extractRegistrationLink(messages.get(0));
-		String otp = registration.extractOtp(messages.get(0));
+		String otp = RegistrationPage.extractOtp(messages.get(0));
 		Assert.assertNotNull(registrationLink);
 		log.info("Registration link: {}, TOP: {}", registrationLink, otp);
 		
@@ -302,5 +303,39 @@ public class LoginTest extends Deployments {
 
 		loginPage
 			.assertLoggedInByLastName("Iwakura");
+	}
+	
+	/**
+	 * Create a new user, the user uses the change password
+	 * workflow to set a new password and log in.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void passwordForgotten()
+	throws IOException, URISyntaxException {
+		
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		LoginPasswordForgottenPage forgottenPage = loginPage
+				.passwordForgotten()
+				.userIdentification(user.getLogin());
+		
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, messages.size());
+		String otp = RegistrationPage.extractOtp(messages.get(0));
+		log.info("Registration OTP: {}", otp);
+		
+		String newPassword = "Sel#12ChngeMeQuickly";
+		forgottenPage
+			.confirmOtp(otp)
+			.newPassword(newPassword);
+		
+		loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs(user.getLogin(), newPassword);
 	}
 }
