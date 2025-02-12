@@ -25,9 +25,6 @@
 
 package org.olat.registration;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
