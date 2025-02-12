@@ -34,7 +34,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
-import org.olat.resource.accesscontrol.provider.invoice.model.InvoiceAccessMethod;
+import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutStatus;
 
 /**
@@ -228,7 +228,7 @@ public class OrderTableItem {
 				return Status.IN_PROCESS;
 			}
 			if(pending) {
-				if(!orderMethods.isEmpty() && orderMethods.get(0) instanceof InvoiceAccessMethod) {
+				if(!orderMethods.isEmpty() && InvoiceAccessHandler.METHOD_TYPE.equals(orderMethods.get(0).getType())) {
 					return Status.OPEN;
 				}
 				return Status.PENDING;

@@ -122,7 +122,7 @@ public class OrderDetailController extends FormBasicController {
 		orderMethods = orderItem.getMethods();
 		offerLabel = orderItem.getLabel();
 		
-		delivery = this.order.getDelivery();
+		delivery = order.getDelivery();
 		profileConfig = userPortraitService.createProfileConfig();
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);

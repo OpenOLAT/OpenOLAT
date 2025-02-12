@@ -21,8 +21,10 @@ package org.olat.resource.accesscontrol.ui;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
@@ -35,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -50,6 +53,8 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	public static final String FILTER_METHOD = "method";
 	public static final String FILTER_OFFER = "offer";
 	
+	public static final String PSEUDO_STATUS_DONE = "done";
+	
 	private ACService acService;
 	
 	private Long refNo;
@@ -59,16 +64,19 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	private final OLATResource resource;
 	private final IdentityRef delivery;
 	private final ForgeDelegate delegate;
+	private final List<AccessMethod> methods;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private Map<Long,OrderModification> modifications = Map.of();
 	
 	public OrdersDataSource(ACService acService, OLATResource resource, IdentityRef delivery,
-			List<UserPropertyHandler> userPropertyHandlers, ForgeDelegate delegate) {
+			List<AccessMethod> methods, List<UserPropertyHandler> userPropertyHandlers,
+			ForgeDelegate delegate) {
 		this.acService = acService;
 		this.resource = resource;
 		this.delivery = delivery;
 		this.delegate = delegate;
+		this.methods = methods;
 		this.userPropertyHandlers = userPropertyHandlers;
 	}
 	
@@ -123,16 +131,27 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 			int firstResult, int maxResults, SortKey... orderBy) {
 		
 		OrderStatus[] states = null;
-		List<OrderStatus> filterStatus = getFilterStatus(filters);
-		if(filterStatus != null && !filterStatus.isEmpty()) {
-			states = filterStatus.toArray(new OrderStatus[filterStatus.size()]);
+		StatusAndMethods filterStatus = getFilterStatus(filters);
+		if(!filterStatus.status().isEmpty()) {
+			states = filterStatus.status().toArray(new OrderStatus[filterStatus.status().size()]);
 		}
 		
-		List<Long> methods = getFilterMethods(filters, FILTER_METHOD);
-		List<Long> offerAccess = getFilterMethods(filters, FILTER_OFFER);
+		// Filter status payed and done apply only to a subset of methods
+		List<Long> filterMethods = getFilterMethods(filters, FILTER_METHOD);
+		if(filterMethods.isEmpty()) {
+			filterMethods = filterStatus.methods();
+		} else if(!filterStatus.methods().isEmpty()) {
+			// The methods from filter and status doesn't match -> nothing to search
+			filterMethods.retainAll(filterStatus.methods());
+			if(filterMethods.isEmpty()) {
+				return new DefaultResultInfos<>(0, -1, new ArrayList<>());
+			}
+		}
+		
+		List<Long> filterOfferAccess = getFilterMethods(filters, FILTER_OFFER);
 
 		List<OrderTableItem> items = acService.findOrderItems(resource, delivery, refNo, from, to, states,
-				methods, offerAccess, firstResult, maxResults, userPropertyHandlers, orderBy);
+				filterMethods, filterOfferAccess, firstResult, maxResults, userPropertyHandlers, orderBy);
 		List<OrderTableRow> rows = new ArrayList<>(items.size());
 		for(OrderTableItem item:items) {
 			OrderTableRow row = new OrderTableRow(item);
@@ -165,17 +184,49 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 		};
 	}
 	
-	private List<OrderStatus> getFilterStatus(List<FlexiTableFilter> filters) {
+	private StatusAndMethods getFilterStatus(List<FlexiTableFilter> filters) {
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, FILTER_STATUS);
 		if (statusFilter instanceof FlexiTableExtendedFilter extendedFilter) {
 			List<String> filterValues = extendedFilter.getValues();
 			if(filterValues != null && !filterValues.isEmpty()) {
-				return filterValues.stream()
-						.map(OrderStatus::valueOf)
-						.toList();
+				List<Long> methodsKeys = new ArrayList<>();
+				Set<OrderStatus> status = new HashSet<>();
+				for(String val:filterValues) {
+					if(PSEUDO_STATUS_DONE.equals(val)) {
+						status.add(OrderStatus.PAYED);
+					} else {
+						status.add(OrderStatus.valueOf(val));
+					}
+				}
+				
+				if(filterValues.contains(OrderStatus.PAYED.name())) {
+					List<Long> methodsWithPayment = methods.stream()
+							.filter(method -> method.isPaymentMethod())
+							.map(AccessMethod::getKey)
+							.toList();
+					methodsKeys.addAll(methodsWithPayment);
+				}
+				
+				if(filterValues.contains(PSEUDO_STATUS_DONE)) {
+					List<Long> methodsWithoutPayment = methods.stream()
+							.filter(method -> !method.isPaymentMethod())
+							.map(AccessMethod::getKey)
+							.toList();
+					methodsKeys.addAll(methodsWithoutPayment);
+				}
+				
+				return new StatusAndMethods(new ArrayList<>(status), methodsKeys);
 			}
 		}
-		return List.of();
+		
+		List<Long> methodsKeys = methods.stream()
+				.map(AccessMethod::getKey)
+				.toList();
+		return new StatusAndMethods(List.of(), methodsKeys);
+	}
+	
+	public record StatusAndMethods(List<OrderStatus> status, List<Long> methods) {
+		//
 	}
 	
 	private List<Long> getFilterMethods(List<FlexiTableFilter> filters, String filterName) {
@@ -185,10 +236,10 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 			if(filterValues != null && !filterValues.isEmpty()) {
 				return filterValues.stream()
 						.map(Long::valueOf)
-						.toList();
+						.collect(Collectors.toList());
 			}
 		}
-		return List.of();
+		return new ArrayList<>();
 	}
 	
 	public interface ForgeDelegate {

@@ -128,6 +128,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
 	private final String avatarMapperBaseURL;
+	private final List<AccessMethod> methods;
 
 	@Autowired
 	private ACService acService;
@@ -158,6 +159,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
+		methods = acService.getAvailableMethods();
 		
 		detailsVC = createVelocityContainer("order_details");
 		
@@ -217,7 +219,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 
-		dataSource = new OrdersDataSource(acService, resource, null, userPropertyHandlers, this);
+		dataSource = new OrdersDataSource(acService, resource, null, methods, userPropertyHandlers, this);
 		if(resource == null) {
 			Calendar cal = CalendarUtils.getStartOfDayCalendar(getLocale());
 			cal.add(Calendar.MONTH, -1);
@@ -259,6 +261,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		SelectionValues rolesValues = new SelectionValues();
 		rolesValues.add(SelectionValues.entry(OrderStatus.NEW.name(), translate("order.status.new")));
 		rolesValues.add(SelectionValues.entry(OrderStatus.PREPAYMENT.name(), translate("order.status.prepayment")));
+		rolesValues.add(SelectionValues.entry(OrdersDataSource.PSEUDO_STATUS_DONE, translate("order.status.ok")));
 		rolesValues.add(SelectionValues.entry(OrderStatus.PAYED.name(), translate("order.status.payed")));
 		rolesValues.add(SelectionValues.entry(OrderStatus.CANCELED.name(), translate("order.status.canceled")));
 		rolesValues.add(SelectionValues.entry(OrderStatus.ERROR.name(), translate("order.status.error")));
@@ -268,7 +271,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		
 		// Offer types / access methods
 		SelectionValues methodsValues = new SelectionValues();
-		List<AccessMethod> methods = acService.getAvailableMethods();
 		for(AccessMethod method:methods) {
 			AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
 			if(handler != null) {
@@ -334,11 +336,17 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		openTab.setFiltersExpanded(true);
 		tabs.add(openTab);
 		
-		FlexiFiltersTab paidTab = FlexiFiltersTabFactory.tabWithImplicitFilters("paid", translate("filter.order.paid"),
+		FlexiFiltersTab doneTab = FlexiFiltersTabFactory.tabWithImplicitFilters(OrdersDataSource.PSEUDO_STATUS_DONE, translate("filter.order.done"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(OrdersDataSource.FILTER_STATUS,
+						List.of(OrdersDataSource.PSEUDO_STATUS_DONE))));
+		doneTab.setFiltersExpanded(true);
+		tabs.add(doneTab);
+		
+		FlexiFiltersTab payedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(OrderStatus.PAYED.name(), translate("filter.order.paid"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(OrdersDataSource.FILTER_STATUS,
 						List.of(OrderStatus.PAYED.name()))));
-		paidTab.setFiltersExpanded(true);
-		tabs.add(paidTab);
+		payedTab.setFiltersExpanded(true);
+		tabs.add(payedTab);
 		
 		FlexiFiltersTab cancelledTab = FlexiFiltersTabFactory.tabWithImplicitFilters("cancelled", translate("filter.order.cancelled"),
 				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(OrdersDataSource.FILTER_STATUS,
@@ -600,7 +608,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			
 			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT
 					|| row.getOrderStatus() == OrderStatus.PAYED) {
-				cancelLink = addLink("cancel", "set.cancel", "o_icon o_icon-fw o_icon_decline", links);
+				cancelLink = addLink("set.cancel", "set.cancel", "o_icon o_icon-fw o_icon_decline", links);
 			}
 			
 			mainVC.contextPut("links", links);

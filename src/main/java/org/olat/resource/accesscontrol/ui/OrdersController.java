@@ -152,7 +152,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 
-		dataSource = new OrdersDataSource(acService, resource, identity, null, this);
+		dataSource = new OrdersDataSource(acService, resource, identity, List.of(), null, this);
 		dataModel = new OrdersDataModel(dataSource, getLocale(), userManager, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
