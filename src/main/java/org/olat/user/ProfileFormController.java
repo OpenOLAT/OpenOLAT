@@ -458,7 +458,7 @@ public class ProfileFormController extends FormBasicController {
 	private void handleChangedEmailEvent(UserRequest ureq, ChangeMailEvent cme) {
 		if (organisationModule.isEnabled()
 				&& organisationModule.isEmailDomainEnabled()
-				&& !isAllowedToChangeEmailWithoutVerification(ureq) && isAdministrativeUser) {
+				&& !isAllowedToChangeEmailWithoutVerification(ureq) && !isAdministrativeUser) {
 			String newDomain = MailHelper.getMailDomain(cme.getChangedEmail());
 			String currentDomain = MailHelper.getMailDomain(emailEl.getValue());
 
