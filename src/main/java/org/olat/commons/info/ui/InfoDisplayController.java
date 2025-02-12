@@ -583,7 +583,7 @@ public class InfoDisplayController extends FormBasicController {
 
 		private InfoMessage handleNotificationsAndMail(InfoMessage msg, UserRequest ureq, boolean isSubscribersSelected,
 												Set<String> selectedOptions, Set<String> selectedGroupOptions, Set<String> selectedCurriculumOptions) {
-			StringBuilder sendMailTo = null;
+			StringBuilder sendMailTo = new StringBuilder();
 			// Set, so identities which are included e.g. in a group and a curriculum should not be added twice or more
 			Set<Identity> identities = new HashSet<>();
 
@@ -596,7 +596,7 @@ public class InfoDisplayController extends FormBasicController {
 			// Course members
 			handleMailOptions(sendMailOptions, selectedOptions, identities, sendMailTo);
 
-			msg.setSendMailTo(sendMailTo != null ? sendMailTo.toString() : null);
+			msg.setSendMailTo(StringHelper.containsNonWhitespace(sendMailTo.toString()) ? sendMailTo.toString() : null);
 
 			// group members
 			addIdentitiesFromGroupOptions(selectedGroupOptions, identities);
@@ -623,7 +623,7 @@ public class InfoDisplayController extends FormBasicController {
 					if (sendMailTo != null && !sendMailTo.toString().contains(option.getOptionKey())) {
 						sendMailTo.append(",").append(option.getOptionKey());
 					} else if (sendMailTo == null) {
-						sendMailTo = new StringBuilder(option.getOptionKey());
+						sendMailTo.append(option.getOptionKey());
 					}
 				}
 			}
