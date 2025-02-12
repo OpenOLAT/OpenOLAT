@@ -320,7 +320,7 @@ public class ACOrderDAO {
 		  .append("  ").appendToArray("offer.resourcedisplayname").append(" as resDisplaynames,")
 		  .append("  ").appendToArray("offer.offer_label").append(" as labels,")
 		  .append("  ").appendToArray("costCenter.a_name").append(" as cost_center_names,")
-		  .append("  ").appendToArray("costCenter.a_account").append(" as cost_center_names,")
+		  .append("  ").appendToArray("costCenter.a_account").append(" as cost_center_accounts,")
 		  .append("  ").appendToArray("trx.trx_status").append(" as trxStatus,")
 		  .append("  ").appendToArray("trx.fk_method_id").append(" as trxMethodIds,")
 		  .append("  ").appendToArray("pspTrx.trx_status").append(" as pspTrxStatus,")
