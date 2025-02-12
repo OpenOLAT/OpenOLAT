@@ -151,6 +151,7 @@ public class ReportTemplatesController extends FormBasicController {
 		String playId = "play-" + count++;
 		FormLink playLink = uifactory.addFormLink(playId, PLAY_CMD, "", null, flc, Link.NONTRANSLATED);
 		playLink.setIconLeftCSS("o_icon o_icon-lg o_icon_play");
+		playLink.setTitle(translate("start.report"));
 		playLink.setUserObject(row);
 		row.setPlayLink(playLink);
 		flc.add(playLink);

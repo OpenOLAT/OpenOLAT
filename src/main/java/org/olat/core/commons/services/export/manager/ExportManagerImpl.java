@@ -216,10 +216,14 @@ public class ExportManagerImpl implements ExportManager {
 		dbInstance.commitAndCloseSession();
 	}
 
-	private void deleteExport(ExportMetadata metadata) {
+	protected void deleteExport(ExportMetadata metadata) {
 		String filePath = metadata.getFilePath();
 		String filename = metadata.getFilename();
 		// Delete export first, foreign key to VFS metadata
+		exportMetadataToCurriculumDao.deleteRelations(metadata);
+		exportMetadataToCurriculumElementDao.deleteRelations(metadata);
+		exportMetadataToOrganisationDao.deleteRelations(metadata);
+		dbInstance.commit();
 		exportMetadataDao.deleteMetadata(metadata);
 		dbInstance.commit();
 		

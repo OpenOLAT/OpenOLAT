@@ -49,4 +49,14 @@ public class ExportMetadataToCurriculumElementDAO {
 		dbInstance.getCurrentEntityManager().persist(metadataToElement);
 		return metadataToElement;
 	}
+	
+	public int deleteRelations(ExportMetadata metadata) {
+		if (metadata == null || metadata.getKey() == null) return 0;
+		
+		String query = "delete from exportmetadatatocurriculumelement rel where rel.metadata.key=:metadataKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("metadataKey", metadata.getKey())
+				.executeUpdate();
+	}
 }

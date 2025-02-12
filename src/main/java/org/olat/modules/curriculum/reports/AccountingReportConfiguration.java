@@ -21,8 +21,10 @@ package org.olat.modules.curriculum.reports;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -36,9 +38,15 @@ import org.olat.modules.coach.reports.AbstractReportConfiguration;
 import org.olat.modules.coach.reports.ReportConfigurationAccessSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumReportConfiguration;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.BookingOrder;
 import org.olat.modules.curriculum.manager.CurriculumAccountingDAO;
+import org.olat.modules.curriculum.model.CurriculumAccountingSearchParams;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.ui.CurriculumManagerRootController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
@@ -116,7 +124,9 @@ public class AccountingReportConfiguration extends AbstractReportConfiguration i
 	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, 
 								List<UserPropertyHandler> userPropertyHandlers) {
 		CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
-		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(coach, userPropertyHandlers);
+		CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
+		searchParams.setIdentity(coach);
+		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
 		for (BookingOrder bookingOrder : bookingOrders) {
 			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder);
 		}		
@@ -174,24 +184,57 @@ public class AccountingReportConfiguration extends AbstractReportConfiguration i
 
 	@Override
 	public ReportContent generateReport(Curriculum curriculum, CurriculumElement curriculumElement, 
-										Identity doer, Locale locale, VFSLeaf file) {
+			Identity doer, Locale locale, VFSLeaf file) {
+		final CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 
-		Translator translator = getTranslator(locale);
-		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
-
-		List<String> worksheetNames = List.of(translator.translate("report.booking"));
-
-		try (OutputStream out = file.getOutputStream(true);
-			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1, worksheetNames)) {
-			OpenXMLWorksheet sheet = workbook.nextWorksheet();
-			sheet.setHeaderRows(1);
-			generateHeader(sheet, userPropertyHandlers, locale);
-			generateData(workbook, doer, sheet, userPropertyHandlers);
+		Set<CurriculumRef> curriculums = new HashSet<>();
+		Set<CurriculumElementRef> implementations = new HashSet<>();
+		try (OutputStream out = file.getOutputStream(true)) {
+			generateReport(curriculum, curriculumElement, curriculums, implementations, locale, out);
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
 			return null;
 		}
+		
+		List<Curriculum> curriculumList = curriculums.isEmpty()
+				? List.of()
+				: curriculumService.getCurriculums(curriculums);
+		List<CurriculumElement> implementationList = implementations.isEmpty()
+				? List.of()
+				: curriculumService.getCurriculumElements(implementations);
+		return new ReportContent(curriculumList, implementationList);
+	}
+	
+	public void generateReport(Curriculum curriculum, CurriculumElement curriculumElement, 
+			Set<CurriculumRef> curriculumsInReport, Set<CurriculumElementRef> implementationsInReport,
+			Locale locale, OutputStream out) {
+		final CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
+		
+		Translator translator = getTranslator(locale);
+		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
+		List<String> worksheetNames = List.of(translator.translate("report.booking"));
+		
+		try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1, worksheetNames)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			sheet.setHeaderRows(1);
+			generateHeader(sheet, userPropertyHandlers, locale);
 
-		return new ReportContent(List.of(), List.of());
+			CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
+			searchParams.setCurriculum(curriculum);
+			searchParams.setCurriculumElement(curriculumElement);
+			List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
+			for (BookingOrder bookingOrder : bookingOrders) {
+				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder);
+				
+				if(curriculumsInReport != null && bookingOrder.getCurriculumKey() != null) {
+					curriculumsInReport.add(new CurriculumRefImpl(bookingOrder.getCurriculumKey()));
+				}
+				if(implementationsInReport != null && bookingOrder.getImplementationKey() != null) {
+					implementationsInReport.add(new CurriculumElementRefImpl(bookingOrder.getImplementationKey()));
+				}
+			}
+		} catch (IOException e) {
+			log.error("Unable to generate export", e);
+		}
 	}
 }

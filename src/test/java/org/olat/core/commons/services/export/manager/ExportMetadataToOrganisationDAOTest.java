@@ -72,4 +72,23 @@ public class ExportMetadataToOrganisationDAOTest extends OlatTestCase {
 			.containsExactly(rel);
 	}
 	
+	@Test
+	public void deleteRelation() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Organisation organisation = organisationService.createOrganisation("Metadata - 2", "MD-2", null, null, null, actor);
+
+		String title = "To be deleted";
+		ExportMetadata metadata = exportMetadataDao.createMetadata(title, null, null, ArchiveType.NONE, null, false,
+				null, null, null, actor, null);
+		dbInstance.commit();
+		
+		ExportMetadataToOrganisation rel = exportMetadataToOrganisationDao.createMetadataToOrganisation(metadata, organisation);
+		metadata.getOrganisations().add(rel);
+		metadata = exportMetadataDao.updateMetadata(metadata);
+		dbInstance.commitAndCloseSession();
+		
+		int deletedRows = exportMetadataToOrganisationDao.deleteRelations(metadata);
+		dbInstance.commit();
+		Assert.assertEquals(1, deletedRows);
+	}
 }

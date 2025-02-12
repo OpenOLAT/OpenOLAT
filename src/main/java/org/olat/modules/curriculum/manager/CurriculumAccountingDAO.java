@@ -22,9 +22,11 @@ package org.olat.modules.curriculum.manager;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.basesecurity.IdentityRef;
+import jakarta.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.modules.curriculum.model.CurriculumAccountingSearchParams;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -42,11 +44,11 @@ public class CurriculumAccountingDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public List<BookingOrder> bookingOrders(IdentityRef identity, List<UserPropertyHandler> userPropertyHandlers) {
+	public List<BookingOrder> bookingOrders(CurriculumAccountingSearchParams searchParams, List<UserPropertyHandler> userPropertyHandlers) {
 		QueryBuilder sb = new QueryBuilder(1024);
-		sb.append("select distinct cur.displayName, cur.identifier, ");
+		sb.append("select distinct cur.key, cur.displayName, cur.identifier, ");
 		sb.append(" org.identifier, org.displayName, ");
-		sb.append(" ce.displayName, ce.identifier, ceType.identifier, ce.status, ceEduType.identifier, ce.beginDate, ce.endDate, ");
+		sb.append(" ce.key, ce.displayName, ce.identifier, ceType.identifier, ce.status, ceEduType.identifier, ce.beginDate, ce.endDate, ");
 		sb.append(" o, billingAddress, ");
 		sb.append(" offer.resourceDisplayName, offer.resourceTypeName, offerCostCenter.name, offerCostCenter.account ");
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -63,16 +65,33 @@ public class CurriculumAccountingDAO {
 		sb.append(" left join ce.educationalType ceEduType");
 		sb.append(" inner join ce.curriculum cur");
 		sb.append(" inner join cur.organisation org");
-		sb.append(" inner join cur.group cGroup");
-		sb.append(" inner join cGroup.members mgmtMember");
 		sb.append(" inner join o.delivery orderer");
 		sb.append(" inner join orderer.user user");
-		sb.append(" where mgmtMember.identity.key = :identityKey");
+		if(searchParams.getIdentity() != null) {
+			// Check membership of curriculum
+			sb.and().append("exists (select member.group.key from bgroupmember member")
+			  .append(" where member.identity.key=:identityKey and member.group.key=cur.group.key")
+			  .append(")");
+		}
+		if(searchParams.getCurriculum() != null) {
+			sb.and().append("cur.key = :curriculumKey");
+		}
+		if(searchParams.getCurriculumElement() != null) {
+			sb.and().append("ce.key = :curriculumElementKey");
+		}
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
-				.setParameter("identityKey", identity.getKey())
-				.getResultList().stream()
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(searchParams.getIdentity() != null) {
+			query.setParameter("identityKey", searchParams.getIdentity().getKey());
+		}
+		if(searchParams.getCurriculum() != null) {
+			query.setParameter("curriculumKey", searchParams.getCurriculum().getKey());
+		}
+		if(searchParams.getCurriculumElement() != null) {
+			query.setParameter("curriculumElementKey", searchParams.getCurriculumElement().getKey());
+		}
+		return query.getResultList().stream()
 				.map(objects -> mapToBookingOrder(objects, userPropertyHandlers))
 				.toList();
 	}
@@ -83,6 +102,9 @@ public class CurriculumAccountingDAO {
 		int srcIdx = 0;
 		
 		// curriculum
+		if (objects[srcIdx++] instanceof Number curriculumKey) {
+			bookingOrder.setCurriculumKey(curriculumKey.longValue());
+		}
 		if (objects[srcIdx++] instanceof String curriculumName) {
 			bookingOrder.setCurriculumName(curriculumName);
 		}
@@ -99,6 +121,9 @@ public class CurriculumAccountingDAO {
 		}
 		
 		// curriculum element (implementation)
+		if (objects[srcIdx++] instanceof Number implementationKey) {
+			bookingOrder.setImplementationKey(implementationKey.longValue());
+		}
 		if (objects[srcIdx++] instanceof String implementationName) {
 			bookingOrder.setImplementationName(implementationName);
 		}

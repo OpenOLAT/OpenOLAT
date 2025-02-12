@@ -279,6 +279,46 @@ public class ExportManagerTest extends OlatTestCase {
 			.isEmpty();
 	}
 	
+	@Test
+	public void deleteMetadata() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("task-1");
+		LittleTask task = new LittleTask();
+		String subIdent = "task-two";
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		ExportMetadata metadata = exportManager.startExport(task, "New archive", "Brand new one", null, ArchiveType.COMPLETE,
+				null, false, entry, subIdent, id);
+		dbInstance.commit();
+		
+		// Add an organisation
+		Organisation organisation = organisationService.createOrganisation("Export -1", "EXP-1", null, null, null, id);
+		List<Organisation> organisations = List.of(organisation);
+		ExportMetadata updatedMetadata = exportManager.addMetadataOrganisations(metadata, organisations);
+		Assert.assertEquals(metadata, updatedMetadata);
+		dbInstance.commit();
+		
+		// Add curriculum
+		Curriculum curriculum = curriculumService.createCurriculum("Task", "TASK-1", null, false, null);
+		List<Curriculum> curriculums = List.of(curriculum);
+		updatedMetadata = exportManager.addMetadataCurriculums(metadata, curriculums);
+		dbInstance.commit();
+
+		// Add curriculum element
+		CurriculumElement element = curriculumService.createCurriculumElement("Task 2.1", "Task 2.1",
+				CurriculumElementStatus.active, null, null, null, null, null, null, null, curriculum);
+		List<CurriculumElement> elements = List.of(element);
+		updatedMetadata = exportManager.addMetadataCurriculumElements(metadata, elements);	
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(metadata, updatedMetadata);
+			
+		// And delete
+		((ExportManagerImpl)exportManager).deleteExport(updatedMetadata);
+		dbInstance.commitAndCloseSession();
+		
+		// Check
+		ExportMetadata deletedMetadata = exportManager.getExportMetadataByKey(updatedMetadata.getKey());
+		Assert.assertNull(deletedMetadata);
+	}
+	
 	public static class LittleTask implements ExportTask {
 
 		private static final long serialVersionUID = 5706709932092654234L;

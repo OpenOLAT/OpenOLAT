@@ -74,4 +74,24 @@ public class ExportMetadataToCurriculumElementDAOTest extends OlatTestCase {
 			.containsExactly(curriculum);
 	}
 	
+	@Test
+	public void deleteRelation() {
+		Identity actor = JunitTestHelper.getDefaultActor();
+		Curriculum curriculum = curriculumService.createCurriculum("MD-2", "METADATA 2", null, false, null);
+		
+		String title = "Will be deleted soon";
+		ExportMetadata metadata = exportMetadataDao.createMetadata(title, null, null, ArchiveType.CURRICULUM, null, false,
+				null, null, null, actor, null);
+		dbInstance.commit();
+		
+		ExportMetadataToCurriculum rel = exportMetadataToCurriculumDao.createMetadataToCurriculum(metadata, curriculum);
+		metadata.getCurriculums().add(rel);
+		metadata = exportMetadataDao.updateMetadata(metadata);
+		dbInstance.commitAndCloseSession();
+		
+		int deletedRows = exportMetadataToCurriculumDao.deleteRelations(metadata);
+		dbInstance.commit();
+		Assert.assertEquals(1, deletedRows);
+	}
+	
 }

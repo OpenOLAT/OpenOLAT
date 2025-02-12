@@ -36,10 +36,12 @@ public class BookingOrder {
 	User user;
 	Order order;
 	private List<String> identityProps;
+	private Long curriculumKey;
 	private String curriculumName;
 	private String curriculumIdentifier;
 	private String orgId;
 	private String orgName;
+	private Long implementationKey;
 	private String implementationName;
 	private String implementationIdentifier;
 	private String implementationType;
@@ -90,6 +92,14 @@ public class BookingOrder {
 		return identityProps.get(index);
 	}
 
+	public Long getCurriculumKey() {
+		return curriculumKey;
+	}
+
+	public void setCurriculumKey(Long curriculumKey) {
+		this.curriculumKey = curriculumKey;
+	}
+
 	public void setCurriculumName(String curriculumName) {
 		this.curriculumName = curriculumName;
 	}
@@ -120,6 +130,14 @@ public class BookingOrder {
 
 	public String getOrgName() {
 		return orgName;
+	}
+
+	public Long getImplementationKey() {
+		return implementationKey;
+	}
+
+	public void setImplementationKey(Long implementationKey) {
+		this.implementationKey = implementationKey;
 	}
 
 	public void setImplementationName(String implementationName) {
