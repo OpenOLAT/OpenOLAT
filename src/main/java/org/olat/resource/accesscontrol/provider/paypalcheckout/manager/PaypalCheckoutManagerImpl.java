@@ -153,7 +153,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 		Offer offer = offerAccess.getOffer();
 		Price amount = offer.getPrice();
 
-		if(acService.reserveAccessToResource(delivery, offerAccess.getOffer(), offerAccess.getMethod())) {
+		if(acService.reserveAccessToResource(delivery, offerAccess.getOffer(), offerAccess.getMethod(), null, delivery)) {
 			Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT, null, null, null);
 			PaypalCheckoutTransaction trx = transactionDao.createTransaction(amount, order, order.getParts().get(0), offerAccess.getMethod());
 			trx = checkoutProvider.createOrder(order, trx);

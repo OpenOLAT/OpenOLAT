@@ -51,6 +51,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
+import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
@@ -123,6 +124,9 @@ public class CurriculumMailing {
 		GroupMembershipStatus nextStatus = change.getNextStatus(CurriculumRoles.participant);
 		if(nextStatus != null) {
 			if(nextStatus == GroupMembershipStatus.reservation && change.getMember().equals(doer)) {
+				if(change.getConfirmationBy() == ConfirmationByEnum.ADMINISTRATIVE_ROLE) {
+					return getMembershipBookedByParticipantNeedConfirmationTemplate(curriculum, curriculumElement, doer);
+				}
 				return getMembershipBookedByParticipantTemplate(curriculum, curriculumElement, doer);
 			}
 			return getMembershipByStatusTemplate(nextStatus, curriculum, curriculumElement, doer);
@@ -139,6 +143,12 @@ public class CurriculumMailing {
 	public static MailTemplate getMembershipBookedByParticipantTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
 		String subjectKey = "notification.mail.member.booked.by.participant.subject";
 		String bodyKey = "notification.mail.member.booked.by.participant.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	public static MailTemplate getMembershipBookedByParticipantNeedConfirmationTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.booked.by.participant.need.confirmation.subject";
+		String bodyKey = "notification.mail.member.booked.by.participant.need.confirmation.body";
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
@@ -255,6 +265,7 @@ public class CurriculumMailing {
 		private static final String CURRICULUM_ELEMENT_DESCRIPTION = "curriculumElementDescription";
 		private static final String CURRICULUM_ELEMENT_IDENTIFIER = "curriculumElementIdentifier";
 		private static final String CURRICULUM_ELEMENT_TYPE_NAME = "curriculumElementTypeName";
+		private static final String MY_COURSES_URL = "myCoursesUrl";
 		private static final String FEE = "fee";
 		
 		private final Locale locale;
@@ -292,6 +303,7 @@ public class CurriculumMailing {
 			variableNames.add(CURRICULUM_ELEMENT_IDENTIFIER);
 			variableNames.add(CURRICULUM_ELEMENT_TYPE_NAME);
 			variableNames.add(FEE);
+			variableNames.add(MY_COURSES_URL);
 			return variableNames;
 		}
 
@@ -302,6 +314,7 @@ public class CurriculumMailing {
 			final String curriculumDescription = (StringHelper.containsNonWhitespace(curriculum.getDescription())
 					? FilterFactory.getHtmlTagAndDescapingFilter().filter(curriculum.getDescription()) : ""); 
 			final String curriculumUrl = Settings.getServerContextPathURI() + "/url/MyCoursesSite/0/Curriculum/0/Curriculum/" + curriculum.getKey();
+			final String myCoursesUrl = Settings.getServerContextPathURI() + "/url/MyCoursesSite/0";
 			
 			final String curriculumElementName;
 			final String curriculumElementDescription;
@@ -330,6 +343,7 @@ public class CurriculumMailing {
 			putVariablesInMailContext(context, CURRICULUM_NAME, curriculumName);
 			putVariablesInMailContext(context, CURRICULUM_DESCRIPTION, curriculumDescription);
 			putVariablesInMailContext(context, CURRICULUM_URL, curriculumUrl);
+			putVariablesInMailContext(context, MY_COURSES_URL, myCoursesUrl);
 			
 			putVariablesInMailContext(context, CURRICULUM_ELEMENT_NAME, curriculumElementName);
 			putVariablesInMailContext(context, CURRICULUM_ELEMENT_DESCRIPTION, curriculumElementDescription);

@@ -312,7 +312,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//id1 start payment process
-		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod());
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), null, null);
 		Assert.assertTrue(reserved);
 		dbInstance.commitAndCloseSession();
 
@@ -368,7 +368,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//id1 try to reserve a place before the payment process
-		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod());
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), null, id1);
 		Assert.assertFalse(reserved);
 
 		if(!enabled) {
@@ -402,7 +402,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id try to reserve a place before the payment process, no problem, no limit
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod());
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), null, id);
 		Assert.assertTrue(reserved);
 	}
 	
@@ -414,7 +414,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 			acModule.setPaypalEnabled(true);
 		}
 
-		//create a group with a free offer
+		// Create a curriculum with an element and an offer
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pay-21");
 		
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-AC-1", "Curriculum AC 1", "Curriculum", false, null);
@@ -432,11 +432,45 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id try to reserve a place before the payment process, no problem, no limit
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod());
+		MailPackage mailing = new MailPackage(false);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), mailing, id);
 		Assert.assertTrue(reserved);
 		
 		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
 		Assertions.assertThat(reservations)
+			.hasSize(1);
+	}
+	
+	@Test
+	public void invoiceBookingReservationAccessToCurriculumElement() {
+		// Create a curriculum with an element and an invoice offer
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pay-21");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-AC-1", "Curriculum AC 1", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for reservation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Offer offer = acService.createOffer(element.getResource(), "Invoice curriculum element");
+		offer.setConfirmationByManagerRequired(true);
+		offer = acService.save(offer);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(InvoiceAccessMethod.class);
+		Assert.assertFalse(methods.isEmpty());
+		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
+		offerAccess = acService.saveOfferAccess(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		MailPackage mailing = new MailPackage(true);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), mailing, id);
+		Assert.assertTrue(reserved);
+		
+		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
+		Assertions.assertThat(reservations)
+			.hasSize(1);
+		
+		// A message was sent
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assertions.assertThat(messages)
 			.hasSize(1);
 	}
 	

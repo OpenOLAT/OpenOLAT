@@ -59,7 +59,7 @@ public class OpenOLATPolicy {
 	private static final Pattern OLATINTERNALURL = Pattern.compile("javascript:parent\\.goto(node|tool)\\(['\"]?[a-zA-Z0-9]+['\"]?\\)");
 	private static final Pattern NUMBERORPERCENT = Pattern.compile("(\\d)+(%{0,1})");
 	private static final Pattern COLORCODE = Pattern.compile("(#([0-9a-fA-F]{6}|[0-9a-fA-F]{3}))");
-	private static final String[] VARIABLES = new String[] { "$courseUrl", "$groupUrl", "$curriculumUrl" };
+	private static final String[] VARIABLES = new String[] { "$courseUrl", "$groupUrl", "$curriculumUrl", "$myCoursesUrl" };
 
 	public static final PolicyFactory POLICY_DEFINITION = new HtmlPolicyBuilder()
 		.allowStyling()

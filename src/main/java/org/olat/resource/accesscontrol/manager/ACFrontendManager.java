@@ -57,6 +57,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -725,14 +726,14 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method) {
+	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method, MailPackage mailing, Identity doer) {
 		OLATResource resource = offer.getResource();
 		String resourceType = resource.getResourceableTypeName();
 		if("BusinessGroup".equals(resourceType)) {
 			return reserveAccessToBusinessGroup(identity, offer, resource, method);
 		}
 		if("CurriculumElement".equals(resourceType)) {
-			return reserveAccessToCurriculumElement(identity, offer, resource);
+			return reserveAccessToCurriculumElement(identity, offer, resource, mailing, doer);
 		}
 		RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
 		if (entry != null) {
@@ -748,7 +749,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		return false;
 	}
 
-	private boolean reserveAccessToCurriculumElement(Identity identity, Offer offer, OLATResource resource) {
+	private boolean reserveAccessToCurriculumElement(Identity identity, Offer offer, OLATResource resource, MailPackage mailing, Identity doer) {
 		boolean reserved = false;
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
 		if (curriculumElement != null) {
@@ -760,6 +761,16 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 						identity, null);
 				reservationDao.createReservation(identity, CurriculumService.RESERVATION_PREFIX.concat("participant"),
 						null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
+				
+				if(mailing != null && mailing.isSendEmail()) {
+					Curriculum curriculum = curriculumElement.getCurriculum();
+					if(mailing.getTemplate() == null) {
+						MailTemplate template = CurriculumMailing
+								.getMembershipBookedByParticipantNeedConfirmationTemplate(curriculum, curriculumElement, doer);
+						mailing = mailing.copyWithTemplate(template);
+					}
+					CurriculumMailing.sendEmail(doer, identity, curriculum, curriculumElement, mailing);
+				}
 			}
 			reserved = true;
 		}
@@ -837,7 +848,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 		
 		if (offer.isConfirmationByManagerRequired()) {
-			return reserveAccessToResource(identity, offer, method);
+			return reserveAccessToResource(identity, offer, method, mailing, doer);
 		}
 
 		String resourceType = resource.getResourceableTypeName();

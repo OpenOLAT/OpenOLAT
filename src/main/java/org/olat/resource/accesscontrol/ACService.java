@@ -252,7 +252,7 @@ public interface ACService {
 	 * @param method
 	 * @return
 	 */
-	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method);
+	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method, MailPackage mailing, Identity doer);
 
 	/**
 	 * A user must sometimes explicitly accept a reservation.
