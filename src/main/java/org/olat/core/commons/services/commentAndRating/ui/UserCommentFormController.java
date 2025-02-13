@@ -97,7 +97,7 @@ public class UserCommentFormController extends FormBasicController {
 
 	private final String resSubPath;
 	private boolean subscribeOnce = true;
-	private UUID tempFolderUUID;
+	private final UUID tempFolderUUID;
 
 	private RichTextElement commentElem;
 	private FormSubmit submitButton;
@@ -498,6 +498,7 @@ public class UserCommentFormController extends FormBasicController {
 				toBeUpdatedComment = commentAndRatingService.updateComment(toBeUpdatedComment, commentText);
 				handleUpdateResult(ureq);
 			}
+			toggleCommentFormElem();
 		}
 	}
 
