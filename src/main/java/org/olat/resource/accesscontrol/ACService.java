@@ -284,6 +284,8 @@ public interface ACService {
 	public List<AccessMethod> getAvailableMethods(OLATResource resource, Identity identity, Roles roles);
 	
 	public List<AccessMethod> getAvailableMethods();
+	
+	public boolean isMethodAvailable(String methodType);
 
 	public OfferAccess createOfferAccess(Offer offer, AccessMethod method);
 

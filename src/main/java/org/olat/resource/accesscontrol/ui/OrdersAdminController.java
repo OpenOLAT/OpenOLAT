@@ -83,6 +83,7 @@ import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
 import org.olat.user.UserAvatarMapper;
@@ -208,12 +209,14 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier));
+		if (acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier));
+		}
 		
 		if(!readOnly) {
 			ActionsColumnModel toolsColumn = new ActionsColumnModel(OrderCol.tools);

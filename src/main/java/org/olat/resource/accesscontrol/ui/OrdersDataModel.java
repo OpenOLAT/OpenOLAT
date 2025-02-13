@@ -150,7 +150,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		billingAddressIdentifier("billing.address", "billing_address_identifier"),
 		summary("order.summary", "resDisplaynames"),
 		status("order.status", "o_status"),
-		tools("table.header.tools", null);
+		tools("action.more", null);
 
 		private final String i18nKey;
 		private final String sortKey;

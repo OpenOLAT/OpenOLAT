@@ -1065,6 +1065,13 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	public List<AccessMethod> getAvailableMethods() {
 		return methodManager.getAvailableMethods();
 	}
+	
+	@Override
+	public boolean isMethodAvailable(String methodType) {
+		return getAvailableMethods().stream()
+				.map(AccessMethod::getType)
+				.anyMatch(type -> methodType.equals(type));
+	}
 
 	@Override
 	public List<AccessMethod> getAvailableMethods(OLATResource resource, Identity identity, Roles roles) {

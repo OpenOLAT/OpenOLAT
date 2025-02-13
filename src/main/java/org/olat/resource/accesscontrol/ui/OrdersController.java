@@ -58,6 +58,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
 import org.olat.user.UserAvatarMapper;
@@ -143,13 +144,16 @@ public class OrdersController extends FormBasicController implements Activateabl
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier));
+		
+		if (acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier));
+		}
+		
 		if(settings.withTools()) {
 			ActionsColumnModel toolsColumn = new ActionsColumnModel(OrderCol.tools);
 			columnsModel.addFlexiColumnModel(toolsColumn);
@@ -161,7 +165,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		tableEl.setExportEnabled(true);
 		tableEl.setEmptyTableMessageKey("table.order.empty");
 	}
-
+	
 	@Override
 	public void forge(OrderTableRow row) {
 		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), CMD_TOOLS);
