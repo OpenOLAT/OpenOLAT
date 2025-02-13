@@ -535,21 +535,22 @@ public class CurriculumElementDAO {
 	}
 	
 	public Long countElements(RepositoryEntryRef entry) {
-		String sb = """
+		String query = """
 				select count(*) from curriculumelement el
 				inner join el.group bGroup
 				inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)
 				where rel.entry.key=:entryKey""";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
+				.createQuery(query, Long.class)
 				.setParameter("entryKey", entry.getKey())
 				.getSingleResult();
 	}
 	
 	public List<CurriculumElement> loadElements(RepositoryEntryRef entry) {
-		String sb = """
+		String query = """
 				select el from curriculumelement el
 				inner join fetch el.curriculum curriculum
+				inner join fetch el.resource resource
 				inner join fetch el.group bGroup
 				inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)
 				left join fetch curriculum.organisation org
@@ -557,22 +558,24 @@ public class CurriculumElementDAO {
 				left join fetch el.parent parentEl
 				where rel.entry.key=:entryKey""";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CurriculumElement.class)
+				.createQuery(query, CurriculumElement.class)
 				.setParameter("entryKey", entry.getKey())
 				.getResultList();
 	}
 	
 	public CurriculumElement loadElementByResource(OLATResource resource) {
-		String sb = """
+		String query = """
 				select el from curriculumelement el
 				inner join fetch el.curriculum curriculum
 				inner join fetch el.resource resource
 				inner join fetch el.group bGroup
-				left join el.parent parentEl
+				left join fetch curriculum.organisation org
+				left join fetch el.type elementType
+				left join fetch el.parent parentEl
 				where resource.key=:resourceKey""";
 	
 		List<CurriculumElement> elements = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CurriculumElement.class)
+				.createQuery(query, CurriculumElement.class)
 				.setParameter("resourceKey", resource.getKey())
 				.getResultList();
 		return elements == null || elements.isEmpty() ? null : elements.get(0);
@@ -1125,26 +1128,26 @@ public class CurriculumElementDAO {
 	}
 
 	public List<Long> getMemberKeys(List<Long> elementKeys, List<String> roles) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select distinct membership.identity.key from curriculumelement el")
-		  .append(" inner join el.group baseGroup")
-		  .append(" inner join baseGroup.members membership")
-		  .append(" where el.key in (:elementKeys) and membership.role in (:roles)");
+		String query = """
+				select distinct membership.identity.key from curriculumelement el
+				inner join el.group baseGroup
+				inner join baseGroup.members membership
+				where el.key in (:elementKeys) and membership.role in (:roles)""";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
+				.createQuery(query, Long.class)
 				.setParameter("elementKeys", elementKeys)
 				.setParameter("roles", roles)
 				.getResultList();
 	}
 	
 	public boolean hasCurriculumElementRole(IdentityRef identity, String role) {
-		QueryBuilder sb = new QueryBuilder(256);
-		sb.append("select el.key from curriculumelement el")
-		  .append(" inner join el.group baseGroup")
-		  .append(" inner join baseGroup.members membership")
-		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
+		String query = """
+				select el.key from curriculumelement el
+				inner join el.group baseGroup
+				inner join baseGroup.members membership
+				where membership.identity.key=:identityKey and membership.role=:role""";
 		List<Long> has = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
+				.createQuery(query, Long.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("role", role)
 				.setFirstResult(0)
