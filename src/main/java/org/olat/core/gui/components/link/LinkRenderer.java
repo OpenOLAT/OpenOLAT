@@ -28,8 +28,6 @@ package org.olat.core.gui.components.link;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Component;
@@ -56,8 +54,6 @@ import org.olat.core.util.StringHelper;
  */
 public class LinkRenderer extends DefaultComponentRenderer {
 	private static final Logger log = Tracing.createLoggerFor(LinkRenderer.class);
-	private static final Pattern singleQuote = Pattern.compile("\'");
-	private static final Pattern doubleQutoe = Pattern.compile("\"");
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
@@ -302,11 +298,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			// fallback to title
 			if (description == null) description = link.getTitle();
 			if (description != null) {
-				Matcher msq = singleQuote.matcher(description);
-				description = msq.replaceAll("&#39;");
-				Matcher mdq = doubleQutoe.matcher(description);
-				description = mdq.replaceAll("\\\\\"");
-				sb.append(" title=\"").append(description).append("\" ");
+				sb.append(" title=\"").appendHtmlAttributeEscaped(description).append("\" ");
 			}
 			sb.append(cssSb).append(" href='#' onclick='return false;'>");
 
