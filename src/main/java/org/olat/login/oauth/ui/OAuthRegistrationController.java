@@ -226,6 +226,7 @@ public class OAuthRegistrationController extends FormBasicController {
 			if (mailValidationCtrl != null) {
 				deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
 			}
+			mailEl.setEnabled(true);
 		} else {
 			flc.remove(submitBtn);
 			if (orgContainer == null) {
@@ -267,8 +268,8 @@ public class OAuthRegistrationController extends FormBasicController {
 				orgSelection.enableNoneSelection(translate("user.organisation.select"));
 				orgSelection.setMandatory(true);
 			}
-			flc.add(submitBtn);
 		}
+		flc.add(submitBtn);
 	}
 	
 	@Override
