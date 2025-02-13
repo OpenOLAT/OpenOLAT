@@ -207,12 +207,6 @@ public class OAuthRegistrationController extends FormBasicController {
 	}
 
 	private void initOrgSelection(TextElement mailEl) {
-		if (orgContainer == null) {
-			orgContainer = FormLayoutContainer.createDefaultFormLayout("org_selection", getTranslator());
-			orgContainer.setFormTitle(translate("user.organisation"));
-			orgContainer.setFormLayout("default");
-		}
-		flc.add(orgContainer);
 		// in case of that the org selection is being recalled
 		// clear previous entries by creating a new reference
 		// We need to do so, to prevent false entries from initialMail
@@ -226,6 +220,7 @@ public class OAuthRegistrationController extends FormBasicController {
 
 		matchedDomains = organisationService.getMatchingEmailDomains(emailDomains, mailDomain);
 
+		flc.remove(submitBtn);
 		if (matchedDomains.isEmpty()) {
 			// Show error, that no org match was found
 			mailEl.setErrorKey("step3.reg.mismatch.form.text", WebappHelper.getMailConfig("mailSupport"));
@@ -233,7 +228,13 @@ public class OAuthRegistrationController extends FormBasicController {
 				deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
 			}
 		} else {
-			flc.remove(submitBtn);
+			if (orgContainer == null) {
+				orgContainer = FormLayoutContainer.createDefaultFormLayout("org_selection", getTranslator());
+				orgContainer.setFormTitle(translate("user.organisation"));
+				orgContainer.setFormLayout("default");
+			}
+			flc.add(orgContainer);
+
 			// Extract orgKey as keys
 			matchedDomains = matchedDomains.stream()
 					.sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName()))
