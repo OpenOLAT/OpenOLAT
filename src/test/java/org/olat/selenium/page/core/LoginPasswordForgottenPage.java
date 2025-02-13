@@ -57,21 +57,27 @@ public class LoginPasswordForgottenPage {
 		OOGraphene.waitElement(validatedBy, browser);
 		OOGraphene.nextStep(browser);
 		
-		By newPasswordBy = By.cssSelector(".o_sel_new_password_form");
+		By newPasswordBy = By.cssSelector(".modal-content fieldset.o_sel_new_password_form");
 		OOGraphene.waitElement(newPasswordBy, browser);
 		return this;
 	}
 	
 	public LoginPasswordForgottenPage newPassword(String value) {
-		By newBy = By.cssSelector(".o_sel_new_password_form .o_sel_new_password input[type='password']");
-		browser.findElement(newBy).sendKeys(value);
-		By repeatBy = By.cssSelector(".o_sel_new_password_form .o_sel_password_confirmation input[type='password']");
-		browser.findElement(repeatBy).sendKeys(value);
-		OOGraphene.nextStep(browser);
-		
-		By confirmationBy = By.cssSelector("fieldset.o_sel_changed_confirmation");
-		OOGraphene.waitElement(confirmationBy, browser);
-		OOGraphene.finishStep(browser);
+		try {
+			By newBy = By.cssSelector(".o_sel_new_password_form .o_sel_new_password input[type='password']");
+			OOGraphene.waitElement(newBy, browser);
+			browser.findElement(newBy).sendKeys(value);
+			By repeatBy = By.cssSelector(".o_sel_new_password_form .o_sel_password_confirmation input[type='password']");
+			browser.findElement(repeatBy).sendKeys(value);
+			OOGraphene.nextStep(browser);
+			
+			By confirmationBy = By.cssSelector("fieldset.o_sel_changed_confirmation");
+			OOGraphene.waitElement(confirmationBy, browser);
+			OOGraphene.finishStep(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Forgotten password", browser);
+			throw e;
+		}
 		return this;
 	}
 	
