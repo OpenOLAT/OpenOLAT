@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
@@ -151,7 +150,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 				new DualNumberCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(numCol);
 		
-		tableModel = new UsersOverviewTableModel(columnsModel, Set.of(), getLocale());
+		tableModel = new UsersOverviewTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		

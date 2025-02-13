@@ -24,7 +24,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
@@ -402,15 +401,6 @@ public class CurriculumElementMemberUsersController extends AbstractMembersContr
 	private void doAddMemberWizard(UserRequest ureq, CurriculumRoles role) {
 		List<Offer> offers = getAvailableOffers();
 		MembersContext membersContext = new MembersContext(role, curriculum, curriculumElement, descendants, offers);
-		
-		// Exclude users with an open/done/payed order
-		List<Order> validOrders = acService.findOrders(curriculumElement.getResource(), OrderStatus.PREPAYMENT, OrderStatus.PAYED);
-		List<Identity> excludedIdentities = validOrders.stream()
-				.map(Order::getDelivery)
-				.filter(Objects::nonNull)
-				.toList();
-		membersContext.setExcludedIdentities(excludedIdentities);
-		
 		AddMember1SearchStep step = new AddMember1SearchStep(ureq, membersContext);
 		AddMemberFinishCallback finish = new AddMemberFinishCallback(membersContext);
 		
