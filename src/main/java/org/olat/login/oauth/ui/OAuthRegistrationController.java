@@ -220,7 +220,6 @@ public class OAuthRegistrationController extends FormBasicController {
 
 		matchedDomains = organisationService.getMatchingEmailDomains(emailDomains, mailDomain);
 
-		flc.remove(submitBtn);
 		if (matchedDomains.isEmpty()) {
 			// Show error, that no org match was found
 			mailEl.setErrorKey("step3.reg.mismatch.form.text", WebappHelper.getMailConfig("mailSupport"));
@@ -228,6 +227,7 @@ public class OAuthRegistrationController extends FormBasicController {
 				deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
 			}
 		} else {
+			flc.remove(submitBtn);
 			if (orgContainer == null) {
 				orgContainer = FormLayoutContainer.createDefaultFormLayout("org_selection", getTranslator());
 				orgContainer.setFormTitle(translate("user.organisation"));
@@ -373,7 +373,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		TextElement mailEl = (TextElement) flc.getFormComponent(UserConstants.EMAIL);
 		boolean isMailUnchanged = isMailUnchanged(mailEl);
 
-		if (isMailUnchanged) {
+		if (isMailUnchanged && !mailEl.hasError()) {
 			handleUserRegistration(ureq);
 		} else if (mailEl != null) {
 			if (orgContainer != null) {
