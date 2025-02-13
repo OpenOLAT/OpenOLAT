@@ -229,7 +229,9 @@ public class OAuthRegistrationController extends FormBasicController {
 		if (matchedDomains.isEmpty()) {
 			// Show error, that no org match was found
 			mailEl.setErrorKey("step3.reg.mismatch.form.text", WebappHelper.getMailConfig("mailSupport"));
-			deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
+			if (mailValidationCtrl != null) {
+				deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
+			}
 		} else {
 			flc.remove(submitBtn);
 			// Extract orgKey as keys
