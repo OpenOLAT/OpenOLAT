@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -164,6 +165,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private RepositoryEntryDAO repositoryEntryDAO;
 	@Autowired
 	private RepositoryEntryRelationDAO reToGroupDao;
+	@Autowired
+	private RepositoryTemplateRelationDAO templateToGroupDao;
 	@Autowired
 	private RepositoryEntryStatisticsDAO repositoryEntryStatisticsDao;
 	@Autowired
@@ -1160,9 +1163,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 					if (curriculumElementDAO.countElements(entry) > 0) {
 						return RuntimeTypeCheckDetails.curriculumElementExists;
 					}
+					if (templateToGroupDao.hasRelations(entry)) {
+						return RuntimeTypeCheckDetails.isTemplate;
+					}
 				}
 				case curricular -> {
 					return canSwitchToCurricular(entry);
+				}
+				case template -> {
+					return RuntimeTypeCheckDetails.isTemplate;
 				}
 			}
 		} else {
@@ -1180,17 +1189,28 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		RuntimeTypeCheckDetails checkDetails = RuntimeTypeCheckDetails.ok;
 		
 		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
-			if (curriculumElementDAO.countElements(entry) == 0) {
-				runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
-			} else {
-				if (curriculumModule.isEnabled() && RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType())) {
-					checkDetails = RuntimeTypeCheckDetails.curriculumElementExists;
+			if(entry.getRuntimeType() == RepositoryEntryRuntimeType.template) {
+				if(templateToGroupDao.hasRelations(entry)) {
+					checkDetails = RuntimeTypeCheckDetails.isTemplate;
+				} else {
+					runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
+					if (curriculumModule.isEnabled()) {
+						runtimeTypes.add(RepositoryEntryRuntimeType.curricular);
+					}
 				}
-			}
-			if (curriculumModule.isEnabled()) {
-				checkDetails = canSwitchToCurricular(entry);
-				if (checkDetails.equals(RuntimeTypeCheckDetails.ok)) {
-					runtimeTypes.add(RepositoryEntryRuntimeType.curricular);
+			} else {
+				if (curriculumElementDAO.countElements(entry) == 0) {
+					runtimeTypes.add(RepositoryEntryRuntimeType.standalone);
+				} else {
+					if (curriculumModule.isEnabled() && RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType())) {
+						checkDetails = RuntimeTypeCheckDetails.curriculumElementExists;
+					}
+				}
+				if (curriculumModule.isEnabled()) {
+					checkDetails = canSwitchToCurricular(entry);
+					if (checkDetails.equals(RuntimeTypeCheckDetails.ok)) {
+						runtimeTypes.add(RepositoryEntryRuntimeType.curricular);
+					}
 				}
 			}
 		} else {
@@ -1202,13 +1222,16 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	private RuntimeTypeCheckDetails canSwitchToCurricular(RepositoryEntry entry) {
-		Map<String, Long> roleToCount = this.reToGroupDao.getRoleToCountMemebers(entry);
+		Map<String, Long> roleToCount = reToGroupDao.getRoleToCountMemebers(entry);
 
 		if (roleToCount.containsKey(GroupRoles.participant.name()) && roleToCount.get(GroupRoles.participant.name()) > 0) {
 			return RuntimeTypeCheckDetails.participantExists;
 		}
 		if (roleToCount.containsKey(GroupRoles.coach.name()) && roleToCount.get(GroupRoles.coach.name()) > 0) {
 			return RuntimeTypeCheckDetails.coachExists;
+		}
+		if(templateToGroupDao.hasRelations(entry)) {
+			return RuntimeTypeCheckDetails.isTemplate;
 		}
 		if (lti13SharedToolDeploymentDAO.getSharedToolDeploymentCount(entry) > 0) {
 			return RuntimeTypeCheckDetails.ltiDeploymentExists;
@@ -1251,9 +1274,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public Set<RepositoryEntryRuntimeType> getPossibleRuntimeTypes(RepositoryEntry entry) {
-		HashSet<RepositoryEntryRuntimeType> types = new HashSet<>();
+		Set<RepositoryEntryRuntimeType> types = EnumSet.noneOf(RepositoryEntryRuntimeType.class);
 		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			types.add(RepositoryEntryRuntimeType.standalone);
+			types.add(RepositoryEntryRuntimeType.template);
 			if (curriculumModule.isEnabled()) {
 				types.add(RepositoryEntryRuntimeType.curricular);
 			}
@@ -1264,6 +1288,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		return types;
 	}
 
+	@Override
 	public boolean canEditRuntimeType(RepositoryEntry entry) {
 		if ("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			if (curriculumModule.isEnabled()) {

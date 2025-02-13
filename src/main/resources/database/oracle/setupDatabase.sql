@@ -637,6 +637,13 @@ CREATE TABLE o_re_to_group (
    fk_entry_id number(20) not null,
    PRIMARY KEY (id)
 );
+CREATE TABLE o_re_template_to_group (
+  id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   fk_group_id number(20) not null,
+   fk_entry_id number(20) not null,
+   primary key (id)
+);
 CREATE TABLE o_re_to_tax_level (
   id number(20) generated always as identity,
   creationdate date not null,
@@ -5018,6 +5025,11 @@ alter table o_re_to_group add constraint re_to_group_group_ctx foreign key (fk_g
 alter table o_re_to_group add constraint re_to_group_re_ctx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 create index re_to_group_group_idx on o_re_to_group (fk_group_id);
 create index re_to_group_re_idx on o_re_to_group (fk_entry_id);
+
+alter table o_re_template_to_group add constraint template_to_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_template_to_group_idx on o_re_template_to_group (fk_group_id);
+alter table o_re_template_to_group add constraint template_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_template_to_re_idx on o_re_template_to_group (fk_entry_id);
 
 alter table o_gp_business add constraint gp_to_group_business_ctx foreign key (fk_group_id) references o_bs_group (id);
 -- create index gp_to_group_group_idx on o_gp_business (fk_group_id);

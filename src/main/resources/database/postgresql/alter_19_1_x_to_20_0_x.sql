@@ -214,9 +214,19 @@ create index idx_exp_meta_to_cur_el_idx on o_ex_export_metadata_to_cur_el (fk_el
 alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_curel_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
 create index idx_exp_meta_cur_el_to_meta_idx on o_ex_export_metadata_to_cur_el (fk_metadata);
 
+-- Template
+create table o_re_template_to_group (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_group_id int8 not null,
+   fk_entry_id int8 not null,
+   primary key (id)
+);
 
+alter table o_re_template_to_group add constraint template_to_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_template_to_group_idx on o_re_template_to_group (fk_group_id);
+alter table o_re_template_to_group add constraint template_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_template_to_re_idx on o_re_template_to_group (fk_entry_id);
 
 
     
-
-

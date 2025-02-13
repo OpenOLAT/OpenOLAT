@@ -43,6 +43,8 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.st.assessment.STLearningPathConfigs;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,12 +59,15 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 	private static final Logger log = Tracing.createLoggerFor(CreateCourseRepositoryEntryController.class);
 	
 	private SingleSelection designEl;
+	private SingleSelection runtimeTypeEl;
 	
 	private CourseAssistanceController courseAssistanceCtrl;
 	private AssistanceAccordionController assistanceCtrl;
 
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
 
 	public CreateCourseRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler,
 			boolean wizardsEnabled) {
@@ -77,6 +82,29 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 	@Override
 	protected boolean hasEducationalType() {
 		return true;
+	}
+	
+	@Override
+	protected void initRuntimeTypeElement(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		SelectionValues runtimeTypeKV = new SelectionValues();
+		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(), translate("runtime.type.standalone")));
+		if(curriculumModule.isEnabled()) {
+			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.curricular.name(), translate("runtime.type.curricular")));
+		}
+		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.template.name(), translate("runtime.type.template")));
+		runtimeTypeEl = uifactory.addDropdownSingleselect("cif.runtime.type", "cif.runtime.type", formLayout,
+				runtimeTypeKV.keys(), runtimeTypeKV.values());
+		runtimeTypeEl.setMandatory(true);
+		
+		if(curriculumModule.isEnabled()) {
+			String defaultType = curriculumModule.getDefaultCourseRuntimeType().name();
+			if(runtimeTypeKV.containsKey(defaultType)) {
+				runtimeTypeEl.select(defaultType, true);
+			}
+		}
+		if(!runtimeTypeEl.isOneSelected()) {
+			runtimeTypeEl.select(RepositoryEntryRuntimeType.standalone.name(), true);
+		}
 	}
 
 	@Override
@@ -114,6 +142,11 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 				: LearningPathNodeAccessProvider.TYPE;
 		CourseFactory.initNodeAccessType(repositoryEntry, NodeAccessType.of(type));
 		repositoryEntry = repositoryManager.setTechnicalType(repositoryEntry, type);
+		
+		RepositoryEntryRuntimeType runtimeType = runtimeTypeEl.isOneSelected()
+				? RepositoryEntryRuntimeType.valueOf(runtimeTypeEl.getSelectedKey())
+				: RepositoryEntryRuntimeType.standalone;
+		repositoryEntry = repositoryManager.setRuntimeType(repositoryEntry, runtimeType);
 		
 		if (CourseModule.COURSE_TYPE_PROGRESS.equals(designEl.getSelectedKey())) {
 			initProgressCourseConfig();

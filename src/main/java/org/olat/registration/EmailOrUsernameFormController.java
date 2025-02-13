@@ -30,7 +30,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -94,6 +94,7 @@ public class EditRuntimeTypeController extends FormBasicController {
 			case curriculumElementExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.curriculumElementExists")).append("</p>");
 			case groupWithOffersOrLtiExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.groupWithOffersOrLtiExists")).append("</p>");
 			case groupWithOtherCoursesExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.groupWithOtherCoursesExists")).append("</p>");
+			case isTemplate -> warnings.append("<p>").append(translate("change.runtime.type.warning.isTemplate")).append("</p>");
 		}
 		if (warnings.isEmpty()) {
 			if(hasUserManager) {
@@ -129,6 +130,14 @@ public class EditRuntimeTypeController extends FormBasicController {
 					"o_icon o_icon_curriculum", null,
 					allowedRuntimeTypesAndDetails.runtimeTypes().contains(RepositoryEntryRuntimeType.curricular)));
 		}
+		if (possibleRuntimeTypes.contains(RepositoryEntryRuntimeType.template)) {
+			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.template.name(),
+					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".title"),
+					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".desc"),
+					"o_icon o_icon_template", null,
+					allowedRuntimeTypesAndDetails.runtimeTypes().contains(RepositoryEntryRuntimeType.template)));
+		}
+		
 
 		runtimeTypeEl = uifactory.addCardSingleSelectHorizontal("cif.runtime.type", "cif.runtime.type", formLayout, runtimeTypeKV);
 		for (int i = 0; i < runtimeTypeKV.size(); i++) {

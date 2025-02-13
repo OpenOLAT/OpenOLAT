@@ -60,6 +60,7 @@ import org.olat.modules.curriculum.CurriculumService.AddRepositoryEntry;
 import org.olat.modules.curriculum.CurriculumService.RemovedRepositoryEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -82,6 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CurriculumElementResourceListController extends FormBasicController implements FlexiTableCssDelegate {
 
+	private FormLink addTemplateButton;
 	private FormLink addResourceButton;
 	private FormLink removeResourcesButton;
 	private FlexiTableElement tableEl;
@@ -90,6 +92,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 	private CloseableModalController cmc;
 	private AuthorListController repoSearchCtr;
 	private DialogBoxController confirmRemoveCtrl;
+	private AuthorListController templateSearchCtr;
 	
 	private final boolean resourcesManaged;
 	private final CurriculumElement curriculumElement;
@@ -148,7 +151,9 @@ public class CurriculumElementResourceListController extends FormBasicController
 				&& (curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 0)) {
 			// 1) add
 			addResourceButton = uifactory.addFormLink("add.resource", formLayout, Link.BUTTON);
-			addResourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");		
+			addResourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			addTemplateButton = uifactory.addFormLink("add.template", formLayout, Link.BUTTON);
+			addTemplateButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			// 2) remove
 			removeResourcesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(removeResourcesButton);
@@ -186,7 +191,12 @@ public class CurriculumElementResourceListController extends FormBasicController
 	
 	public void loadModel() {
 		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
-		tableModel.setObjects(entries);
+		List<RepositoryEntry> templates = curriculumService.getRepositoryTemplates(curriculumElement);
+		
+		List<RepositoryEntry> rows = new ArrayList<>();
+		rows.addAll(entries);
+		rows.addAll(templates);
+		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 		
 		int maxRelations = curriculumElementType == null ? -1 : curriculumElementType.getMaxRepositoryEntryRelations();
@@ -205,6 +215,14 @@ public class CurriculumElementResourceListController extends FormBasicController
 				doRemove(rows);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
+		} else if(templateSearchCtr == source) {
+			if(event instanceof AuthoringEntryRowSelectionEvent se) {
+				doAddTemplate(se.getRow());
+				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(repoSearchCtr == source) {
 			if(event instanceof AuthoringEntryRowSelectionEvent se) {
 				doAddRepositoryEntry(se.getRow());
@@ -220,8 +238,10 @@ public class CurriculumElementResourceListController extends FormBasicController
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(templateSearchCtr);
 		removeAsListenerAndDispose(repoSearchCtr);
 		removeAsListenerAndDispose(cmc);
+		templateSearchCtr = null;
 		repoSearchCtr = null;
 		cmc = null;
 	}
@@ -230,6 +250,8 @@ public class CurriculumElementResourceListController extends FormBasicController
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addResourceButton == source) {
 			doChooseResources(ureq);
+		} else if(addTemplateButton == source) {
+			doChooseTemplate(ureq);
 		} else if(removeResourcesButton == source) {
 			doConfirmRemoveResources(ureq);
 		} else if(tableEl == source) {
@@ -271,6 +293,30 @@ public class CurriculumElementResourceListController extends FormBasicController
 		cmc.activate();
 	}
 	
+	private void doChooseTemplate(UserRequest ureq) {
+		if(guardModalController(templateSearchCtr)) return;
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		AuthorListConfiguration tableConfig = AuthorListConfiguration.selectRessource("curriculum-course-v1", "CourseModule");
+		tableConfig.setSelectRepositoryEntry(SelectionMode.single);
+		tableConfig.setBatchSelect(true);
+		tableConfig.setImportRessources(false);
+		tableConfig.setCreateRessources(false);
+		tableConfig.setAllowedRuntimeTypes(List.of(RepositoryEntryRuntimeType.template));
+		
+		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
+		searchParams.addResourceTypes("CourseModule");
+		searchParams.setRuntimeType(RepositoryEntryRuntimeType.template);
+		templateSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
+		listenTo(templateSearchCtr);
+		templateSearchCtr.selectFilterTab(ureq, templateSearchCtr.getMyCoursesTab());
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), templateSearchCtr.getInitialComponent(),
+				true, translate("add.template"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doAddRepositoryEntry(RepositoryEntryRef entryRef) {
 		RepositoryEntry entry = repositoryService.loadBy(entryRef);
 		if(entry != null) {
@@ -282,6 +328,14 @@ public class CurriculumElementResourceListController extends FormBasicController
 			} else {
 				showInfo("info.repositoryentry.added");
 			}
+		}
+	}
+	
+	private void doAddTemplate(RepositoryEntryRef entryRef) {
+		RepositoryEntry entry = repositoryService.loadBy(entryRef);
+		if(entry != null && entry.getRuntimeType() == RepositoryEntryRuntimeType.template) {
+			curriculumService.addRepositoryTemplate(curriculumElement, entry);
+			showInfo("info.repositoryentry.added");
 		}
 	}
 	
@@ -303,8 +357,12 @@ public class CurriculumElementResourceListController extends FormBasicController
 	private void doRemove(List<RepositoryEntry> resourcesToRemove) {
 		int lectureBlocksRemoved = 0;
 		for(RepositoryEntry resourceToRemove:resourcesToRemove) {
-			RemovedRepositoryEntry infos = curriculumService.removeRepositoryEntry(curriculumElement, resourceToRemove);
-			lectureBlocksRemoved += infos.lectureBlockMoved();
+			if(resourceToRemove.getRuntimeType() == RepositoryEntryRuntimeType.template) {
+				curriculumService.removeRepositoryTemplate(curriculumElement, resourceToRemove);
+			} else {
+				RemovedRepositoryEntry infos = curriculumService.removeRepositoryEntry(curriculumElement, resourceToRemove);
+				lectureBlocksRemoved += infos.lectureBlockMoved();
+			}
 		}
 		loadModel();
 		

@@ -184,7 +184,8 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			root.addChild(node);
 		}
 
-		if(!isCourseManagedByCurriculum() && acModule.isEnabled() && (entryAdmin || principal ||  memberManagementRight)) {
+		if(!isCourseManagedByCurriculum() && !isCourseTemplate()
+				&& acModule.isEnabled() && (entryAdmin || principal || memberManagementRight)) {
 			//check if the course is managed and/or has offers
 			if(!RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.bookings)
 					|| (repoEntry.isPublicVisible() && acService.isResourceAccessControled(repoEntry.getOlatResource(), null))) {
@@ -224,6 +225,10 @@ public class MembersManagementMainController extends MainLayoutBasicController i
 			return false;
 		}
 		return RepositoryEntryRuntimeType.curricular.equals(repoEntry.getRuntimeType());
+	}
+	
+	private boolean isCourseTemplate() {
+		return RepositoryEntryRuntimeType.template.equals(repoEntry.getRuntimeType());
 	}
 
 	@Override

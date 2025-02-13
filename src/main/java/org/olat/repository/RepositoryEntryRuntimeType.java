@@ -26,21 +26,23 @@ import org.olat.core.util.StringHelper;
 /**
  * 
  * Initial date: 22 janv. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public enum RepositoryEntryRuntimeType {
 	standalone,
 	embedded,
-	curricular;
+	curricular,
+	template;
 
 	public static ILoggingAction loggingAction(RepositoryEntryRuntimeType status) {
-		switch(status) {
-			case standalone: return LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_STANDALONE;
-			case embedded: return LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_EMBEDDED;
-			case curricular: return LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_CURRICULAR;
-			default: return null;
-		}
+		return switch(status) {
+			case standalone -> LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_STANDALONE;
+			case embedded -> LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_EMBEDDED;
+			case curricular -> LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_CURRICULAR;
+			case template -> LearningResourceLoggingAction.LEARNING_RESOURCE_RUNTIME_TYPE_TEMPLATE;
+			default -> null;
+		};
 	}
 
 	public static RepositoryEntryRuntimeType secureValueOf(String value, RepositoryEntryRuntimeType defaultValue) {
@@ -55,6 +57,6 @@ public enum RepositoryEntryRuntimeType {
 	}
 	
 	public static RepositoryEntryRuntimeType[] notEmbedded() {
-		return new RepositoryEntryRuntimeType[] { curricular, standalone };
+		return new RepositoryEntryRuntimeType[] { curricular, standalone, template };
 	}
 }

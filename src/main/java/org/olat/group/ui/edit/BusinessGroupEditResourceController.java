@@ -258,7 +258,8 @@ public class BusinessGroupEditResourceController extends BasicController {
 			if (RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups)) {
 				return false;
 			}
-			if (RepositoryEntryRuntimeType.curricular.equals(re.getRuntimeType())) {
+			if (RepositoryEntryRuntimeType.curricular.equals(re.getRuntimeType())
+					|| RepositoryEntryRuntimeType.template.equals(re.getRuntimeType())) {
 				return false;
 			}
 			return true;

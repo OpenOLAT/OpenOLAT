@@ -590,6 +590,13 @@ create table o_re_to_group (
    fk_entry_id bigint not null,
    primary key (id)
 );
+create table o_re_template_to_group (
+  id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_group_id bigint not null,
+   fk_entry_id bigint not null,
+   primary key (id)
+);
 create table o_re_to_tax_level (
   id bigint not null auto_increment,
   creationdate datetime not null,
@@ -4888,6 +4895,7 @@ alter table o_bs_relation_role ENGINE = InnoDB;
 alter table o_bs_relation_right ENGINE = InnoDB;
 alter table o_bs_relation_role_to_right ENGINE = InnoDB;
 alter table o_re_to_group ENGINE = InnoDB;
+alter table o_re_template_to_group ENGINE = InnoDB;
 alter table o_re_to_tax_level ENGINE = InnoDB;
 alter table o_bs_grant ENGINE = InnoDB;
 alter table o_repositoryentry_cycle ENGINE = InnoDB;
@@ -5229,6 +5237,9 @@ alter table o_bs_group_member_history add constraint history_group_idx foreign k
 
 alter table o_re_to_group add constraint re_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 alter table o_re_to_group add constraint re_to_group_re_ctx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+
+alter table o_re_template_to_group add constraint template_to_group_idx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_re_template_to_group add constraint template_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 
 -- business group
 alter table o_gp_business add constraint idx_bgp_rsrc foreign key (fk_resource) references o_olatresource (resource_id);

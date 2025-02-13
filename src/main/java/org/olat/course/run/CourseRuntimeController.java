@@ -2328,13 +2328,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				removeCustomCSS();
 
 				OLATResourceable ores = OresHelper.createOLATResourceableType("LecturesAdmin");
+				RepositoryEntry re = getRepositoryEntry();
 				WindowControl swControl = addToHistory(ureq, ores, null);
 				CourseReadOnlyDetails readOnlyDetails = getUserCourseEnvironment().getCourseReadOnlyDetails();
-				boolean readOnlyManaged = isCourseManagedByCurriculum();
+				boolean readOnlyManaged = isCourseManagedByCurriculum() || re.getRuntimeType() == RepositoryEntryRuntimeType.template;
 				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
 						.getSecurityCallback(reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR), reSecurity.isMasterCoach(), false,
 								readOnlyDetails, readOnlyManaged);
-				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, getRepositoryEntry(), secCallback);
+				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, re, secCallback);
 				listenTo(ctrl);
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);
 				setActiveTool(lecturesAdminLink);

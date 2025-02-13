@@ -22,6 +22,7 @@ package org.olat.repository.ui.author;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
+import org.olat.repository.RepositoryEntryRuntimeType;
 
 /**
  * 
@@ -45,6 +46,7 @@ public class AuthorListConfiguration {
 	private boolean rowSelect = false;
 	
 	private List<String> allowedRessourceTypes;
+	private List<RepositoryEntryRuntimeType> allowedRuntimeTypes;
 	
 	private boolean defaultAccessControl = true;
 	private boolean defaultTaxonomyPath = true;
@@ -190,6 +192,19 @@ public class AuthorListConfiguration {
 	public boolean isResourceTypeAllowed(String type) {
 		return allowedRessourceTypes == null || allowedRessourceTypes.isEmpty()
 				|| allowedRessourceTypes.contains(type);
+	}
+	
+	public List<RepositoryEntryRuntimeType> getAllowedRuntimeTypes() {
+		return allowedRuntimeTypes;
+	}
+	
+	public void setAllowedRuntimeTypes(List<RepositoryEntryRuntimeType> runtimeTypes) {
+		this.allowedRuntimeTypes = runtimeTypes;
+	}
+	
+	public boolean isRuntimeTypeAllowed(RepositoryEntryRuntimeType type) {
+		return allowedRuntimeTypes == null || allowedRuntimeTypes.isEmpty()
+				|| allowedRuntimeTypes.contains(type);
 	}
 
 	public boolean isDefaultAccessControl() {

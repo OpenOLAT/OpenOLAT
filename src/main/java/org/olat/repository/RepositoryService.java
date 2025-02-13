@@ -519,6 +519,7 @@ public interface RepositoryService {
 		curriculumElementExists,
 		groupWithOffersOrLtiExists,
 		groupWithOtherCoursesExists,
+		isTemplate,
 	}
 	
 	/**

@@ -537,6 +537,14 @@ public interface CurriculumService {
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element);
 	
 	/**
+	 * The all list of templates hold by the specified curriculum element.
+	 * 
+	 * @param element The curriculum element
+	 * @return A list of templates
+	 */
+	public List<RepositoryEntry> getRepositoryTemplates(CurriculumElementRef element);
+	
+	/**
 	 * The all list of repository entries hold by the specified curriculum element and
 	 * its descendants elements.
 	 * 
@@ -583,6 +591,8 @@ public interface CurriculumService {
 	 * @return True if the repository entry and curriculum element share a group
 	 */
 	public boolean hasRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry);
+
+	public boolean hasRepositoryTemplate(CurriculumElement element, RepositoryEntryRef entry);
 	
 	/**
 	 * This will add a relation between the curriculum element and the repository
@@ -596,6 +606,8 @@ public interface CurriculumService {
 	 */
 	public AddRepositoryEntry addRepositoryEntry(CurriculumElement element, RepositoryEntry entry, boolean moveLectureBlocks);
 	
+	public boolean addRepositoryTemplate(CurriculumElement element, RepositoryEntry template);
+	
 	public record AddRepositoryEntry(boolean entryAdded, boolean lectureBlockMoved) {
 		//
 	}
@@ -606,11 +618,13 @@ public interface CurriculumService {
 	 * @param element
 	 * @param entry
 	 */
-	RemovedRepositoryEntry removeRepositoryEntry(CurriculumElement element, RepositoryEntry entry);
+	public RemovedRepositoryEntry removeRepositoryEntry(CurriculumElement element, RepositoryEntry entry);
 	
 	public record RemovedRepositoryEntry(boolean entryRemoved, int lectureBlockMoved) {
 		//
 	}
+	
+	public void removeRepositoryTemplate(CurriculumElement element, RepositoryEntry entry);
 	
 	/**
 	 * Remove the repository entry from all the curriculum elements.

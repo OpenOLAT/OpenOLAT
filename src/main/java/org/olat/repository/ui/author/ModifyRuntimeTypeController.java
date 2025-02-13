@@ -101,6 +101,12 @@ public class ModifyRuntimeTypeController extends FormBasicController {
 					translate("runtime.type." + RepositoryEntryRuntimeType.curricular.name() + ".desc"), "o_icon o_icon_curriculum", null, false));
 		}
 
+		if (runtimeTypes.contains(RepositoryEntryRuntimeType.template)) {
+			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.template.name(),
+					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".title"),
+					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".desc"), "o_icon o_icon_template", null, false));
+		}
+
 		runtimeTypeEl = uifactory.addCardSingleSelectHorizontal("cif.runtime.type", "cif.runtime.type", formLayout, runtimeTypeKV);
 		if (allEntriesHaveTheSameRuntimeType()) {
 			runtimeTypeEl.select(entries.get(0).getRuntimeType().name(), true);

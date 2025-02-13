@@ -95,7 +95,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		setBasePackage(RepositoryService.class);
 		this.repositoryEntry = entry;
 		this.curriculumManaged = RepositoryEntryRuntimeType.curricular.equals(repositoryEntry.getRuntimeType());
-		this.readOnly = readOnly;
+		this.readOnly = readOnly || entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
 		initForm(ureq);
 	}
 	
@@ -113,7 +113,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		this.repositoryEntry = entry;
 		this.curriculumManaged = RepositoryEntryRuntimeType.curricular.equals(repositoryEntry.getRuntimeType());
 		this.usedInWizard = true;
-		readOnly = false;
+		readOnly = entry.getRuntimeType() == RepositoryEntryRuntimeType.template;
 		initForm(ureq);
 		initEventListeners();
 	}

@@ -98,6 +98,23 @@ public class CurriculumRepositoryEntryRelationDAO {
 		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0l;
 	}
 	
+	public List<RepositoryEntry> getRepositoryTemplates(CurriculumElementRef element) {
+		if(element == null) return new ArrayList<>();
+		
+		String query = """
+				select distinct v from repositoryentry as v
+				inner join fetch v.olatResource as ores
+				inner join fetch v.statistics as statistics
+				left join fetch v.lifecycle as lifecycle
+				inner join repotemplatetogroup as rel on (rel.entry.key=v.key)
+				inner join curriculumelement as el on (el.group.key=rel.group.key)
+				where el.key = :elementKey""";
+		
+		return dbInstance.getCurrentEntityManager().createQuery(query, RepositoryEntry.class)
+				.setParameter("elementKey", element.getKey())
+				.getResultList();
+	}
+	
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumRef curriculum, List<CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status,
 			boolean onlyWithLectures, IdentityRef identity, List<String> roles) {
 		if((elements == null || elements.isEmpty()) && curriculum == null) return new ArrayList<>();

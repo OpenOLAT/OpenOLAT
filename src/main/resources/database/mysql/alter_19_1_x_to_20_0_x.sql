@@ -201,3 +201,16 @@ alter table o_ex_export_metadata_to_cur_el ENGINE = InnoDB;
 alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_to_cur_el_idx foreign key (fk_element) references o_cur_curriculum_element (id);
 alter table o_ex_export_metadata_to_cur_el add constraint exp_meta_curel_to_meta_idx foreign key (fk_metadata) references o_ex_export_metadata (id);
 
+-- Template
+create table o_re_template_to_group (
+  id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_group_id bigint not null,
+   fk_entry_id bigint not null,
+   primary key (id)
+);
+alter table o_re_template_to_group ENGINE = InnoDB;
+
+alter table o_re_template_to_group add constraint template_to_group_idx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_re_template_to_group add constraint template_to_re_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+

@@ -145,6 +145,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryMyCourseQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.manager.RepositoryTemplateRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
@@ -204,6 +205,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumElementTypeToTypeDAO curriculumElementTypeToTypeDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private RepositoryTemplateRelationDAO repositoryTemplateRelationDao;
 	@Autowired
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	@Autowired
@@ -1324,6 +1327,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		return curriculumRepositoryEntryRelationDao
 				.getRepositoryEntries(null, elements, RepositoryEntryStatusEnum.preparationToClosed(), false, null, null);
 	}
+	
+	@Override
+	public List<RepositoryEntry> getRepositoryTemplates(CurriculumElementRef element) {
+		return curriculumRepositoryEntryRelationDao.getRepositoryTemplates(element);
+	}
 
 	@Override
 	public List<RepositoryEntry> getRepositoryEntriesWithDescendants(CurriculumElement element) {
@@ -1383,6 +1391,16 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		return new AddRepositoryEntry(false, false);
 	}
 	
+	@Override
+	public boolean addRepositoryTemplate(CurriculumElement curriculumElement, RepositoryEntry template) {
+		if(!hasRepositoryTemplate(curriculumElement, template)) {
+			RepositoryEntry repoTemplate = repositoryEntryDao.loadByKey(template.getKey());
+			repositoryTemplateRelationDao.createRelation(curriculumElement.getGroup(), repoTemplate);
+			return true;
+		}
+		return false;
+	}
+	
 	private boolean moveLectureBlocks(CurriculumElement curriculumElement, RepositoryEntry entry) {
 		if(curriculumElement == null || entry == null) return false;
 		
@@ -1399,6 +1417,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public boolean hasRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry) {
 		return repositoryEntryRelationDao.hasRelation(element.getGroup(), entry);
+	}
+	
+	@Override
+	public boolean hasRepositoryTemplate(CurriculumElement element, RepositoryEntryRef entry) {
+		return repositoryTemplateRelationDao.hasRelation(element.getGroup(), entry);
 	}
 
 	@Override
@@ -1442,6 +1465,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		repositoryEntryRelationDao.removeRelation(element.getGroup(), entry);
 		return lectureBlocksMoved;
+	}
+	
+	@Override
+	public void removeRepositoryTemplate(CurriculumElement element, RepositoryEntry entry) {
+		repositoryTemplateRelationDao.removeRelation(element.getGroup(), entry);
 	}
 
 	@Override

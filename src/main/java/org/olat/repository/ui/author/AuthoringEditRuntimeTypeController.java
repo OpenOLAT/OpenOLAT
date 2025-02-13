@@ -76,6 +76,7 @@ public class AuthoringEditRuntimeTypeController extends FormBasicController {
 			case standalone -> "o_icon_people";
 			case curricular -> "o_icon_curriculum";
 			case embedded -> "o_icon_link";
+			case template -> "o_icon_template";
 		};
 		changeRuntimeCont.contextPut("iconCss", iconCss);
 		changeRuntimeCont.contextPut("title", translate("runtime.type." + type + ".title"));

@@ -55,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class CurriculumElementInfosController extends BasicController implements Controller {
+public class CurriculumElementInfosController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private CurriculumElementInfosHeaderController headerCtrl;

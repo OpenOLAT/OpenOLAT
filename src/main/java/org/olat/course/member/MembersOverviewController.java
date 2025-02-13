@@ -163,7 +163,8 @@ public class MembersOverviewController extends BasicController implements Activa
 		addMemberDropdown.setElementCssClass("o_sel_add_more");
 		addMemberDropdown.setEmbbeded(true);
 		addMemberDropdown.setButton(true);
-		addMemberDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly() && !isCourseManagedByCurriculum());
+		addMemberDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly()
+				&& !isCourseManagedByCurriculum() && !isCourseTemplate());
 		mainVC.put("addmore", addMemberDropdown);
 		
 		if(invitationModule.isCourseInvitationEnabled() && canInvite) {
@@ -178,7 +179,8 @@ public class MembersOverviewController extends BasicController implements Activa
 
 		moreDropdown = DropdownUIFactory.createMoreDropdown("more", getTranslator());
 		moreDropdown.setButton(true);
-		moreDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly() && !isCourseManagedByCurriculum());
+		moreDropdown.setVisible(!managed && !coachCourseEnv.isCourseReadOnly()
+				&& !isCourseManagedByCurriculum() && !isCourseTemplate());
 		mainVC.put("more", moreDropdown);
 		
 		dedupLink = LinkFactory.createLink("dedup.members", mainVC, this);
@@ -194,6 +196,10 @@ public class MembersOverviewController extends BasicController implements Activa
 			return false;
 		}
 		return RepositoryEntryRuntimeType.curricular.equals(repoEntry.getRuntimeType());
+	}
+	
+	private boolean isCourseTemplate() {
+		return RepositoryEntryRuntimeType.template.equals(repoEntry.getRuntimeType());
 	}
 
 	protected boolean isAllowedToOverrideManaged(UserRequest ureq) {

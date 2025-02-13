@@ -177,6 +177,11 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	}
 	
 	@SuppressWarnings("unused")
+	protected void initRuntimeTypeElement(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// 
+	}
+	
+	@SuppressWarnings("unused")
 	protected void initAdditionalFormElements(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// 
 	}
@@ -227,6 +232,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		externalRef.setHelpText(translate("cif.externalref.hover"));
 		externalRef.setHelpUrlForManualPage("manual_user/learningresources/Set_up_info_page/");
 		externalRef.setInlineValidationOn(true);
+		
+		initRuntimeTypeElement(generalCont, listener, ureq);
 		
 		if (hasLifecycle()) {
 			initLifecycle(generalCont);

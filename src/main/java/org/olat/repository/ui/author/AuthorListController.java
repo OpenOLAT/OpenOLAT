@@ -752,11 +752,17 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		// runtime type
 		SelectionValues runtimeTypeKV = new SelectionValues();
-		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.standalone.name(), translate("runtime.type.".concat(RepositoryEntryRuntimeType.standalone.name()))));
-		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.embedded.name(), translate("runtime.type.".concat(RepositoryEntryRuntimeType.embedded.name()))));
-		runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.curricular.name(), translate("runtime.type.".concat(RepositoryEntryRuntimeType.curricular.name()))));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.runtime.type"),
-				AuthorSourceFilter.RUNTIMETYPE.name(), runtimeTypeKV, false));
+		RepositoryEntryRuntimeType[] runtimeTypes = { RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.embedded,
+				RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.template };
+		for(RepositoryEntryRuntimeType runtimeType:runtimeTypes) {
+			if(configuration.isRuntimeTypeAllowed(runtimeType)) {
+				runtimeTypeKV.add(SelectionValues.entry(runtimeType.name(), translate("runtime.type.".concat(runtimeType.name()))));
+			}
+		}
+		if(runtimeTypeKV.size() > 1) {
+			filters.add(new FlexiTableSingleSelectionFilter(translate("cif.runtime.type"),
+					AuthorSourceFilter.RUNTIMETYPE.name(), runtimeTypeKV, false));
+		}
 
 		// life-cycle
 		SelectionValues lifecycleValues = new SelectionValues();

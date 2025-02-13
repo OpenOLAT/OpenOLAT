@@ -138,7 +138,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		createGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addGroup = uifactory.addFormLink("group.add", formLayout, Link.BUTTON);
 		addGroup.setElementCssClass("o_sel_course_select_group");
-		addGroup.setVisible(!isCourseManagedByCurriculum() && !managed && !readOnly);
+		addGroup.setVisible(!isCourseManagedByCurriculum() && !isCourseTemplate() && !managed && !readOnly);
 		addGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add_search");
 	}
 
@@ -148,6 +148,13 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		}
 		if (getUserObject() instanceof RepositoryEntry entry) {
 			return RepositoryEntryRuntimeType.curricular.equals(entry.getRuntimeType());
+		}
+		return false;
+	}
+	
+	private boolean isCourseTemplate() {
+		if (getUserObject() instanceof RepositoryEntry entry) {
+			return RepositoryEntryRuntimeType.template.equals(entry.getRuntimeType());
 		}
 		return false;
 	}

@@ -25,6 +25,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -33,8 +34,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
@@ -46,35 +45,21 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="repoentrytogroup")
-@Table(name="o_re_to_group")
-@NamedQuery(name="relationByRepositoryEntryAndGroup",query="select rel from repoentrytogroup as rel where rel.entry.key=:repoKey and rel.group.key=:groupKey")
-@NamedQuery(name="relationByRepositoryEntry", query="select rel from repoentrytogroup as rel where rel.entry.key=:repoKey")
-@NamedQuery(name="relationByGroup", query="select rel from repoentrytogroup as rel where rel.group.key=:groupKey")
-@NamedQuery(name="filterRepositoryEntryRelationMembership", query="select relGroup.entry.key, membership.identity.key from repoentrytogroup as relGroup inner join bgroupmember as membership on (relGroup.group.key=membership.group.key) where membership.identity.key=:identityKey and membership.role in ('owner','coach','participant') and relGroup.entry.key in (:repositoryEntryKey)")
-public class RepositoryEntryToGroupRelation implements Persistable {
+@Entity(name="repotemplatetogroup")
+@Table(name="o_re_template_to_group")
+@NamedQuery(name="relationByRepositoryTemplateAndGroup",query="select rel from repotemplatetogroup as rel where rel.entry.key=:repoKey and rel.group.key=:groupKey")
+public class RepositoryTemplateToGroupRelation implements Persistable {
 
 	private static final long serialVersionUID = 2215547264646107606L;
 
 	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
-		@Parameter(name="sequence_name", value="hibernate_unique_key"),
-		@Parameter(name="force_table_use", value="true"),
-		@Parameter(name="optimizer", value="legacy-hilo"),
-		@Parameter(name="value_column", value="next_hi"),
-		@Parameter(name="increment_size", value="32767"),
-		@Parameter(name="initial_value", value="32767")
-	})
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
-
-	@Column(name="r_defgroup", nullable=false, insertable=true, updatable=false)
-	private boolean defaultGroup = false;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
@@ -99,14 +84,6 @@ public class RepositoryEntryToGroupRelation implements Persistable {
 
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
-	}
-
-	public boolean isDefaultGroup() {
-		return defaultGroup;
-	}
-
-	public void setDefaultGroup(boolean defaultGroup) {
-		this.defaultGroup = defaultGroup;
 	}
 
 	public Group getGroup() {
@@ -145,8 +122,8 @@ public class RepositoryEntryToGroupRelation implements Persistable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof RepositoryEntryToGroupRelation) {
-			RepositoryEntryToGroupRelation rel = (RepositoryEntryToGroupRelation)obj;
+		if(obj instanceof RepositoryTemplateToGroupRelation) {
+			RepositoryTemplateToGroupRelation rel = (RepositoryTemplateToGroupRelation)obj;
 			return getKey() != null && getKey().equals(rel.getKey());
 		}
 		return false;

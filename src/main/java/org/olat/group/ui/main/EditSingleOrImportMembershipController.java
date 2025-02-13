@@ -227,8 +227,9 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		
 		member = null;
 		if(membersContext.getRepoEntry() != null &&
-				(membersContext.getRepoEntry().getRuntimeType() == RepositoryEntryRuntimeType.embedded ||
-						membersContext.getRepoEntry().getRuntimeType() == RepositoryEntryRuntimeType.curricular)) {
+				(membersContext.getRepoEntry().getRuntimeType() == RepositoryEntryRuntimeType.embedded
+						|| membersContext.getRepoEntry().getRuntimeType() == RepositoryEntryRuntimeType.template
+						|| membersContext.getRepoEntry().getRuntimeType() == RepositoryEntryRuntimeType.curricular)) {
 			allowedRoles = List.of(GroupRoles.owner.name());
 		} else {
 			allowedRoles = null;
