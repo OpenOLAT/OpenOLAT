@@ -88,7 +88,6 @@ public class CalendarEntryLinksController extends FormBasicController {
 	private final Collection<KalendarRenderWrapper> availableCalendars;
 	private final String caller;
 	private final Boolean isReadOnly;
-	private final Boolean isNew;
 	private final List<CalendarEntryLinkRow> calendarEntryLinkRows;
 	private final List<CalendarEntryLinkRow> calendarRssLinkRows;
 	private final List<CalendarEntryLinkRow> calendarCourseElLinkRows;
@@ -120,7 +119,6 @@ public class CalendarEntryLinksController extends FormBasicController {
 		this.availableCalendars = availableCalendars;
 		this.caller = caller;
 		this.eventForm = eventForm;
-		this.isNew = isNew;
 		if (chosenCalendarWrapper == null) {
 			updateChosenCalendarWrapper();
 		} else {
@@ -169,13 +167,10 @@ public class CalendarEntryLinksController extends FormBasicController {
 
 		createLinkToCourseEl = uifactory.addFormLink("cal.entry.link.title.course.el", formLayout, Link.LINK);
 		addDropdown.addElement(createLinkToCourseEl);
-		createLinkToCourseEl.setVisible(!isNew);
 		createLinkToLibrary = uifactory.addFormLink("cal.entry.link.title.library", formLayout, Link.LINK);
 		addDropdown.addElement(createLinkToLibrary);
-		createLinkToLibrary.setVisible(!isNew);
 		createExternalLink = uifactory.addFormLink("cal.entry.link.title.external", formLayout, Link.LINK);
 		addDropdown.addElement(createExternalLink);
-		createExternalLink.setVisible(!isNew);
 	}
 
 	private void updateVisibility() {
@@ -207,7 +202,6 @@ public class CalendarEntryLinksController extends FormBasicController {
 							&& (caller.equalsIgnoreCase(CalendarController.CALLER_COLLAB)
 							|| caller.equalsIgnoreCase(CalendarController.CALLER_COURSE))
 							&& chosenCalendarWrapper.getLinkProviderCreator() != null)
-						&& !isNew
 		);
 		createLinkToGroup.setVisible(getChosenCalendarType().equals(GROUP) && isNewGroupItemAllowed);
 
@@ -507,5 +501,9 @@ public class CalendarEntryLinksController extends FormBasicController {
 	 */
 	public List<CalendarEntryLinkRow> getCalendarEntryLinkRows() {
 		return calendarEntryLinkRows;
+	}
+
+	public boolean isAddDropdownVisible() {
+		return addDropdown.isVisible();
 	}
 }
