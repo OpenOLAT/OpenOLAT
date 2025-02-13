@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.bigbluebutton.ui;
@@ -65,6 +65,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -91,7 +92,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 4 mars 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class BigBlueButtonMeetingController extends FormBasicController implements GenericEventListener {
@@ -164,7 +165,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		initJoinForm(formLayout);
+		initJoinForm(formLayout, ureq);
 		initRecordings(formLayout);
 	}
 	
@@ -180,10 +181,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		}
 	}
 	
-	private void initJoinForm(FormItemContainer formLayout) {
+	private void initJoinForm(FormItemContainer formLayout, UserRequest ureq) {
 		boolean ended = isEnded();
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer  layoutCont) {
 			layoutCont.contextPut("title", meeting.getName());
 			String descr = meeting.getDescription();
 			if(StringHelper.containsNonWhitespace(descr)) {
@@ -239,6 +239,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		acknowledgeKeyValue.add(SelectionValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
 		acknowledgeRecordingEl = uifactory.addCheckboxesHorizontal("meeting.acknowledge.recording", null, formLayout,
 				acknowledgeKeyValue.keys(), acknowledgeKeyValue.values());
+		Preferences guiPreferences = ureq.getUserSession().getGuiPreferences();
+		boolean isConform = bigBlueButtonManager.getUserConformanceDecisionById(meeting.getMeetingId(), guiPreferences);
+		acknowledgeRecordingEl.select("agree", isConform);
 	}
 	
 	private void loadSlides(FormLayoutContainer layoutCont) {
@@ -255,8 +258,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				boolean slidesEditable = isSlidesEditable();
 				List<VFSItem> items = slidesContainer.getItems(new VFSLeafButSystemFilter());
 				for(VFSItem item:items) {
-					if(item instanceof VFSLeaf) {
-						VFSLeaf slide = (VFSLeaf)item;
+					if(item instanceof VFSLeaf slide) {
 						SlideWrapper wrapper = new SlideWrapper(slide, false);
 						if(slidesEditable) {
 							FormLink deleteButton = uifactory
@@ -659,6 +661,11 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			BigBlueButtonAttendeeRoles role = guest ? BigBlueButtonAttendeeRoles.guest : BigBlueButtonAttendeeRoles.viewer;
 			meetingUrl = bigBlueButtonManager.join(meeting, getIdentity(), null, avatarUrl, role, Boolean.TRUE, errors);
 		}
+		if (!guest) {
+			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+			bigBlueButtonManager.setUserConformanceDecisionById(meeting.getMeetingId(), guiPrefs, acknowledgeRecordingEl.isKeySelected("agree"));
+		}
+
 		redirectTo(meetingUrl, errors);
 	}
 	

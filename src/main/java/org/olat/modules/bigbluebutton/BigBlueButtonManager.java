@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.bigbluebutton;
@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.manager.BigBlueButtonUriBuilder;
@@ -41,7 +42,7 @@ import org.w3c.dom.Document;
 /**
  * 
  * Initial date: 18 mars 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public interface BigBlueButtonManager {
@@ -238,7 +239,22 @@ public interface BigBlueButtonManager {
 	
 	public boolean checkConnection(String url, String sharedSecret, BigBlueButtonErrors errors);
 
-	
-	
+	/**
+	 * Retrieves the user's conformance decision for a specific meeting
+	 *
+	 * @param meetingId The unique identifier of the meeting.
+	 * @param userGuiPreferences The user's GUI preferences, which contains the conformanceDecision
+	 * @return true if the user has confirmed conformance for the meeting, false otherwise.
+	 */
+	public boolean getUserConformanceDecisionById(String meetingId, Preferences userGuiPreferences);
+
+	/**
+	 * Sets the user's conformance decision for a specific meeting.
+	 *
+	 * @param meetingId The unique identifier of the meeting.
+	 * @param userGuiPreferences The user's GUI preferences, which contains the conformanceDecision
+	 * @param isConform true if the user conforms to the meeting requirements, false otherwise.
+	 */
+	public void setUserConformanceDecisionById(String meetingId, Preferences userGuiPreferences, boolean isConform);
 
 }

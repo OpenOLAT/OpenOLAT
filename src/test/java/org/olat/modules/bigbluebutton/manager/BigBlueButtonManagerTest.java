@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.bigbluebutton.manager;
@@ -29,6 +29,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.prefs.PreferencesFactory;
+import org.olat.core.util.prefs.gui.GuiPreferenceService;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
@@ -39,6 +42,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsHandler;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingImpl;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingController;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,13 +50,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 6 janv. 2021<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class BigBlueButtonManagerTest extends OlatTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private GuiPreferenceService guiPreferenceService;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
@@ -177,6 +183,52 @@ public class BigBlueButtonManagerTest extends OlatTestCase {
 		Assert.assertTrue(deletedReferences.isEmpty());
 
 		bigBlueButtonModule.setRecordingHandlerId(currentHandlerId);
+	}
+
+	@Test
+	public void testSetUserConformanceDecisionById() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-user-" + UUID.randomUUID());
+		String meetingId = "test-meeting-123";
+		boolean isConform = true;
+		Preferences guiPrefs = PreferencesFactory.getInstance().getPreferencesFor(id, false);
+
+		bigBlueButtonManager.setUserConformanceDecisionById(meetingId, guiPrefs, isConform);
+
+		boolean storedValue = (boolean) guiPrefs.get(BigBlueButtonMeetingController.class, meetingId);
+		Assert.assertEquals(isConform, storedValue);
+	}
+
+	@Test
+	public void testGetUserConformanceDecisionById() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-user-" + UUID.randomUUID());
+		String meetingId = "test-meeting-123";
+		boolean expectedDecision = true;
+		Preferences guiPrefs = PreferencesFactory.getInstance().getPreferencesFor(id, false);
+		guiPrefs.putAndSave(BigBlueButtonMeetingController.class, meetingId, expectedDecision);
+
+		boolean actualDecision = bigBlueButtonManager.getUserConformanceDecisionById(meetingId, guiPrefs);
+
+		Assert.assertEquals(expectedDecision, actualDecision);
+	}
+
+	@Test
+	public void testDeleteMeetingRemovesGuiPrefs() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bbb-user-" + UUID.randomUUID());
+		Preferences guiPrefs = PreferencesFactory.getInstance().getPreferencesFor(id, false);
+
+		BusinessGroup group = businessGroupDao.createAndPersist(id, "BBB Recording" + UUID.randomUUID(), "Delete recording or not", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		BigBlueButtonMeeting meeting = bigBlueButtonMeetingDao.createAndPersistMeeting("Recording saved - 1", null, null, group, id);
+		dbInstance.commit();
+		String meetingId = meeting.getMeetingId();
+
+		guiPrefs.putAndSave(BigBlueButtonMeetingController.class, meetingId, true);
+
+		bigBlueButtonManager.deleteMeeting(meeting, new BigBlueButtonErrors());
+
+		guiPreferenceService.deleteGuiPrefsByUniqueProperties(null, BigBlueButtonMeetingController.class.getName(), meetingId);
+		Object storedValue = guiPrefs.get(BigBlueButtonMeetingController.class, meetingId);
+		Assert.assertNull(storedValue);
 	}
 
 }
