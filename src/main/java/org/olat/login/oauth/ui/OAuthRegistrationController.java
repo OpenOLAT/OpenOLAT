@@ -226,6 +226,8 @@ public class OAuthRegistrationController extends FormBasicController {
 			if (mailValidationCtrl != null) {
 				deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
 			}
+			// give user the possibility to change the previous mail and reset previous validation
+			mailValidationCtrl = null;
 			mailEl.setEnabled(true);
 		} else {
 			flc.remove(submitBtn);
