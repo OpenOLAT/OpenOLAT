@@ -212,7 +212,8 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	private void doSelectBillingAddress(UserRequest ureq) {
 		if (guardModalController(addressSelectionCtrl)) return;
 		
-		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), bookedIdentity, billingAddress);
+		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, true, true, true,
+				bookedIdentity, billingAddress);
 		listenTo(addressSelectionCtrl);
 		
 		String title = translate("billing.address.select");

@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -60,6 +61,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessTransaction;
+import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
@@ -88,8 +90,13 @@ public class OrderDetailController extends FormBasicController {
 	private static final String CMD_SELECT = "sel";
 	
 	private FormLink setPaidButton;
+	private DropdownItem moreDropdown;
+	private FormLink changeBillingAddressLink;
 	private FormLink selectResourceLink;
+	private BillingAddressItem billingAddressItem;
+	
 	private CloseableModalController cmc;
+	private BillingAddressSelectionController addressSelectionCtrl;
 	private TransactionDetailsController detailsCtlr;
 	
 	private int counter = 0;
@@ -174,6 +181,13 @@ public class OrderDetailController extends FormBasicController {
 			setPaidButton = uifactory.addFormLink("set.paid", formLayout, Link.BUTTON);
 			setPaidButton.setIconLeftCSS("o_icon o_icon-fw o_icon_pay");
 		}
+		
+		if (!readOnly && order.getBillingAddress() != null) {
+			moreDropdown = uifactory.addDropdownMenuMore("more", formLayout, getTranslator());
+			
+			changeBillingAddressLink = uifactory.addFormLink("billing.address.change", formLayout, Link.LINK);
+			moreDropdown.addElement(changeBillingAddressLink);
+		}
 	}
 	
 	private void initMetadataForm(FormItemContainer formLayout) {
@@ -232,7 +246,7 @@ public class OrderDetailController extends FormBasicController {
 		}
 		
 		if (order.getBillingAddress() != null) {
-			BillingAddressItem billingAddressItem = new BillingAddressItem("billing-address", getLocale());
+			billingAddressItem = new BillingAddressItem("billing-address", getLocale());
 			billingAddressItem.setBillingAddress(order.getBillingAddress());
 			billingAddressItem.setLabel("billing.address", null);
 			formLayout.add("billing-address", billingAddressItem);
@@ -258,8 +272,8 @@ public class OrderDetailController extends FormBasicController {
 
 	private void initDeliveryForm(FormItemContainer formLayout, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			PortraitUser teacherPortraitUser = userPortraitService.createPortraitUser(delivery);
-			UserInfoProfileController profile = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, teacherPortraitUser);
+			PortraitUser portraitUser = userPortraitService.createPortraitUser(delivery);
+			UserInfoProfileController profile = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, portraitUser);
 			listenTo(profile);
 			layoutCont.put("delivery-profile", profile.getInitialComponent());
 		}
@@ -337,17 +351,25 @@ public class OrderDetailController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == detailsCtlr) {
+		if (addressSelectionCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				updateBillingAddress(addressSelectionCtrl.getBillingAddress());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == detailsCtlr) {
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
 	}
-	
+
 	private void cleanUp() {
+		removeAsListenerAndDispose(addressSelectionCtrl);
 		removeAsListenerAndDispose(detailsCtlr);
 		removeAsListenerAndDispose(cmc);
+		addressSelectionCtrl = null;
 		detailsCtlr = null;
 		cmc = null;
 	}
@@ -358,6 +380,8 @@ public class OrderDetailController extends FormBasicController {
 			doSelectResource(ureq);
 		} else if(source == setPaidButton) {
 			doSetPaid(ureq);
+		} else if(source == changeBillingAddressLink) {
+			doChangeBillingAddress(ureq);
 		} else if(source instanceof FormLink link && CMD_SELECT.equals(link.getCmd())
 				&& link.getUserObject() instanceof OrderItemRow row) {
 			doOpenTransactionDetails(ureq, row);
@@ -377,6 +401,24 @@ public class OrderDetailController extends FormBasicController {
 		}
 		showInfo("info.order.set.as.paid");
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doChangeBillingAddress(UserRequest ureq) {
+		if (guardModalController(addressSelectionCtrl)) return;
+		
+		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, false, false, false, delivery, null);
+		listenTo(addressSelectionCtrl);
+		
+		String title = translate("billing.address.change");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				addressSelectionCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void updateBillingAddress(BillingAddress billingAddress) {
+		order = acService.addBillingAddress(order, billingAddress);
+		billingAddressItem.setBillingAddress(billingAddress);
 	}
 	
 	private void doSelectResource(UserRequest ureq) {

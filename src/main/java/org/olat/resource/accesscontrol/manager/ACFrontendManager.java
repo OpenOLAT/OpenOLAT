@@ -1154,7 +1154,17 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	
 	@Override
 	public Order addBillingAddress(Order order, BillingAddress billingAddress) {
-		return orderManager.save(order, billingAddress);
+		BillingAddress previousAddress = order.getBillingAddress();
+		
+		Order updatedOrder = orderManager.save(order, billingAddress);
+		
+		// Always delete temporary addresses if not used anymore
+		if (previousAddress != null && previousAddress.getOrganisation() == null && previousAddress.getIdentity() == null) {
+			dbInstance.commit();
+			billingAddressDao.delete(previousAddress);
+		}
+		
+		return updatedOrder;
 	}
 	
 	@Override

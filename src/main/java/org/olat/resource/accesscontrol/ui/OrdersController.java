@@ -212,7 +212,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		removeAsListenerAndDispose(detailController);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
-		this.removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(cmc);
 		detailController = null;
 		calloutCtrl = null;
 		toolsCtrl = null;

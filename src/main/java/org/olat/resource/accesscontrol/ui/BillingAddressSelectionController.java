@@ -63,6 +63,10 @@ public class BillingAddressSelectionController extends FormBasicController {
 	private BillingAddressForm organisationAddressForm;
 	private BillingAddressForm userAddressForm;
 
+	private final boolean organisationAddressesEnabled;
+	private final boolean organistionAddressCreate;
+	private final boolean userAddressesEnabled;
+	private final boolean userAddressCreate;
 	private final Identity bookedIdentity;
 	private final BillingAddress preselectedAddress;
 
@@ -73,9 +77,14 @@ public class BillingAddressSelectionController extends FormBasicController {
 	@Autowired
 	private OrganisationService organisationService;
 
-	public BillingAddressSelectionController(UserRequest ureq, WindowControl wControl, Identity bookedIdentity,
-			BillingAddress preselectedAddress) {
+	public BillingAddressSelectionController(UserRequest ureq, WindowControl wControl,
+			boolean organisationAddressesEnabled, boolean organistionAddressCreate, boolean userAddressesEnabled,
+			boolean userAddressCreate, Identity bookedIdentity, BillingAddress preselectedAddress) {
 		super(ureq, wControl, "billing_address_selection");
+		this.organisationAddressesEnabled = organisationAddressesEnabled;
+		this.organistionAddressCreate = organistionAddressCreate;
+		this.userAddressesEnabled = userAddressesEnabled;
+		this.userAddressCreate = userAddressCreate;
 		this.bookedIdentity = bookedIdentity;
 		this.preselectedAddress = preselectedAddress;
 		
@@ -84,7 +93,7 @@ public class BillingAddressSelectionController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (organisationModule.isEnabled()) {
+		if (organisationAddressesEnabled && organisationModule.isEnabled()) {
 			List<Organisation> organisations = organisationService.getOrganisations(bookedIdentity,
 					OrganisationRoles.user);
 			if (organisations != null && !organisations.isEmpty()) {
@@ -97,12 +106,14 @@ public class BillingAddressSelectionController extends FormBasicController {
 				organsationAddresses.forEach(address -> organisationBillingAddressSV
 						.add(createSelectionValue(address)));
 				organisationBillingAddressSV.sort(SelectionValues.VALUE_ASC);
-				organisationBillingAddressSV.add( SelectionValues.entry(
-						KEY_NEW_ADDRESS_ORGANISATION,
-						translate("billing.address.create.organisation"),
-						translate("billing.address.create.organisation.desc"),
-						"o_icon o_icon_edit",
-						null, true));
+				if (organistionAddressCreate) {
+					organisationBillingAddressSV.add( SelectionValues.entry(
+							KEY_NEW_ADDRESS_ORGANISATION,
+							translate("billing.address.create.organisation"),
+							translate("billing.address.create.organisation.desc"),
+							"o_icon o_icon_edit",
+							null, true));
+				}
 				
 				organisationAddressesEl = uifactory.addCardSingleSelectHorizontal("organisation.addresses", null,
 						formLayout, organisationBillingAddressSV);
@@ -121,33 +132,38 @@ public class BillingAddressSelectionController extends FormBasicController {
 			}
 		}
 
-		BillingAddressSearchParams searchParams = new BillingAddressSearchParams();
-		searchParams.setEnabled(Boolean.TRUE);
-		searchParams.setIdentityKeys(List.of(bookedIdentity));
-
-		SelectionValues userBillingAddressSV = new SelectionValues();
-		acService.getBillingAddresses(searchParams).forEach(address -> userBillingAddressSV
-				.add(createSelectionValue(address)));
-		userBillingAddressSV.sort(SelectionValues.VALUE_ASC);
-		userBillingAddressSV.add( SelectionValues.entry(
-				KEY_NEW_ADDRESS_USER,
-				translate("billing.address.create.user"),
-				translate("billing.address.create.user.desc"),
-				"o_icon o_icon_add",
-				null, true));
-
-		userAddressesEl = uifactory.addCardSingleSelectHorizontal("user.addresses", null, formLayout,
-				userBillingAddressSV);
-		userAddressesEl.setAllowNoSelection(true);
-		userAddressesEl.addActionListener(FormEvent.ONCHANGE);
-		
-		if (preselectedAddress != null && preselectedAddress.getIdentity() != null && preselectedAddress.getKey() == null) {
-			userAddressForm = new BillingAddressForm(ureq, getWindowControl(), mainForm, preselectedAddress);
-		} else {
-			userAddressForm = new BillingAddressForm(ureq, getWindowControl(), mainForm, null, bookedIdentity);
+		if (userAddressesEnabled) {
+			BillingAddressSearchParams searchParams = new BillingAddressSearchParams();
+			searchParams.setEnabled(Boolean.TRUE);
+			searchParams.setIdentityKeys(List.of(bookedIdentity));
+			
+			SelectionValues userBillingAddressSV = new SelectionValues();
+			acService.getBillingAddresses(searchParams).forEach(address -> userBillingAddressSV
+					.add(createSelectionValue(address)));
+			userBillingAddressSV.sort(SelectionValues.VALUE_ASC);
+			if (userAddressCreate) {
+				userBillingAddressSV.add( SelectionValues.entry(
+						KEY_NEW_ADDRESS_USER,
+						translate("billing.address.create.user"),
+						translate("billing.address.create.user.desc"),
+						"o_icon o_icon_add",
+						null, true));
+			}
+			
+			userAddressesEl = uifactory.addCardSingleSelectHorizontal("user.addresses", null, formLayout,
+					userBillingAddressSV);
+			userAddressesEl.setAllowNoSelection(true);
+			userAddressesEl.addActionListener(FormEvent.ONCHANGE);
+			
+			if (preselectedAddress != null && preselectedAddress.getIdentity() != null && preselectedAddress.getKey() == null) {
+				userAddressForm = new BillingAddressForm(ureq, getWindowControl(), mainForm, preselectedAddress);
+			} else {
+				userAddressForm = new BillingAddressForm(ureq, getWindowControl(), mainForm, null, bookedIdentity);
+			}
+			listenTo(userAddressForm);
+			formLayout.add("user.address", userAddressForm.getInitialFormItem());
 		}
-		listenTo(userAddressForm);
-		formLayout.add("user.address", userAddressForm.getInitialFormItem());
+		
 		
 		// Init selection 
 		// 1. Address is preselected
@@ -156,30 +172,30 @@ public class BillingAddressSelectionController extends FormBasicController {
 				if (organisationAddressesEl != null && preselectedAddress.getOrganisation() != null && Arrays.asList(organisationAddressesEl.getKeys()).contains(preselectedAddress.getKey().toString())) {
 					// 1.1 Organisation address is preselected
 					organisationAddressesEl.select(preselectedAddress.getKey().toString(), true);
-				} else if (preselectedAddress.getIdentity() != null && Arrays.asList(userAddressesEl.getKeys()).contains(preselectedAddress.getKey().toString())) {
+				} else if (userAddressesEl != null && preselectedAddress.getIdentity() != null && Arrays.asList(userAddressesEl.getKeys()).contains(preselectedAddress.getKey().toString())) {
 					// 1.2 User address is preselected
 					userAddressesEl.select(preselectedAddress.getKey().toString(), true);
 				}
 			} else {
-				if (organisationAddressesEl != null && preselectedAddress.getIdentity() == null) {
+				if (organisationAddressesEl != null && preselectedAddress.getIdentity() == null && Arrays.asList(organisationAddressesEl.getKeys()).contains(KEY_NEW_ADDRESS_ORGANISATION)) {
 					// 2.1 Select new organisation address
 					organisationAddressesEl.select(KEY_NEW_ADDRESS_ORGANISATION, true);
-				} else if (preselectedAddress.getIdentity() != null) {
+				} else if (userAddressesEl != null && preselectedAddress.getIdentity() != null && Arrays.asList(userAddressesEl.getKeys()).contains(KEY_NEW_ADDRESS_USER)) {
 					userAddressesEl.select(KEY_NEW_ADDRESS_USER, true);
 				}
 			}
 		}
-		if (!organisationAddressesEl.isOneSelected() && !userAddressesEl.isOneSelected()) {
+		if ((organisationAddressesEl != null && !organisationAddressesEl.isOneSelected()) && (userAddressesEl != null &&!userAddressesEl.isOneSelected())) {
 			if (organisationAddressesEl != null && organisationAddressesEl.getKeys().length > 1) {
 				// 3.1 Select first organisation address if any available
 				organisationAddressesEl.select(organisationAddressesEl.getKey(0), true);
-			} else if (userAddressesEl.getKeys().length > 1) {
+			} else if (userAddressesEl != null && userAddressesEl.getKeys().length > 1) {
 				// 3.2 Select first user address if any available
 				userAddressesEl.select(userAddressesEl.getKey(0), true);
-			} else if (organisationAddressesEl != null) {
+			} else if (organisationAddressesEl != null && Arrays.asList(organisationAddressesEl.getKeys()).contains(KEY_NEW_ADDRESS_ORGANISATION)) {
 				// 4.1 Create new organisation address if module enabled
 				organisationAddressesEl.select(KEY_NEW_ADDRESS_ORGANISATION, true);
-			} else {
+			} else if (userAddressesEl != null && Arrays.asList(userAddressesEl.getKeys()).contains(KEY_NEW_ADDRESS_USER)) {
 				// 4.2 Create new user address if module enabled
 				userAddressesEl.select(KEY_NEW_ADDRESS_USER, true);
 			}
@@ -189,9 +205,11 @@ public class BillingAddressSelectionController extends FormBasicController {
 					&& KEY_NEW_ADDRESS_ORGANISATION.equals(organisationAddressesEl.getSelectedKey()));
 			
 		}
-		userAddressForm.getInitialFormItem().setVisible(userAddressesEl.isOneSelected()
-				&& KEY_NEW_ADDRESS_USER.equals(userAddressesEl.getSelectedKey()));
-
+		if (userAddressesEl != null) {
+			userAddressForm.getInitialFormItem().setVisible(userAddressesEl.isOneSelected()
+					&& KEY_NEW_ADDRESS_USER.equals(userAddressesEl.getSelectedKey()));
+		}
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setElementCssClass("o_block_top");
 		formLayout.add("buttons", buttonLayout);
@@ -211,13 +229,13 @@ public class BillingAddressSelectionController extends FormBasicController {
 	private void updateUI(boolean organisationAddressSelected) {
 		if (organisationAddressSelected) {
 			if (organisationAddressesEl.isOneSelected()) {
-				if (userAddressesEl.isOneSelected()) {
+				if (userAddressesEl != null && userAddressesEl.isOneSelected()) {
 					userAddressesEl.select(userAddressesEl.getSelectedKey(), false);
 				}
 			}
 		} else {
-			if (userAddressesEl.isOneSelected()) {
-				if (organisationAddressesEl.isOneSelected()) {
+			if (userAddressesEl != null && userAddressesEl.isOneSelected()) {
+				if (organisationAddressesEl != null && organisationAddressesEl.isOneSelected()) {
 					organisationAddressesEl.select(organisationAddressesEl.getSelectedKey(), false);
 				}
 			}
@@ -227,8 +245,10 @@ public class BillingAddressSelectionController extends FormBasicController {
 			organisationAddressForm.getInitialFormItem().setVisible(organisationAddressesEl.isOneSelected()
 					&& organisationAddressesEl.isKeySelected(KEY_NEW_ADDRESS_ORGANISATION));
 		}
-		userAddressForm.getInitialFormItem().setVisible(userAddressesEl.isOneSelected()
-				&& userAddressesEl.isKeySelected(KEY_NEW_ADDRESS_USER));
+		if (userAddressForm != null) {
+			userAddressForm.getInitialFormItem().setVisible(userAddressesEl.isOneSelected()
+					&& userAddressesEl.isKeySelected(KEY_NEW_ADDRESS_USER));
+		}
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 <div class="o_ac_billing_address_selection o_form">
 	#if($r.available("organisation.addresses"))
-		<fieldset>
+		<fieldset class="o_block_large_bottom">
 			<legend>$r.translate("billing.addresses.organisation")</legend>
 			$r.render("organisation.addresses")
 			#if($r.available("organsiation.address") && $r.visible("organsiation.address"))
@@ -10,14 +10,16 @@
 			#end
 		</fieldset>
 	#end
-	<fieldset>
-	<legend class="o_block_top">$r.translate("billing.addresses.user")</legend>
-		$r.render("user.addresses")
-		#if($r.available("user.address") && $r.visible("user.address"))
-			<div class="o_block">
-				$r.render("user.address")
-			</div>
-		#end
-	</fieldset>
+	#if($r.available("user.addresses"))
+		<fieldset class="o_block_large_bottom">
+		<legend>$r.translate("billing.addresses.user")</legend>
+			$r.render("user.addresses")
+			#if($r.available("user.address") && $r.visible("user.address"))
+				<div class="o_block">
+					$r.render("user.address")
+				</div>
+			#end
+		</fieldset>
+	#end
 	$r.render("buttons")
 <div>
