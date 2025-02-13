@@ -126,7 +126,7 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	 * @return The email address or username entered by the user
 	 */
 	public String getEmailOrUsernameEl() {
-		return StringHelper.xssScan(emailOrUsernameEl.getValue()).toLowerCase().trim();
+		return emailOrUsernameEl.getValue().toLowerCase().trim();
 	}
 
 	public void setUserNotIdentifiedError() {
