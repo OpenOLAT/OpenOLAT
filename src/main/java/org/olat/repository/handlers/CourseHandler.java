@@ -830,10 +830,17 @@ public class CourseHandler implements RepositoryHandler {
 		ReferenceManager refM = CoreSpringFactory.getImpl(ReferenceManager.class);
 		String referencesSummary = refM.getReferencesToSummary(entry.getOlatResource(), locale);
 		if (referencesSummary != null) {
-			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
+			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
 			errors.setError(translator.translate("details.delete.error.references", referencesSummary, entry.getDisplayname()));
 			return false;
 		}
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		if (repositoryService.isTemplateInUse(entry)) {
+			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
+			errors.setError(translator.translate("details.delete.error.template", entry.getDisplayname()));
+			return false;
+		}
+		
 		/*
 		 * make an archive of the course nodes with valuable data
 		 */

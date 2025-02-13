@@ -758,6 +758,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		groupMembershipHistoryDao.deleteMembershipHistory(defaultGroup);
 		List<BusinessGroup> internalGroups = curriculumService.deleteInternalGroupMembershipsAndInvitations(reloadedEntry);
 		reToGroupDao.removeRelations(reloadedEntry);
+		templateToGroupDao.deleteRelations(reloadedEntry);
 		dbInstance.commit();
 		
 		// Delete the invitations which are hold by the default group
@@ -1064,6 +1065,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		Group group = organisation.getGroup();
 		reToGroupDao.removeRelation(group, entry);
 		repositoryEntryToOrganisationDao.delete(entry, organisation);
+	}
+
+	@Override
+	public boolean isTemplateInUse(RepositoryEntryRef template) {
+		return templateToGroupDao.hasRelations(template);
 	}
 
 	@Override

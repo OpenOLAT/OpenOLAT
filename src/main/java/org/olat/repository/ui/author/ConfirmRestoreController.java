@@ -70,8 +70,7 @@ public class ConfirmRestoreController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layout = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layout) {
 			layout.contextPut("numOfMembers", Integer.toString(numOfMembers));
 
 			FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
@@ -86,8 +85,8 @@ public class ConfirmRestoreController extends FormBasicController {
 			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			layoutCont.add(buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			restoreButton = uifactory.addFormLink("tools.restore", buttonsCont, Link.BUTTON);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 	}
 

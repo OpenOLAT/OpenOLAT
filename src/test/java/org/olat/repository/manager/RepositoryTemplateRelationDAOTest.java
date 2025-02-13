@@ -101,4 +101,55 @@ public class RepositoryTemplateRelationDAOTest extends OlatTestCase {
 		boolean hasNoRelation = repositoryTemplateRelationDao.hasRelations(re);
 		Assert.assertFalse(hasNoRelation);
 	}
+	
+	@Test
+	public void removeRelation() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-template-3", "Curriculum for template", "Curriculum", false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Template-3", "3.0 Template",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryTemplateToGroupRelation rel = repositoryTemplateRelationDao.createRelation(element.getGroup(), re);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(rel);
+		
+		boolean hasRelation = repositoryTemplateRelationDao.hasRelations(re);
+		Assert.assertTrue(hasRelation);
+		
+		// Remove relation
+		int removed = repositoryTemplateRelationDao.removeRelation(element.getGroup(), re);
+		Assert.assertEquals(1, removed);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasNoRelation = repositoryTemplateRelationDao.hasRelations(re);
+		Assert.assertFalse(hasNoRelation);
+	}
+	
+	@Test
+	public void deleteRelations() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-template-3", "Curriculum for template", "Curriculum", false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Template-3", "3.0 Template",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryTemplateToGroupRelation rel = repositoryTemplateRelationDao.createRelation(element.getGroup(), re);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(rel);
+		
+		boolean hasRelation = repositoryTemplateRelationDao.hasRelations(re);
+		Assert.assertTrue(hasRelation);
+		
+		// Delete all relations of the entry
+		int deleted = repositoryTemplateRelationDao.deleteRelations(re);
+		Assert.assertEquals(1, deleted);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasNoRelation = repositoryTemplateRelationDao.hasRelations(re);
+		Assert.assertFalse(hasNoRelation);
+	}
+	
+	
+
 }

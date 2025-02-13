@@ -94,4 +94,11 @@ public class RepositoryTemplateRelationDAO {
 		}
 		return rels.size();
 	}
+	
+	public int deleteRelations(RepositoryEntryRef re) {
+		String query = "delete from repotemplatetogroup as rel where rel.entry.key=:templateKey";
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("templateKey", re.getKey())
+				.executeUpdate();
+	}
 }

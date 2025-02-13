@@ -114,7 +114,7 @@ class QualityContextDAO {
 		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) {
 			return Collections.emptyList();
 		}
-		//TODO jee9 remove 2 fetch
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select context");
 		sb.append("  from qualitycontext as context");

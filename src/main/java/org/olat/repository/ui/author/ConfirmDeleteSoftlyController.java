@@ -95,8 +95,7 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layout = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layout) {
 			layout.contextPut("notAllDeleteable", Boolean.valueOf(notAllDeleteable));
 			layout.contextPut("numOfMembers", Integer.toString(numOfMembers));
 
@@ -123,8 +122,9 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			layoutCont.add(buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			deleteButton = uifactory.addFormLink("details.delete", buttonsCont, Link.BUTTON);
+			deleteButton.setElementCssClass("btn btn-danger");
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 	}
 

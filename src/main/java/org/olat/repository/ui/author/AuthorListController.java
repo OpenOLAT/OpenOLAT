@@ -1936,8 +1936,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		List<Long> deleteableRowKeys = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.delete);
-			if(!managed && repositoryService.hasRoleExpanded(getIdentity(), row, OrganisationRoles.learnresourcemanager.name(),
-				OrganisationRoles.administrator.name())) {
+			if(!managed
+					&& repositoryService.hasRoleExpanded(getIdentity(), row, OrganisationRoles.learnresourcemanager.name(), OrganisationRoles.administrator.name())
+					&& !(row.getRuntimeType() == RepositoryEntryRuntimeType.template && repositoryService.isTemplateInUse(row))) {
 				deleteableRowKeys.add(row.getKey());
 			}
 		}

@@ -336,6 +336,8 @@ public interface RepositoryService {
 	public void addRole(Identity identity, RepositoryEntry re, String role);
 
 	public void removeRole(Identity identity, RepositoryEntry re, String role);
+	
+	public boolean isTemplateInUse(RepositoryEntryRef template);
 
 	public List<RepositoryEntry> searchByIdAndRefs(String id);
 
@@ -414,7 +416,6 @@ public interface RepositoryService {
 	 * @param entry The repository entry
 	 * @param level
 	 */
-	//TODO jee9 remove?
 	public void addTaxonomyLevel(RepositoryEntry entry, TaxonomyLevel level);
 	
 	/**
@@ -422,7 +423,6 @@ public interface RepositoryService {
 	 * @param entry The repository entry
 	 * @param level
 	 */
-	//TODO jee9 remove?
 	public void removeTaxonomyLevel(RepositoryEntry entry, TaxonomyLevel level);
 	
 	/**
