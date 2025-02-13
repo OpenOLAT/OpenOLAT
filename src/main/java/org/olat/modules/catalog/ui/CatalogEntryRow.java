@@ -72,6 +72,7 @@ public class CatalogEntryRow {
 	private final Set<TaxonomyLevel> taxonomyLevels;
 	private List<TaxonomyLevelNamePath> taxonomyLevelNamePaths;
 	private final boolean member;
+	private final boolean reservationAvailable;
 	private final boolean openAccess;
 	private final boolean guestAccess;
 	private Set<String> accessMethodTypes;
@@ -108,6 +109,7 @@ public class CatalogEntryRow {
 		olatResource = catalogEntry.getOlatResource();
 		taxonomyLevels = catalogEntry.getTaxonomyLevels();
 		member = catalogEntry.isMember();
+		reservationAvailable = catalogEntry.isReservationAvailable();
 		openAccess = catalogEntry.isOpenAccess();
 		guestAccess = catalogEntry.isGuestAccess();
 		maxParticipants = catalogEntry.getMaxParticipants();
@@ -212,6 +214,10 @@ public class CatalogEntryRow {
 		return member;
 	}
 	
+	public boolean isReservationAvailable() {
+		return reservationAvailable;
+	}
+
 	public boolean isOpenAccess() {
 		return openAccess;
 	}

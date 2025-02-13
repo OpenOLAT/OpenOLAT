@@ -84,6 +84,9 @@ public class ACReservationDAO {
 		} else {
 			sb.append(" left join fetch reservation.resource rsrc");
 		}
+		if(searchParams.getIdentities() != null && !searchParams.getIdentities().isEmpty()) {
+			sb.and().append("reservation.identity.key in :identityKeys");
+		}
 		
 		if(searchParams.getConfirmationByUser() != null) {
 			if(searchParams.getConfirmationByUser().booleanValue()) {
@@ -104,7 +107,10 @@ public class ACReservationDAO {
 			List<Long> resourceKeys = PersistenceHelper.toKeys(searchParams.getResources());
 			query.setParameter("resourceKey", resourceKeys);
 		}
-				
+		if(searchParams.getIdentities() != null && !searchParams.getIdentities().isEmpty()) {
+			query.setParameter("identityKeys", searchParams.getIdentities().stream().map(IdentityRef::getKey).toList());
+		}
+		
 		return query.getResultList();
 	}
 	

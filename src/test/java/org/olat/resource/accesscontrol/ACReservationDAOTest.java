@@ -142,6 +142,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 		
 		// Positive check
 		SearchReservationParameters searchParams = new SearchReservationParameters(List.of(resource));
+		searchParams.setIdentities(List.of(id));
 		searchParams.setConfirmationByUser(Boolean.TRUE);
 		searchParams.setWithConfirmationDate(true);
 		

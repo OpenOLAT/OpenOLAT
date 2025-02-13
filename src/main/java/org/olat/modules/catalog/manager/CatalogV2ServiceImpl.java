@@ -55,8 +55,8 @@ import org.olat.modules.catalog.CatalogLauncherSearchParams;
 import org.olat.modules.catalog.CatalogLauncherToOrganisation;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.model.CatalogEntryImpl;
-import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -69,7 +69,10 @@ import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -101,6 +104,8 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	private AccessControlModule acModule;
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private ACReservationDAO reservationDao;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
@@ -197,7 +202,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 			Map<Long, List<TaxonomyLevel>> ceKeyTaxonomyLevels = loadCurriculumElementToTaxonomyLevels(curriculumElements);
 			Map<Long, Long> ceKeyToNumParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(curriculumElements, true);
 			
-			Set<Long> myCurriculumKeys = loadMyCurriculumKeys(curriculumElements, searchParams.getMember());
+			Set<Long> ceMembershipKeys = loadCurriculumElementMembershipKeys(curriculumElements, searchParams.getMember());
 			
 			for (CurriculumElement curriculumElement : curriculumElements) {
 				CatalogEntryImpl catalogEntry = new CatalogEntryImpl(curriculumElement);
@@ -205,7 +210,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 				List<TaxonomyLevel> levels = ceKeyTaxonomyLevels.get(curriculumElement.getKey());
 				catalogEntry.setTaxonomyLevels(levels != null ? new HashSet<>(levels): null);
 				catalogEntry.setNumParticipants(ceKeyToNumParticipants.get(curriculumElement.getKey()));
-				catalogEntry.setMember(myCurriculumKeys.contains(catalogEntry.getCurriculumKey()));
+				catalogEntry.setMember(ceMembershipKeys.contains(curriculumElement.getKey()));
 				
 				catalogEntries.add(catalogEntry);
 				resourcesWithAC.add(curriculumElement.getResource());
@@ -217,7 +222,8 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		List<OLATResource> oresGuestAccess = loadResourceGuestAccess(resourcesWithAC, searchParams.isWebPublish());
 		
 		resourcesWithAC.addAll(ceResourcesWithAC);
-		Map<OLATResource, List<OLATResourceAccess>> reToResourceAccess = loadResourceToResourceAccess(resourcesWithAC, searchParams.getOfferOrganisations());
+		Map<OLATResource, List<OLATResourceAccess>> resourceToResourceAccess = loadResourceToResourceAccess(resourcesWithAC, searchParams.getOfferOrganisations());
+		Set<OLATResource> resourceWithReservation = loadResourceWithReservation(resourcesWithAC, searchParams.getMember());
 		
 		for (CatalogEntry entry : catalogEntries) {
 			if (entry instanceof CatalogEntryImpl catalogEntry) {
@@ -226,8 +232,12 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 					catalogEntry.setGuestAccess(oresGuestAccess.contains(catalogEntry.getOlatResource()));
 				}
 				
-				List<OLATResourceAccess> resourceAccess = reToResourceAccess.getOrDefault(catalogEntry.getOlatResource(), List.of());
+				List<OLATResourceAccess> resourceAccess = resourceToResourceAccess.getOrDefault(catalogEntry.getOlatResource(), List.of());
 				catalogEntry.setResourceAccess(resourceAccess);
+				
+				if (resourceWithReservation.contains(catalogEntry.getOlatResource())) {
+					catalogEntry.setReservationAvailable(true);
+				}
 			}
 		}
 		
@@ -259,10 +269,12 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		return Map.of();
 	}
 
-	private Set<Long> loadMyCurriculumKeys(List<CurriculumElement> curriculumElements, Identity member) {
+	private Set<Long> loadCurriculumElementMembershipKeys(List<CurriculumElement> curriculumElements, Identity member) {
 		if (!curriculumElements.isEmpty() && member != null) {
-			return curriculumService.getMyCurriculums(member).stream()
-					.map(Curriculum::getKey)
+			
+			return curriculumService.getCurriculumElementMemberships(curriculumElements, member)
+					.stream()
+					.map(CurriculumElementMembership::getCurriculumElementKey)
 					.collect(Collectors.toSet());
 		}
 		return Set.of();
@@ -293,6 +305,16 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		
 		return acService.filterResourceWithAC(resourcesWithAC, offerOrganisations).stream()
 				.collect(Collectors.groupingBy(OLATResourceAccess::getResource));
+	}
+	
+	private Set<OLATResource> loadResourceWithReservation( List<OLATResource> resourcesWithAC, Identity identity) {
+		if (!acModule.isEnabled()) return Set.of();
+		
+		SearchReservationParameters searchParams = new SearchReservationParameters(resourcesWithAC);
+		searchParams.setIdentities(List.of(identity));
+		return reservationDao.loadReservations(searchParams).stream()
+				.map(ResourceReservation::getResource)
+				.collect(Collectors.toSet());
 	}
 	
 	private Map<Resourceable,ResourceLicense> loadLicenses(List<RepositoryEntry> repositoryEntries) {

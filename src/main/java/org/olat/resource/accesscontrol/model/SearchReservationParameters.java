@@ -19,8 +19,10 @@
  */
 package org.olat.resource.accesscontrol.model;
 
+import java.util.Collection;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.resource.OLATResource;
 
 /**
@@ -32,6 +34,7 @@ import org.olat.resource.OLATResource;
 public class SearchReservationParameters {
 	
 	private final List<OLATResource> resources;
+	private Collection<? extends IdentityRef> identities;
 	private boolean withConfirmationDate;
 	private Boolean confirmationByUser;
 	
@@ -41,6 +44,14 @@ public class SearchReservationParameters {
 	
 	public List<OLATResource> getResources() {
 		return resources;
+	}
+
+	public Collection<? extends IdentityRef> getIdentities() {
+		return identities;
+	}
+
+	public void setIdentities(Collection<? extends IdentityRef> identities) {
+		this.identities = identities;
 	}
 
 	public boolean isWithConfirmationDate() {

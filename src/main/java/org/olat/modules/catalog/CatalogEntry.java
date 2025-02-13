@@ -81,6 +81,8 @@ public interface CatalogEntry {
 	
 	boolean isMember();
 	
+	boolean isReservationAvailable();
+	
 	boolean isOpenAccess();
 	
 	boolean isGuestAccess();

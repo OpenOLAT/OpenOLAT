@@ -67,6 +67,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 	
 	private Set<TaxonomyLevel> taxonomyLevels;
 	private boolean member;
+	private boolean reservationAvailable;
 	private boolean openAccess;
 	private boolean guestAccess;
 	private List<OLATResourceAccess> resourceAccess;
@@ -238,6 +239,15 @@ public class CatalogEntryImpl implements CatalogEntry {
 		this.member = member;
 	}
 	
+	@Override
+	public boolean isReservationAvailable() {
+		return reservationAvailable;
+	}
+
+	public void setReservationAvailable(boolean reservationAvailable) {
+		this.reservationAvailable = reservationAvailable;
+	}
+
 	@Override
 	public boolean isOpenAccess() {
 		return openAccess;

@@ -263,7 +263,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			}
 		}
 		
-		if (listParams.isExcludeMembers() && catalogEntry.isMember()) {
+		if (listParams.isExcludeMembers() && (catalogEntry.isMember() || catalogEntry.isReservationAvailable())) {
 			return true;
 		}
 		
@@ -419,7 +419,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 
 	private void updateAccessInfo(CatalogEntryRow row, CatalogEntry catalogEntry) {
-		if (searchParams.isGuestOnly() || row.isMember() || catalogEntry.isOpenAccess()) {
+		if (searchParams.isGuestOnly() || row.isMember() || row.isReservationAvailable() || catalogEntry.isOpenAccess()) {
 			return;
 		}
 		
@@ -466,7 +466,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 
 	private void updateAccessMaxParticipants(CatalogEntryRow row, CatalogEntry catalogEntry) {
-		if (searchParams.isGuestOnly() || row.isMember() || catalogEntry.isOpenAccess() || row.getMaxParticipants() == null) {
+		if (searchParams.isGuestOnly() || row.isMember() || row.isReservationAvailable() || catalogEntry.isOpenAccess() || row.getMaxParticipants() == null) {
 			return;
 		}
 		
@@ -538,7 +538,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			return;
 		}
 		
-		if (!searchParams.isGuestOnly() && !row.isMember() && row.isPublicVisible() && !row.isOpenAccess() && !row.isAutoBooking()) {
+		if (!searchParams.isGuestOnly() && !row.isMember() && !row.isReservationAvailable() && row.isPublicVisible() && !row.isOpenAccess() && !row.isAutoBooking()) {
 			cmd = "book";
 			label = "book";
 		}
@@ -559,7 +559,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		linkSmall.setUrl(url);
 		row.setStartSmallLink(linkSmall);
 		
-		if (StringHelper.containsNonWhitespace(row.getAccessError())) {
+		if (StringHelper.containsNonWhitespace(row.getAccessError()) || row.isReservationAvailable()) {
 			link.setEnabled(false);
 			linkSmall.setEnabled(false);
 		}
