@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.modules.bigbluebutton.manager;
@@ -68,6 +68,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.prefs.gui.GuiPreferenceService;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -103,6 +105,7 @@ import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingInfos;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingsSearchParameters;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonRecordingWithReference;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonServerInfos;
+import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryRef;
@@ -122,7 +125,7 @@ import org.w3c.dom.Document;
 /**
  * 
  * Initial date: 18 mars 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 @Service
@@ -172,6 +175,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private List<BigBlueButtonRecordingsHandler> recordingsHandlers;
 	@Autowired
 	private List<BigBlueButtonMeetingDeletionHandler> bigBlueButtonMeetingDeletionHandlers;
+	@Autowired
+	private GuiPreferenceService guiPreferenceService;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -611,6 +616,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				bigBlueButtonAttendeeDao.deleteAttendee(finalReloadedMeeting);
 				bigBlueButtonMeetingDao.deleteMeeting(finalReloadedMeeting);
 			}
+			// delete all related guiPrefs
+			guiPreferenceService.deleteGuiPrefsByUniqueProperties(null, BigBlueButtonMeetingController.class.getName(), meeting.getMeetingId());
 		}
 		return false;
 	}
@@ -1341,6 +1348,17 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			return BigBlueButtonUtils.checkSuccess(doc, errors);
 		}
 		return false;
+	}
+
+	@Override
+	public boolean getUserConformanceDecisionById(String meetingId, Preferences userGuiPreferences) {
+		return userGuiPreferences.get(BigBlueButtonMeetingController.class, meetingId) instanceof Boolean isConform && isConform;
+	}
+
+
+	@Override
+	public void setUserConformanceDecisionById(String meetingId, Preferences userGuiPreferences, boolean isConform) {
+		userGuiPreferences.putAndSave(BigBlueButtonMeetingController.class, meetingId, isConform);
 	}
 
 	@Override
