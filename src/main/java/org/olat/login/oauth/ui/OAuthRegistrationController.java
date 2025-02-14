@@ -227,6 +227,7 @@ public class OAuthRegistrationController extends FormBasicController {
 				deleteTemporaryKeyIfExists(mailValidationCtrl.getTemporaryKey().getRegistrationKey());
 			}
 			// give user the possibility to change the previous mail and reset previous validation
+			removeAsListenerAndDispose(mailValidationCtrl);
 			mailValidationCtrl = null;
 			mailEl.setEnabled(true);
 		} else {
