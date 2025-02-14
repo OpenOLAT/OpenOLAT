@@ -499,7 +499,7 @@ public class UserCommentFormController extends FormBasicController {
 				handleUpdateResult(ureq);
 			}
 			toggleCommentFormElem();
-			resetCommentElem();
+			resetForm();
 			flc.setDirty(false);
 		}
 	}
@@ -555,7 +555,7 @@ public class UserCommentFormController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		if (commentElem.isVisible()) {
-			resetCommentElem();
+			resetForm();
 			toggleCommentFormElem();
 			cleanUpTempDir();
 			cleanUp();
@@ -564,9 +564,10 @@ public class UserCommentFormController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	private void resetCommentElem() {
+	private void resetForm() {
 		commentElem.setValue("");
 		commentElem.clearError();
+		uploadedFiles.clear();
 	}
 
 	/**
