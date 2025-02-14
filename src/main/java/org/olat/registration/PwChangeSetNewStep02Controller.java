@@ -78,17 +78,18 @@ public class PwChangeSetNewStep02Controller extends StepFormBasicController {
 
 		Roles roles = securityManager.getRoles(recipientIdentity);
 		PasskeyLevels requiredLevel = loginModule.getPasskeyLevel(roles);
+		boolean withPasskey = loginModule.isOlatProviderWithPasskey();
 
 		List<Authentication> authentications = securityManager.getAuthentications(recipientIdentity);
 		PasskeyLevels currentLevel = PasskeyLevels.currentLevel(authentications);
 
-		if (requiredLevel == PasskeyLevels.level1 || requiredLevel == PasskeyLevels.level3 || currentLevel == PasskeyLevels.level3) {
+		if (!withPasskey || requiredLevel == PasskeyLevels.level1 || requiredLevel == PasskeyLevels.level3 || currentLevel == PasskeyLevels.level3) {
 			pwChangeFormCtrl = new PwChangeForm(ureq, getWindowControl(), recipientIdentity, mainForm);
 			listenTo(pwChangeFormCtrl);
 			formLayout.add("pwf", pwChangeFormCtrl.getInitialFormItem());
 		}
 
-		if (requiredLevel == PasskeyLevels.level2 || requiredLevel == PasskeyLevels.level3) {
+		if (withPasskey && (requiredLevel == PasskeyLevels.level2 || requiredLevel == PasskeyLevels.level3)) {
 			regPasskeyListCtrl = new RegistrationPasskeyListController(ureq, getWindowControl(), recipientIdentity, mainForm);
 			listenTo(regPasskeyListCtrl);
 			formLayout.add("pkf", regPasskeyListCtrl.getInitialFormItem());
