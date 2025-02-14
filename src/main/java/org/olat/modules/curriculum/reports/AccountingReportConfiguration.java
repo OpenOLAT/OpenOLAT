@@ -190,7 +190,10 @@ public class AccountingReportConfiguration extends AbstractReportConfiguration i
 		Set<CurriculumRef> curriculums = new HashSet<>();
 		Set<CurriculumElementRef> implementations = new HashSet<>();
 		try (OutputStream out = file.getOutputStream(true)) {
-			generateReport(curriculum, curriculumElement, curriculums, implementations, locale, out);
+			CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
+			searchParams.setCurriculum(curriculum);
+			searchParams.setCurriculumElement(curriculumElement);
+			generateReport(searchParams, curriculums, implementations, locale, out);
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
 			return null;
@@ -205,7 +208,7 @@ public class AccountingReportConfiguration extends AbstractReportConfiguration i
 		return new ReportContent(curriculumList, implementationList);
 	}
 	
-	public void generateReport(Curriculum curriculum, CurriculumElement curriculumElement, 
+	public void generateReport(CurriculumAccountingSearchParams searchParams, 
 			Set<CurriculumRef> curriculumsInReport, Set<CurriculumElementRef> implementationsInReport,
 			Locale locale, OutputStream out) {
 		final CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
@@ -218,10 +221,6 @@ public class AccountingReportConfiguration extends AbstractReportConfiguration i
 			OpenXMLWorksheet sheet = workbook.nextWorksheet();
 			sheet.setHeaderRows(1);
 			generateHeader(sheet, userPropertyHandlers, locale);
-
-			CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
-			searchParams.setCurriculum(curriculum);
-			searchParams.setCurriculumElement(curriculumElement);
 			List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
 			for (BookingOrder bookingOrder : bookingOrders) {
 				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder);

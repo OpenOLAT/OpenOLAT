@@ -1251,7 +1251,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			String costCenteryAccount = deduplicate(rawOrder.getCostCenterAccount());
 			
 			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(), offerLabel,
-					rawOrder.getTotal(), rawOrder.getCancellationFees(), rawOrder.getBillingAddressIdentifier(),
+					rawOrder.getOrderAmount(), rawOrder.getOrderCancellationFee(), rawOrder.getOffersTotalAmount(),
+					rawOrder.getOffersCancellationFees(), rawOrder.getBillingAddressIdentifier(),
 					rawOrder.getPurchaseOrderNumber(), rawOrder.getComment(), rawOrder.getCreationDate(), orderStatus,
 					finalStatus, rawOrder.getDeliveryKey(), resourceDisplayName, costCenteryName, costCenteryAccount,
 					rawOrder.getUsername(), rawOrder.getUserProperties(), orderMethods);
@@ -1343,7 +1344,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		row.addCell(col++, methodSb.toString());
 		for(AccessMethod method:methods) {
 			if(method.isPaymentMethod()) {
-				row.addCell(col++, PriceFormat.fullFormat(order.getTotal()));
+				row.addCell(col++, PriceFormat.fullFormat(order.getOrderAmount()));
 			}
 		}
 	}

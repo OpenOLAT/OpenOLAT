@@ -143,10 +143,10 @@ public class OrdersController extends FormBasicController implements Activateabl
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderAmount));
 		
 		if (acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderCancellationFee));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));

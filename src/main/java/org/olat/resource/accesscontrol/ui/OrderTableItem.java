@@ -56,8 +56,11 @@ public class OrderTableItem {
 	private final Long orderKey;
 	private final String orderNr;
 	private final String label;
-	private final Price total;
-	private final Price cancellationFees;
+	private final Price orderAmount;
+	private final Price orderCancellationFee;
+	private final Price offersTotalAmount;
+	private final Price offersCancellationFees;
+	
 	private final String billingAddressIdentifier;
 	private final String purchaseOrderNumber;
 	private final String comment;
@@ -74,15 +77,18 @@ public class OrderTableItem {
 	private Status status;
 	private List<AccessMethod> methods;
 	
-	public OrderTableItem(Long orderKey, String orderNr, String label, Price total, Price cancellationFees,
+	public OrderTableItem(Long orderKey, String orderNr, String label,
+			Price orderAmount, Price orderCancellationFee, Price offersTotalAmount, Price offersCancellationFees,
 			String billingAddressIdentifier, String purchaseOrderNumber, String comment, Date creationDate,
 			OrderStatus orderStatus, Status status, Long deliveryKey, String resourceDisplayname, String costCenterName,
 			String costCenterAccount, String username, String[] userProperties, List<AccessMethod> methods) {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
-		this.total = total;
 		this.label = label;
-		this.cancellationFees = cancellationFees;
+		this.orderAmount = orderAmount;
+		this.offersTotalAmount = offersTotalAmount;
+		this.orderCancellationFee = orderCancellationFee;
+		this.offersCancellationFees = offersCancellationFees;
 		this.billingAddressIdentifier = billingAddressIdentifier;
 		this.purchaseOrderNumber = purchaseOrderNumber;
 		this.comment = comment;
@@ -122,12 +128,20 @@ public class OrderTableItem {
 		return orderStatus;	
 	}
 	
-	public Price getTotal() {
-		return total;
+	public Price getOrderAmount() {
+		return orderAmount;
 	}
 	
-	public Price getCancellationFees() {
-		return cancellationFees;
+	public Price getOrderCancellationFee() {
+		return orderCancellationFee;
+	}
+
+	public Price getOffersTotalAmount() {
+		return offersTotalAmount;
+	}
+
+	public Price getOffersCancellationFees() {
+		return offersCancellationFees;
 	}
 
 	public String getBillingAddressIdentifier() {

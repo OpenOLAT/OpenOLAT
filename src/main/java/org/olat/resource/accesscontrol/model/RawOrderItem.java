@@ -37,8 +37,10 @@ public class RawOrderItem {
 	private final Long orderKey;
 	private final String orderNr;
 	private final String label;
-	private final Price total;
-	private final Price cancellationFees;
+	private final Price orderAmount;
+	private final Price orderCancellationFee;
+	private final Price offersTotalAmount;
+	private final Price offersCancellationFees;
 	private final String billingAddressIdentifier;
 	private final String purchaseOrderNumber;
 	private final String comment;
@@ -58,16 +60,19 @@ public class RawOrderItem {
 	private final String username;
 	private final String[] userProperties;
 	
-	public RawOrderItem(Long orderKey, String orderNr, String label, String totalCurrencyCode, BigDecimal totalAmount,
-			BigDecimal cancellationFees, String billingAddressIdentifier, String purchaseOrderNumber,
+	public RawOrderItem(Long orderKey, String orderNr, String label, String totalCurrencyCode,
+			BigDecimal orderAmount, BigDecimal orderCancellationFee, BigDecimal offersTotalAmount, BigDecimal offersCancellationFees,
+			String billingAddressIdentifier, String purchaseOrderNumber,
 			String comment, Date creationDate, String orderStatus, Long deliveryKey, String resourceName,
 			String costCenterName, String costCenterAccount, String trxStatus, String trxMethodIds, String pspTrxStatus,
 			String checkoutTrxStatus, String checkoutOrderTrxStatus, String username, String[] userProperties) {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
 		this.label = label;
-		this.total = new PriceImpl(totalAmount, totalCurrencyCode);
-		this.cancellationFees = new PriceImpl(cancellationFees, totalCurrencyCode);
+		this.orderAmount = new PriceImpl(orderAmount, totalCurrencyCode);
+		this.offersTotalAmount = new PriceImpl(offersTotalAmount, totalCurrencyCode);
+		this.orderCancellationFee = new PriceImpl(orderCancellationFee, totalCurrencyCode);
+		this.offersCancellationFees = new PriceImpl(offersCancellationFees, totalCurrencyCode);
 		this.billingAddressIdentifier = billingAddressIdentifier;
 		this.purchaseOrderNumber = purchaseOrderNumber;
 		this.comment = comment;
@@ -98,14 +103,26 @@ public class RawOrderItem {
 		return label;
 	}
 
-	public Price getTotal() {
-		return total;
+	/**
+	 * Amount of the order, can be different at the sum of the offers prices
+	 * @return
+	 */
+	public Price getOrderAmount() {
+		return orderAmount;
 	}
 	
-	public Price getCancellationFees() {
-		return cancellationFees;
+	public Price getOrderCancellationFee() {
+		return orderCancellationFee;
 	}
 	
+	public Price getOffersTotalAmount() {
+		return offersTotalAmount;
+	}
+
+	public Price getOffersCancellationFees() {
+		return offersCancellationFees;
+	}
+
 	public String getBillingAddressIdentifier() {
 		return billingAddressIdentifier;
 	}

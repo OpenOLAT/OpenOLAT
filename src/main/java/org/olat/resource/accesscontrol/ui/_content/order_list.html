@@ -3,7 +3,7 @@
 	#if($r.isNotEmpty($description))
 	<div class="o_hint">$description</div>
 	#end
-	#if($r.available("export.booking.offers"))
+	#if($r.visible("export.booking.offers"))
 	<div class="o_button_group o_button_group_right">$r.render("export.booking.offers")</div>
 	#end
 	$r.render("orderList")

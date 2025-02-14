@@ -24,12 +24,13 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.core.id.Identity;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
-import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumAccountingSearchParams;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,34 +43,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AccountingReportResource extends OpenXMLWorkbookResource {
 	
 	private final Locale locale;
+	private final Identity manager;
 	private final OLATResource resource;
-	private final Curriculum curriculum;
-	private final CurriculumElement curriculumElement;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
 	private AccountingReportConfiguration accountingReportConfiguration;
 	
-	public AccountingReportResource(OLATResource resource, Locale locale) {
-		super("AccountBooking");
+	public AccountingReportResource(String filename, OLATResource resource, Locale locale) {
+		super(filename);
 		this.locale = locale;
 		this.resource = resource;
-		this.curriculum = null;
-		this.curriculumElement = null;
+		this.manager = null;
 	}
 	
-	/**
-	 * 
-	 * @param curriculum
-	 * @param curriculumElement
-	 */
-	public AccountingReportResource(Curriculum curriculum, CurriculumElement curriculumElement, Locale locale) {
-		super("");
+	public AccountingReportResource(Identity manager, Locale locale) {
+		super("AccountBooking");
 		this.locale = locale;
 		this.resource = null;
-		this.curriculum = curriculum;
-		this.curriculumElement = curriculumElement;
+		this.manager = manager;
 	}
 
 	@Override
@@ -79,10 +72,15 @@ public class AccountingReportResource extends OpenXMLWorkbookResource {
 		if(resource != null) {
 			CurriculumElement element = curriculumService.getCurriculumElement(resource);
 			if(element != null) {
-				accountingReportConfiguration.generateReport(element.getCurriculum(), element, curriculums, implementations, locale, out);
+				CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
+				searchParams.setCurriculum(element.getCurriculum());
+				searchParams.setCurriculumElement(element);
+				accountingReportConfiguration.generateReport(searchParams, curriculums, implementations, locale, out);
 			}
 		} else {
-			accountingReportConfiguration.generateReport(curriculum, curriculumElement, curriculums, implementations, locale, out);
+			CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
+			searchParams.setIdentity(manager);
+			accountingReportConfiguration.generateReport(searchParams, curriculums, implementations, locale, out);
 		}
 	}
 }

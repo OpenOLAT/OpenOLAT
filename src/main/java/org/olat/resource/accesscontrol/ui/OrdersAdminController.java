@@ -21,6 +21,7 @@ package org.olat.resource.accesscontrol.ui;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -43,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModelDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -71,9 +71,11 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.reports.AccountingReportResource;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -82,6 +84,7 @@ import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
+import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
@@ -177,6 +180,8 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		
 		exportButton = uifactory.addFormLink("export.booking.offers", "export.booking.offers", null, formLayout, Link.BUTTON);
 		exportButton.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+		exportButton.setVisible(resource != null
+				&& "CurriculumElement".equals(resource.getResourceableTypeName()));
 		
 		initTableForm(formLayout, ureq);
 	}
@@ -208,9 +213,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderAmount));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offersTotalAmount));
 		if (acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderCancellationFee));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offersCancellationFees));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
@@ -246,7 +253,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		tableEl.setDetailsRenderer(detailsVC, this);
 		tableEl.setMultiDetails(true);
 		
-		String id = resource == null ? "orders-admin-list-v2" : "orders-resource-list-v2";
+		String id = resource == null ? "orders-admin-list-v3" : "orders-resource-list-v3";
 		tableEl.setAndLoadPersistedPreferences(ureq, id);
 		
 		if(!readOnly) {
@@ -585,9 +592,16 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	}
 	
 	private void doExport(UserRequest ureq) {
-		ExportableFlexiTableDataModelDelegate delegate = new ExportableFlexiTableDataModelDelegate();
-		MediaResource exportedResource = delegate.export(tableEl.getComponent(), getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(exportedResource);
+		MediaResource reportResource;
+		if(resource == null) {
+			reportResource = new AccountingReportResource(getIdentity(), getLocale());
+		} else {
+			ACResourceInfo infos = acService.getResourceInfos(List.of(resource)).get(0);
+			String filename = "Orders_" + StringHelper.transformDisplayNameToFileSystemName(infos.getName())
+				+ "_" + Formatter.formatDatetimeWithMinutes(new Date());
+			reportResource = new AccountingReportResource(filename, resource, getLocale());
+		}
+		ureq.getDispatchResult().setResultingMediaResource(reportResource);
 	}
 
 	private class ToolsController extends BasicController {

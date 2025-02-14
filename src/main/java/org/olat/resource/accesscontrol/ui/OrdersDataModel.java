@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.user.UserManager;
@@ -67,8 +68,10 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 			case delivery -> getDelivery(order);
 			case methods -> order.getMethods();
 			case offerLabel -> order.getOfferLabel();
-			case total -> getTotal(order);
-			case cancellationFee -> getCancellationFees(order);
+			case orderAmount -> toPaymentPrice(order, order.getOrderAmount());
+			case orderCancellationFee -> toPaymentPrice(order, order.getOrderCancellationFee());
+			case offersTotalAmount -> toPaymentPrice(order, order.getOffersTotalAmount());
+			case offersCancellationFees -> toPaymentPrice(order, order.getOffersCancellationFees());
 			case costCenterName -> order.getCostCenterName();
 			case costCenterAccount -> order.getCostCenterAccount();
 			case purchaseOrderNumber -> order.getPurchaseOrderNumber();
@@ -92,21 +95,11 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		return userManager.getUserDisplayName(deliveryKey);
 	}
 	
-	private String getTotal(OrderTableRow order) {
+	private String toPaymentPrice(OrderTableRow order, Price value) {
 		if(hasPaymentMethods(order)) {
-			String total = PriceFormat.fullFormat(order.getTotal());
-			if(StringHelper.containsNonWhitespace(total)) {
-				return total;
-			}
-		}
-		return null;
-	}
-	
-	private String getCancellationFees(OrderTableRow order) {
-		if(hasPaymentMethods(order)) {
-			String fees = PriceFormat.fullFormat(order.getCancellationFees());
-			if(StringHelper.containsNonWhitespace(fees)) {
-				return fees;
+			String val = PriceFormat.fullFormat(value);
+			if(StringHelper.containsNonWhitespace(val)) {
+				return val;
 			}
 		}
 		return null;
@@ -141,8 +134,10 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		delivery("order.delivery", "delivery_id"),
 		methods("table.order.part.payment", "trxMethodIds"),
 		offerLabel("table.order.offer.label", null),
-		total("table.order.total", "total_amount"),
-		cancellationFee("order.cancellation.fee", "cancellation_fee_amount"),
+		orderAmount("table.order.total", "total_amount"),
+		orderCancellationFee("order.cancellation.fee", "cancellation_fee_amount"),
+		offersTotalAmount("table.order.offers.total", "offers_amount"),
+		offersCancellationFees("table.order.offers.cancellation.fee", "offers_cancellation_fee_amount"),
 		costCenterName("cost.center", "cost_center_names"),
 		costCenterAccount("cost.center.account", "cost_center_accounts"),
 		purchaseOrderNumber("order.purchase.number", "purchase_order_number"),

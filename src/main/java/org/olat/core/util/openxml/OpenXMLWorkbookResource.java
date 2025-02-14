@@ -52,6 +52,10 @@ public abstract class OpenXMLWorkbookResource extends DefaultMediaResource {
 		this.label = label;
 	}
 	
+	protected String getLabel() {
+		return label;
+	}
+	
 	@Override
 	public long getCacheControlDuration() {
 		return ServletUtil.CACHE_NO_CACHE;
@@ -70,7 +74,7 @@ public abstract class OpenXMLWorkbookResource extends DefaultMediaResource {
 			log.error("", e);
 		}
 
-		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
+		String urlEncodedLabel = StringHelper.urlEncodeUTF8(getLabel());
 		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);
 		hres.setHeader("Content-Description", urlEncodedLabel);
 		

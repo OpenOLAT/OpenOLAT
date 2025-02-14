@@ -317,6 +317,8 @@ public class ACOrderDAO {
 		  .append("  o.creationdate as creationdate,")
 		  .append("  o.order_status as o_status,")
 		  .append("  o.fk_delivery_id as delivery_id,")
+		  .append("  sum(offer.price_amount) as offers_amount,")
+		  .append("  sum(offer.cancelling_fee_amount) as offers_cancellation_fee_amount,")
 		  .append("  ").appendToArray("offer.resourcedisplayname").append(" as resDisplaynames,")
 		  .append("  ").appendToArray("offer.offer_label").append(" as labels,")
 		  .append("  ").appendToArray("costCenter.a_name").append(" as cost_center_names,")
@@ -475,14 +477,16 @@ public class ACOrderDAO {
 
 			Long orderKey = ((Number)order[pos++]).longValue();
 			String totalCurrencyCode = (String)order[pos++];
-			BigDecimal totalAmount = (BigDecimal)order[pos++];
-			BigDecimal cancellationFees = (BigDecimal)order[pos++];
+			BigDecimal orderAmount = (BigDecimal)order[pos++];
+			BigDecimal orderCancellationFee = (BigDecimal)order[pos++];
 			String billingAddressIdentifier = (String)order[pos++];
 			String purchseOrderNumber = (String)order[pos++];
 			String comment = (String)order[pos++];
 			Date creationDate = (Date)order[pos++];
 			String orderStatus = (String)order[pos++];
 			Long deliveryKey = ((Number)order[pos++]).longValue();
+			BigDecimal offersTotalAmount = (BigDecimal)order[pos++];
+			BigDecimal offersCancellationFees = (BigDecimal)order[pos++];
 			String resourceName = (String)order[pos++];
 			String label = (String)order[pos++];
 			String costCenterName = (String)order[pos++];
@@ -505,8 +509,9 @@ public class ACOrderDAO {
 				}
 			}
 			
-			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), label, totalCurrencyCode, totalAmount,
-					cancellationFees, billingAddressIdentifier, purchseOrderNumber, comment, creationDate,
+			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), label, totalCurrencyCode,
+					orderAmount, orderCancellationFee, offersTotalAmount, offersCancellationFees,
+					billingAddressIdentifier, purchseOrderNumber, comment, creationDate,
 					orderStatus, deliveryKey, resourceName, costCenterName, costCenterAccount, trxStatus, trxMethodIds,
 					pspTrxStatus, checkoutTrxStatus, checkoutOrderTrxStatus, username, userProperties);
 			items.add(item);

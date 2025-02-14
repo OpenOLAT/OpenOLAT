@@ -97,14 +97,22 @@ public class OrderTableRow {
 		return item.getMethods();
 	}
 
-	public Price getTotal() {
-		return item.getTotal();
+	public Price getOrderAmount() {
+		return item.getOrderAmount();
 	}
 	
-	public Price getCancellationFees() {
-		return item.getCancellationFees();
+	public Price getOrderCancellationFee() {
+		return item.getOrderCancellationFee();
 	}
 	
+	public Price getOffersTotalAmount() {
+		return item.getOffersTotalAmount();
+	}
+	
+	public Price getOffersCancellationFees() {
+		return item.getOffersCancellationFees();
+	}
+
 	public String getCostCenterName() {
 		return item.getCostCenterName();
 	}
