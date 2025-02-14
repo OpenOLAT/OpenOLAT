@@ -352,6 +352,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		}
 
 		TextElement mailEl = (TextElement) flc.getFormComponent(UserConstants.EMAIL);
+		mailEl.clearError();
 		boolean isMailUnchanged = isMailUnchanged(mailEl);
 		if (orgSelection != null && isMailUnchanged) {
 			orgSelection.clearError();
@@ -359,6 +360,8 @@ public class OAuthRegistrationController extends FormBasicController {
 				orgSelection.setErrorKey("change.org.selection.error");
 				allOk = false;
 			}
+		} else if (matchedDomains != null && matchedDomains.isEmpty()) {
+			mailEl.setErrorKey("step3.reg.mismatch.form.text", WebappHelper.getMailConfig("mailSupport"));
 		}
 
 		return allOk;
