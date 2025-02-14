@@ -400,6 +400,10 @@ public class CatalogEntryListController extends FormBasicController implements A
 					}
 				}
 			}
+			// Prevents auto booking with (only) two auto booking offers
+			if (priceMethods.size() > 1) {
+				autoBooking = false;
+			}
 			
 			if (catalogEntry.isOpenAccess()) {
 				priceMethods.add(new PriceMethod(null, "o_ac_openaccess_icon", translate("open.access.name")));
@@ -412,7 +416,6 @@ public class CatalogEntryListController extends FormBasicController implements A
 			}
 			
 			updateAccessInfo(row, catalogEntry);
-			updateAccessMaxParticipants(row, catalogEntry);
 		}
 		
 		return row;
@@ -420,6 +423,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 
 	private void updateAccessInfo(CatalogEntryRow row, CatalogEntry catalogEntry) {
 		if (searchParams.isGuestOnly() || row.isMember() || row.isReservationAvailable() || catalogEntry.isOpenAccess()) {
+			return;
+		}
+		
+		if (row.getAccessMethodTypes() != null && row.getAccessMethodTypes().size() > 1) {
+			row.setAccessInfo(translate("access.info.several.types"));
 			return;
 		}
 		
@@ -465,8 +473,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 		}
 	}
 
-	private void updateAccessMaxParticipants(CatalogEntryRow row, CatalogEntry catalogEntry) {
-		if (searchParams.isGuestOnly() || row.isMember() || row.isReservationAvailable() || catalogEntry.isOpenAccess() || row.getMaxParticipants() == null) {
+	private void updateAccessMaxParticipants(CatalogEntryRow row) {
+		if (searchParams.isGuestOnly() || row.isMember() || row.isReservationAvailable() || row.isOpenAccess() || row.getMaxParticipants() == null) {
 			return;
 		}
 		
@@ -497,6 +505,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 	
 	private void forgeLinks(CatalogEntryRow row) {
+		updateAccessMaxParticipants(row);
 		forgeSelectLink(row);
 		forgeStartLink(row);
 		forgeDetailsLink(row);
