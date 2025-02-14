@@ -71,7 +71,7 @@ public class LectureBlocksTimelineController extends BasicController {
 			return;
 		}
 		
-		if (showFirstOnly) {
+		if (showFirstOnly && lectureBlocks.size() > FIRST_ONLY_LIMIT) {
 			showAllLink = LinkFactory.createButton("show.all.events", mainVC, this);
 			showAllLink.setIconLeftCSS("o_icon o_icon_events");
 			showAllLink.setGhost(true);

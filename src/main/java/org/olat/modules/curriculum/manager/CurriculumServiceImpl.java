@@ -110,6 +110,7 @@ import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
+import org.olat.modules.curriculum.model.CurriculumElementKeyToRepositoryEntryKey;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistory;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipHistorySearchParameters;
@@ -1605,6 +1606,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		return elements;
 	}
 
+	@Override
+	public List<CurriculumElementKeyToRepositoryEntryKey> getRepositoryEntryKeyToCurriculumElementKeys(List<? extends CurriculumElementRef> curriculumElements) {
+		return curriculumRepositoryEntryRelationDao.getRepositoryEntryKeyToCurriculumElementKeys(curriculumElements);
+	}
+	
 	@Override
 	public List<CurriculumElement> filterElementsWithoutManagerRole(List<CurriculumElement> elements, Roles roles) {
 		if(elements == null || elements.isEmpty()) return elements;

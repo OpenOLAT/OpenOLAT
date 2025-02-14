@@ -70,7 +70,7 @@ public class CurriculumElementInfosOverviewController extends BasicController {
 		mainVC.contextPut("location", element.getLocation());
 		mainVC.contextPut("expenditureOfWork", element.getExpenditureOfWork());
 		mainVC.contextPut("mainLanguage", element.getMainLanguage());
-		mainVC.contextPut("participants", CurriculumHelper.getParticipantRange(getTranslator(), element, false));
+		mainVC.contextPut("participants", CurriculumHelper.getParticipantRange(getTranslator(), null, element.getMaxParticipants(), false));
 		
 		if (numLectureBlocks > 0) {
 			String numEvents = numLectureBlocks == 1

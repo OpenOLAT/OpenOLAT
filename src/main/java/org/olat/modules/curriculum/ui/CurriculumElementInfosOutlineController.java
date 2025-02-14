@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -37,6 +38,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementKeyToRepositoryEntryKey;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.lecture.LectureBlock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,9 +88,26 @@ public class CurriculumElementInfosOutlineController extends BasicController {
 		}
 		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 		
-		Map<Long, List<LectureBlock>> elementKeyToLectureBlocks = lectureBlocks.stream()
-				.filter(lb -> lb.getCurriculumElement() != null)
-				.collect(Collectors.groupingBy(lb -> lb.getCurriculumElement().getKey()));
+		Map<Long, Set<Long>> repositoryEntryToCurriculumElementKeys = curriculumService
+				.getRepositoryEntryKeyToCurriculumElementKeys(elements).stream()
+				.collect(Collectors.groupingBy(
+						CurriculumElementKeyToRepositoryEntryKey::repositoryEntryKey,
+						Collectors.mapping(CurriculumElementKeyToRepositoryEntryKey::curriculumElementKey, Collectors.toSet())));
+		
+		Map<Long, List<LectureBlock>> elementKeyToLectureBlocks = new HashMap<>(elements.size());
+		for (LectureBlock lectureBlock : lectureBlocks) {
+			if (lectureBlock.getCurriculumElement() != null) {
+				elementKeyToLectureBlocks.computeIfAbsent(lectureBlock.getCurriculumElement().getKey(), key -> new ArrayList<>()).add(lectureBlock);
+			} else if (lectureBlock.getEntry() != null) {
+				Set<Long> curriculumElementKeys = repositoryEntryToCurriculumElementKeys.get(lectureBlock.getEntry().getKey());
+				if (curriculumElementKeys != null) {
+					for (Long curriculumElementKey : curriculumElementKeys) {
+						elementKeyToLectureBlocks.computeIfAbsent(curriculumElementKey, key -> new ArrayList<>()).add(lectureBlock);
+					}
+				}
+			}
+		}
+		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		List<OutlineRow> outlineRows = new ArrayList<>(rows.size());
 		for (CurriculumElementRow row : rows) {

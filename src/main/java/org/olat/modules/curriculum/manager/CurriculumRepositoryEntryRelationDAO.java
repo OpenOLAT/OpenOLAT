@@ -38,6 +38,7 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.model.CurriculumElementKeyToRepositoryEntryKey;
 import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -263,5 +264,25 @@ public class CurriculumRepositoryEntryRelationDAO {
 			}
 		}
 		return map;
+	}
+	
+	public List<CurriculumElementKeyToRepositoryEntryKey> getRepositoryEntryKeyToCurriculumElementKeys(
+			List<? extends CurriculumElementRef> curriculumElements) {
+		
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select distinct el.key");
+		sb.append("     , rel.entry.key");
+		sb.append("  from curriculumelement as el");
+		sb.append(" inner join el.group as bGroup");
+		sb.append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)");
+		sb.and().append("el.key in :curriculumElementKeys");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("curriculumElementKeys", curriculumElements.stream().map(CurriculumElementRef::getKey).collect(Collectors.toList()))
+			.getResultList()
+			.stream()
+			.map(rawObject -> new CurriculumElementKeyToRepositoryEntryKey((Long)rawObject[0], (Long)rawObject[1]))
+			.toList();
 	}
 }

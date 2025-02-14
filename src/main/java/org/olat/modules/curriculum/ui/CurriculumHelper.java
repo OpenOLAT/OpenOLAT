@@ -68,7 +68,11 @@ public class CurriculumHelper {
 	}
 	
 	public static String getParticipantRange(Translator translator, CurriculumElement element, boolean appendIcon) {
-		if (element.getMinParticipants() == null && element.getMaxParticipants() == null) {
+		return getParticipantRange(translator, element.getMinParticipants(), element.getMaxParticipants(), appendIcon);
+	}
+	
+	public static String getParticipantRange(Translator translator, Long minParticipants, Long maxParticipants, boolean appendIcon) {
+		if (minParticipants == null && maxParticipants == null) {
 			return null;
 		}
 		
@@ -76,16 +80,16 @@ public class CurriculumHelper {
 		if (appendIcon) {
 			participants += "<i class=\"o_icon o_icon_num_participants\"></i> ";
 		}
-		if (element.getMinParticipants() != null && element.getMinParticipants() != 0 
-				&& element.getMaxParticipants() != null && element.getMaxParticipants() != 0) {
+		if (minParticipants != null && minParticipants != 0 && maxParticipants != null && maxParticipants != 0) {
 			participants += translator.translate("curriculum.element.participants.min.max",
-					String.valueOf(element.getMinParticipants()), String.valueOf(element.getMaxParticipants()));
-		} else if (element.getMinParticipants() != null && element.getMinParticipants() != 0) {
+					String.valueOf(minParticipants),
+					String.valueOf(maxParticipants));
+		} else if (minParticipants != null && minParticipants != 0) {
 			participants += translator.translate("curriculum.element.participants.min",
-					String.valueOf(element.getMaxParticipants()));
-		} else if (element.getMaxParticipants() != null && element.getMaxParticipants() != 0) {
+					String.valueOf(maxParticipants));
+		} else if (maxParticipants != null && maxParticipants != 0) {
 			participants += translator.translate("curriculum.element.participants.max",
-					String.valueOf(element.getMaxParticipants()));
+					String.valueOf(maxParticipants));
 		} else {
 			participants = null;
 		}

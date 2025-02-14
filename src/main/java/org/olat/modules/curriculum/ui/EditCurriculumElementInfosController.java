@@ -343,7 +343,7 @@ public class EditCurriculumElementInfosController extends FormBasicController {
 		if (lectureModule.isEnabled()) {
 			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 			searchParams.setLectureConfiguredRepositoryEntry(false);
-			searchParams.setCurriculumElement(element);
+			searchParams.setCurriculumElementPath(element.getMaterializedPathKeys());
 			List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, -1, Boolean.TRUE);
 			taughtByTeachers = lectureService.getTeachers(lectureBlocks).size();
 		}
