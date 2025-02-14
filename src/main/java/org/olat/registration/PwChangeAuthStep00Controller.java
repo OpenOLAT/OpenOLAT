@@ -77,11 +77,26 @@ public class PwChangeAuthStep00Controller extends StepFormBasicController {
 		// null, true and false - because we have three different outcomes depending on the user
 		Boolean isSmsResetEnabled;
 		if (!userModule.isPwdChangeAllowed(identity)) {
-			isSmsResetEnabled = null;
+			isSmsResetEnabled = null; // If password change is not allowed, go to support form
 		} else {
-			isSmsResetEnabled = smsModule.isEnabled() && smsModule.isResetPasswordEnabled()
+			boolean hasValidEmail = StringHelper.containsNonWhitespace(identity.getUser().getProperty(UserConstants.EMAIL, getLocale()));
+			boolean hasValidSms = smsModule.isEnabled()
+					&& smsModule.isResetPasswordEnabled()
 					&& StringHelper.containsNonWhitespace(identity.getUser().getProperty(UserConstants.SMSTELMOBILE, getLocale()));
+
+			if (hasValidEmail && hasValidSms) {
+				isSmsResetEnabled = Boolean.TRUE; // Both email and SMS -> PwChangeVSelectionStep01 (no need for validation type)
+			} else if (hasValidEmail) {
+				isSmsResetEnabled = Boolean.FALSE; // Only email -> PwChangeValidationStep01
+				runContext.put(PwChangeWizardConstants.VALTYPE, PwChangeVSelectionStep01Controller.PW_CHANGE_VAL_TYPE_MAIL);
+			} else if (hasValidSms) {
+				isSmsResetEnabled = Boolean.FALSE; // Only SMS -> PwChangeValidationStep01
+				runContext.put(PwChangeWizardConstants.VALTYPE, PwChangeVSelectionStep01Controller.PW_CHANGE_VAL_TYPE_SMS);
+			} else {
+				isSmsResetEnabled = null; // Neither -> PwChangeSupportFormStep01 (no need for validation type)
+			}
 		}
+
 		registrationStepsListener.onStepsChanged(ureq, isSmsResetEnabled);
 
 		runContext.put(PwChangeWizardConstants.EMAILORUSERNAME, emailOrUsernameCtrl.getEmailOrUsernameEl());
