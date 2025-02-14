@@ -339,7 +339,7 @@ public class PasswordValidationRuleFactoryTest {
 		ValidationRule rule = sut.createUsernameForbiddenRule();
 		
 		Identity identity = mock(Identity.class);
-		when(identity.getName()).thenReturn("myname");
+		when(identity.getUser().getNickName()).thenReturn("myname");
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(rule.validate("myname", identity)).isFalse();
