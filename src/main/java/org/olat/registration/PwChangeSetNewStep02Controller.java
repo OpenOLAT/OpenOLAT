@@ -58,6 +58,8 @@ public class PwChangeSetNewStep02Controller extends StepFormBasicController {
 	private RegistrationPasskeyListController regPasskeyListCtrl;
 	private NewPasskeyController newPasskeyCtrl;
 
+	private boolean done = false;
+	
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
@@ -73,7 +75,6 @@ public class PwChangeSetNewStep02Controller extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
 		setFormStyle("o_sel_new_password_form");
 
 		Roles roles = securityManager.getRoles(recipientIdentity);
@@ -98,6 +99,8 @@ public class PwChangeSetNewStep02Controller extends StepFormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		if(done) return true;
+		
 		boolean allOk = super.validateFormLogic(ureq);
 
 		if (regPasskeyListCtrl != null && !regPasskeyListCtrl.hasPasskeys()) {
@@ -158,6 +161,9 @@ public class PwChangeSetNewStep02Controller extends StepFormBasicController {
 
 	@Override
 	protected void formNext(UserRequest ureq) {
+		// to prevent validation problems in last step
+		// since there is no way to get back to this step, this is okay to bypass the validation
+		done = true;
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 

@@ -317,6 +317,8 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 			// previously the delete process was handled in PwChangeForm
 			// to keep it simple: Now delete temporaryKey as soon as validation is completed
 			registrationManager.deleteTemporaryKeyWithId(temporaryKey.getRegistrationKey());
+			// to prevent validation problems in last step
+			// since there is no way to get back to this step, this is okay to bypass the validation
 			removeAsListenerAndDispose(this);
 		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

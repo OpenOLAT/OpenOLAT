@@ -65,7 +65,6 @@ public class LoginProcessController extends BasicController {
 	private final Invitation invitation;
 
 	private StepsMainRunController registrationWizardCtrl;
-	private StepsMainRunController pwChangeWizardCtrl;
 	private PwChangeController pwChangeCtrl;
 
 	@Autowired
@@ -96,7 +95,7 @@ public class LoginProcessController extends BasicController {
 			} else if (event == StepsEvent.RELOAD) {
 				fireEvent(ureq, event);
 			} else {
-				stackPanel.popContent();
+				getWindowControl().pop();
 			}
 		} else if (source == pwChangeCtrl) {
 			if (event == Event.CANCELLED_EVENT
@@ -106,9 +105,12 @@ public class LoginProcessController extends BasicController {
 			}
 
 			if (stackPanel instanceof BreadcrumbedStackedPanel breadcrumbedStackedPanel) {
-				breadcrumbedStackedPanel.popController(pwChangeWizardCtrl);
+				breadcrumbedStackedPanel.popController(pwChangeCtrl);
 			} else {
-				stackPanel.popContent();
+				removeAsListenerAndDispose(pwChangeCtrl);
+				getWindowControl().pop();
+
+				getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(false);
 			}
 		}
 	}
@@ -116,16 +118,13 @@ public class LoginProcessController extends BasicController {
 	public void doOpenChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
 		if (userModule.isAnyPasswordChangeAllowed()) {
-			removeAsListenerAndDispose(pwChangeCtrl);
-
 			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), initialEmail, false);
 			listenTo(pwChangeCtrl);
-			pwChangeWizardCtrl = pwChangeCtrl.doOpenPasswordChange(ureq);
 
 			if (stackPanel instanceof BreadcrumbedStackedPanel breadcrumbedStackedPanel) {
-				breadcrumbedStackedPanel.pushController(translate("pwchange.wizard.title"), pwChangeWizardCtrl);
+				breadcrumbedStackedPanel.pushController(translate("pwchange.wizard.title"), pwChangeCtrl);
 			} else {
-				stackPanel.pushContent(pwChangeWizardCtrl.getInitialComponent());
+				getWindowControl().pushAsModalDialog(pwChangeCtrl.getInitialComponent());
 			}
 		} else {
 			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
@@ -143,7 +142,7 @@ public class LoginProcessController extends BasicController {
 		if (stackPanel instanceof BreadcrumbedStackedPanel breadcrumbedStackedPanel) {
 			breadcrumbedStackedPanel.pushController(translate("menu.register"), registrationWizardCtrl);
 		} else {
-			stackPanel.pushContent(registrationWizardCtrl.getInitialComponent());
+			getWindowControl().pushAsModalDialog(registrationWizardCtrl.getInitialComponent());
 		}
 	}
 

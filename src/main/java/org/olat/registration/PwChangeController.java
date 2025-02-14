@@ -71,11 +71,15 @@ public class PwChangeController extends BasicController {
 		super(ureq, wControl);
 		this.initialEmail = initialEmail;
 
+		// Always initialize the wizard
+		pwChangeWizardCtrl = doOpenPasswordChange(ureq);
+
 		if (isContentCtrl) {
-			StepsMainRunController pwChangeCtrl = doOpenPasswordChange(ureq);
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, pwChangeCtrl.getInitialComponent(), null);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, pwChangeWizardCtrl.getInitialComponent(), null);
 			listenTo(layoutCtr);
 			putInitialPanel(layoutCtr.getInitialComponent());
+		} else {
+			putInitialPanel(pwChangeWizardCtrl.getInitialComponent());
 		}
 	}
 

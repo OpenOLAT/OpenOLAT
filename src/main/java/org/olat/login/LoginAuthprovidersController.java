@@ -384,7 +384,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (event == StepsEvent.RELOAD) {
-			dmzPanel.popContent();
+			getWindowControl().pop();
 			cleanUp();
 			doOpenRegistration(ureq);
 		} else if (cmc == source) {
@@ -502,6 +502,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	}
 
 	private void openChangePassword(UserRequest ureq, String initialEmail) {
+		getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
+		
 		loginProcessCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, invitation);
 		listenTo(loginProcessCtrl);
 		loginProcessCtrl.doOpenChangePassword(ureq, initialEmail);
