@@ -272,7 +272,9 @@ public class OAuthRegistrationController extends FormBasicController {
 				orgSelection.setMandatory(true);
 			}
 		}
-		flc.add(submitBtn);
+		if (!flc.hasFormComponent(submitBtn)) {
+			flc.add(submitBtn);
+		}
 	}
 	
 	@Override
