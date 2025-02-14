@@ -154,10 +154,10 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
 		String[] whereFromAttrs = new String[]{ serverPath, today };
 
-		createTemporaryKey(ureq, ip, whereFromAttrs);
+		createTemporaryKey(ip, whereFromAttrs);
 	}
 
-	private void createTemporaryKey(UserRequest ureq, String ip, String[] whereFromAttrs) {
+	private void createTemporaryKey(String ip, String[] whereFromAttrs) {
 		Integer validityPeriod = null;
 		if (StringHelper.containsNonWhitespace(initialEmail)) {
 			validityPeriod = loginModule.getValidUntilHoursGui();
@@ -165,12 +165,13 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 		temporaryKey = registrationManager.loadOrCreateTemporaryKeyByEmail(
 				recipientEmail, ip, RegistrationManager.PW_CHANGE, validityPeriod
 		);
-		sendPasswordChangeEmail(ureq, whereFromAttrs);
+		sendPasswordChangeEmail(whereFromAttrs);
 	}
 
-	private void sendPasswordChangeEmail(UserRequest ureq, String[] whereFromAttrs) {
+	private void sendPasswordChangeEmail(String[] whereFromAttrs) {
+		addToRunContext(PwChangeWizardConstants.TEMPORARYREGKEY, temporaryKey.getRegistrationKey());
+
 		Locale locale = getUserLocale(recipientIdentity);
-		ureq.getUserSession().setLocale(locale);
 		Translator userTrans = Util.createPackageTranslator(PwChangeController.class, locale);
 
 		String userName = getAuthenticationNameOrDefault(recipientIdentity);
@@ -179,15 +180,15 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 		String subject;
 		StringBuilder i18nBody = new StringBuilder(2048);
 		i18nBody.append("<p>")
-				.append(translate("pwchange.intro.before"))
+				.append(userTrans.translate("pwchange.intro.before"))
 				.append("</p>");
 
 		if (hasPasskeyAuthentication(recipientIdentity)) {
-			subject = translate("pwchange.subject.passkey");
+			subject = userTrans.translate("pwchange.subject.passkey");
 			i18nBody.append(userTrans.translate("pwchange.intro.passkey", userName))
 					.append(userTrans.translate("pwchange.body.passkey"));
 		} else {
-			subject = translate("pwchange.subject");
+			subject = userTrans.translate("pwchange.subject");
 			i18nBody.append(userTrans.translate("pwchange.intro", userName))
 					.append(userTrans.translate("pwchange.body", temporaryKey.getRegistrationKey()));
 		}
@@ -259,7 +260,7 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 			String[] whereFromAttrs = new String[]{ serverPath, today };
 
 			if (temporaryKey != null) {
-				sendPasswordChangeEmail(ureq, whereFromAttrs);
+				sendPasswordChangeEmail(whereFromAttrs);
 			}
 		} else {
 			processSms();
@@ -328,7 +329,6 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
-		registrationManager.deleteTemporaryKeyWithId(temporaryKey.getRegistrationKey());
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 }

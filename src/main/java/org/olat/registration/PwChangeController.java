@@ -25,6 +25,7 @@
 
 package org.olat.registration;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -104,6 +105,11 @@ public class PwChangeController extends BasicController {
 	private static class CancelCallback implements StepRunnerCallback {
 		@Override
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			String temporaryRegKey = (String) runContext.get(PwChangeWizardConstants.TEMPORARYREGKEY);
+			// remove temporaryKey entry, if process gets canceled
+			if (temporaryRegKey != null) {
+				CoreSpringFactory.getImpl(RegistrationManager.class).deleteTemporaryKeyWithId(temporaryRegKey);
+			}
 			return Step.NOSTEP;
 		}
 	}

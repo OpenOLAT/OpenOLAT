@@ -52,7 +52,6 @@ public class PwChangeConfirmationStep03Controller extends StepFormBasicControlle
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 }
