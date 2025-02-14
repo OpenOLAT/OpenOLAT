@@ -129,6 +129,9 @@ public class CurriculumMailing {
 				}
 				return getMembershipBookedByParticipantTemplate(curriculum, curriculumElement, doer);
 			}
+			if(nextStatus == GroupMembershipStatus.active && change.getMember().equals(doer)) {
+				return getMembershipBookedByParticipantTemplate(curriculum, curriculumElement, doer);
+			}
 			return getMembershipByStatusTemplate(nextStatus, curriculum, curriculumElement, doer);
 		}
 		return null;

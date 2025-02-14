@@ -1014,11 +1014,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				MailTemplate template = CurriculumMailing.findBestMailTemplate(additionToNotifiy, doer);
 				mailingWithTemplate = mailingWithTemplate.copyWithTemplate(template);
 			}
-			CurriculumMailing.sendEmail(doer, additionToNotifiy.getMember(), curriculum, curriculumElement, mailing);
+			CurriculumMailing.sendEmail(doer, additionToNotifiy.getMember(), curriculum, curriculumElement, mailingWithTemplate);
 		}
 	}
-	
-
 	
 	private void updateCurriculumElementMembership(CurriculumElementMembershipChange changes, Identity actor) {
 		final CurriculumElement element = changes.getCurriculumElement();
