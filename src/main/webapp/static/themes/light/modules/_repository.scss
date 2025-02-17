@@ -24,6 +24,7 @@
 				}
 				@media (max-width: $screen-xs-max) {
 					margin-left: 0;
+					margin-bottom: 1em;
 					max-width: 100%;	
 					width: 100%;
 					.o_image, img, .o_video, video {
@@ -34,16 +35,11 @@
 			.o_meta_wrapper {
 				display: flex;
 				flex-direction: column;
+				gap: 1em;
 				
 				flex-grow: 1;
 				flex-shrink: 1;
 				width: 100%;
-				white-space: nowrap;
-				overflow-x: hidden;
-				text-overflow: ellipsis;	
-				.o_multi_line {
-					white-space: normal;
-				}
 			}
 			
 			.o_ext_ref {
@@ -272,12 +268,19 @@
 			margin-top: 10px;
 		}
 	}
+	.o_ac_offer_selection {
+		margin-bottom: $o-radio-cards-gap;
+		.form-group {
+			margin-bottom: 0;
+		}
+	}
 	.o_ac_offer_message {
+		margin-bottom: math.div($o-radio-cards-gap, 2);
 		width: 100%;
-		margin: 0px 5px;
 	}
 	.o_ac_offer_custom {
 		button {
+			margin-top: 0;
 			width: 100%;
 		}
 	}

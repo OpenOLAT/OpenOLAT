@@ -268,19 +268,18 @@
 				
 				.o_actions {
 					position: absolute;
-					display: flex;
-					bottom: 0;				
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					bottom: 0;
 					
 					a {
-						width: math.div($o-coursesite-rowelem-width-md ,2) - 5px;
 						@include text-overflow();
-
+						
 						.o_icon_details {
 							display: none;
 						}
 						
 						@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-							width: math.div($o-coursesite-rowelem-width-sm ,2) - 5px;		
 							span {
 								display: none;
 							}

@@ -293,7 +293,7 @@ form .o_form, form.o_form {
 		display: flex;
 		flex-flow: column wrap;
 		align-items : stretch;
-		gap: 10px;
+		gap: $o-radio-cards-gap;
 	
 		&:is(.form-inline *) { /* for vertical alignment style */
 			flex-flow: row wrap;
