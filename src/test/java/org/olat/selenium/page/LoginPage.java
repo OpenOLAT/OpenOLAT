@@ -378,7 +378,7 @@ public class LoginPage {
 		By passwordForgottenBy = By.cssSelector(".o_login_help a.o_login_pwd");
 		OOGraphene.waitElement(passwordForgottenBy, browser);
 		browser.findElement(passwordForgottenBy).click();
-		By modalBy = By.cssSelector("#o_main_center dialog div.modal-body");
+		By modalBy = By.cssSelector(".o_layered_panel dialog.o_wizard div.modal-body");
 		OOGraphene.waitElement(modalBy, browser);
 		return new LoginPasswordForgottenPage(browser);
 	}

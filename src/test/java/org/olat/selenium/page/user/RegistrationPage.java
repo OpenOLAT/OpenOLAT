@@ -49,7 +49,7 @@ public class RegistrationPage {
 		By signInBy = By.id("o_co_olat_login_register");
 		OOGraphene.waitElement(signInBy, browser);
 		browser.findElement(signInBy).click();
-		By modalBy = By.cssSelector("#o_main_center dialog div.modal-body");
+		By modalBy = By.cssSelector("dialog.o_wizard div.modal-body");
 		OOGraphene.waitElement(modalBy, browser);
 		return this;
 	}

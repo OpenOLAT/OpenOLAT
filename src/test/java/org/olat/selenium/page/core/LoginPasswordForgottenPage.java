@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.core;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -30,6 +32,8 @@ import org.openqa.selenium.WebDriver;
  *
  */
 public class LoginPasswordForgottenPage {
+	
+	private static final Logger log = Tracing.createLoggerFor(LoginPasswordForgottenPage.class);
 	
 	private final WebDriver browser;
 	
@@ -73,11 +77,17 @@ public class LoginPasswordForgottenPage {
 			
 			By confirmationBy = By.cssSelector("fieldset.o_sel_changed_confirmation");
 			OOGraphene.waitElement(confirmationBy, browser);
-			OOGraphene.finishStep(browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Forgotten password", browser);
 			throw e;
 		}
+		
+		try {
+			OOGraphene.finishStep(browser);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		
 		return this;
 	}
 	
