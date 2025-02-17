@@ -6,7 +6,11 @@
 			<div class="o_folder_card_thumbnail o_folder_openable" onClick="$f.ffXHREvent("open","$row.key");" role="link">
 		#end
 	#else
-		<div class="o_folder_card_thumbnail">
+		#if(!$row.isDirectory())
+			<div class="o_folder_card_thumbnail o_folder_openable" onClick="$f.ffXHREvent("download","$row.key");" role="link">
+		#else
+			<div class="o_folder_card_thumbnail">
+		#end
 	#end
 		<div class="o_folder_card_img #if($row.getThumbnailCss())$row.getThumbnailCss()#end">
 			#if($row.isThumbnailAvailable())
