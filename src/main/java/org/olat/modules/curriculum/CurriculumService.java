@@ -51,6 +51,7 @@ import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumMemberStats;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.curriculum.model.RepositoryEntryInfos;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -536,6 +537,8 @@ public interface CurriculumService {
 	 * @return A list of repository entries
 	 */
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element);
+	
+	public List<RepositoryEntryInfos> getRepositoryEntriesWithInfos(CurriculumElementRef element);
 	
 	/**
 	 * The all list of templates hold by the specified curriculum element.

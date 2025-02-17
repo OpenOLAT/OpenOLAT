@@ -618,7 +618,8 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 * @param showAlwaysSearchFields    true (default): show the search field,
 	 *                                  false: don't show it on empty tables
 	 */
-	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS, boolean showAlwaysSearchFields);
+	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS,
+			boolean showAlwaysSearchFields, String... i18nArgs);
 	
 	/**
 	 * Add a button or an other component in the "button grouped"

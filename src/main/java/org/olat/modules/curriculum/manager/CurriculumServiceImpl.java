@@ -126,6 +126,7 @@ import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumMemberStats;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.modules.curriculum.model.RepositoryEntryInfos;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
@@ -1327,6 +1328,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				.getRepositoryEntries(null, elements, RepositoryEntryStatusEnum.preparationToClosed(), false, null, null);
 	}
 	
+	@Override
+	public List<RepositoryEntryInfos> getRepositoryEntriesWithInfos(CurriculumElementRef element) {
+		return curriculumRepositoryEntryRelationDao.getRepositoryEntriesWithInfos(element);
+	}
+
 	@Override
 	public List<RepositoryEntry> getRepositoryTemplates(CurriculumElementRef element) {
 		return curriculumRepositoryEntryRelationDao.getRepositoryTemplates(element);

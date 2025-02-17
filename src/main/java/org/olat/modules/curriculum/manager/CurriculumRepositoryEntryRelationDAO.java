@@ -31,6 +31,7 @@ import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -40,6 +41,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementKeyToRepositoryEntryKey;
 import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
+import org.olat.modules.curriculum.model.RepositoryEntryInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -193,6 +195,33 @@ public class CurriculumRepositoryEntryRelationDAO {
 			infos.add(new CurriculumElementWebDAVInfos(repositoryEntryKey,
 					curriculumElementKey, curriculumElementDisplayName, curriculumElementIdentifier,
 					parentCurriculumElementKey, parentCurriculumElementDisplayName, parentCurriculumElementIdentifier));
+		}
+		return infos;
+	}
+	
+	public List<RepositoryEntryInfos> getRepositoryEntriesWithInfos(CurriculumElementRef curriculumElement) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select distinct v,")
+		  .append(" (select count(distinct lblock.key) from lectureblock lblock")
+		  .append("  where lblock.entry.key=v.key")
+		  .append(" ) as numOfLectures")
+		  .append(" from repositoryentry as v")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" inner join v.groups as rel")
+		  .append(" inner join curriculumelement as el on (el.group.key=rel.group.key)")
+		  .append(" where el.key=:curriculumElementKey");
+		
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("curriculumElementKey", curriculumElement.getKey())
+				.getResultList();
+		List<RepositoryEntryInfos> infos = new ArrayList<>(rawObjects.size());
+		for(Object[] rawObject:rawObjects) {
+			RepositoryEntry entry = (RepositoryEntry)rawObject[0];
+			long numOfLectureBlocks = PersistenceHelper.extractPrimitiveLong(rawObject, 1);
+			infos.add(new RepositoryEntryInfos(entry, numOfLectureBlocks));
 		}
 		return infos;
 	}

@@ -81,6 +81,28 @@ public class ReferencesController extends BasicController {
 		loadReferences(ureq, elementRow.getCurriculumElement());
 	}
 	
+	public ReferencesController(UserRequest ureq, WindowControl wControl, Translator translator,
+			RepositoryEntry entry) {
+		super(ureq, wControl, Util
+				.createPackageTranslator(RepositoryService.class, ureq.getLocale(), translator));
+		this.elementRow = null;
+		loadReferences(ureq, entry);
+	}
+	
+	private void loadReferences(UserRequest ureq, RepositoryEntry entry) {
+		lectureBlockStatusTranslator = Util
+				.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale(), getTranslator());
+		
+		VelocityContainer mainVC = createVelocityContainer("references");
+		loadLectureBlocks(mainVC, entry);
+		putInitialPanel(mainVC);
+	}
+	
+	private void loadLectureBlocks(VelocityContainer mainVC, RepositoryEntry entry) {
+		List<LectureBlock> lecturesBlocks = lectureService.getLectureBlocks(entry);
+		loadLectureBlocks(mainVC, lecturesBlocks);
+	}
+	
 	private void loadReferences(UserRequest ureq, CurriculumElement el) {
 		lectureBlockStatusTranslator = Util
 				.createPackageTranslator(LectureListRepositoryController.class, ureq.getLocale(), getTranslator());
@@ -93,6 +115,10 @@ public class ReferencesController extends BasicController {
 
 	private void loadLectureBlocks(VelocityContainer mainVC, CurriculumElement el) {
 		List<LectureBlock> lecturesBlocks = lectureService.getLectureBlocks(el);
+		loadLectureBlocks(mainVC, lecturesBlocks);
+	}
+	
+	private void loadLectureBlocks(VelocityContainer mainVC, List<LectureBlock> lecturesBlocks) {
 		List<String> refLinks = new ArrayList<>(lecturesBlocks.size());
 		for(LectureBlock ref:lecturesBlocks) {
 			String name = "lec-" + (++counter);

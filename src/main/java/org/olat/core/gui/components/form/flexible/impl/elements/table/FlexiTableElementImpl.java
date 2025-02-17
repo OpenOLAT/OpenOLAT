@@ -140,6 +140,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private String emptyTableMessageKey;
 	private String emptyTableHintKey;		
 	private String emptyTableIconCss;	
+	private String[] emptyMessagei18nArgs;
 	private FormLink emptyTablePrimaryActionButton;
 	private boolean emptyShowSearch = true;
 	
@@ -2599,10 +2600,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	@Override
-	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS, boolean showAlwaysSearchFields) {
+	public void setEmptyTableSettings(String emptyMessagei18key, String emptyTableHintKey, String emptyTableIconCss, String emptyPrimaryActionKey, String emptyPrimaryActionIconCSS,
+			boolean showAlwaysSearchFields, String... i18nArgs) {
 		this.emptyTableMessageKey = emptyMessagei18key;
 		this.emptyTableHintKey = emptyTableHintKey;
 		this.emptyTableIconCss = emptyTableIconCss;
+		this.emptyMessagei18nArgs = i18nArgs;
 		// create action button
 		if (emptyPrimaryActionKey != null) {
 			String dispatchId = component.getDispatchID();
@@ -2638,12 +2641,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public String getEmtpyTableIconCss() {
 		return emptyTableIconCss;
 	}
+	public String[] getEmtpyTableMessageArgs() {
+		return emptyMessagei18nArgs;
+	}
 
 	@Override
 	public void dispose() {
 		for (FormItem formItem : getFormItems()) {
-			if (formItem instanceof Disposable) {
-				Disposable disposableFormItem = (Disposable) formItem;
+			if (formItem instanceof Disposable disposableFormItem) {
 				disposableFormItem.dispose();				
 			}
 		}

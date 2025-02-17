@@ -1,9 +1,9 @@
-<h3><i class="o_icon o_icon-fw o_CourseModule_icon"> </i>  $r.translate("curriculum.courses")</h3>
-#if($r.available("add.resource"))
-<div class="o_button_group o_button_group_right">
-	<div class="btn-group">
+<fieldset>
+	<legend> $r.translate("curriculum.courses")</legend>
+	#if($r.available("add.resource"))
+	<div class="o_button_group o_button_group_right">
 		$r.render("add.resource")
 	</div>
-</div>
-#end
-$r.render("table")
+	#end
+	$r.render("table")
+</fieldset>

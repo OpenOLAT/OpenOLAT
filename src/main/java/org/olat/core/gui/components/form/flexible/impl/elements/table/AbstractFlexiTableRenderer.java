@@ -169,6 +169,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String emptyMessageKey = ftE.getEmtpyTableMessageKey();
 		String emptyMessageIconCss = ftE.getEmtpyTableIconCss();
 		String emptyMessageHintKey = ftE.getEmptyTableHintKey();
+		String[] emptyMessageArgs = ftE.getEmtpyTableMessageArgs();
 		sb.append("<div class=\"o_empty_state\"");
 		
 		String wrapperSelector = ftE.getWrapperSelector();
@@ -176,9 +177,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append(" id=\"").append(wrapperSelector).append("\"");
 		}
 		sb.append("><div class=\"o_empty_visual\"><i class='o_icon o_icon_empty_indicator'></i><i class='o_icon ").append(emptyMessageIconCss).append("'></i></div>")
-			.append("<div class=\"o_empty_msg\">").append(translator.translate(emptyMessageKey)).append("</div>");			
+			.append("<div class=\"o_empty_msg\">").append(translator.translate(emptyMessageKey, emptyMessageArgs)).append("</div>");			
 		if (emptyMessageHintKey != null) {
-			sb.append("<div class=\"o_empty_hint\">").append(translator.translate(emptyMessageHintKey)).append("</div>");
+			sb.append("<div class=\"o_empty_hint\">").append(translator.translate(emptyMessageHintKey, emptyMessageArgs)).append("</div>");
 		}			
 		if (ftE.getEmptyTablePrimaryActionButton() != null) {
 			sb.append("<div class=\"o_empty_action\">");			

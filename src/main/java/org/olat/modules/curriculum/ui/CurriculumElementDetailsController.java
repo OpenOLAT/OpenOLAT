@@ -124,7 +124,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private EditCurriculumElementController editMetadataCtrl;
 	private LectureListRepositoryController lectureBlocksCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	private CurriculumElementResourceListController resourcesCtrl;
+	private CurriculumElementResourcesController resourcesCtrl;
 	private LectureBlocksWidgetController lectureBlocksWidgetCtrl;
 	private CurriculumElementStatusChangeController statusChangeCtrl;
 	private CurriculumElementUserManagementController userManagementCtrl;
@@ -456,7 +456,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		resourcesTab = tabPane.addTab(ureq, translate("tab.resources"), uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_RESOURCES), null);
-			resourcesCtrl = new CurriculumElementResourceListController(uureq, subControl, curriculumElement, secCallback);
+			resourcesCtrl = new CurriculumElementResourcesController(uureq, subControl, curriculumElement, secCallback);
 			listenTo(resourcesCtrl);
 			return resourcesCtrl.getInitialComponent();
 		});
@@ -559,6 +559,9 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			activateLectures(ureq, entries);
 		} else if(CONTEXT_RESOURCES.equalsIgnoreCase(type)) {
 			tabPane.setSelectedPane(ureq, resourcesTab);
+			if(resourcesCtrl != null) {
+				resourcesCtrl.loadModel();
+			}
 		} else if((CONTEXT_IMPLEMENTATIONS.equalsIgnoreCase(type) || CONTEXT_STRUCTURE.equalsIgnoreCase(type))
 				&& structuresTab >= 0) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());

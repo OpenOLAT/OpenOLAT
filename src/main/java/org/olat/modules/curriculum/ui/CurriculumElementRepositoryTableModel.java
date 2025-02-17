@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui;
+package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusin
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
@@ -58,13 +59,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<RepositoryEntry>
-		implements SortableFlexiTableDataModel<RepositoryEntry>, FilterableFlexiTableModel, FlexiBusinessPathModel {
+public class CurriculumElementRepositoryTableModel extends DefaultFlexiTableDataModel<CurriculumElementRepositoryRow>
+		implements SortableFlexiTableDataModel<CurriculumElementRepositoryRow>, FilterableFlexiTableModel, FlexiBusinessPathModel {
 
 	private static final RepoCols[] COLS = RepoCols.values();
 
 	private final Translator translator;
-	private List<RepositoryEntry> backups;
+	private List<CurriculumElementRepositoryRow> backups;
 	private final Map<String, String> fullNames = new HashMap<>();
 	private final Map<Long, OLATResourceAccess> repoEntriesWithOffer = new HashMap<>();
 
@@ -75,7 +76,7 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 	@Autowired
 	private AccessControlModule acModule;
 
-	public RepositoryFlexiTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public CurriculumElementRepositoryTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		CoreSpringFactory.autowireObject(this);
 		translator = Util.createPackageTranslator(RepositoryService.class, locale);
@@ -84,9 +85,8 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 	@Override
 	public void sort(SortKey orderBy) {
 		if (orderBy != null) {
-			RepositoryFlexiTableSortDelegate sort = new RepositoryFlexiTableSortDelegate(orderBy, this,
-					translator.getLocale());
-			List<RepositoryEntry> sorted = sort.sort();
+			SortableFlexiTableModelDelegate<CurriculumElementRepositoryRow> sort = new SortableFlexiTableModelDelegate<>(orderBy, this, translator.getLocale());
+			List<CurriculumElementRepositoryRow> sorted = sort.sort();
 			super.setObjects(sorted);
 		}
 	}
@@ -94,9 +94,9 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if (StringHelper.containsNonWhitespace(searchString)) {
-			List<RepositoryEntry> filteredRows = new ArrayList<>();
+			List<CurriculumElementRepositoryRow> filteredRows = new ArrayList<>();
 			searchString = searchString.toLowerCase();
-			for (RepositoryEntry row : backups) {
+			for (CurriculumElementRepositoryRow row : backups) {
 				if (accept(searchString, row)) {
 					filteredRows.add(row);
 				}
@@ -107,7 +107,7 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 		}
 	}
 
-	private boolean accept(String searchString, RepositoryEntry entry) {
+	private boolean accept(String searchString, CurriculumElementRepositoryRow entry) {
 		return accept(searchString, entry.getDisplayname()) || accept(searchString, entry.getExternalRef());
 	}
 
@@ -117,8 +117,8 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 
 	@Override
 	public String getUrl(Component source, Object object, String action) {
-		if ("select".equals(action) && object instanceof RepositoryEntry) {
-			String businessPath = "[RepositoryEntry:" + ((RepositoryEntry) object).getKey() + "]";
+		if ("select".equals(action) && object instanceof CurriculumElementRepositoryRow repositoryRow) {
+			String businessPath = "[RepositoryEntry:" + repositoryRow.getKey() + "]";
 			return BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
 		}
 		return null;
@@ -126,12 +126,13 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		RepositoryEntry entry = getObject(row);
+		CurriculumElementRepositoryRow entry = getObject(row);
 		return getValueAt(entry, col);
 	}
 
 	@Override
-	public Object getValueAt(RepositoryEntry re, int col) {
+	public Object getValueAt(CurriculumElementRepositoryRow row, int col) {
+		RepositoryEntry re = row.getRepositoryEntry();
 		return switch (COLS[col]) {
 			case ac -> getAccessControl(re);
 			case repoEntry -> re;
@@ -147,29 +148,22 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 			case lifecycleStart -> re.getLifecycle() == null ? null : re.getLifecycle().getValidFrom();
 			case lifecycleEnd -> re.getLifecycle() == null ? null : re.getLifecycle().getValidTo();
 			case runtimeType -> re.getRuntimeType();
+			case instantiateTemplate -> row.getInstantiateLink();
+			case resources -> row.getResourcesLink();
+			case tools -> row.getToolsLink();
 			default -> "ERROR";
 		};
 	}
 
 	@Override
-	public void setObjects(List<RepositoryEntry> objects) {
+	public void setObjects(List<CurriculumElementRepositoryRow> objects) {
 		backups = objects;
 		super.setObjects(objects);
 		repoEntriesWithOffer.clear();
 		secondaryInformations(objects);
 	}
 
-	public void addObject(RepositoryEntry object) {
-		getObjects().add(object);
-		secondaryInformations(Collections.singletonList(object));
-	}
-
-	public void addObjects(List<RepositoryEntry> addedObjects) {
-		getObjects().addAll(addedObjects);
-		secondaryInformations(addedObjects);
-	}
-
-	private void secondaryInformations(List<RepositoryEntry> repoEntries) {
+	private void secondaryInformations(List<CurriculumElementRepositoryRow> repoEntries) {
 		if (repoEntries == null || repoEntries.isEmpty())
 			return;
 
@@ -177,22 +171,26 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 		secondaryInformationsUsernames(repoEntries);
 	}
 
-	private void secondaryInformationsAccessControl(List<RepositoryEntry> repoEntries) {
-		if (repoEntries == null || repoEntries.isEmpty() || !acModule.isEnabled())
+	private void secondaryInformationsAccessControl(List<CurriculumElementRepositoryRow> entriesRows) {
+		if (entriesRows == null || entriesRows.isEmpty() || !acModule.isEnabled()) {
 			return;
+		}
 
+		List<RepositoryEntry> repoEntries = entriesRows.stream()
+				.map(CurriculumElementRepositoryRow::getRepositoryEntry)
+				.toList();
 		List<OLATResourceAccess> withOffers = acService.filterRepositoryEntriesWithAC(repoEntries);
 		for (OLATResourceAccess withOffer : withOffers) {
 			repoEntriesWithOffer.put(withOffer.getResource().getKey(), withOffer);
 		}
 	}
 
-	private void secondaryInformationsUsernames(List<RepositoryEntry> repoEntries) {
+	private void secondaryInformationsUsernames(List<CurriculumElementRepositoryRow> repoEntries) {
 		if (repoEntries == null || repoEntries.isEmpty())
 			return;
 
 		Set<String> newNames = new HashSet<>();
-		for (RepositoryEntry re : repoEntries) {
+		for (CurriculumElementRepositoryRow re : repoEntries) {
 			final String author = re.getInitialAuthor();
 			if (StringHelper.containsNonWhitespace(author) && !fullNames.containsKey(author)) {
 				newNames.add(author);
@@ -205,10 +203,6 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 		}
 	}
 
-	public void removeObject(RepositoryEntry object) {
-		getObjects().remove(object);
-		repoEntriesWithOffer.remove(object.getOlatResource().getKey());
-	}
 
 	private Object getAccessControl(RepositoryEntry re) {
 		if (re.isPublicVisible()) {
@@ -239,13 +233,24 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 	}
 
 	public enum RepoCols implements FlexiSortableColumnDef {
-		ac("table.header.ac"), repoEntry("table.header.typeimg"), displayname("table.header.displayname"),
-		author("table.header.author"), access("table.header.access"), creationDate("table.header.date"),
-		lastUsage("table.header.lastusage"), externalId("table.header.externalid"),
-		externalRef("table.header.externalref"), lifecycleLabel("table.header.lifecycle.label"),
-		lifecycleSoftKey("table.header.lifecycle.softkey"), lifecycleStart("table.header.lifecycle.start"),
-		lifecycleEnd("table.header.lifecycle.end"), guests("table.header.guests"),
-		runtimeType("table.header.runtime.type");
+		ac("table.header.ac"),
+		repoEntry("table.header.typeimg"),
+		displayname("table.header.displayname"),
+		author("table.header.author"),
+		access("table.header.access"),
+		creationDate("table.header.date"),
+		lastUsage("table.header.lastusage"),
+		externalId("table.header.externalid"),
+		externalRef("table.header.externalref"),
+		lifecycleLabel("table.header.lifecycle.label"),
+		lifecycleSoftKey("table.header.lifecycle.softkey"),
+		lifecycleStart("table.header.lifecycle.start"),
+		lifecycleEnd("table.header.lifecycle.end"),
+		guests("table.header.guests"),
+		runtimeType("table.header.runtime.type"),
+		instantiateTemplate("table.header.instantiate.template"),
+		resources("table.header.resources"),
+		tools("table.header.tools");
 
 		private final String i18nKey;
 
@@ -260,7 +265,7 @@ public class RepositoryFlexiTableModel extends DefaultFlexiTableDataModel<Reposi
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return instantiateTemplate != this && tools != this;
 		}
 
 		@Override
