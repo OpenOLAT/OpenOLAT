@@ -1161,16 +1161,17 @@ public class FolderController extends FormBasicController implements Activateabl
 				row.setSelectionItem(selectionEl);
 				row.setTitleItem(titleEl);
 			} else {
-				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), null);
-				selectionEl.setElementCssClass("o_nowrap");
-				selectionEl.setDomWrapperElement(DomWrapperElement.span);
-				selectionEl.setStaticFormElement(false);
-				row.setSelectionItem(selectionEl);
-				
-				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, getTitleWithLabel(row), null);
-				titleEl.setDomWrapperElement(DomWrapperElement.span);
-				titleEl.setStaticFormElement(false);
-				row.setTitleItem(titleEl);
+				FormLink selectionDownloadLink = uifactory.addFormLink("file_" + counter++, CMD_DOWNLOAD, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+				selectionDownloadLink.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
+				selectionDownloadLink.setUserObject(row);
+				selectionDownloadLink.setElementCssClass("o_link_plain");
+
+				FormLink titleDownloadLink = uifactory.addFormLink("file_" + counter++, CMD_DOWNLOAD, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+				titleDownloadLink.setI18nKey(getTitleWithLabel(row));
+				titleDownloadLink.setUserObject(row);
+
+				row.setSelectionItem(selectionDownloadLink);
+				row.setTitleItem(titleDownloadLink);
 			}
 		}
 	}
@@ -1375,6 +1376,13 @@ public class FolderController extends FormBasicController implements Activateabl
 				Long key = Long.valueOf(rowKey);
 				doOpenItem(ureq, key);
 				return;
+			} else if (StringHelper.containsNonWhitespace(ureq.getParameter("download"))) {
+				Long downloadKey = Long.valueOf(ureq.getParameter("download"));
+				dataModel.getObjects().stream()
+						.filter(row -> downloadKey.equals(row.getKey()))
+						.findFirst()
+						.ifPresent(folderRow -> doDownload(ureq, folderRow));
+				return;
 			}
 		}
 		super.event(ureq, source, event);
@@ -1463,7 +1471,9 @@ public class FolderController extends FormBasicController implements Activateabl
 				doOpenPath(ureq, folderRow);
 			} else if (CMD_FILE.equals(link.getCmd()) && link.getUserObject() instanceof FolderRow folderRow) {
 				doOpenFile(ureq, folderRow);
-			} 
+			} else if (CMD_DOWNLOAD.equals(link.getCmd()) && link.getUserObject() instanceof FolderRow folderRow) {
+				doDownload(ureq, folderRow);
+			}
 		}
 		
 		super.formInnerEvent(ureq, source, event);
