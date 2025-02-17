@@ -152,8 +152,6 @@ public class CurriculumElementResourceListController extends FormBasicController
 			// 1) add
 			addResourceButton = uifactory.addFormLink("add.resource", formLayout, Link.BUTTON);
 			addResourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-			addTemplateButton = uifactory.addFormLink("add.template", formLayout, Link.BUTTON);
-			addTemplateButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 			// 2) remove
 			removeResourcesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(removeResourcesButton);
