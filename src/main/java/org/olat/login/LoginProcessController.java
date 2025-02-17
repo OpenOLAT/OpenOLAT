@@ -109,8 +109,6 @@ public class LoginProcessController extends BasicController {
 			} else {
 				removeAsListenerAndDispose(pwChangeCtrl);
 				getWindowControl().pop();
-
-				getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(false);
 			}
 		}
 	}
