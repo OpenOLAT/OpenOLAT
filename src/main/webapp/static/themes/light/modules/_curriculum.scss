@@ -723,6 +723,12 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	}
 }
 
+@media (max-width: $screen-xs-max) {
+	.o_curriculum_overview {
+		grid-template-columns: 1fr;
+	}
+}
+
 .o_curriculum_status_change_status {
 	display: flex;
 	gap: 40px;

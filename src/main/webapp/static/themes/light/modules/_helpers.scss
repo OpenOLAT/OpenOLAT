@@ -277,6 +277,26 @@
 	grid-template-columns: 4fr repeat(4, minmax(207px, 1fr)) 4fr;
 }
 
+@media (max-width: $screen-md) {
+	.o_mega_buttons_3_centered, .o_mega_buttons_4_centered  {
+		grid-template-columns: 1fr 1fr;
+		
+		li[aria-hidden='true'] {
+			display:none;
+		}
+	}
+}
+
+@media (max-width: $screen-xs) {
+	.o_mega_buttons_3_centered, .o_mega_buttons_4_centered  {
+		grid-template-columns: 1fr;
+		
+		li[aria-hidden='true'] {
+			display:none;
+		}
+	}
+}
+
 /* Call to action button */
 .btn.o_button_call_to_action {
 	font-size: floor($font-size-base * 1.3);
