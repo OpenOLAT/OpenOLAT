@@ -113,7 +113,7 @@ public class TeamsConfigurationController extends FormBasicController {
 		clientIdEl.setVisible(enabled && showOldConfiguration);
 		secretEl.setVisible(enabled && showOldConfiguration);
 		tenantEl.setVisible(enabled && showOldConfiguration);
-		enabledForEl.setVisible(enabled && showOldConfiguration);
+		enabledForEl.setVisible(enabled);
 	}
 
 	@Override
