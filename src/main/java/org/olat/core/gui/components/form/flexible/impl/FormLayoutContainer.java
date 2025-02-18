@@ -312,13 +312,19 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	
 	/**
 	 * remove the component with the give name from this container	  
-	 * @param binderName
+	 * @param formCompName
 	 */
 	@Override
 	public void remove(String formCompName) {
 		FormItem toBeRemoved = getFormComponent(formCompName);
 		if(toBeRemoved != null) {
-			remove(formCompName, toBeRemoved);
+			// book keeping of FormComponent order
+			formComponentsNames.remove(formCompName);
+			formComponents.remove(formCompName);
+			/*
+			 * remove the gui representation
+			 */
+			formLayoutContainer.remove(toBeRemoved.getComponent().getComponentName());
 		}
 	}
 	
