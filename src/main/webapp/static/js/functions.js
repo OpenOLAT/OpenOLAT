@@ -1381,7 +1381,7 @@ function o_handleFileInit(formName, areaId, inputFileId, dropAreaId) {
 	function loadFiles(files) {
 		const listFiles = [];
 		for(const file of files) {
-			if(file.size > 0 && file.type != "") {
+			if(file.size > 0 || (file.type != "" && file.type.length > 0)) {
 				listFiles.push(file);
 			}
 		}
