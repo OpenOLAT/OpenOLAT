@@ -42,6 +42,7 @@ public class LecturesRepositoryPage {
 	
 	public TeacherRollCallPage openRollCall(String lectureBlockTitle) {
 		By selectBy = By.xpath("//table//tr[td[contains(text(),'" + lectureBlockTitle + "')]]/td/a[contains(@onclick,'details')]");
+		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		return new TeacherRollCallPage(browser)
 				.assertOnRollCall();
@@ -50,7 +51,7 @@ public class LecturesRepositoryPage {
 	/**
 	 * Click back to the course
 	 * 
-	 * @return
+	 * @return Itself
 	 */
 	public CoursePageFragment clickToolbarRootCrumb() {
 		By toolbarBackBy = By.xpath("//ol[@class='breadcrumb']/li[contains(@class,'o_first_crumb')]/a");
@@ -58,6 +59,4 @@ public class LecturesRepositoryPage {
 		OOGraphene.waitBusy(browser);
 		return new CoursePageFragment(browser);
 	}
-	
-
 }
