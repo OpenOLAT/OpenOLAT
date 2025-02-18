@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -298,7 +299,8 @@ public class FolderController extends FormBasicController implements Activateabl
 	private final Date newLabelDate = new Date();
 	private FolderView folderView;
 	private int counter = 0;
-	
+	private final List<String> trackedComponentNames = new ArrayList<>();
+
 	@Autowired
 	private FolderModule folderModule;
 	@Autowired
@@ -842,7 +844,8 @@ public class FolderController extends FormBasicController implements Activateabl
 
 	private void loadModel(UserRequest ureq) {
 		Instant start = Instant.now();
-		
+
+		removeOldComponents();
 		List<FolderRow> rows = FolderView.trash == folderView
 				? loadTrashRows(ureq)
 				: loadRows(ureq);
@@ -1104,10 +1107,6 @@ public class FolderController extends FormBasicController implements Activateabl
 	}
 	
 	private void forgeTitleLink(UserRequest ureq, FolderRow row) {
-		// This method can lead to memory overflows if a folder has a large number of
-		// files and is often switched between.
-		// The links from the previous call remain referenced by the flc, even though
-		// they are no longer required. They cannot be destroyed by the garbage collection.
 		if (row.getVfsItem() instanceof VFSContainer) {
 			if (row.getMetadata() != null && row.getMetadata().isDeleted()) {
 				StaticTextElement selectionEl = uifactory.addStaticTextElement("selection_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), null);
@@ -1118,6 +1117,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				StaticTextElement titleEl = uifactory.addStaticTextElement("title_" + counter++, null, StringHelper.escapeHtml(row.getTitle()), null);
 				titleEl.setStaticFormElement(false);
 				row.setTitleItem(titleEl);
+				trackedComponentNames.add(selectionEl.getName());
+				trackedComponentNames.add(titleEl.getName());
 			} else {
 				row.setOpenable(true);
 				
@@ -1133,6 +1134,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				titleLink.setUserObject(row);
 				row.setSelectionItem(selectionLink);
 				row.setTitleItem(titleLink);
+				trackedComponentNames.add(selectionLink.getName());
+				trackedComponentNames.add(titleLink.getName());
 			}
 		} else {
 			DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
@@ -1160,6 +1163,8 @@ public class FolderController extends FormBasicController implements Activateabl
 				
 				row.setSelectionItem(selectionEl);
 				row.setTitleItem(titleEl);
+				trackedComponentNames.add(selectionEl.getName());
+				trackedComponentNames.add(titleEl.getName());
 			} else {
 				FormLink selectionDownloadLink = uifactory.addFormLink("file_" + counter++, CMD_DOWNLOAD, "", null, flc, Link.LINK + Link.NONTRANSLATED);
 				selectionDownloadLink.setI18nKey(StringHelper.escapeHtml(row.getTitle()));
@@ -1172,8 +1177,29 @@ public class FolderController extends FormBasicController implements Activateabl
 
 				row.setSelectionItem(selectionDownloadLink);
 				row.setTitleItem(titleDownloadLink);
+
+				trackedComponentNames.add(selectionDownloadLink.getName());
+				trackedComponentNames.add(titleDownloadLink.getName());
 			}
 		}
+	}
+
+	/**
+	 * Removes old UI components to prevent memory overflows.
+	 */
+	private void removeOldComponents() {
+		Instant start = Instant.now();
+		if (trackedComponentNames.isEmpty()) return;
+
+		Iterator<String> iterator = trackedComponentNames.iterator();
+		while (iterator.hasNext()) {
+			String itemName = iterator.next();
+			flc.remove(itemName);
+			iterator.remove();
+		}
+		trackedComponentNames.clear();
+
+		log.debug("Folder: Old flc components removed in {} millis", Duration.between(start, Instant.now()).toMillis());
 	}
 
 	private String getTitleWithLabel(FolderRow row) {
@@ -1221,11 +1247,13 @@ public class FolderController extends FormBasicController implements Activateabl
 			pathEl.setDomWrapperElement(DomWrapperElement.span);
 			pathEl.setStaticFormElement(false);
 			row.setFilePathItem(pathEl);
+			trackedComponentNames.add(pathEl.getName());
 		} else if (FolderView.folder != folderView) {
 			FormLink pathEl = uifactory.addFormLink("path_" + counter++, CMD_PATH, "", null, null, Link.NONTRANSLATED);
 			pathEl.setI18nKey(StringHelper.escapeHtml(row.getFilePath()));
 			pathEl.setUserObject(row);
 			row.setFilePathItem(pathEl);
+			trackedComponentNames.add(pathEl.getName());
 		}
 	}
 	
@@ -1233,6 +1261,7 @@ public class FolderController extends FormBasicController implements Activateabl
 		FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
+		trackedComponentNames.add(toolsLink.getName());
 	}
 	
 	private void applyFilters(List<FolderRow> rows) {

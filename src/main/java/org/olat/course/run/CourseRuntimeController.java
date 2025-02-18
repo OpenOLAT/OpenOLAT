@@ -562,7 +562,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(corrupted) return;
 		
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-		if(!course.getCourseConfig().isToolbarEnabled() && !reSecurity.isEntryAdmin() && !reSecurity.isCoach()
+		if (!course.getCourseConfig().isToolbarEnabled() 
+				&& !reSecurity.getWrappedSecurity().isEntryAdmin()
+				&& !reSecurity.getWrappedSecurity().isCoach()
+				&& reSecurity.getOtherRoles().isEmpty()
 				&& !hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) && !hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)
 				&& !hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) && !hasCourseRight(CourseRights.RIGHT_ARCHIVING)
 					&& !hasCourseRight(CourseRights.RIGHT_STATISTICS) && !hasCourseRight(CourseRights.RIGHT_DB)

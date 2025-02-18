@@ -182,7 +182,7 @@ public class FolderPage {
 	 * 
 	 * @param file The file to upload
 	 * @return Itselfs
-	 */
+	 */ 
 	public FolderPage quickUploadFile(File file) {
 		By addFileBy = By.cssSelector(".o_folder_cmds .o_folder_create_group div.o_fileinput");
 		OOGraphene.waitElement(addFileBy, browser);
@@ -192,7 +192,7 @@ public class FolderPage {
 	}
 	
 	public FolderPage unzipFile(String filename) {
-		By unzipBy = By.xpath("//div[@class='o_folder_table']//div[contains(@class,'o_folder_card_meta')]/div[div/h5/div/span[text()[contains(.,'" + filename + "')]]]/a[i[contains(@class,'o_icon_actions')]]");
+		By unzipBy = By.xpath("//div[@class='o_folder_table']//div[contains(@class,'o_folder_card_meta')]/div[div/h5/a/span[text()[contains(.,'" + filename + "')]]]/a[i[contains(@class,'o_icon_actions')]]");
 		OOGraphene.waitElement(unzipBy, browser);
 		browser.findElement(unzipBy).click();
 		
