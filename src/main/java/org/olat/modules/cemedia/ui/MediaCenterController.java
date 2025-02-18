@@ -77,6 +77,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
@@ -191,6 +192,7 @@ public class MediaCenterController extends FormBasicController
 	public static final String FILTER_SHARED_WITH = "sharedWith";
 	public static final String FILTER_SOURCE = "source";
 	public static final String FILTER_PLATFORM = "platform";
+	public static final String FILTER_WITHOUT_AUTHOR = "withoutAuthor";
 
 	private MediaDataModel model;
 	private FormLink bulkDeleteButton;
@@ -514,6 +516,12 @@ public class MediaCenterController extends FormBasicController
 				FILTER_SHARED_WITH, sharedWithKV, true);
 		filters.add(sharedWithFilter);
 
+		SelectionValues withoutAuthorKeyValue = new SelectionValues();
+		withoutAuthorKeyValue.add(SelectionValues.entry("withoutAuthor", translate("filter.without.author")));
+		FlexiTableOneClickSelectionFilter withoutAuthorFilter = new FlexiTableOneClickSelectionFilter(translate("filter.without.author"),
+				FILTER_WITHOUT_AUTHOR, withoutAuthorKeyValue, true);
+		filters.add(withoutAuthorFilter);
+
 		filters.add(new FlexiTableTextFilter(translate("filter.source"), FILTER_SOURCE, false));
 
 		SelectionValues platforms = mediaService.getPlatforms(getIdentity(), getTranslator());
@@ -805,6 +813,16 @@ public class MediaCenterController extends FormBasicController
 			List<String> filterValues = ((FlexiTableExtendedFilter) platformFilter).getValues();
 			if (filterValues != null && !filterValues.isEmpty()) {
 				params.setPlatforms(filterValues);
+			}
+		}
+
+		FlexiTableFilter withoutAuthorFilters = FlexiTableFilter.getFilter(filters, FILTER_WITHOUT_AUTHOR);
+		if (withoutAuthorFilters != null) {
+			String filterValue = withoutAuthorFilters.getValue();
+			if ("withoutAuthor".equals(filterValue)) {
+				params.setWithoutAuthor(Boolean.TRUE);
+			} else {
+				params.setWithoutAuthor(Boolean.FALSE);
 			}
 		}
 		
