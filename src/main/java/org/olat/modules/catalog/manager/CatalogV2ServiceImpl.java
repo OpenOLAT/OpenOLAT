@@ -308,7 +308,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	}
 	
 	private Set<OLATResource> loadResourceWithReservation( List<OLATResource> resourcesWithAC, Identity identity) {
-		if (!acModule.isEnabled()) return Set.of();
+		if (!acModule.isEnabled() || identity == null) return Set.of();
 		
 		SearchReservationParameters searchParams = new SearchReservationParameters(resourcesWithAC);
 		searchParams.setIdentities(List.of(identity));
