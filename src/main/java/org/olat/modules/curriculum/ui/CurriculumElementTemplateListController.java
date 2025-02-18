@@ -336,7 +336,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 		RepositoryEntry entry = repositoryService.loadBy(entryRef);
 		if(entry != null && entry.getRuntimeType() == RepositoryEntryRuntimeType.template) {
 			curriculumService.addRepositoryTemplate(curriculumElement, entry);
-			showInfo("info.repositoryentry.added");
+			showInfo("info.repositorytemplate.added");
 		}
 	}
 	
@@ -378,7 +378,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 		
 		String i18nKey;
 		if(lectureBlocksRemoved == 0) {
-			i18nKey = resourcesToRemove.size() == 1 ? "info.repositoryentry.removed" : "info.repositoryentries.removed";
+			i18nKey = resourcesToRemove.size() == 1 ? "info.repositorytemplate.removed" : "info.repositorytemplates.removed";
 		} else {
 			i18nKey = resourcesToRemove.size() == 1 ? "info.repositoryentry.removed.lectureblock.moved" : "info.repositoryentries.removed.lectureblock.moved";
 		}

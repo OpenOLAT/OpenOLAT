@@ -1,9 +1,18 @@
 <div class="o_curriculum_widget">
 	<div class="o_curriculum_widget_title o_header_with_buttons">
 		<h3 class="o_widget_title">$r.render("curriculum.courses")</h3>
-		#if($r.available("add.resource"))
+		#if($r.available("add.resource") || $r.available("add.template") || $r.available("add.menu"))
 		<div class="o_curriculum_widget_cmds o_button_group o_button_group_right">
-			$r.render("add.resource")
+			#if($r.visible("add.menu"))
+				$r.render("add.menu")
+			#else
+				#if($r.visible("add.resource"))
+					$r.render("add.resource")
+				#end
+				#if($r.visible("add.template"))
+					$r.render("add.template")
+				#end
+			#end
 		</div>
 		#end
 	</div>

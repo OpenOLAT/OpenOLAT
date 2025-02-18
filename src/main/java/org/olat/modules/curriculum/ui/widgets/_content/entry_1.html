@@ -1,4 +1,4 @@
-<div class="o_curriculum_course_card">
+<div class="o_curriculum_course_card #if(${row.template()}) o_template_course #end">
 	<div class="o_thumbnail">
 		<div class="o_thumbnail_file_img">
 			<a href="$row.url" onclick="${f.ffXHREvent("select_entry","${row.getKey()}")}; return false;" title="$r.escapeForHtmlAttribute(${row.displayName()})">
@@ -9,6 +9,11 @@
 			#end
 			</a>
 		</div>
+		#if(${row.template()}) 
+			<div class="o_curriculum_course_card_labels">
+				<div class="o_curriculum_course_card_label o_curriculum_label_template"><i class="o_icon o_icon-fw o_icon_file_lines"> </i> $r.translate("template")</div>
+			</div>
+		 #end
 	</div>
 	<div class="o_card_meta">
 		<h4 class="o_card_title">$r.render(${row.openLink().getComponent().getComponentName()})</h4>
@@ -16,5 +21,12 @@
 			<small>$r.escapeHtml(${row.getExternalRef()})</small>
 		#end
 		<div class="o_card_status">${row.statusHtml()}</div>
+	</div>
+	<div class="o_card_cmds">
+	#if(${row.template()} && $r.isNotNull($row.instantiateTemplateLink)) 
+	
+		$r.render($row.instantiateTemplateLink)
+	
+	#end
 	</div>
 </div>

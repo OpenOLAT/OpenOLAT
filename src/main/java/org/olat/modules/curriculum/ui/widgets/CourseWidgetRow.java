@@ -29,7 +29,8 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record CourseWidgetRow(RepositoryEntry entry, FormLink openLink, String url, String thumbnailUrl, String statusHtml) {
+public record CourseWidgetRow(RepositoryEntry entry, boolean template, FormLink openLink, FormLink instantiateTemplateLink,
+		String url, String thumbnailUrl, String statusHtml) {
 
 	public Long getKey() {
 		return entry.getKey();
@@ -49,6 +50,10 @@ public record CourseWidgetRow(RepositoryEntry entry, FormLink openLink, String u
 
 	public FormLink getOpenLink() {
 		return openLink;
+	}
+	
+	public FormLink getInstantiateTemplateLink() {
+		return instantiateTemplateLink;
 	}
 
 	@Override

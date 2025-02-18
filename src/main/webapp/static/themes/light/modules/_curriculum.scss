@@ -630,6 +630,12 @@ $o-curriculum-entry-bg							: #CCFFCC;
 			background-position:50% 50%;		
 			background-size: contain;
 		}
+		
+		&.o_template_course {
+			border: $o-box-warning-color;
+			border-style: dashed;
+			background-color: $o-box-warning-bg;
+		}
 	}
 	
 	.o_thumbnail_file_img {
@@ -640,6 +646,22 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		justify-content: center;
 		align-items: center;
 		overflow: hidden;
+	}
+	
+	
+	.o_curriculum_course_card_labels {
+		margin-top: -75px;
+		margin-left: 5px;
+	}
+	
+	.o_curriculum_course_card_label {
+		@extend %o_labeled;
+		
+		&.o_curriculum_label_template {
+			background-color: $o-curriculum-widget-template-label-bg ;
+			border-color: $o-curriculum-widget-template-label-border;
+			color: $o-curriculum-widget-template-label-color;
+		}
 	}
 	
 	.o_card_meta {
@@ -654,6 +676,12 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		> * {
 			order: 2;
 		}
+	}
+	
+	.o_card_cmds {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
 	}
 	
 	.o_curriculum_offer_cards {
