@@ -85,19 +85,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		Offer offer = link.getOffer();
-		
-		if (offer.getCancellingFee() != null) {
-			String cancellingFee = PriceFormat.fullFormat(offer.getCancellingFee());
-			if (offer.getCancellingFeeDeadlineDays() != null) {
-				if (offer.getCancellingFeeDeadlineDays() == 1) {
-					cancellingFee += " (" + translate("cancelling.fee.addon.one") + ")";
-				} else {
-					cancellingFee += " (" + translate("cancelling.fee.addon", offer.getCancellingFeeDeadlineDays().toString()) + ")";
-				}
-			}
-			uifactory.addStaticTextElement("cancelling.fee", cancellingFee, formLayout);
-		}
+
 		
 		billingAddressCont = FormLayoutContainer.createCustomFormLayout("billingAddress", getTranslator(), velocity_root + "/billing_address.html");
 		billingAddressCont.setLabel("billing.address", null);
@@ -115,6 +103,19 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		purchseNumberEl = uifactory.addTextElement("order.purchase.number", 100, null, formLayout);
 		
 		commentEl = uifactory.addTextAreaElement("order.comment", 4, 72, null, formLayout);
+		
+		Offer offer = link.getOffer();
+		if (offer.getCancellingFee() != null) {
+			String cancellingFee = PriceFormat.fullFormat(offer.getCancellingFee());
+			if (offer.getCancellingFeeDeadlineDays() != null) {
+				if (offer.getCancellingFeeDeadlineDays() == 1) {
+					cancellingFee += " (" + translate("cancelling.fee.addon.one") + ")";
+				} else {
+					cancellingFee += " (" + translate("cancelling.fee.addon", offer.getCancellingFeeDeadlineDays().toString()) + ")";
+				}
+			}
+			uifactory.addStaticTextElement("cancelling.fee", cancellingFee, formLayout);
+		}
 		
 		uifactory.addFormSubmitButton("access.button.fee", formLayout);
 	}
