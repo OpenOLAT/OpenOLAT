@@ -90,9 +90,9 @@ public class RepositoryCatalogInfoFactory {
 					true, translator.translate("access.taxonomy.level"), details,
 					null, getCatalogStatusEvaluator(entry.getEntryStatus()), translator.translate("offer.available.in.status.course"),
 					false,
-					editBusinessPath, 
-					translator.translate("access.open.metadata"),
-					CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()): null, taxonomyLevels, showRQCode);
+					false, 
+					editBusinessPath,
+					translator.translate("access.open.metadata"), CatalogBCFactory.get(false).getOfferUrl(entry.getOlatResource()), catalogV2Module.isWebPublishEnabled()? CatalogBCFactory.get(true).getOfferUrl(entry.getOlatResource()): null, taxonomyLevels, showRQCode);
 		} else if (CoreSpringFactory.getImpl(RepositoryModule.class).isCatalogEnabled()) {
 			Translator translator = Util.createPackageTranslator(RepositoryService.class, locale);
 			translator = Util.createPackageTranslator(AccessConfigurationController.class, locale, translator);
@@ -121,7 +121,7 @@ public class RepositoryCatalogInfoFactory {
 			}
 			return new CatalogInfo(true, false, false, true, true, translator.translate("access.info.catalog.entries"),
 					details, null, statusEvaluator, translator.translate("offer.available.in.status.course"), false,
-					editBusinessPath, translator.translate("access.open.catalog"), null, null, null, showRQCode);
+					false, editBusinessPath, translator.translate("access.open.catalog"), null, null, null, showRQCode);
 		}
 		return CatalogInfo.UNSUPPORTED;
 	}

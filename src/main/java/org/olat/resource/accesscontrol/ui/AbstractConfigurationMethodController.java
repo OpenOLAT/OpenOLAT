@@ -104,6 +104,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		// Label
 		String label = link.getOffer() != null ? link.getOffer().getLabel() : null;
 		labelEl = uifactory.addTextElement("offer.label", "offer.label", 128, label, formLayout);
+		labelEl.setHelpTextKey("offer.label.help", null);
 		
 		// Catalog
 		SelectionValues catalogSV = new SelectionValues();
@@ -148,8 +149,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		
 		// Confirmations
 		if (isConfirmationByManagerSupported()) {
-			confirmationByManagerEl = uifactory.addCheckboxesHorizontal("confirmation.by.manager", formLayout, onKeys,
-					new String[] { translate("confirmation.by.manager.required") });
+			confirmationByManagerEl = uifactory.addCheckboxesHorizontal("confirmation.by", formLayout, onKeys,
+					new String[] { translate("confirmation.by.admin") });
 			confirmationByManagerEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationByManagerRequired());
 		}
 		

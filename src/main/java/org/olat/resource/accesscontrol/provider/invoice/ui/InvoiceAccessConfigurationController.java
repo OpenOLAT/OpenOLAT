@@ -26,9 +26,11 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
@@ -58,8 +60,10 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 
 	private SingleSelection currencyEl;
 	private TextElement priceAmountEl;
+	private FormToggle cancellingEnabledEl;
 	private TextElement cancellingFeeAmountEl;
-	private TextElement cancellingFeeDeadlineDaysEl;
+	private FormLayoutContainer cancellingFeeFreeCont;
+	private TextElement cancellingFeeFreeEl;
 	private SingleSelection costCenterEl;
 	
 	private String currencyCode = null;
@@ -137,9 +141,25 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		priceAmountEl = uifactory.addTextElement("price", 32, priceAmount, formLayout);
 		priceAmountEl.setMandatory(true);
 		
-		cancellingFeeAmountEl = uifactory.addTextElement("cancelling.fee", 32, cancellingFeeAmount, formLayout);
+		cancellingEnabledEl = uifactory.addToggleButton("cancelling.fee.enabled", "cancelling.fee.enabled",
+				translate("on"), translate("off"), formLayout);
+		cancellingEnabledEl.toggle(StringHelper.containsNonWhitespace(cancellingFeeAmount));
+		cancellingEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
-		cancellingFeeDeadlineDaysEl = uifactory.addTextElement("cancelling.fee.deadline.days", 32, cancellingFeeDeadlineDays, formLayout);
+		cancellingFeeAmountEl = uifactory.addTextElement("cancelling.fee", 32, cancellingFeeAmount, formLayout);
+		cancellingFeeAmountEl.setMandatory(true);
+		
+		cancellingFeeFreeCont = FormLayoutContainer.createCustomFormLayout("freeCont", getTranslator(), velocity_root + "/cancelling_fee_free.html");
+		cancellingFeeFreeCont.setLabel("cancelling.fee.free", null);
+		cancellingFeeFreeCont.setRootForm(mainForm);
+		if (!catalogInfo.isStartDateAvailable()) {
+			cancellingFeeFreeCont.setWarningKey("cancelling.fee.free.start.missing");
+		}
+		formLayout.add(cancellingFeeFreeCont);
+		
+		cancellingFeeFreeEl = uifactory.addTextElement("cancelling.fee.free", 8, cancellingFeeDeadlineDays, cancellingFeeFreeCont);
+		cancellingFeeFreeEl.setDisplaySize(8);
+		updateCancellingUI();
 		
 		SelectionValues costCenterSV = new SelectionValues();
 		CostCenterSearchParams costCenterSearchParams = new CostCenterSearchParams();
@@ -170,10 +190,12 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == currencyEl) {
 			updateCancellingFeeAmount();
+		} else if (source == cancellingEnabledEl) {
+			updateCancellingUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	private void updateCancellingFeeAmount() {
 		if (!currencyEl.isOneSelected()) {
 			return;
@@ -201,6 +223,13 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		}
 		
 		currencyCode = selectedCurreny;
+	}
+	
+	private void updateCancellingUI() {
+		boolean cancellingFeeEnabled = cancellingEnabledEl.isOn();
+		cancellingFeeAmountEl.setVisible(cancellingFeeEnabled);
+		cancellingFeeFreeCont.setVisible(cancellingFeeEnabled);
+		cancellingFeeFreeEl.setVisible(cancellingFeeEnabled);
 	}
 
 	@Override
@@ -230,22 +259,28 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		}
 		
 		cancellingFeeAmountEl.clearError();
-		if (StringHelper.containsNonWhitespace(cancellingFeeAmountEl.getValue())) {
-			try {
-				if (Double.valueOf(cancellingFeeAmountEl.getValue()) < 0) {
+		if (cancellingFeeAmountEl.isVisible()) {
+			if (StringHelper.containsNonWhitespace(cancellingFeeAmountEl.getValue())) {
+				try {
+					if (Double.valueOf(cancellingFeeAmountEl.getValue()) < 0) {
+						cancellingFeeAmountEl.setErrorKey("form.error.nofloat");
+						allOk &= false;
+					}
+				} catch (Exception e) {
 					cancellingFeeAmountEl.setErrorKey("form.error.nofloat");
 					allOk &= false;
 				}
-			} catch (Exception e) {
-				cancellingFeeAmountEl.setErrorKey("form.error.nofloat");
+			} else {
+				cancellingFeeAmountEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
 		
-		cancellingFeeDeadlineDaysEl.clearError();
-		if (StringHelper.containsNonWhitespace(cancellingFeeDeadlineDaysEl.getValue())
-				&& (!StringHelper.isLong(cancellingFeeDeadlineDaysEl.getValue()) || Long.parseLong(cancellingFeeDeadlineDaysEl.getValue()) < 1)) {
-			cancellingFeeDeadlineDaysEl.setErrorKey("form.error.nointeger");
+		cancellingFeeFreeCont.clearError();
+		if (cancellingFeeFreeEl.isVisible()
+				&& StringHelper.containsNonWhitespace(cancellingFeeFreeEl.getValue())
+				&& (!StringHelper.isLong(cancellingFeeFreeEl.getValue()) || Long.parseLong(cancellingFeeFreeEl.getValue()) < 1)) {
+			cancellingFeeFreeCont.setErrorKey("form.error.nointeger");
 			allOk &= false;
 		}
 		
@@ -263,17 +298,21 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		link.getOffer().setPrice(price);
 		
 		PriceImpl cancellingFee = null;
-		if (StringHelper.containsNonWhitespace(cancellingFeeAmountEl.getValue())) {
-			BigDecimal cancellingFeeAmount = new BigDecimal(cancellingFeeAmountEl.getValue());
-			cancellingFee = new PriceImpl();
-			cancellingFee.setAmount(cancellingFeeAmount);
-			cancellingFee.setCurrencyCode(currencyCode);
+		if (cancellingFeeAmountEl.isVisible()) {
+			if (StringHelper.containsNonWhitespace(cancellingFeeAmountEl.getValue())) {
+				BigDecimal cancellingFeeAmount = new BigDecimal(cancellingFeeAmountEl.getValue());
+				cancellingFee = new PriceImpl();
+				cancellingFee.setAmount(cancellingFeeAmount);
+				cancellingFee.setCurrencyCode(currencyCode);
+			}
 		}
 		link.getOffer().setCancellingFee(cancellingFee);
 		
 		Integer cancellingFeeDeadlineDays = null;
-		if (StringHelper.containsNonWhitespace(cancellingFeeDeadlineDaysEl.getValue())) {
-			cancellingFeeDeadlineDays = Integer.valueOf(cancellingFeeDeadlineDaysEl.getValue());
+		if (cancellingFeeFreeEl.isVisible()) {
+			if (StringHelper.containsNonWhitespace(cancellingFeeFreeEl.getValue())) {
+				cancellingFeeDeadlineDays = Integer.valueOf(cancellingFeeFreeEl.getValue());
+			}
 		}
 		link.getOffer().setCancellingFeeDeadlineDays(cancellingFeeDeadlineDays);
 		

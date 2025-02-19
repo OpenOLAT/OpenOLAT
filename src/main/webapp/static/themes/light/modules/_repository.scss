@@ -294,6 +294,13 @@
 	}
 }
 
+.o_ac_invoice_fee_free {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 5px;
+}
+
 .o_ac_order_details .o_ac_order_header p {
 	font-size: 2em;
 	font-weight: 900;
