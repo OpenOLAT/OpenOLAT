@@ -96,7 +96,7 @@ public class FormParticipationController extends BasicController {
 			participations = formManager.loadParticipations(survey, coachedCourseEnv.getIdentityEnvironment().getIdentity())
 					.stream()
 					.filter(participation -> participation.getStatus() == EvaluationFormParticipationStatus.done)
-					.sorted((p1, p2) -> Integer.compare(p1.getRun(), p2.getRun()))
+					.sorted((p1, p2) -> Integer.compare(p2.getRun(), p1.getRun()))
 					.toList();
 		} else {
 			EvaluationFormParticipation lastParticipation = formManager.loadLastParticipation(survey,
@@ -121,17 +121,20 @@ public class FormParticipationController extends BasicController {
 						.collect(Collectors.toMap(
 								session -> session.getParticipation().getKey(),
 								EvaluationFormSession::getSubmissionDate));
-				ParticipationSubmissionDate participationSubmissionDate = null;
+				ParticipationSubmissionDate lastParticipationSubmissionDate = null;
 				for (EvaluationFormParticipation participation : participations) {
 					Date submissionDate = participationKeyToSubmissionDate.get(participation.getKey());
-					participationSubmissionDate = new ParticipationSubmissionDate(participation, submissionDate);
+					ParticipationSubmissionDate participationSubmissionDate = new ParticipationSubmissionDate(participation, submissionDate);
+					if (lastParticipationSubmissionDate == null) {
+						lastParticipationSubmissionDate = participationSubmissionDate;
+					}
 					
 					Link link = LinkFactory.createLink("run." + participation.getRun(), "run", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 					link.setCustomDisplayText(getTranslatedRunName(participationSubmissionDate));
 					link.setUserObject(participationSubmissionDate);
 					runsDropdown.addComponent(link);
 				}
-				doSelectParticipation(ureq, participationSubmissionDate);
+				doSelectParticipation(ureq, lastParticipationSubmissionDate);
 			}
 		} else {
 			EmptyStateFactory.create("emptyState", mainVC, this, EMPTY_STATE);

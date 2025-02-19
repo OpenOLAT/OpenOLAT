@@ -305,13 +305,13 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor) {
-		List<EvaluationFormParticipation> participations = evaluationFormParticipationDao.loadByExecutor(surveyRef, executor, true);
+		List<EvaluationFormParticipation> participations = evaluationFormParticipationDao.loadByExecutor(surveyRef, executor, Boolean.TRUE);
 		return !participations.isEmpty()? participations.get(0): null;
 	}
 	
 	@Override
 	public List<EvaluationFormParticipation> loadParticipationsByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor) {
-		return evaluationFormParticipationDao.loadByExecutor(surveyRef, executor, false);
+		return evaluationFormParticipationDao.loadByExecutor(surveyRef, executor, null);
 	}
 	
 	@Override
