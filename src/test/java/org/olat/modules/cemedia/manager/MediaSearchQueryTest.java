@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagService;
