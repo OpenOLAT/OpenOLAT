@@ -53,6 +53,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserLifecycleManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,6 +88,8 @@ public class MediaSearchQueryTest extends OlatTestCase {
 	private PortfolioService portfolioService;
 	@Autowired
 	private MediaToTaxonomyLevelDAO mediaToTaxonomyLevelDao;
+	@Autowired
+	private UserLifecycleManager lifecycleManager;
 	
 	@Test
 	public void searchByAuthor() {
@@ -108,7 +111,7 @@ public class MediaSearchQueryTest extends OlatTestCase {
 		List<MediaWithVersion> ownedMedias = mediaSearchQuery.searchBy(ownedParameters);
 		assertThat(ownedMedias)
 			.hasSizeGreaterThanOrEqualTo(3)
-			.map(media -> media.media())
+			.map(MediaWithVersion::media)
 			.containsAnyOf(media1, media2, media3)
 			.doesNotContain(mediaAlt);
 
@@ -120,9 +123,40 @@ public class MediaSearchQueryTest extends OlatTestCase {
 		List<MediaWithVersion> searchMedias = mediaSearchQuery.searchBy(parameters);
 		assertThat(searchMedias)
 			.hasSize(1)
-			.map(media -> media.media())
+			.map(MediaWithVersion::media)
 			.containsAnyOf(media3)
 			.doesNotContain(media1, media2, mediaAlt);
+
+		Identity deletedAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-deleted");
+		dbInstance.commitAndCloseSession();
+
+		lifecycleManager.deleteIdentity(deletedAuthor, null);
+		dbInstance.commitAndCloseSession();
+
+		// Create media with deleted author
+		Media mediaDeletedAuthor = mediaDao.createMediaAndVersion("Media Deleted", "No author", null, "This media has a deleted author", "Forum", "[Media:0]", null, 10, deletedAuthor);
+		dbInstance.commit();
+
+		SearchMediaParameters withoutAuthorParams = new SearchMediaParameters();
+		withoutAuthorParams.setWithoutAuthor(true);
+		List<MediaWithVersion> withoutAuthorMedias = mediaSearchQuery.searchBy(withoutAuthorParams);
+
+		assertThat(withoutAuthorMedias)
+				.isNotEmpty()
+				.map(MediaWithVersion::media)
+				.contains(mediaDeletedAuthor)
+				.doesNotContain(media1, media2, media3, mediaAlt);
+
+		SearchMediaParameters withAuthorParams = new SearchMediaParameters();
+		withAuthorParams.setWithoutAuthor(false);
+		withAuthorParams.setIdentity(author);
+		List<MediaWithVersion> withAuthorMedias = mediaSearchQuery.searchBy(withAuthorParams);
+
+		assertThat(withAuthorMedias)
+				.isNotEmpty()
+				.map(MediaWithVersion::media)
+				.doesNotContain(mediaDeletedAuthor)
+				.contains(media1, media2, media3);
 	}
 
 	@Test

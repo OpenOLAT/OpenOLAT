@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaToGroupRelation.MediaToGroupRelationType;
@@ -98,6 +99,10 @@ public class MediaSearchQuery {
 		
 		if(parameters.getUsedIn() != null && !parameters.getUsedIn().isEmpty()) {
 			appendUsedIn(sb, parameters);
+		}
+
+		if (parameters.isWithoutAuthor()) {
+			sb.and().append("media.author.status = ").append(Identity.STATUS_DELETED);
 		}
 		
 		if(parameters.getSharedWith() != null && !parameters.getSharedWith().isEmpty()) {
