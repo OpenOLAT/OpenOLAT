@@ -523,12 +523,13 @@ public class LTIConfigForm extends FormBasicController {
 		boolean lti13 = !CONFIGKEY_LTI_11.equals(selectedVersionKey);
 		boolean sharedTool = StringHelper.isLong(selectedVersionKey)
 				&& tool != null && tool.getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE;
+		boolean sharedMultiContexts = sharedTool && getMultiContextToolDeployment(tool) != null;
 		boolean deepLink = (sharedTool && tool.getDeepLinking() != null && tool.getDeepLinking().booleanValue())
 				|| (lti13 && !sharedTool);
 		
 		// LTI 1.3
 		clientIdEl.setVisible(lti13 && !sharedTool);
-		deploymentIdEl.setVisible(lti13 && !sharedTool);
+		deploymentIdEl.setVisible(lti13 && !sharedMultiContexts);
 		publicKeyTypeEl.setVisible(lti13 && !sharedTool);
 		publicKeyTypeEl.setEnabled(!sharedTool);
 		publicKeyEl.setVisible(lti13 && PublicKeyType.KEY.name().equals(publicKeyTypeEl.getSelectedKey())  && !sharedTool);
