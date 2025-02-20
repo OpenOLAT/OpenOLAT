@@ -140,8 +140,8 @@ public class LoginModule extends AbstractSpringModule {
 	private String usernameRegex;
 	private Pattern usernamePattern;
 
-	@Value("${password.change.valid.hours.gui}")
-	private Integer validUntilHoursGui;
+	@Value("${password.change.valid.minutes.gui}")
+	private Integer validUntilMinutesGui;
 	
 	@Value("${password.change.once:false}")
 	private boolean passwordChangeOnce;
@@ -466,9 +466,9 @@ public class LoginModule extends AbstractSpringModule {
 			passwordLastnameForbidden = "true".equals(lastnameForbiddenObj);
 		}
 		
-		int validUntilHoursGuiInt = getIntPropertyValue("password.change.valid.hours.gui");
-		if (validUntilHoursGuiInt > 0) {
-			validUntilHoursGui = validUntilHoursGuiInt;
+		int validUntilMinutesGuiInt = getIntPropertyValue("password.change.valid.minutes.gui");
+		if (validUntilMinutesGuiInt > 0) {
+			validUntilMinutesGui = validUntilMinutesGuiInt;
 		}
 		
 		passwordMaxAge = getAgeValue(MAX_AGE, passwordMaxAge);
@@ -745,13 +745,13 @@ public class LoginModule extends AbstractSpringModule {
 		return usernamePattern;
 	}
 
-	public Integer getValidUntilHoursGui() {
-		return validUntilHoursGui;
+	public Integer getValidUntilMinutesGui() {
+		return validUntilMinutesGui;
 	}
 
-	public void setValidUntilHoursGui(Integer validUntilHoursGui) {
-		this.validUntilHoursGui = validUntilHoursGui;
-		setIntProperty("password.change.valid.hours.gui", validUntilHoursGui, true);
+	public void setValidUntilMinutesGui(Integer validUntilMinutesGui) {
+		this.validUntilMinutesGui = validUntilMinutesGui;
+		setIntProperty("password.change.valid.minutes.gui", validUntilMinutesGui, true);
 	}
 
 	public boolean isPasswordChangeOnce() {
