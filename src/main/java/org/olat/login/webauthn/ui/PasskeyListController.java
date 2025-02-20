@@ -20,6 +20,7 @@
 package org.olat.login.webauthn.ui;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.admin.user.SendTokenToUserForm;
 import org.olat.basesecurity.Authentication;
@@ -42,6 +43,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Preferences;
+import org.olat.core.id.UserConstants;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.login.webauthn.OLATWebAuthnManager;
 import org.olat.login.webauthn.ui.PasskeyListTableModel.PasskeyCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,13 +202,19 @@ public class PasskeyListController extends FormBasicController {
 	}
 	
 	private void doSendToken(UserRequest ureq) {
-		sendTokenToUserCtrl = new SendTokenToUserForm(ureq, getWindowControl(), identityToModify, false, false, true);
-		listenTo(sendTokenToUserCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), sendTokenToUserCtrl.getInitialComponent(),
-				true, translate("send.password.link"));
-		cmc.activate();
-		listenTo(cmc);
+		Preferences prefs = identityToModify.getUser().getPreferences();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
+		if (identityToModify.getUser().getProperty(UserConstants.EMAIL, locale) != null) {
+			sendTokenToUserCtrl = new SendTokenToUserForm(ureq, getWindowControl(), identityToModify, false, false, true);
+			listenTo(sendTokenToUserCtrl);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), sendTokenToUserCtrl.getInitialComponent(),
+					true, translate("send.password.link"));
+			cmc.activate();
+			listenTo(cmc);
+		} else {
+			showError("send.password.no.mail");
+		}
 	}
 	
 	private void doGeneratePasskey(UserRequest ureq) {

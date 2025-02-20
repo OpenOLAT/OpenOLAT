@@ -31,21 +31,27 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.sysinfo.InfoMessageManager;
 import org.olat.admin.sysinfo.SysInfoMessage;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Invitation;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -53,11 +59,19 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Preferences;
+import org.olat.core.id.User;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -70,8 +84,22 @@ import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.WebCatalogDispatcher;
+import org.olat.modules.invitation.InvitationService;
+import org.olat.registration.PwChangeController;
+import org.olat.registration.RegWizardConstants;
+import org.olat.registration.RegistrationAdditionalPersonalDataController;
+import org.olat.registration.RegistrationLangStep00;
+import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
+import org.olat.registration.RegistrationPersonalDataController;
+import org.olat.registration.SelfRegistrationAdvanceOrderInput;
+import org.olat.registration.TemporaryKey;
+import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
+import org.olat.shibboleth.ShibbolethDispatcher;
+import org.olat.user.UserManager;
 import org.olat.user.UserModule;
+import org.olat.user.UserPropertiesConfig;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -83,10 +111,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LoginAuthprovidersController extends MainLayoutBasicController implements Activateable2 {
 
+	private static final Logger log = Tracing.createLoggerFor(LoginAuthprovidersController.class);
+
 	private static final String ACTION_LOGIN = "login";
 	public  static final String ATTR_LOGIN_PROVIDER = "lp";
 
-	private final Invitation invitation;
+	private Invitation invitation;
 	private final StackedPanel dmzPanel;
 	private final List<Controller> authenticationCtrlList = new ArrayList<>();
 
@@ -95,7 +125,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private Component changePasswordLink;
 
 	private CloseableModalController cmc;
-	private LoginProcessController loginProcessCtrl;
+	private StepsMainRunController registrationWizardCtrl;
+	private PwChangeController pwChangeCtrl;
 
 	@Autowired
 	private HelpModule helpModule;
@@ -113,6 +144,18 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private InfoMessageManager infoMessageMgr;
 	@Autowired
 	private RegistrationModule registrationModule;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private RegistrationManager registrationManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private InvitationService invitationService;
+	@Autowired
+	private AutoAccessManager autoAccessManager;
+	@Autowired
+	private UserPropertiesConfig userPropertiesConfig;
 
 	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null, false);
@@ -178,14 +221,23 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			if(entries.size() > 1) {
 				email = entries.get(1).getOLATResourceable().getResourceableTypeName();
 			}
-			openChangePassword(ureq, email);
+			doOpenChangePassword(ureq, email);
 		}
 	}
 
 	private void doOpenRegistration(UserRequest ureq) {
-		loginProcessCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, invitation);
-		listenTo(loginProcessCtrl);
-		loginProcessCtrl.doOpenRegistration(ureq);
+		boolean isAdditionalRegistrationFormEnabled = !userManager
+				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
+		Step startReg = new RegistrationLangStep00(ureq, invitation, registrationModule.isDisclaimerEnabled(),
+				registrationModule.isEmailValidationEnabled(), isAdditionalRegistrationFormEnabled, registrationModule.isAllowRecurringUserEnabled());
+		registrationWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startReg, new RegisterFinishCallback(),
+				new RegCancelCallback(), translate("menu.register"), "o_sel_registration_start_wizard");
+		listenTo(registrationWizardCtrl);
+		if (invitation != null) {
+			dmzPanel.pushContent(registrationWizardCtrl.getInitialComponent());
+		} else {
+			getWindowControl().pushAsModalDialog(registrationWizardCtrl.getInitialComponent());
+		}
 	}
 
 	private VelocityContainer initLoginContent(UserRequest ureq) {
@@ -374,7 +426,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		if (source == registerLink) {
 			doOpenRegistration(ureq);
 		} else if (source == changePasswordLink) {
-			openChangePassword(ureq, null);
+			doOpenChangePassword(ureq, null);
 		} else if (ACTION_LOGIN.equals(event.getCommand())
 				&& "guest".equalsIgnoreCase(ureq.getParameter(ATTR_LOGIN_PROVIDER))) {
 			doGuestLogin(ureq);
@@ -383,11 +435,26 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (event == StepsEvent.RELOAD) {
+		if (source == registrationWizardCtrl) {
+			if (invitation != null) {
+				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
+				dmzPanel.popContent();
+			} else {
+				getWindowControl().pop();
+			}
+			if (event == StepsEvent.RELOAD) {
+				cleanUp();
+				doOpenRegistration(ureq);
+			} else {
+				cleanUp();
+			}
+		} else if (source == pwChangeCtrl) {
+			if (event == Event.CANCELLED_EVENT
+					&& loginModule.getAuthenticationProvider(ShibbolethDispatcher.PROVIDER_SHIB) != null) {
+				// Redirect to context path to prevent Javascript error when using Shibboleth provider OO-7777
+				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
+			}
 			getWindowControl().pop();
-			cleanUp();
-			doOpenRegistration(ureq);
-		} else if (cmc == source) {
 			cleanUp();
 		} else if (event instanceof AuthenticationEvent authEvent) {
 			doAuthentication(ureq, authEvent);
@@ -399,9 +466,11 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(loginProcessCtrl);
+		removeAsListenerAndDispose(registrationWizardCtrl);
+		removeAsListenerAndDispose(pwChangeCtrl);
 		removeAsListenerAndDispose(cmc);
-		loginProcessCtrl = null;
+		registrationWizardCtrl = null;
+		pwChangeCtrl = null;
 		cmc = null;
 	}
 
@@ -443,8 +512,16 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		Identity identity = authEvent.getIdentity();
 		String provider = authEvent.getProvider() == null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : authEvent.getProvider();
 
-		LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, invitation);
-		loginProcessEventCtrl.doLogin(ureq, identity, provider);
+		int loginStatus = AuthHelper.doLogin(identity, provider, ureq);
+		if (loginStatus == AuthHelper.LOGIN_OK) {
+			// it's ok
+		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
+			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+			getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
+		} else {
+			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
+		}
 	}
 
 	private void doGuestLogin(UserRequest ureq) {
@@ -501,11 +578,195 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		dmzPanel.pushContent(aboutVC);
 	}
 
-	private void openChangePassword(UserRequest ureq, String initialEmail) {
+	private void doOpenChangePassword(UserRequest ureq, String initialEmail) {
 		getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
-		
-		loginProcessCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, invitation);
-		listenTo(loginProcessCtrl);
-		loginProcessCtrl.doOpenChangePassword(ureq, initialEmail);
+
+		if (userModule.isAnyPasswordChangeAllowed()) {
+			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), initialEmail, false);
+			listenTo(pwChangeCtrl);
+			getWindowControl().pushAsModalDialog(pwChangeCtrl.getInitialComponent());
+		} else {
+			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
+		}
+	}
+
+	private static class RegCancelCallback implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			TemporaryKey temporaryKey = (TemporaryKey) runContext.get(RegWizardConstants.TEMPORARYKEY);
+			// remove temporaryKey entry, if process gets canceled
+			if (temporaryKey != null) {
+				CoreSpringFactory.getImpl(RegistrationManager.class).deleteTemporaryKey(temporaryKey);
+			}
+			return Step.NOSTEP;
+		}
+	}
+
+	private class RegisterFinishCallback implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			if (runContext.get(RegWizardConstants.RECURRINGDETAILS) == null) {
+				Identity identity = (invitation != null && invitation.getIdentity() != null) ? invitation.getIdentity() : null;
+
+				// Make sure we have an identity
+				if (identity == null) {
+					identity = createNewUser(runContext);
+					if (identity == null) {
+						showError("user.notregistered");
+						return null;
+					}
+				} else {
+					handleExistingIdentity(identity, runContext);
+				}
+
+				updateUserData(identity, runContext);
+				if (invitation != null) {
+					invitationService.acceptInvitation(invitation, identity);
+				}
+
+				doLogin(ureq, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+			}
+
+			return StepsMainRunController.DONE_MODIFIED;
+		}
+
+		public void doLogin(UserRequest ureq, Identity persistedIdentity, String authProvider) {
+			int loginStatus = AuthHelper.doLogin(persistedIdentity, authProvider, ureq);
+			if (loginStatus == AuthHelper.LOGIN_OK) {
+				// it's ok
+			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
+				DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+				getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
+			} else {
+				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
+			}
+		}
+
+		private void handleExistingIdentity(Identity identity, StepsRunContext runContext) {
+			String username = (String) runContext.get(RegWizardConstants.USERNAME);
+			String password = (String) runContext.get(RegWizardConstants.PASSWORD);
+			List<Authentication> passkeys = (List<Authentication>) runContext.get(RegWizardConstants.PASSKEYS);
+
+			if (StringHelper.containsNonWhitespace(password)) {
+				ensurePasswordAuthentication(identity, username, password);
+			}
+
+			if (passkeys != null && !passkeys.isEmpty()) {
+				securityManager.persistAuthentications(identity, passkeys);
+			}
+		}
+
+		private void ensurePasswordAuthentication(Identity identity, String username, String password) {
+			Authentication auth = securityManager.findAuthentication(identity,
+					BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
+			if (auth == null) {
+				securityManager.createAndPersistAuthentication(identity,
+						BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
+						username, password, loginModule.getDefaultHashAlgorithm());
+			}
+		}
+
+		private Identity createNewUser(StepsRunContext runContext) {
+			String firstName = (String) runContext.get(RegWizardConstants.FIRSTNAME);
+			String lastName = (String) runContext.get(RegWizardConstants.LASTNAME);
+			String email = (String) runContext.get(RegWizardConstants.EMAIL);
+			String username = (String) runContext.get(RegWizardConstants.USERNAME);
+			String password = (String) runContext.get(RegWizardConstants.PASSWORD);
+
+			// create user with mandatory fields from registration-form
+			User volatileUser = userManager.createUser(firstName, lastName, email);
+
+			// create an identity with the given username / pwd and the user object
+			List<Authentication> passkeys = (List<Authentication>) runContext.get(RegWizardConstants.PASSKEYS);
+
+			// if organisation module and emailDomain is enabled, then set the selected orgaKey
+			// otherwise selectedOrgaKey is null
+			String selectedOrgaKey = (String) runContext.get(RegWizardConstants.SELECTEDORGANIZATIONKEY);
+
+			TemporaryKey temporaryKey = (TemporaryKey) runContext.get(RegWizardConstants.TEMPORARYKEY);
+			Identity identity = registrationManager.createNewUserAndIdentityFromTemporaryKey(username, password, volatileUser, temporaryKey, selectedOrgaKey);
+
+			if (identity != null && passkeys != null && !passkeys.isEmpty()) {
+				securityManager.persistAuthentications(identity, passkeys);
+			}
+			return identity;
+		}
+
+		private void updateUserData(Identity identity, StepsRunContext runContext) {
+			User user = identity.getUser();
+
+			// Set user configured language
+			Preferences preferences = user.getPreferences();
+			preferences.setLanguage((String) runContext.get(RegWizardConstants.CHOSEN_LANG));
+			user.setPreferences(preferences);
+
+			// Enroll user to auto-enrolled courses if not invited
+			if (invitation == null) {
+				autoEnrollUser(identity);
+			}
+
+			// Add static properties if enabled and not invited
+			if (invitation == null && registrationModule.isStaticPropertyMappingEnabled()) {
+				addStaticProperty(user);
+			}
+
+			// Add user property values from registration forms
+			populateUserPropertiesFromForm(user, RegistrationPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, (Map<String, FormItem>) runContext.get(RegWizardConstants.PROPFORMITEMS));
+
+			boolean isAdditionalRegistrationFormEnabled = !userManager
+					.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
+			if (isAdditionalRegistrationFormEnabled) {
+				populateUserPropertiesFromForm(user, RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, (Map<String, FormItem>) runContext.get(RegWizardConstants.ADDITIONALPROPFORMITEMS));
+			}
+
+			// Persist changes and send notifications
+			userManager.updateUserFromIdentity(identity);
+			notifyAdminOnNewUser(identity);
+
+			// Register user's disclaimer acceptance
+			registrationManager.setHasConfirmedDislaimer(identity);
+
+			if (invitation != null && invitation.getIdentity() == null) {
+				invitation = invitationService.update(invitation, identity);
+			}
+		}
+
+		private void autoEnrollUser(Identity identity) {
+			SelfRegistrationAdvanceOrderInput input = new SelfRegistrationAdvanceOrderInput();
+			input.setIdentity(identity);
+			input.setRawValues(registrationModule.getAutoEnrolmentRawValue());
+			autoAccessManager.createAdvanceOrders(input);
+			autoAccessManager.grantAccessToCourse(identity);
+		}
+
+		private void addStaticProperty(User user) {
+			String propertyName = registrationModule.getStaticPropertyMappingName();
+			String propertyValue = registrationModule.getStaticPropertyMappingValue();
+
+			if (StringHelper.containsNonWhitespace(propertyName) && StringHelper.containsNonWhitespace(propertyValue)
+					&& userPropertiesConfig.getPropertyHandler(propertyName) != null) {
+				try {
+					user.setProperty(propertyName, propertyValue);
+				} catch (Exception e) {
+					log.error("Cannot set the static property value", e);
+				}
+			}
+		}
+
+		private void populateUserPropertiesFromForm(User user, String formIdentifier, Map<String, FormItem> propFormItems) {
+			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(formIdentifier, false);
+			for (UserPropertyHandler handler : userPropertyHandlers) {
+				FormItem formItem = propFormItems.get(handler.getName());
+				handler.updateUserFromFormItem(user, formItem);
+			}
+		}
+
+		private void notifyAdminOnNewUser(Identity identity) {
+			String notificationEmail = registrationModule.getRegistrationNotificationEmail();
+			if (notificationEmail != null) {
+				registrationManager.sendNewUserNotificationMessage(notificationEmail, identity);
+			}
+		}
 	}
 }

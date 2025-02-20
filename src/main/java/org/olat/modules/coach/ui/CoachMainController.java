@@ -36,7 +36,7 @@ import org.olat.modules.grading.model.GradingSecurity;
 /**
  * 
  * Initial date: 6 févr. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CoachMainController extends BasicController implements Activateable2 {
@@ -52,7 +52,7 @@ public class CoachMainController extends BasicController implements Activateable
 		toolbarPanel = new TooledStackedPanel("categoriesStackPanel", getTranslator(), this);
 		toolbarPanel.setShowCloseLink(false, false);
 		toolbarPanel.setInvisibleCrumb(-1);
-		toolbarPanel.setToolbarEnabled(false);
+		toolbarPanel.setToolbarAutoEnabled(true);
 		putInitialPanel(toolbarPanel);
 		
 		rootCtrl = new CoachMainRootController(ureq, getWindowControl(), toolbarPanel,

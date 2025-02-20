@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
@@ -38,12 +39,12 @@ public class PwChangeSetNewStep02 extends BasicStep {
 		super(ureq);
 
 		setI18nTitleAndDescr("step3.pw.title", "step3.pw.text");
-		setNextStep(new PwChangeConfirmationStep03(ureq));
+		setNextStep(Step.NOSTEP);
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, true, false);
+		return new PrevNextFinishConfig(false, false, true);
 	}
 
 	@Override

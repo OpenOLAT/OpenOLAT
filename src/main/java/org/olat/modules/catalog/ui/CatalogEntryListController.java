@@ -24,10 +24,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -59,16 +66,28 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsEvent;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Preferences;
+import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
-import org.olat.login.LoginProcessController;
+import org.olat.login.LoginModule;
 import org.olat.login.LoginProcessEvent;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogEntrySearchParams;
@@ -88,6 +107,15 @@ import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelTeaserImageMapper;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.registration.PwChangeController;
+import org.olat.registration.RegWizardConstants;
+import org.olat.registration.RegistrationAdditionalPersonalDataController;
+import org.olat.registration.RegistrationLangStep00;
+import org.olat.registration.RegistrationManager;
+import org.olat.registration.RegistrationModule;
+import org.olat.registration.RegistrationPersonalDataController;
+import org.olat.registration.SelfRegistrationAdvanceOrderInput;
+import org.olat.registration.TemporaryKey;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -104,10 +132,16 @@ import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
+import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 import org.olat.resource.accesscontrol.ui.OpenAccessOfferController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.shibboleth.ShibbolethDispatcher;
+import org.olat.user.UserManager;
+import org.olat.user.UserModule;
+import org.olat.user.UserPropertiesConfig;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -117,7 +151,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CatalogEntryListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
-	
+
+	private static final Logger log = Tracing.createLoggerFor(CatalogEntryListController.class);
+
 	private final BreadcrumbedStackedPanel stackPanel;
 	private FlexiTableElement tableEl;
 	private CatalogEntryDataModel dataModel;
@@ -127,6 +163,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private Controller infosCtrl;
 	private LightboxController lightboxCtrl;
 	private WebCatalogAuthController authCtrl;
+	private StepsMainRunController registrationWizardCtrl;
+	private PwChangeController pwChangeCtrl;
 	
 	private String headerSearchString;
 	private final MapperKey repositoryEntryMapperKey;
@@ -155,6 +193,22 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private RegistrationModule registrationModule;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private UserModule userModule;
+	@Autowired
+	private RegistrationManager registrationManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private AutoAccessManager autoAccessManager;
+	@Autowired
+	private UserPropertiesConfig userPropertiesConfig;
+	@Autowired
+	private LoginModule loginModule;
 
 	public CatalogEntryListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, 
 			CatalogEntrySearchParams searchParams, CatalogEntryListParams listParams) {
@@ -697,14 +751,27 @@ public class CatalogEntryListController extends FormBasicController implements A
 			lightboxCtrl.deactivate();
 			cleanUp();
 			if (event instanceof LoginProcessEvent) {
-				LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), stackPanel, null);
 				if (event == LoginProcessEvent.REGISTER_EVENT) {
-					loginProcessEventCtrl.doOpenRegistration(ureq);
+					doOpenRegistration(ureq);
 				} else if (event == LoginProcessEvent.PWCHANGE_EVENT) {
-					loginProcessEventCtrl.doOpenChangePassword(ureq, null);
+					doOpenChangePassword(ureq);
 				}
 			}
 		} else if (lightboxCtrl == source) {
+			cleanUp();
+		} else if (registrationWizardCtrl == source) {
+			stackPanel.popController(registrationWizardCtrl);
+			cleanUp();
+			if (event == StepsEvent.RELOAD) {
+				doOpenRegistration(ureq);
+			}
+		} else if (source == pwChangeCtrl) {
+			if (event == Event.CANCELLED_EVENT
+					&& loginModule.getAuthenticationProvider(ShibbolethDispatcher.PROVIDER_SHIB) != null) {
+				// Redirect to context path to prevent Javascript error when using Shibboleth provider OO-7777
+				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
+			}
+			stackPanel.popController(pwChangeCtrl);
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -713,8 +780,12 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private void cleanUp() {
 		removeAsListenerAndDispose(authCtrl);
 		removeAsListenerAndDispose(lightboxCtrl);
+		removeAsListenerAndDispose(pwChangeCtrl);
+		removeAsListenerAndDispose(registrationWizardCtrl);
 		authCtrl = null;
 		lightboxCtrl = null;
+		pwChangeCtrl = null;
+		registrationWizardCtrl = null;
 	}
 
 	@Override
@@ -837,7 +908,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(row.getRepositotyEntryKey());
 			doOpenDetails(ureq, entry);
 		} else if (row.getCurriculumElementKey() != null) {
-			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(() -> row.getCurriculumElementKey());
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(row::getCurriculumElementKey);
 			doOpenDetails(ureq, curriculumElement);
 		}
 	}
@@ -848,7 +919,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(entry.getOlatResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, stackPanel, entry);
+			infosCtrl = new CatalogRepositoryEntryInfosController(ureq, bwControl, entry);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
@@ -917,6 +988,29 @@ public class CatalogEntryListController extends FormBasicController implements A
 		}
 		
 		doOpenDetails(ureq, row);
+	}
+
+	public void doOpenRegistration(UserRequest ureq) {
+		boolean isAdditionalRegistrationFormEnabled = !userManager
+				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
+		Step startReg = new RegistrationLangStep00(ureq, null, registrationModule.isDisclaimerEnabled(),
+				registrationModule.isEmailValidationEnabled(), isAdditionalRegistrationFormEnabled, registrationModule.isAllowRecurringUserEnabled());
+		registrationWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startReg, new RegisterFinishCallback(),
+				new RegCancelCallback(), translate("menu.register"), "o_sel_registration_start_wizard");
+		listenTo(registrationWizardCtrl);
+		stackPanel.pushController(translate("menu.register"), registrationWizardCtrl);
+	}
+
+	private void doOpenChangePassword(UserRequest ureq) {
+		getWindowControl().getWindowBackOffice().getWindowManager().setAjaxEnabled(true);
+
+		if (userModule.isAnyPasswordChangeAllowed()) {
+			pwChangeCtrl = new PwChangeController(ureq, getWindowControl(), null, false);
+			listenTo(pwChangeCtrl);
+			stackPanel.pushController(translate("pwchange.wizard.title"), pwChangeCtrl);
+		} else {
+			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
+		}
 	}
 
 	private void doLogin(UserRequest ureq, CatalogEntryRow row) {
@@ -992,6 +1086,144 @@ public class CatalogEntryListController extends FormBasicController implements A
 			this.thumbnailRelPath = thumbnailRelPath;
 		}
 		
+	}
+
+	private class RegisterFinishCallback implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			if (runContext.get(RegWizardConstants.RECURRINGDETAILS) == null) {
+
+				Identity identity = createNewUser(runContext);
+				if (identity == null) {
+					showError("user.notregistered");
+					return null;
+				}
+				updateUserData(identity, runContext);
+				doLogin(ureq, identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+			}
+
+			return StepsMainRunController.DONE_MODIFIED;
+		}
+
+		public void doLogin(UserRequest ureq, Identity persistedIdentity, String authProvider) {
+			int loginStatus = AuthHelper.doLogin(persistedIdentity, authProvider, ureq);
+			if (loginStatus == AuthHelper.LOGIN_OK) {
+				// it's ok
+			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
+				DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+				getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
+			} else {
+				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
+			}
+		}
+
+		private Identity createNewUser(StepsRunContext runContext) {
+			String firstName = (String) runContext.get(RegWizardConstants.FIRSTNAME);
+			String lastName = (String) runContext.get(RegWizardConstants.LASTNAME);
+			String email = (String) runContext.get(RegWizardConstants.EMAIL);
+			String username = (String) runContext.get(RegWizardConstants.USERNAME);
+			String password = (String) runContext.get(RegWizardConstants.PASSWORD);
+
+			// create user with mandatory fields from registration-form
+			User volatileUser = userManager.createUser(firstName, lastName, email);
+
+			// create an identity with the given username / pwd and the user object
+			List<Authentication> passkeys = (List<Authentication>) runContext.get(RegWizardConstants.PASSKEYS);
+
+			// if organisation module and emailDomain is enabled, then set the selected orgaKey
+			// otherwise selectedOrgaKey is null
+			String selectedOrgaKey = (String) runContext.get(RegWizardConstants.SELECTEDORGANIZATIONKEY);
+
+			TemporaryKey temporaryKey = (TemporaryKey) runContext.get(RegWizardConstants.TEMPORARYKEY);
+			Identity identity = registrationManager.createNewUserAndIdentityFromTemporaryKey(username, password, volatileUser, temporaryKey, selectedOrgaKey);
+
+			if (identity != null && passkeys != null && !passkeys.isEmpty()) {
+				securityManager.persistAuthentications(identity, passkeys);
+			}
+			return identity;
+		}
+
+		private void updateUserData(Identity identity, StepsRunContext runContext) {
+			User user = identity.getUser();
+
+			// Set user configured language
+			Preferences preferences = user.getPreferences();
+			preferences.setLanguage((String) runContext.get(RegWizardConstants.CHOSEN_LANG));
+			user.setPreferences(preferences);
+
+			autoEnrollUser(identity);
+
+			// Add static properties if enabled and not invited
+			if (registrationModule.isStaticPropertyMappingEnabled()) {
+				addStaticProperty(user);
+			}
+
+			// Add user property values from registration forms
+			populateUserPropertiesFromForm(user, RegistrationPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, (Map<String, FormItem>) runContext.get(RegWizardConstants.PROPFORMITEMS));
+
+			boolean isAdditionalRegistrationFormEnabled = !userManager
+					.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
+			if (isAdditionalRegistrationFormEnabled) {
+				populateUserPropertiesFromForm(user, RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, (Map<String, FormItem>) runContext.get(RegWizardConstants.ADDITIONALPROPFORMITEMS));
+			}
+
+			// Persist changes and send notifications
+			userManager.updateUserFromIdentity(identity);
+			notifyAdminOnNewUser(identity);
+
+			// Register user's disclaimer acceptance
+			registrationManager.setHasConfirmedDislaimer(identity);
+		}
+
+		private void autoEnrollUser(Identity identity) {
+			SelfRegistrationAdvanceOrderInput input = new SelfRegistrationAdvanceOrderInput();
+			input.setIdentity(identity);
+			input.setRawValues(registrationModule.getAutoEnrolmentRawValue());
+			autoAccessManager.createAdvanceOrders(input);
+			autoAccessManager.grantAccessToCourse(identity);
+		}
+
+		private void addStaticProperty(User user) {
+			String propertyName = registrationModule.getStaticPropertyMappingName();
+			String propertyValue = registrationModule.getStaticPropertyMappingValue();
+
+			if (StringHelper.containsNonWhitespace(propertyName) && StringHelper.containsNonWhitespace(propertyValue)
+					&& userPropertiesConfig.getPropertyHandler(propertyName) != null) {
+				try {
+					user.setProperty(propertyName, propertyValue);
+				} catch (Exception e) {
+					log.error("Cannot set the static property value", e);
+				}
+			}
+		}
+
+		private void populateUserPropertiesFromForm(User user, String formIdentifier, Map<String, FormItem> propFormItems) {
+			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(formIdentifier, false);
+			for (UserPropertyHandler handler : userPropertyHandlers) {
+				FormItem formItem = propFormItems.get(handler.getName());
+				handler.updateUserFromFormItem(user, formItem);
+			}
+		}
+
+		private void notifyAdminOnNewUser(Identity identity) {
+			String notificationEmail = registrationModule.getRegistrationNotificationEmail();
+			if (notificationEmail != null) {
+				registrationManager.sendNewUserNotificationMessage(notificationEmail, identity);
+			}
+		}
+	}
+
+	private static class RegCancelCallback implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			TemporaryKey temporaryKey = (TemporaryKey) runContext.get(RegWizardConstants.TEMPORARYKEY);
+			// remove temporaryKey entry, if process gets canceled
+			if (temporaryKey != null) {
+				CoreSpringFactory.getImpl(RegistrationManager.class).deleteTemporaryKey(temporaryKey);
+			}
+			return Step.NOSTEP;
+		}
 	}
 
 }

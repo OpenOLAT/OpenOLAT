@@ -31,6 +31,7 @@ public class PwChangeWizardConstants {
 	public static final String IDENTITY = "identity";
 	public static final String VALTYPE = "valtype";
 	public static final String TEMPORARYREGKEY = "temporaryregkey";
+	public static final String PASSWORD = "password";
 
 	/**
 	 * private constructor to hide the implicit public one

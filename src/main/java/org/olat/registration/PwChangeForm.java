@@ -65,6 +65,22 @@ public class PwChangeForm extends FormBasicController {
 	}
 
 	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("form.password.enter.new");
+		String descriptions = formatDescriptionAsList(syntaxValidator.getAllDescriptions(), getLocale());
+		setFormDescription("form.password.rules", new String[] { descriptions });
+
+		setFormInfo("step3.pw.text");
+
+		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
+		newpass1.setElementCssClass("o_sel_new_password");
+		newpass1.setAutocomplete("new-password");
+		newpass2 = uifactory.addPasswordElement("newpass2",  "form.password.new2", 5000, "", formLayout);
+		newpass2.setElementCssClass("o_sel_password_confirmation");
+		newpass2.setAutocomplete("new-password");
+	}
+
+	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
@@ -89,38 +105,10 @@ public class PwChangeForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		changeIdentity();
 		fireEvent (ureq, Event.DONE_EVENT);
 	}
 
-	private void changeIdentity() {
-		if(identityToChange != null && !saveFormData(identityToChange)) {
-			showError("password.failed");
-		}
-	}
-
-	/**
-	 * Saves the form data in the user object and the database
-	 * 
-	 * @param s The identity to change the password.
-	 */
-	private boolean saveFormData(Identity s) {
-		return olatAuthManager.changePasswordByPasswordForgottenLink(s, newpass1.getValue());	
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("form.password.enter.new");
-		String descriptions = formatDescriptionAsList(syntaxValidator.getAllDescriptions(), getLocale());
-		setFormDescription("form.password.rules", new String[] { descriptions });
-		
-		setFormInfo("step3.pw.text");
-		
-		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
-		newpass1.setElementCssClass("o_sel_new_password");
-		newpass1.setAutocomplete("new-password");
-		newpass2 = uifactory.addPasswordElement("newpass2",  "form.password.new2", 5000, "", formLayout);
-		newpass2.setElementCssClass("o_sel_password_confirmation");
-		newpass2.setAutocomplete("new-password");
+	public String getNewpass1Value() {
+		return newpass1.getValue();
 	}
 }

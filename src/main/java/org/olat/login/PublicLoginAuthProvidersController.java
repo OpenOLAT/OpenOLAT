@@ -28,6 +28,7 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.services.help.HelpModule;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.ExternalLink;
@@ -49,6 +50,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
@@ -266,8 +268,16 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		Identity identity = authEvent.getIdentity();
 		String provider = authEvent.getProvider() == null ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : authEvent.getProvider();
 
-		LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), dmzPanel, null);
-		loginProcessEventCtrl.doLogin(ureq, identity, provider);
+		int loginStatus = AuthHelper.doLogin(identity, provider, ureq);
+		if (loginStatus == AuthHelper.LOGIN_OK) {
+			// it's ok
+		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
+			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+			getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
+		} else {
+			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
+		}
 	}
 
 	private void doStart(Controller source) {

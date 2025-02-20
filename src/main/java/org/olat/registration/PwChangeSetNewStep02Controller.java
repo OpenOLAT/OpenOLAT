@@ -160,15 +160,11 @@ public class PwChangeSetNewStep02Controller extends StepFormBasicController {
 	}
 
 	@Override
-	protected void formNext(UserRequest ureq) {
+	protected void formOK(UserRequest ureq) {
 		// to prevent validation problems in last step
 		// since there is no way to get back to this step, this is okay to bypass the validation
 		done = true;
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
+		addToRunContext(PwChangeWizardConstants.PASSWORD, pwChangeFormCtrl.getNewpass1Value());
+		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 }

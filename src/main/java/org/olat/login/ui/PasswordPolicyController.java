@@ -78,7 +78,7 @@ public class PasswordPolicyController extends FormBasicController {
 		
 		setFormDescription("max.age.description");
 		
-		validUntilGuiEl = uifactory.addTextElement("password.change.valid.until.gui", 20, loginModule.getValidUntilHoursGui().toString(), formLayout);
+		validUntilGuiEl = uifactory.addTextElement("password.change.valid.until.gui", 20, loginModule.getValidUntilMinutesGui().toString(), formLayout);
 		validUntilGuiEl.setMandatory(true);
 
 		String[] onValues = new String[] { translate("on") };
@@ -190,7 +190,7 @@ public class PasswordPolicyController extends FormBasicController {
 		loginModule.setPasswordChangeOnce(changeOnceEl.isAtLeastSelected(1));
 		
 		Integer validUntilHoursGui = Integer.parseInt(validUntilGuiEl.getValue());
-		loginModule.setValidUntilHoursGui(validUntilHoursGui);
+		loginModule.setValidUntilMinutesGui(validUntilHoursGui);
 
 		loginModule.setPasswordMaxAge(getMaxAge(maxAgeEl));
 		loginModule.setPasswordMaxAgeFor(OrganisationRoles.author, getMaxAge(maxAgeAuthorEl));

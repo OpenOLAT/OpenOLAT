@@ -763,7 +763,7 @@ public class ProfileFormController extends FormBasicController {
 			// An usermanager does not need to verify the new mail and can change it directly
 			areMailsSent = handleDirectEmailChange(ureq);
 		} else {
-			areMailsSent = handleVerifiedEmailChange(ureq, serverPath);
+			areMailsSent = handleVerifiedEmailChange(ureq);
 		}
 
 		if (areMailsSent) {
@@ -790,7 +790,7 @@ public class ProfileFormController extends FormBasicController {
 		return false; // Default case if conditions are not met
 	}
 
-	private boolean handleVerifiedEmailChange(UserRequest ureq, String serverPath) {
+	private boolean handleVerifiedEmailChange(UserRequest ureq) {
 		// Load temporary key
 		String key = identityToModify.getUser().getProperty(EMAIL_CHANGE_KEY_PROP, null);
 		TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
@@ -803,8 +803,8 @@ public class ProfileFormController extends FormBasicController {
 
 		// Prepare email content
 		String subject = translate("email.change.subject");
-		String bodyOld = buildEmailBody(ureq, serverPath, "email.change.body.old");
-		String bodyNew = buildEmailBody(ureq, serverPath, "email.change.body.new");
+		String bodyOld = buildEmailBody("email.change.body.old");
+		String bodyNew = buildEmailBody("email.change.body.new");
 
 		// Send emails to current and new email addresses
 		boolean emailToCurrentSent = sendEmail(ureq, subject, bodyOld, currentEmail);
@@ -819,11 +819,8 @@ public class ProfileFormController extends FormBasicController {
 		return areMailsSent;
 	}
 
-	private String buildEmailBody(UserRequest ureq, String serverPath, String bodyKey) {
-		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
-
-		return translate(bodyKey, identityToModify.getName(), WebappHelper.getMailConfig("mailSupport"))
-				+ SEPARATOR + translate("email.change.wherefrom", serverPath, today);
+	private String buildEmailBody(String bodyKey) {
+		return translate(bodyKey, userManager.getUserDisplayName(identityToModify.getUser()), WebappHelper.getMailConfig("mailSupport"));
 	}
 
 	private boolean sendEmail(UserRequest ureq, String subject,

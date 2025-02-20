@@ -21,67 +21,51 @@ package org.olat.modules.catalog.ui;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.lightbox.LightboxController;
 import org.olat.course.CorruptedCourseException;
-import org.olat.login.LoginProcessController;
-import org.olat.login.LoginProcessEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
  * Initial date: 5 Jun 2022<br>
- * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  */
 public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetailsController {
 
-	private final BreadcrumbedStackedPanel stackPanel;
-	
 	private LightboxController lightboxCtrl;
 	private WebCatalogAuthController authCtrl;
-	
+
 	@Autowired
 	protected ACService acService;
 
-	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbedStackedPanel stackPanel, RepositoryEntry entry) {
+	public CatalogRepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, entry, false, false);
-		this.stackPanel = stackPanel;
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (authCtrl == source) {
 			lightboxCtrl.deactivate();
 			cleanUp();
-			if (event instanceof LoginProcessEvent) {
-				LoginProcessController loginProcessEventCtrl = new LoginProcessController(ureq, getWindowControl(), stackPanel, null);
-				if (event == LoginProcessEvent.REGISTER_EVENT) {
-					loginProcessEventCtrl.doOpenRegistration(ureq);
-				} else if (event == LoginProcessEvent.PWCHANGE_EVENT) {
-					loginProcessEventCtrl.doOpenChangePassword(ureq, null);
-				}
-			}
 		} else if (lightboxCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(authCtrl);
 		removeAsListenerAndDispose(lightboxCtrl);
 		authCtrl = null;
 		lightboxCtrl = null;
 	}
-	
+
 	@Override
 	protected void doStart(UserRequest ureq) {
 		try {
@@ -99,7 +83,7 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 
 	private void doShowLogin(UserRequest ureq) {
 		if (guardModalController(authCtrl)) return;
-		
+
 		String offerBusinessPath = CatalogBCFactory.get(false).getOfferBusinessPath(getEntry().getOlatResource());
 		authCtrl = new WebCatalogAuthController(ureq, getWindowControl(), offerBusinessPath);
 		listenTo(authCtrl);

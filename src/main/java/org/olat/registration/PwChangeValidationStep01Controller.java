@@ -75,6 +75,8 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 	private TextElement otpEl;
 	private FormLink resendOtpLink;
 
+	private boolean done = false;
+
 	@Autowired
 	private RegistrationManager registrationManager;
 	@Autowired
@@ -160,7 +162,7 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 	private void createTemporaryKey(String ip, String[] whereFromAttrs) {
 		Integer validityPeriod = null;
 		if (StringHelper.containsNonWhitespace(initialEmail)) {
-			validityPeriod = loginModule.getValidUntilHoursGui();
+			validityPeriod = loginModule.getValidUntilMinutesGui();
 		}
 		temporaryKey = registrationManager.loadOrCreateTemporaryKeyByEmail(
 				recipientEmail, ip, RegistrationManager.PW_CHANGE, validityPeriod
@@ -284,6 +286,8 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
+		if(done) return true;
+
 		boolean allOk = super.validateFormLogic(ureq);
 
 		if (otpEl.isEmpty("reg.otp.may.not.be.empty")) {
@@ -313,13 +317,13 @@ public class PwChangeValidationStep01Controller extends StepFormBasicController 
 
 	@Override
 	protected void formNext(UserRequest ureq) {
+		// to prevent validation problems in last step
+		// since there is no way to get back to this step, this is okay to bypass the validation
+		done = true;
 		if (temporaryKey != null) {
 			// previously the delete process was handled in PwChangeForm
 			// to keep it simple: Now delete temporaryKey as soon as validation is completed
 			registrationManager.deleteTemporaryKeyWithId(temporaryKey.getRegistrationKey());
-			// to prevent validation problems in last step
-			// since there is no way to get back to this step, this is okay to bypass the validation
-			removeAsListenerAndDispose(this);
 		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

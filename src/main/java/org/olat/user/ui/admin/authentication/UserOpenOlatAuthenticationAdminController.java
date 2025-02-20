@@ -21,6 +21,7 @@ package org.olat.user.ui.admin.authentication;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.admin.user.ChangeUserPasswordForm;
 import org.olat.admin.user.SendTokenToUserForm;
@@ -43,10 +44,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Preferences;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.webauthn.PasskeyLevels;
@@ -268,13 +272,19 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 	}
 	
 	private void doSendPassword(UserRequest ureq) {
-		sendPasswordLinkCtrl = new SendTokenToUserForm(ureq, getWindowControl(), identityToModify, false, false, true);
-		listenTo(sendPasswordLinkCtrl);
-		
-		String title = translate("send.password.title");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), sendPasswordLinkCtrl.getInitialComponent(), true, title);
-		cmc.activate();
-		listenTo(cmc);
+		Preferences prefs = identityToModify.getUser().getPreferences();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
+		if (identityToModify.getUser().getProperty(UserConstants.EMAIL, locale) != null) {
+			sendPasswordLinkCtrl = new SendTokenToUserForm(ureq, getWindowControl(), identityToModify, false, false, true);
+			listenTo(sendPasswordLinkCtrl);
+
+			String title = translate("send.password.title");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), sendPasswordLinkCtrl.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
+		} else {
+			showError("send.password.no.mail");
+		}
 	}
 	
 	private void doResetPassword(UserRequest ureq) {

@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,7 @@ public class UserChangePasswordController extends BasicController {
 	private ChangeUserPasswordForm chPwdForm;
 	private SendTokenToUserForm tokenForm;
 	private VelocityContainer mainVC;
-	private Identity user;
+	private Identity identityToModify;
 	
 	@Autowired
 	private UserModule userModule;
@@ -65,21 +66,21 @@ public class UserChangePasswordController extends BasicController {
 	 * @param wControl
 	 * @param changeableUser
 	 */
-	public UserChangePasswordController(UserRequest ureq, WindowControl wControl, Identity changeableUser) { 
+	public UserChangePasswordController(UserRequest ureq, WindowControl wControl, Identity changeableUser) {
 		super(ureq, wControl);
 
-		user = changeableUser;
+		this.identityToModify = changeableUser;
 		mainVC = createVelocityContainer("pwd");
 		String authenticationUsername = olatAuthenticationSpi.getAuthenticationUsername(changeableUser);
 		if (authenticationUsername == null) { // create new authentication for provider OLAT
 			authenticationUsername = olatAuthenticationSpi.getOlatAuthusernameFromIdentity(changeableUser);
 		}
 		
-		chPwdForm = new ChangeUserPasswordForm(ureq, wControl, user, authenticationUsername, true, false);
+		chPwdForm = new ChangeUserPasswordForm(ureq, wControl, identityToModify, authenticationUsername, true, false);
 		listenTo(chPwdForm);
 		mainVC.put("chPwdForm", chPwdForm.getInitialComponent());
-		if (userModule.isAnyPasswordChangeAllowed()) {
-			tokenForm = new SendTokenToUserForm(ureq, wControl, user, true, true, false);
+		if (userModule.isAnyPasswordChangeAllowed() && identityToModify.getUser().getProperty(UserConstants.EMAIL, getLocale()) != null) {
+			tokenForm = new SendTokenToUserForm(ureq, wControl, identityToModify, true, true, false);
 			listenTo(tokenForm);
 			mainVC.put("tokenForm", tokenForm.getInitialComponent());
 		}
@@ -95,9 +96,9 @@ public class UserChangePasswordController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == chPwdForm && event.equals(Event.DONE_EVENT)) {
-			if (olatAuthenticationSpi.changePassword(ureq.getIdentity(), user, chPwdForm.getNewPassword())) {
+			if (olatAuthenticationSpi.changePassword(ureq.getIdentity(), identityToModify, chPwdForm.getNewPassword())) {
 				showInfo("changeuserpwd.successful");
-				logAudit("user password changed successfully of " + user.getKey());
+				logAudit("user password changed successfully of " + identityToModify.getKey());
 			} else {
 				showError("changeuserpwd.failed");
 			}
