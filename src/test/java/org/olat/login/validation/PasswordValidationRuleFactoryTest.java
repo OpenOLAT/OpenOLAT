@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.login.validation;
@@ -22,9 +22,13 @@ package org.olat.login.validation;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -32,7 +36,7 @@ import org.olat.core.id.User;
 /**
  * 
  * Initial date: 12 May 2019<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 public class PasswordValidationRuleFactoryTest {
@@ -337,17 +341,32 @@ public class PasswordValidationRuleFactoryTest {
 	@Test
 	public void shouldUsernameForbiddenRule() {
 		ValidationRule rule = sut.createUsernameForbiddenRule();
+		BaseSecurityManager securityManager = mock(BaseSecurityManager.class);
+
+		// Mock Authentication objects for auth usernames
+		Authentication auth1 = mock(Authentication.class);
+		when(auth1.getAuthusername()).thenReturn("authUser1");
+
+		Authentication auth2 = mock(Authentication.class);
+		when(auth2.getAuthusername()).thenReturn("authUser2");
+
+		List<Authentication> authList = List.of(auth1, auth2);
 
 		User user = mock(User.class);
 		when(user.getNickName()).thenReturn("myname");
 		Identity identity = mock(Identity.class);
 		when(identity.getUser()).thenReturn(user);
+
+		// Return the mock authentication list for the identity
+		when(securityManager.getAuthentications(identity)).thenReturn(authList);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(rule.validate("myname", identity)).isFalse();
 		softly.assertThat(rule.validate("MYNAME", identity)).isFalse();
 		softly.assertThat(rule.validate("$$$MYNAME$$$", identity)).isFalse();
 		softly.assertThat(rule.validate("myname01", identity)).isFalse();
+		softly.assertThat(rule.validate("authUser1", identity)).isFalse();
+		softly.assertThat(rule.validate("authUser2", identity)).isFalse();
 		softly.assertThat(rule.validate("superman", identity)).isTrue();
 		softly.assertAll();
 	}
