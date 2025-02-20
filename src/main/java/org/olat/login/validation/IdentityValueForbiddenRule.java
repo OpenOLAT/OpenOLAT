@@ -19,6 +19,7 @@
  */
 package org.olat.login.validation;
 
+import java.util.List;
 import java.util.function.Function;
 
 import org.olat.core.id.Identity;
@@ -27,26 +28,34 @@ import org.olat.core.util.StringHelper;
 /**
  * 
  * Initial date: 14 May 2019<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 class IdentityValueForbiddenRule extends DescriptionRule {
 
-	private final Function<Identity, String> forbiddenValue;
+	private final Function<Identity, List<String>> forbiddenValues;
 
-	IdentityValueForbiddenRule(ValidationDescription description, Function<Identity, String> forbiddenValue) {
+	IdentityValueForbiddenRule(ValidationDescription description, Function<Identity, List<String>> forbiddenValues) {
 		super(description);
-		this.forbiddenValue = forbiddenValue;
+		this.forbiddenValues = forbiddenValues;
 	}
 
 	@Override
 	public boolean validate(String value, Identity identity) {
 		if (identity == null) return true;
-		
-		String identityValue = forbiddenValue.apply(identity);
-		if (!StringHelper.containsNonWhitespace(identityValue)) return true;
-		
-		return !value.toLowerCase().contains(identityValue.toLowerCase());
+
+		List<String> identityValues = forbiddenValues.apply(identity);
+		if (identityValues == null || identityValues.isEmpty()) return true;
+
+		// Check if the password contains any of the forbidden values
+		for (String forbiddenValue : identityValues) {
+			if (StringHelper.containsNonWhitespace(forbiddenValue) &&
+					value.toLowerCase().contains(forbiddenValue.toLowerCase())) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	@Override
