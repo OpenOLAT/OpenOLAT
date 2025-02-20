@@ -67,29 +67,14 @@ public class LoginPasswordForgottenPage {
 	}
 	
 	public LoginPasswordForgottenPage newPassword(String value) {
-		try {
-			By newBy = By.cssSelector(".o_sel_new_password_form .o_sel_new_password input[type='password']");
-			OOGraphene.waitElement(newBy, browser);
-			browser.findElement(newBy).sendKeys(value);
-			By repeatBy = By.cssSelector(".o_sel_new_password_form .o_sel_password_confirmation input[type='password']");
-			browser.findElement(repeatBy).sendKeys(value);
-			OOGraphene.nextStep(browser);
-			
-			By confirmationBy = By.cssSelector("fieldset.o_sel_changed_confirmation");
-			OOGraphene.waitElement(confirmationBy, browser);
-		} catch (Exception e) {
-			OOGraphene.takeScreenshot("Forgotten password", browser);
-			throw e;
-		}
+		By newBy = By.cssSelector(".o_sel_new_password_form .o_sel_new_password input[type='password']");
+		OOGraphene.waitElement(newBy, browser);
+		browser.findElement(newBy).sendKeys(value);
+		By repeatBy = By.cssSelector(".o_sel_new_password_form .o_sel_password_confirmation input[type='password']");
+		browser.findElement(repeatBy).sendKeys(value);
+		OOGraphene.finishStep(browser);
 		
-		try {
-			OOGraphene.finishStep(browser);
-		} catch (Exception e) {
-			log.error("", e);
-		}
-		
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
-	
-
 }

@@ -336,6 +336,7 @@ public class LoginTest extends Deployments {
 		
 		loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
-			.loginAs(user.getLogin(), newPassword);
+			.loginAs(user.getLogin(), newPassword)
+			.assertLoggedInByLastName(user.getLastName());
 	}
 }
