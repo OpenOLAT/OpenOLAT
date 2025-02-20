@@ -110,6 +110,8 @@ public class CurriculumElementDAO {
 		element.setLearningProgress(learningProgress);
 		element.setShowOutline(true);
 		element.setShowLectures(true);
+		element.setTaughtBys(new HashSet<>());
+		element.setTaxonomyLevels(new HashSet<>());
 		element.setChildren(new ArrayList<>());
 		if(status == null) {
 			element.setStatus(CurriculumElementStatus.preparation.name());
@@ -132,6 +134,34 @@ public class CurriculumElementDAO {
 		createResource(element);
 		dbInstance.getCurrentEntityManager().merge(element);
 		return element;
+	}
+	
+	public CurriculumElement copyCurriculumElement(CurriculumElement elementToCopy,
+			String identifier, String displayName, Date beginDate, Date endDate,
+			CurriculumElement parentElement, Curriculum curriculum) {
+		CurriculumElement copy = createCurriculumElement(identifier, displayName, CurriculumElementStatus.preparation,
+				beginDate, endDate, parentElement, elementToCopy.getType(), elementToCopy.getCalendars(), elementToCopy.getLectures(),
+				elementToCopy.getLearningProgress(), curriculum);
+		
+		copy.setAuthors(elementToCopy.getAuthors());
+		copy.setCredits(elementToCopy.getCredits());
+		copy.setDescription(elementToCopy.getDescription());
+		copy.setEducationalType(elementToCopy.getEducationalType());
+		copy.setExpenditureOfWork(elementToCopy.getExpenditureOfWork());
+		copy.setLocation(elementToCopy.getLocation());
+		copy.setMainLanguage(elementToCopy.getMainLanguage());
+		copy.setMaxParticipants(elementToCopy.getMaxParticipants());
+		copy.setMinParticipants(elementToCopy.getMinParticipants());
+		copy.setObjectives(elementToCopy.getObjectives());
+		copy.setRequirements(elementToCopy.getRequirements());
+		copy.setShowLectures(elementToCopy.isShowLectures());
+		copy.setShowOutline(elementToCopy.isShowOutline());
+		if(elementToCopy.getTaughtBys() != null) {
+			copy.setTaughtBys(elementToCopy.getTaughtBys());
+		}
+		copy.setTeaser(elementToCopy.getTeaser());
+		
+		return dbInstance.getCurrentEntityManager().merge(copy);
 	}
 	
 	public OLATResource createResource(CurriculumElement element) {

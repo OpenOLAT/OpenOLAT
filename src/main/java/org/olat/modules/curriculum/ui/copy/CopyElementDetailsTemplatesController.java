@@ -34,71 +34,70 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
-import org.olat.modules.curriculum.ui.copy.CopyElementDetailsLectureBlocksTableModel.CopyLectureBlockCols;
-import org.olat.modules.lecture.LectureBlock;
-import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.curriculum.ui.copy.CopyElementDetailsResourcesTableModel.CopyResourcesCols;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.author.AccessRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * 
- * Initial date: 19 févr. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 20 févr. 2025<br>
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class CopyElementDetailsLectureBlocksController extends FormBasicController {
+public class CopyElementDetailsTemplatesController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
-	private CopyElementDetailsLectureBlocksTableModel tableModel;
+	private CopyElementDetailsResourcesTableModel tableModel;
 
-	private final CopyElementContext context;
 	private final CurriculumElement curriculumElement;
 	
 	@Autowired
-	private LectureService lectureService;
-	
-	public CopyElementDetailsLectureBlocksController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			CurriculumElement curriculumElement, CopyElementContext context) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "element_details_lectures_blocks", rootForm);
+	private CurriculumService curriculumService;
+
+	public CopyElementDetailsTemplatesController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			CurriculumElement curriculumElement) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "element_details_templates", rootForm);
 		setTranslator(Util.createPackageTranslator(CurriculumComposerController.class, getLocale(),
 				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator())));
-		this.context = context;
 		this.curriculumElement = curriculumElement;
 		
 		initForm(ureq);
 		loadModel();
 	}
+	
+	public int getNumOfTemplates() {
+		return tableModel.getRowCount();
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CopyLectureBlockCols.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyLectureBlockCols.activity,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CopyResourcesCols.key));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyResourcesCols.activity,
 				new CopySettingCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyLectureBlockCols.title));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CopyLectureBlockCols.externalId));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyLectureBlockCols.externalRef));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyLectureBlockCols.resource));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyLectureBlockCols.beginDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyResourcesCols.displayname));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyResourcesCols.externalRef));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CopyResourcesCols.externalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyResourcesCols.access,
+				new AccessRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyResourcesCols.lifecycle,
+				new RepositoryEntryLifecycleCellRenderer(getLocale())));
 
-		tableModel = new CopyElementDetailsLectureBlocksTableModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "lecturesBlocksTable", tableModel, 20, false, getTranslator(), formLayout);
-		tableEl.setEmptyTableSettings("empty.lectures.blocks", null, "o_icon_calendar", null, null, false);
+		tableModel = new CopyElementDetailsResourcesTableModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "templatesTable", tableModel, 20, false, getTranslator(), formLayout);
 	}
 	
 	private void loadModel() {
-		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
-		searchParams.setCurriculumElement(curriculumElement);
-		List<LectureBlock> blocks = lectureService.getLectureBlocks(curriculumElement);
-		List<CopyElementDetailsLectureBlocksRow> rows = new ArrayList<>(blocks.size());
-		for(LectureBlock lectureBlock:blocks) {
-			CopyResources copySetting = lectureBlock.getEntry() != null && lectureBlock.getEntry().getKey() != null
-					? context.getCoursesEventsCopySetting()
-					: context.getStandaloneEventsCopySetting();		
-			rows.add(new CopyElementDetailsLectureBlocksRow(lectureBlock, copySetting));
+		List<RepositoryEntry> templates = curriculumService.getRepositoryTemplates(curriculumElement);
+		List<CopyElementDetailsResourcesRow> rows = new ArrayList<>(templates.size());
+		for(RepositoryEntry template:templates) {
+			rows.add(new CopyElementDetailsResourcesRow(template, -1, CopyResources.relation));
 		}
 		
 		tableModel.setObjects(rows);

@@ -521,9 +521,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			displayName += " (Copy)";
 		}
 		
-		CurriculumElement clone = curriculumElementDao.createCurriculumElement(identifier, displayName, CurriculumElementStatus.preparation,
-				beginDate, endDate, parentElement, elementToClone.getType(), elementToClone.getCalendars(), elementToClone.getLectures(),
-				elementToClone.getLearningProgress(), curriculum);
+		CurriculumElement clone = curriculumElementDao.copyCurriculumElement(elementToClone,
+				identifier, displayName, beginDate, endDate, parentElement, curriculum);
 		
 		if(settings.getCopyResources() == CopyResources.relation) {
 			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
@@ -545,7 +544,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		List<RepositoryEntry> templates = getRepositoryTemplates(elementToClone);
 		for(RepositoryEntry template:templates) {
-			instantiateTemplate(template, clone, displayName, identifier, doer);
+			addRepositoryTemplate(clone, template);
 		}
 		
 		if(settings.isCopyTaxonomy()) {

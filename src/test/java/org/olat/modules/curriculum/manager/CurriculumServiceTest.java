@@ -102,9 +102,9 @@ public class CurriculumServiceTest extends OlatTestCase {
 		
 		// check if we can retrieve the managers
 		List<Identity> managers = curriculumService.getMembersIdentity(curriculum, CurriculumRoles.curriculummanager);
-		Assert.assertNotNull(managers);
-		Assert.assertEquals(1, managers.size());
-		Assert.assertEquals(manager, managers.get(0));
+		Assertions.assertThat(managers)
+			.hasSize(1)
+			.containsExactly(manager);
 		
 		// check that there is not an other member with an other role
 		List<Identity> owners = curriculumService.getMembersIdentity(curriculum, CurriculumRoles.owner);
@@ -294,11 +294,10 @@ public class CurriculumServiceTest extends OlatTestCase {
 		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element1, copySettings, actor);
 		dbInstance.commit();
 		
-		List<RepositoryEntry> courses = curriculumService.getRepositoryEntries(copiedElement);
-		Assertions.assertThat(courses)
+		List<RepositoryEntry> templates = curriculumService.getRepositoryTemplates(copiedElement);
+		Assertions.assertThat(templates)
 			.hasSize(1)
-			.map(RepositoryEntry::getDisplayname)
-			.containsExactly(copiedElement.getDisplayName());
+			.containsExactly(template);
 	}
 	
 	@Test

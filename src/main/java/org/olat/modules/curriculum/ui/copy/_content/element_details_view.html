@@ -1,4 +1,9 @@
 $r.render("resources")
+#if($r.available("templates"))
+	<div class="o_block_large_top">
+		$r.render("templates")
+	</div>
+#end
 <div class="o_block_large_top">
 	$r.render("lecturesBlocks")
 </div>

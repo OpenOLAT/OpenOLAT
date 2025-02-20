@@ -89,6 +89,9 @@ public class CopyElementDetailsResourcesController extends FormBasicController {
 
 		tableModel = new CopyElementDetailsResourcesTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "resourcesTable", tableModel, 20, false, getTranslator(), formLayout);
+		
+		String typeName = curriculumElement.getType() == null ? "-" : curriculumElement.getType().getDisplayName();
+		tableEl.setEmptyTableSettings("empty.resources", null, "o_CourseModule_icon", null, null, false, typeName);
 	}
 	
 	private void loadModel() {
