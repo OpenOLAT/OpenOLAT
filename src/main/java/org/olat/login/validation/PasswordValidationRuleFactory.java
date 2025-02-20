@@ -171,12 +171,14 @@ public class PasswordValidationRuleFactory {
 			}
 
 			// Add authentication usernames if present
-			List<Authentication> authentications = securityManager.getAuthentications(i);
-			if (authentications != null) {
-				for (Authentication auth : authentications) {
-					String authValue = auth.getAuthusername();
-					if (StringHelper.containsNonWhitespace(authValue)) {
-						forbiddenAuthValues.add(authValue);
+			if(i.getKey() != null) {
+				List<Authentication> authentications = securityManager.getAuthentications(i);
+				if (authentications != null) {
+					for (Authentication auth : authentications) {
+						String authValue = auth.getAuthusername();
+						if (StringHelper.containsNonWhitespace(authValue)) {
+							forbiddenAuthValues.add(authValue);
+						}
 					}
 				}
 			}
@@ -189,13 +191,19 @@ public class PasswordValidationRuleFactory {
 
 	public ValidationRule createUserFirstnameForbiddenRule() {
 		ValidationDescription description = createDescription("password.rule.forbidden.user.firstname");
-		Function<Identity, List<String>> forbiddenValues = i -> List.of(i.getUser().getFirstName());
+		Function<Identity, List<String>> forbiddenValues = i ->  {
+			String firstName = i.getUser().getFirstName();
+			return firstName == null ? List.of() : List.of(firstName);
+		};
 		return new IdentityValueForbiddenRule(description, forbiddenValues);
 	}
 
 	public ValidationRule createUserLastnameForbiddenRule() {
 		ValidationDescription description = createDescription("password.rule.forbidden.user.lastname");
-		Function<Identity, List<String>> forbiddenValues = i -> List.of(i.getUser().getLastName());
+		Function<Identity, List<String>> forbiddenValues = i -> {
+			String lastName = i.getUser().getLastName();
+			return lastName == null ? List.of() : List.of(lastName);
+		};
 		return new IdentityValueForbiddenRule(description, forbiddenValues);
 	}
 
