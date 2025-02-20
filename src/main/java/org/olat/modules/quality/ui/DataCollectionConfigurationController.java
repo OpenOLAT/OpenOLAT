@@ -214,6 +214,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		topicCurriculumEl.addActionListener(FormEvent.ONCHANGE);
 		// topic curriculum element
 		topicCurriculumElementEl = uifactory.addDropdownSingleselect("data.collection.topic.curriculum.element", formLayout, emptyArray(), emptyArray());
+		topicCurriculumElementEl.setAllowNoSelection(true);
 		// topic repository
 		topicRepositoryNameEl = uifactory.addStaticTextElement("data.collection.topic.repository.name", null, formLayout);
 		topicRepositorySelectLink = uifactory.addFormLink("data.collection.topic.repository.select", formLayout,
@@ -508,7 +509,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 					break;
 				}
 				case CURRICULUM_ELEMENT: {
-					if (topicCurriculum == null) {
+					if (topicCurriculumElement == null) {
 						topicCurriculumElementEl.setErrorKey("form.mandatory.hover");
 						allOk = false;
 					}
