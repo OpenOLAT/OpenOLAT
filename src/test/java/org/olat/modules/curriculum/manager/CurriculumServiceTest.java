@@ -43,7 +43,10 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.CurriculumService.AddRepositoryEntry;
 import org.olat.modules.curriculum.CurriculumStatus;
+import org.olat.modules.curriculum.model.CurriculumCopySettings;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -215,8 +218,87 @@ public class CurriculumServiceTest extends OlatTestCase {
 		CurriculumElement secondElement = myElements.get(0).getCurriculumElement();
 		Assert.assertTrue(firstElement.equals(element1) || firstElement.equals(rootElement));
 		Assert.assertTrue(secondElement.equals(element1) || secondElement.equals(rootElement));
-		// Element 2 ist not in the output
+		// Element 2 is not in the output
 		Assert.assertFalse(firstElement.equals(element2) || secondElement.equals(element2));
+	}
+	
+	@Test
+	public void copyCurriculumElement() {
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-1");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-20", "Curriculum 20", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-copy-1", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element11 = curriculumService.createCurriculumElement("Element-to-copy-1-1", "Element to copy 1.1",
+				CurriculumElementStatus.active, null, null, element1, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element111 = curriculumService.createCurriculumElement("Element-to-copy-1-1-1", "Element to copy 1.1.1",
+				CurriculumElementStatus.active, null, null, element11, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		Assert.assertNotNull(element111);
+		
+		CurriculumCopySettings copySettings = new CurriculumCopySettings();
+		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element1, copySettings, actor);
+		dbInstance.commit();
+		
+		List<CurriculumElement> copiedDescendantsElements = curriculumService.getCurriculumElementsDescendants(copiedElement);
+		Assertions.assertThat(copiedDescendantsElements)
+			.hasSize(2)
+			.map(CurriculumElement::getDisplayName)
+			.containsAnyOf("Element to copy 1.1.1 (Copy)");
+		
+		List<CurriculumElement> implementations = curriculumService.getImplementations(curriculum);
+		Assertions.assertThat(implementations)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(element1, copiedElement);
+	}
+	
+	@Test
+	public void copyCurriculumElementAndReuseCourse() {
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-2");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-21", "Curriculum 21", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-copy-1", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(actor);
+		AddRepositoryEntry addEntry = curriculumService.addRepositoryEntry(element1, entry, false);
+		dbInstance.commit();
+		Assert.assertTrue(addEntry.entryAdded());
+		
+		CurriculumCopySettings copySettings = new CurriculumCopySettings();
+		copySettings.setCopyResources(CopyResources.relation);
+		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element1, copySettings, actor);
+		dbInstance.commit();
+		
+		List<RepositoryEntry> courses = curriculumService.getRepositoryEntries(copiedElement);
+		Assertions.assertThat(courses)
+			.hasSize(1)
+			.containsExactly(entry);
+	}
+	
+	@Test
+	public void copyCurriculumElementAndTemplate() {
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-2");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-21", "Curriculum 21", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-copy-1", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		RepositoryEntry template = JunitTestHelper.createRandomRepositoryEntry(actor);
+		boolean addEntry = curriculumService.addRepositoryTemplate(element1, template);
+		dbInstance.commit();
+		Assert.assertTrue(addEntry);
+		
+		CurriculumCopySettings copySettings = new CurriculumCopySettings();
+		copySettings.setCopyResources(CopyResources.relation);
+		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element1, copySettings, actor);
+		dbInstance.commit();
+		
+		List<RepositoryEntry> courses = curriculumService.getRepositoryEntries(copiedElement);
+		Assertions.assertThat(courses)
+			.hasSize(1)
+			.map(RepositoryEntry::getDisplayname)
+			.containsExactly(copiedElement.getDisplayName());
 	}
 	
 	@Test

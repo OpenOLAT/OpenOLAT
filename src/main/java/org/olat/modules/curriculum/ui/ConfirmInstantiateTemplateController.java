@@ -36,7 +36,6 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -59,8 +58,6 @@ public class ConfirmInstantiateTemplateController extends FormBasicController {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -190,15 +187,8 @@ public class ConfirmInstantiateTemplateController extends FormBasicController {
 		String displayname = displayNameEl.getValue();
 		String externalRef = externalRefEl.getValue();
 		
-		RepositoryEntry entry = repositoryService.copy(template, getIdentity(), displayname);
-		instantiatedEntry = repositoryManager.setDescriptionAndName(entry, displayname, externalRef,
-				entry.getAuthors(), entry.getDescription(), entry.getTeaser(), entry.getObjectives(), entry.getRequirements(),
-				entry.getCredits(), entry.getMainLanguage(), entry.getLocation(), entry.getExpenditureOfWork(),
-				entry.getLifecycle(), null, null, entry.getEducationalType());
-		
-		boolean hasRepositoryEntries = curriculumService.hasRepositoryEntries(element);
-		boolean moveLectureBlocks = !hasRepositoryEntries;
-		curriculumService.addRepositoryEntry(element, entry, moveLectureBlocks);
+		instantiatedEntry = curriculumService.instantiateTemplate(template, element,
+				displayname, externalRef, getIdentity());
 		
 		// Make sure all is committed before sending event
 		dbInstance.commit();

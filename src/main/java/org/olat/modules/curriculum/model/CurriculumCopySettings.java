@@ -19,6 +19,12 @@
  */
 package org.olat.modules.curriculum.model;
 
+import java.util.Date;
+import java.util.List;
+
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
+
 /**
  * 
  * Initial date: 19 févr. 2019<br>
@@ -30,6 +36,7 @@ public class CurriculumCopySettings {
 	private boolean copyDates;
 	private boolean copyTaxonomy;
 	private CopyResources copyResources;
+	private List<CopyElementSetting> copyElementSettings;
 	
 	public CurriculumCopySettings() {
 		//
@@ -59,6 +66,24 @@ public class CurriculumCopySettings {
 		this.copyTaxonomy = copyTaxonomy;
 	}
 	
+	public CopyElementSetting getCopyElementSetting(CurriculumElementRef ref) {
+		if(copyElementSettings != null) {
+			return copyElementSettings.stream()
+					.filter(el -> ref.getKey().equals(el.originalElement().getKey()))
+					.findFirst()
+					.orElse(null);
+		}
+		return null;
+	}
+	
+	public List<CopyElementSetting> getCopyElementSettings() {
+		return copyElementSettings;
+	}
+
+	public void setCopyElementSettings(List<CopyElementSetting> copyElementSettings) {
+		this.copyElementSettings = copyElementSettings;
+	}
+
 	public enum CopyResources {
 		dont,
 		relation,
@@ -73,6 +98,13 @@ public class CurriculumCopySettings {
 				}
 			}
 			return def;
+		}
+	}
+	
+	public record CopyElementSetting(CurriculumElement originalElement, String displayName, String identifier, Date begin, Date end) {
+		
+		public boolean hasDates() {
+			return begin != null || end != null;
 		}
 	}
 }

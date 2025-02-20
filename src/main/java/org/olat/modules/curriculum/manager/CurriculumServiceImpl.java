@@ -106,6 +106,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -143,6 +144,7 @@ import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryMyCourseQueries;
@@ -488,24 +490,34 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public CurriculumElement cloneCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
-			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity identity) {
-		return cloneCurriculumElementRec(curriculum, parentElement, elementToClone, settings, identity, 0);
+	public CurriculumElement copyCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
+			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity doer) {
+		return copyCurriculumElementRec(curriculum, parentElement, elementToClone, settings, doer, 0);
 	}
 	
-	private CurriculumElement cloneCurriculumElementRec(Curriculum curriculum, CurriculumElement parentElement,
-			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity identity, int depth) {
+	private CurriculumElement copyCurriculumElementRec(Curriculum curriculum, CurriculumElement parentElement,
+			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity doer, int depth) {
+		
+		CopyElementSetting elementSetting = settings.getCopyElementSetting(elementToClone);
 		
 		Date beginDate = null;
 		Date endDate = null;
-		if(settings.isCopyDates()) {
+		if(elementSetting != null && elementSetting.hasDates()) {
+			beginDate = elementSetting.begin();
+			endDate = elementSetting.end();
+		} else if(settings.isCopyDates()) {
 			beginDate = elementToClone.getBeginDate();
 			endDate = elementToClone.getEndDate();
 		}
 		
 		String identifier = elementToClone.getIdentifier();
+		if(elementSetting != null && StringHelper.containsNonWhitespace(elementSetting.identifier())) {
+			identifier = elementSetting.identifier();
+		}
 		String displayName = elementToClone.getDisplayName();
-		if(depth == 0) {
+		if(elementSetting != null && StringHelper.containsNonWhitespace(elementSetting.displayName())) {
+			displayName = elementSetting.displayName();
+		} else if(depth == 0) {
 			displayName += " (Copy)";
 		}
 		
@@ -523,12 +535,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
 			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);// prevent service to service link at startup
 			for(RepositoryEntry entry:entries) {
-				if(repositoryService.canCopy(entry, identity)) {
-					RepositoryEntry entryCopy = repositoryService.copy(entry, identity, entry.getDisplayname());
+				if(repositoryService.canCopy(entry, doer)) {
+					RepositoryEntry entryCopy = repositoryService.copy(entry, doer, entry.getDisplayname());
 					repositoryEntryRelationDao.createRelation(clone.getGroup(), entryCopy);
 					fireRepositoryEntryAddedEvent(clone, entryCopy);
 				}
 			}
+		}
+		
+		List<RepositoryEntry> templates = getRepositoryTemplates(elementToClone);
+		for(RepositoryEntry template:templates) {
+			instantiateTemplate(template, clone, displayName, identifier, doer);
 		}
 		
 		if(settings.isCopyTaxonomy()) {
@@ -541,9 +558,27 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		List<CurriculumElement> childrenToClone = getCurriculumElementsChildren(elementToClone);
 		for(CurriculumElement childToClone:childrenToClone) {
-			cloneCurriculumElementRec(curriculum, clone, childToClone, settings, identity, depth);
+			copyCurriculumElementRec(curriculum, clone, childToClone, settings, doer, depth);
 		}
 		return clone;
+	}
+
+	@Override
+	public RepositoryEntry instantiateTemplate(RepositoryEntry template, CurriculumElement curriculumElement, String displayName, String externalRef, Identity doer) {
+		// prevent service to service link at startup
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		
+		RepositoryEntry entry = repositoryService.copy(template, doer, displayName);
+		RepositoryEntry instantiatedEntry = repositoryManager.setDescriptionAndName(entry, displayName, externalRef,
+				entry.getAuthors(), entry.getDescription(), entry.getTeaser(), entry.getObjectives(), entry.getRequirements(),
+				entry.getCredits(), entry.getMainLanguage(), entry.getLocation(), entry.getExpenditureOfWork(),
+				entry.getLifecycle(), null, null, entry.getEducationalType());
+		
+		boolean hasRepositoryEntries = hasRepositoryEntries(curriculumElement);
+		boolean moveLectureBlocks = !hasRepositoryEntries;
+		addRepositoryEntry(curriculumElement, entry, moveLectureBlocks);
+		return instantiatedEntry;
 	}
 
 	@Override

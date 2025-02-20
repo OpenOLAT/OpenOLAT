@@ -276,8 +276,11 @@ public interface CurriculumService {
 	 * @param settings The settings to clone elements
 	 * @return The root element
 	 */
-	public CurriculumElement cloneCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
+	public CurriculumElement copyCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
 			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity identity);
+	
+	public RepositoryEntry instantiateTemplate(RepositoryEntry template, CurriculumElement curriculumElement,
+			String displayName, String externalRef, Identity doer);
 	
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);

@@ -75,6 +75,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.Callout
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -99,7 +100,9 @@ import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
-import org.olat.modules.curriculum.ui.copy.CopySettingsController;
+import org.olat.modules.curriculum.ui.copy.CopyElement1SettingsStep;
+import org.olat.modules.curriculum.ui.copy.CopyElementCallback;
+import org.olat.modules.curriculum.ui.copy.CopyElementContext;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.event.CurriculumElementEvent;
 import org.olat.modules.curriculum.ui.event.SelectCurriculumElementRowEvent;
@@ -110,6 +113,8 @@ import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.generator.ui.CurriculumElementPreviewListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -148,8 +153,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
-	private CopySettingsController copyCtrl;
 	private ReferencesController referencesCtrl;
+	private StepsMainRunController copyElementCtrl;
 	private EditCurriculumElementMetadataController newElementCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditCurriculumElementMetadataController newSubElementCtrl;
@@ -171,6 +176,8 @@ public class CurriculumComposerController extends FormBasicController implements
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
 	
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -649,18 +656,21 @@ public class CurriculumComposerController extends FormBasicController implements
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(newElementCtrl == source || newSubElementCtrl == source
 				|| moveElementCtrl == source || confirmDeleteCtrl == source
-				|| copyCtrl == source) {
+				|| bulkDeleteConfirmationCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(bulkDeleteConfirmationCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+		} else if(source == copyElementCtrl) {
+			if (event == Event.CANCELLED_EVENT) {
+				getWindowControl().pop();
+				cleanUp();
+			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				getWindowControl().pop();
 				loadModel();
+				cleanUp();
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (referencesCtrl == source || curriculumStructureCalloutCtrl == source) {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
@@ -693,23 +703,23 @@ public class CurriculumComposerController extends FormBasicController implements
 	private void cleanUp() {
 		removeAsListenerAndDispose(curriculumStructureCalloutCtrl);
 		removeAsListenerAndDispose(bulkDeleteConfirmationCtrl);
+		removeAsListenerAndDispose(copyElementCtrl);
 		removeAsListenerAndDispose(newSubElementCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(moveElementCtrl);
 		removeAsListenerAndDispose(newElementCtrl);
 		removeAsListenerAndDispose(referencesCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
-		removeAsListenerAndDispose(copyCtrl);
 		removeAsListenerAndDispose(cmc);
 		curriculumStructureCalloutCtrl = null;
 		bulkDeleteConfirmationCtrl = null;
+		copyElementCtrl = null;
 		newSubElementCtrl = null;
 		toolsCalloutCtrl = null;
 		confirmDeleteCtrl = null;
 		moveElementCtrl = null;
 		newElementCtrl = null;
 		referencesCtrl = null;
-		copyCtrl = null;
 		cmc = null;
 	}
 
@@ -1071,6 +1081,22 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 	}
 	
+	private void doCopyElement(UserRequest ureq, CurriculumElementRow row) {
+		CurriculumElement element = curriculumService.getCurriculumElement(row);
+		List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(element);
+		List<OfferAndAccessInfos> offersAndAccessList = acService.findOfferAndAccessByResource(element.getResource(), true);
+		CopyElementContext context = new CopyElementContext(element, descendants, offersAndAccessList);
+		CopyElement1SettingsStep step = new CopyElement1SettingsStep(ureq, context);
+		CopyElementCallback finish = new CopyElementCallback(context);
+		
+		removeAsListenerAndDispose(copyElementCtrl);
+		String title = translate("wizard.duplicate.element");
+		copyElementCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, title, "");
+		listenTo(copyElementCtrl);
+		getWindowControl().pushAsModalDialog(copyElementCtrl.getInitialComponent());
+		
+	}
+	
 	private void launch(UserRequest ureq, RepositoryEntryRef ref) {
 		String coursePath = "[RepositoryEntry:" + ref.getKey() + "]";
 		if(!NewControllerFactory.getInstance().launch(coursePath, ureq, getWindowControl())) {
@@ -1092,6 +1118,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		private Link newLink;
 		private Link openLink;
 		private Link deleteLink;
+		private Link duplicateLink;
 		private Link manageMembersLink;
 		
 		private CurriculumElementRow row;
@@ -1111,6 +1138,11 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(curriculum != null && secCallback.canEditCurriculumElement(element) && element.getParent() != null
 					&& !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
 				addNewElementLinks(element, links);
+			}
+			
+			if(secCallback.canEditCurriculumElement(element)
+					&& !CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
+				duplicateLink = addLink("duplicate.element", "o_icon_copy", links);
 			}
 
 			if(secCallback.canManagerCurriculumElementUsers(element)) {
@@ -1170,6 +1202,9 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(manageMembersLink == source) {
 				close();
 				doOpenCurriculumElementUserManagement(ureq, row, null);
+			} else if(duplicateLink == source) {
+				close();
+				doCopyElement(ureq, row);
 			} else if(source instanceof Link link
 					&& NEW_ELEMENT.equals(link.getCommand())
 					&& link.getUserObject() instanceof CurriculumElementType type) {

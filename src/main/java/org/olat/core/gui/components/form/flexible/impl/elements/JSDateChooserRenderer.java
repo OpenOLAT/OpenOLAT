@@ -60,7 +60,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			super.renderVerticalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
 		}
 	}
-	
+
 	private void renderTwoColumnsForSameDayWithTimeLayout(StringOutput sb, Component source, String layout,
 			Translator translator, String[] args) {
 		JSDateChooserComponent jsdcc = (JSDateChooserComponent) source;
