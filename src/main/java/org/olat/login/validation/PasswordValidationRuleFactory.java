@@ -21,16 +21,22 @@ package org.olat.login.validation;
 
 import static java.util.regex.Pattern.UNICODE_CHARACTER_CLASS;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,6 +47,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PasswordValidationRuleFactory {
+
+	@Autowired
+	private BaseSecurityManager securityManager;
 	
 	public ValidationRule createVisibleCharactersRule(int min, int max) {
 		ValidationDescription description = createDescription("password.rule.length", min, max);
@@ -153,20 +162,41 @@ public class PasswordValidationRuleFactory {
 
 	public ValidationRule createUsernameForbiddenRule() {
 		ValidationDescription description = createDescription("password.rule.forbidden.username");
-		Function<Identity, String> forbiddenValue = i -> i.getUser().getNickName();
-		return new IdentityValueForbiddenRule(description, forbiddenValue);
+		Function<Identity, List<String>> forbiddenValues = i -> {
+			List<String> forbiddenAuthValues = new ArrayList<>();
+
+			String nickname = i.getUser().getNickName();
+			if (StringHelper.containsNonWhitespace(nickname)) {
+				forbiddenAuthValues.add(nickname);
+			}
+
+			// Add authentication usernames if present
+			List<Authentication> authentications = securityManager.getAuthentications(i);
+			if (authentications != null) {
+				for (Authentication auth : authentications) {
+					String authValue = auth.getAuthusername();
+					if (StringHelper.containsNonWhitespace(authValue)) {
+						forbiddenAuthValues.add(authValue);
+					}
+				}
+			}
+
+			return forbiddenAuthValues;
+		};
+
+		return new IdentityValueForbiddenRule(description, forbiddenValues);
 	}
 
 	public ValidationRule createUserFirstnameForbiddenRule() {
 		ValidationDescription description = createDescription("password.rule.forbidden.user.firstname");
-		Function<Identity, String> forbiddenValue = i -> i.getUser().getFirstName();
-		return new IdentityValueForbiddenRule(description, forbiddenValue);
+		Function<Identity, List<String>> forbiddenValues = i -> List.of(i.getUser().getFirstName());
+		return new IdentityValueForbiddenRule(description, forbiddenValues);
 	}
 
 	public ValidationRule createUserLastnameForbiddenRule() {
 		ValidationDescription description = createDescription("password.rule.forbidden.user.lastname");
-		Function<Identity, String> forbiddenValue = i -> i.getUser().getLastName();
-		return new IdentityValueForbiddenRule(description, forbiddenValue);
+		Function<Identity, List<String>> forbiddenValues = i -> List.of(i.getUser().getLastName());
+		return new IdentityValueForbiddenRule(description, forbiddenValues);
 	}
 
 	public ValidationRule createHistoryRule(int numberChanges) {
