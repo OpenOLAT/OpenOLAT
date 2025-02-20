@@ -55,10 +55,7 @@ public class CopyElementCallback implements StepRunnerCallback {
 		final CurriculumElement rootElementToCopy = curriculumService.getCurriculumElement(context.getCurriculumElement());
 		final Curriculum curriculum = rootElementToCopy.getCurriculum();
 
-		CurriculumCopySettings copySettings = new CurriculumCopySettings();
-		copySettings.setCopyResources(context.getCoursesCopySetting());
-		copySettings.setCopyElementSettings(context.getCurriculumElementsSettings());
-		
+		CurriculumCopySettings copySettings = context.getCopySettings();
 		CurriculumElement parentElement = rootElementToCopy.getParent();
 		curriculumService.copyCurriculumElement(curriculum, parentElement, rootElementToCopy, copySettings, ureq.getIdentity());	
 		

@@ -1095,6 +1095,17 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
+	public OfferAccess copyOfferAccess(OfferAccess link, Date validFrom, Date validTo, OLATResource resource, String resourceName) {
+		Offer offer = link.getOffer();
+		AccessMethod method = link.getMethod();
+		Offer offerCopy = accessManager.copyAndPersistOffer(offer, validFrom, validTo, resource, resourceName);
+		OfferAccess accessCopy = createOfferAccess(offerCopy, method);
+		accessCopy.setValidFrom(validFrom);
+		accessCopy.setValidTo(validTo);
+		return methodManager.save(accessCopy);
+	}
+
+	@Override
 	public void deletedLinkToMethod(OfferAccess link) {
 		methodManager.delete(link);
 	}

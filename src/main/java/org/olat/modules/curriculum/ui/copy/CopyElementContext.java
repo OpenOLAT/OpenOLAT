@@ -24,8 +24,11 @@ import java.util.List;
 
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 
 /**
@@ -40,14 +43,16 @@ public class CopyElementContext {
 	private final List<CurriculumElement> descendants;
 	private final List<OfferAndAccessCopy> offersAndAccessInfos;
 	
+	private final CurriculumCopySettings copySettings = new CurriculumCopySettings();
+	
 	private String displayName;
 	private String identifier;
-	private CopyResources coursesEventsCopySetting;
-	private CopyResources standaloneEventsCopySetting;
-	private List<CopyElementSetting> curriculumElementsSettings;
 	
 	public CopyElementContext(CurriculumElement curriculumElement, List<CurriculumElement> descendants,
 			List<OfferAndAccessInfos> offersAndAccessInfos) {
+		copySettings.setCopyOffers(true);
+		copySettings.setCopyResources(CopyResources.relation);
+		
 		this.curriculumElement = curriculumElement;
 		this.descendants = descendants;
 		this.offersAndAccessInfos = offersAndAccessInfos == null
@@ -55,6 +60,10 @@ public class CopyElementContext {
 				: offersAndAccessInfos.stream()
 					.map(infos -> new OfferAndAccessCopy(infos.offer(), infos.offerAccess()))
 					.toList();
+	}
+	
+	public CurriculumCopySettings getCopySettings() {
+		return copySettings;
 	}
 
 	public CurriculumElement getCurriculumElement() {
@@ -93,42 +102,44 @@ public class CopyElementContext {
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
 	}
-	
-	public CopyResources getCoursesCopySetting() {
-		return CopyResources.relation;
-	}
 
 	public CopyResources getCoursesEventsCopySetting() {
-		return coursesEventsCopySetting;
+		return copySettings.getCopyResources();
 	}
 
 	public void setCoursesEventsCopySetting(CopyResources coursesEvents) {
-		this.coursesEventsCopySetting = coursesEvents;
+		copySettings.setCopyResources(coursesEvents);
 	}
 
 	public CopyResources getStandaloneEventsCopySetting() {
-		return standaloneEventsCopySetting;
+		return copySettings.getCopyStandaloneEvents();
 	}
 
 	public void setStandaloneEventsCopySetting(CopyResources standaloneEvents) {
-		this.standaloneEventsCopySetting = standaloneEvents;
+		copySettings.setCopyStandaloneEvents(standaloneEvents);
+	}
+	
+	public CopyOfferSetting getOfferToCopy(Offer offer) {
+		return copySettings.getCopyOfferSetting(offer);
+	}
+	
+	public List<CopyOfferSetting> getOfferSettings() {
+		return copySettings.getCopyOfferSettings();
+	}
+	
+	public void setOfferSettings(List<CopyOfferSetting> settings) {
+		copySettings.setCopyOfferSettings(settings);
 	}
 	
 	public CopyElementSetting getCurriculumElementToCopy(CurriculumElementRef ref) {
-		if(curriculumElementsSettings != null) {
-			return curriculumElementsSettings.stream()
-					.filter(el -> ref.getKey().equals(el.originalElement().getKey()))
-					.findFirst()
-					.orElse(null);
-		}
-		return null;
+		return copySettings.getCopyElementSetting(ref);
 	}
 
 	public List<CopyElementSetting> getCurriculumElementsSettings() {
-		return curriculumElementsSettings;
+		return copySettings.getCopyElementSettings();
 	}
 
 	public void setCurriculumElementsToCopy(List<CopyElementSetting> settings) {
-		this.curriculumElementsSettings = settings;
+		copySettings.setCopyElementSettings(settings);
 	}
 }

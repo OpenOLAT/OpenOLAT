@@ -288,6 +288,15 @@ public interface ACService {
 	public boolean isMethodAvailable(String methodType);
 
 	public OfferAccess createOfferAccess(Offer offer, AccessMethod method);
+	
+	/**
+	 * Copy the offer and the settings of the link to a new resource.
+	 * 
+	 * @param link The offer access
+	 * @param resource The resource
+	 * @return A copy of the offer acces and the initial offer linked to the specified resource
+	 */
+	public OfferAccess copyOfferAccess(OfferAccess link, Date validFrom, Date validTo, OLATResource resource, String resourceName);
 
 	public void deletedLinkToMethod(OfferAccess link);
 

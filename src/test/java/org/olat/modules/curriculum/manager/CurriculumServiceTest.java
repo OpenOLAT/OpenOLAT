@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -46,6 +47,8 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumService.AddRepositoryEntry;
 import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.lecture.LectureBlock;
@@ -58,6 +61,12 @@ import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.OfferAccess;
+import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
+import org.olat.resource.accesscontrol.provider.invoice.model.InvoiceAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +85,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ACService acService;
 	@Autowired
 	private QualityService qualityService;
 	@Autowired
@@ -238,9 +249,17 @@ public class CurriculumServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(element111);
 		
+		Date begin = DateUtils.getStartOfDay(new Date());
+		Date end = DateUtils.getEndOfDay(new Date());
 		CurriculumCopySettings copySettings = new CurriculumCopySettings();
+		copySettings.setCopyElementSettings(List.of(new CopyElementSetting(element1, null, null, begin, end)));
+		
 		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element1, copySettings, actor);
 		dbInstance.commit();
+		
+		Assert.assertEquals(begin, copiedElement.getBeginDate());
+		Assert.assertEquals(end, copiedElement.getEndDate());
+		Assert.assertEquals("Element to copy 1 (Copy)", copiedElement.getDisplayName());
 		
 		List<CurriculumElement> copiedDescendantsElements = curriculumService.getCurriculumElementsDescendants(copiedElement);
 		Assertions.assertThat(copiedDescendantsElements)
@@ -298,6 +317,57 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assertions.assertThat(templates)
 			.hasSize(1)
 			.containsExactly(template);
+	}
+	
+	
+	@Test
+	public void copyCurriculumElementWithOffer() {
+		// Create curriculum
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-3");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-22", "Curriculum 22", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-to-copy-1", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		// Add an offer and an access to it
+		Offer offer = acService.createOffer(element.getResource(), "Invoice curriculum element");
+		offer.setConfirmationByManagerRequired(true);
+		offer.setLabel("Offer to copy");
+		offer.setConfirmationEmail(false);
+		offer.setConfirmationByManagerRequired(true);
+		offer = acService.save(offer);
+		
+		List<AccessMethod> methods = acService.getAvailableMethodsByType(InvoiceAccessMethod.class);
+		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
+		offerAccess = acService.saveOfferAccess(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		// Copy the element
+		CurriculumCopySettings copySettings = new CurriculumCopySettings();
+		copySettings.setCopyOffers(true);
+		copySettings.setCopyOfferSettings(List.of(new CopyOfferSetting(offer, new Date(), new Date())));
+		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element, copySettings, actor);
+		dbInstance.commit();
+
+		List<OfferAndAccessInfos> offerAndAccessList = acService.findOfferAndAccessByResource(copiedElement.getResource(), true);
+		Assertions.assertThat(offerAndAccessList)
+			.hasSize(1);
+		
+		OfferAndAccessInfos infosOfCopy = offerAndAccessList.get(0);
+		Assert.assertNotNull(infosOfCopy.offer());
+		Assert.assertNotNull(infosOfCopy.offerAccess());
+		
+		Assert.assertEquals("Element to copy 1 (Copy)", infosOfCopy.offer().getResourceDisplayName());
+		Assert.assertEquals("Offer to copy", infosOfCopy.offer().getLabel());
+		Assert.assertFalse(infosOfCopy.offer().isConfirmationEmail());
+		Assert.assertTrue(infosOfCopy.offer().isConfirmationByManagerRequired());
+		Assert.assertNotNull(infosOfCopy.offer().getValidFrom());
+		Assert.assertNotNull(infosOfCopy.offer().getValidTo());
+		Assert.assertNotNull(infosOfCopy.offerAccess().getValidFrom());
+		Assert.assertNotNull(infosOfCopy.offerAccess().getValidTo());
+		
+		Assert.assertNotEquals(offer, infosOfCopy.offer());
+		Assert.assertNotEquals(offerAccess, infosOfCopy.offerAccess());
 	}
 	
 	@Test

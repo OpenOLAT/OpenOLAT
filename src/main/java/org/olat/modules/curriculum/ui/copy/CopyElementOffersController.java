@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui.copy;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.curriculum.ui.copy.CopyElementOffersDataModel.CopyOfferCols;
 import org.olat.resource.accesscontrol.ACService;
@@ -137,6 +139,7 @@ public class CopyElementOffersController extends StepFormBasicController {
 	@Override
 	protected void formNext(UserRequest ureq) {
 		List<CopyOfferRow> rows = tableModel.getObjects();
+		List<CopyOfferSetting> settings = new ArrayList<>();
 		for(CopyOfferRow row:rows) {
 			DateChooser dateChooser = row.getValidFromToEl();
 			OfferAndAccessCopy offerAndInfos = row.getOfferAndInfos();
@@ -147,7 +150,9 @@ public class CopyElementOffersController extends StepFormBasicController {
 				offerAndInfos.setValidFrom(dateChooser.getDate());
 				offerAndInfos.setValidTo(dateChooser.getSecondDate());
 			}
+			settings.add(new CopyOfferSetting(row.getOffer(), offerAndInfos.getValidFrom(), offerAndInfos.getValidTo()));
 		}
+		context.setOfferSettings(settings);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	

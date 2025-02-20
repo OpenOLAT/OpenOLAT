@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.resource.accesscontrol.Offer;
 
 /**
  * 
@@ -35,7 +36,12 @@ public class CurriculumCopySettings {
 	
 	private boolean copyDates;
 	private boolean copyTaxonomy;
+	private boolean copyOffers;
+	
 	private CopyResources copyResources;
+	private CopyResources copyStandaloneEvents;
+
+	private List<CopyOfferSetting> copyOfferSettings;
 	private List<CopyElementSetting> copyElementSettings;
 	
 	public CurriculumCopySettings() {
@@ -56,6 +62,22 @@ public class CurriculumCopySettings {
 
 	public void setCopyResources(CopyResources copyResources) {
 		this.copyResources = copyResources;
+	}
+
+	public CopyResources getCopyStandaloneEvents() {
+		return copyStandaloneEvents;
+	}
+
+	public void setCopyStandaloneEvents(CopyResources copyStandaloneEvents) {
+		this.copyStandaloneEvents = copyStandaloneEvents;
+	}
+
+	public boolean isCopyOffers() {
+		return copyOffers;
+	}
+
+	public void setCopyOffers(boolean copy) {
+		this.copyOffers = copy;
 	}
 
 	public boolean isCopyTaxonomy() {
@@ -83,6 +105,24 @@ public class CurriculumCopySettings {
 	public void setCopyElementSettings(List<CopyElementSetting> copyElementSettings) {
 		this.copyElementSettings = copyElementSettings;
 	}
+	
+	public CopyOfferSetting getCopyOfferSetting(Offer ref) {
+		if(copyOfferSettings != null) {
+			return copyOfferSettings.stream()
+					.filter(el -> ref.getKey().equals(el.originalOffer().getKey()))
+					.findFirst()
+					.orElse(null);
+		}
+		return null;
+	}
+
+	public List<CopyOfferSetting> getCopyOfferSettings() {
+		return copyOfferSettings;
+	}
+
+	public void setCopyOfferSettings(List<CopyOfferSetting> copyOfferSettings) {
+		this.copyOfferSettings = copyOfferSettings;
+	}
 
 	public enum CopyResources {
 		dont,
@@ -98,6 +138,13 @@ public class CurriculumCopySettings {
 				}
 			}
 			return def;
+		}
+	}
+	
+	public record CopyOfferSetting(Offer originalOffer, Date validFrom, Date validTo) {
+		
+		public boolean hasDates() {
+			return validFrom != null || validTo != null;
 		}
 	}
 	

@@ -97,7 +97,7 @@ public class CopyElementDetailsResourcesController extends FormBasicController {
 	private void loadModel() {
 		List<RepositoryEntryInfos> entriesWithInfos = curriculumService.getRepositoryEntriesWithInfos(curriculumElement);
 		List<CopyElementDetailsResourcesRow> rows = new ArrayList<>(entriesWithInfos.size());
-		final CopyResources copySetting = context.getCoursesCopySetting();
+		final CopyResources copySetting = context.getCoursesEventsCopySetting();
 		for(RepositoryEntryInfos entryWithInfos:entriesWithInfos) {
 			rows.add(new CopyElementDetailsResourcesRow(entryWithInfos.repositoryEntry(), entryWithInfos.numOfLectureBlocks(), copySetting));
 		}

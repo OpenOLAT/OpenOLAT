@@ -107,6 +107,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
@@ -153,8 +154,11 @@ import org.olat.repository.manager.RepositoryTemplateRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -492,7 +496,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public CurriculumElement copyCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
 			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity doer) {
-		return copyCurriculumElementRec(curriculum, parentElement, elementToClone, settings, doer, 0);
+		CurriculumElement copy = copyCurriculumElementRec(curriculum, parentElement, elementToClone, settings, doer, 0);
+		dbInstance.commit();
+		return copy;
 	}
 	
 	private CurriculumElement copyCurriculumElementRec(Curriculum curriculum, CurriculumElement parentElement,
@@ -545,6 +551,18 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		List<RepositoryEntry> templates = getRepositoryTemplates(elementToClone);
 		for(RepositoryEntry template:templates) {
 			addRepositoryTemplate(clone, template);
+		}
+		
+		if(settings.isCopyOffers()) {
+			ACService acService = CoreSpringFactory.getImpl(ACService.class);
+			List<OfferAndAccessInfos> offerAndAccessList = acService.findOfferAndAccessByResource(elementToClone.getResource(), true);
+			for(OfferAndAccessInfos offerAndAccess:offerAndAccessList) {
+				OfferAccess linkToCopy = offerAndAccess.offerAccess();
+				CopyOfferSetting offerSetting = settings.getCopyOfferSetting(offerAndAccess.offer());
+				Date validFrom = offerSetting == null ? null : offerSetting.validFrom();
+				Date validTo = offerSetting == null ? null : offerSetting.validTo();
+				acService.copyOfferAccess(linkToCopy, validFrom, validTo, clone.getResource(), clone.getDisplayName());
+			}
 		}
 		
 		if(settings.isCopyTaxonomy()) {

@@ -278,6 +278,26 @@ public class ACOfferDAO {
 		offer.setResourceTypeName(resourceTypeName);
 		return offer;
 	}
+	
+	public Offer copyAndPersistOffer(Offer offer, Date validFrom, Date validTo, OLATResource resource, String resourceName) {
+		Offer offerCopy = createOffer(resource, resourceName);
+		offerCopy.setAutoBooking(offer.isAutoBooking());
+		offerCopy.setCancellingFee(offer.getCancellingFee());
+		offerCopy.setCancellingFeeDeadlineDays(offer.getCancellingFeeDeadlineDays());
+		offerCopy.setCatalogPublish(offer.isCatalogPublish());
+		offerCopy.setCatalogWebPublish(offer.isCatalogWebPublish());
+		offerCopy.setConfirmationByManagerRequired(offer.isConfirmationByManagerRequired());
+		offerCopy.setConfirmationEmail(offer.isConfirmationEmail());
+		offerCopy.setCostCenter(offer.getCostCenter());
+		offerCopy.setDescription(offer.getDescription());
+		offerCopy.setGuestAccess(offer.isGuestAccess());
+		offerCopy.setLabel(offer.getLabel());
+		offerCopy.setOpenAccess(offer.isOpenAccess());
+		offerCopy.setValidFrom(validFrom);
+		offerCopy.setValidTo(validTo);
+		dbInstance.getCurrentEntityManager().persist(offerCopy);
+		return offerCopy;
+	}
 
 	public Offer deleteOffer(Offer offer) {
 		offer = loadOfferByKey(offer.getKey());
