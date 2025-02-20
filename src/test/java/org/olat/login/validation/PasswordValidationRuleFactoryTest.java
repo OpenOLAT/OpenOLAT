@@ -22,9 +22,11 @@ package org.olat.login.validation;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.assertj.core.api.SoftAssertions;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.olat.basesecurity.Authentication;
@@ -47,6 +49,14 @@ public class PasswordValidationRuleFactoryTest {
 	private BaseSecurityManager securityManager = mock(BaseSecurityManager.class);
 	
 	PasswordValidationRuleFactory sut = new TestableValidationRuleFactory();
+
+	@Before
+	public void setUp() throws Exception {
+		// Inject securityManager manually using reflection (since it is @Autowired)
+		Field securityManagerField = PasswordValidationRuleFactory.class.getDeclaredField("securityManager");
+		securityManagerField.setAccessible(true);
+		securityManagerField.set(sut, securityManager);
+	}
 
 	@Test
 	public void shouldCreateVisibleCharactersRule() {
