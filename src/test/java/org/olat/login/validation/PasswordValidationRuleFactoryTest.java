@@ -43,6 +43,8 @@ public class PasswordValidationRuleFactoryTest {
 	
 	@Mock
 	private Identity iMock = mock(Identity.class);
+	@Mock
+	private BaseSecurityManager securityManager = mock(BaseSecurityManager.class);
 	
 	PasswordValidationRuleFactory sut = new TestableValidationRuleFactory();
 
@@ -341,7 +343,6 @@ public class PasswordValidationRuleFactoryTest {
 	@Test
 	public void shouldUsernameForbiddenRule() {
 		ValidationRule rule = sut.createUsernameForbiddenRule();
-		BaseSecurityManager securityManager = mock(BaseSecurityManager.class);
 
 		// Mock Authentication objects for auth usernames
 		Authentication auth1 = mock(Authentication.class);
