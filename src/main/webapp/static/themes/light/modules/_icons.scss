@@ -479,6 +479,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_share { @include o-add-icon('share');}
 .o_icon_share_alt { @include o-add-icon('share-alt-square');}
 .o_icon_sharepoint_drive { @include o-add-icon('database'); }
+.o_icon_shift { @include o-add-icon('arrows-turn-right'); }
 .o_icon_show_more { @include o-add-icon('square-caret-down', false);}
 .o_icon_show_less { @include o-add-icon('square-caret-up', false);}
 .o_icon_show_send { @include o-add-icon('paper-plane', false);}

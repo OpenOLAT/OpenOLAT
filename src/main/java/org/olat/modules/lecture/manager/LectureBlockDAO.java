@@ -228,7 +228,7 @@ public class LectureBlockDAO {
 				.getResultList();
 	}
 	
-	public List<LectureBlock> getLectureBlock2s(CurriculumElementRef curriculumElement) {
+	public List<LectureBlock> getLectureBlocks(CurriculumElementRef curriculumElement) {
 		String query = """
 				select block from lectureblock block
 				where block.curriculumElement.key=:curriculumElementKey

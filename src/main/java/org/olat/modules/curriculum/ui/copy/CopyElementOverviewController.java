@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -41,9 +42,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
@@ -69,11 +73,16 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
 	
+	private FormLink shiftDatesButton;
 	private FlexiTableElement tableEl;
 	private CopyElementOverviewTableModel tableModel;
 	private final VelocityContainer detailsVC;
 	
+	private int counter = 0;
 	private final CopyElementContext context;
+	
+	private CloseableModalController cmc;
+	private ShiftDatesController shiftDatesCtrl;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -92,6 +101,9 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		shiftDatesButton = uifactory.addFormLink("shift.dates", formLayout, Link.BUTTON);
+		shiftDatesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_shift");
+		
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(TOGGLE_DETAILS_CMD);
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CopyElementCols.key));
@@ -146,12 +158,12 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		CopyElementSetting setting = calculateSetting(element);
 		CopyElementRow row = new CopyElementRow(element, setting, numOfResources, numOfLectureBlocks);
 		
-		Date beginDate = element.getBeginDate();
-		DateChooser beginDateEl = uifactory.addDateChooser("begin.date", null, beginDate, flc);
+		Date beginDate = context.shiftDate(element.getBeginDate());
+		DateChooser beginDateEl = uifactory.addDateChooser("begin.date." + (++counter), null, beginDate, flc);
 		row.setBeginDateEl(beginDateEl);
 		
-		Date endDate = element.getEndDate();
-		DateChooser endDateEl = uifactory.addDateChooser("end.date", null, endDate, flc);
+		Date endDate = context.shiftDate(element.getEndDate());
+		DateChooser endDateEl = uifactory.addDateChooser("end.date." + (++counter), null, endDate, flc);
 		row.setEndDateEl(endDateEl);
 		
 		return row;
@@ -165,6 +177,18 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		}
 		String identifier = context.evaluateIdentifier(element);
 		return new CopyElementSetting(element, displayName, identifier, null, null);
+	}
+	
+	private Date getEarliestDate() {
+		Date earliestDate = null;
+		List<CopyElementRow> rows = tableModel.getObjects();
+		for(CopyElementRow row:rows) {
+			Date beginDate = row.getCurriculumElement().getBeginDate();
+			if(beginDate != null && (earliestDate == null || earliestDate.after(beginDate))) {
+				earliestDate = beginDate;
+			}
+		}
+		return earliestDate;
 	}
 	
 	@Override
@@ -181,10 +205,33 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		}
 		return components;
 	}
+
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if(shiftDatesCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
 	
+	private void cleanUp() {
+		removeAsListenerAndDispose(shiftDatesCtrl);
+		removeAsListenerAndDispose(cmc);
+		shiftDatesCtrl = null;
+		cmc = null;
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(shiftDatesButton == source) {
+			doOpenShiftDates(ureq);
+		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if(TOGGLE_DETAILS_CMD.equals(cmd)) {
@@ -252,6 +299,18 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doOpenShiftDates(UserRequest ureq) {
+		Date earliestDate = getEarliestDate();
+		shiftDatesCtrl = new ShiftDatesController(ureq, getWindowControl(), context, earliestDate);
+		listenTo(shiftDatesCtrl);
+		
+		String title = translate("shift.dates");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), shiftDatesCtrl.getInitialComponent(),
+				true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doOpenElementDetails(UserRequest ureq, CopyElementRow row) {

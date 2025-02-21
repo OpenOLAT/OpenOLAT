@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui.copy;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -99,7 +100,10 @@ public class CopyElementDetailsLectureBlocksController extends FormBasicControll
 					? context.getCoursesEventsCopySetting()
 					: (context.isStandaloneEventsCopySetting() ? CopyResources.resource : CopyResources.dont);
 			String externalRef = context.evaluateIdentifier(lectureBlock.getExternalRef());
-			rows.add(new CopyElementDetailsLectureBlocksRow(lectureBlock, copySetting, externalRef));
+			Date startDate = context.shiftDate(lectureBlock.getStartDate());
+			
+			
+			rows.add(new CopyElementDetailsLectureBlocksRow(lectureBlock, copySetting, startDate, externalRef));
 		}
 		
 		tableModel.setObjects(rows);

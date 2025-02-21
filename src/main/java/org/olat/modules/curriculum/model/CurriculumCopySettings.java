@@ -22,16 +22,16 @@ package org.olat.modules.curriculum.model;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
-import org.olat.modules.lecture.LectureBlock;
 import org.olat.resource.accesscontrol.Offer;
 
 /**
  * 
  * Initial date: 19 févr. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CurriculumCopySettings {
@@ -49,11 +49,12 @@ public class CurriculumCopySettings {
 	 */
 	private String baseIdentifier;
 	
+	private long shiftDateByDays = 0;
+	
 	private CopyResources copyResources;
 
 	private List<CopyOfferSetting> copyOfferSettings;
 	private List<CopyElementSetting> copyElementSettings;
-	private List<CopyLectureBlockSetting> copyLectureBlockSettings;
 	
 	public CurriculumCopySettings() {
 		//
@@ -129,22 +130,18 @@ public class CurriculumCopySettings {
 		this.copyTaxonomy = copyTaxonomy;
 	}
 	
-	public CopyLectureBlockSetting getCopyLectureBlockSetting(LectureBlock lectureBlock) {
-		if(copyLectureBlockSettings != null) {
-			return copyLectureBlockSettings.stream()
-					.filter(el -> lectureBlock.getKey().equals(el.originalLectureBlock().getKey()))
-					.findFirst()
-					.orElse(null);
-		}
-		return null;
-	}
-	
-	public List<CopyLectureBlockSetting> getCopyLectureBlockSettings() {
-		return copyLectureBlockSettings;
+	public long getShiftDateByDays() {
+		return shiftDateByDays;
 	}
 
-	public void setCopyLectureBlockSettings(List<CopyLectureBlockSetting> copyLectureBlockSettings) {
-		this.copyLectureBlockSettings = copyLectureBlockSettings;
+	public void setShiftDateByDays(long shiftDateByDays) {
+		this.shiftDateByDays = shiftDateByDays;
+	}
+	
+	public Date shiftDate(Date date) {
+		if(date == null) return null;
+		if(shiftDateByDays == 0) return date;
+		return DateUtils.addDays(date, (int)shiftDateByDays);
 	}
 
 	public CopyElementSetting getCopyElementSetting(CurriculumElementRef ref) {
@@ -183,7 +180,6 @@ public class CurriculumCopySettings {
 		this.copyOfferSettings = copyOfferSettings;
 	}
 
-
 	public enum CopyResources {
 		dont,
 		relation,
@@ -198,13 +194,6 @@ public class CurriculumCopySettings {
 				}
 			}
 			return def;
-		}
-	}
-	
-	public record CopyLectureBlockSetting(LectureBlock originalLectureBlock, Date start, Date end) {
-		
-		public boolean hasDates() {
-			return start != null || end != null;
 		}
 	}
 	

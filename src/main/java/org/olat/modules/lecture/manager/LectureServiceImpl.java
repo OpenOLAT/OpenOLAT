@@ -1482,7 +1482,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		if(followUpToRepositoryEntries) {
 			return lectureBlockDao.getLectureBlocksUpToRepositoryEntries(element);
 		}
-		return lectureBlockDao.getLectureBlock2s(element);
+		return lectureBlockDao.getLectureBlocks(element);
 	}
 
 	@Override

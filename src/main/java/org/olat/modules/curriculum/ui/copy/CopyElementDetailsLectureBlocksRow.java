@@ -34,11 +34,13 @@ import org.olat.repository.RepositoryEntry;
 public class CopyElementDetailsLectureBlocksRow {
 	
 	private String externalRef;
+	private final Date startDate;
 	private final CopyResources copySetting;
 	private final LectureBlock lectureBlock;
 	private final RepositoryEntry repositoryEntry;
 	
-	public CopyElementDetailsLectureBlocksRow(LectureBlock lectureBlock, CopyResources copySetting, String externalRef) {
+	public CopyElementDetailsLectureBlocksRow(LectureBlock lectureBlock, CopyResources copySetting, Date startDate, String externalRef) {
+		this.startDate = startDate;
 		this.externalRef = externalRef;
 		this.lectureBlock = lectureBlock;
 		this.repositoryEntry = lectureBlock.getEntry();
@@ -62,7 +64,7 @@ public class CopyElementDetailsLectureBlocksRow {
 	}
 	
 	public Date getBeginDate() {
-		return lectureBlock.getStartDate();
+		return startDate == null ? lectureBlock.getStartDate() : startDate;
 	}
 
 	public CopyResources getCopySetting() {

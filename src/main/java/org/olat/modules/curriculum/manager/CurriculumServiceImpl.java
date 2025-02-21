@@ -107,7 +107,6 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
-import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyLectureBlockSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
@@ -563,11 +562,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		if(settings.isCopyStandaloneEvents()) {
 			LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
-			List<LectureBlock> lectureBlocksToCopy = lectureBlockDao.getLectureBlock2s(elementToClone);
+			List<LectureBlock> lectureBlocksToCopy = lectureBlockDao.getLectureBlocks(elementToClone);
 			for(LectureBlock blockToCopy:lectureBlocksToCopy) {
-				CopyLectureBlockSetting blockSetting = settings.getCopyLectureBlockSetting(blockToCopy);
-				Date start = blockSetting != null && blockSetting.hasDates() ? blockSetting.start() : blockToCopy.getStartDate();
-				Date end = blockSetting != null && blockSetting.hasDates() ? blockSetting.end() : blockToCopy.getEndDate();
+				Date start = settings.shiftDate(blockToCopy.getStartDate());
+				Date end = settings.shiftDate(blockToCopy.getEndDate());
 				String externalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
 				lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
 			}
@@ -1470,7 +1468,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(curriculumElement == null || entry == null) return false;
 		
 		boolean moved = false;
-		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlock2s(curriculumElement);
+		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks(curriculumElement);
 		for(LectureBlock lectureBlock:lectureBlocks) {
 			((LectureBlockImpl)lectureBlock).setEntry(entry);
 			lectureBlockDao.update(lectureBlock);

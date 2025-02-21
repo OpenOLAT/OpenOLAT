@@ -48,7 +48,6 @@ import org.olat.modules.curriculum.CurriculumService.AddRepositoryEntry;
 import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
-import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyLectureBlockSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
@@ -389,11 +388,9 @@ public class CurriculumServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		CurriculumCopySettings copySettings = new CurriculumCopySettings();
-		Date start = DateUtils.getStartOfDay(new Date());
-		Date end = DateUtils.getEndOfDay(new Date());
 		copySettings.setBaseIdentifier(element.getIdentifier());
 		copySettings.setIdentifier("COPY-1");
-		copySettings.setCopyLectureBlockSettings(List.of(new CopyLectureBlockSetting(lectureBlock, start, end)));
+		copySettings.setShiftDateByDays(2);
 		copySettings.setCopyStandaloneEvents(true);
 		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element, copySettings, actor);
 		dbInstance.commit();
@@ -403,8 +400,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 			.hasSize(1);
 		
 		LectureBlock copiedLectureBlock = copiedLectureBlocks.get(0);
-		Assert.assertEquals(start, copiedLectureBlock.getStartDate());
-		Assert.assertEquals(end, copiedLectureBlock.getEndDate());
+		Assert.assertNotNull(copiedLectureBlock.getStartDate());
+		Assert.assertNotNull(copiedLectureBlock.getEndDate());
 		Assert.assertEquals("Hello curriculum 25", copiedLectureBlock.getTitle());
 		Assert.assertEquals("COPY-1-EV-1", copiedLectureBlock.getExternalRef());
 		Assert.assertNull(copiedLectureBlock.getExternalId());

@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui.copy;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.util.StringHelper;
@@ -116,6 +117,18 @@ public class CopyElementContext {
 	
 	public String evaluateIdentifier(String originalIdentifier) {
 		return copySettings.evaluateIdentifier(originalIdentifier);
+	}
+
+	public long getShiftDateByDays() {
+		return copySettings.getShiftDateByDays();
+	}
+
+	public void setShiftDateByDays(long days) {
+		copySettings.setShiftDateByDays(days);
+	}
+	
+	public Date shiftDate(Date date) {
+		return copySettings.shiftDate(date);
 	}
 
 	public CopyResources getCoursesEventsCopySetting() {
