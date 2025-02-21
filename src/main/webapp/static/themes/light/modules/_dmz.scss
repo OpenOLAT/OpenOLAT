@@ -92,6 +92,9 @@ body.o_dmz {
 
 	/* for loginCtrl in lightbox or modal dialog e.g. in webcatalog */
 	&.o_login_popup {
+		overflow-x: hidden;
+		overflow-y: auto;
+		max-height: calc(96vh - 40px);
 		padding: 0 0 0 0;
 	}
 	
