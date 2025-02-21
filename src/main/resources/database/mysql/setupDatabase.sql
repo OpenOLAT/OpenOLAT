@@ -1171,7 +1171,6 @@ create table if not exists o_ac_order (
   discount_currency_code VARCHAR(3),
   cancellation_fee_amount decimal(12,4),
   cancellation_fee_currency_code varchar(3),
-  cancelling_fee_deadline_days int,
   order_status VARCHAR(32) default 'NEW',
   purchase_order_number varchar(100),
   order_comment mediumtext,
@@ -1206,6 +1205,7 @@ create table if not exists o_ac_order_line (
   total_currency_code VARCHAR(3),
   cancellation_fee_amount decimal(12,4),
   cancellation_currency_code varchar(3),
+  cancelling_fee_deadline_days int,
   fk_order_part_id bigint,
   fk_offer_id bigint,
   primary key (order_item_id)
