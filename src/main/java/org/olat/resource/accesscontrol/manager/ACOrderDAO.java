@@ -111,6 +111,7 @@ public class ACOrderDAO {
 		if(offer.getCancellingFee() != null) {
 			line.setCancellationFee(offer.getCancellingFee().clone());
 		}
+		line.setCancellingFeeDeadlineDays(offer.getCancellingFeeDeadlineDays());
 		return line;
 	}
 

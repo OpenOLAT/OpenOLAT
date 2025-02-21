@@ -1123,6 +1123,7 @@ create table o_ac_order_line (
   total_currency_code varchar(3),
   cancellation_fee_amount decimal,
   cancellation_currency_code varchar(3),
+  cancelling_fee_deadline_days int8,
   fk_order_part_id int8,
   fk_offer_id int8,
   primary key (order_item_id)

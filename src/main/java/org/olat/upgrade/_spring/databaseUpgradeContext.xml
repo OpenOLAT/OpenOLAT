@@ -168,6 +168,10 @@
                     <constructor-arg index="0" value="OLAT_20.0.0" />
                     <property name="alterDbStatements" value="alter_19_1_x_to_20_0_x.sql" />
                 </bean>
+				<bean id="database_upgrade_20_0_pre2" class="org.olat.upgrade.DatabaseUpgrade">
+					<constructor-arg index="0" value="OLAT_20.0.pre2" />
+					<property name="alterDbStatements" value="alter_20_0_0_pre1_to_20_0_0.sql" />
+				</bean>
 			</list>
 		</property>
 	</bean>

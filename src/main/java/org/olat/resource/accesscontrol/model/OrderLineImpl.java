@@ -89,6 +89,8 @@ public class OrderLineImpl implements Persistable, OrderLine {
     @AttributeOverride(name="amount", column = @Column(name="cancellation_fee_amount"))
     @AttributeOverride(name="currencyCode", column = @Column(name="cancellation_currency_code"))
 	private PriceImpl cancellationFee;
+	@Column(name="cancelling_fee_deadline_days", nullable=true, insertable=true, updatable=true)
+	private Integer cancellingFeeDeadlineDays;
 	
 	@ManyToOne(targetEntity=OfferImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_offer_id", nullable=false, insertable=true, updatable=false)
@@ -145,6 +147,15 @@ public class OrderLineImpl implements Persistable, OrderLine {
 
 	public void setCancellationFee(Price cancellationFee) {
 		this.cancellationFee = (PriceImpl)cancellationFee;
+	}
+
+	@Override
+	public Integer getCancellingFeeDeadlineDays() {
+		return cancellingFeeDeadlineDays;
+	}
+
+	public void setCancellingFeeDeadlineDays(Integer cancellingFeeDeadlineDays) {
+		this.cancellingFeeDeadlineDays = cancellingFeeDeadlineDays;
 	}
 
 	@Override

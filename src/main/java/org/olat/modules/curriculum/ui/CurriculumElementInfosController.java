@@ -45,6 +45,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureBlocksTimelineController;
 import org.olat.repository.ui.author.MediaContainerFilter;
+import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.OffersController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,6 +192,8 @@ public class CurriculumElementInfosController extends BasicController {
 				fireEvent(ureq, new BookedEvent(element));
 			} else if (event == OffersController.LOGIN_EVENT) {
 				fireEvent(ureq, new BookEvent(element.getResource().getKey()));
+			} else if (event instanceof LeavingEvent) {
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);

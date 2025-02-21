@@ -51,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractDetailsHeaderController extends BasicController {
 	
 	public static final Event START_EVENT = new Event("start");
-	static final Event LEAVE_EVENT = new Event("leave");
+	public static final Event LEAVE_EVENT = new Event("leave");
 	
 	private VelocityContainer mainVC;
 

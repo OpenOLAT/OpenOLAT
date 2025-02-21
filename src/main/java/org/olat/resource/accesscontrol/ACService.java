@@ -348,5 +348,7 @@ public interface ACService {
 			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy);
 	
 	public boolean hasOrder(OfferRef offer);
+	
+	public Price getCancellationFee(OLATResource recource, Date resourceBeginDate, List<Order> orders);
 
 }

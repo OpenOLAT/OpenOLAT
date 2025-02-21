@@ -55,6 +55,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
@@ -103,6 +104,7 @@ import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
@@ -633,7 +635,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			for(OrderLine line:part.getOrderLines()) {
 				Offer offer = line.getOffer();
 				Date begin = getBeginDate(offer.getResource());
-				GroupMembershipStatus nextStatus = offer.isCancellationFeeApplyingFor(new Date(), begin)
+				Price cancellationFee = getCancellationFee(line, begin, DateUtils.getStartOfDay(new Date()));
+				GroupMembershipStatus nextStatus = cancellationFee != null
 						? GroupMembershipStatus.cancelWithFee
 						: GroupMembershipStatus.cancel;
 				if(internalDenyAccesToResource(identity, offer, nextStatus, doer, adminNote)) {
@@ -928,8 +931,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
 			if (curriculumElement != null) {
 				// Delegate the job to the curriculum service, inherited memberships will be removed too
-				return curriculumService.removeMember(curriculumElement, identity, CurriculumRoles.participant,
+				boolean removed = curriculumService.removeMember(curriculumElement, identity, CurriculumRoles.participant,
 						status, doer, adminNote);
+				if (removed) {
+					return removed;
+				} // else check reservations below
 			}
 		} else {
 			RepositoryEntryRef entry = repositoryEntryDao.loadByResource(resource);
@@ -943,6 +949,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				}
 				return true;
 			}
+		}
+		ResourceReservation reservation = reservationDao.loadReservation(identity, resource);
+		if(reservation != null) {
+			removeReservation(identity, identity, reservation);
+			return true;
 		}
 		return false;
 	}
@@ -1299,6 +1310,59 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Override
 	public boolean hasOrder(OfferRef offer) {
 		return orderManager.hasOrder(offer);
+	}
+	
+	@Override
+	public Price getCancellationFee(OLATResource recource, Date resourceBeginDate, List<Order> orders) {
+		Date cancellationDate = DateUtils.getStartOfDay(new Date());
+		Price totalFee = null;
+		
+		for(Order order:orders) {
+			for(OrderPart part:order.getParts()) {
+				for(OrderLine line:part.getOrderLines()) {
+					OLATResource offerResource = line.getOffer().getResource();
+					if(recource.equals(offerResource)) {
+						Price fee = getCancellationFee(line, resourceBeginDate, cancellationDate);
+						if(fee != null) {
+							if(totalFee == null) {
+								totalFee = fee;
+							} else {
+								totalFee = totalFee.add(fee);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return totalFee;
+	}
+	
+	private Price getCancellationFee(OrderLine orderLine, Date resourceBeginDate, Date cancellationDate) {
+		Price cancellingFee = orderLine.getCancellationFee();
+		Integer cancellationDeadline = orderLine.getCancellingFeeDeadlineDays();
+
+		Price fee;
+		if(cancellingFee == null) {
+			fee = null;
+		} else if(cancellationDeadline == null) {
+			fee = cancellingFee;
+		} else if(cancellatioFeeApply(resourceBeginDate, cancellationDate, cancellationDeadline.intValue())) {
+			fee = cancellingFee;
+		} else {
+			fee = null;
+		}
+		return fee;
+	}
+	
+	private boolean cancellatioFeeApply(Date resourceBeginDate, Date cancellationDate, long days) {
+		if(resourceBeginDate != null) {
+			long countDays = DateUtils.countDays(cancellationDate, resourceBeginDate);
+			if(days > countDays) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

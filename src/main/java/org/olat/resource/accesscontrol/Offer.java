@@ -22,9 +22,6 @@ package org.olat.resource.accesscontrol;
 
 import java.util.Date;
 
-import jakarta.persistence.Transient;
-
-import org.olat.core.util.DateUtils;
 import org.olat.resource.OLATResource;
 
 /**
@@ -71,18 +68,6 @@ public interface Offer extends OfferRef {
 	public Integer getCancellingFeeDeadlineDays();
 
 	public void setCancellingFeeDeadlineDays(Integer cancellingFeeDeadlineDays);
-	
-	@Transient
-	public default boolean isCancellationFeeApplyingFor(Date orderCancellationDate, Date begin) {
-		Integer days = getCancellingFeeDeadlineDays();
-		if(orderCancellationDate != null && days != null && begin != null) {
-			long countDays = DateUtils.countDays(orderCancellationDate, begin);
-			if(days.intValue() > countDays) {
-				return true;
-			}
-		}
-		return false;
-	}
 	
 	public String getLabel();
 	

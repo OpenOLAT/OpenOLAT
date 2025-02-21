@@ -173,6 +173,15 @@ public class CurriculumMailing {
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
+	public static MailTemplate getMembershipCancelledByParticipantTemplate(Curriculum curriculum, CurriculumElement curriculumElement,
+			Map<Long,Price> cancellationFees, Identity actor) {
+		String subjectKey = "notification.mail.member.cancelled.by.participant.subject";
+		String bodyKey = "notification.mail.member.cancelled.by.participant.body";
+		CurriculumMailTemplate template = createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+		template.setCancellationFees(cancellationFees);
+		return template;
+	}
+	
 	public static MailTemplate getMembershipCancelledTemplate(Curriculum curriculum, CurriculumElement curriculumElement,
 			Map<Long,Price> cancellationFees, Identity actor) {
 		String subjectKey = "notification.mail.member.cancelled.subject";
@@ -355,12 +364,13 @@ public class CurriculumMailing {
 			// Backwards compatibility
 			putVariablesInMailContext(context, "curriculumTypeName", curriculumElementTypeName);
 			
+			String feeStr = "-";
 			if(identity != null && cancellationFees != null
 					&& cancellationFees.containsKey(identity.getKey())) {
 				Price fee = cancellationFees.get(identity.getKey());
-				String feeStr = PriceFormat.fullFormat(fee);
-				putVariablesInMailContext(context, FEE, feeStr);
+				feeStr = PriceFormat.fullFormat(fee);
 			}
+			putVariablesInMailContext(context, FEE, feeStr);
 		}
 	}
 }

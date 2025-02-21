@@ -40,4 +40,6 @@ public interface OrderLine {
 	public Price getTotal();
 	
 	public Price getCancellationFee();
+	
+	public Integer getCancellingFeeDeadlineDays();
 }

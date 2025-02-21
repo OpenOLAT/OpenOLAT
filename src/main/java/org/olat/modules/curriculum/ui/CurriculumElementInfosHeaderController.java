@@ -19,19 +19,43 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
+import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.ui.list.AbstractDetailsHeaderController;
+import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+import org.olat.resource.accesscontrol.model.SearchReservationParameters;
+import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -41,13 +65,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CurriculumElementInfosHeaderController extends AbstractDetailsHeaderController {
-
+	
+	private CloseableModalController cmc;
+	private ConfirmationController leaveConfirmationCtrl;
+	
 	private final CurriculumElement element;
 	private final boolean isMember;
 	private final Identity bookedIdentity;
 
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private ACReservationDAO reservationDao;
 	@Autowired
 	private AccessControlModule acModule;
 
@@ -112,15 +141,17 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			startCtrl.getInitialComponent().setVisible(true);
 			startCtrl.getStartLink().setEnabled(false);
 			setWarning(translate("access.denied.not.published"), translate("access.denied.not.published.hint"));
+			initLeaveButton();
 		} else if (isMember) {
 			startCtrl.getInitialComponent().setVisible(true);
+			initLeaveButton();
 		} else {
 			if (acService.isAccessToResourcePending(element.getResource(), bookedIdentity) 
 					|| acService.getReservation(bookedIdentity, element.getResource()) != null) {
 				startCtrl.getInitialComponent().setVisible(true);
 				startCtrl.getStartLink().setEnabled(false);
-				
 				showInfoMessage(translate("access.denied.not.accepted.yet"));
+				initLeaveButton();
 			} else {
 				initOffers(ureq, null);
 			}
@@ -157,6 +188,58 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 				}
 			}
 		}
+	}
+	
+	private void initLeaveButton() {
+		if (!canLeave()) {
+			return;
+		}
+		
+		List<Order> orders = acService.findOrders(bookedIdentity, element.getResource(),
+				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+		if (orders.isEmpty()) {
+			startCtrl.getLeaveLink().setCustomDisplayText(translate("leave.implementation", StringHelper.escapeHtml(element.getType().getDisplayName())));
+			startCtrl.getLeaveLink().setVisible(true);
+		} else {
+			Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), orders);
+			if (cancellationFee == null) {
+				startCtrl.getLeaveLink().setCustomDisplayText(translate("leave.cancel"));
+				startCtrl.getLeaveLink().setVisible(true);
+			} else {
+				startCtrl.getLeaveLink().setCustomDisplayText(translate("leave.cancel.fee"));
+				startCtrl.getLeaveLink().setVisible(true);
+			}
+		}
+	}
+
+	private boolean canLeave() {
+		// Leave not allowed after start
+		if (element.getBeginDate() != null && DateUtils.getStartOfDay(element.getBeginDate()).before(new Date())) {
+			return false;
+		}
+		
+		// Leave not allowed if not a participant
+		if (!isParticipant()) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private boolean isParticipant() {
+		List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(List.of(element), List.of(bookedIdentity));
+		if (memberships != null && !memberships.isEmpty() && memberships.get(0).isParticipant()) {
+			return true;
+		}
+		
+		SearchReservationParameters searchParams = new SearchReservationParameters(List.of(element.getResource()));
+		searchParams.setIdentities(List.of(bookedIdentity));
+		List<ResourceReservation> reservations = reservationDao.loadReservations(searchParams);
+		if (!reservations.isEmpty()) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	private ParticipantsLeftResult updateAccessMaxParticipants() {
@@ -204,6 +287,100 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	@Override
 	protected Long getResourceKey() {
 		return element.getResource().getKey();
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == startCtrl) {
+			if (event == LEAVE_EVENT) {
+				doConfirmLeave(ureq);
+			}
+		} else if (leaveConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doLeave(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cmc.deactivate();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(leaveConfirmationCtrl);
+		removeAsListenerAndDispose(cmc);
+		leaveConfirmationCtrl = null;
+		cmc = null;
+	}
+	
+	
+	private void doConfirmLeave(UserRequest ureq) {
+		if (!canLeave()) {
+			return;
+		}
+		
+		String modalTitle;
+		
+		List<Order> orders = acService.findOrders(bookedIdentity, element.getResource(),
+				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+		if (orders.isEmpty()) {
+			leaveConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+					translate("leave.implementation.text", StringHelper.escapeHtml(element.getDisplayName())),
+					null,
+					translate("leave.implementation", StringHelper.escapeHtml(element.getType().getDisplayName())));
+			modalTitle = translate("leave.implementation", StringHelper.escapeHtml(element.getType().getDisplayName()));
+		} else {
+			Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), orders);
+			if (cancellationFee == null) {
+				leaveConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+						translate("leave.cancel.text", StringHelper.escapeHtml(element.getDisplayName())),
+						null,
+						translate("leave.cancel"));
+				modalTitle = translate("leave.cancel");
+			} else {
+				leaveConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+						translate("leave.cancel.fee.text", StringHelper.escapeHtml(element.getDisplayName())),
+						translate("leave.cancel.fee.confirmation", PriceFormat.fullFormat(cancellationFee)),
+						translate("leave.cancel.fee"));
+				modalTitle = translate("leave.cancel.fee");
+			}
+		}
+		listenTo(leaveConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				leaveConfirmationCtrl.getInitialComponent(), true, modalTitle, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doLeave(UserRequest ureq) {
+		if (!canLeave()) {
+			return;
+		}
+		
+		List<Order> orders = acService.findOrders(bookedIdentity, element.getResource(),
+				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
+		if (orders.isEmpty()) {
+			curriculumService.removeMember(element, bookedIdentity, CurriculumRoles.participant, GroupMembershipStatus.removed, getIdentity(), null);
+		} else {
+			for (Order order : orders) {
+				Map<Long, Price> cancellationFees = new HashMap<>(1);
+				Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), List.of(order));
+				if (cancellationFee != null) {
+					cancellationFees.put(bookedIdentity.getKey(), cancellationFee);
+				}
+				MailerResult result = new MailerResult();
+				MailTemplate template = CurriculumMailing.getMembershipCancelledByParticipantTemplate(
+						element.getCurriculum(), element, cancellationFees, getIdentity());
+				MailPackage mailing = new MailPackage(template, result, (MailContext) null, template != null);
+				acService.cancelOrder(order, getIdentity(), null, mailing);
+				curriculumService.removeMemberReservation(element, bookedIdentity, CurriculumRoles.participant, GroupMembershipStatus.removed, getIdentity(), null);
+			}
+		}
+		
+		fireEvent(ureq, new LeavingEvent());
 	}
 	
 }

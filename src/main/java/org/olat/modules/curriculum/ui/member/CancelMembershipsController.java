@@ -53,7 +53,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailPackage;
@@ -70,10 +69,7 @@ import org.olat.modules.curriculum.ui.component.DualNumberCellRenderer;
 import org.olat.modules.curriculum.ui.member.CancelMembershipsTableModel.CancelCols;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.Order;
-import org.olat.resource.accesscontrol.OrderLine;
-import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ResourceReservation;
@@ -112,7 +108,6 @@ public class CancelMembershipsController extends FormBasicController implements 
 	private final CurriculumElement selectedCurriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
-	private final Date cancellationDate = DateUtils.getStartOfDay(new Date());
 	
 	private CloseableModalController cmc;
 	private CustomizeNotificationController customizeNotificationsCtrl;
@@ -259,7 +254,8 @@ public class CancelMembershipsController extends FormBasicController implements 
 		
 		// Calculate cancellation fees
 		for(CancelMembershipRow row:rows) {
-			Price cancellationFee = getCancellationFee(row.getOngoingOrders());
+			Price cancellationFee = acService.getCancellationFee(selectedCurriculumElement.getResource(),
+					selectedCurriculumElement.getBeginDate(), row.getOngoingOrders());
 			row.setCancellationFee(cancellationFee);	
 		}
 
@@ -431,7 +427,8 @@ public class CancelMembershipsController extends FormBasicController implements 
 		Map<OLATResource, ResourceReservation> resourceToCurriculumElements = rowReservations.stream()
 				.collect(Collectors.toMap(ResourceReservation::getResource, ce -> ce, (u, v) -> u));
 		
-		Price cancellationFee = getCancellationFee(orders);
+		Price cancellationFee = acService.getCancellationFee(selectedCurriculumElement.getResource(),
+				selectedCurriculumElement.getBeginDate(), orders);
 		GroupMembershipStatus nextStatus = cancellationFee == null ? GroupMembershipStatus.cancel : GroupMembershipStatus.cancelWithFee;
 		
 		for(CurriculumElement curriculumElement:curriculumElements) {
@@ -445,64 +442,6 @@ public class CancelMembershipsController extends FormBasicController implements 
 			modifications.add(modification);
 		}
 		return modifications;
-	}
-	
-	/**
-	 * Order is only possible on the implementation element.
-	 * 
-	 * @param orders List of all orders
-	 * @return
-	 */
-	private Price getCancellationFee(List<Order> orders) {
-		Price totalFee = null;
-		
-		for(Order order:orders) {
-			for(OrderPart part:order.getParts()) {
-				for(OrderLine line:part.getOrderLines()) {
-					OLATResource resource = line.getOffer().getResource();
-					if(selectedCurriculumElement.getResource().equals(resource)) {
-						Price fee = getCancellationFee(line.getOffer());
-						if(fee != null) {
-							if(totalFee == null) {
-								totalFee = fee;
-							} else {
-								totalFee = totalFee.add(fee);
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		return totalFee;
-	}
-	
-	private Price getCancellationFee(Offer offer) {
-		Price cancellingFee = offer.getCancellingFee();
-		Integer cancellationDeadline = offer.getCancellingFeeDeadlineDays();
-
-		Price fee;
-		if(cancellingFee == null) {
-			fee = null;
-		} else if(cancellationDeadline == null) {
-			fee = cancellingFee;
-		} else if(cancellatioFeeApply(cancellationDate, cancellationDeadline.intValue())) {
-			fee = cancellingFee;
-		} else {
-			fee = null;
-		}
-		return fee;
-	}
-	
-	private boolean cancellatioFeeApply(Date cancellationDate, long days) {
-		Date begin = selectedCurriculumElement.getBeginDate();
-		if(begin != null) {
-			long countDays = DateUtils.countDays(cancellationDate, begin);
-			if(days > countDays) {
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	protected final void doCloseMemberDetails(CancelMembershipRow row) {

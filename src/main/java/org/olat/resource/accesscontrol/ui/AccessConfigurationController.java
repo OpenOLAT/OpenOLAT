@@ -424,12 +424,14 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(methodSelectionCtrl);
 		removeAsListenerAndDispose(openAccessOfferCtrl);
 		removeAsListenerAndDispose(guestOfferCtrl);
 		removeAsListenerAndDispose(editMethodCtrl);
 		removeAsListenerAndDispose(newMethodCtrl);
 		removeAsListenerAndDispose(offerLinksCtrl);
 		removeAsListenerAndDispose(cmc);
+		methodSelectionCtrl = null;
 		openAccessOfferCtrl = null;
 		guestOfferCtrl = null;
 		editMethodCtrl = null;

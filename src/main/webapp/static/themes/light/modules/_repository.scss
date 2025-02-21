@@ -78,6 +78,7 @@
 				.o_start_inner {
 					width: 100%;
 					>.o_button_call_to_action {
+						margin-top: 0;
 						flex-grow: 2;
 					}
 				
@@ -85,9 +86,9 @@
 					gap: 20px;
 					flex-wrap: wrap;
 					align-items: center;
+					justify-content: center;
 					
 					@media (max-width: math.div($o-page-width-max, 3)) {
-						justify-content: center;
 						.o_button_call_to_action {
 							width: 100%;
 						}

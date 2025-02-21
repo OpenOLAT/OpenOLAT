@@ -61,7 +61,7 @@ public class HeaderStartController extends BasicController {
 		startLink.setPrimary(true);
 		startLink.setElementCssClass("o_start o_button_call_to_action");
 		
-		leaveLink = LinkFactory.createButton("leave", "sign.out", mainVC, this);
+		leaveLink = LinkFactory.createCustomLink("leave", "sign.out", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
 		leaveLink.setElementCssClass("o_sign_out");
 		leaveLink.setIconLeftCSS("o_icon o_icon_sign_out");
 		leaveLink.setGhost(true);

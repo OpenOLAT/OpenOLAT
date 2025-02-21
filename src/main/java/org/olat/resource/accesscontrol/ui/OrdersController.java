@@ -91,7 +91,6 @@ public class OrdersController extends FormBasicController implements Activateabl
 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
-	//TODO uh container
 	private OrderDetailController detailController;
 	private CloseableCalloutWindowController calloutCtrl;
 
