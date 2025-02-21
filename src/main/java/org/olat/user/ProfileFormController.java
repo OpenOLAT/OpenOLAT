@@ -92,8 +92,7 @@ public class ProfileFormController extends FormBasicController {
 
 	private static final String USAGE_USER_IDENTIFIER = ProfileFormController.class.getCanonicalName();
 	private static final String USAGE_INVITEE_IDENTIFIER = ProfileFormController.class.getCanonicalName() + "_invitee";
-	
-	private static final String SEPARATOR = "\n____________________________________________________________________\n";
+
 	private static final String EMAIL_CHANGE_KEY_PROP = "emchangeKey";
 
 	private final Map<String, FormItem> formItems = new HashMap<>();
@@ -342,10 +341,12 @@ public class ProfileFormController extends FormBasicController {
 		groupContainer.add(emailLayoutContainer);
 		emailLayoutContainer.setRootForm(mainForm);
 
-		changeEmailBtn = uifactory.addFormLink("change.mail.in.process", emailLayoutContainer, Link.BUTTON_SMALL);
-		changeEmailBtn.setElementCssClass("o_sel_user_change_mail");
-		changeEmailBtn.setIconLeftCSS("o_icon o_icon_edit");
-		
+		if (getIdentity().getUser().getProperty("emailDisabled") == null || getIdentity().getUser().getProperty("emailDisabled").equals("false")) {
+			changeEmailBtn = uifactory.addFormLink("change.mail.in.process", emailLayoutContainer, Link.BUTTON_SMALL);
+			changeEmailBtn.setElementCssClass("o_sel_user_change_mail");
+			changeEmailBtn.setIconLeftCSS("o_icon o_icon_edit");
+		}
+
 		if (!userModule.isEmailMandatory()) {
 			emailEl.setMandatory(false);
 		}
@@ -804,8 +805,11 @@ public class ProfileFormController extends FormBasicController {
 		String bodyOld = buildEmailBody("email.change.body.old");
 		String bodyNew = buildEmailBody("email.change.body.new");
 
+		boolean emailToCurrentSent = true;
 		// Send emails to current and new email addresses
-		boolean emailToCurrentSent = sendEmail(ureq, subject, bodyOld, currentEmail);
+		if (StringHelper.containsNonWhitespace(currentEmail)) {
+			emailToCurrentSent = sendEmail(ureq, subject, bodyOld, currentEmail);
+		}
 		boolean emailToNewSent = sendEmail(ureq, subject, bodyNew, changedEmail);
 		boolean areMailsSent = emailToCurrentSent && emailToNewSent;
 

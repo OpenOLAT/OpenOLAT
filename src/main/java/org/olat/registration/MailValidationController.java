@@ -211,7 +211,8 @@ public class MailValidationController extends FormBasicController {
 	}
 
 	private boolean isEmailEligibleForRegistration(String email) {
-		return userManager.isEmailAllowed(email) && userManager.findUniqueIdentityByEmail(email) == null;
+		return userManager.isEmailAllowed(email) &&
+				(!userModule.isEmailUnique() || userManager.findUniqueIdentityByEmail(email) == null);
 	}
 
 	private void loadOrCreateTemporaryKey(UserRequest ureq, String email, String ip, String[] whereFromAttrs) {
