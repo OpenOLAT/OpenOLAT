@@ -65,8 +65,8 @@ public class InvitationRegistrationWizardPage {
 		return this;
 	}
 	
-	public InvitationRegistrationWizardPage selectLanguage() {	
-		By languageBy = By.id("o_fioselect_language_SELBOX");
+	public InvitationRegistrationWizardPage selectLanguage() {
+		By languageBy = By.cssSelector(".modal-body fieldset select#o_fioselect_language_SELBOX");
 		OOGraphene.waitElement(languageBy, browser);	
 		new Select(browser.findElement(languageBy)).selectByValue("en");
 		OOGraphene.waitBusy(browser);
@@ -74,10 +74,15 @@ public class InvitationRegistrationWizardPage {
 	}
 	
 	public InvitationRegistrationWizardPage nextToDisclaimer() {
-		OOGraphene.nextStep(browser);	
-		// wait disclaimer
-		By disclaimerBy = By.cssSelector("fieldset.o_disclaimer");
-		OOGraphene.waitElement(disclaimerBy, browser);
+		try {
+			OOGraphene.nextStep(browser);
+			// wait disclaimer
+			By disclaimerBy = By.cssSelector("fieldset.o_disclaimer");
+			OOGraphene.waitElement(disclaimerBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Registration disclaimer", browser);
+			throw e;
+		}
 		return this;
 	}
 	
