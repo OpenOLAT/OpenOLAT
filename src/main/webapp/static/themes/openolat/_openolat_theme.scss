@@ -21,6 +21,18 @@
 .o_cmembers_print #o_print_brand {
 	width: 5cm;
 }
+
+.o_login_logo {
+	display: block;
+	background-image: url("images/OpenOlat_Logo_RGB.svg");
+	background-repeat: no-repeat;
+	background-position: -40px -115px;
+	background-size: 510px;
+	width: 460px;
+	height: 110px;
+	margin-top: 0px;
+}
+
 /* Special logo on login screen, but only when enough space is available */
 #o_body.o_dmz {
 	.o_navbar-brand {
