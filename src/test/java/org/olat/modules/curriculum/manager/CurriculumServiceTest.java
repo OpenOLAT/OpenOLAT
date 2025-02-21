@@ -48,6 +48,7 @@ import org.olat.modules.curriculum.CurriculumService.AddRepositoryEntry;
 import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyLectureBlockSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
@@ -319,7 +320,6 @@ public class CurriculumServiceTest extends OlatTestCase {
 			.containsExactly(template);
 	}
 	
-	
 	@Test
 	public void copyCurriculumElementWithOffer() {
 		// Create curriculum
@@ -368,6 +368,46 @@ public class CurriculumServiceTest extends OlatTestCase {
 		
 		Assert.assertNotEquals(offer, infosOfCopy.offer());
 		Assert.assertNotEquals(offerAccess, infosOfCopy.offerAccess());
+	}
+	
+	@Test
+	public void copyCurriculumElementAndLectureBlock() {
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-5");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-25", "Curriculum 25", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("ORIGINAL-1", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		LectureBlock lectureBlock = lectureService.createLectureBlock(element, null);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setExternalId("ORIGINAL-ID");
+		lectureBlock.setExternalRef("ORIGINAL-1-EV-1");
+		lectureBlock.setTitle("Hello curriculum 25");
+		lectureBlock = lectureService.save(lectureBlock, null);
+
+		dbInstance.commit();
+		
+		CurriculumCopySettings copySettings = new CurriculumCopySettings();
+		Date start = DateUtils.getStartOfDay(new Date());
+		Date end = DateUtils.getEndOfDay(new Date());
+		copySettings.setBaseIdentifier(element.getIdentifier());
+		copySettings.setIdentifier("COPY-1");
+		copySettings.setCopyLectureBlockSettings(List.of(new CopyLectureBlockSetting(lectureBlock, start, end)));
+		copySettings.setCopyStandaloneEvents(true);
+		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element, copySettings, actor);
+		dbInstance.commit();
+		
+		List<LectureBlock> copiedLectureBlocks = lectureService.getLectureBlocks(copiedElement, false);
+		Assertions.assertThat(copiedLectureBlocks)
+			.hasSize(1);
+		
+		LectureBlock copiedLectureBlock = copiedLectureBlocks.get(0);
+		Assert.assertEquals(start, copiedLectureBlock.getStartDate());
+		Assert.assertEquals(end, copiedLectureBlock.getEndDate());
+		Assert.assertEquals("Hello curriculum 25", copiedLectureBlock.getTitle());
+		Assert.assertEquals("COPY-1-EV-1", copiedLectureBlock.getExternalRef());
+		Assert.assertNull(copiedLectureBlock.getExternalId());
 	}
 	
 	@Test

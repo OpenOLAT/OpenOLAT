@@ -422,16 +422,24 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block) {
-		LectureBlock copy = lectureBlockDao.createLectureBlock(block.getEntry(), block.getCurriculumElement());
-		copy.setTitle(newTitle);
+		return copyLectureBlock(block, newTitle, null, block.getStartDate(), block.getEndDate(),
+				block.getEntry(), block.getCurriculumElement());
+	}
+
+	@Override
+	public LectureBlock copyLectureBlock(LectureBlock block, String title, String externalRef, Date start, Date end,
+			RepositoryEntry entry, CurriculumElement element) {
+		LectureBlock copy = lectureBlockDao.createLectureBlock(entry, element);
+		copy.setTitle(title);
+		copy.setExternalRef(externalRef);
 		copy.setDescription(block.getDescription());
 		copy.setPreparation(block.getPreparation());
 		copy.setLocation(block.getLocation());
 		copy.setRollCallStatus(LectureRollCallStatus.open);
 		copy.setEffectiveLecturesNumber(block.getEffectiveLecturesNumber());
 		copy.setPlannedLecturesNumber(block.getPlannedLecturesNumber());
-		copy.setStartDate(block.getStartDate());
-		copy.setEndDate(block.getEndDate());
+		copy.setStartDate(start);
+		copy.setEndDate(end);
 		copy = lectureBlockDao.update(copy);
 		return copy;
 	}
@@ -1470,8 +1478,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 	
 	@Override
-	public List<LectureBlock> getLectureBlocks(CurriculumElementRef element) {
-		return lectureBlockDao.getLectureBlocks(element);
+	public List<LectureBlock> getLectureBlocks(CurriculumElementRef element, boolean followUpToRepositoryEntries) {
+		if(followUpToRepositoryEntries) {
+			return lectureBlockDao.getLectureBlocksUpToRepositoryEntries(element);
+		}
+		return lectureBlockDao.getLectureBlock2s(element);
 	}
 
 	@Override

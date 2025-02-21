@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 19 févr. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CopyElementDetailsLectureBlocksController extends FormBasicController {
@@ -92,13 +92,14 @@ public class CopyElementDetailsLectureBlocksController extends FormBasicControll
 	private void loadModel() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setCurriculumElement(curriculumElement);
-		List<LectureBlock> blocks = lectureService.getLectureBlocks(curriculumElement);
+		List<LectureBlock> blocks = lectureService.getLectureBlocks(curriculumElement, true);
 		List<CopyElementDetailsLectureBlocksRow> rows = new ArrayList<>(blocks.size());
 		for(LectureBlock lectureBlock:blocks) {
 			CopyResources copySetting = lectureBlock.getEntry() != null && lectureBlock.getEntry().getKey() != null
 					? context.getCoursesEventsCopySetting()
-					: context.getStandaloneEventsCopySetting();		
-			rows.add(new CopyElementDetailsLectureBlocksRow(lectureBlock, copySetting));
+					: (context.isStandaloneEventsCopySetting() ? CopyResources.resource : CopyResources.dont);
+			String externalRef = context.evaluateIdentifier(lectureBlock.getExternalRef());
+			rows.add(new CopyElementDetailsLectureBlocksRow(lectureBlock, copySetting, externalRef));
 		}
 		
 		tableModel.setObjects(rows);

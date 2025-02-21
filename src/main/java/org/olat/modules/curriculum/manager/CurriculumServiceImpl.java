@@ -107,6 +107,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyLectureBlockSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyOfferSetting;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
@@ -136,6 +137,7 @@ import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
 import org.olat.modules.curriculum.ui.member.ResourceToRoleKey;
 import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.manager.LectureBlockDAO;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -506,15 +508,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		CopyElementSetting elementSetting = settings.getCopyElementSetting(elementToClone);
 		
-		Date beginDate = null;
-		Date endDate = null;
-		if(elementSetting != null && elementSetting.hasDates()) {
-			beginDate = elementSetting.begin();
-			endDate = elementSetting.end();
-		} else if(settings.isCopyDates()) {
-			beginDate = elementToClone.getBeginDate();
-			endDate = elementToClone.getEndDate();
-		}
+		Date beginDate = elementSetting != null && elementSetting.hasDates() ? elementSetting.begin() : elementToClone.getBeginDate();
+		Date endDate = elementSetting != null && elementSetting.hasDates() ? elementSetting.end() : elementToClone.getEndDate();
 		
 		String identifier = elementToClone.getIdentifier();
 		if(elementSetting != null && StringHelper.containsNonWhitespace(elementSetting.identifier())) {
@@ -541,7 +536,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);// prevent service to service link at startup
 			for(RepositoryEntry entry:entries) {
 				if(repositoryService.canCopy(entry, doer)) {
-					RepositoryEntry entryCopy = repositoryService.copy(entry, doer, entry.getDisplayname());
+					String externalRef = settings.evaluateIdentifier(entry.getExternalRef());
+					RepositoryEntry entryCopy = repositoryService.copy(entry, doer, entry.getDisplayname(), externalRef);
 					repositoryEntryRelationDao.createRelation(clone.getGroup(), entryCopy);
 					fireRepositoryEntryAddedEvent(clone, entryCopy);
 				}
@@ -562,6 +558,18 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				Date validFrom = offerSetting == null ? null : offerSetting.validFrom();
 				Date validTo = offerSetting == null ? null : offerSetting.validTo();
 				acService.copyOfferAccess(linkToCopy, validFrom, validTo, clone.getResource(), clone.getDisplayName());
+			}
+		}
+		
+		if(settings.isCopyStandaloneEvents()) {
+			LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
+			List<LectureBlock> lectureBlocksToCopy = lectureBlockDao.getLectureBlock2s(elementToClone);
+			for(LectureBlock blockToCopy:lectureBlocksToCopy) {
+				CopyLectureBlockSetting blockSetting = settings.getCopyLectureBlockSetting(blockToCopy);
+				Date start = blockSetting != null && blockSetting.hasDates() ? blockSetting.start() : blockToCopy.getStartDate();
+				Date end = blockSetting != null && blockSetting.hasDates() ? blockSetting.end() : blockToCopy.getEndDate();
+				String externalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
+				lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
 			}
 		}
 		
@@ -586,7 +594,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		
-		RepositoryEntry entry = repositoryService.copy(template, doer, displayName);
+		RepositoryEntry entry = repositoryService.copy(template, doer, displayName, externalRef);
 		RepositoryEntry instantiatedEntry = repositoryManager.setDescriptionAndName(entry, displayName, externalRef,
 				entry.getAuthors(), entry.getDescription(), entry.getTeaser(), entry.getObjectives(), entry.getRequirements(),
 				entry.getCredits(), entry.getMainLanguage(), entry.getLocation(), entry.getExpenditureOfWork(),
@@ -1462,7 +1470,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(curriculumElement == null || entry == null) return false;
 		
 		boolean moved = false;
-		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks(curriculumElement);
+		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlock2s(curriculumElement);
 		for(LectureBlock lectureBlock:lectureBlocks) {
 			((LectureBlockImpl)lectureBlock).setEntry(entry);
 			lectureBlockDao.update(lectureBlock);

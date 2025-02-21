@@ -22,8 +22,10 @@ package org.olat.modules.curriculum.model;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.lecture.LectureBlock;
 import org.olat.resource.accesscontrol.Offer;
 
 /**
@@ -37,15 +39,54 @@ public class CurriculumCopySettings {
 	private boolean copyDates;
 	private boolean copyTaxonomy;
 	private boolean copyOffers;
+	private boolean copyStandaloneEvents;
+	
+	private String identifier;
+	private String displayName;
+	/**
+	 * The identifier of the original root element to copy. If other identifiers starts with it,
+	 * replace the part with the new identifier.
+	 */
+	private String baseIdentifier;
 	
 	private CopyResources copyResources;
-	private CopyResources copyStandaloneEvents;
 
 	private List<CopyOfferSetting> copyOfferSettings;
 	private List<CopyElementSetting> copyElementSettings;
+	private List<CopyLectureBlockSetting> copyLectureBlockSettings;
 	
 	public CurriculumCopySettings() {
 		//
+	}
+	
+	public void setBaseIdentifier(String baseIdentifier) {
+		this.baseIdentifier = baseIdentifier;
+	}
+
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
+	}
+	
+	public String evaluateIdentifier(String originalIdentifier) {
+		String derivatedIdentifier = originalIdentifier;
+		if(baseIdentifier != null && derivatedIdentifier != null && StringHelper.containsNonWhitespace(getIdentifier())
+				&& derivatedIdentifier.startsWith(baseIdentifier)) {
+			String suffix = derivatedIdentifier.substring(baseIdentifier.length());
+			derivatedIdentifier = getIdentifier() + suffix;
+		}
+		return derivatedIdentifier;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	public boolean isCopyDates() {
@@ -64,12 +105,12 @@ public class CurriculumCopySettings {
 		this.copyResources = copyResources;
 	}
 
-	public CopyResources getCopyStandaloneEvents() {
+	public boolean isCopyStandaloneEvents() {
 		return copyStandaloneEvents;
 	}
 
-	public void setCopyStandaloneEvents(CopyResources copyStandaloneEvents) {
-		this.copyStandaloneEvents = copyStandaloneEvents;
+	public void setCopyStandaloneEvents(boolean copy) {
+		this.copyStandaloneEvents = copy;
 	}
 
 	public boolean isCopyOffers() {
@@ -88,6 +129,24 @@ public class CurriculumCopySettings {
 		this.copyTaxonomy = copyTaxonomy;
 	}
 	
+	public CopyLectureBlockSetting getCopyLectureBlockSetting(LectureBlock lectureBlock) {
+		if(copyLectureBlockSettings != null) {
+			return copyLectureBlockSettings.stream()
+					.filter(el -> lectureBlock.getKey().equals(el.originalLectureBlock().getKey()))
+					.findFirst()
+					.orElse(null);
+		}
+		return null;
+	}
+	
+	public List<CopyLectureBlockSetting> getCopyLectureBlockSettings() {
+		return copyLectureBlockSettings;
+	}
+
+	public void setCopyLectureBlockSettings(List<CopyLectureBlockSetting> copyLectureBlockSettings) {
+		this.copyLectureBlockSettings = copyLectureBlockSettings;
+	}
+
 	public CopyElementSetting getCopyElementSetting(CurriculumElementRef ref) {
 		if(copyElementSettings != null) {
 			return copyElementSettings.stream()
@@ -124,6 +183,7 @@ public class CurriculumCopySettings {
 		this.copyOfferSettings = copyOfferSettings;
 	}
 
+
 	public enum CopyResources {
 		dont,
 		relation,
@@ -138,6 +198,13 @@ public class CurriculumCopySettings {
 				}
 			}
 			return def;
+		}
+	}
+	
+	public record CopyLectureBlockSetting(LectureBlock originalLectureBlock, Date start, Date end) {
+		
+		public boolean hasDates() {
+			return start != null || end != null;
 		}
 	}
 	

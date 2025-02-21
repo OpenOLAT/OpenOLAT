@@ -329,7 +329,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname) {
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String externalRef) {
 		OLATResource sourceResource = sourceEntry.getOlatResource();
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		RepositoryEntry copyEntry = create(author, null, sourceEntry.getResourcename(), displayname,
@@ -337,6 +337,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 				sourceEntry.getRuntimeType(), null);
 
 		//copy all fields
+		copyEntry.setExternalRef(externalRef);
 		copyEntry.setTechnicalType(sourceEntry.getTechnicalType());
 		copyEntry.setAuthors(sourceEntry.getAuthors());
 		copyEntry.setCredits(sourceEntry.getCredits());

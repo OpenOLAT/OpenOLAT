@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui.copy;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
@@ -34,7 +35,7 @@ import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 /**
  * 
  * Initial date: 12 févr. 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CopyElementContext {
@@ -45,13 +46,11 @@ public class CopyElementContext {
 	
 	private final CurriculumCopySettings copySettings = new CurriculumCopySettings();
 	
-	private String displayName;
-	private String identifier;
-	
 	public CopyElementContext(CurriculumElement curriculumElement, List<CurriculumElement> descendants,
 			List<OfferAndAccessInfos> offersAndAccessInfos) {
 		copySettings.setCopyOffers(true);
 		copySettings.setCopyResources(CopyResources.relation);
+		copySettings.setBaseIdentifier(curriculumElement.getIdentifier());
 		
 		this.curriculumElement = curriculumElement;
 		this.descendants = descendants;
@@ -88,19 +87,35 @@ public class CopyElementContext {
 	}
 	
 	public String getDisplayName() {
-		return displayName;
+		return copySettings.getDisplayName();
 	}
 
 	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
+		copySettings.setDisplayName(displayName);
 	}
 
 	public String getIdentifier() {
-		return identifier;
+		return copySettings.getIdentifier();
 	}
 
 	public void setIdentifier(String identifier) {
-		this.identifier = identifier;
+		copySettings.setIdentifier(identifier);
+	}
+	
+	public String evaluateIdentifier(CurriculumElement element) {
+		String derivatedIdentifier = element.getIdentifier();
+		if(element.equals(getCurriculumElement())) {
+			if(StringHelper.containsNonWhitespace(getIdentifier())) {
+				derivatedIdentifier = getIdentifier();
+			}
+		} else {
+			derivatedIdentifier = copySettings.evaluateIdentifier(derivatedIdentifier);
+		}
+		return derivatedIdentifier;
+	}
+	
+	public String evaluateIdentifier(String originalIdentifier) {
+		return copySettings.evaluateIdentifier(originalIdentifier);
 	}
 
 	public CopyResources getCoursesEventsCopySetting() {
@@ -111,11 +126,11 @@ public class CopyElementContext {
 		copySettings.setCopyResources(coursesEvents);
 	}
 
-	public CopyResources getStandaloneEventsCopySetting() {
-		return copySettings.getCopyStandaloneEvents();
+	public boolean isStandaloneEventsCopySetting() {
+		return copySettings.isCopyStandaloneEvents();
 	}
 
-	public void setStandaloneEventsCopySetting(CopyResources standaloneEvents) {
+	public void setStandaloneEventsCopySetting(boolean standaloneEvents) {
 		copySettings.setCopyStandaloneEvents(standaloneEvents);
 	}
 	

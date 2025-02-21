@@ -92,7 +92,6 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer(TOGGLE_DETAILS_CMD);
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CopyElementCols.key));
@@ -136,7 +135,6 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 			Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 		}
 		
-		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
@@ -161,19 +159,11 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 	
 	private CopyElementSetting calculateSetting(CurriculumElement element) {
 		String displayName = element.getDisplayName();
-		String identifier = element.getIdentifier();
-		if(element.equals(context.getCurriculumElement())) {
-			if(StringHelper.containsNonWhitespace(context.getDisplayName())) {
-				displayName = context.getDisplayName();
-			}
-			if(StringHelper.containsNonWhitespace(context.getIdentifier())) {
-				identifier = context.getIdentifier();
-			}
-		} else if(identifier != null && StringHelper.containsNonWhitespace(context.getIdentifier())
-				&& identifier.startsWith(context.getCurriculumElement().getIdentifier())) {
-			String suffix = identifier.substring(context.getCurriculumElement().getIdentifier().length());
-			identifier = context.getIdentifier() + suffix;
+		if(element.equals(context.getCurriculumElement())
+				&& StringHelper.containsNonWhitespace(context.getDisplayName())) {
+			displayName = context.getDisplayName();
 		}
+		String identifier = context.evaluateIdentifier(element);
 		return new CopyElementSetting(element, displayName, identifier, null, null);
 	}
 	

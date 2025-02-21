@@ -201,7 +201,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getLectureBlocksByCurriculumElement() {
+	public void getLectureBlocksByCurriculumElementUpToRepositoryEntries() {
 		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-5", "Curriculum with lectures", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Block to curriculum", "Element for relation",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -214,7 +214,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		lectureBlock = lectureBlockDao.update(lectureBlock);
 		dbInstance.commitAndCloseSession();
 		
-		List<LectureBlock> blocks = lectureBlockDao.getLectureBlocks(element);
+		List<LectureBlock> blocks = lectureBlockDao.getLectureBlocksUpToRepositoryEntries(element);
 		Assert.assertNotNull(blocks);
 		Assert.assertEquals(1, blocks.size());
 		LectureBlock loadedBlock = blocks.get(0);

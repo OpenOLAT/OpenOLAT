@@ -99,6 +99,7 @@ public class CopyElementOffersController extends StepFormBasicController {
 		
 		tableModel = new CopyElementOffersDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, true, getTranslator(), formLayout);
+		tableEl.setCustomizeColumns(false);
 	}
 	
 	private void loadModel() {

@@ -227,6 +227,22 @@ public interface LectureService {
 	 */
 	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block);
 	
+	/**
+	 * Copy the specified lecture block with some customization and link it
+	 * to the specified course or curriculum element.
+	 * 
+	 * @param block The lecture block to copy
+	 * @param title The new title
+	 * @param externalRef The new external reference (optional)
+	 * @param start The new start date
+	 * @param end The new end date
+	 * @param entry The course (optional)
+	 * @param curriculumElement The curriculum element (optional)
+	 * @return The new lecture block
+	 */
+	public LectureBlock copyLectureBlock(LectureBlock block, String title, String externalRef, Date start, Date end,
+			RepositoryEntry entry, CurriculumElement curriculumElement);
+	
 	public LectureBlock moveLectureBlock(LectureBlockRef block, RepositoryEntry newEntry);
 	
 	/**
@@ -583,7 +599,7 @@ public interface LectureService {
 	 * @param element
 	 * @return
 	 */
-	public List<LectureBlock> getLectureBlocks(CurriculumElementRef element);
+	public List<LectureBlock> getLectureBlocks(CurriculumElementRef element, boolean followUpToRepositoryEntries);
 	
 	public long countLectureBlocks(LecturesBlockSearchParameters searchParams);
 	

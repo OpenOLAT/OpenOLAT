@@ -211,7 +211,24 @@ public class LectureBlockDAO {
 				.getResultList();
 	}
 	
-	public List<LectureBlock> getLectureBlocks(CurriculumElementRef curriculumElement) {
+	public List<LectureBlock> getLectureBlocksUpToRepositoryEntries(CurriculumElementRef curriculumElement) {
+		String query = """
+				select block from lectureblock block
+				where block.curriculumElement.key=:curriculumElementKey
+				or block.entry.key in (select v.key from repositoryentry v
+				  inner join v.groups as baseGroups
+				  inner join baseGroups.group as baseGroup
+				  inner join curriculumelement as curEl on (curEl.group.key=baseGroup.key)
+				  where curEl.key = :curriculumElementKey
+				)""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, LectureBlock.class)
+				.setParameter("curriculumElementKey", curriculumElement.getKey())
+				.getResultList();
+	}
+	
+	public List<LectureBlock> getLectureBlock2s(CurriculumElementRef curriculumElement) {
 		String query = """
 				select block from lectureblock block
 				where block.curriculumElement.key=:curriculumElementKey

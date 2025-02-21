@@ -114,7 +114,7 @@ public class ReferencesController extends BasicController {
 	}
 
 	private void loadLectureBlocks(VelocityContainer mainVC, CurriculumElement el) {
-		List<LectureBlock> lecturesBlocks = lectureService.getLectureBlocks(el);
+		List<LectureBlock> lecturesBlocks = lectureService.getLectureBlocks(el, true);
 		loadLectureBlocks(mainVC, lecturesBlocks);
 	}
 	

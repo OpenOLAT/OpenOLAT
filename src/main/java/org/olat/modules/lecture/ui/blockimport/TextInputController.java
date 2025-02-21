@@ -73,7 +73,7 @@ public class TextInputController extends StepFormBasicController {
 		this.importedBlocks = importedBlocks;
 		this.curriculumElement = curriculumElement;
 		if(curriculumElement != null) {
-			currentBlocks = lectureService.getLectureBlocks(curriculumElement);
+			currentBlocks = lectureService.getLectureBlocks(curriculumElement, true);
 		} else {
 			currentBlocks = lectureService.getLectureBlocks(entry);
 		}

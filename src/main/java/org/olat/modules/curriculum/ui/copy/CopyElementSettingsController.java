@@ -134,7 +134,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		context.setDisplayName(displayNameEl.getValue());
 		context.setIdentifier(identifierEl.getValue());
 		context.setCoursesEventsCopySetting(CopyResources.valueOf(courseEventsEl.getSelectedKey()));
-		context.setStandaloneEventsCopySetting(CopyResources.valueOf(standaloneEventsEl.getSelectedKey()));
+		context.setStandaloneEventsCopySetting(CopyResources.resource.name().equals(standaloneEventsEl.getSelectedKey()));
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
