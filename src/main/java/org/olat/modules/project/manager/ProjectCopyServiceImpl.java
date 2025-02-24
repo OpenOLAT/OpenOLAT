@@ -198,7 +198,6 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 		
 		ProjToDo toDoCopy = projectService.createToDo(doer, projectCopy);
 		activityDao.create(Action.toDoCopyInitialized, null, null, doer, toDoCopy.getArtefact());
-		projectService.updateMembers(doer, toDoCopy, List.of(doer), List.of());
 		ToDoTask toDoTask = toDo.getToDoTask();
 		projectService.updateToDo(doer, toDoCopy,
 				toDoTask.getTitle(),
@@ -209,6 +208,7 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 				toDoTask.getExpenditureOfWork(),
 				toDoTask.getDescription());
 		projectService.updateTags(doer, toDoCopy, artefactToTagDisplayNames.getOrDefault(toDo.getArtefact(), List.of()));
+		projectService.updateMembers(doer, toDoCopy, List.of(doer), List.of());
 		artefactToArtefactCopy.put(toDo.getArtefact(), toDoCopy.getArtefact());
 	}
 	
