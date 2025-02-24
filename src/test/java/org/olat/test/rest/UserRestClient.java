@@ -29,18 +29,19 @@ import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.olat.modules.invitation.restapi.InvitationVO;
+import org.olat.registration.restapi.TemporaryKeyVO;
 import org.olat.restapi.RestConnection;
 import org.olat.user.restapi.RolesVO;
 import org.olat.user.restapi.UserVO;
-
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * REST client for the user webservice.
@@ -93,7 +94,16 @@ public class UserRestClient {
 	throws IOException, URISyntaxException {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
-		UserVO user = createUser(restConnection, name, "Rnd");
+		UserVO user = createUser(restConnection, name, "Rnd", createRandomPwd());
+		restConnection.shutdown();
+		return user;
+	}
+	
+	public UserVO createRandomUserWithoutPassword(String name)
+	throws IOException, URISyntaxException {
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		assertTrue(restConnection.login(username, password));
+		UserVO user = createUser(restConnection, name, "Rnd", null);
 		restConnection.shutdown();
 		return user;
 	}
@@ -108,7 +118,7 @@ public class UserRestClient {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
 		
-		UserVO user = createUser(restConnection, name, "Auth");
+		UserVO user = createUser(restConnection, name, "Auth", createRandomPwd());
 		
 		RolesVO roles = new RolesVO();
 		roles.setAuthor(true);
@@ -123,7 +133,7 @@ public class UserRestClient {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
 		
-		UserVO user = createUser(restConnection, name, "Auth");
+		UserVO user = createUser(restConnection, name, "Pool", createRandomPwd());
 		
 		RolesVO roles = new RolesVO();
 		roles.setPoolAdmin(true);
@@ -159,8 +169,8 @@ public class UserRestClient {
 	throws IOException, URISyntaxException {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
-		
-		UserVO user = createUser(restConnection, "Admin", "");
+
+		UserVO user = createUser(restConnection, "Admin", "", createRandomPwd());
 		
 		RolesVO roles = new RolesVO();
 		roles.setOlatAdmin(true);
@@ -171,7 +181,7 @@ public class UserRestClient {
 		return user;
 	}
 	
-	private UserVO createUser(RestConnection restConnection, String name, String role)
+	private UserVO createUser(RestConnection restConnection, String name, String role, String pwd)
 	throws URISyntaxException, IOException {
 		String uuid = Integer.toString(counter.incrementAndGet()) + UUID.randomUUID().toString();
 		
@@ -179,8 +189,7 @@ public class UserRestClient {
 		String rndUsername = (name + "-" + uuid).substring(0, 24);
 		String login = rndUsername.toLowerCase();
 		vo.setLogin(login);
-		String rndPassword = ("passwd-" + uuid).substring(0, 24);
-		vo.setPassword(rndPassword);
+		vo.setPassword(pwd);
 		vo.setFirstName(name + "-" + role + "-" + uuid);
 		vo.setLastName("Smith");
 		vo.setEmail(rndUsername + "@frentix.com");
@@ -206,6 +215,11 @@ public class UserRestClient {
 		return current;
 	}
 	
+	private String createRandomPwd() {
+		String uuid = UUID.randomUUID().toString();
+		return  "passwd-" + uuid.substring(0, 24);
+	}
+	
 	/**
 	 * Update roles
 	 */
@@ -218,6 +232,19 @@ public class UserRestClient {
 		HttpResponse response = restConnection.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
+	}
+	
+	public String createPasswordChangeLink(UserVO user)
+	throws URISyntaxException, IOException {
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		assertTrue(restConnection.login(username, password));
+		
+		URI request = getRestURIBuilder().path("pwchange").queryParam("identityKey", user.getKey()).build();
+		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = restConnection.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		TemporaryKeyVO key = restConnection.parse(response.getEntity(), TemporaryKeyVO.class);
+		return key == null ? null : key.getUrl();
 	}
 	
 	public InvitationVO createExternalUser(Long repositoryEntryKey, String firstName, String lastName,
@@ -253,7 +280,7 @@ public class UserRestClient {
 	}
 	
 	public UriBuilder getRestURIBuilder()
-	throws URISyntaxException, MalformedURLException {
+	throws URISyntaxException {
 		return UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi");
 	}
 }

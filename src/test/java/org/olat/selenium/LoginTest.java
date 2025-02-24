@@ -20,6 +20,7 @@
 package org.olat.selenium;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
@@ -304,6 +305,95 @@ public class LoginTest extends Deployments {
 		loginPage
 			.assertLoggedInByLastName("Iwakura");
 	}
+	
+	/**
+	 * Someone wants to register using the registration URL .
+	 * @throws MalformedURLException 
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void registrationLink() throws MalformedURLException {
+		String email = UUID.randomUUID() + "@openolat.com";
+		
+		// The default browser is probably still logged in
+		WebDriver anOtherBrowser = getWebDriver(1);
+		
+		// Use the registration URL
+		URL registrationUrl = new URL(deploymentUrl + "url/registration/0");
+		anOtherBrowser.navigate()
+			.to(registrationUrl);
+		OOGraphene.waitModalDialog(anOtherBrowser);
+		
+		RegistrationPage registration = RegistrationPage.getPage(anOtherBrowser)
+			.nextToDisclaimer()
+			.acknowledgeDisclaimer()
+			.validate(email);
+		
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, messages.size());
+
+		String registrationLink = registration.extractRegistrationLink(messages.get(0));
+		String otp = RegistrationPage.extractOtp(messages.get(0));
+		Assert.assertNotNull(registrationLink);
+		log.info("Registration link: {}, TOP: {}", registrationLink, otp);
+		
+		String login = "md_" + CodeHelper.getForeverUniqueID();
+		String password = "MyVerySecure#01";
+		registration
+			.validateOtp(otp)
+			.finalizeRegistration("Momo", "Ayase", login, password);
+
+		LoginPage loginPage = new LoginPage(anOtherBrowser);
+		loginPage
+			.assertLoggedInByLastName("Ayase");
+	}
+	
+	
+	/**
+	 * Someone wants to register using the classic registration URL
+	 * /dmz/registration/
+	 * 
+	 * @throws MalformedURLException 
+	 */
+	@Test
+	public void registrationDMZLink() throws MalformedURLException {
+		String email = UUID.randomUUID() + "@openolat.com";
+		
+		// The default browser is probably still logged in
+		WebDriver anOtherBrowser = getWebDriver(1);
+		
+		// Use the registration URL
+		URL registrationUrl = new URL(deploymentUrl + "dmz/registration/");
+		anOtherBrowser.navigate()
+			.to(registrationUrl);
+		OOGraphene.waitModalDialog(anOtherBrowser);
+		
+		RegistrationPage registration = RegistrationPage.getPage(anOtherBrowser)
+			.nextToDisclaimer()
+			.acknowledgeDisclaimer()
+			.validate(email);
+		
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, messages.size());
+
+		String registrationLink = registration.extractRegistrationLink(messages.get(0));
+		String otp = RegistrationPage.extractOtp(messages.get(0));
+		Assert.assertNotNull(registrationLink);
+		log.info("Registration link: {}, TOP: {}", registrationLink, otp);
+		
+		String login = "md_" + CodeHelper.getForeverUniqueID();
+		String password = "MyVery#02Secure";
+		registration
+			.validateOtp(otp)
+			.finalizeRegistration("Ken", "Takakura", login, password);
+
+		LoginPage loginPage = new LoginPage(anOtherBrowser);
+		loginPage
+			.assertLoggedInByLastName("Takakura");
+	}
+	
 	
 	/**
 	 * Create a new user, the user uses the change password

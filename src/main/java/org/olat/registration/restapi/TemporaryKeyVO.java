@@ -40,8 +40,8 @@ public class TemporaryKeyVO {
 	private Long key;
 	private String emailAddress;
 	private String ipAddress;
+	private String url;
 	private Date creationDate;
-	private String registrationKey;
 	private String regAction;
 	private boolean mailSent;
 	
@@ -49,12 +49,12 @@ public class TemporaryKeyVO {
 		//
 	}
 	
-	public TemporaryKeyVO(TemporaryKey tk) {
+	public TemporaryKeyVO(TemporaryKey tk, String url) {
 		this.key = tk.getKey();
 		this.emailAddress = tk.getEmailAddress();
 		this.ipAddress = tk.getIpAddress();
+		this.url = url;
 		this.creationDate = tk.getCreationDate();
-		this.registrationKey = tk.getRegistrationKey();
 		this.regAction = tk.getRegAction();
 		this.mailSent = tk.isMailSent();
 	}
@@ -91,14 +91,14 @@ public class TemporaryKeyVO {
 		this.creationDate = creationDate;
 	}
 	
-	public String getRegistrationKey() {
-		return registrationKey;
+	public String getUrl() {
+		return url;
 	}
-	
-	public void setRegistrationKey(String registrationKey) {
-		this.registrationKey = registrationKey;
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
-	
+
 	public String getRegAction() {
 		return regAction;
 	}

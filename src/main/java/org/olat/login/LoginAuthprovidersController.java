@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +41,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Invitation;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -66,6 +68,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.context.ContextEntry;
@@ -76,8 +79,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
@@ -157,13 +162,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private UserPropertiesConfig userPropertiesConfig;
 
 	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null, false);
-	}
-
-	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl, Invitation invitation, boolean hasModuleUri) {
 		// Use fallback translator from full webapp package to translate accessibility stuff
 		super(ureq, wControl, Util.createPackageTranslator(BaseFullWebappController.class, ureq.getLocale()));
-		this.invitation = invitation;
 
 		UserSession usess = ureq.getUserSession();
 		if(usess.getEntry("error.change.email") != null) {
@@ -189,11 +189,6 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		}
 
 		dmzPanel = putInitialPanel(panel);
-
-		// if the call is from an invitation or as rest call, directly open Registration
-		if (invitation != null || hasModuleUri) {
-			doOpenRegistration(ureq);
-		}
 	}
 
 	@Override
@@ -202,12 +197,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 		ContextEntry entry = entries.get(0);
 		String type = entry.getOLATResourceable().getResourceableTypeName();
-		if("browsercheck".equals(type)) {
-			showBrowserCheckPage(ureq);
-		} else if ("accessibility".equals(type)) {
-			showAccessibilityPage();
-		} else if ("about".equals(type)) {
-			showAboutPage();
+		if ("about".equals(type)) {
+			doOpenAboutPage();
 		} else if ("registration".equals(type)) {
 			// make sure the OLAT authentication controller is activated as only this one can handle registration requests
 			AuthenticationProvider olatProvider = loginModule.getAuthenticationProvider(BaseSecurityModule.getDefaultAuthProviderIdentifier());
@@ -221,6 +212,9 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				email = entries.get(1).getOLATResourceable().getResourceableTypeName();
 			}
 			doOpenChangePassword(ureq, email);
+		} else if("invitationregistration".equalsIgnoreCase(type)) {
+			invitation = (Invitation)ureq.getUserSession().getEntry(AuthHelper.ATTRIBUTE_INVITATION);
+			doOpenRegistration(ureq);
 		}
 	}
 
@@ -232,11 +226,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		registrationWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startReg, new RegisterFinishCallback(),
 				new RegCancelCallback(), translate("menu.register"), "o_sel_registration_start_wizard");
 		listenTo(registrationWizardCtrl);
-		if (invitation != null) {
-			dmzPanel.pushContent(registrationWizardCtrl.getInitialComponent());
-		} else {
-			getWindowControl().pushAsModalDialog(registrationWizardCtrl.getInitialComponent());
-		}
+		getWindowControl().pushAsModalDialog(registrationWizardCtrl.getInitialComponent());
 	}
 
 	private VelocityContainer initLoginContent(UserRequest ureq) {
@@ -435,16 +425,18 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == registrationWizardCtrl) {
-			if (invitation != null) {
-				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
-				dmzPanel.popContent();
-			} else {
-				getWindowControl().pop();
-			}
 			if (event == StepsEvent.RELOAD) {
+				getWindowControl().pop();
 				cleanUp();
+				updateLanguage(ureq);
 				doOpenRegistration(ureq);
 			} else {
+				if (invitation != null) {
+					ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
+					dmzPanel.popContent();
+				} else {
+					getWindowControl().pop();
+				}
 				cleanUp();
 			}
 		} else if (source == pwChangeCtrl) {
@@ -471,6 +463,15 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		registrationWizardCtrl = null;
 		pwChangeCtrl = null;
 		cmc = null;
+	}
+	
+	private void updateLanguage(UserRequest ureq) {
+		Locale locale = ureq.getUserSession().getLocale();
+		setTranslator(Util.createPackageTranslator(LoginAuthprovidersController.class, locale,
+				Util.createPackageTranslator(BaseFullWebappController.class, locale)));
+		MultiUserEvent mue = new LanguageChangedEvent(ureq.getUserSession().getLocale(), ureq);
+		OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(mue, wrappedLocale);
 	}
 
 	private void doBack() {
@@ -540,18 +541,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		}
 	}
 
-	protected void showAccessibilityPage() {
-		VelocityContainer accessibilityVC = createVelocityContainer("accessibility");
-		dmzPanel.pushContent(accessibilityVC);
-	}
-
-	protected void showBrowserCheckPage(UserRequest ureq) {
-		VelocityContainer browserCheck = createVelocityContainer("browsercheck");
-		browserCheck.contextPut("isBrowserAjaxReady", !Settings.isBrowserAjaxBlacklisted(ureq));
-		dmzPanel.pushContent(browserCheck);
-	}
-
-	protected void showAboutPage() {
+	protected void doOpenAboutPage() {
 		VelocityContainer aboutVC = createVelocityContainer("about");
 		// Add version info and licenses
 		aboutVC.contextPut("version", Settings.getFullVersionInfo());

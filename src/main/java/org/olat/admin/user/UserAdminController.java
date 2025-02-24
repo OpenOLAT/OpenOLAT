@@ -697,7 +697,7 @@ public class UserAdminController extends BasicController implements Activateable
 				|| editedRoles.isInviteeOnly()) {
 			// show pwd form only if user has also right to create new passwords in case
 			// of a user that has no password yet
-			if(ldapLoginModule.isLDAPEnabled() && ldapLoginManager.isIdentityInLDAPSecGroup(identity)) {
+			if(ldapLoginModule.isLDAPEnabled() && ldapLoginManager.hasIdentityLDAPAuthentication(identity)) {
 				// it's an ldap-user
 				return ldapLoginModule.isPropagatePasswordChangedOnLdapServer();
 			}

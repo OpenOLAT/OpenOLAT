@@ -27,6 +27,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
 
 import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
@@ -87,5 +88,5 @@ public interface LDAPLoginManager {
 	 * @param ident
 	 * @return
 	 */
-	public boolean isIdentityInLDAPSecGroup(Identity ident);
+	public boolean hasIdentityLDAPAuthentication(IdentityRef ident);
 }

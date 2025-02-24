@@ -65,6 +65,9 @@ public class RegistrationModule extends AbstractSpringModule {
 	
 	public static final String SEPARATOR = ";";
 	
+	public static final int VALID_UNTIL_30_DAYS_IN_HOURS = 30 * 24;
+	public static final int VALID_UNTIL_30_DAYS_IN_MINUTES = VALID_UNTIL_30_DAYS_IN_HOURS * 60;
+	
 	private static final String EMAIL_VLIDATION_ENABLED = "email.validation.enabled";
 	private static final String ACCOUNT_EXPIRATION = "registration.account.expiration";
 	private static final String AUTO_ENROLMENT_COURSES = "registration.auto.enrolment.courses";
@@ -85,7 +88,7 @@ public class RegistrationModule extends AbstractSpringModule {
 	private boolean addDefaultOrgEnabled;
 	@Value("${registration.valid.minutes.gui}")
 	private Integer validUntilMinutesGui;
-	@Value("${registration.valid.hours.rest}")
+	@Value("${registration.valid.hours.rest:720}")
 	private Integer validUntilHoursRest;
 	@Value("${registration.organisation.key:default}")
 	private String selfRegistrationOrganisationKey;
@@ -268,6 +271,16 @@ public class RegistrationModule extends AbstractSpringModule {
 	public void setValidUntilMinutesGui(Integer validUntilMinutesGui) {
 		this.validUntilMinutesGui = validUntilMinutesGui;
 		setIntProperty("registration.valid.minutes.gui", validUntilMinutesGui, true);
+	}
+	
+	/**
+	 * 
+	 * @return A value in minutes
+	 */
+	public int getRESTValidityOfTemporaryKey() {
+		return validUntilHoursRest == null
+				? VALID_UNTIL_30_DAYS_IN_MINUTES
+				: (validUntilHoursRest.intValue() * 60) ;
 	}
 
 	public Integer getValidUntilHoursRest() {

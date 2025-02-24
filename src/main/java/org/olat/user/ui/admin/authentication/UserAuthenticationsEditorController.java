@@ -64,8 +64,11 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.login.auth.AuthenticationProviderSPI;
+import org.olat.registration.RegistrationManager;
+import org.olat.registration.TemporaryKey;
 import org.olat.restapi.ui.RestApiKeyController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +102,8 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private RegistrationManager registrationManager;
 
 	/**
 	 * @param ureq
@@ -155,6 +160,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	public void reloadModel() {
 		changeableIdentity = securityManager.loadIdentityByKey(changeableIdentity.getKey());
 		loadModel();
+		loadModelTemporaryKeys();
 	}
 	
 	/**
@@ -174,6 +180,25 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private void loadModelTemporaryKeys() {
+		List<TemporaryKey> tmpKeys = registrationManager.loadTemporaryKeyByIdentity(changeableIdentity,
+				List.of(RegistrationManager.PW_CHANGE, RegistrationManager.REGISTRATION));
+		// Only one key (normally)
+		if(hasTemporaryKey(tmpKeys, RegistrationManager.PW_CHANGE)) {
+			String validity = Formatter.getInstance(getLocale()).formatDateAndTime(tmpKeys.get(0).getValidUntil());
+			setFormDescription("info.temporary.request.password", new String[] { validity });
+		} else if(hasTemporaryKey(tmpKeys, RegistrationManager.REGISTRATION)) {
+			String validity = Formatter.getInstance(getLocale()).formatDateAndTime(tmpKeys.get(0).getValidUntil());
+			setFormDescription("info.temporary.request.registration", new String[] { validity });
+		}
+	}
+	
+	private boolean hasTemporaryKey(List<TemporaryKey> tmpKeys, String action) {
+		if(tmpKeys == null || tmpKeys.isEmpty()) return false;
+		return tmpKeys.stream()
+				.anyMatch(tmpKey -> action.equals(tmpKey.getRegAction()));
 	}
 	
 	private AuthenticationProviderSPI getProvider(Authentication authentication, Map<String, AuthenticationProviderSPI> providers) {

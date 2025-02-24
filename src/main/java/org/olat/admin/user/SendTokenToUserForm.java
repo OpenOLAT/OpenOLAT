@@ -46,6 +46,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.login.LoginModule;
 import org.olat.registration.RegistrationManager;
+import org.olat.registration.RegistrationModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,6 +74,10 @@ public class SendTokenToUserForm extends FormBasicController {
 	private BaseSecurity securityManager;
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private RegistrationModule registrationModule;
+	@Autowired
+	private RegistrationManager registrationManager;
 
 	public SendTokenToUserForm(UserRequest ureq, WindowControl wControl, Identity identityToModify,
 			boolean withTitle, boolean withDescription, boolean withCancel) {
@@ -137,7 +142,7 @@ public class SendTokenToUserForm extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String body = bodyText.getValue();
 		String subject = subjectText.getValue();
-		sendToken(subject, body);
+		sendToken(ureq, subject, body);
 		bodyText.setValue(body);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -174,12 +179,16 @@ public class SendTokenToUserForm extends FormBasicController {
 		return null;
 	}
 	
-	private void sendToken(String subject, String body) {
+	private void sendToken(UserRequest ureq, String subject, String body) {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(identityToModify);
 		bundle.setContent(subject, body);
 		MailerResult result = mailManager.sendExternMessage(bundle, new MailerResult(), false);
-		if(result.getReturnCode() == 0) {
+		if(result.getReturnCode() == MailerResult.OK) {
+			String ip = ureq.getHttpReq().getRemoteAddr();
+			String emailAdress = identityToModify.getUser().getProperty(UserConstants.EMAIL, getLocale());
+			registrationManager.createAndDeleteOldTemporaryKey(identityToModify.getKey(), emailAdress, ip,
+					RegistrationManager.PW_CHANGE, registrationModule.getRESTValidityOfTemporaryKey());
 			showInfo("email.sent");
 		} else {
 			showError("email.notsent");

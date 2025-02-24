@@ -24,7 +24,6 @@
 */
 package org.olat.dispatcher;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Locale;
@@ -238,7 +237,7 @@ public class RESTDispatcher implements Dispatcher {
 					//logged in as invited user, continue
 					ServletUtil.serveResource(request, response, ureq.getDispatchResult().getResultingMediaResource());
 				} else if (loginStatus == AuthHelper.LOGIN_REGISTER) {
-					redirectRegister(response);
+					redirectRegister(request, response, usess);
 				} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 					DispatcherModule.redirectToServiceNotAvailable(response);
 				} else {
@@ -276,11 +275,12 @@ public class RESTDispatcher implements Dispatcher {
 		DispatcherModule.redirectTo(ureq.getHttpResp(), url);
 	}
 	
-	private void redirectRegister(HttpServletResponse response) {
+	private void redirectRegister(HttpServletRequest request, HttpServletResponse response, UserSession usess) {
 		try {
-			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + "invitationregister/");
-		} catch (IOException e) {
-			log.error("Redirect failed: url={}{}", WebappHelper.getServletContextPath(), DispatcherModule.getPathDefault(),e);
+			usess.putEntryInNonClearedStore(DMZDispatcher.DMZDISPATCHER_BUSINESSPATH, "[invitationregistration:0]");
+			DispatcherModule.forwardToDefault(request, response);
+		} catch (Exception e) {
+			log.error("Redirect failed: url={}{}", WebappHelper.getServletContextPath(), DispatcherModule.getPathDefault(), e);
 		}
 	}
 	

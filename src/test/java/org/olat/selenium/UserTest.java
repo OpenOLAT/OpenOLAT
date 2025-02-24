@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -34,10 +35,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.login.webauthn.PasskeyLevels;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.LoginPage.PasskeyInformations;
+import org.olat.selenium.page.core.LoginPasswordForgottenPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -48,6 +51,7 @@ import org.olat.selenium.page.tracing.ContactTracingPage;
 import org.olat.selenium.page.user.ImportUserPage;
 import org.olat.selenium.page.user.PasswordAndAuthenticationAdminPage;
 import org.olat.selenium.page.user.PortalPage;
+import org.olat.selenium.page.user.RegistrationPage;
 import org.olat.selenium.page.user.UserAdminPage;
 import org.olat.selenium.page.user.UserAttributesWizardPage;
 import org.olat.selenium.page.user.UserPasswordPage;
@@ -76,6 +80,8 @@ import com.dumbster.smtp.SmtpMessage;
 @RunWith(Arquillian.class)
 public class UserTest extends Deployments {
 
+	public static final Logger log = Tracing.createLoggerFor(UserTest.class);
+	
 	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
@@ -616,6 +622,48 @@ public class UserTest extends Deployments {
 			.assertOnResume()
 			.resume()
 			.assertLoggedIn(user);
+	}
+	
+	
+	/**
+	 * An administrator generate a link to change the password of
+	 * a user. The user uses the link to change its password.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void userChangeItsPasswordWithRESTLink()
+	throws IOException, URISyntaxException {
+		UserRestClient userWebService = new UserRestClient(deploymentUrl);
+		UserVO user = userWebService.createRandomUser();
+		String pwChangeLink = userWebService.createPasswordChangeLink(user);
+		
+		// The default browser is probably still logged in
+		WebDriver anOtherBrowser = getWebDriver(1);
+		anOtherBrowser.navigate()
+			.to(new URL(pwChangeLink));
+		OOGraphene.waitModalDialog(anOtherBrowser);
+		
+		LoginPasswordForgottenPage forgottenPage = new LoginPasswordForgottenPage(anOtherBrowser)
+				.assertUserIdentificationAndNext(user.getEmail());
+		
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, messages.size());
+		String otp = RegistrationPage.extractOtp(messages.get(0));
+		log.info("Registration OTP: {}", otp);
+		
+		String newPassword = "Sel#17HighlySecret";
+		forgottenPage
+			.confirmOtp(otp)
+			.newPassword(newPassword);
+		
+		LoginPage loginPage = LoginPage.load(anOtherBrowser, deploymentUrl);
+		loginPage
+			.loginAs(user.getLogin(), newPassword)
+			.assertLoggedInByLastName(user.getLastName());
 	}
 	
 

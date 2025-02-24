@@ -198,8 +198,7 @@ public class TemporaryKeyImpl implements Persistable, CreateInfo, TemporaryKey {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof TemporaryKeyImpl) {
-			TemporaryKeyImpl tmpKey = (TemporaryKeyImpl)obj;
+		if(obj instanceof TemporaryKeyImpl tmpKey) {
 			return getKey() != null && getKey().equals(tmpKey.getKey());
 		}
 		return false;

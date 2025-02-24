@@ -47,10 +47,12 @@ import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.webauthn.OLATWebAuthnManager;
+import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
+import org.olat.registration.TemporaryKey;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -385,18 +387,33 @@ public class UserModule extends AbstractSpringModule {
 		
 		// check if the user has an OLAT provider token, otherwise a password change makes no sense
 		List<Authentication> auths = CoreSpringFactory.getImpl(BaseSecurity.class).findAuthentications(id,
-				List.of(OLATWebAuthnManager.PASSKEY, BaseSecurityModule.getDefaultAuthProviderIdentifier()));
-		if((auths == null || auths.isEmpty()) && !pwdChangeWithoutAuthenticationAllowed) {
-			return false;
+				List.of(OLATWebAuthnManager.PASSKEY, BaseSecurityModule.getDefaultAuthProviderIdentifier(),
+						LDAPAuthenticationController.PROVIDER_LDAP));
+		if(!hasAuthentication(auths, OLATWebAuthnManager.PASSKEY) && !hasAuthentication(auths, BaseSecurityModule.getDefaultAuthProviderIdentifier())) {
+			if(hasAuthentication(auths, LDAPAuthenticationController.PROVIDER_LDAP)) {
+				return CoreSpringFactory.getImpl(LDAPLoginModule.class).isPropagatePasswordChangedOnLdapServer();
+			}
+
+			TemporaryKey changeTmpKey = CoreSpringFactory.getImpl(RegistrationManager.class)
+					.loadTemporaryKeyByEmail(id.getUser().getEmail(), RegistrationManager.PW_CHANGE);
+			return changeTmpKey != null && (RegistrationManager.PW_CHANGE.equals(changeTmpKey.getRegAction())
+					|| RegistrationManager.REGISTRATION.equals(changeTmpKey.getRegAction()));
 		}
 		
-		LDAPLoginManager ldapLoginManager = CoreSpringFactory.getImpl(LDAPLoginManager.class);
-		if (ldapLoginManager.isIdentityInLDAPSecGroup(id)) {
-			// it's an ldap-user
-			return CoreSpringFactory.getImpl(LDAPLoginModule.class)
-					.isPropagatePasswordChangedOnLdapServer();
+		if(hasAuthentication(auths, LDAPAuthenticationController.PROVIDER_LDAP)) {
+			return CoreSpringFactory.getImpl(LDAPLoginModule.class).isPropagatePasswordChangedOnLdapServer();
 		}
-		return pwdchangeallowed;
+		
+		return true;
+	}
+	
+	private boolean hasAuthentication(List<Authentication> auths, String provider) {
+		for(Authentication auth:auths) {
+			if(provider.equals(auth.getProvider())) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**

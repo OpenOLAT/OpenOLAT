@@ -19,8 +19,6 @@
  */
 package org.olat.selenium.page.core;
 
-import org.apache.logging.log4j.Logger;
-import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -33,8 +31,6 @@ import org.openqa.selenium.WebDriver;
  */
 public class LoginPasswordForgottenPage {
 	
-	private static final Logger log = Tracing.createLoggerFor(LoginPasswordForgottenPage.class);
-	
 	private final WebDriver browser;
 	
 	public LoginPasswordForgottenPage(WebDriver browser) {
@@ -45,6 +41,16 @@ public class LoginPasswordForgottenPage {
 		By nameBy = By.cssSelector(".modal-content .o_form .o_sel_pw_change input[type='text']");
 		OOGraphene.waitElement(nameBy, browser);
 		browser.findElement(nameBy).sendKeys(emailAddress);
+		OOGraphene.nextStep(browser);
+		
+		By otpBy = By.cssSelector(".o_wizard_steps_current .o_sel_registration_otp");
+		OOGraphene.waitElement(otpBy, browser);
+		return this;
+	}
+	
+	public LoginPasswordForgottenPage assertUserIdentificationAndNext(String emailAddress) {
+		By emailBy = By.xpath("//div[contains(@class,'modal-content')]//div[contains(@class,'o_sel_pw_change')]//input[@value='" + emailAddress + "']");
+		OOGraphene.waitElement(emailBy, browser);
 		OOGraphene.nextStep(browser);
 		
 		By otpBy = By.cssSelector(".o_wizard_steps_current .o_sel_registration_otp");

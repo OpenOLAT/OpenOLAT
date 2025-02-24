@@ -68,7 +68,7 @@ public class ChangePasswordTest extends OlatRestTestCase {
 		TemporaryKeyVO tk = conn.parse(response, TemporaryKeyVO.class);
 		Assert.assertNotNull(tk);
 		Assert.assertNotNull(tk.getIpAddress());
-		Assert.assertNotNull(tk.getRegistrationKey());
+		Assert.assertNotNull(tk.getUrl());
 		Assert.assertEquals(RegistrationManager.PW_CHANGE, tk.getRegAction());
 		Assert.assertEquals(id.getUser().getProperty(UserConstants.EMAIL, null), tk.getEmailAddress());
 		Assert.assertFalse(tk.isMailSent());

@@ -35,10 +35,12 @@ import jakarta.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.registration.RegistrationManager;
+import org.olat.registration.RegistrationModule;
 import org.olat.registration.TemporaryKey;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +66,9 @@ public class ChangePasswordWebService {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private RegistrationManager rm;
+	private RegistrationModule registrationModule;
+	@Autowired
+	private RegistrationManager registrationManager;
 
 	/**
 	 * 
@@ -73,7 +77,7 @@ public class ChangePasswordWebService {
 	 * @return
 	 */
 	@PUT
-	@Operation(summary = "Change password", description = "Change password")
+	@Operation(summary = "Change password", description = " Set a link to change the password. The user can change it if it has or not a password during the validity perdio of the link")
 	@ApiResponse(responseCode = "200", description = "Password has been changed")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -92,9 +96,11 @@ public class ChangePasswordWebService {
 
 		String emailAdress = identity.getUser().getProperty(UserConstants.EMAIL, null); 
 		String ip = request.getRemoteAddr();
-		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip,
-				RegistrationManager.PW_CHANGE, null);
-		return Response.ok(new TemporaryKeyVO(tk)).build();
+		TemporaryKey tk = registrationManager.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip,
+				RegistrationManager.PW_CHANGE, registrationModule.getValidUntilHoursRest());
+		String url = Settings.getServerContextPathURI() + "/url/changepw/0/" + emailAdress + "/0";
+		TemporaryKeyVO keyVo = new TemporaryKeyVO(tk, url);
+		return Response.ok(keyVo).build();
 	}
 	
 	private boolean isUserManagerOf(Long identityKey, HttpServletRequest request) {

@@ -168,40 +168,6 @@
 		<!-- defines first pages of other dmz entry points, e.g. /dmz/register etc. -->
 		<property name="dmzServicesByPath">
 			<map>
-				<!-- triggers registration workflow -->
-				<entry key="/registration/">
-					<bean
-						class="org.olat.core.gui.control.ChiefControllerCreator">
-						<property name="contentControllerCreator">
-							<!-- creates a BasicFullWebappController with DMZ content -->
-							<bean
-								class="org.olat.registration.DMZRegistrationContentControllerCreator" />
-						</property>
-					</bean>
-				</entry>
-				<!-- registration invitation -->
-				<entry key="/invitationregister/">
-					<bean
-						class="org.olat.core.gui.control.ChiefControllerCreator">
-						<property name="contentControllerCreator">
-							<!-- creates a BasicFullWebappController with DMZ content -->
-							<bean
-								class="org.olat.modules.invitation.InvitationRegistrationContentControllerCreator" />
-						</property>
-					</bean>
-				</entry>
-				
-				<!-- triggers password change workflow -->
-				<entry key="/pwchange/">
-					<bean
-						class="org.olat.core.gui.control.ChiefControllerCreator">
-						<property name="contentControllerCreator">
-							<!-- creates a BasicFullWebappController with DMZ content -->
-							<bean
-								class="org.olat.registration.DMZPWChangeContentControllerCreator" />
-						</property>
-					</bean>
-				</entry>
 				<!-- triggers shibboleth registration workflow -->
 				<entry key="/shibregister/">
 					<bean

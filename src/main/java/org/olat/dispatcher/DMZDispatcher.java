@@ -54,6 +54,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.servlets.RequestAbortedException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.oauth.OAuthLoginModule;
@@ -173,7 +174,6 @@ public class DMZDispatcher implements Dispatcher {
 			//
 			// add the context path to align with uriPrefix e.g. /olat/dmz/
 			String pathInfo = request.getContextPath() + request.getPathInfo();
-			ChiefControllerCreator subPathccc = null;
 			boolean dmzOnly = pathInfo.equals(uriPrefix);// if /olat/dmz/
 			if (!dmzOnly) {
 				int sl = pathInfo.indexOf('/', uriPrefix.length());
@@ -185,18 +185,9 @@ public class DMZDispatcher implements Dispatcher {
 					// e.g. something like /info.html from (/dmz/info.html)
 					sub = pathInfo;
 				}
-				// chief controller creator for sub path, e.g. 
-				subPathccc = dmzServicesByPath.get(sub);
-				if(subPathccc != null) {
-					Windows ws = Windows.getWindows(ureq);
-					synchronized (ws) { //o_clusterOK by:fj per user session
-						ChiefController occ = subPathccc.createChiefController(ureq);
-						Window window = occ.getWindow();
-						window.setUriPrefix(uriPrefix);
-						ws.registerWindow(occ);
-						window.dispatchRequest(ureq, true);
-						return;
-					}					
+				
+				if(processDmzServices(request, response, ureq, uriPrefix, sub)) {
+					return;
 				}
 			}//else a /olat/dmz/ request
 
@@ -292,6 +283,36 @@ public class DMZDispatcher implements Dispatcher {
 		}
 	}
 	
+	private boolean processDmzServices(HttpServletRequest request, HttpServletResponse response, UserRequest ureq,
+			String uriPrefix, String sub) {
+		return switch(sub) {
+			case "/registration/" -> forwardTo(request, response, ureq.getUserSession(), "[registration:0]");
+			case "/invitationregister/" -> forwardTo(request, response, ureq.getUserSession(), "[invitationregistration:0]");
+			case "/pwchange/", "/changepw/" -> forwardTo(request, response, ureq.getUserSession(), "[changepw:0]");
+			case "/browsercheck/" -> forwardTo(request, response, ureq.getUserSession(), "[browsercheck:0]");
+			default -> processDmzServicesByPath(ureq, uriPrefix, sub);
+		};
+	}
+	
+	private boolean processDmzServicesByPath(UserRequest ureq,
+			String uriPrefix, String sub) {
+		// Chief controller creator for sub path, e.g.
+		ChiefControllerCreator subPathccc = dmzServicesByPath.get(sub);
+		if(subPathccc != null) {
+			Windows ws = Windows.getWindows(ureq);
+			synchronized (ws) { //o_clusterOK by:fj per user session
+				ChiefController occ = subPathccc.createChiefController(ureq);
+				Window window = occ.getWindow();
+				window.setUriPrefix(uriPrefix);
+				ws.registerWindow(occ);
+				window.dispatchRequest(ureq, true);
+				return true;
+			}					
+		}
+		return false;
+		
+	}
+	
 	private boolean ignoreMissingWindow(HttpServletRequest request) {
 		String pathInfo = request.getPathInfo();
 		if(pathInfo.contains("cid:close-window")) {
@@ -326,6 +347,17 @@ public class DMZDispatcher implements Dispatcher {
 			}
 		}
 		return false;
+	}
+	
+	private boolean forwardTo(HttpServletRequest request, HttpServletResponse response, UserSession usess, String businessPath) {
+		try {
+			usess.putEntryInNonClearedStore(DMZDispatcher.DMZDISPATCHER_BUSINESSPATH, businessPath);
+			DispatcherModule.forwardToDefault(request, response);
+			return true;
+		} catch (Exception e) {
+			log.error("Redirect failed: url={}{}", WebappHelper.getServletContextPath(), DispatcherModule.getPathDefault(), e);
+			return false;
+		}
 	}
 
 	/**

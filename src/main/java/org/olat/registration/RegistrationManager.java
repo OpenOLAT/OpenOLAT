@@ -44,6 +44,7 @@ import jakarta.persistence.TemporalType;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -87,8 +88,6 @@ import org.springframework.stereotype.Service;
 public class RegistrationManager implements UserDataDeletable, UserDataExportable {
 	
 	private static final Logger log = Tracing.createLoggerFor(RegistrationManager.class);
-
-	private static final int VALID_UNTIL_30_DAYS = 30*24;
 
 	public static final String PW_CHANGE = "PW_CHANGE";
 	public static final String REGISTRATION = "REGISTRATION";
@@ -369,6 +368,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 * @param email
 	 * @param ip
 	 * @param action
+	 * @param validForMinutes In minutes
 	 * @return
 	 */
 	public TemporaryKey createAndDeleteOldTemporaryKey(Long identityKey, String email, String ip, String action, Integer validForMinutes) {
@@ -387,7 +387,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		tk.setEmailAddress(email);
 		tk.setIpAddress(ip);
 		tk.setRegistrationKey(createRegistrationToken());
-		Integer validMinutes = validForMinutes != null ? validForMinutes : VALID_UNTIL_30_DAYS;
+		Integer validMinutes = validForMinutes != null ? validForMinutes : RegistrationModule.VALID_UNTIL_30_DAYS_IN_MINUTES;
 		Date validUntil = addMinutes(tk.getCreationDate(), validMinutes);
 		tk.setValidUntil(validUntil);
 		tk.setRegAction(action);
@@ -400,7 +400,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		if (tk != null) {
 			Integer validForMinutes = registrationModule.getValidUntilMinutesGui();
 			tk.setRegistrationKey(createRegistrationToken());
-			Integer validMinutes = validForMinutes != null ? validForMinutes : VALID_UNTIL_30_DAYS;
+			Integer validMinutes = validForMinutes != null ? validForMinutes : RegistrationModule.VALID_UNTIL_30_DAYS_IN_MINUTES;
 			Date validUntil = addMinutes(new Date(), validMinutes);
 			tk.setValidUntil(validUntil);
 			dbInstance.getCurrentEntityManager().merge(tk);
@@ -467,6 +467,16 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		return null;
 	}
 	
+	public TemporaryKey loadTemporaryKeyByEmail(String email, String action) {
+		String query = "select r from otemporarykey r where lower(r.emailAddress)=:email and r.regAction=:action";
+		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
+				.createQuery(query, TemporaryKey.class)
+				.setParameter("email", email.toLowerCase())
+				.setParameter("action", action)
+				.getResultList();
+		return tks.size() == 1 ? tks.get(0) : null;
+	}
+	
 	/**
 	 * returns an existing list of TemporaryKey by a given action or null if none
 	 * found
@@ -506,6 +516,19 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 				.createNamedQuery("loadTemporaryKeyByIdentity", TemporaryKey.class)
 				.setParameter("identityKey", identityKey)
 				.setParameter("action", action)
+				.getResultList();
+	}
+	
+	public List<TemporaryKey> loadTemporaryKeyByIdentity(IdentityRef identity, List<String> actions) {
+		if(identity == null || identity.getKey() == null || actions == null || actions.isEmpty()) {
+			return new ArrayList<>();
+		}
+		
+		String query = "select r from otemporarykey r where r.identityKey=:identityKey and r.regAction in (:actions)";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, TemporaryKey.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("actions", actions)
 				.getResultList();
 	}
 

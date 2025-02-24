@@ -68,6 +68,8 @@ public class RegistrationLangStep00Controller extends StepFormBasicController {
 		if(source instanceof SingleSelection se && se.isOneSelected()) {
 			Locale localeOrDefault = I18nManager.getInstance().getLocaleOrDefault(se.getSelectedKey());
 			ureq.getUserSession().setLocale(localeOrDefault);
+			ureq.getUserSession().putEntry("negotiated-locale", localeOrDefault);
+			
 			fireEvent(ureq, StepsEvent.RELOAD);
 		}
 		super.formInnerEvent(ureq, source, event);

@@ -1,3 +1,6 @@
+#if($off_desc)
+	<div class="o_info_with_icon">$off_desc</div>
+#end
 <fieldset>
 	<legend>$r.translate("change.username.title") $r.contextHelpWithWrapper("manual_admin/usermanagement/Configure_User/")</legend>
 	$r.render("username", "3_9")

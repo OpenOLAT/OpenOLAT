@@ -2135,7 +2135,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	}
 
 	@Override
-	public boolean isIdentityInLDAPSecGroup(Identity ident) {
+	public boolean hasIdentityLDAPAuthentication(IdentityRef ident) {
 		return authenticationDao.hasAuthentication(ident, LDAPAuthenticationController.PROVIDER_LDAP);
 	}
 	
