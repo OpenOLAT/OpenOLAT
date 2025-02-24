@@ -238,7 +238,11 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			}
 		}
 		
-		rows.sort(new TaxonomyTreeNodeComparator());
+		try {
+			rows.sort(new TaxonomyTreeNodeComparator());
+		} catch (Exception e) {
+			logError("Cannot sort taxonomy tree", e);
+		}
 
 		model.setObjects(rows);
 		tableEl.reset(resetPage, resetInternal, true);
