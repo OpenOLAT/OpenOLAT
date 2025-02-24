@@ -167,7 +167,9 @@ abstract class AbstractWorkflowListController extends FormBasicController {
 				val = translate("workflow.infos.range.documents", Integer.toString(min), Integer.toString(max));
 			}
 		} else if(min >= 1 && max < 0) {
-			val = translate("workflow.infos.num.documents", ">" + Integer.toString(min));
+			val = translate("workflow.infos.num.min.documents", Integer.toString(min));
+		} else if(min < 0 && max > 0) {
+			val = translate("workflow.infos.num.max.documents", Integer.toString(max));
 		}
 		return val;
 	}
