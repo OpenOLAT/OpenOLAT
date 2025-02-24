@@ -31,7 +31,7 @@
 	
 	<bean id="userPropertyEmail" class="org.olat.user.propertyhandlers.EmailProperty">
 		<property name="name" value="email" />
-		<property name="group" value="personal" />
+		<property name="group" value="contact" />
 	</bean>
 
 	<bean id="userPropertyEmailSignature" class="org.olat.user.propertyhandlers.Generic2048RichTextPropertyHandler">
@@ -69,7 +69,7 @@
 	
 	<bean id="userPropertySmsTelMobile" class="org.olat.user.propertyhandlers.SmsPhonePropertyHandler">
 		<property name="name" value="smsTelMobile" />
-		<property name="group" value="personal" />
+		<property name="group" value="contact" />
 	</bean>
 	
 	<bean id="userPropertyTelOffice" class="org.olat.user.propertyhandlers.PhonePropertyHandler">

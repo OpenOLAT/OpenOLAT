@@ -210,7 +210,17 @@ public class ProfileFormController extends FormBasicController {
 			
 			// add spacer if necessary (i.e. when group name changes)
 			String group = userPropertyHandler.getGroup();
-			String formId = "group." + group;
+
+			// special case, to put smstelmobile and email always into personal section, regardless of configuration
+			// OO-8430
+			String formId;
+			if (UserConstants.SMSTELMOBILE.equals(userPropertyHandler.getName())
+					|| UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
+				formId = "group.personal";
+			} else {
+				formId = "group." + group;
+			}
+
 			FormLayoutContainer groupContainer = (FormLayoutContainer)formLayout.getFormComponent(formId);
 			if(groupContainer == null) {
 				groupContainer = FormLayoutContainer.createDefaultFormLayout(formId, getTranslator());
