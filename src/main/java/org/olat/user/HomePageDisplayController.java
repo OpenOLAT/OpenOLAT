@@ -146,7 +146,7 @@ public class HomePageDisplayController extends BasicController {
 	
 	private void exposeOrganisations(Identity homeIdentity, VelocityContainer mainVC) {
 		if(organisationModule.isEnabled()) {
-			List<Organisation> organisations = organisationService.getOrganisations(homeIdentity, OrganisationRoles.values());
+			List<Organisation> organisations = organisationService.getOrganisations(homeIdentity, OrganisationRoles.user);
 			List<String> organisationNames = new ArrayList<>(organisations.size());
 			for(Organisation organisation:organisations) {
 				organisationNames.add(organisation.getDisplayName());
