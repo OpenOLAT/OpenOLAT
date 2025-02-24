@@ -140,7 +140,12 @@ public class UserBulkChangeManager implements InitializingBean {
 			String errorDesc = "";
 			boolean updateError = false;
 			
-			boolean canManagedCritical2 = securityModule.isUserAllowedCriticalUserChanges(actingRoles, roles);
+			boolean canManagedCritical2;
+			if(roles.isInvitee()) {
+				canManagedCritical2 = securityModule.isUserAllowedCriticalInviteeChanges(actingRoles, roles);
+			} else {
+				canManagedCritical2 = securityModule.isUserAllowedCriticalUserChanges(actingRoles, roles);
+			}
 			if(canManagedCritical2) {
 				// change pwd
 				if (attributeChangeMap.containsKey(CRED_IDENTIFYER)) {

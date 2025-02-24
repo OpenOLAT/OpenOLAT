@@ -663,6 +663,22 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		return canManageCritical;
 	}
 	
+	/**
+	 * Calculate if the acting user can make critical changes like password changes,
+	 * email changes or status changes to a specific invitee.
+	 * 
+	 * @param actingRoles The roles of the user which makes changes
+	 * @param editedRoles The roles of the edited invitee 
+	 * @return
+	 */
+	public boolean isUserAllowedCriticalInviteeChanges(Roles actingRoles, Roles editedRoles) {
+		boolean canManageCritical = actingRoles.isInviteeOf(OrganisationRoles.administrator, editedRoles)
+				|| (actingRoles.isInviteeOf(OrganisationRoles.rolesmanager, editedRoles) && !editedRoles.isAdministrator() && !editedRoles.isSystemAdmin())
+				|| (actingRoles.isInviteeOf(OrganisationRoles.usermanager, editedRoles) && !editedRoles.isAdministrator() && !editedRoles.isSystemAdmin() && !editedRoles.isRolesManager());
+		log.debug("Can manage critical invitee change: {}", canManageCritical);
+		return canManageCritical;
+	}
+	
 	public int getUserSearchMaxResultsValue() {
 		if(StringHelper.containsNonWhitespace(userSearchMaxResults)) {
 			try {
