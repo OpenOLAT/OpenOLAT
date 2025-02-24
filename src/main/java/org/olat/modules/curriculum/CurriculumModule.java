@@ -68,7 +68,11 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	private List<TaxonomyRef> taxonomyRefs;
 	@Value("${curriculum.default.course.runtime.type}")
 	private String defaultCourseRuntimeType;
-	
+	@Value("${reports.accounting.fiscal.year.start.day:1}")
+	private int reportsAccountingFiscalYearStartDay;
+	@Value("${reports.accounting.fiscal.year.start.month:1}")
+	private int reportsAccountingFiscalYearStartMonth;
+
 	@Autowired
 	private CurriculumModule(CoordinatorManager coordinateManager) {
 		super(coordinateManager);
@@ -206,5 +210,13 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	public void setDefaultCourseRuntimeType(RepositoryEntryRuntimeType value) {
 		defaultCourseRuntimeType = value.name();
 		setStringProperty(DEFAULT_COURSE_RUNTIME_TYPE, defaultCourseRuntimeType, true);
+	}
+
+	public int getReportsAccountingFiscalYearStartDay() {
+		return reportsAccountingFiscalYearStartDay;
+	}
+
+	public int getReportsAccountingFiscalYearStartMonth() {
+		return reportsAccountingFiscalYearStartMonth;
 	}
 }
