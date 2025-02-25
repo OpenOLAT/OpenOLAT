@@ -34,7 +34,6 @@ import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -42,8 +41,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -77,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RegistrationAdminController extends FormBasicController {
 
 	private SingleSelection organisationsEl;
-	private FormToggle registrationElement;
+	private MultipleSelectionElement registrationElement;
 	private MultipleSelectionElement registrationLinkElement;
 	private MultipleSelectionElement registrationLoginElement;
 	private MultipleSelectionElement staticPropElement;
@@ -105,10 +102,6 @@ public class RegistrationAdminController extends FormBasicController {
 	private FormLink openCourseBrowserLink;
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController selectCoursesController;
-	private final SegmentViewComponent segmentView;
-	private FormLink configLink;
-	private FormLink accountLink;
-	private FormLink externalLink;
 	
 	private static final String[] pendingRegistrationKeys = new String[] { 
 			RegistrationPendingStatus.active.name(),
@@ -175,16 +168,7 @@ public class RegistrationAdminController extends FormBasicController {
 		}
 		
 		orgEmailDomainEnabled = organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled();
-
-		segmentView = SegmentViewFactory.createSegmentView("segments", flc, this);
-
-		configLink = uifactory.addFormLink("self.reg.config", flc, Link.LINK);
-		segmentView.addSegment(configLink.getComponent(), true);
-		accountLink = uifactory.addFormLink("self.reg.account", flc, Link.LINK);
-		segmentView.addSegment(accountLink.getComponent(), false);
-		externalLink = uifactory.addFormLink("self.reg.extern", flc, Link.LINK);
-		segmentView.addSegment(externalLink.getComponent(), false);
-
+		
 		initForm(ureq);
 	}
 
@@ -203,14 +187,9 @@ public class RegistrationAdminController extends FormBasicController {
 					BusinessControlFactory.getInstance().getURLFromBusinessPathString("[AdminSite:0][organisations:0]")));
 		}
 		
-		registrationElement = uifactory.addToggleButton("enable.self.registration", "admin.enableRegistration", null, null, settingsContainer);
+		registrationElement = uifactory.addCheckboxesHorizontal("enable.self.registration", "admin.enableRegistration", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
 		registrationElement.addActionListener(FormEvent.ONCHANGE);
-
-		if (registrationModule.isSelfRegistrationEnabled()) {
-			registrationElement.toggleOn();
-		} else {
-			registrationElement.toggleOff();
-		}
+		registrationElement.select("on", registrationModule.isSelfRegistrationEnabled());
 		
 		registrationLoginElement = uifactory.addCheckboxesHorizontal("enable.registration.login", "admin.enableRegistrationLogin", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
 		registrationLoginElement.addActionListener(FormEvent.ONCHANGE);
@@ -421,7 +400,7 @@ public class RegistrationAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == registrationElement) {
-			boolean enable = registrationElement.isOn();
+			boolean  enable = registrationElement.isSelected(0);
 			registrationModule.setSelfRegistrationEnabled(enable);
 			updateUI();
 		} else if(source == registrationLinkElement) {
@@ -442,18 +421,11 @@ public class RegistrationAdminController extends FormBasicController {
 		} else if (source == openCourseBrowserLink) {
 			openCourseBrowser(ureq);
 		} else if (source instanceof FormLink link) {
-			if (link.getCmd().equals("remove_course")
-					&& source.getUserObject() instanceof Long courseKey) {
-				registrationModule.removeCourseFromAutoEnrolment(courseKey);
-				initForm(ureq);
-			}
-
-			if (link == accountLink) {
-				segmentView.select(accountLink.getComponent());
-			} else if (link == externalLink) {
-				segmentView.select(externalLink.getComponent());
-			} else if (link == configLink) {
-				segmentView.select(configLink.getComponent());
+			if (link.getCmd().equals("remove_course")) {
+				if (source.getUserObject() instanceof Long courseKey) {
+					registrationModule.removeCourseFromAutoEnrolment(courseKey);
+					initForm(ureq);
+				}
 			}
 		} else if (source == organisationsEl) {
 			Long defaultOrgKey = organisationService.getDefaultOrganisation().getKey();
@@ -507,7 +479,7 @@ public class RegistrationAdminController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		boolean enableMain = registrationElement.isOn();
+		boolean  enableMain = registrationElement.isSelected(0);
 		registrationLinkElement.setEnabled(enableMain);
 		registrationLoginElement.setEnabled(enableMain);
 		organisationsEl.setEnabled(enableMain && !orgEmailDomainEnabled);
@@ -661,7 +633,7 @@ public class RegistrationAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		registrationModule.setSelfRegistrationEnabled(registrationElement.isOn());
+		registrationModule.setSelfRegistrationEnabled(registrationElement.isSelected(0));
 		registrationModule.setSelfRegistrationLinkEnabled(registrationLinkElement.isSelected(0));
 		registrationModule.setSelfRegistrationLoginEnabled(registrationLoginElement.isSelected(0));
 		
