@@ -19,8 +19,6 @@
  */
 package org.olat.modules.coach.reports;
 
-import org.olat.course.certificate.CertificationTimeUnit;
-
 /**
  * Initial date: 2025-01-29<br>
  *
@@ -47,7 +45,10 @@ public abstract class TimeBoundReportConfiguration extends AbstractReportConfigu
 		return durationUnit;
 	}
 
-	protected CertificationTimeUnit getDurationTimeUnit() {
-		return CertificationTimeUnit.valueOf(getDurationUnit());
+	protected ReportTimeUnit getDurationTimeUnit() {
+		if (getDurationUnit() == null) {
+			return null;
+		}
+		return ReportTimeUnit.valueOf(getDurationUnit());
 	}
 }

@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.reports;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -36,6 +37,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.coach.reports.AbstractReportConfiguration;
 import org.olat.modules.coach.reports.ReportConfigurationAccessSecurityCallback;
+import org.olat.modules.coach.reports.TimeBoundReportConfiguration;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -57,7 +59,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class AccountingReportConfiguration extends AbstractReportConfiguration implements CurriculumReportConfiguration {
+public class AccountingReportConfiguration extends TimeBoundReportConfiguration implements CurriculumReportConfiguration {
 
 	@Override
 	public boolean hasAccess(ReportConfigurationAccessSecurityCallback secCallback) {
@@ -126,6 +128,11 @@ public class AccountingReportConfiguration extends AbstractReportConfiguration i
 		CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
 		CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
 		searchParams.setIdentity(coach);
+		if (getDurationTimeUnit() != null) {
+			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
+			searchParams.setFromDate(getDurationTimeUnit().fromDate(new Date(), duration));
+			searchParams.setToDate(getDurationTimeUnit().toDate(new Date()));
+		}
 		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
 		for (BookingOrder bookingOrder : bookingOrders) {
 			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder);
@@ -193,6 +200,11 @@ public class AccountingReportConfiguration extends AbstractReportConfiguration i
 			CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
 			searchParams.setCurriculum(curriculum);
 			searchParams.setCurriculumElement(curriculumElement);
+			if (getDurationTimeUnit() != null) {
+				int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
+				searchParams.setFromDate(getDurationTimeUnit().fromDate(new Date(), duration));
+				searchParams.setToDate(getDurationTimeUnit().toDate(new Date()));
+			}
 			generateReport(searchParams, curriculums, implementations, locale, out);
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);

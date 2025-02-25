@@ -33,8 +33,45 @@
 	<!-- Reports -->
 	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
 		<property name="order" value="10" />
-		<property name="i18nNameKey" value="report.booking.all" />
-		<property name="i18nDescriptionKey" value="report.booking.all.desc" />
+		<property name="i18nNameKey" value="report.booking.all.unfiltered" />
+		<property name="i18nDescriptionKey" value="report.booking.all.unfiltered.desc" />
 	</bean>
 
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="20" />
+		<property name="i18nNameKey" value="report.booking.all.current.fiscal.year" />
+		<property name="i18nDescriptionKey" value="report.booking.all.current.fiscal.year.desc" />
+		<property name="durationUnit" value="currentFiscalYear" />
+	</bean>
+
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="30" />
+		<property name="i18nNameKey" value="report.booking.all.last.fiscal.year" />
+		<property name="i18nDescriptionKey" value="report.booking.all.last.fiscal.year.desc" />
+		<property name="durationUnit" value="lastFiscalYear" />
+	</bean>
+
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="40" />
+		<property name="i18nNameKey" value="report.booking.new.last.seven.days" />
+		<property name="i18nDescriptionKey" value="report.booking.new.last.seven.days.desc" />
+		<property name="durationUnit" value="day" />
+		<property name="duration" value="7" />
+	</bean>
+
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="50" />
+		<property name="i18nNameKey" value="report.booking.new.last.four.weeks" />
+		<property name="i18nDescriptionKey" value="report.booking.new.last.four.weeks.desc" />
+		<property name="durationUnit" value="week" />
+		<property name="duration" value="4" />
+	</bean>
+
+	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
+		<property name="order" value="60" />
+		<property name="i18nNameKey" value="report.booking.new.last.twelve.months" />
+		<property name="i18nDescriptionKey" value="report.booking.new.last.twelve.months.desc" />
+		<property name="durationUnit" value="month" />
+		<property name="duration" value="12" />
+	</bean>
 </beans>

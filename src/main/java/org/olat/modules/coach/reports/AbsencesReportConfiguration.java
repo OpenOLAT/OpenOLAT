@@ -61,8 +61,11 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers) {
 		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
-		params.setEndDate(new Date());
-		params.setStartDate(getDurationTimeUnit().toDate(new Date(), Integer.valueOf(getDuration())));
+		if (getDurationTimeUnit() != null) {
+			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
+			params.setStartDate(getDurationTimeUnit().fromDate(new Date(), duration));
+			params.setEndDate(getDurationTimeUnit().toDate(new Date()));
+		}
 		List<LectureBlockIdentityStatistics> statistics = lectureService.getLecturesStatistics(params, userPropertyHandlers, coach);
 		for (LectureBlockIdentityStatistics stats : statistics) {
 			generateDataRow(sheet, userPropertyHandlers, stats);
