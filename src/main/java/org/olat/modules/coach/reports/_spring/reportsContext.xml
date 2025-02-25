@@ -21,30 +21,14 @@
 		<property name="durationUnit" value="month" />
 	</bean>
 
-	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
-		<property name="order" value="30" />
-		<property name="i18nNameKey" value="report.name.openBookingOrdersLast4Weeks" />
-		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast4Weeks" />
-		<property name="duration" value="4" />
-		<property name="durationUnit" value="week" />
-	</bean>
-
-	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
-		<property name="order" value="40" />
-		<property name="i18nNameKey" value="report.name.openBookingOrdersLast12Months" />
-		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast12Months" />
-		<property name="duration" value="12" />
-		<property name="durationUnit" value="month" />
-	</bean>
-	
 	<bean class="org.olat.modules.coach.reports.CertificatesReportConfiguration">
-		<property name="order" value="50" />
+		<property name="order" value="30" />
 		<property name="i18nNameKey" value="report.name.allCertificates" />
 		<property name="i18nDescriptionKey" value="report.description.allCertificates" />
 	</bean>
 
 	<bean class="org.olat.modules.coach.reports.CertificatesReportConfiguration">
-		<property name="order" value="60" />
+		<property name="order" value="40" />
 		<property name="i18nNameKey" value="report.name.certificatesLast4Weeks" />
 		<property name="i18nDescriptionKey" value="report.description.certificatesLast4Weeks" />
 		<property name="duration" value="4" />
@@ -52,9 +36,25 @@
 	</bean>
 
 	<bean class="org.olat.modules.coach.reports.CertificatesReportConfiguration">
-		<property name="order" value="70" />
+		<property name="order" value="50" />
 		<property name="i18nNameKey" value="report.name.certificatesLast12Months" />
 		<property name="i18nDescriptionKey" value="report.description.certificatesLast12Months" />
+		<property name="duration" value="12" />
+		<property name="durationUnit" value="month" />
+	</bean>
+
+	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
+		<property name="order" value="1010" />
+		<property name="i18nNameKey" value="report.name.openBookingOrdersLast4Weeks" />
+		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast4Weeks" />
+		<property name="duration" value="4" />
+		<property name="durationUnit" value="week" />
+	</bean>
+
+	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
+		<property name="order" value="1020" />
+		<property name="i18nNameKey" value="report.name.openBookingOrdersLast12Months" />
+		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast12Months" />
 		<property name="duration" value="12" />
 		<property name="durationUnit" value="month" />
 	</bean>

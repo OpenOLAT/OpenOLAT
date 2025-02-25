@@ -155,9 +155,10 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 		CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
 		Date from = null;
 		Date to = null;
-		if (getDuration() != null) {
-			to = new Date();
-			from = getDurationTimeUnit().toDate(to, - Integer.valueOf(getDuration()));
+		if (getDurationTimeUnit() != null) {
+			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
+			from = getDurationTimeUnit().fromDate(new Date(), duration);
+			to = getDurationTimeUnit().toDate(new Date());
 		}
 
 		List<CertificateIdentityConfig> groupCertificates = 
