@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -234,7 +235,7 @@ public class ProfileFormController extends FormBasicController {
 			}
 			
 			// add input field to container
-			FormItem formItem = userPropertyHandler.addFormItem(getLocale(), user, usageIdentifier, isAdministrativeUser, groupContainer);
+			FormItem formItem = userPropertyHandler.addFormItem(getLocale(), user, usageIdentifier, isAllowedToModifyWithoutVerification(), groupContainer);
 			if(formItem.isEnabled() && (!canModify || UserConstants.NICKNAME.equals(userPropertyHandler.getName()))) {
 				formItem.setEnabled(false);
 			}
@@ -351,7 +352,7 @@ public class ProfileFormController extends FormBasicController {
 		groupContainer.add(emailLayoutContainer);
 		emailLayoutContainer.setRootForm(mainForm);
 
-		if (getIdentity().getUser().getProperty("emailDisabled") == null || getIdentity().getUser().getProperty("emailDisabled").equals("false")) {
+		if (identityToModify.getUser().getProperty("emailDisabled") == null || identityToModify.getUser().getProperty("emailDisabled").equals("false")) {
 			changeEmailBtn = uifactory.addFormLink("change.mail.in.process", emailLayoutContainer, Link.BUTTON_SMALL);
 			changeEmailBtn.setElementCssClass("o_sel_user_change_mail");
 			changeEmailBtn.setIconLeftCSS("o_icon o_icon_edit");
@@ -416,7 +417,7 @@ public class ProfileFormController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (isAllowedToChangeEmailWithoutVerification(ureq) && isAdministrativeUser
+		if (isAllowedToModifyWithoutVerification()
 				&& source == changeMailCtrl
 				&& event instanceof ChangeMailEvent cme) {
 			changedEmail = cme.getChangedEmail();
@@ -467,17 +468,17 @@ public class ProfileFormController extends FormBasicController {
 	private void handleChangedEmailEvent(UserRequest ureq, ChangeMailEvent cme) {
 		if (organisationModule.isEnabled()
 				&& organisationModule.isEmailDomainEnabled()
-				&& !isAllowedToChangeEmailWithoutVerification(ureq) && !isAdministrativeUser) {
+				&& !isAllowedToModifyWithoutVerification()) {
 			String newDomain = MailHelper.getMailDomain(cme.getChangedEmail());
 			String currentDomain = MailHelper.getMailDomain(emailEl.getValue());
 
-			// mail change for administrative users is straight forward without any consideration of orgs
 			if (newDomain.equals(currentDomain)) {
 				startChangeEmailWorkflow(ureq);
 			} else {
 				processMailDomainChange(ureq, newDomain);
 			}
 		} else {
+			// mail change for administrative users is straight forward without any consideration of orgs
 			startChangeEmailWorkflow(ureq);
 		}
 	}
@@ -602,7 +603,7 @@ public class ProfileFormController extends FormBasicController {
 
 	private void doStartChangeMailProcess(UserRequest ureq) {
 		changeMailCtrl = new ChangeMailController(ureq, getWindowControl(),
-				emailEl.getValue(), identityToModify, (isAllowedToChangeEmailWithoutVerification(ureq) && isAdministrativeUser));
+				emailEl.getValue(), identityToModify, isAllowedToModifyWithoutVerification());
 		listenTo(changeMailCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -768,7 +769,7 @@ public class ProfileFormController extends FormBasicController {
 		logDebug("this servername is " + serverName + " and serverpath is " + serverPath);
 
 		boolean areMailsSent;
-		if (isAllowedToChangeEmailWithoutVerification(ureq) && isAdministrativeUser) {
+		if (isAllowedToModifyWithoutVerification()) {
 			// An usermanager does not need to verify the new mail and can change it directly
 			areMailsSent = handleDirectEmailChange(ureq);
 		} else {
@@ -868,7 +869,7 @@ public class ProfileFormController extends FormBasicController {
 
 		User user = identityToModify.getUser();
 
-		String newMail = getNewEmail(ureq, user);
+		String newMail = getNewEmail(user);
 		if (newMail == null || newMail.isEmpty()) {
 			// Failed to retrieve a valid new email; cannot proceed
 			return false;
@@ -891,8 +892,8 @@ public class ProfileFormController extends FormBasicController {
 		return true;
 	}
 
-	private String getNewEmail(UserRequest ureq, User user) {
-		if (isAllowedToChangeEmailWithoutVerification(ureq) && isAdministrativeUser) {
+	private String getNewEmail(User user) {
+		if (isAllowedToModifyWithoutVerification()) {
 			return changedEmail;
 		}
 
@@ -978,11 +979,7 @@ public class ProfileFormController extends FormBasicController {
 		mainForm.setDirtyMarking(isDirtyMarking);
 	}
 
-	private boolean isAllowedToChangeEmailWithoutVerification(UserRequest ureq) {
-		Roles managerRoles = ureq.getUserSession().getRoles();
-		Roles identityToModifyRoles = securityManager.getRoles(identityToModify);
-		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityToModifyRoles)
-				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityToModifyRoles)
-				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityToModifyRoles);
+	private boolean isAllowedToModifyWithoutVerification() {
+		return isAdministrativeUser && !Objects.equals(identityToModify.getKey(), getIdentity().getKey());
 	}
 }
