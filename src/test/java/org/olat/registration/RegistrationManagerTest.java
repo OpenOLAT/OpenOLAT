@@ -40,7 +40,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -149,6 +151,34 @@ public class RegistrationManagerTest extends OlatTestCase {
 		List<TemporaryKey> keys = registrationManager.loadTemporaryKeyByIdentity(identityKey, RegistrationManager.REGISTRATION);
 		Assert.assertEquals(1, keys.size());
 		Assert.assertEquals(keyOfIdentity, keys.get(0));
+	}
+	
+	@Test
+	public void testLoadTemporaryKeyEntryAndAction() {
+		String emailAddress = UUID.randomUUID() + "@frentix.com";
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("temp-key-1");
+
+		TemporaryKey tempKey = registrationManager.createAndDeleteOldTemporaryKey(id.getKey(), emailAddress, "192.168.1.100", RegistrationManager.REGISTRATION, null);
+		dbInstance.commitAndCloseSession();
+		
+
+		TemporaryKey result = registrationManager.loadTemporaryKeyByEmail(emailAddress, RegistrationManager.REGISTRATION);
+		Assert.assertNotNull(result);
+		Assert.assertEquals(tempKey, result);
+	}
+	
+	@Test
+	public void testLoadTemporaryKeyEntryAndActionWithNulls() {
+		String emailaddress = UUID.randomUUID() + "@frentix.com";
+
+		TemporaryKey resultWithoutAction = registrationManager.loadTemporaryKeyByEmail(emailaddress, null);
+		Assert.assertNull(resultWithoutAction);
+		
+		TemporaryKey resultWithoutEmail = registrationManager.loadTemporaryKeyByEmail(null, RegistrationManager.PW_CHANGE);
+		Assert.assertNull(resultWithoutEmail);
+		
+		TemporaryKey resultWithout = registrationManager.loadTemporaryKeyByEmail(null, null);
+		Assert.assertNull(resultWithout);
 	}
 	
 	/**

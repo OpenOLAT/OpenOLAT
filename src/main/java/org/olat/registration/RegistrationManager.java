@@ -468,6 +468,9 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	}
 	
 	public TemporaryKey loadTemporaryKeyByEmail(String email, String action) {
+		if(!StringHelper.containsNonWhitespace(email) || !StringHelper.containsNonWhitespace(action)) {
+			return null;
+		}
 		String query = "select r from otemporarykey r where lower(r.emailAddress)=:email and r.regAction=:action";
 		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
 				.createQuery(query, TemporaryKey.class)
