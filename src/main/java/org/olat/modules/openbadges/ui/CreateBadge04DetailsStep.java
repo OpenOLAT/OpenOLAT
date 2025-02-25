@@ -147,7 +147,7 @@ public class CreateBadge04DetailsStep extends BasicStep {
 
 			linkedInOrganizationKV = new SelectionValues();
 			openBadgesManager.loadLinkedInOrganizations().forEach((bo) -> {
-				linkedInOrganizationKV.add(SelectionValues.entry(bo.getOrganizationKey(), bo.getOrganizationValue()));
+				linkedInOrganizationKV.add(SelectionValues.entry(Long.toString(bo.getKey()), bo.getOrganizationValue()));
 			});
 
 			boolean isEditMode = CreateBadgeClassWizardContext.Mode.edit.equals(createContext.getMode());
@@ -313,7 +313,7 @@ public class CreateBadge04DetailsStep extends BasicStep {
 
 			if (linkedInOrganizationEl != null) {
 				if (linkedInOrganizationEl.isOneSelected()) {
-					badgeClass.setBadgeOrganization(openBadgesManager.loadLinkedInOrganization(linkedInOrganizationEl.getSelectedKey()));
+					badgeClass.setBadgeOrganization(openBadgesManager.loadLinkedInOrganization(Long.parseLong(linkedInOrganizationEl.getSelectedKey())));
 				} else {
 					badgeClass.setBadgeOrganization(null);
 				}
@@ -382,7 +382,7 @@ public class CreateBadge04DetailsStep extends BasicStep {
 				linkedInOrganizationEl.enableNoneSelection();
 
 				if (badgeClass.getBadgeOrganization() != null) {
-					linkedInOrganizationEl.select(badgeClass.getBadgeOrganization().getOrganizationKey(), true);
+					linkedInOrganizationEl.select(Long.toString(badgeClass.getBadgeOrganization().getKey()), true);
 				}
 			}
 

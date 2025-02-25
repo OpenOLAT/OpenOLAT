@@ -238,8 +238,6 @@ public interface OpenBadgesManager {
 
 	BadgeOrganization loadLinkedInOrganization(Long key);
 
-	BadgeOrganization loadLinkedInOrganization(String organizationId);
-
 	boolean isBadgeOrganizationInUse(Long key);
 
 	void addLinkedInOrganization(String organizationId, String organizationName);
