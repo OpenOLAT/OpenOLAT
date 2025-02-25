@@ -183,7 +183,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(identityToModify);
 		bundle.setContent(subject, body);
-		MailerResult result = mailManager.sendExternMessage(bundle, new MailerResult(), false);
+		MailerResult result = mailManager.sendExternMessage(bundle, new MailerResult(), true);
 		if(result.getReturnCode() == MailerResult.OK) {
 			String ip = ureq.getHttpReq().getRemoteAddr();
 			String emailAdress = identityToModify.getUser().getProperty(UserConstants.EMAIL, getLocale());

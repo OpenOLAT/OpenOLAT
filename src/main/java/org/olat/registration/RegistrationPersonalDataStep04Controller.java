@@ -28,6 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.User;
 import org.olat.core.util.i18n.I18nModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,10 +55,11 @@ public class RegistrationPersonalDataStep04Controller extends StepFormBasicContr
 		String firstName = invitation != null ? invitation.getFirstName() : null;
 		String lastName = invitation != null ? invitation.getLastName() : null;
 		String email = invitation != null ? invitation.getMail() : (String) runContext.get(RegWizardConstants.EMAIL);
+		User user = invitation != null ? invitation.getIdentity().getUser() : null;
 		boolean usernameReadOnly = invitation != null;
 
 		registrationPersonalDataCtrl = new RegistrationPersonalDataController(ureq, getWindowControl(), runContext, i18nModule.getLocaleKey(getLocale()),
-				proposedUsername, firstName, lastName, email, false, usernameReadOnly, rootForm);
+				proposedUsername, firstName, lastName, email, user, false, usernameReadOnly, rootForm);
 		initForm(ureq);
 	}
 

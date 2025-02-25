@@ -35,8 +35,10 @@ import java.util.Map;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.OrganisationEmailDomain;
+import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -54,10 +56,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.render.DomWrapperElement;
+import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.SyntaxValidator;
@@ -84,6 +88,7 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final Map<String,FormItem> propFormItems = new HashMap<>();
 	private final StepsRunContext runContext;
+	private final User invUser;
 
 	private SingleSelection lang;
 	private SingleSelection organisationSelection;
@@ -116,12 +121,15 @@ public class RegistrationPersonalDataController extends FormBasicController {
 	private OLATAuthManager olatAuthManager;
 	@Autowired
 	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 
 	public RegistrationPersonalDataController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, String languageKey,
 											  String proposedUsername, String firstName, String lastName,
-											  String email, boolean userInUse, boolean usernameReadonly, Form mainForm) {
+											  String email, User invUser, boolean userInUse, boolean usernameReadonly, Form mainForm) {
 		super(ureq, wControl, "registration_personal_data", Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		this.runContext = runContext;
+		this.invUser = invUser;
 		this.mainForm = mainForm;
 		flc.setRootForm(mainForm);
 		this.mainForm.addSubFormListener(this);
@@ -321,6 +329,14 @@ public class RegistrationPersonalDataController extends FormBasicController {
 			@SuppressWarnings("unchecked")
 			List<OrganisationEmailDomain> matchedDomains = (List<OrganisationEmailDomain>) runContext.get(RegWizardConstants.MAILDOMAINS);
 
+			// can occur, for invited users
+			if (matchedDomains == null) {
+				OrganisationEmailDomainSearchParams searchParams = new OrganisationEmailDomainSearchParams();
+				searchParams.setEnabled(true);
+				List<OrganisationEmailDomain> emailDomains = organisationService.getEmailDomains(searchParams);
+				matchedDomains = organisationService.getMatchingEmailDomains(emailDomains, MailHelper.getMailDomain(email));
+			}
+
 			// Extract orgKey as keys
 			matchedDomains = matchedDomains.stream().sorted(Comparator.comparing(domain -> domain.getOrganisation().getDisplayName())).toList();
 			String[] orgKeys = matchedDomains.stream()
@@ -344,20 +360,20 @@ public class RegistrationPersonalDataController extends FormBasicController {
 				organisationSelection.enableNoneSelection(translate("user.organisation.select"));
 				organisationSelection.setMandatory(true);
 			}
-
 		}
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
+
+
 		// validate each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
 			if (fi.isEnabled() ) {
 				if(fi instanceof TextElement textEl && !validateElement(textEl)
-						|| !userPropertyHandler.isValid(null, fi, null)) {
+						|| !userPropertyHandler.isValid(invUser, fi, null)) {
 					allOk = false;
 				}
 			}
