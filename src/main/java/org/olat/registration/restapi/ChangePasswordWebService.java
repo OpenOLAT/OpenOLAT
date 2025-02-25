@@ -97,7 +97,7 @@ public class ChangePasswordWebService {
 		String emailAdress = identity.getUser().getProperty(UserConstants.EMAIL, null); 
 		String ip = request.getRemoteAddr();
 		TemporaryKey tk = registrationManager.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip,
-				RegistrationManager.PW_CHANGE, registrationModule.getValidUntilHoursRest());
+				RegistrationManager.PW_CHANGE, registrationModule.getRESTValidityOfTemporaryKey());
 		String url = Settings.getServerContextPathURI() + "/url/changepw/0/" + emailAdress + "/0";
 		TemporaryKeyVO keyVo = new TemporaryKeyVO(tk, url);
 		return Response.ok(keyVo).build();
