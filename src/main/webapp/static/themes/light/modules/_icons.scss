@@ -260,6 +260,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_landingpage { @include o-add-icon('bullseye');}
 .o_icon_language { @include o-add-icon('globe');}
 .o_icon_layout { @include o-add-icon('file-image', false);}
+.o_icon_legal_folder { @include o-add-icon('section');}
 .o_icon_learning_path { @include o-add-icon('map-signs');}
 .o_icon_lecture { @include o-add-icon('book');}
 .o_icon_left { @include o-add-icon('arrow-circle-left');}

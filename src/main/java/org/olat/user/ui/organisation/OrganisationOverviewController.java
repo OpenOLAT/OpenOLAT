@@ -22,6 +22,10 @@ package org.olat.user.ui.organisation;
 import org.olat.admin.privacy.PrivacyAdminController;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.core.commons.services.folder.ui.FolderController;
+import org.olat.core.commons.services.folder.ui.FolderControllerConfig;
+import org.olat.core.commons.services.folder.ui.FolderEmailFilter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -37,6 +41,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ui.BillingAddressListController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +55,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OrganisationOverviewController extends BasicController {
 	
+	private static final FolderControllerConfig LEGAL_FOLDER_CONFIG = FolderControllerConfig.builder()
+			.withDisplayWebDAVLinkEnabled(false)
+			.withMail(FolderEmailFilter.never)
+			.build();
+	
 	private final Link metadataLink;
 	private final Link resourcesLink;
 	private final Link userManagementLink;
@@ -56,6 +67,7 @@ public class OrganisationOverviewController extends BasicController {
 	private final Link educationManagersLink;
 	private final Link billingAddressesLink;
 	private final Link emailDomainsLink;
+	private final Link legalFolderLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
@@ -66,11 +78,14 @@ public class OrganisationOverviewController extends BasicController {
 	private OrganisationRoleEditController educationManagerConfigCtrl;
 	private BillingAddressListController billingAddressesCtrl;
 	private OrganisationEmailDomainAdminController emailDomainsCtrl;
+	private FolderController legalFolderCtrl;
 	
 	private final Organisation organisation;
 	
 	@Autowired
 	private OrganisationModule organisationModul;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private AccessControlModule acModule;
 
@@ -103,6 +118,11 @@ public class OrganisationOverviewController extends BasicController {
 		if (organisationModul.isEmailDomainEnabled()) {
 			segmentView.addSegment(emailDomainsLink, false);
 		}
+		legalFolderLink = LinkFactory.createLink("organisation.legal.folder", mainVC, this);
+		if (organisationModul.isLegalFolderEnabled()) {
+			segmentView.addSegment(legalFolderLink, false);
+		}
+		
 		putInitialPanel(mainVC);
 		doOpenMetadadata(ureq);
 	}
@@ -142,6 +162,8 @@ public class OrganisationOverviewController extends BasicController {
 					doOpenBillingAddresses(ureq);
 				} else if(clickedLink == emailDomainsLink) {
 					doOpenEmailDomains(ureq);
+				} else if(clickedLink == legalFolderLink) {
+					doOpenLegalFolder(ureq);
 				}
 			}
 		}
@@ -223,6 +245,19 @@ public class OrganisationOverviewController extends BasicController {
 		
 		addToHistory(ureq, emailDomainsCtrl);
 		mainVC.put("segmentCmp", emailDomainsCtrl.getInitialComponent());
+	}
+
+	private void doOpenLegalFolder(UserRequest ureq) {
+		if (legalFolderCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("LegalFolder"), null);
+			VFSContainer organisationContainer = organisationService.getLegalContainer(organisation);
+			organisationContainer = new NamedContainerImpl(translate("organisation.legal.folder"), organisationContainer);
+			legalFolderCtrl = new FolderController(ureq, bwControl, organisationContainer, LEGAL_FOLDER_CONFIG);
+			listenTo(legalFolderCtrl);
+		}
+		
+		addToHistory(ureq, legalFolderCtrl);
+		mainVC.put("segmentCmp", legalFolderCtrl.getInitialComponent());
 	}
 	
 }

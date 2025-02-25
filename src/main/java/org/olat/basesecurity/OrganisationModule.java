@@ -38,13 +38,16 @@ public class OrganisationModule extends AbstractSpringModule implements ConfigOn
 	
 	private static final String ORGANISATION_ENABLED = "organisation.enabled";
 	private static final String EMAIL_DOMAIN_ENABLED = "email.domain.enabled";
+	private static final String LEGAL_FOLDER_ENABLED = "legal.folder.enabled";
 	
 	@Value("${organisation.enabled:true}")
 	private boolean enabled;
 	@Value("${organisation.managed.enabled:true}")
 	private boolean managedEnabled;
-	@Value("${organisation.email.domain.enabled:true}")
+	@Value("${organisation.email.domain.enabled:false}")
 	private boolean emailDomainEnabled;
+	@Value("${organisation.legal.folder.enabled:false}")
+	private boolean legalFolderEnabled;
 
 	@Autowired
 	public OrganisationModule(CoordinatorManager coordinatorManager) {
@@ -71,6 +74,11 @@ public class OrganisationModule extends AbstractSpringModule implements ConfigOn
 		if(StringHelper.containsNonWhitespace(emailDomainEnabledObj)) {
 			emailDomainEnabled = "true".equals(emailDomainEnabledObj);
 		}
+		
+		String legalFolderEnabledObj = getStringPropertyValue(LEGAL_FOLDER_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(legalFolderEnabledObj)) {
+			legalFolderEnabled = "true".equals(legalFolderEnabledObj);
+		}
 	}
 
 	@Override
@@ -95,4 +103,14 @@ public class OrganisationModule extends AbstractSpringModule implements ConfigOn
 		this.emailDomainEnabled = emailDomainEnabled;
 		setStringProperty(EMAIL_DOMAIN_ENABLED, Boolean.toString(emailDomainEnabled), true);
 	}
+
+	public boolean isLegalFolderEnabled() {
+		return legalFolderEnabled;
+	}
+
+	public void setLegalFolderEnabled(boolean legalFolderEnabled) {
+		this.legalFolderEnabled = legalFolderEnabled;
+		setStringProperty(LEGAL_FOLDER_ENABLED, Boolean.toString(legalFolderEnabled), true);
+	}
+	
 }

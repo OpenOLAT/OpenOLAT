@@ -34,6 +34,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
 
 /**
  * 
@@ -203,6 +204,8 @@ public interface OrganisationService {
 	 * @return A list of matching {@link OrganisationEmailDomain} objects, or an empty list if no matches are found.
 	 */
 	public List<OrganisationEmailDomain> getMatchingEmailDomains(List<OrganisationEmailDomain> emailDomains, String mailDomain);
+	
+	public VFSContainer getLegalContainer(OrganisationRef organisation);
 
 	/**
 	 * The list of all organizations where the user has the specified roles,

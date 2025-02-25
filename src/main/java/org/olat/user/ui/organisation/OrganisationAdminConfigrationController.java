@@ -43,6 +43,8 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 	private FormToggle enableEl;
 	private FormLayoutContainer emailDomainCont;
 	private FormToggle emailDomainEnableEl;
+	private FormLayoutContainer legalFolderCont;
+	private FormToggle legalFolderEnableEl;
 	
 	@Autowired
 	private OrganisationModule organisationModule;
@@ -78,10 +80,21 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 		emailDomainEnableEl = uifactory.addToggleButton("email.domain", "organisation.admin.email.domain.enabled", translate("on"), translate("off"), emailDomainCont);
 		emailDomainEnableEl.toggle(organisationModule.isEmailDomainEnabled());
 		emailDomainEnableEl.addActionListener(FormEvent.ONCHANGE);
+
+		legalFolderCont = FormLayoutContainer.createDefaultFormLayout("legalFolder", getTranslator());
+		legalFolderCont.setFormTitle(translate("organisation.legal.folder"));
+		legalFolderCont.setElementCssClass("o_block_top");
+		legalFolderCont.setRootForm(mainForm);
+		formLayout.add(legalFolderCont);
+		
+		legalFolderEnableEl = uifactory.addToggleButton("legal.folder", "organisation.admin.legal.folder.enabled", translate("on"), translate("off"), legalFolderCont);
+		legalFolderEnableEl.toggle(organisationModule.isLegalFolderEnabled());
+		legalFolderEnableEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	private void updateUI() {
 		emailDomainCont.setVisible(enableEl.isOn());
+		legalFolderCont.setVisible(enableEl.isOn());
 	}
 
 	@Override
@@ -97,6 +110,9 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if(emailDomainEnableEl == source) {
 			organisationModule.setEmailDomainEnabled(emailDomainEnableEl.isOn());
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if(legalFolderEnableEl == source) {
+			organisationModule.setLegalFolderEnabled(legalFolderEnableEl.isOn());
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);

@@ -72,6 +72,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -93,6 +94,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	private GroupDAO groupDao;
 	@Autowired
 	private OrganisationDAO organisationDao;
+	@Autowired
+	private OrganisationStorage organisationStorage;
 	@Autowired
 	private OrganisationTypeDAO organisationTypeDao;
 	@Autowired
@@ -204,7 +207,8 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			deleteOrganisation(child, organisationAlt, doer);
 		}
 		
-		organisationEmailDomainDao.delete(organisation);
+		organisationEmailDomainDao.delete(reloadedOrganisation);
+		organisationStorage.delete(reloadedOrganisation);
 		
 		//TODO organisation: move memberships to default organisation or a lost+found???
 		Group organisationGroup = reloadedOrganisation.getGroup();
@@ -560,6 +564,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			return emailAddress.substring(atIndex + 1).toLowerCase();
 		}
 		return "";
+	}
+	
+	@Override
+	public VFSContainer getLegalContainer(OrganisationRef organisation) {
+		return organisationStorage.getLegalContainer(organisation);
 	}
 
 	@Override
