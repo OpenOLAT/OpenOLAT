@@ -43,6 +43,7 @@ import org.olat.course.core.CourseElement;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.openbadges.BadgeClass;
@@ -115,7 +116,8 @@ public class CreateBadgeClassWizardContext {
 		ICourse course = CourseFactory.loadCourse(courseResourcableId);
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 
-		return AssessmentHelper.getAssessableNodes(entry, editorModel, null);
+		return AssessmentHelper.getAssessableNodes(entry, editorModel, null).stream()
+				.filter(node -> !(node instanceof PFCourseNode)).toList();
 	}
 
 	public boolean isGlobalBadge() {
