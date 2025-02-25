@@ -13,7 +13,9 @@
 		#if($r.isTrue($row.taskRunning) || $r.isTrue($row.taskNew) || $r.isTrue($row.taskCancelled))
 			<h5>$r.escapeHtml($row.title)#if(${row.isTaskNew()}) <span class="o_export_wait">$r.translate("row.new")</span> #elseif(${row.isTaskCancelled()}) <span class="o_export_wait">$r.translate("row.cancelled")</span>#end</h5>
 			<span>$r.translate("row.running.by", $creationDate, $creatorFullName)</span><br>
-			$r.render($row.progressBar)
+			#if($row.progressBar)
+				$r.render($row.progressBar)
+			#end
 		#else
 			<div class="o_export_exp">
 			#if($r.isNotEmpty($expirationInDays) && $expirationInDays == 0)
@@ -33,7 +35,7 @@
 		#if($r.isTrue($row.taskRunning) || $r.isTrue($row.taskNew))
 			$r.render($row.cancelButton)
 		#elseif($r.isTrue($row.taskCancelled))
-			## No actions
+			$r.render($row.deleteButton)
 		#else
 			$r.render($row.infosButton)
 			$r.render($row.copyToButton)
