@@ -63,14 +63,6 @@ public class BadgeOrganizationDAO {
 		return dbInstance.getCurrentEntityManager().find(BadgeOrganizationImpl.class, key);
 	}
 
-	public BadgeOrganization loadBadgeOrganization(String organizationKey) {
-		String query = "select org from badgeorganization org where org.organizationKey=:organizationKey";
-
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(query, BadgeOrganization.class)
-				.setParameter("organizationKey", organizationKey).getSingleResult();
-	}
-
 	public boolean isBadgeOrganizationInUse(Long organizationKey) {
 		String query = "select count(bc.key) from badgeclass bc where bc.badgeOrganization.key=:organizationKey";
 
