@@ -21,6 +21,7 @@ package org.olat.modules.coach.ui;
 
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -71,6 +72,7 @@ public class CoachMainRootController extends BasicController implements Activate
 	
 	private GradingSecurity gradingSec;
 	private CoachingSecurity coachingSec;
+	private final boolean showPeopleView;
 	private final boolean showLineManagerView;
 	private final boolean showEducationManagerView;
 	private final boolean coachAssignmentsAvailable;
@@ -92,6 +94,8 @@ public class CoachMainRootController extends BasicController implements Activate
 	private GradingModule gradingModule;
 	@Autowired
 	private OrganisationModule organisationModule;
+	@Autowired
+	private IdentityRelationshipService identityRelationsService;
 	
 	public CoachMainRootController(UserRequest ureq, WindowControl wControl, TooledStackedPanel content,
 			CoachingSecurity coachingSec, GradingSecurity gradingSec) {
@@ -104,6 +108,8 @@ public class CoachMainRootController extends BasicController implements Activate
 		coachAssignmentsAvailable = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal() || roles.isAuthor();
 		showLineManagerView = organisationModule.isEnabled() && roles.isLineManager();
 		showEducationManagerView = organisationModule.isEnabled() && roles.isEducationManager();
+		showPeopleView = coachingSec.isCoach() || roles.isPrincipal() || roles.isLineManager() ||roles.isEducationManager()
+				|| !identityRelationsService.getRelationsAsSource(getIdentity()).isEmpty();
 		
 		mainVC = createVelocityContainer("coaching");
 		
@@ -139,6 +145,7 @@ public class CoachMainRootController extends BasicController implements Activate
 		peopleButton = LinkFactory.createLink("students.menu.title", "students.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		peopleButton.setIconLeftCSS("o_icon o_icon-xl o_icon_user");
 		peopleButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_people");
+		peopleButton.setVisible(showPeopleView);
 		
 		coursesButton = LinkFactory.createLink("courses.menu.title", "courses.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		coursesButton.setIconLeftCSS("o_icon o_icon-xl o_CourseModule_icon");

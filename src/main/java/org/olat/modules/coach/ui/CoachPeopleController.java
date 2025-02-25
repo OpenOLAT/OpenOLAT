@@ -42,6 +42,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -88,7 +89,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 		
 		// As coach
 		List<Scope> scopes = new ArrayList<>(4);
-		if(coachingSec.isTeacher()) {
+		if(coachingSec.isCoach()) {
 			scopes.add(ScopeFactory.createScope(COACH_SCOPE, translate("lectures.teacher.menu.title"), null, "o_icon o_icon_coaching_tool"));
 		}
 		
@@ -115,9 +116,10 @@ public class CoachPeopleController extends BasicController implements Activateab
 		searchScopes = ScopeFactory.createScopeSelection("search.scopes", mainVC, this, scopes);
 
 		putInitialPanel(mainVC);
-		if(coachingSec.isTeacher()) {
-			searchScopes.setSelectedKey(COACH_SCOPE);
-			doOpenAsCoach(ureq);
+		if(!scopes.isEmpty()) {
+			Scope firstScope = scopes.get(0);
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(firstScope.getKey());
+			activate(ureq, entries, null);
 		}
 	}
 
