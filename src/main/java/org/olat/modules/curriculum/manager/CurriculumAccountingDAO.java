@@ -79,7 +79,13 @@ public class CurriculumAccountingDAO {
 		if(searchParams.getCurriculumElement() != null) {
 			sb.and().append("ce.key = :curriculumElementKey");
 		}
-		
+		if(searchParams.getFromDate() != null) {
+			sb.and().append("o.creationDate >= :fromDate");
+		}
+		if(searchParams.getToDate() != null) {
+			sb.and().append("o.creationDate < :toDate");
+		}
+
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
 		if(searchParams.getIdentity() != null) {
@@ -90,6 +96,12 @@ public class CurriculumAccountingDAO {
 		}
 		if(searchParams.getCurriculumElement() != null) {
 			query.setParameter("curriculumElementKey", searchParams.getCurriculumElement().getKey());
+		}
+		if(searchParams.getFromDate() != null) {
+			query.setParameter("fromDate", searchParams.getFromDate());
+		}
+		if(searchParams.getToDate() != null) {
+			query.setParameter("toDate", searchParams.getToDate());
 		}
 		return query.getResultList().stream()
 				.map(objects -> mapToBookingOrder(objects, userPropertyHandlers))
