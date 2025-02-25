@@ -96,6 +96,7 @@ import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
@@ -2013,6 +2014,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 
 		if (!AssessmentHelper.checkIfNodeIsAssessable(courseEntry, courseNode)) {
+			return false;
+		}
+		
+		if (courseNode instanceof PFCourseNode) {
 			return false;
 		}
 
