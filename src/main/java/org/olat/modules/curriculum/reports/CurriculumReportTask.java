@@ -68,10 +68,10 @@ public class CurriculumReportTask extends AbstractExportTask {
 	private Locale locale;
 	private Long curriculumKey;
 	private Long curriculumElementKey;
-	private Class<? extends CurriculumReportConfiguration> implementation;
+	private CurriculumReportConfiguration implementation;
 	
 	public CurriculumReportTask(String title, Curriculum curriculum, CurriculumElement curriculumElement,
-			IdentityRef doer, Locale locale, Class<? extends CurriculumReportConfiguration> implementation) {
+			IdentityRef doer, Locale locale, CurriculumReportConfiguration implementation) {
 		this.title = title;
 		this.locale = locale;
 		this.implementation = implementation;
@@ -99,7 +99,6 @@ public class CurriculumReportTask extends AbstractExportTask {
 	public void run() {
 		final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		final ExportManager exportManager = CoreSpringFactory.getImpl(ExportManager.class);
-		final CurriculumReportConfiguration config = CoreSpringFactory.getImpl(implementation);
 		final CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		final TaskExecutorManager taskExecutorManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);
 		final VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
@@ -136,7 +135,7 @@ public class CurriculumReportTask extends AbstractExportTask {
 		metadata.setMetadata(exportZip.getMetaInfo());
 		metadata = exportManager.updateMetadata(metadata);
 		
-		ReportContent content = config.generateReport(curriculum, curriculumElement, doer, locale, exportZip);
+		ReportContent content = implementation.generateReport(curriculum, curriculumElement, doer, locale, exportZip);
 		
 		metadata = addRelations(metadata, curriculum, curriculumElement, content);
 		

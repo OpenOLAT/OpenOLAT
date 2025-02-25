@@ -88,7 +88,7 @@ public class CurriculumReportTemplatesController extends ReportTemplatesControll
 			resource = curriculumElement.getResource();
 		}
 		Date expirationDate = DateUtils.addDays(new Date(), 10);
-		CurriculumReportTask task = new CurriculumReportTask(title, curriculum, curriculumElement, getIdentity(), getLocale(), config.getClass());
+		CurriculumReportTask task = new CurriculumReportTask(title, curriculum, curriculumElement, getIdentity(), getLocale(), config);
 		ExportMetadata metadata = exportManager.startExport(task, title, config.getDescription(getLocale()), fileName,
 				type, expirationDate, false, resource, CurriculumReportsListController.CURRICULUM_REPORT_IDENT, getIdentity());
 		
