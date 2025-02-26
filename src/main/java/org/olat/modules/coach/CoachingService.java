@@ -26,6 +26,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.UserEfficiencyStatement;
@@ -48,7 +49,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public interface CoachingService {
 
-	public CoachingSecurity isCoach(Identity identity);
+	public CoachingSecurity isCoach(Identity identity, Roles roles);
 	
 	//TODO absence remove it in a few weeks
 	public boolean isTeacher(IdentityRef identity);

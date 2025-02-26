@@ -66,7 +66,7 @@ public class CoachSite extends AbstractSiteInstance {
 	private CoachingSecurity coachingSec;
 	
 	/**
-	 * @param loccale
+	 * @param locale
 	 */
 	public CoachSite(SiteDefinition siteDef, CoachingSecurity coachingSec, GradingSecurity gradingSec, Locale locale) {
 		super(siteDef);
@@ -89,7 +89,8 @@ public class CoachSite extends AbstractSiteInstance {
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(coachOres));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, coachOres, new StateSite(this), wControl, true);
 		if(coachingSec == null) {
-			coachingSec = CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity());
+			Roles roles = ureq.getUserSession().getRoles();
+			coachingSec = CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity(), roles);
 		}
 		if(gradingSec == null) {
 			Roles roles = ureq.getUserSession().getRoles();

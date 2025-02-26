@@ -30,12 +30,14 @@ import java.util.Map;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityRelationshipService;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSItem;
@@ -82,16 +84,20 @@ public class CoachingServiceImpl implements CoachingService {
 	private EfficiencyStatementManager efficiencyStatementManager;
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
-
+	@Autowired
+	private OrganisationModule organisationModule;
+	
 	private static final String GENERATED_REPORT_FOLDER_NAME = "ooo-generated-reports-ooo"; 
 	
 	@Override
-	public CoachingSecurity isCoach(Identity identity) {
+	public CoachingSecurity isCoach(Identity identity, Roles roles) {
 		boolean coach = coachingDao.isCoach(identity);
 		boolean teacher = lectureModule.isEnabled() && coachingDao.isTeacher(identity);
 		boolean masterCoach =  lectureModule.isEnabled() && coachingDao.isMasterCoach(identity);
 		boolean isUserRelationSource = !identityRelationsService.getRelationsAsSource(identity).isEmpty();
-		return new CoachingSecurity(masterCoach, coach, teacher, isUserRelationSource);
+		boolean lineManager = organisationModule.isEnabled() && roles.isLineManager();
+		boolean educationManager = organisationModule.isEnabled() && roles.isEducationManager();
+		return new CoachingSecurity(masterCoach, coach, teacher, isUserRelationSource, lineManager, educationManager);
 	}
 
 	@Override

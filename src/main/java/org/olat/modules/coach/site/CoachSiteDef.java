@@ -57,7 +57,7 @@ public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefiniti
 		if(roles.isAdministrator() || roles.isPrincipal() || roles.isLearnResourceManager() || roles.isLectureManager()) {
 			return new CoachSite(this, null, null, ureq.getLocale());
 		}	
-		CoachingSecurity coachingSec = CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity());
+		CoachingSecurity coachingSec = CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity(), roles);
 		GradingSecurity gradingSec = CoreSpringFactory.getImpl(GradingService.class).isGrader(ureq.getIdentity(), roles);
 		if(coachingSec.isCoach() || coachingSec.isMasterCoachForLectures() || coachingSec.isTeacher() || coachingSec.isUserRelationSource()
 				|| gradingSec.isGrader() || gradingSec.isGradedResourcesManager()) {

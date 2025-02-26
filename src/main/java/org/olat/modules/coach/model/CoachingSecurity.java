@@ -31,12 +31,17 @@ public class CoachingSecurity {
 	private final boolean coach;
 	private final boolean teacher;
 	private final boolean isUserRelationSource;
-	
-	public CoachingSecurity(boolean masterCoach, boolean coach, boolean teacher, boolean isUserRelationSource) {
+	private final boolean lineManager;
+	private final boolean educationManager;
+
+	public CoachingSecurity(boolean masterCoach, boolean coach, boolean teacher, boolean isUserRelationSource, 
+							boolean lineManager, boolean educationManager) {
 		this.masterCoach = masterCoach;
 		this.coach = coach;
 		this.teacher = teacher;
 		this.isUserRelationSource = isUserRelationSource;
+		this.lineManager = lineManager;
+		this.educationManager = educationManager;
 	}
 
 	public boolean isMasterCoachForLectures() {
@@ -53,5 +58,13 @@ public class CoachingSecurity {
 
 	public boolean isUserRelationSource() {
 		return isUserRelationSource;
+	}
+
+	public boolean isLineManager() {
+		return lineManager;
+	}
+
+	public boolean isEducationManager() {
+		return educationManager;
 	}
 }
