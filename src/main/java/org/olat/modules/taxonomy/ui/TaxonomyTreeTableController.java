@@ -875,9 +875,19 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 					String c1 = r1.getDisplayName();
 					String c2 = r2.getDisplayName();
 					if(c1 == null || c2 == null) {
-						c = -compareNullObjects(c1, s2);
+						c = -compareNullObjects(c1, c2);
 					} else {
 						c = c1.compareTo(c2);
+					}
+				}
+				
+				if(c == 0) {
+					Long k1 = r1.getKey();
+					Long k2 = r2.getKey();
+					if(k1 == null || k2 == null) {
+						c = -compareNullObjects(k1, k2);
+					} else {
+						c = k1.compareTo(k2);
 					}
 				}
 			}
