@@ -121,6 +121,11 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	protected RepositoryEntryEducationalType getEducationalType() {
 		return entry.getEducationalType();
 	}
+
+	@Override
+	protected boolean isPreview() {
+		return false;
+	}
 	
 	@Override
 	protected void initAccess(UserRequest ureq) {

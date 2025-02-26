@@ -1137,7 +1137,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 						if(acResult.isAccessible()) {
 							launchContent(ureq);
 						} else {
-							accessController = new OffersController(ureq, getWindowControl(), acResult.getAvailableMethods(), true, false, getIdentity());
+							accessController = new OffersController(ureq, getWindowControl(), getIdentity(), acResult.getAvailableMethods(), false, true, false);
 							listenTo(accessController);
 							toolbarPanel.rootController(re.getDisplayname(), accessController);
 						}

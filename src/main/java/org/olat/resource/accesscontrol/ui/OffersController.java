@@ -54,14 +54,17 @@ public class OffersController extends BasicController {
 	private Identity bookedIdentity;
 
 	private final boolean webCatalog;
+	private final boolean preview;
 	
 	@Autowired
 	private AccessControlModule acModule;
 
-	public OffersController(UserRequest ureq, WindowControl wControl, List<OfferAccess> offers, boolean withTitle, boolean webCatalog, Identity bookedIdentity) {
+	public OffersController(UserRequest ureq, WindowControl wControl, Identity bookedIdentity, List<OfferAccess> offers,
+			boolean webCatalog, boolean withTitle, boolean preview) {
 		super(ureq, wControl);
 		this.webCatalog = webCatalog;
 		this.bookedIdentity = bookedIdentity;
+		this.preview = preview;
 		mainVC = createVelocityContainer("offers");
 		putInitialPanel(mainVC);
 		
@@ -121,7 +124,9 @@ public class OffersController extends BasicController {
 		listenTo(detailsCtrl);
 		mainVC.put("details", detailsCtrl.getInitialComponent());
 		
-		if (webCatalog) {
+		if (preview) {
+			accessCtrl = new PreviewBookController(ureq, getWindowControl());
+		} else if (webCatalog) {
 			accessCtrl = new LoginOrRegisterController(ureq, getWindowControl());
 		} else {
 			AccessMethodHandler handler = acModule.getAccessMethodHandler(offerAccess.getMethod().getType());

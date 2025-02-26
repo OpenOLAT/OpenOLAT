@@ -70,8 +70,9 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	private ConfirmationController leaveConfirmationCtrl;
 	
 	private final CurriculumElement element;
-	private final boolean isMember;
 	private final Identity bookedIdentity;
+	private final boolean isMember;
+	private final boolean preview;
 
 	@Autowired
 	private CurriculumService curriculumService;
@@ -81,11 +82,12 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	private AccessControlModule acModule;
 
 	public CurriculumElementInfosHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			boolean isMember, Identity bookedIdentity) {
+			Identity bookedIdentity, boolean isMember, boolean preview) {
 		super(ureq, wControl);
 		this.element = element;
-		this.isMember = isMember;
-		this.bookedIdentity = bookedIdentity;
+		this.bookedIdentity = preview? null: bookedIdentity;
+		this.isMember = preview? false: isMember;
+		this.preview = preview;
 		
 		init(ureq);
 	}
@@ -131,6 +133,11 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	}
 
 	@Override
+	protected boolean isPreview() {
+		return preview;
+	}
+
+	@Override
 	protected void initAccess(UserRequest ureq) {
 		if (ureq.getUserSession().getRoles() == null) {
 			initOffers(ureq, Boolean.TRUE);
@@ -146,8 +153,8 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			startCtrl.getInitialComponent().setVisible(true);
 			initLeaveButton();
 		} else {
-			if (acService.isAccessToResourcePending(element.getResource(), bookedIdentity) 
-					|| acService.getReservation(bookedIdentity, element.getResource()) != null) {
+			if (!preview && (acService.isAccessToResourcePending(element.getResource(), bookedIdentity) 
+					|| acService.getReservation(bookedIdentity, element.getResource()) != null)) {
 				startCtrl.getInitialComponent().setVisible(true);
 				startCtrl.getStartLink().setEnabled(false);
 				showInfoMessage(translate("access.denied.not.accepted.yet"));
@@ -159,7 +166,9 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	}
 
 	private void initOffers(UserRequest ureq, Boolean webPublish) {
-		AccessResult acResult = acService.isAccessible(element, bookedIdentity, isMember, false, webPublish, false);
+		AccessResult acResult = preview
+				? acService.isAccessible(element, null, Boolean.FALSE, false, null, false)
+				: acService.isAccessible(element, bookedIdentity, isMember, false, webPublish, false);
 		if (acResult.isAccessible()) {
 			startCtrl.getInitialComponent().setVisible(true);
 		} else if (!acResult.getAvailableMethods().isEmpty()) {
@@ -173,7 +182,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 				return;
 			}
 			
-			if (acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
+			if (!preview && acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
 				startCtrl.getInitialComponent().setVisible(true);
 				startCtrl.setAutoBooking(true);
 				if (result.left == ParticipantsLeft.almostFullyBooked) {
@@ -213,6 +222,10 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	}
 
 	private boolean canLeave() {
+		if (preview) {
+			return false;
+		}
+		
 		// Leave not allowed after start
 		if (element.getBeginDate() != null && DateUtils.getStartOfDay(element.getBeginDate()).before(new Date())) {
 			return false;
@@ -280,6 +293,10 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 
 	@Override
 	protected boolean tryAutoBooking(UserRequest ureq) {
+		if (preview) {
+			return false; // Paranoia. Button should not be displayed anyway.
+		}
+		
 		AccessResult acResult = acService.isAccessible(element, bookedIdentity, null, false, null, false);
 		return acService.tryAutoBooking(bookedIdentity, element, acResult);
 	}

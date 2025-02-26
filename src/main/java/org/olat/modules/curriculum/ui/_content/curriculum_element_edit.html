@@ -67,7 +67,9 @@
 			#end
 		</div>
 		<div class="o_curriculum_metadata_header_cmd">
-			$r.render("preview")
+			#if($r.available("preview.info") && $r.visible("preview.info"))
+				$r.render("preview.info")
+			#end
 		</div>
 	</div>
 	$r.render("segments")

@@ -27,6 +27,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.ButtonGroupComponent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -54,6 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditCurriculumElementController extends BasicController {
 	
+	private final TooledStackedPanel toolbarPanel;
 	private final VelocityContainer mainVC;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final Link metadataLink;
@@ -66,6 +68,7 @@ public class EditCurriculumElementController extends BasicController {
 	private EditCurriculumElementInfosController infoCtrl;
 	private EditCurriculumElementExecutionController executionCtrl;
 	private EditCurriculumElementOptionsController optionsCtrl;
+	private CurriculumElementInfosController previewCtrl;
 	
 	private CurriculumElement element;
 	private final CurriculumElement parentElement;
@@ -78,11 +81,13 @@ public class EditCurriculumElementController extends BasicController {
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	protected EditCurriculumElementController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			CurriculumElement parentElement, Curriculum curriculum, CurriculumSecurityCallback secCallback) {
+	public EditCurriculumElementController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			CurriculumElement element, CurriculumElement parentElement, Curriculum curriculum,
+			CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
+		this.toolbarPanel = toolbarPanel;
 		if (element != null) {
 			this.element = curriculumService.getCurriculumElement(element);
 		}
@@ -110,8 +115,9 @@ public class EditCurriculumElementController extends BasicController {
 		optionsLink = LinkFactory.createLink("curriculum.element.options", getTranslator(), this);
 		segmentButtonsCmp.addButton(optionsLink, false);
 		
-		previewButton = LinkFactory.createButton("preview", mainVC, this);
-		previewButton.setEnabled(false);
+		previewButton = LinkFactory.createButton("preview.info", mainVC, this);
+		previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
+		previewButton.setVisible(element != null && element.getParent() == null);
 		
 		doOpenMetadata(ureq);
 	}
@@ -154,6 +160,8 @@ public class EditCurriculumElementController extends BasicController {
 			doOpenExecution(ureq);
 		} else if (source == optionsLink) {
 			doOpenOptions(ureq);
+		} else if (source == previewButton) {
+			doOpenPreview(ureq);
 		}
 	}
 	
@@ -225,6 +233,12 @@ public class EditCurriculumElementController extends BasicController {
 		listenTo(optionsCtrl);
 		mainVC.put("content", optionsCtrl.getInitialComponent());
 		segmentButtonsCmp.setSelectedButton(optionsLink);
+	}
+
+	private void doOpenPreview(UserRequest ureq) {
+		previewCtrl = new CurriculumElementInfosController(ureq, getWindowControl(), element, getIdentity(), true);
+		listenTo(previewCtrl);
+		toolbarPanel.pushController(translate("preview.info"), previewCtrl);
 	}
 
 }

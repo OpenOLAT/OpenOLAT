@@ -83,7 +83,7 @@ public class CurriculumElementInfosController extends BasicController {
 	private LectureService lectureService;
 
 	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			Identity bookedIdentity) {
+			Identity bookedIdentity, boolean preview) {
 		super(ureq, wControl);
 		this.element = element;
 		mainVC = createVelocityContainer("curriculum_element_infos");
@@ -105,7 +105,7 @@ public class CurriculumElementInfosController extends BasicController {
 		
 		
 		// Header
-		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, isMember, bookedIdentity);
+		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, bookedIdentity, isMember, preview);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
