@@ -1,3 +1,5 @@
 <h2><i class="o_icon o_ico-fw o_icon_user"> </i> $r.translate("students.menu.title")</h2>
 $r.render("search.scopes")
-$r.render("component")
+#if($r.available("component"))
+	$r.render("component")
+#end

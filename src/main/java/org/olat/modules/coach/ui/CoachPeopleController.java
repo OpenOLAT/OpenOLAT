@@ -142,7 +142,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 			searchScopes.setSelectedKey(EDU_MANAGER_SCOPE);
 		} else {
 			for(RelationRole role:userRelationRoles) {
-				if(role.getRole().equalsIgnoreCase(type)) {
+				if((RELATION_PREFIX_SCOPE + role.getRole()).equalsIgnoreCase(type)) {
 					doOpenRelation(ureq, role);
 					searchScopes.setSelectedKey(RELATION_PREFIX_SCOPE + role.getRole());
 					break;
