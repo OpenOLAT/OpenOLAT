@@ -144,6 +144,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		datesEl.setSecondDate(true);
 		datesEl.setSecondDate(link.getValidTo());
 		datesEl.setSeparator("offer.period.date.to");
+		datesEl.setHelpTextKey("offer.preiod.help", null);
 		
 		uifactory.addSpacerElement("confirmations", formLayout, false);
 		
@@ -170,6 +171,7 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		}
 		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, desc, formLayout);
 		descEl.setElementCssClass("o_sel_accesscontrol_description");
+		descEl.setHelpTextKey("offer.description.help", null);
 		
 		// Buttons
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());

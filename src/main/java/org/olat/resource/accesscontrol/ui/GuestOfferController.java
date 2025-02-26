@@ -81,6 +81,7 @@ public class GuestOfferController extends FormBasicController {
 		
 		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, false, offer.getDescription(), formLayout);
 		descEl.setElementCssClass("o_sel_accesscontrol_description");
+		descEl.setHelpTextKey("offer.description.help", null);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);

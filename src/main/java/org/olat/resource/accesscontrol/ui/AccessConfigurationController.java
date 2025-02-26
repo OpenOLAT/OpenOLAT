@@ -47,8 +47,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
-import org.olat.core.gui.components.helpTooltip.HelpTooltip;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.panel.IconPanelItem;
 import org.olat.core.gui.control.Controller;
@@ -531,7 +529,8 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		AccessInfo infos = new AccessInfo(iconPanel, link, handler, numOfOrders);
 		accessInfos.add(infos);
-		FormLayoutContainer cont = createContentContainer();
+		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
+		cont.setRootForm(mainForm);
 		iconPanel.setContent(cont.getComponent());
 		infos.setConfigCont(cont);
 		
@@ -565,7 +564,8 @@ public class AccessConfigurationController extends FormBasicController {
 			
 			AccessInfo infos = new AccessInfo(iconPanel, -1);
 			accessInfos.add(infos);
-			FormLayoutContainer cont = createContentContainer();
+			FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
+			cont.setRootForm(mainForm);
 			iconPanel.setContent(cont.getComponent());
 			infos.setConfigCont(cont);
 			
@@ -596,7 +596,8 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		AccessInfo infos = new AccessInfo(iconPanel, -1);
 		accessInfos.add(infos);
-		FormLayoutContainer cont = createContentContainer();
+		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
+		cont.setRootForm(mainForm);
 		iconPanel.setContent(cont.getComponent());
 		infos.setConfigCont(cont);
 		
@@ -608,20 +609,6 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		offersContainer.setDirty(true);
 		updateAddUI();
-	}
-	
-	private FormLayoutContainer createContentContainer() {
-		FormLayoutContainer cont = FormLayoutContainer.createCustomFormLayout("offer_cont_" + counter++, getTranslator(), velocity_root + "/configuration_content.html");
-		cont.setRootForm(mainForm);
-		
-		HelpTooltip datesHelp = new HelpTooltip("dates_help_" + counter++, translate("offer.preiod.help"));
-		datesHelp.setElementCssClass("o_form_chelp");
-		cont.add("datesHelp", new ComponentWrapperElement(datesHelp));
-		
-		HelpTooltip descHelp = new HelpTooltip("desc_help_" + counter++, translate("offer.description.help"));
-		descHelp.setElementCssClass("o_form_chelp");
-		cont.add("descriptionHelp", new ComponentWrapperElement(descHelp));
-		return cont;
 	}
 
 	private void forgeCatalogInfos(FormItemContainer formLayout) {

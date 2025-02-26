@@ -498,7 +498,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		}
 		
 		// Metadata
-		metadataTab = tabPane.addTab(ureq, translate("curriculum.metadata"), uureq -> {
+		metadataTab = tabPane.addTab(ureq, translate("tab.settings"), uureq -> {
 			editMetadataCtrl = new EditCurriculumElementController(uureq, getWindowControl(), toolbarPanel,
 					curriculumElement, curriculumElement.getParent(), curriculum, secCallback);
 			listenTo(editMetadataCtrl);

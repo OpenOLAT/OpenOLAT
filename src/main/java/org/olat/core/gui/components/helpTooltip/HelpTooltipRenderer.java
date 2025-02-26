@@ -63,11 +63,7 @@ public class HelpTooltipRenderer extends DefaultComponentRenderer {
 		}
 		
 		// Tooltip is bound to this icon
-		sb.append("<i class='o_chelp_tooltip o_icon o_icon-fw o_icon_help ");
-		if (StringHelper.containsNonWhitespace(helpTooltip.getElementCssClass())) {
-			sb.append(helpTooltip.getElementCssClass());
-		}
-		sb.append("' id='").append(helpIconId).append("'></i>");
+		sb.append("<i class='o_chelp_tooltip o_icon o_icon-fw o_icon_help' id='").append(helpIconId).append("'></i>");
 		if (helpUrl != null) {
 			sb.append("</a>");
 		}			
