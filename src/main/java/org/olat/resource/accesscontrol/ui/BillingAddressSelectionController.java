@@ -69,6 +69,7 @@ public class BillingAddressSelectionController extends FormBasicController {
 	private final boolean userAddressCreate;
 	private final Identity bookedIdentity;
 	private final BillingAddress preselectedAddress;
+	private Object userObject;
 
 	@Autowired
 	private ACService acService;
@@ -91,6 +92,14 @@ public class BillingAddressSelectionController extends FormBasicController {
 		initForm(ureq);
 	}
 	
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (organisationAddressesEnabled && organisationModule.isEnabled()) {

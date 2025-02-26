@@ -79,6 +79,7 @@ import org.olat.modules.curriculum.reports.AccountingReportResource;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Order;
@@ -124,6 +125,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private OrderDetailController detailController;
+	private BillingAddressSelectionController addressSelectionCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	private boolean readOnly;
@@ -475,6 +477,14 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			if(event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
+		} else if (addressSelectionCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (addressSelectionCtrl.getUserObject() instanceof OrderTableRow row) {
+					updateBillingAddress(row, addressSelectionCtrl.getBillingAddress());
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(toolsCtrl == source) {
 			calloutCtrl.deactivate();
 			cleanUp();	
@@ -482,12 +492,14 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			cleanUp();
 		}
 	}
-	
+
 	private void cleanUp() {
+		removeAsListenerAndDispose(addressSelectionCtrl);
 		removeAsListenerAndDispose(detailController);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		addressSelectionCtrl = null;
 		detailController = null;
 		calloutCtrl = null;
 		toolsCtrl = null;
@@ -591,6 +603,36 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		tableEl.reloadData();
 	}
 	
+	private void doChangeBillingAddress(UserRequest ureq, OrderTableRow row) {
+		if (guardModalController(addressSelectionCtrl)) return;
+		
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if (order == null) {
+			return;
+		}
+		
+		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, false, false, false, order.getDelivery(), null);
+		addressSelectionCtrl.setUserObject(row);
+		listenTo(addressSelectionCtrl);
+		
+		String title = translate("billing.address.change");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				addressSelectionCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void updateBillingAddress(OrderTableRow row, BillingAddress billingAddress) {
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if(order != null) {
+			acService.addBillingAddress(order, billingAddress);	
+			doCloseOrderDetails(row);
+			showInfo("info.billing.address.change");
+			tableEl.deselectAll();
+			tableEl.reloadData();
+		}
+	}
+	
 	private void doExport(UserRequest ureq) {
 		MediaResource reportResource;
 		if(resource == null) {
@@ -608,6 +650,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 
 		private Link payLink;
 		private Link cancelLink;
+		private Link changeBillingAddressLink;
 		private final VelocityContainer mainVC;
 		
 		private final OrderTableRow row;
@@ -625,6 +668,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT
 					|| row.getOrderStatus() == OrderStatus.PAYED) {
 				cancelLink = addLink("set.cancel", "set.cancel", "o_icon o_icon-fw o_icon_decline", links);
+			}
+			
+			if ((row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT)
+					&& row.getBillingAddressIdentifier() != null) {
+				changeBillingAddressLink = addLink("billing.address.change", "billing.address.change", "o_icon o_icon-fw o_icon_billing_address", links);
 			}
 			
 			mainVC.contextPut("links", links);
@@ -649,6 +697,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			} else if(cancelLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doCancelOrder(List.of(row));
+			} else if(changeBillingAddressLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doChangeBillingAddress(ureq, row);
 			}
 		}
 	}

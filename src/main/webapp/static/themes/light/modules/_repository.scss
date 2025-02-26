@@ -437,6 +437,7 @@
 	border: $o-ac-ba-border;
 	border-radius: $o-ac-ba-border-radius;
 	padding: $o-ac-ba-padding;
+	min-width: $o-ac-ba-min-width;
 	max-width: max-content;
 	
 	.o_ac_billing_address_inner {
@@ -466,6 +467,14 @@
 		@extend %o_labeled_light_grey;
 	}
 }
+.o_ac_billing_address_selection.o_form {
+.o_radio_cards_wrapper {
+	.o_radio_cards {
+		label {
+			flex-basis: $o-ac-ba-radio-card-width;
+		}
+	}
+}}
 
 
 tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,

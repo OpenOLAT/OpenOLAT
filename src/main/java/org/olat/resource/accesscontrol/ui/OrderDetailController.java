@@ -182,10 +182,12 @@ public class OrderDetailController extends FormBasicController {
 			setPaidButton.setIconLeftCSS("o_icon o_icon-fw o_icon_pay");
 		}
 		
-		if (!readOnly && order.getBillingAddress() != null) {
+		if (!readOnly && order.getBillingAddress() != null 
+				&& (order.getOrderStatus() == OrderStatus.NEW || order.getOrderStatus() == OrderStatus.PREPAYMENT)) {
 			moreDropdown = uifactory.addDropdownMenuMore("more", formLayout, getTranslator());
 			
 			changeBillingAddressLink = uifactory.addFormLink("billing.address.change", formLayout, Link.LINK);
+			changeBillingAddressLink.setIconLeftCSS("o_icon o_icon-fw o_icon_billing_address");
 			moreDropdown.addElement(changeBillingAddressLink);
 		}
 	}
