@@ -39,8 +39,8 @@ public class BookingOrder {
 	private Long curriculumKey;
 	private String curriculumName;
 	private String curriculumIdentifier;
-	private String orgId;
-	private String orgName;
+	private String curriculumOrgId;
+	private String curriculumOrgName;
 	private Long implementationKey;
 	private String implementationName;
 	private String implementationIdentifier;
@@ -54,6 +54,8 @@ public class BookingOrder {
 	private String offerCostCenter;
 	private String offerAccount;
 	private BillingAddress billingAddress;
+	private String billingAddressOrgId;
+	private String billingAddressOrgName;
 
 	public User getUser() {
 		return user;
@@ -116,20 +118,20 @@ public class BookingOrder {
 		return curriculumIdentifier;
 	}
 
-	public void setOrgId(String orgId) {
-		this.orgId = orgId;
+	public void setCurriculumOrgId(String curriculumOrgId) {
+		this.curriculumOrgId = curriculumOrgId;
 	}
 
-	public String getOrgId() {
-		return orgId;
+	public String getCurriculumOrgId() {
+		return curriculumOrgId;
 	}
 
-	public void setOrgName(String orgName) {
-		this.orgName = orgName;
+	public void setCurriculumOrgName(String curriculumOrgName) {
+		this.curriculumOrgName = curriculumOrgName;
 	}
 
-	public String getOrgName() {
-		return orgName;
+	public String getCurriculumOrgName() {
+		return curriculumOrgName;
 	}
 
 	public Long getImplementationKey() {
@@ -234,5 +236,21 @@ public class BookingOrder {
 
 	public BillingAddress getBillingAddress() {
 		return billingAddress;
+	}
+
+	public String getBillingAddressOrgId() {
+		return billingAddressOrgId;
+	}
+
+	public void setBillingAddressOrgId(String billingAddressOrgId) {
+		this.billingAddressOrgId = billingAddressOrgId;
+	}
+
+	public String getBillingAddressOrgName() {
+		return billingAddressOrgName;
+	}
+
+	public void setBillingAddressOrgName(String billingAddressOrgName) {
+		this.billingAddressOrgName = billingAddressOrgName;
 	}
 }

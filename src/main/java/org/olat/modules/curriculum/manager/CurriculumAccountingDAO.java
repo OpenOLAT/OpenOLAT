@@ -47,9 +47,9 @@ public class CurriculumAccountingDAO {
 	public List<BookingOrder> bookingOrders(CurriculumAccountingSearchParams searchParams, List<UserPropertyHandler> userPropertyHandlers) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select distinct cur.key, cur.displayName, cur.identifier, ");
-		sb.append(" org.identifier, org.displayName, ");
+		sb.append(" curOrg.identifier, curOrg.displayName, ");
 		sb.append(" ce.key, ce.displayName, ce.identifier, ceType.identifier, ce.status, ceEduType.identifier, ce.beginDate, ce.endDate, ");
-		sb.append(" o, billingAddress, ");
+		sb.append(" o, billingAddress, billingAddressOrg.identifier, billingAddressOrg.displayName, ");
 		sb.append(" offer.resourceDisplayName, offer.resourceTypeName, offerCostCenter.name, offerCostCenter.account ");
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
@@ -64,9 +64,10 @@ public class CurriculumAccountingDAO {
 		sb.append(" left join ce.type ceType");
 		sb.append(" left join ce.educationalType ceEduType");
 		sb.append(" inner join ce.curriculum cur");
-		sb.append(" inner join cur.organisation org");
+		sb.append(" inner join cur.organisation curOrg");
 		sb.append(" inner join o.delivery orderer");
 		sb.append(" inner join orderer.user user");
+		sb.append(" left join billingAddress.organisation billingAddressOrg");
 		if(searchParams.getIdentity() != null) {
 			// Check membership of curriculum
 			sb.and().append("exists (select member.group.key from bgroupmember member")
@@ -124,12 +125,12 @@ public class CurriculumAccountingDAO {
 			bookingOrder.setCurriculumIdentifier(curriculumIdentifier);
 		}
 		
-		// org
-		if (objects[srcIdx++] instanceof String orgId) {
-			bookingOrder.setOrgId(orgId);
+		// curriculum org
+		if (objects[srcIdx++] instanceof String curriculumOrgId) {
+			bookingOrder.setCurriculumOrgId(curriculumOrgId);
 		}
-		if (objects[srcIdx++] instanceof String orgName) {
-			bookingOrder.setOrgName(orgName);
+		if (objects[srcIdx++] instanceof String curriculumOrgName) {
+			bookingOrder.setCurriculumOrgName(curriculumOrgName);
 		}
 		
 		// curriculum element (implementation)
@@ -166,6 +167,14 @@ public class CurriculumAccountingDAO {
 		// billing address
 		if (objects[srcIdx++] instanceof BillingAddress billingAddress) {	
 			bookingOrder.setBillingAddress(billingAddress);
+		}
+		
+		if (objects[srcIdx++] instanceof String billingAddressOrgId) {
+			bookingOrder.setBillingAddressOrgId(billingAddressOrgId);
+		}
+		
+		if (objects[srcIdx++] instanceof String billingAddressOrgName) {
+			bookingOrder.setBillingAddressOrgName(billingAddressOrgName);
 		}
 		
 		// offer

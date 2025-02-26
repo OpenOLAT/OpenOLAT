@@ -86,8 +86,8 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	protected int generateCustomHeaderColumns(Row header, int pos, Translator translator) {
 		header.addCell(pos++, translator.translate("report.header.curriculum"));
 		header.addCell(pos++, translator.translate("report.header.ext.ref"));
-		header.addCell(pos++, translator.translate("report.header.org.id"));
-		header.addCell(pos++, translator.translate("report.header.organisation"));
+		header.addCell(pos++, translator.translate("report.header.curriculum.org.id"));
+		header.addCell(pos++, translator.translate("report.header.curriculum.org.name"));
 		header.addCell(pos++, translator.translate("report.header.implementation"));
 		header.addCell(pos++, translator.translate("report.header.ext.ref"));
 		header.addCell(pos++, translator.translate("report.header.implementation.type"));
@@ -118,6 +118,8 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		header.addCell(pos++, translator.translate("report.header.zip"));
 		header.addCell(pos++, translator.translate("report.header.city"));
 		header.addCell(pos++, translator.translate("report.header.country"));
+		header.addCell(pos++, translator.translate("report.header.billing.address.org.id"));
+		header.addCell(pos++, translator.translate("report.header.billing.address.org.name"));
 		
 		return pos;
 	}
@@ -149,8 +151,8 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		}
 		row.addCell(pos++, bookingOrder.getCurriculumName());
 		row.addCell(pos++, bookingOrder.getCurriculumIdentifier());
-		row.addCell(pos++, bookingOrder.getOrgId());
-		row.addCell(pos++, bookingOrder.getOrgName());
+		row.addCell(pos++, bookingOrder.getCurriculumOrgId());
+		row.addCell(pos++, bookingOrder.getCurriculumOrgName());
 		row.addCell(pos++, bookingOrder.getImplementationName());
 		row.addCell(pos++, bookingOrder.getImplementationIdentifier());
 		row.addCell(pos++, bookingOrder.getImplementationType());
@@ -181,6 +183,8 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getBillingAddress().getZip());
 		row.addCell(pos++, bookingOrder.getBillingAddress().getCity());
 		row.addCell(pos++, bookingOrder.getBillingAddress().getCountry());
+		row.addCell(pos++, bookingOrder.getBillingAddressOrgId());
+		row.addCell(pos++, bookingOrder.getBillingAddressOrgName());
 	}
 
 	@Override
