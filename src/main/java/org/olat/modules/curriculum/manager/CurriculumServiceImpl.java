@@ -1543,7 +1543,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	
 	@Override
 	public Map<Long, List<TaxonomyLevel>> getCurriculumElementKeyToTaxonomyLevels(List<? extends CurriculumElementRef> curriculumElements) {
-		if(curriculumElements == null || !curriculumElements.isEmpty()) return Map.of();
+		if (curriculumElements == null || curriculumElements.isEmpty()) return Map.of();
 		return curriculumElementToTaxonomyLevelDao.getCurriculumElementKeyToTaxonomyLevels(curriculumElements);
 	}
 	
