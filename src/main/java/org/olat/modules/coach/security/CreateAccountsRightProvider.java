@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
 public class CreateAccountsRightProvider implements RightProvider {
 
 	@Autowired
-	private ViewAndEditProfileRightProvider parentRight;
+	private EditProfileRightProvider parentRight;
 
 	public static final String RELATION_RIGHT = "createAccounts";
 

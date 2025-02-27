@@ -28,24 +28,20 @@ import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.ui.CoachMainController;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Initial date: 2024-12-16<br>
+ * Initial date: 2025-02-27<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 @Component
-public class DeactivateAccountsRightProvider implements RightProvider {
+public class ViewProfileRightProvider implements RightProvider {
 
-	@Autowired
-	private ViewProfileRightProvider parentRight;
-
-	public static final String RELATION_RIGHT = "deactivateAccounts";
+	public static final String RELATION_RIGHT = "viewProfile";
 
 	private static final Collection<OrganisationRoles> educationManagerRole = Collections.singleton(OrganisationRoles.educationmanager);
-	
+
 	@Override
 	public String getRight() {
 		return RELATION_RIGHT;
@@ -53,7 +49,7 @@ public class DeactivateAccountsRightProvider implements RightProvider {
 
 	@Override
 	public RightProvider getParent() {
-		return parentRight;
+		return null;
 	}
 
 	@Override
@@ -63,18 +59,18 @@ public class DeactivateAccountsRightProvider implements RightProvider {
 
 	@Override
 	public int getUserRelationsPosition() {
-		return UserRelationRightsOrder.DeactivateAccountsRight.ordinal();
+		return UserRelationRightsOrder.ViewProfileRight.ordinal();
 	}
 
 	@Override
 	public int getOrganisationPosition() {
-		return OrganisationRightsOrder.DeactivateAccountsRight.ordinal();
+		return OrganisationRightsOrder.ViewProfileRight.ordinal();
 	}
 
 	@Override
 	public String getTranslatedName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(CoachMainController.class, locale);
-		return translator.translate("relation.right.deactivate.accounts");
+		return translator.translate("relation.right.view.profile");
 	}
 
 	@Override

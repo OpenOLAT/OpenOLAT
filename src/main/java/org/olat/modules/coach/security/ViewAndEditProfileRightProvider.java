@@ -19,8 +19,11 @@
  */
 package org.olat.modules.coach.security;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -35,6 +38,8 @@ import org.springframework.stereotype.Component;
 public class ViewAndEditProfileRightProvider implements RightProvider {
 
 	public static final String RELATION_RIGHT = "viewAndEditProfile";
+
+	private static final Collection<OrganisationRoles> lineManagerRole = Collections.singleton(OrganisationRoles.linemanager);
 
 	@Override
 	public String getRight() {
@@ -65,5 +70,10 @@ public class ViewAndEditProfileRightProvider implements RightProvider {
 	public String getTranslatedName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(CoachMainController.class, locale);
 		return translator.translate("relation.right.view.edit.profile");
+	}
+
+	@Override
+	public Collection<OrganisationRoles> getOrganisationRoles() {
+		return lineManagerRole;
 	}
 }

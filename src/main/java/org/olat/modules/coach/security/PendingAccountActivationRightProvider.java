@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
 public class PendingAccountActivationRightProvider implements RightProvider {
 
 	@Autowired
-	private ViewAndEditProfileRightProvider parentRight;
+	private ViewProfileRightProvider parentRight;
 
 	public static final String RELATION_RIGHT = "pendingAccountActivation";
 
