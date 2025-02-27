@@ -301,7 +301,7 @@ public class ProfileFormController extends FormBasicController {
 		portraitUpload.addActionListener(FormEvent.ONCHANGE);
 		portraitUpload.setHelpTextKey("ul.select.fhelp", null);
 		portraitUpload.setDeleteEnabled(true);
-		portraitUpload.setEnabled(portraitEnable);
+		portraitUpload.setEnabled(portraitEnable && canModify);
 		portraitUpload.setVisible(!inviteeOnly);
 		if(portraitFile != null) {
 			portraitUpload.setInitialFile(portraitFile);
@@ -337,8 +337,8 @@ public class ProfileFormController extends FormBasicController {
 		buttonLayoutWrappper.add(buttonLayout);
 		if(canModify) {
 			uifactory.addFormSubmitButton("save", buttonLayout);
+			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		}
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
 	private void initEmailForm(FormItem formItem, FormLayoutContainer groupContainer) {
@@ -356,6 +356,7 @@ public class ProfileFormController extends FormBasicController {
 			changeEmailBtn = uifactory.addFormLink("change.mail.in.process", emailLayoutContainer, Link.BUTTON_SMALL);
 			changeEmailBtn.setElementCssClass("o_sel_user_change_mail");
 			changeEmailBtn.setIconLeftCSS("o_icon o_icon_edit");
+			changeEmailBtn.setEnabled(canModify);
 		}
 
 		if (!userModule.isEmailMandatory()) {

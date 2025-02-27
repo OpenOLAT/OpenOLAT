@@ -160,6 +160,16 @@ public class RoleSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canViewProfile() {
+			return roleRights.contains(ViewProfileRightProvider.RELATION_RIGHT);
+		}
+
+		@Override
+		public boolean canEditProfile() {
+			return roleRights.contains(EditProfileRightProvider.RELATION_RIGHT);
+		}
+
+		@Override
 		public boolean canCreateAccounts() {
 			return roleRights.contains(CreateAccountsRightProvider.RELATION_RIGHT);
 		}

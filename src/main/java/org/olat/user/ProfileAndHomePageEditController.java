@@ -71,12 +71,18 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	private Identity identityToModify;
 	private boolean isAdministrativeUser;
 	private boolean showImmunityProof;
-	
+	private final boolean readOnly;
+
 	@Autowired
 	private ImmunityProofModule immunityProofModule;
 
 	public ProfileAndHomePageEditController(UserRequest ureq, WindowControl wControl) {		
 		this(ureq,wControl, ureq.getIdentity(), false);
+	}
+
+	public ProfileAndHomePageEditController(UserRequest ureq, WindowControl wControl, Identity identityToModify, 
+											boolean isAdministrativeUser) {
+		this(ureq, wControl, identityToModify, isAdministrativeUser, false);
 	}
 	
 	/**
@@ -86,11 +92,13 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	 *          user (usermanager that edits another users profile)
 	 * @param isAdministrativeUser
 	 */
-	public ProfileAndHomePageEditController(UserRequest ureq, WindowControl wControl, Identity identityToModify, boolean isAdministrativeUser) {
+	public ProfileAndHomePageEditController(UserRequest ureq, WindowControl wControl, Identity identityToModify, 
+											boolean isAdministrativeUser, boolean readOnly) {
 		super(ureq, wControl);
 		this.identityToModify = identityToModify;
 		this.isAdministrativeUser = isAdministrativeUser;
 		this.showImmunityProof = identityToModify.equals(getIdentity());
+		this.readOnly = readOnly;
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
 		setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
 		
@@ -103,12 +111,18 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		
 		homePageLink = LinkFactory.createLink("tab.hp", myContent, this);
 		homePageLink.setElementCssClass("o_sel_usersettings_homepage");
-		segmentView.addSegment(homePageLink, false);
+		if (!readOnly) {
+			segmentView.addSegment(homePageLink, false);
+		}
 		
 		immunityProofLink = LinkFactory.createLink("immunity.proof", myContent, this);
 		immunityProofLink.setElementCssClass("o_sel_immunity_proof");
 		if (immunityProofModule.isEnabled() && showImmunityProof) {
 			segmentView.addSegment(immunityProofLink, false);
+		}
+		
+		if (segmentView.size() <= 1) {
+			segmentView.setVisible(false);
 		}
 
 		putInitialPanel(myContent);
@@ -178,7 +192,9 @@ public class ProfileAndHomePageEditController extends BasicController implements
 			if("Profile".equalsIgnoreCase(type)) {
 				doOpenProfile(ureq);
 			} else if("HomePage".equalsIgnoreCase(type)) {
-				doOpenHomePageSettings(ureq);
+				if (!readOnly) {
+					doOpenHomePageSettings(ureq);
+				}
 			} else if("CovidCertificate".equalsIgnoreCase(type) && showImmunityProof) {
 				doOpenImmunityProof(ureq);
 			} else {
@@ -192,12 +208,12 @@ public class ProfileAndHomePageEditController extends BasicController implements
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Profile", 0l);
             WindowControl bwControl = addToHistory(ureq, ores, null);
 			profileFormController = new ProfileFormController(ureq, bwControl,
-					identityToModify, isAdministrativeUser, true);
+					identityToModify, isAdministrativeUser, !readOnly);
 			listenTo(profileFormController);
 		} 
 
 		myContent.put("segmentCmp", profileFormController.getInitialComponent());
-		myContent.contextPut("showNote", true);
+		myContent.contextPut("showNote", !readOnly);
 		
 		segmentView.select(profilLink);
 		return profileFormController;

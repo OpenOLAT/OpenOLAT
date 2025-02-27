@@ -123,6 +123,21 @@ public interface RoleSecurityCallback {
 	 * @return
 	 */
 	public boolean canViewAndEditProfile();
+	
+	/**
+	 * Is this role allowed to view a profile?
+	 * 
+	 * @return
+	 */
+	public boolean canViewProfile();
+
+
+	/**
+	 * Is this role allowed to edit a profile?
+	 *
+	 * @return
+	 */
+	public boolean canEditProfile();
 
 	/**
 	 * Is this role allowed to create accounts?
@@ -159,5 +174,4 @@ public interface RoleSecurityCallback {
 	 * @return
 	 */
 	public boolean canUploadExternalCertificate();
-	
 }
