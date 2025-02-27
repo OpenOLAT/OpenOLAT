@@ -370,6 +370,12 @@ body.o_dmz {
 .o_sel_registration_code_not_received {
 	display: flex !important;
 	gap: 0.5rem;
+	margin-bottom: 0;
+}
+
+.o_sel_pw_change_code_not_received {
+	display: flex;
+	margin-bottom: 0;
 }
 
 .o_sel_registration_otp {
