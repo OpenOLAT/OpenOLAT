@@ -97,10 +97,6 @@ public class RegistrationConfigAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String[] enableRegistrationValues = new String[]{
-				!orgEmailDomainEnabled ? translate("admin.enableRegistration.on") : translate("admin.enable.email.validation.disabled")
-		};
-
 		//settings
 		settingsContainer = FormLayoutContainer.createDefaultFormLayout("settingsCont", getTranslator());
 		settingsContainer.setRootForm(mainForm);
@@ -114,7 +110,7 @@ public class RegistrationConfigAdminController extends FormBasicController {
 		registrationEl.addActionListener(FormEvent.ONCHANGE);
 		registrationEl.toggle(registrationModule.isSelfRegistrationEnabled());
 
-		registrationLoginElement = uifactory.addCheckboxesHorizontal("enable.registration.login", "admin.enableRegistrationLogin", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
+		registrationLoginElement = uifactory.addCheckboxesHorizontal("enable.registration.login", "admin.enableRegistrationLogin", settingsContainer, enableRegistrationKeys, new String[]{ translate("admin.enableRegistration.on") });
 		registrationLoginElement.addActionListener(FormEvent.ONCHANGE);
 		registrationLoginElement.select("on", registrationModule.isSelfRegistrationLoginEnabled());
 
@@ -129,7 +125,7 @@ public class RegistrationConfigAdminController extends FormBasicController {
 				orgEmailDomainEnabled || registrationModule.isEmailValidationEnabled()
 		);
 
-		emailValidationEl = uifactory.addCheckboxesHorizontal("email.validation", "admin.enable.email.validation", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
+		emailValidationEl = uifactory.addCheckboxesHorizontal("email.validation", "admin.enable.email.validation", settingsContainer, enableRegistrationKeys, new String[]{translate("admin.enable.email.validation.disabled")});
 		emailValidationEl.select("on", registrationModule.isEmailValidationEnabled());
 		emailValidationEl.setEnabled(!orgEmailDomainEnabled);
 
