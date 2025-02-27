@@ -268,7 +268,7 @@ public class EdusharingDispatcher implements Dispatcher {
 				String errorText = switch (edusharingResponse.getStatus()) {
 				case 401 -> translator.translate("error.render.401");
 				case 404 -> translator.translate("error.render.404");
-				case 405 -> translator.translate("error.render.405");
+				case 500 -> translator.translate("error.render.500");
 				default -> translator.translate("error.render", String.valueOf(edusharingResponse.getStatus()));
 				};
 				stream( new ByteArrayInputStream(errorText.getBytes(StandardCharsets.UTF_8)) , response.getOutputStream());
