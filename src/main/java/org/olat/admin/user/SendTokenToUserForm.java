@@ -97,13 +97,16 @@ public class SendTokenToUserForm extends FormBasicController {
 		if(withDescription) {
 			setFormDescription("form.token.new.description");
 		}
+		formLayout.setElementCssClass("o_sel_send_token_form");
 
 		MailContent content = generateMailText();
 		if (content != null) {
 			subjectText = uifactory.addTextElement("subjecttext", "form.token.new.subject", 255, content.subject(), formLayout);
+			subjectText.setElementCssClass("o_sel_send_subject");
 			subjectText.setMandatory(true);
 
 			bodyText = uifactory.addTextAreaElement("mailtext", "form.token.new.text", 4000, 12, 255, false, false, content.body(), formLayout);
+			bodyText.setElementCssClass("o_sel_send_body");
 			bodyText.setMandatory(true);
 
 			FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);

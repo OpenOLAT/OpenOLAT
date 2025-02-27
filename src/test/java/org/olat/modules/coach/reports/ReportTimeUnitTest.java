@@ -1,20 +1,3 @@
-package org.olat.modules.coach.reports;
-
-import static org.mockito.Mockito.when;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-
-import org.olat.core.util.DateUtils;
-import org.olat.modules.curriculum.CurriculumModule;
-import org.olat.test.OlatTestCase;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 /**
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
@@ -34,6 +17,24 @@ import org.mockito.MockitoAnnotations;
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
+package org.olat.modules.coach.reports;
+
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
+
+import org.olat.core.util.DateUtils;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.test.OlatTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+
 public class ReportTimeUnitTest extends OlatTestCase {
 
 	@Mock

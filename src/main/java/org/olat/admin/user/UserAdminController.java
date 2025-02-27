@@ -505,7 +505,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		if (isPasswordChangesAllowed(identity)) {
-			userTabP.addTab(ureq, translate(NLS_EDIT_UPCRED), null, uureq -> {
+			userTabP.addTab(ureq, translate(NLS_EDIT_UPCRED), "o_sel_passwords", uureq -> {
 				boolean onlyInvitee =  (isInvitee && !editedRoles.isAdministrator() && !editedRoles.isSystemAdmin());
 				boolean canResetPassword = isAdminOf || (isUserManagerOf && !editedRoles.isAdministrator() && !editedRoles.isSystemAdmin()) || onlyInvitee;
 				boolean canSendPasswordLink = isAdminOf || isUserManagerOf || onlyInvitee;
@@ -517,11 +517,11 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		if (isAdminOf) {
-			userTabP.addTab(ureq, translate(NLS_EDIT_UAUTH),  uureq -> {
+			userTabP.addTab(ureq, translate(NLS_EDIT_UAUTH), "o_sel_authentications", uureq -> {
 				authenticationsCtr =  new UserAuthenticationsEditorController(uureq, getWindowControl(), identity);
 				listenTo(authenticationsCtr);
 				return authenticationsCtr.getInitialComponent();
-			});
+			}, false);
 
 			userTabP.addTab(ureq, translate(NLS_EDIT_UPROP), uureq -> {
 				propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity, editedRoles);

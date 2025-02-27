@@ -59,6 +59,7 @@ import org.olat.selenium.page.user.UserPreferencesPageFragment;
 import org.olat.selenium.page.user.UserPreferencesPageFragment.ResumeOption;
 import org.olat.selenium.page.user.UserProfilePage;
 import org.olat.selenium.page.user.UserToolsPage;
+import org.olat.selenium.page.user.UserViewPage;
 import org.olat.selenium.page.user.VisitingCardPage;
 import org.olat.test.rest.RepositoryRestClient;
 import org.olat.test.rest.UserRestClient;
@@ -363,7 +364,6 @@ public class UserTest extends Deployments {
 	public void passkeyRegistration()
 	throws IOException, URISyntaxException {
 		// Firefox doesn't implement passkey and Safari not several browsers
-		//if(browser instanceof FirefoxDriver || browser instanceof SafariDriver) return;
 		Assume.assumeTrue(browser instanceof ChromeDriver);
 
 		WebDriver userBrowser = getWebDriver(1);
@@ -418,7 +418,6 @@ public class UserTest extends Deployments {
 	public void passkeyRecoveryKey()
 	throws IOException, URISyntaxException {
 		// Firefox doesn't implement passkey and Safari not several browsers
-		//if(browser instanceof FirefoxDriver || browser instanceof SafariDriver) return;
 		Assume.assumeTrue(browser instanceof ChromeDriver);
 
 		WebDriver userBrowser = getWebDriver(1);
@@ -666,6 +665,71 @@ public class UserTest extends Deployments {
 			.assertLoggedInByLastName(user.getLastName());
 	}
 	
+	
+	/**
+	 * An administrator generate a link to change the password of
+	 * a user. The user uses the link to change its password.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void userChangeItsPasswordWithAdminLink()
+	throws IOException, URISyntaxException {
+		UserRestClient userWebService = new UserRestClient(deploymentUrl);
+		UserVO user = userWebService.createRandomUserWithoutPassword("Joe");
+		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
+		
+		//login
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.assertOnLoginPage()
+			.loginAs(administrator)
+			.resume();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		UserViewPage userViewPage = navBar
+			.openUserManagement()
+			.searchByUsername(user.getLogin())
+			.selectByUsername(user.getLogin());
+		String pwChangeLink = userViewPage
+			.assertOnUserEditView(user.getLogin())
+			.openPasswordsTab()
+			.sendPasswordLink();
+		
+		// Log out
+		new UserToolsPage(browser).logout();
+		// Check the presence of an email
+		List<SmtpMessage> adminMessages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, adminMessages.size());
+		getSmtpServer().reset();
+		
+		// The user starts the password reset
+		browser.navigate()
+			.to(new URL(pwChangeLink));
+		OOGraphene.waitModalDialog(browser);
+		
+		LoginPasswordForgottenPage forgottenPage = new LoginPasswordForgottenPage(browser)
+				.assertUserIdentificationAndNext(user.getEmail());
+		
+		List<SmtpMessage> userMessages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, userMessages.size());
+		String otp = RegistrationPage.extractOtp(userMessages.get(0));
+		log.info("Registration OTP: {}", otp);
+		
+		String newPassword = "Sel#22FamousSecret";
+		forgottenPage
+			.confirmOtp(otp)
+			.newPassword(newPassword);
+		
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
+		userLoginPage
+			.loginAs(user.getLogin(), newPassword)
+			.assertLoggedInByLastName(user.getLastName());
+	}
+	
 
 	/**
 	 * Change the email, log out and check the new confirmed E-mail.
@@ -893,7 +957,8 @@ public class UserTest extends Deployments {
 		NavigationPage navBar = NavigationPage.load(browser);
 		UserAdminPage userAdminPage = navBar
 			.openUserManagement()
-			.openCreateUser()
+			.openCreateUser();
+		userAdminPage
 			.fillUserForm(userVo)
 			.assertOnUserEditView(username);
 		
@@ -946,7 +1011,8 @@ public class UserTest extends Deployments {
 		NavigationPage navBar = NavigationPage.load(browser);
 		UserAdminPage userAdminPage = navBar
 			.openUserManagement()
-			.openCreateUser()
+			.openCreateUser();
+		userAdminPage
 			.fillUserForm(userVo)
 			.assertOnUserEditView(username);
 		

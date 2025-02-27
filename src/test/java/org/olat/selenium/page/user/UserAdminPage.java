@@ -74,36 +74,6 @@ public class UserAdminPage {
 		return this;
 	}
 	
-	/**
-	 * Click the tool to delete the user.
-	 * 
-	 * @return Itself
-	 */
-	public UserAdminPage deleteUser() {
-		By createBy = By.cssSelector("ul.o_tools a.o_sel_user_delete");
-		OOGraphene.waitElement(createBy, browser);
-		browser.findElement(createBy).click();
-		OOGraphene.waitModalDialog(browser);
-		return this;
-	}
-	
-	/**
-	 * Acknowledge and confirm to delete a user.
-	 * 
-	 * @return Itself
-	 */
-	public UserAdminPage confirmDeleteUsers() {
-		By confirmCheckBy = By.cssSelector("fieldset.o_sel_confirm_delete_user input[type='checkbox']");
-		OOGraphene.waitElement(confirmCheckBy, browser);
-		WebElement confirmCheckEl = browser.findElement(confirmCheckBy);
-		OOGraphene.check(confirmCheckEl, Boolean.TRUE);
-		
-		By buttonsBy = By.cssSelector("div.modal-dialog div.modal-body a.btn.o_sel_delete_user");
-		browser.findElement(buttonsBy).click();
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
-		return this;
-	}
-	
 	public UserAdminPage openDirectDeleteUser() {
 		By createBy = By.cssSelector("ul.o_tools a.o_sel_useradmin_direct_delete");
 		OOGraphene.waitElement(createBy, browser);
@@ -190,12 +160,12 @@ public class UserAdminPage {
 		return userVo;
 	}
 	
-	public UserAdminPage fillUserForm(String username, String firstName, String lastName, String email, String password) {
+	public UserViewPage fillUserForm(String username, String firstName, String lastName, String email, String password) {
 		UserVO userVo = createUserVO(username, firstName, lastName, email, password);
 		return fillUserForm(userVo);
 	}
 	
-	public UserAdminPage fillUserForm(UserVO userVo) {
+	public UserViewPage fillUserForm(UserVO userVo) {
 		By usernameBy = By.cssSelector(".o_sel_id_create .o_sel_id_username input[type='text']");
 		OOGraphene.waitElement(usernameBy, browser);
 		browser.findElement(usernameBy).sendKeys(userVo.getLogin());
@@ -219,13 +189,7 @@ public class UserAdminPage {
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.scrollTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
-		return this;
-	}
-	
-	public UserAdminPage assertOnUserEditView(String username) {
-		By userInfoBy = By.xpath("//div[contains(@class,'o_user_infos')]//table//tr/td[contains(text(),'" + username + "')]");
-		OOGraphene.waitElement(userInfoBy, browser);
-		return this;
+		return new UserViewPage(browser);
 	}
 	
 	public UserAdminPage searchByUsername(String username) {
@@ -291,12 +255,12 @@ public class UserAdminPage {
 	 * @param username The username
 	 * @return Itself
 	 */
-	public UserAdminPage selectByUsername(String username) {
+	public UserViewPage selectByUsername(String username) {
 		By selectBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//td/a[text()[contains(.,'" + username + "')]]");
 		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
-		return this;
+		return new UserViewPage(browser);
 	}
 	
 	public UserAdminPage modifyStatusBatch(int status) {

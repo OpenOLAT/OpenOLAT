@@ -198,7 +198,7 @@ public class UserOpenOlatAuthenticationAdminController extends BasicController {
 					.withIconCss("o_icon_provider_olat")
 					.withIndicatorIconCss("o-empty")
 					.withMessageI18nKey("olat.authentication.no.password");
-			if(currentLevel != PasskeyLevels.level2 && minimalLevel != PasskeyLevels.level2) {
+			if(!withPasskey || (currentLevel != PasskeyLevels.level2 && minimalLevel != PasskeyLevels.level2)) {
 				config = config.withSecondaryButtonI18nKey("send.password.link");
 			}
 			noAuthenticationState = EmptyStateFactory.create("noolatauthentication", mainVC, this, config.build());
