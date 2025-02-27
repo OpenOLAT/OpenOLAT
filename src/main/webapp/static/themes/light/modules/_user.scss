@@ -157,6 +157,13 @@
 
 
 /* User infos */
+
+.o_togglebox_content {
+	> .o_user_infos {
+		padding-right: 20px;	
+	}
+}
+
 .o_user_infos {
 	position:relative;
 	min-height:100px;
