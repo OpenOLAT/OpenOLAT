@@ -665,14 +665,17 @@ public class OrdersAdminController extends FormBasicController implements Activa
 				payLink = addLink("set.paid", "set.paid", "o_icon o_icon-fw o_icon_pay", links);
 			}
 			
-			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT
-					|| row.getOrderStatus() == OrderStatus.PAYED) {
-				cancelLink = addLink("set.cancel", "set.cancel", "o_icon o_icon-fw o_icon_decline", links);
-			}
-			
 			if ((row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT)
 					&& row.getBillingAddressIdentifier() != null) {
 				changeBillingAddressLink = addLink("billing.address.change", "billing.address.change", "o_icon o_icon-fw o_icon_billing_address", links);
+			}
+			
+			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT
+					|| row.getOrderStatus() == OrderStatus.PAYED) {
+				if (!links.isEmpty()) {
+					links.add("-");
+				}
+				cancelLink = addLink("set.cancel", "set.cancel", "o_icon o_icon-fw o_icon_decline", links);
 			}
 			
 			mainVC.contextPut("links", links);
