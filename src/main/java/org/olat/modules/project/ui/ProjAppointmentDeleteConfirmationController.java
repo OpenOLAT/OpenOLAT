@@ -45,7 +45,7 @@ public class ProjAppointmentDeleteConfirmationController extends ConfirmationCon
 
 	public ProjAppointmentDeleteConfirmationController(UserRequest ureq, WindowControl wControl, String message,
 			String confirmation, String confirmButton, boolean reccurence) {
-		super(ureq, wControl, message, confirmation, confirmButton, ButtonType.danger, false);
+		super(ureq, wControl, message, confirmation, confirmButton, ButtonType.danger, null, false);
 		setTranslator(Util.createPackageTranslator(ConfirmationController.class, getLocale(), getTranslator()));
 		this.reccurence = reccurence;
 		initForm(ureq);

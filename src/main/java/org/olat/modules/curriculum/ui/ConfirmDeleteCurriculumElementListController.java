@@ -58,7 +58,7 @@ public class ConfirmDeleteCurriculumElementListController extends ConfirmationCo
 	public ConfirmDeleteCurriculumElementListController(UserRequest ureq, WindowControl wControl,
 			String message, String confirmation, String confirmButton,
 			List<CurriculumElement> implementations) {
-		super(ureq, wControl, message, confirmation, confirmButton, ButtonType.danger, false);
+		super(ureq, wControl, message, confirmation, confirmButton, ButtonType.danger, null, false);
 		setTranslator(Util.createPackageTranslator(ConfirmationController.class, getLocale(), getTranslator()));
 		this.implementations = implementations;
 

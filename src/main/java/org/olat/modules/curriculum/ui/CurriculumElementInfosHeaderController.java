@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
@@ -206,18 +207,13 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		
 		List<Order> orders = acService.findOrders(bookedIdentity, element.getResource(),
 				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
-		if (orders.isEmpty()) {
-			startCtrl.getLeaveLink().setCustomDisplayText(translate("leave.implementation", StringHelper.escapeHtml(element.getType().getDisplayName())));
+		Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), orders);
+		if (cancellationFee == null) {
+			startCtrl.getLeaveLink().setCustomDisplayText(translate("leave.cancel"));
 			startCtrl.getLeaveLink().setVisible(true);
 		} else {
-			Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), orders);
-			if (cancellationFee == null) {
-				startCtrl.getLeaveLink().setCustomDisplayText(translate("leave.cancel"));
-				startCtrl.getLeaveLink().setVisible(true);
-			} else {
-				startCtrl.getLeaveLink().setCustomDisplayText(translate("leave.cancel.fee"));
-				startCtrl.getLeaveLink().setVisible(true);
-			}
+			startCtrl.getLeaveLink().setCustomDisplayText(translate("leave.cancel.fee"));
+			startCtrl.getLeaveLink().setVisible(true);
 		}
 	}
 
@@ -226,8 +222,13 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			return false;
 		}
 		
-		// Leave not allowed after start
-		if (element.getBeginDate() != null && DateUtils.getStartOfDay(element.getBeginDate()).before(new Date())) {
+		// Leave only allowed before start
+		if (element.getBeginDate() == null || DateUtils.getStartOfDay(element.getBeginDate()).before(new Date())) {
+			return false;
+		}
+		
+		// Leave only allowed if order available
+		if (!isOrderAvailable()) {
 			return false;
 		}
 		
@@ -239,6 +240,11 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		return true;
 	}
 	
+	private boolean isOrderAvailable() {
+		return !acService.findOrders(bookedIdentity, element.getResource(),
+				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED).isEmpty();
+	}
+
 	private boolean isParticipant() {
 		List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(List.of(element), List.of(bookedIdentity));
 		if (memberships != null && !memberships.isEmpty() && memberships.get(0).isParticipant()) {
@@ -338,31 +344,25 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			return;
 		}
 		
-		String modalTitle;
-		
 		List<Order> orders = acService.findOrders(bookedIdentity, element.getResource(),
 				OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
-		if (orders.isEmpty()) {
+		Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), orders);
+		
+		String modalTitle;
+		if (cancellationFee == null) {
 			leaveConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
-					translate("leave.implementation.text", StringHelper.escapeHtml(element.getDisplayName())),
+					translate("leave.cancel.text", StringHelper.escapeHtml(element.getDisplayName())),
 					null,
-					translate("leave.implementation", StringHelper.escapeHtml(element.getType().getDisplayName())));
-			modalTitle = translate("leave.implementation", StringHelper.escapeHtml(element.getType().getDisplayName()));
+					translate("leave.cancel"),
+					ButtonType.regular, translate("leave.cancel.cancel"), true);
+			modalTitle = translate("leave.cancel");
 		} else {
-			Price cancellationFee = acService.getCancellationFee(element.getResource(), element.getBeginDate(), orders);
-			if (cancellationFee == null) {
-				leaveConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
-						translate("leave.cancel.text", StringHelper.escapeHtml(element.getDisplayName())),
-						null,
-						translate("leave.cancel"));
-				modalTitle = translate("leave.cancel");
-			} else {
-				leaveConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
-						translate("leave.cancel.fee.text", StringHelper.escapeHtml(element.getDisplayName())),
-						translate("leave.cancel.fee.confirmation", PriceFormat.fullFormat(cancellationFee)),
-						translate("leave.cancel.fee"));
-				modalTitle = translate("leave.cancel.fee");
-			}
+			leaveConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+					translate("leave.cancel.fee.text", StringHelper.escapeHtml(element.getDisplayName()), PriceFormat.fullFormat(cancellationFee)),
+					translate("leave.cancel.fee.confirmation", PriceFormat.fullFormat(cancellationFee)),
+					translate("leave.cancel.fee"),
+					ButtonType.regular, translate("leave.cancel.cancel"), true);
+			modalTitle = translate("leave.cancel.fee");
 		}
 		listenTo(leaveConfirmationCtrl);
 		

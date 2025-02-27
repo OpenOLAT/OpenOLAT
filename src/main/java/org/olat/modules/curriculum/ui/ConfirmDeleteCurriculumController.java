@@ -42,7 +42,7 @@ public class ConfirmDeleteCurriculumController extends ConfirmationController {
 	
 	public ConfirmDeleteCurriculumController(UserRequest ureq, WindowControl wControl,
 			String message, String confirmation, String confirmButton, Curriculum curriculum) {
-		super(ureq, wControl, message, confirmation, confirmButton, ButtonType.danger, false);
+		super(ureq, wControl, message, confirmation, confirmButton, ButtonType.danger, null, false);
 		setTranslator(Util.createPackageTranslator(ConfirmationController.class, getLocale(), getTranslator()));
 		this.curriculum = curriculum;
 		initForm(ureq);

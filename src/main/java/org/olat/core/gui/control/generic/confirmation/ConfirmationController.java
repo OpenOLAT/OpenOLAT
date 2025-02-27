@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -53,6 +54,7 @@ public class ConfirmationController extends FormBasicController {
 	private final String confirmation;
 	private final String confirmButton;
 	private final ButtonType confirmButtonType;
+	private final String cancelButton;
 	private Object userObject;
 	
 	public ConfirmationController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
@@ -62,16 +64,17 @@ public class ConfirmationController extends FormBasicController {
 	
 	public ConfirmationController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
 			String confirmButton, ButtonType confirmButtonType) {
-		this(ureq, wControl, message, confirmation, confirmButton, confirmButtonType, true);
+		this(ureq, wControl, message, confirmation, confirmButton, confirmButtonType, null, true);
 	}
 
 	public ConfirmationController(UserRequest ureq, WindowControl wControl, String message, String confirmation,
-			String confirmButton, ButtonType confirmButtonType, boolean init) {
+			String confirmButton, ButtonType confirmButtonType, String cancelButton, boolean init) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.message = message;
 		this.confirmation = confirmation;
 		this.confirmButton = confirmButton;
 		this.confirmButtonType = confirmButtonType;
+		this.cancelButton = cancelButton;
 		
 		if (init) {
 			initForm(ureq);
@@ -127,7 +130,11 @@ public class ConfirmationController extends FormBasicController {
 				confirmLink.setElementCssClass("btn-danger");
 			}
 		}
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		FormCancel cancelLink = uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		if (StringHelper.containsNonWhitespace(cancelButton)) {
+			cancelLink.setCustomDisplayText(cancelButton);
+		}
+		
 	}
 	
 	@Override

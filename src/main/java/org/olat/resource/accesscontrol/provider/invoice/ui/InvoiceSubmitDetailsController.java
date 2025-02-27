@@ -19,6 +19,9 @@
  */
 package org.olat.resource.accesscontrol.provider.invoice.ui;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +40,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Offer;
@@ -72,6 +76,8 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	private BillingAddress billingAddress;
 	
 	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
 	private ACService acService;
 
 	protected InvoiceSubmitDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
@@ -105,7 +111,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		commentEl = uifactory.addTextAreaElement("order.comment", 4, 72, null, formLayout);
 		
 		Offer offer = link.getOffer();
-		if (offer.getCancellingFee() != null) {
+		if (offer.getCancellingFee() != null && offer.getCancellingFee().getAmount() != null) {
 			String cancellingFee = PriceFormat.fullFormat(offer.getCancellingFee());
 			if (offer.getCancellingFeeDeadlineDays() != null) {
 				if (offer.getCancellingFeeDeadlineDays() == 1) {
@@ -117,7 +123,22 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 			uifactory.addStaticTextElement("cancelling.fee", cancellingFee, formLayout);
 		}
 		
-		uifactory.addFormSubmitButton("access.button.fee", formLayout);
+		if (offer.getPrice() != null && offer.getPrice().getAmount() != null) {
+			String price = PriceFormat.fullFormat(offer.getPrice());
+			if (acModule.isVatEnabled()) {
+				BigDecimal vat = acModule.getVat();
+				String vatStr = vat == null ? "" : vat.setScale(3, RoundingMode.HALF_EVEN).toPlainString();
+				price = translate("access.info.price.vat", price, vatStr);
+			} else {
+				price = translate("access.info.price.noVat", price);
+			}
+			uifactory.addStaticTextElement("total.amount", price, formLayout);
+		}
+		
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		formLayout.add("buttons", buttonLayout);
+		uifactory.addFormSubmitButton("access.button.fee", buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
 	private void updateBillingAddress(BillingAddress billingAddress) {
@@ -132,6 +153,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		if (addressSelectionCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				updateBillingAddress(addressSelectionCtrl.getBillingAddress());
+				billingAddressCont.clearError();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -167,6 +189,11 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		}
 		
 		return allOk;
+	}
+	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, FormEvent.CANCELLED_EVENT);
 	}
 
 	@Override

@@ -120,6 +120,10 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 	public void setI18nKey(String i18n) {
 		cancelLink.setCustomDisplayText(translator.translate(i18n));
 	}
+	
+	public void setCustomDisplayText(String customDisplayText) {
+		cancelLink.setCustomDisplayText(customDisplayText);
+	}
 
 	@Override
 	public void dispose() {
