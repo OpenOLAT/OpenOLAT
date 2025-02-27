@@ -165,15 +165,14 @@ public class RegistrationAccountAdminController extends FormBasicController {
 		accountConfigCont.setFormTitle(translate("admin.registration.account.config"));
 		formLayout.add(accountConfigCont);
 		initOrganisationsEl(accountConfigCont);
+		// pending status
 		initPendingRegistrationStatus(accountConfigCont);
+		initPendingPropForm(accountConfigCont);
 		initAutoEnrolment(accountConfigCont);
 
 		Integer expirationInDays = registrationModule.getAccountExpirationInDays();
 		expirationDateDaysEl = uifactory.addTextElement("admin.registration.account.expiration.days", 20,
 				expirationInDays == null ? "" : expirationInDays.toString(), accountConfigCont);
-
-		// pending status
-		initPendingPropForm(accountConfigCont);
 
 		FormLayoutContainer accountAttrCont = FormLayoutContainer.createDefaultFormLayout("accountAttrCont", getTranslator());
 		accountAttrCont.setRootForm(mainForm);
