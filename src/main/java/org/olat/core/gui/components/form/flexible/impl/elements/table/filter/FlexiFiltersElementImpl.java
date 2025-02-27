@@ -93,6 +93,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private boolean alwaysExpanded;
 	private boolean expanded = false;
 	private boolean customPresets = true;
+	private ImplicitFiltersValues implicitFiltersValues;
 	
 	public FlexiFiltersElementImpl(WindowControl wControl, String name, FlexiTableElementImpl tableEl, Translator translator) {
 		super(name);
@@ -542,6 +543,12 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	public void setFiltersValues(List<String> enabledFilters, List<String> implicitFilters, List<FlexiTableFilterValue> values, boolean reset) {
+		if(implicitFilters == null) {
+			implicitFiltersValues = null;
+		} else {
+			implicitFiltersValues = new ImplicitFiltersValues(implicitFilters, values);
+		}
+		
 		for(FlexiFilterButton filterButton:filterButtons) {
 			filterButton.setChanged(false);
 			FlexiTableExtendedFilter filter = filterButton.getFilter();
@@ -691,6 +698,10 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			filterButton.setChanged(false);
 			setFilterButtonCssClass(filterButton, filter.isSelected());
 		}
+		
+		if(implicitFiltersValues != null && implicitFiltersValues.hasImplicitValues()) {
+			setFiltersValues(null, implicitFiltersValues.implicitFilters(), implicitFiltersValues.values(), true);
+		}
 		component.setDirty(true);
 	}
 	
@@ -704,5 +715,13 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		choice.setResetKey("reset");
 		choice.setElementCssClass("o_table_config");
 		return choice;
+	}
+	
+	private record ImplicitFiltersValues(List<String> implicitFilters, List<FlexiTableFilterValue> values) {
+
+		public boolean hasImplicitValues() {
+			return implicitFilters != null && !implicitFilters.isEmpty()
+					&& values != null && !values.isEmpty();
+		}
 	}
 }
