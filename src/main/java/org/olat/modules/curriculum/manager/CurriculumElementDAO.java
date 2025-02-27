@@ -1280,7 +1280,8 @@ public class CurriculumElementDAO {
 		sb.append("select el.key, membership from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
-		  .append(" inner join fetch membership.identity ident");
+		  .append(" inner join fetch membership.identity ident")
+		  .append(" inner join fetch ident.user user");
 		boolean and = false;
 		if(identities != null && identities.length > 0) {
 			and = and(sb, and);
