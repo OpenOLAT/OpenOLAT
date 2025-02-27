@@ -374,7 +374,7 @@ public class MailValidationController extends FormBasicController {
 				runContext.put(RegWizardConstants.MAILDOMAINS, matchedDomains);
 				return true;
 			}
-		} else if (!registrationModule.getDomainList().isEmpty()) {
+		} else if (!registrationModule.getDomainList().isEmpty() && registrationModule.isDomainRestrictionEnabled()) {
 			return registrationManager.validateEmailUsername(getEmailAddress());
 		} else {
 			return true;

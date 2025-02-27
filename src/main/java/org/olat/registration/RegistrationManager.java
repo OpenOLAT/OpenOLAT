@@ -139,8 +139,10 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		// if organisation e-mail domains are enabled, the regular domain list is deactivated.
 		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
 			return true;
-		} else {
+		} else if (registrationModule.isDomainRestrictionEnabled()) {
 			whiteList = registrationModule.getDomainList();
+		} else {
+			return true;
 		}
 
 		if (whiteList.isEmpty()) {

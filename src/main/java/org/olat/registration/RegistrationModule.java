@@ -73,6 +73,8 @@ public class RegistrationModule extends AbstractSpringModule {
 	private static final String AUTO_ENROLMENT_COURSES = "registration.auto.enrolment.courses";
 	private static final String RECURRING_USERS_ENABLED = "registration.recurring.users.enabled";
 	private static final String ADD_DEFAULT_ORG_ADDITIONALLY = "registration.add.default.org.enabled";
+	private static final String DOMAIN_RESTRICTION_ENABLED = "registration.domain.restriction.enabled";
+	private static final String AUTO_ENROLMENT_COURSES_ENABLED = "registration.auto.enrolment.enabled";
 	
 	@Value("${registration.enableSelfRegistration}")
 	private boolean selfRegistrationEnabled;
@@ -86,6 +88,10 @@ public class RegistrationModule extends AbstractSpringModule {
 	private boolean allowRecurringUserEnabled;
 	@Value("${registration.add.default.org}")
 	private boolean addDefaultOrgEnabled;
+	@Value("${registration.domain.restriction.enabled}")
+	private boolean domainRestrictionEnabled;
+	@Value("${registration.auto.enrolment.enabled}")
+	private boolean autoEnrolmentCoursesEnabled;
 	@Value("${registration.valid.minutes.gui}")
 	private Integer validUntilMinutesGui;
 	@Value("${registration.valid.hours.rest:720}")
@@ -242,6 +248,24 @@ public class RegistrationModule extends AbstractSpringModule {
 	public void setAddDefaultOrgEnabled(boolean addDefaultOrgEnabled) {
 		this.addDefaultOrgEnabled = addDefaultOrgEnabled;
 		setStringProperty(ADD_DEFAULT_ORG_ADDITIONALLY, Boolean.toString(addDefaultOrgEnabled), true);
+	}
+
+	public boolean isDomainRestrictionEnabled() {
+		return domainRestrictionEnabled;
+	}
+
+	public void setDomainRestrictionEnabled(boolean domainRestrictionEnabled) {
+		this.domainRestrictionEnabled = domainRestrictionEnabled;
+		setStringProperty(DOMAIN_RESTRICTION_ENABLED, Boolean.toString(domainRestrictionEnabled), true);
+	}
+
+	public boolean isAutoEnrolmentCoursesEnabled() {
+		return autoEnrolmentCoursesEnabled;
+	}
+
+	public void setAutoEnrolmentCoursesEnabled(boolean autoEnrolmentCoursesEnabled) {
+		this.autoEnrolmentCoursesEnabled = autoEnrolmentCoursesEnabled;
+		setStringProperty(AUTO_ENROLMENT_COURSES_ENABLED, Boolean.toString(autoEnrolmentCoursesEnabled), true);
 	}
 	
 	public void resetEmailUserProperty() {
@@ -557,6 +581,16 @@ public class RegistrationModule extends AbstractSpringModule {
 		String addDefaultOrgObj = getStringPropertyValue(ADD_DEFAULT_ORG_ADDITIONALLY, true);
 		if(StringHelper.containsNonWhitespace(addDefaultOrgObj)) {
 			addDefaultOrgEnabled = Boolean.parseBoolean(addDefaultOrgObj);
+		}
+
+		String domainRestrictionObj = getStringPropertyValue(DOMAIN_RESTRICTION_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(domainRestrictionObj)) {
+			domainRestrictionEnabled = Boolean.parseBoolean(domainRestrictionObj);
+		}
+
+		String autoEnrolmentCoursesObj = getStringPropertyValue(AUTO_ENROLMENT_COURSES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(autoEnrolmentCoursesObj)) {
+			autoEnrolmentCoursesEnabled = Boolean.parseBoolean(autoEnrolmentCoursesObj);
 		}
 
 		String enableNotificationEmailObj = getStringPropertyValue("registration.enableNotificationEmail", true);

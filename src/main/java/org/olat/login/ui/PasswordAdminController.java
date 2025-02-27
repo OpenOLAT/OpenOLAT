@@ -51,7 +51,7 @@ public class PasswordAdminController extends BasicController implements Activate
 	private static final String SYNTAX_RES_TYPE = "syntax";
 	private static final String POLICY_RES_TYPE = "policy";
 	
-	private VelocityContainer mainVC;
+	private final VelocityContainer mainVC;
 	private final Link syntaxLink;
 	private final Link policyLink;
 	private final Link authenticationLink;
