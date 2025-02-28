@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.commons.services.sms.ui;
@@ -27,6 +27,7 @@ import org.olat.core.commons.services.sms.SimpleMessageService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -40,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 3 févr. 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class SimpleMessageServiceAdminConfigurationController extends FormBasicController {
@@ -49,7 +50,7 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 	
 	private SpacerElement spacer;
 	private SingleSelection serviceEl;
-	private MultipleSelectionElement enableEl;
+	private FormToggle enableEl;
 	private MultipleSelectionElement resetPasswordEl;
 	private MultipleSelectionElement askByFirstLoginEl;
 	
@@ -74,14 +75,11 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 		
 		setFormTitle("admin.configuration.title");
 		setFormDescription("admin.configuration.description");
-		
-		String[] onValues = new String[]{ translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("enable", "admin.enable", serviceCont, onKeys, onValues);
+
+		enableEl = uifactory.addToggleButton("enable", "admin.enable", translate("on"), translate("off"), serviceCont);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
-		if(messageModule.isEnabled()) {
-			enableEl.select(onKeys[0], true);
-		}
-		
+		enableEl.toggle(messageModule.isEnabled());
+
 		List<MessagesSPI> spies = messagesService.getMessagesSpiList();
 		String[] serviceKeys = new String[spies.size() + 1];
 		String[] serviceValues = new String[spies.size() + 1];
@@ -147,7 +145,7 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 	}
 	
 	private void updateEnableDisable(UserRequest ureq) {
-		boolean enabled = enableEl.isAtLeastSelected(1);
+		boolean enabled = enableEl.isOn();
 		serviceEl.setVisible(enabled);
 		spacer.setVisible(enabled);
 		resetPasswordEl.setVisible(enabled);
@@ -165,7 +163,7 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 			String serviceId = serviceEl.getSelectedKey();
 			MessagesSPI spi = messagesService.getMessagesSpi(serviceId);
 			if(spi != null && !spi.isValid()) {
-				serviceEl.setErrorKey("warning.spi.not.configured", new String[]{ spi.getName() });
+				serviceEl.setErrorKey("warning.spi.not.configured", spi.getName());
 			}
 		}
 	}
@@ -190,7 +188,7 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean enabled = enableEl.isAtLeastSelected(1);
+		boolean enabled = enableEl.isOn();
 		messageModule.setEnabled(enabled);
 		boolean resetPasswordEnabled = enabled && resetPasswordEl.isAtLeastSelected(1);
 		messageModule.setResetPasswordEnabled(resetPasswordEnabled);
