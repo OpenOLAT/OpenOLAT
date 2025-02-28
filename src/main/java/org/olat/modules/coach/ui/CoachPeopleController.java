@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.OrganisationRoles;
@@ -97,6 +98,9 @@ public class CoachPeopleController extends BasicController implements Activateab
 	@Autowired
 	private OrganisationService organisationService;
 
+	@Autowired
+	private IdentityPowerSearchQueries identityPowerSearchQueries;
+
 	public CoachPeopleController(UserRequest ureq, WindowControl wControl, TooledStackedPanel content, CoachingSecurity coachingSec) {
 		super(ureq, wControl);
 		this.content = content;
@@ -159,6 +163,15 @@ public class CoachPeopleController extends BasicController implements Activateab
 			if (!roleSecurityCallback.canActivatePendingAccounts()) {
 				return;
 			}
+			
+			SearchIdentityParams params = new SearchIdentityParams();
+			params.setOrganisations(orgs);
+			params.setUserPropertiesAsIntersectionSearch(true);
+			params.setExactStatusList(List.of(Identity.STATUS_PENDING));
+			if (identityPowerSearchQueries.countIdentitiesByPowerSearch(params) == 0) {
+				return;
+			}
+
 			activatePendingAccountsButton.setVisible(true);
 		}
 	}
