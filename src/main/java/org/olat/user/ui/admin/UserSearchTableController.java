@@ -360,7 +360,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 			bulkChangesButton.setElementCssClass("o_sel_user_bulk_change_attributes");
 			tableEl.addBatchButton(bulkChangesButton);
 		}
-		if(roles.isAdministrator() || roles.isRolesManager()) {
+		if(roles.isAdministrator() || roles.isRolesManager() || settings.isBulkStatus()) {
 			bulkStatusButton = uifactory.addFormLink("bulkStatus.title", formLayout, Link.BUTTON);
 			bulkStatusButton.setElementCssClass("o_sel_user_bulk_change_status");
 			tableEl.addBatchButton(bulkStatusButton);

@@ -35,6 +35,7 @@ public class UserSearchTableSettings {
 	private final boolean organisationsFilter;
 	private final boolean tableSearch;
 	private final boolean lifecycleColumns;
+	private boolean bulkStatus;
 	
 	private UserSearchTableSettings(boolean vCard, boolean lifecycleColumns, boolean bulkMail, boolean bulkOrganisationMove, boolean bulkDelete,
 			boolean statusFilter, boolean organisationsFilter, boolean tableSearch) {
@@ -90,5 +91,13 @@ public class UserSearchTableSettings {
 	
 	public boolean isOrganisationsFilter() {
 		return organisationsFilter;
+	}
+
+	public boolean isBulkStatus() {
+		return bulkStatus;
+	}
+
+	public void setBulkStatus(boolean bulkStatus) {
+		this.bulkStatus = bulkStatus;
 	}
 }

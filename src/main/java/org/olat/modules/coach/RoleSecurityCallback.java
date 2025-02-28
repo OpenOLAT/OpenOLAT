@@ -145,9 +145,9 @@ public interface RoleSecurityCallback {
 	public boolean canCreateAccounts();
 
 	/**
-	 * Can this role manage a pending account activation?
+	 * Can this role activate a pending account?
 	 */
-	public boolean canManagePendingAccountActivation();
+	public boolean canActivatePendingAccounts();
 
 	/**
 	 * Can this role deactivate accounts?

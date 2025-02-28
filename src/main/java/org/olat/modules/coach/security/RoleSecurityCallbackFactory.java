@@ -175,7 +175,7 @@ public class RoleSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canManagePendingAccountActivation() {
+		public boolean canActivatePendingAccounts() {
 			return roleRights.contains(PendingAccountActivationRightProvider.RELATION_RIGHT);
 		}
 

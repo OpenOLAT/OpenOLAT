@@ -27,9 +27,13 @@ import java.util.Set;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.RelationRole;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.scope.Scope;
 import org.olat.core.gui.components.scope.ScopeEvent;
 import org.olat.core.gui.components.scope.ScopeFactory;
@@ -40,14 +44,20 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.CoachingSecurity;
+import org.olat.modules.coach.security.RoleSecurityCallbackFactory;
+import org.olat.user.ui.admin.UserSearchTableController;
+import org.olat.user.ui.admin.UserSearchTableSettings;
 import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +79,8 @@ public class CoachPeopleController extends BasicController implements Activateab
 	private static final String RELATION_PREFIX_SCOPE = "rr_";
 	
 	private final VelocityContainer mainVC;
+	private Link activatePendingAccountsButton;
+	private Link createAccountButton;
 	private final TooledStackedPanel content;
 	private final ScopeSelection searchScopes;
 	
@@ -77,15 +89,22 @@ public class CoachPeopleController extends BasicController implements Activateab
 	private StudentListController studentListCtrl;
 	private OrganisationListController organisationListCtrl;
 	private UserRelationListController userRelationsListController;
+	private UserSearchTableController userSearchTableCtrl;
 	
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
 	
+	@Autowired
+	private OrganisationService organisationService;
+
 	public CoachPeopleController(UserRequest ureq, WindowControl wControl, TooledStackedPanel content, CoachingSecurity coachingSec) {
 		super(ureq, wControl);
 		this.content = content;
 		
 		mainVC = createVelocityContainer("people");
+		
+		addActivatePendingAccountsButton(ureq);
+		addCreateAccountButton(ureq);
 		
 		// As coach
 		List<Scope> scopes = new ArrayList<>(4);
@@ -123,6 +142,49 @@ public class CoachPeopleController extends BasicController implements Activateab
 		}
 	}
 
+	private void addActivatePendingAccountsButton(UserRequest ureq) {
+		activatePendingAccountsButton = LinkFactory.createButton("activate.pending.accounts", mainVC, this);
+		activatePendingAccountsButton.setVisible(false);
+		mainVC.put("activate.pending.accounts", activatePendingAccountsButton);
+
+		Roles roles = ureq.getUserSession().getRoles();
+		if (roles.isEducationManager()) {
+			List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), OrganisationRoles.educationmanager);
+			if (orgs.isEmpty()) {
+				return;
+			}
+			Organisation org = orgs.get(0);
+			RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.create(
+					organisationService.getGrantedOrganisationRights(org, OrganisationRoles.educationmanager));
+			if (!roleSecurityCallback.canActivatePendingAccounts()) {
+				return;
+			}
+			activatePendingAccountsButton.setVisible(true);
+		}
+	}
+
+	private void addCreateAccountButton(UserRequest ureq) {
+		createAccountButton = LinkFactory.createButton("create.account", mainVC, this);
+		createAccountButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+		createAccountButton.setVisible(false);
+		mainVC.put("create.account", createAccountButton);
+
+		Roles roles = ureq.getUserSession().getRoles();
+		if (roles.isEducationManager()) {
+			List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), OrganisationRoles.educationmanager);
+			if (orgs.isEmpty()) {
+				return;
+			}
+			Organisation org = orgs.get(0);
+			RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.create(
+					organisationService.getGrantedOrganisationRights(org, OrganisationRoles.educationmanager));
+			if (!roleSecurityCallback.canCreateAccounts()) {
+				return;
+			}
+			//createAccountButton.setVisible(true);
+		}
+	}
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
@@ -156,9 +218,13 @@ public class CoachPeopleController extends BasicController implements Activateab
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(searchScopes == source) {
-			if(event instanceof ScopeEvent se) {
+			if (event instanceof ScopeEvent se) {
 				doOpen(ureq, se.getSelectedKey());
 			}
+		} else if (activatePendingAccountsButton == source) {
+			doActivatePendingAccounts(ureq);
+		} else if (createAccountButton == source) {
+			doCreateAccount(ureq);
 		}
 	}
 	
@@ -219,6 +285,24 @@ public class CoachPeopleController extends BasicController implements Activateab
 		organisationListCtrl = new OrganisationListController(ureq, bwControl, content, role);
 		listenTo(organisationListCtrl);
 		mainVC.put(MAIN_CONTROLLER, organisationListCtrl.getInitialComponent());
+	}
+
+	private void doActivatePendingAccounts(UserRequest ureq) {
+		UserSearchTableSettings userSearchTableSettings = UserSearchTableSettings.minimal();
+		userSearchTableSettings.setBulkStatus(true);
+		userSearchTableCtrl = new UserSearchTableController(ureq, getWindowControl(), content, userSearchTableSettings);
+		SearchIdentityParams searchIdentityParams = new SearchIdentityParams();
+		searchIdentityParams.setUserPropertiesAsIntersectionSearch(true);
+		searchIdentityParams.setExactStatusList(List.of(Identity.STATUS_PENDING));
+		searchIdentityParams.setOrganisations(
+				organisationService.getOrganisations(getIdentity(), OrganisationRoles.educationmanager));
+		userSearchTableCtrl.loadModel(searchIdentityParams);
+		listenTo(userSearchTableCtrl);
+		mainVC.put(MAIN_CONTROLLER, userSearchTableCtrl.getInitialComponent());
+	}
+
+	private void doCreateAccount(UserRequest ureq) {
+		
 	}
 	
 	/**
