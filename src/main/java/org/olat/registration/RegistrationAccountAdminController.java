@@ -249,7 +249,7 @@ public class RegistrationAccountAdminController extends FormBasicController {
 	}
 
 	private void initAutoEnrolment(FormItemContainer formLayout) {
-		autoEnrolmentCoursesEl = uifactory.addToggleButton("auto.enrolment.courses", "auto.enrolment.courses.toggle", null, null, formLayout);
+		autoEnrolmentCoursesEl = uifactory.addToggleButton("auto.enrolment.courses", "auto.enrolment.courses.toggle", translate("on"), translate("off"), formLayout);
 		autoEnrolmentCoursesEl.addActionListener(FormEvent.ONCHANGE);
 		autoEnrolmentCoursesEl.toggle(registrationModule.isAutoEnrolmentCoursesEnabled());
 
@@ -338,7 +338,7 @@ public class RegistrationAccountAdminController extends FormBasicController {
 
 		uifactory.addStaticTextElement("admin.registration.staticprop.error", null, translate("admin.registration.staticprop.desc"), formLayout);
 
-		staticPropElement = uifactory.addToggleButton("enable.staticprop", "admin.enableStaticProp", null, null, formLayout);
+		staticPropElement = uifactory.addToggleButton("enable.staticprop", "admin.enableStaticProp", translate("on"), translate("off"), formLayout);
 		staticPropElement.addActionListener(FormEvent.ONCHANGE);
 		staticPropElement.toggle(registrationModule.isStaticPropertyMappingEnabled());
 

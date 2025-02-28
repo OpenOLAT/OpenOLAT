@@ -106,7 +106,7 @@ public class RegistrationConfigAdminController extends FormBasicController {
 		FormLayoutContainer enableCont = FormLayoutContainer.createDefaultFormLayout("enableCont", getTranslator());
 		enableCont.setRootForm(mainForm);
 		formLayout.add(enableCont);
-		registrationEl = uifactory.addToggleButton("enable.self.registration", "admin.enableRegistration", null, null, enableCont);
+		registrationEl = uifactory.addToggleButton("enable.self.registration", "admin.enableRegistration", translate("on"), translate("off"), enableCont);
 		registrationEl.addActionListener(FormEvent.ONCHANGE);
 		registrationEl.toggle(registrationModule.isSelfRegistrationEnabled());
 
@@ -157,7 +157,7 @@ public class RegistrationConfigAdminController extends FormBasicController {
 
 		if (!orgEmailDomainEnabled) {
 			domainsContainer.setFormInfo(translate("admin.registration.domains.desc"));
-			domainRestrictionEl = uifactory.addToggleButton("enable.domain.restriction", "admin.enable.domain.restriction", null, null, domainsContainer);
+			domainRestrictionEl = uifactory.addToggleButton("enable.domain.restriction", "admin.enable.domain.restriction", translate("on"), translate("off"), domainsContainer);
 			domainRestrictionEl.addActionListener(FormEvent.ONCHANGE);
 			domainRestrictionEl.toggle(registrationModule.isDomainRestrictionEnabled());
 

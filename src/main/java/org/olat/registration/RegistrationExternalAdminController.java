@@ -60,7 +60,7 @@ public class RegistrationExternalAdminController extends FormBasicController {
 		externalContainer.setFormTitle(translate("remote.login.title"));
 		formLayout.add(externalContainer);
 
-		registrationLinkEl = uifactory.addToggleButton("enable.registration.link", "admin.enableRegistrationLink", null, null, externalContainer);
+		registrationLinkEl = uifactory.addToggleButton("enable.registration.link", "admin.enableRegistrationLink", translate("on"), translate("off"), externalContainer);
 		registrationLinkEl.addActionListener(FormEvent.ONCHANGE);
 		registrationLinkEl.toggle(registrationModule.isSelfRegistrationLinkEnabled());
 
