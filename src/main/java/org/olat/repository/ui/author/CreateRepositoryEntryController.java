@@ -371,9 +371,15 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		publicDatesEl = uifactory.addDropdownSingleselect("cif.public.dates", formLayout, publicKeys, publicValues, null);
 		if (dateTypesEl.isKeySelected("public")) {
 			cycles.stream()
-					.filter(RepositoryEntryLifecycle::isDefaultPublicCycle)
+					.filter(RepositoryEntryLifecycle::isDefaultPublicCycle) // check if there is any default set
 					.findFirst()
-					.ifPresent(re -> publicDatesEl.select(re.getKey().toString(), true));
+					.ifPresent(re -> {
+						// if there is a default, check if that default entry is included in the dropdown
+						// if it is not included it means, it is not applicable here (for example outdated cycle)
+						if (publicDatesEl.containsKey(re.getKey().toString())) {
+							publicDatesEl.select(re.getKey().toString(), true);
+						}
+					});
 		}
 
 		String privateDatePage = Util.getPackageVelocityRoot(RepositoryService.class) + "/cycle_dates.html";
