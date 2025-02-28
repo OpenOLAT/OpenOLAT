@@ -334,9 +334,12 @@ public class AuthHelper {
 		if (identity == null) return LOGIN_FAILED;
 		//test if a user may not logon, since he/she is in the PERMISSION_LOGON
 		if (!BaseSecurityManager.getInstance().isIdentityLoginAllowed(identity, authProvider)) {
-			if(identity != null && Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
+			if(Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
 				log.info(Tracing.M_AUDIT, "was denied login because inactive: {}", identity);
 				return LOGIN_INACTIVE;
+			} else if (Identity.STATUS_PENDING.equals(identity.getStatus())) {
+				log.info(Tracing.M_AUDIT, "was pending login");
+				return LOGIN_PENDING;
 			}
 			log.info(Tracing.M_AUDIT, "was denied login");
 			return LOGIN_DENIED;
