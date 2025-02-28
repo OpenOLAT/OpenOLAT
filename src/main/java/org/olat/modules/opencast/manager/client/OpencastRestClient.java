@@ -239,7 +239,7 @@ public class OpencastRestClient {
 			if (statusCode == HttpStatus.SC_OK) {
 				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
 				SearchResult result = objectMapper.readValue(json, SearchResult.class);
-				return result.getSearchResults().getTotal() > 0;
+				return result.getTotal() > 0;
 			}
 		} catch(Exception e) {
 			log.error("Cannot send: {}", uri, e);
