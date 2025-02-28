@@ -91,8 +91,6 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
-		
 		billingAddressCont = FormLayoutContainer.createCustomFormLayout("billingAddress", getTranslator(), velocity_root + "/billing_address.html");
 		billingAddressCont.setLabel("billing.address", null);
 		billingAddressCont.setMandatory(true);
@@ -114,11 +112,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		if (offer.getCancellingFee() != null && offer.getCancellingFee().getAmount() != null) {
 			String cancellingFee = PriceFormat.fullFormat(offer.getCancellingFee());
 			if (offer.getCancellingFeeDeadlineDays() != null) {
-				if (offer.getCancellingFeeDeadlineDays() == 1) {
-					cancellingFee += " (" + translate("cancelling.fee.addon.one") + ")";
-				} else {
-					cancellingFee += " (" + translate("cancelling.fee.addon", offer.getCancellingFeeDeadlineDays().toString()) + ")";
-				}
+				cancellingFee += " (" + translate("cancelling.with.deadline", offer.getCancellingFeeDeadlineDays().toString()) + ")";
 			}
 			uifactory.addStaticTextElement("cancelling.fee", cancellingFee, formLayout);
 		}
@@ -132,7 +126,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 			} else {
 				price = translate("access.info.price.noVat", price);
 			}
-			uifactory.addStaticTextElement("total.amount", price, formLayout);
+			uifactory.addStaticTextElement("price", price, formLayout);
 		}
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
