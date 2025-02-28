@@ -80,6 +80,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserAccountController extends FormBasicController {
 
+	private final boolean canDeactivateAccounts;
 	private FormSubmit saveButton;
 	private FormCancel cancelButton;
 	private StaticTextElement userTypeEl;
@@ -118,14 +119,20 @@ public class UserAccountController extends FormBasicController {
 	@Autowired
 	private UserBulkChangeManager userBulkChangeManager;
 	
+	public UserAccountController(WindowControl wControl, UserRequest ureq, Identity identity) {
+		this(wControl, ureq, identity, false);
+	}
+
 	/**
 	 * Constructor for a controller that lets you edit the users system roles and rights.
 	 * @param wControl
 	 * @param ureq
 	 * @param identity identity to be edited
 	 */
-	public UserAccountController(WindowControl wControl, UserRequest ureq, Identity identity) {
+	public UserAccountController(WindowControl wControl, UserRequest ureq, Identity identity,
+								 boolean canDeactivateAccounts) {
 		super(ureq, wControl);
+		this.canDeactivateAccounts = canDeactivateAccounts;
 		setTranslator(Util.createPackageTranslator(UserAdminController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		this.editedIdentity = identity;
@@ -185,7 +192,7 @@ public class UserAccountController extends FormBasicController {
 		sendLoginDeniedEmailEl = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", formLayout, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")});
 		sendLoginDeniedEmailEl.setLabel(null, null);
 		
-		statusEl.setVisible(iAmAdmin || iAmUserManager);
+		statusEl.setVisible(iAmAdmin || iAmUserManager || canDeactivateAccounts);
 		sendLoginDeniedEmailEl.setVisible(false);
 		
 		// life cycle information

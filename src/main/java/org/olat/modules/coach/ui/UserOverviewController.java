@@ -92,6 +92,7 @@ import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageDisplayController;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
+import org.olat.user.ui.admin.UserAccountController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -113,6 +114,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	private static final String CMD_GROUPS = "Groups";
 	private static final String CMD_PROFILE = "Profile";
 	private static final String CMD_ENROLLMENTS = "Enrollments";
+	private static final String CMD_ACCOUNT = "Account";
 
 	private final VelocityContainer mainVC;
 
@@ -124,6 +126,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	private int groupTabIndex;
 	private int calendarTabIndex;
 	private int profileTabIndex;
+	private int accountTabIndex;
 	
 	private Link homeLink, contactLink, resetLink, bookOnBehalfOfLink;
 	private Link nextStudent, detailsStudentCmp, previousStudent;
@@ -146,6 +149,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	private CertificateAndEfficiencyStatementWrapperController certificateAndEfficiencyStatementWrapperController;
 	private BadgesController badgesController;
 	private BookOnBehalfOfController bookOnBehalfOfController;
+	private UserAccountController userAccountController;
 
 	private TabbedPane functionsTabbedPane;
 
@@ -357,6 +361,15 @@ public class UserOverviewController extends BasicController implements Activatea
 				return profileAndHomePageEditController.getInitialComponent();
 			});			
 		}
+		
+		if (roleSecurityCallback.canDeactivateAccounts()) {
+			accountTabIndex = functionsTabbedPane.addTab(ureq, translate("account"), uureq -> {
+				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_ACCOUNT), null);
+						userAccountController = new UserAccountController(bwControl, uureq, mentee, true);
+				listenTo(userAccountController);
+			return userAccountController.getInitialComponent();
+			});
+		}
 
 		mainVC.put("functionsTabbedPane", functionsTabbedPane);
 	}
@@ -474,6 +487,8 @@ public class UserOverviewController extends BasicController implements Activatea
 			functionsTabbedPane.setSelectedPane(ureq, groupTabIndex);
 		} else if(CMD_PROFILE.equalsIgnoreCase(type) && profileTabIndex >= 0) {
 			functionsTabbedPane.setSelectedPane(ureq, profileTabIndex);
+		} else if (CMD_ACCOUNT.equalsIgnoreCase(type) && accountTabIndex >= 0) {
+			functionsTabbedPane.setSelectedPane(ureq, accountTabIndex);
 		}
 	}
 
