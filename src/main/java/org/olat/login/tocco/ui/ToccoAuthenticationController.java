@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.login.tocco.ui;
@@ -22,6 +22,7 @@ package org.olat.login.tocco.ui;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -53,10 +54,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 22 avr. 2021<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class ToccoAuthenticationController extends AuthenticationController implements Activateable2 {
+
+	private static final Logger log = Tracing.createLoggerFor(ToccoAuthenticationController.class);
 	
 	private Identity authenticatedIdentity;
 
@@ -152,8 +155,13 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 			} else {
 				showError("login.error");
 			}
-		} else if(Identity.STATUS_INACTIVE.equals(authenticatedIdentity.getStatus())) {
+		} else if(Identity.STATUS_INACTIVE.equals(authenticatedIdentity.getStatus())
+				|| Identity.STATUS_LOGIN_DENIED.equals(authenticatedIdentity.getStatus())) {
 			showError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+			log.error("Tocco Login ok but the user is inactive or denied: {}", authenticatedIdentity);
+		} else if (Identity.STATUS_PENDING.equals(authenticatedIdentity.getStatus())) {
+			showError("login.error.pending", WebappHelper.getMailConfig("mailSupport"));
+			log.error("Tocco Login ok but the user is pending: {}", authenticatedIdentity);
 		} else {
 			loginModule.clearFailedLoginAttempts(login);
 			// Check if disclaimer has been accepted

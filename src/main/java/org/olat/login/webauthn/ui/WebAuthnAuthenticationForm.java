@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -79,10 +80,12 @@ import com.webauthn4j.server.ServerProperty;
  * </ul>
  * 
  * Initial date: 3 oct. 2023<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class WebAuthnAuthenticationForm extends FormBasicController {
+
+	private static final Logger log = Tracing.createLoggerFor(WebAuthnAuthenticationForm.class);
 
 	private TextElement loginEl;
 	private TextElement pass;
@@ -432,8 +435,13 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				} else {
 					setError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
 				}
-			} else if(Identity.STATUS_INACTIVE.equals(authenticatedIdentity.getStatus())) {
+			} else if(Identity.STATUS_INACTIVE.equals(authenticatedIdentity.getStatus())
+					|| Identity.STATUS_LOGIN_DENIED.equals(authenticatedIdentity.getStatus())) {
 				setError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+				log.error("WebAuthn Login ok but the user is inactive or denied: {}", authenticatedIdentity);
+			} else if (Identity.STATUS_PENDING.equals(authenticatedIdentity.getStatus())) {
+				setError("login.error.pending", WebappHelper.getMailConfig("mailSupport"));
+				log.error("WebAuthn Login ok but the user is pending: {}", authenticatedIdentity);
 			} else {
 				step = Flow.authenticatedWithPassword;
 				

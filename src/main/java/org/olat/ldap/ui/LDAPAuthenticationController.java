@@ -153,8 +153,14 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin() || ldapLoginModule.isTryFallbackToOLATPwdOnLogin()) {
 					AuthenticationStatus status = new AuthenticationStatus();
 					authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass, status);
-					if(status.getStatus() == AuthHelper.LOGIN_INACTIVE) {
+					if(status.getStatus() == AuthHelper.LOGIN_INACTIVE
+							|| status.getStatus() == AuthHelper.LOGIN_DENIED) {
 						showError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+						log.error("LDAP Login ok but the user is inactive or denied: {}", authenticatedIdentity);
+						return;
+					} else if(status.getStatus() == AuthHelper.LOGIN_PENDING) {
+						showError("login.error.pending", WebappHelper.getMailConfig("mailSupport"));
+						log.error("LDAP Login ok but the user is pending: {}", authenticatedIdentity);
 						return;
 					}
 				}

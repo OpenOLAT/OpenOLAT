@@ -227,6 +227,8 @@ public class OLATAuthManager implements AuthenticationSPI {
 				if(status != null) {
 					if(Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
 						status.setStatus(AuthHelper.LOGIN_INACTIVE);
+					} else if (Identity.STATUS_PENDING.equals(identity.getStatus())) {
+						status.setStatus(AuthHelper.LOGIN_PENDING);
 					} else {
 						status.setStatus(AuthHelper.LOGIN_DENIED);
 					}

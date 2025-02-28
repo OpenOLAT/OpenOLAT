@@ -254,12 +254,16 @@ public class OAuthDispatcher implements Dispatcher {
 		if (loginStatus != AuthHelper.LOGIN_OK) {
 			if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 				DispatcherModule.redirectToServiceNotAvailable(response);
-			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
+			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE
+					|| loginStatus == AuthHelper.LOGIN_DENIED) {
 				error(ureq, translate(ureq, "login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
-				log.error("OAuth Login ok but the user is inactive: {}", identity);
+				log.error("OAuth Login ok but the user is inactive or denied: {}", identity);
+			} else if (loginStatus == AuthHelper.LOGIN_PENDING) {
+				error(ureq, translate(ureq, "login.error.pending", WebappHelper.getMailConfig("mailSupport")));
+				log.error("OAuth Login ok but the user is pending: {}", identity);
 			} else {
 				// error, redirect to login screen
-				DispatcherModule.redirectToDefaultDispatcher(response); 
+				DispatcherModule.redirectToDefaultDispatcher(response);
 			}
 		} else {
 			ureq.getUserSession().setOAuth2Tokens(infos.getOAuth2Tokens());

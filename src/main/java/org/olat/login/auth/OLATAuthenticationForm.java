@@ -174,8 +174,13 @@ public class OLATAuthenticationForm extends FormBasicController {
 
 		AuthenticationStatus status = new AuthenticationStatus();
 		Identity authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass, status);
-		if(status.getStatus() == AuthHelper.LOGIN_INACTIVE) {
+		if(status.getStatus() == AuthHelper.LOGIN_INACTIVE
+				|| status.getStatus() == AuthHelper.LOGIN_DENIED) {
 			setError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+			getLogger().info(Tracing.M_AUDIT, "OAuth Login ok but the user is inactive or denied: {}", authenticatedIdentity);
+		} else if (status.getStatus() == AuthHelper.LOGIN_PENDING) {
+			setError("login.error.pending", WebappHelper.getMailConfig("mailSupport"));
+			getLogger().info(Tracing.M_AUDIT, "OAuth Login ok but the user is pending: {}", authenticatedIdentity);
 		} else if (authenticatedIdentity == null) {
 			if (loginModule.registerFailedLoginAttempt(login)) {
 				getLogger().info(Tracing.M_AUDIT, "Too many failed login attempts for {}. Login blocked. IP::{}", login, ureq.getHttpReq().getRemoteAddr());

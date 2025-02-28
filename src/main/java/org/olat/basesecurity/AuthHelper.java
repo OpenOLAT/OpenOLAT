@@ -102,6 +102,7 @@ public class AuthHelper {
 	public static final int LOGIN_INACTIVE = 4;
 	public static final int LOGIN_REGISTER = 5;
 	public static final int LOGIN_NEED_LOGIN = 6;
+	public static final int LOGIN_PENDING = 7;
 	
 
 	private static final int MAX_SESSION_NO_LIMIT = 0;
