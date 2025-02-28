@@ -31,7 +31,7 @@ import org.olat.modules.opencast.OpencastEvent;
  *
  */
 public class OpencastEventImpl implements OpencastEvent {
-	
+
 	private String identifier;
 	private String title;
 	private String description;
@@ -40,6 +40,7 @@ public class OpencastEventImpl implements OpencastEvent {
 	private Date start;
 	private Date end;
 	private String series;
+	private boolean publicAvailable;
 
 	@Override
 	public String getIdentifier() {
@@ -111,6 +112,15 @@ public class OpencastEventImpl implements OpencastEvent {
 
 	public void setSeries(String series) {
 		this.series = series;
+	}
+
+	@Override
+	public boolean isPublicAvailable() {
+		return publicAvailable;
+	}
+
+	public void setPublicAvailable(boolean publicAvailable) {
+		this.publicAvailable = publicAvailable;
 	}
 
 }

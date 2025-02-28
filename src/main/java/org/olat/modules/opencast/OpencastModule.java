@@ -60,6 +60,7 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 	private static final String ROLES_PARTICIPANT = "roles.participant";
 	private static final String AUTH_DELEGATE_TYPE = "auth.delegate";
 	private static final String AUTH_DELEGATE_ROLES = "auth.delegate.roles";
+	private static final String AUTH_PUBLIC_ROLES = "auth.public.roles";
 	
 	@Value("${opencast.enabled}")
 	private boolean enabled;
@@ -93,6 +94,8 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 	private Type authDelegateType;
 	@Value("${opencast.course.node.auth.delegate.roles}")
 	private String authDelegateRoles;
+	@Value("${opencast.course.node.auth.public.roles}")
+	private String authPublicRoles;
 
 	private String apiAuthorizationHeader;
 	
@@ -140,6 +143,7 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 			authDelegateType = Type.User;
 		}
 		authDelegateRoles = getStringPropertyValue(AUTH_DELEGATE_ROLES, authDelegateRoles);
+		authPublicRoles = getStringPropertyValue(AUTH_PUBLIC_ROLES, authPublicRoles);
 	}
 
 	@Override
@@ -320,6 +324,15 @@ public class OpencastModule extends AbstractSpringModule implements ConfigOnOff 
 	public void setAuthDelegateRoles(String authDelegateRoles) {
 		this.authDelegateRoles = authDelegateRoles;
 		setStringProperty(AUTH_DELEGATE_ROLES, authDelegateRoles, true);
+	}
+
+	public String getAuthPublicRoles() {
+		return authPublicRoles;
+	}
+
+	public void setAuthPublicRoles(String authPublicRoles) {
+		this.authPublicRoles = authPublicRoles;
+		setStringProperty(AUTH_PUBLIC_ROLES, authPublicRoles, true);
 	}
 
 }

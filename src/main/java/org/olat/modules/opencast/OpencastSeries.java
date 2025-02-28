@@ -38,5 +38,7 @@ public interface OpencastSeries {
 	List<String> getContributors();
 	
 	List<String> getSubjects();
+	
+	boolean isPublicAvailable();
 
 }

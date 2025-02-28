@@ -68,6 +68,7 @@ implements SortableFlexiTableDataModel<OpencastSeries> {
 			case description: return Formatter.truncate(series.getDescription(), 200);
 			case contributors: return series.getContributors().stream().collect(Collectors.joining(", "));
 			case subjects: return series.getSubjects().stream().collect(Collectors.joining(", "));
+			case publicAvailable: return series.isPublicAvailable();
 			default: return null;
 		}
 	}
@@ -78,6 +79,7 @@ implements SortableFlexiTableDataModel<OpencastSeries> {
 		description("series.description"),
 		contributors("series.contributors"),
 		subjects("series.subjects"),
+		publicAvailable("public"),
 		select("select");
 		
 		private final String i18nKey;

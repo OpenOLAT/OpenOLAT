@@ -69,6 +69,7 @@ implements SortableFlexiTableDataModel<OpencastEvent> {
 			case presenters: return event.getPresenters().stream().collect(Collectors.joining(", "));
 			case start: return event.getStart();
 			case series: return event.getSeries();
+			case publicAvailable: return event.isPublicAvailable();
 			default: return null;
 		}
 	}
@@ -80,6 +81,7 @@ implements SortableFlexiTableDataModel<OpencastEvent> {
 		presenters("event.presenters"),
 		start("event.start"),
 		series("event.series"),
+		publicAvailable("public"),
 		select("select");
 		
 		private final String i18nKey;
