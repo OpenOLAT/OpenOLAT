@@ -46,4 +46,6 @@ public interface OpencastEvent {
 	
 	String getSeries();
 	
+	boolean isPublicAvailable();
+	
 }

@@ -72,6 +72,7 @@ public class OpencastAdminController extends FormBasicController {
 	private MultipleSelectionElement courseNodeEnabledEl;
 	private SingleSelection authDelegateTypeEl;
 	private TextElement authDelegateRolesEl;
+	private TextElement authPublicRolesEl;
 	private MultipleSelectionElement rolesAdminEl;
 	private MultipleSelectionElement rolesCoachEl;
 	private MultipleSelectionElement rolesParticipantEl;
@@ -152,6 +153,8 @@ public class OpencastAdminController extends FormBasicController {
 		authDelegateRolesEl = uifactory.addTextElement("admin.auth.delegate.roles", 128, null, formLayout);
 		authDelegateRolesEl.setMandatory(true);
 		
+		authPublicRolesEl = uifactory.addTextElement("admin.auth.public.roles", 128, null, formLayout);
+		
 		String[] ltiRolesValues = new String[]{
 				translate("roles.lti.learner"),
 				translate("roles.lti.instructor"),
@@ -182,6 +185,7 @@ public class OpencastAdminController extends FormBasicController {
 		courseNodeEnabledEl.select(ENABLED_KEYS[0], opencastModule.isCourseNodeEnabledRaw());
 		authDelegateTypeEl.select(opencastModule.getAuthDelegateType().name(), true);
 		authDelegateRolesEl.setValue(opencastModule.getAuthDelegateRoles());
+		authPublicRolesEl.setValue(opencastModule.getAuthPublicRoles());
 		udpateRoles(rolesAdminEl, opencastModule.getRolesAdmin());
 		udpateRoles(rolesCoachEl, opencastModule.getRolesCoach());
 		udpateRoles(rolesParticipantEl, opencastModule.getRolesParticipant());
@@ -199,6 +203,7 @@ public class OpencastAdminController extends FormBasicController {
 		authDelegateTypeEl.setVisible(enabled);
 		boolean authDelegateRoles = authDelegateTypeEl.isOneSelected() && Type.Roles == Type.valueOf(authDelegateTypeEl.getSelectedKey());
 		authDelegateRolesEl.setVisible(enabled && authDelegateRoles);
+		authPublicRolesEl.setVisible(enabled);
 		rolesAdminEl.setVisible(enabled);
 		rolesCoachEl.setVisible(enabled);
 		rolesParticipantEl.setVisible(enabled);
@@ -300,6 +305,8 @@ public class OpencastAdminController extends FormBasicController {
 					? authDelegateRolesEl.getValue()
 					: null;
 			opencastModule.setAuthDelegateRoles(authDelegateRoles);
+			
+			opencastModule.setAuthPublicRoles(authPublicRolesEl.getValue());
 			
 			String rolesAdmin = getRoles(rolesAdminEl);
 			opencastModule.setRolesAdmin(rolesAdmin);

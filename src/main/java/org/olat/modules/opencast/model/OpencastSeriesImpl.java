@@ -36,6 +36,7 @@ public class OpencastSeriesImpl implements OpencastSeries {
 	private String description;
 	private List<String> contributors;
 	private List<String> subjects;
+	private boolean publicAvailable;
 	
 	@Override
 	public String getIdentifier() {
@@ -80,6 +81,14 @@ public class OpencastSeriesImpl implements OpencastSeries {
 	
 	public void setSubjects(List<String> subjects) {
 		this.subjects = subjects;
+	}
+	
+	@Override
+	public boolean isPublicAvailable() {
+		return publicAvailable;
+	}
+	public void setPublicAvailable(boolean publicAvailable) {
+		this.publicAvailable = publicAvailable;
 	}
 	
 }

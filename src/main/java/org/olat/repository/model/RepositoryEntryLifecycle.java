@@ -78,6 +78,8 @@ public class RepositoryEntryLifecycle implements Persistable, CreateInfo, Modifi
 	private String label;
 	@Column(name="r_privatecycle", nullable=false, insertable=true, updatable=false)
 	private boolean privateCycle;
+	@Column(name="r_defaultpubliccycle", nullable=false, insertable=true, updatable=true)
+	private boolean defaultPublicCycle;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="r_validfrom", nullable=true, insertable=true, updatable=true)
@@ -138,6 +140,14 @@ public class RepositoryEntryLifecycle implements Persistable, CreateInfo, Modifi
 	public void setPrivateCycle(boolean privateCycle) {
 		this.privateCycle = privateCycle;
 	}
+
+	public boolean isDefaultPublicCycle() {
+		return defaultPublicCycle;
+	}
+
+	public void setDefaultPublicCycle(boolean defaultPublicCycle) {
+		this.defaultPublicCycle = defaultPublicCycle;
+	}
 	
 	public Date getValidFrom() {
 		return validFrom;
@@ -160,8 +170,7 @@ public class RepositoryEntryLifecycle implements Persistable, CreateInfo, Modifi
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof RepositoryEntryLifecycle) {
-			RepositoryEntryLifecycle relc = (RepositoryEntryLifecycle)obj;
+		if(obj instanceof RepositoryEntryLifecycle relc) {
 			return key != null && key.equals(relc.key);
 		}
 		return false;

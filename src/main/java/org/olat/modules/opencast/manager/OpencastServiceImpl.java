@@ -23,12 +23,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIManager;
@@ -81,15 +83,19 @@ public class OpencastServiceImpl implements OpencastService {
 	@Override
 	public OpencastEvent getEvent(String identifier) {
 		Event event = opencastRestClient.getEvent(identifier);
-		return event != null? toOpencastEvent(event): null;
+		return event != null? toOpencastEvent(event, false): null;
 	}
 
 	@Override
 	public List<OpencastEvent> getEvents(AuthDelegate authDelegate) {
+		Set<String> publicEventIdentifiers = getPublicEventIdentifiers();
+		
 		GetEventsParams params = GetEventsParams.builder()
 				.setAuthDelegate(authDelegate)
 				.build();
-		return getEvents(params);
+		return Arrays.stream(opencastRestClient.getEvents(params))
+				.map(event -> toOpencastEvent(event, publicEventIdentifiers.contains(event.getIdentifier())))
+				.toList();
 	}
 
 	@Override
@@ -114,13 +120,13 @@ public class OpencastServiceImpl implements OpencastService {
 	private List<OpencastEvent> toOpencastEvents(Event[] events) {
 		List<OpencastEvent> opencastEvents = new ArrayList<>(events.length);
 		for (Event event : events) {
-			OpencastEvent opencastEvent = toOpencastEvent(event);
+			OpencastEvent opencastEvent = toOpencastEvent(event, false);
 			opencastEvents.add(opencastEvent);
 		}
 		return opencastEvents;
 	}
 
-	private OpencastEvent toOpencastEvent(Event event) {
+	private OpencastEvent toOpencastEvent(Event event, boolean publicAvailable) {
 		OpencastEventImpl opencastEvent = new OpencastEventImpl();
 		opencastEvent.setIdentifier(event.getIdentifier());
 		opencastEvent.setTitle(event.getTitle());
@@ -129,9 +135,24 @@ public class OpencastServiceImpl implements OpencastService {
 		opencastEvent.setPresenters(Arrays.stream(event.getPresenter()).collect(Collectors.toList()));
 		opencastEvent.setStart(event.getStart());
 		opencastEvent.setSeries(event.getSeries());
+		opencastEvent.setPublicAvailable(publicAvailable);
 		// End has to be calculated with the duration, but the duration of the event is always 0.
 		// Only the duration of the metadata would be the right value. We skip that for now.
 		return opencastEvent;
+	}
+	
+	private Set<String> getPublicEventIdentifiers() {
+		if (!StringHelper.containsNonWhitespace(opencastModule.getAuthPublicRoles())) {
+			return  Set.of();
+		}
+		
+		AuthDelegate publicAuthDelegate = AuthDelegate.of(AuthDelegate.Type.Roles, opencastModule.getAuthPublicRoles());
+		GetEventsParams publicEventsParams = GetEventsParams.builder()
+				.setAuthDelegate(publicAuthDelegate)
+				.build();
+		return Arrays.stream(opencastRestClient.getEvents(publicEventsParams))
+				.map(Event::getIdentifier)
+				.collect(Collectors.toSet());
 	}
 
 	@Override
@@ -142,39 +163,44 @@ public class OpencastServiceImpl implements OpencastService {
 	@Override
 	public OpencastSeries getSeries(String identifier) {
 		Series series = opencastRestClient.getSeries(identifier);
-		return series != null? toOpencastSeries(series): null;
+		return series != null? toOpencastSeries(series, false): null;
 	}
 
 	@Override
 	public List<OpencastSeries> getSeries(AuthDelegate authDelegate) {
+		Set<String> publicSeriesIdentifiers = getPublicSeriesIdentifiers();
+		
 		GetSeriesParams params = GetSeriesParams.builder()
 				.setAuthDelegate(authDelegate)
 				.build();
-		return getSeries(params);
-	}
-	
-	private List<OpencastSeries> getSeries(GetSeriesParams params) {
-		Series[] series = opencastRestClient.getSeries(params);
-		return toOpencastSeries(series);
-	}
-	
-	private List<OpencastSeries> toOpencastSeries(Series[] series) {
-		List<OpencastSeries> opencastSeriesLIst = new ArrayList<>(series.length);
-		for (Series event : series) {
-			OpencastSeries opencastSeries = toOpencastSeries(event);
-			opencastSeriesLIst.add(opencastSeries);
-		}
-		return opencastSeriesLIst;
+		return Arrays.stream(opencastRestClient.getSeries(params))
+				.map(event -> toOpencastSeries(event, publicSeriesIdentifiers.contains(event.getIdentifier())))
+				.toList();
 	}
 
-	private OpencastSeries toOpencastSeries(Series series) {
+	private OpencastSeries toOpencastSeries(Series series, boolean publicAvailable) {
 		OpencastSeriesImpl opencastSeries = new OpencastSeriesImpl();
 		opencastSeries.setIdentifier(series.getIdentifier());
 		opencastSeries.setTitle(series.getTitle());
 		opencastSeries.setDescription(series.getDescription());
 		opencastSeries.setContributors(Arrays.stream(series.getContributors()).collect(Collectors.toList()));
 		opencastSeries.setSubjects(Arrays.stream(series.getSubjects()).collect(Collectors.toList()));
+		opencastSeries.setPublicAvailable(publicAvailable);
 		return opencastSeries;
+	}
+	
+	private Set<String> getPublicSeriesIdentifiers() {
+		if (!StringHelper.containsNonWhitespace(opencastModule.getAuthPublicRoles())) {
+			return  Set.of();
+		}
+		
+		AuthDelegate publicAuthDelegate = AuthDelegate.of(AuthDelegate.Type.Roles, opencastModule.getAuthPublicRoles());
+		GetSeriesParams publicSeriessParams = GetSeriesParams.builder()
+				.setAuthDelegate(publicAuthDelegate)
+				.build();
+		return Arrays.stream(opencastRestClient.getSeries(publicSeriessParams))
+				.map(Series::getIdentifier)
+				.collect(Collectors.toSet());
 	}
 
 	@Override

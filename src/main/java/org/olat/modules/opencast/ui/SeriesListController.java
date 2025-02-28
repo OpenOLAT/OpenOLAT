@@ -19,9 +19,9 @@
  */
 package org.olat.modules.opencast.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,6 +34,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -52,8 +56,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SeriesListController extends FormBasicController {
 	
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_PUBLIC = "Public";
 	private static final String CMD_SELECT = "select";
 	
+	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabPublic;
 	private FlexiTableElement tableEl;
 	private SeriesDataModel dataModel;
 	
@@ -68,7 +76,8 @@ public class SeriesListController extends FormBasicController {
 		series = opencastService.getSeries(authDelegate);
 		
 		initForm(ureq);
-		loadModel(null);
+		initFilterTabs(ureq);
+		loadModel();
 	}
 
 	@Override
@@ -79,6 +88,7 @@ public class SeriesListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SeriesCols.description));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SeriesCols.contributors));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SeriesCols.subjects));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SeriesCols.publicAvailable));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CMD_SELECT, translate(SeriesCols.select.i18nHeaderKey()), CMD_SELECT));
 		
 		dataModel = new SeriesDataModel(columnsModel, getLocale());
@@ -86,24 +96,55 @@ public class SeriesListController extends FormBasicController {
 		tableEl.setAndLoadPersistedPreferences(ureq, "opencast-series");
 		tableEl.setSearchEnabled(true);
 	}
+	
+	private void initFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
+		
+		tabAll = FlexiFiltersTabFactory.tab(
+				TAB_ID_ALL,
+				translate("all"),
+				TabSelectionBehavior.nothing);
+		tabs.add(tabAll);
+		
+		tabPublic = FlexiFiltersTabFactory.tab(
+				TAB_ID_PUBLIC,
+				translate("tab.public"),
+				TabSelectionBehavior.nothing);
+		tabs.add(tabPublic);
+		
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, tabAll);
+	}
 
-	private void loadModel(String search) {
-		List<OpencastSeries> filteredSeries = StringHelper.containsNonWhitespace(search)
-				? series.stream().filter(searchFilter(search)).collect(Collectors.toList())
-				: series;
+	private void loadModel() {
+		List<OpencastSeries> filteredSeries = series.stream()
+				.filter(publicFilter())
+				.filter(searchFilter())
+				.toList();
+		
 		dataModel.setObjects(filteredSeries);
 		tableEl.reset(false, false, true);
 	}
 
-	private Predicate<? super OpencastSeries> searchFilter(String search) {
-		return event -> {
-			return contains(event.getTitle(), search)
-					|| contains(event.getDescription(), search)
-					|| contains(event.getContributors(), search)
-					|| contains(event.getIdentifier(), search)
-					|| contains(event.getSubjects(), search)
-					;
-			};
+	private Predicate<? super OpencastSeries> publicFilter() {
+		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabPublic) {
+			return OpencastSeries::isPublicAvailable;
+		}
+		
+		return series -> true;
+	}
+
+	private Predicate<? super OpencastSeries> searchFilter() {
+		if (StringHelper.containsNonWhitespace(tableEl.getQuickSearchString())) {
+			String search = tableEl.getQuickSearchString();
+			return series -> (contains(series.getTitle(), search)
+					|| contains(series.getDescription(), search)
+					|| contains(series.getContributors(), search)
+					|| contains(series.getIdentifier(), search)
+					|| contains(series.getSubjects(), search));
+		}
+		
+		return series -> true;
 	}
 
 	private boolean contains(String value, String search) {
@@ -127,9 +168,10 @@ public class SeriesListController extends FormBasicController {
 					OpencastSeries opencastSeries = dataModel.getObject(se.getIndex());
 					fireEvent(ureq, new OpencastSeriesSelectionEvent(opencastSeries));
 				}
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				loadModel();
 			} else if (event instanceof FlexiTableSearchEvent) {
-				String search = ((FlexiTableSearchEvent)event).getSearch();
-				loadModel(search);
+				loadModel();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

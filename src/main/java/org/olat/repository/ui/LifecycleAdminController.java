@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.repository.ui;
@@ -53,7 +53,7 @@ import org.olat.repository.ui.LifecycleDataModel.LCCols;
 /**
  * 
  * Initial date: 10.06.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class LifecycleAdminController extends FormBasicController {
@@ -87,6 +87,7 @@ public class LifecycleAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.validFrom.i18nKey(), LCCols.validFrom.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.validTo.i18nKey(), LCCols.validTo.ordinal()));
 
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.defaultCycle.i18nKey(), LCCols.defaultCycle.ordinal()));
 		FlexiCellRenderer delRenderer = new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("delete"), "delete-cycle"), null);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", LCCols.delete.ordinal(), "delete-cycle", delRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate(LCCols.edit.i18nKey()), "edit-lifecycle"));

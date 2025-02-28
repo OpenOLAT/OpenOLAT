@@ -19,9 +19,9 @@
  */
 package org.olat.modules.opencast.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,6 +34,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -52,8 +56,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EventListController extends FormBasicController {
 	
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_PUBLIC = "Public";
 	private static final String CMD_SELECT = "select";
 	
+	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabPublic;
 	private FlexiTableElement tableEl;
 	private EventDataModel dataModel;
 	
@@ -68,7 +76,8 @@ public class EventListController extends FormBasicController {
 		events = opencastService.getEvents(authDelegate);
 		
 		initForm(ureq);
-		loadModel(null);
+		initFilterTabs(ureq);
+		loadModel();
 	}
 
 	@Override
@@ -80,6 +89,7 @@ public class EventListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, EventCols.presenters));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EventCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, EventCols.series));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EventCols.publicAvailable));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CMD_SELECT, translate(EventCols.select.i18nHeaderKey()), CMD_SELECT));
 		
 		dataModel = new EventDataModel(columnsModel, getLocale());
@@ -87,24 +97,56 @@ public class EventListController extends FormBasicController {
 		tableEl.setAndLoadPersistedPreferences(ureq, "opencast-event");
 		tableEl.setSearchEnabled(true);
 	}
+	
+	private void initFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
+		
+		tabAll = FlexiFiltersTabFactory.tab(
+				TAB_ID_ALL,
+				translate("all"),
+				TabSelectionBehavior.nothing);
+		tabs.add(tabAll);
+		
+		tabPublic = FlexiFiltersTabFactory.tab(
+				TAB_ID_PUBLIC,
+				translate("tab.public"),
+				TabSelectionBehavior.nothing);
+		tabs.add(tabPublic);
+		
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, tabAll);
+	}
 
-	private void loadModel(String search) {
-		List<OpencastEvent> filteredEvents = StringHelper.containsNonWhitespace(search)
-				? events.stream().filter(searchFilter(search)).collect(Collectors.toList())
-				: events;
+	private void loadModel() {
+		List<OpencastEvent> filteredEvents = events.stream()
+				.filter(publicFilter())
+				.filter(searchFilter())
+				.toList();
+		
 		dataModel.setObjects(filteredEvents);
 		tableEl.reset(false, false, true);
 	}
 
-	private Predicate<? super OpencastEvent> searchFilter(String search) {
-		return event -> {
-			return contains(event.getTitle(), search)
-					|| contains(event.getDescription(), search)
-					|| contains(event.getSeries(), search)
-					|| contains(event.getIdentifier(), search)
-					|| contains(event.getPresenters(), search)
-					;
-			};
+	private Predicate<? super OpencastEvent> publicFilter() {
+		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabPublic) {
+			return OpencastEvent::isPublicAvailable;
+		}
+		
+		return event -> true;
+	}
+
+	private Predicate<? super OpencastEvent> searchFilter() {
+		if (StringHelper.containsNonWhitespace(tableEl.getQuickSearchString())) {
+			String search = tableEl.getQuickSearchString();
+			return event -> (contains(event.getTitle(), search)
+						|| contains(event.getDescription(), search)
+						|| contains(event.getSeries(), search)
+						|| contains(event.getIdentifier(), search)
+						|| contains(event.getPresenters(), search)
+						);
+		}
+		
+		return event -> true;
 	}
 
 	private boolean contains(String value, String search) {
@@ -128,9 +170,10 @@ public class EventListController extends FormBasicController {
 					OpencastEvent opencastEvent = dataModel.getObject(se.getIndex());
 					fireEvent(ureq, new OpencastEventSelectionEvent(opencastEvent));
 				}
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				loadModel();
 			} else if (event instanceof FlexiTableSearchEvent) {
-				String search = ((FlexiTableSearchEvent)event).getSearch();
-				loadModel(search);
+				loadModel();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

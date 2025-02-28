@@ -1,11 +1,11 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
  * You may obtain a copy of the License at the
- * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.repository.ui;
@@ -26,7 +26,7 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
 /**
  * 
  * Initial date: 10.06.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class LifecycleDataModel extends DefaultFlexiTableDataModel<RepositoryEntryLifecycle> {
@@ -45,6 +45,7 @@ public class LifecycleDataModel extends DefaultFlexiTableDataModel<RepositoryEnt
 			case softkey: return cycle.getSoftKey();
 			case validFrom: return cycle.getValidFrom();
 			case validTo: return cycle.getValidTo();
+			case defaultCycle: return cycle.isDefaultPublicCycle();
 			case delete: return Boolean.FALSE;
 			default: return "ERROR";
 		}
@@ -56,6 +57,7 @@ public class LifecycleDataModel extends DefaultFlexiTableDataModel<RepositoryEnt
 		validFrom("lifecycle.validFrom"),
 		validTo("lifecycle.validTo"),
 		edit("edit"),
+		defaultCycle("lifecycle.default"),
 		delete("delete");
 		
 		private final String i18nKey;
