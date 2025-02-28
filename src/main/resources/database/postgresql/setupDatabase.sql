@@ -581,6 +581,7 @@ create table o_repositoryentry_cycle (
    r_softkey varchar(64),
    r_label varchar(255),
    r_privatecycle bool default false,
+   r_defaultpubliccycle bool default false,
    r_validfrom timestamp,
    r_validto timestamp,
    primary key (id)

@@ -635,6 +635,7 @@ CREATE TABLE o_repositoryentry_cycle (
    r_softkey varchar2(64 char),
    r_label varchar2(255 char),
    r_privatecycle number default 0,
+   r_defaultpubliccycle number default 0,
    r_validfrom date,
    r_validto date,
    PRIMARY KEY (id)

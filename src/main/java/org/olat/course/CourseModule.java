@@ -70,6 +70,7 @@ public class CourseModule extends AbstractSpringModule {
 	private static final String COURSE_DISPLAY_INFOBOX = "course.display.infobox";
 	private static final String COURSE_DISCLAIMER_ENABLED = "course.disclaimer.enabled";
 	private static final String COURSE_TYPE_DEFAULT = "course.type.default";
+	private static final String COURSE_EXECUTION_DEFAULT = "course.execution.default";
 	private static final String COURSE_STYLE_TEASER_IMAGE_SOURCE_TYPE = "course.style.teaser.image.source.type";
 	private static final String COURSE_STYLE_TEASER_IMAGE_FILENAME = "course.style.teaser.image.filename";
 	private static final String COURSE_STYLE_TEASER_IMAGE_STYLE = "course.style.teaser.image.style";
@@ -92,6 +93,8 @@ public class CourseModule extends AbstractSpringModule {
 	private boolean disclaimerEnabled;
 	@Value("${course.type.default}")
 	private String courseTypeDefault;
+	@Value("${course.execution.default}")
+	private String courseExecutionDefault;
 	@Value("${course.archive.log.table.on.delete:true}")
 	private String archiveLogTableOnDelete;
 	@Value("${course.info.details.enabled:false}")
@@ -144,6 +147,11 @@ public class CourseModule extends AbstractSpringModule {
 		String courseTypeDefaultObj = getStringPropertyValue(COURSE_TYPE_DEFAULT, true);
 		if (StringHelper.containsNonWhitespace(courseTypeDefaultObj)) {
 			courseTypeDefault = courseTypeDefaultObj;
+		}
+
+		String courseExecutionDefaultObj = getStringPropertyValue(COURSE_EXECUTION_DEFAULT, true);
+		if (StringHelper.containsNonWhitespace(courseExecutionDefaultObj)) {
+			courseExecutionDefault = courseExecutionDefaultObj;
 		}
 		
 		String teaserImageSourceTypeObj = getStringPropertyValue(COURSE_STYLE_TEASER_IMAGE_SOURCE_TYPE, true);
@@ -305,6 +313,15 @@ public class CourseModule extends AbstractSpringModule {
 	public void setCourseTypeDefault(String courseTypeDefault) {
 		this.courseTypeDefault = courseTypeDefault;
 		setStringProperty(COURSE_TYPE_DEFAULT, courseTypeDefault, true);
+	}
+
+	public String getCourseExecutionDefault() {
+		return courseExecutionDefault;
+	}
+
+	public void setCourseExecutionDefault(String courseExecutionDefault) {
+		this.courseExecutionDefault = courseExecutionDefault;
+		setStringProperty(COURSE_EXECUTION_DEFAULT, courseExecutionDefault, true);
 	}
 
 	public boolean isArchiveLogTableOnDelete() {

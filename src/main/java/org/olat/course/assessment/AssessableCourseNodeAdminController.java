@@ -48,7 +48,8 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[]{ "on" };
 	private final String[] onValues;
-	
+
+	private SingleSelection courseExecEl;
 	private SingleSelection designEl;
 	private MultipleSelectionElement infoBoxEl;
 	private MultipleSelectionElement changeLogEl;
@@ -71,6 +72,12 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer courseExecCont = FormLayoutContainer.createDefaultFormLayout("courseExec", getTranslator());
+		courseExecCont.setRootForm(mainForm);
+		courseExecCont.setFormTitle(translate("course.execution.period"));
+		formLayout.add(courseExecCont);
+		initCourseExecPeriodOptions(courseExecCont);
+
 		FormLayoutContainer courseSettings = FormLayoutContainer.createVerticalFormLayout("courseSettings", getTranslator());
 		courseSettings.setFormTitle(translate("admin.course.design.settings"));
 		courseSettings.setRootForm(mainForm);
@@ -128,6 +135,20 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		formLayout.add(otherSettings);
 		inviteeLink = uifactory.addFormLink("course.login", "course.login.invitee", "course.login", otherSettings, Link.LINK);
 	}
+
+	private void initCourseExecPeriodOptions(FormLayoutContainer formLayoutContainer) {
+		String[] dateKeys = new String[]{ "none", "private", "public"};
+		String[] dateValues = new String[] {
+				translate("cif.dates.none"),
+				translate("cif.dates.private"),
+				translate("cif.dates.public")
+		};
+
+		courseExecEl = uifactory.addRadiosVertical("cif.dates", "cif.dates", formLayoutContainer, dateKeys, dateValues);
+		courseExecEl.setHelpText(translate("cif.dates.help"));
+		courseExecEl.select(courseModule.getCourseExecutionDefault(), true);
+		courseExecEl.addActionListener(FormEvent.ONCHANGE);
+	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -144,6 +165,8 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		} else if (inviteeLink == source) {
 			String invitationSettingsPath = "[AdminSite:0][loginadmin:0][Invitation:0]";
 			NewControllerFactory.getInstance().launch(invitationSettingsPath, ureq, getWindowControl());
+		} else if (source == courseExecEl) {
+			courseModule.setCourseExecutionDefault(courseExecEl.getSelectedKey());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
