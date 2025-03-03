@@ -209,7 +209,8 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 		
 		// login failed
 		Identity deniedId = webdavAuthManager.authenticate(id.getLogin(), id.getPassword(), status);
-		Assert.assertNull(deniedId);
+		Assert.assertNotNull(deniedId);
+		Assert.assertEquals(Identity.STATUS_LOGIN_DENIED, deniedId.getStatus());
 	}
 	
 	@Test
