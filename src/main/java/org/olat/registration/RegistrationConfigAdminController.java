@@ -298,7 +298,7 @@ public class RegistrationConfigAdminController extends FormBasicController {
 		Integer validUntilHoursRest = Integer.parseInt(validUntilRestEl.getValue());
 		registrationModule.setValidUntilHoursRest(validUntilHoursRest);
 
-		String domains = domainListElement.getValue();
+		String domains = domainListElement == null ? null : domainListElement.getValue();
 		registrationModule.setDomainListRaw(domains);
 	}
 }
