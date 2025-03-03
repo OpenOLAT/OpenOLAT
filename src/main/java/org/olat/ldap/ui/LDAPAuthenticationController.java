@@ -155,11 +155,11 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 					authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass, status);
 					if(status.getStatus() == AuthHelper.LOGIN_INACTIVE
 							|| status.getStatus() == AuthHelper.LOGIN_DENIED) {
-						showError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+						showError("login.error.inactive");
 						log.error("LDAP Login ok but the user is inactive or denied: {}", authenticatedIdentity);
 						return;
 					} else if(status.getStatus() == AuthHelper.LOGIN_PENDING) {
-						showError("login.error.pending", WebappHelper.getMailConfig("mailSupport"));
+						showError("login.error.pending");
 						log.error("LDAP Login ok but the user is pending: {}", authenticatedIdentity);
 						return;
 					}
@@ -178,7 +178,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				}
 				return;
 			} else if(Identity.STATUS_INACTIVE.equals(authenticatedIdentity.getStatus())) {
-				showError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+				showError("login.error.inactive");
 				return;
 			} else {
 				try {
@@ -257,7 +257,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
-				getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
+				getWindowControl().setError(translate("login.error.inactive"));
 			} else {
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
 			}

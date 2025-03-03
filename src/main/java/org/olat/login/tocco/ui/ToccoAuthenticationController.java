@@ -157,10 +157,10 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 			}
 		} else if(Identity.STATUS_INACTIVE.equals(authenticatedIdentity.getStatus())
 				|| Identity.STATUS_LOGIN_DENIED.equals(authenticatedIdentity.getStatus())) {
-			showError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+			showError("login.error.inactive");
 			log.error("Tocco Login ok but the user is inactive or denied: {}", authenticatedIdentity);
 		} else if (Identity.STATUS_PENDING.equals(authenticatedIdentity.getStatus())) {
-			showError("login.error.pending", WebappHelper.getMailConfig("mailSupport"));
+			showError("login.error.pending");
 			log.error("Tocco Login ok but the user is pending: {}", authenticatedIdentity);
 		} else {
 			loginModule.clearFailedLoginAttempts(login);
@@ -196,7 +196,7 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 			DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
-			getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
+			getWindowControl().setError(translate("login.error.inactive"));
 		} else {
 			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
 		}

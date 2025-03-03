@@ -437,10 +437,10 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 				}
 			} else if(Identity.STATUS_INACTIVE.equals(authenticatedIdentity.getStatus())
 					|| Identity.STATUS_LOGIN_DENIED.equals(authenticatedIdentity.getStatus())) {
-				setError("login.error.inactive", WebappHelper.getMailConfig("mailSupport"));
+				setError("login.error.inactive");
 				log.error("WebAuthn Login ok but the user is inactive or denied: {}", authenticatedIdentity);
 			} else if (Identity.STATUS_PENDING.equals(authenticatedIdentity.getStatus())) {
-				setError("login.error.pending", WebappHelper.getMailConfig("mailSupport"));
+				setError("login.error.pending");
 				log.error("WebAuthn Login ok but the user is pending: {}", authenticatedIdentity);
 			} else {
 				step = Flow.authenticatedWithPassword;

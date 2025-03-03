@@ -1112,7 +1112,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 				DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
-				getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
+				getWindowControl().setError(translate("login.error.inactive"));
 			} else {
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 			}
