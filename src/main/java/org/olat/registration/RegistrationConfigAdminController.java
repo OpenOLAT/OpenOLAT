@@ -125,7 +125,8 @@ public class RegistrationConfigAdminController extends FormBasicController {
 				orgEmailDomainEnabled || registrationModule.isEmailValidationEnabled()
 		);
 
-		emailValidationEl = uifactory.addCheckboxesHorizontal("email.validation", "admin.enable.email.validation", settingsContainer, enableRegistrationKeys, new String[]{translate("admin.enable.email.validation.disabled")});
+		String emailValidationStepValue = !orgEmailDomainEnabled ? translate("admin.enableRegistration.on") : translate("admin.enable.email.validation.disabled");
+		emailValidationEl = uifactory.addCheckboxesHorizontal("email.validation", "admin.enable.email.validation", settingsContainer, enableRegistrationKeys, new String[]{emailValidationStepValue});
 		emailValidationEl.select("on", registrationModule.isEmailValidationEnabled());
 		emailValidationEl.setEnabled(!orgEmailDomainEnabled);
 

@@ -20,6 +20,7 @@
 package org.olat.registration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -576,6 +577,9 @@ public class RegistrationAccountAdminController extends FormBasicController {
 		}
 		registrationModule.setStaticPropertyMappingValue(propertyValueElement.getValue());
 
+		if (!autoEnrolmentCoursesEl.isOn()) {
+			registrationModule.saveCourseKeys(Collections.emptyList());
+		}
 		registrationModule.setAutoEnrolmentCoursesEnabled(autoEnrolmentCoursesEl.isOn());
 	}
 

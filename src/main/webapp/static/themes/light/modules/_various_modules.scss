@@ -1862,3 +1862,9 @@ ul.o_list_narrow {
 	padding-top: 0;
 	min-height: 0;
 }
+
+/* Self reg */
+.o_code_self_reg {
+	display: flex;
+	align-items: baseline;
+}

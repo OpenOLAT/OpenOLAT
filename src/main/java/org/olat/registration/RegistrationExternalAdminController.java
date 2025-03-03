@@ -22,9 +22,8 @@ package org.olat.registration;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -40,9 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RegistrationExternalAdminController extends FormBasicController {
 
-	private FormToggle registrationLinkEl;
-	private TextElement regExampleEl;
-	private TextAreaElement signInExampleEl;
 
 	@Autowired
 	private RegistrationModule registrationModule;
@@ -60,32 +56,38 @@ public class RegistrationExternalAdminController extends FormBasicController {
 		externalContainer.setFormTitle(translate("remote.login.title"));
 		formLayout.add(externalContainer);
 
-		registrationLinkEl = uifactory.addToggleButton("enable.registration.link", "admin.enableRegistrationLink", translate("on"), translate("off"), externalContainer);
-		registrationLinkEl.addActionListener(FormEvent.ONCHANGE);
-		registrationLinkEl.toggle(registrationModule.isSelfRegistrationLinkEnabled());
-
-		String example = generateExampleCode();
-		regExampleEl = uifactory.addTextAreaElement("registration.link.example", "admin.registration.code.reg", 64000, 4, 65, true, false, example, externalContainer);
-		regExampleEl.setVisible(registrationModule.isSelfRegistrationLinkEnabled());
+		StaticTextElement regExampleStaticEl = uifactory.addStaticTextElement("admin.registration.code.reg", generateExampleCode(), externalContainer);
+		regExampleStaticEl.setVisible(registrationModule.isSelfRegistrationLinkEnabled());
+		regExampleStaticEl.setElementCssClass("o_code_self_reg");
 
 		String remoteExample = generateRemoteLoginExampleCode();
-		signInExampleEl = uifactory.addTextAreaElement("remotelogin.example", "admin.registration.code.login", 64000, 4, 65, true, false, remoteExample, externalContainer);
+		TextAreaElement signInExampleEl = uifactory.addTextAreaElement("remotelogin.example", "admin.registration.code.login", 64000, 4, 65, true, false, remoteExample, externalContainer);
 		signInExampleEl.setVisible(registrationModule.isSelfRegistrationLinkEnabled());
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		formLayout.add(buttonsCont);
-		flc.contextPut("showBtn", registrationLinkEl.isOn());
 	}
 
 	private String generateExampleCode() {
+		String selfRegLink = Settings.getServerContextPathURI() + "/url/registration/0";
+
 		StringBuilder code = new StringBuilder();
-		code.append("<form name=\"openolatregistration\" action=\"")
-				.append(Settings.getServerContextPathURI()).append("/url/registration/0")
-				.append("\" method=\"post\" target=\"OpenOLAT\" onsubmit=\"var openolat=window.open('','OpenOLAT',''); openolat.focus();\">\n")
-				.append("  <input type=\"submit\" value=\"Go to registration\">\n")
-				.append("</form>");
+		code.append("<div class=\"o_copy_code\">")
+				.append("    <a href=\"javascript:;\" id=\"o_selfreglink\">")
+				.append("        <i class=\"o_icon o_icon-lg o_icon-fw o_icon_qrcode\" aria-hidden='true' title='")
+				.append("            $r.translateInAttribute(\"qr.code\")'>&nbsp;</i>")
+				.append("        <span class='sr-only'>$r.translate(\"link.resource\")</span>")
+				.append("    </a>")
+				.append("    <input type=\"text\" value=\"").append(selfRegLink).append("\" onclick=\"this.select()\" aria-labelledby=\"o_selfreglink\"/>")
+				.append("    <script>")
+				.append("        jQuery(function() {")
+				.append("            o_QRCodePopup('o_selfreglink', '").append(selfRegLink).append("', 'right');")
+				.append("        });")
+				.append("    </script>")
+				.append("</div>");
+
 		return code.toString();
 	}
 
@@ -103,12 +105,7 @@ public class RegistrationExternalAdminController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == registrationLinkEl) {
-			registrationModule.setSelfRegistrationLinkEnabled(registrationLinkEl.isOn());
-			regExampleEl.setVisible(registrationLinkEl.isOn());
-			signInExampleEl.setVisible(registrationLinkEl.isOn());
-			flc.contextPut("showBtn", registrationLinkEl.isOn());
-		}
+		//
 	}
 
 	@Override
