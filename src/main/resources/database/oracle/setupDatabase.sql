@@ -4661,7 +4661,7 @@ create table o_badge_class (
    b_language varchar(32),
    b_image varchar(256) not null,
    b_name varchar(256) not null,
-   b_description varchar(1024) not null,
+   b_description varchar(4000),
    b_criteria clob,
    b_salt varchar(128) not null,
    b_issuer varchar(1024) not null,

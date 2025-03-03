@@ -79,6 +79,8 @@ public class CreateBadge04DetailsStep extends BasicStep {
 
 	private static class CreateBadgeDetailsForm extends StepFormBasicController {
 
+		private static int MAX_DESCRIPTION_LENGTH = 3000;
+
 		private CreateBadgeClassWizardContext createContext;
 		private TextElement nameEl;
 		private TextElement versionEl;
@@ -256,8 +258,8 @@ public class CreateBadge04DetailsStep extends BasicStep {
 			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
 				descriptionEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
-			} else if (descriptionEl.getValue().length() > 1000) {
-				descriptionEl.setErrorKey("form.error.toolong", Integer.toString(1000));
+			} else if (descriptionEl.getValue().length() > MAX_DESCRIPTION_LENGTH) {
+				descriptionEl.setErrorKey("form.error.toolong", Integer.toString(MAX_DESCRIPTION_LENGTH));
 				allOk &= false;
 			}
 
