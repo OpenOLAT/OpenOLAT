@@ -20,6 +20,7 @@
 package org.olat.repository.ui;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
@@ -40,18 +41,18 @@ public class LifecycleDataModel extends DefaultFlexiTableDataModel<RepositoryEnt
 	@Override
 	public Object getValueAt(int row, int col) {
 		RepositoryEntryLifecycle cycle = getObject(row);
-		switch(COLS[col]) {
-			case label: return cycle.getLabel();
-			case softkey: return cycle.getSoftKey();
-			case validFrom: return cycle.getValidFrom();
-			case validTo: return cycle.getValidTo();
-			case defaultCycle: return cycle.isDefaultPublicCycle();
-			case delete: return Boolean.FALSE;
-			default: return "ERROR";
-		}
+		return switch (COLS[col]) {
+			case label -> cycle.getLabel();
+			case softkey -> cycle.getSoftKey();
+			case validFrom -> cycle.getValidFrom();
+			case validTo -> cycle.getValidTo();
+			case defaultCycle -> cycle.isDefaultPublicCycle();
+			case delete -> Boolean.FALSE;
+			default -> "ERROR";
+		};
 	}
 
-	public enum LCCols {
+	public enum LCCols implements FlexiSortableColumnDef {
 		softkey("lifecycle.softkey"),
 		label("lifecycle.label"),
 		validFrom("lifecycle.validFrom"),
@@ -69,7 +70,21 @@ public class LifecycleDataModel extends DefaultFlexiTableDataModel<RepositoryEnt
 		public String i18nKey() {
 			return i18nKey;
 		}
-		
+
+		@Override
+		public boolean sortable() {
+			return false;
+		}
+
+		@Override
+		public String sortKey() {
+			return "";
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
 	}
 	
 

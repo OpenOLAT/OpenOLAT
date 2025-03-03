@@ -203,6 +203,18 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		}
 		publicDatesEl = uifactory.addDropdownSingleselect("cif.public.dates", formLayout, publicKeys, publicValues, null);
 		publicDatesEl.setEnabled(!readOnly);
+		if (publicDatesEl.isEnabled()) {
+			cycles.stream()
+					.filter(RepositoryEntryLifecycle::isDefaultPublicCycle) // check if there is any default set
+					.findFirst()
+					.ifPresent(re -> {
+						// if there is a default, check if that default entry is included in the dropdown
+						// if it is not included it means, it is not applicable here (for example outdated cycle)
+						if (publicDatesEl.containsKey(re.getKey().toString())) {
+							publicDatesEl.select(re.getKey().toString(), true);
+						}
+					});
+		}
 
 		String privateDatePage = velocity_root + "/cycle_dates.html";
 		privateDatesCont = FormLayoutContainer.createCustomFormLayout("private.date", getTranslator(), privateDatePage);
