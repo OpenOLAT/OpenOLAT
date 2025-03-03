@@ -233,7 +233,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 						status.setStatus(AuthHelper.LOGIN_DENIED);
 					}
 				}
-				return null;
+				return identity;
 			}
 			if(identity != null && webDAVAuthManager != null) {
 				webDAVAuthManager.upgradePassword(identity, login, password);
