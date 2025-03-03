@@ -75,6 +75,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.reports.AccountingReportResource;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -219,7 +220,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderAmount));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offersTotalAmount));
-		if (acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE)) {
+		if (isWithBillingAddress()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderCancellationFee));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offersCancellationFees));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
@@ -376,7 +377,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		errorTab.setFiltersExpanded(true);
 		tabs.add(errorTab);
 		
-		if (acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE)) {
+		if (isWithBillingAddress()) {
 			billingAddressProposalTab = FlexiFiltersTabFactory.tab("proposal", translate("filter.billing.address.proposal"),
 					TabSelectionBehavior.nothing);
 			tabs.add(billingAddressProposalTab);
@@ -384,7 +385,12 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		
 		tableEl.setFilterTabs(true, tabs);
 	}
-
+	
+	private boolean isWithBillingAddress() {
+		return resource.getResourceableTypeName().equals(OresHelper.calculateTypeName(CurriculumElement.class))
+				&& acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE);
+	}
+	
 	@Override
 	public boolean isFilterAddressProposal() {
 		if (billingAddressProposalTab != null && tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == billingAddressProposalTab) {
