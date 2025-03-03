@@ -298,13 +298,12 @@ public class ACOrderDAO {
 	/**
 	 * The method is optimized for our settings: 1 order -> 1 order part -> 1 order line
 	 *
-	 * @param resource
-	 * @param delivery
 	 * @return
 	 */
-	public List<RawOrderItem> findNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
-			Date from, Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
-			int firstResult, int maxResults, List<UserPropertyHandler> userPropertyHandlers,  SortKey... orderBy) {
+	public List<RawOrderItem> findNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from,
+			Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
+			boolean filterAddressProposal, int firstResult, int maxResults,
+			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy) {
 
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
@@ -312,6 +311,9 @@ public class ACOrderDAO {
 		  .append("  o.total_currency_code as total_currency_code,")
 		  .append("  o.total_amount as total_amount,")
 		  .append("  o.cancellation_fee_amount as cancellation_fee_amount,")
+		  .append("  min(billingAddress.id) as billing_address_key,")
+		  .append("  min(billingAddress.fk_organisation) as billing_address_organisation_key,")
+		  .append("  min(billingAddress.fk_identity) as billing_address_identity_key,")
 		  .append("  billingAddress.a_identifier as billing_address_identifier,")
 		  .append("  o.purchase_order_number as purchase_order_number,")
 		  .append("  o.order_comment as comment,")
@@ -416,6 +418,10 @@ public class ACOrderDAO {
 				}
 			}
 		}
+		
+		if (filterAddressProposal) {
+			sb.append(" having min(billingAddress.id) is not null and min(billingAddress.fk_organisation) is null and min(billingAddress.fk_identity) is null");
+		}
 
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			sb.appendOrderBy(orderBy[0]);
@@ -480,6 +486,9 @@ public class ACOrderDAO {
 			String totalCurrencyCode = (String)order[pos++];
 			BigDecimal orderAmount = (BigDecimal)order[pos++];
 			BigDecimal orderCancellationFee = (BigDecimal)order[pos++];
+			Number billingAddressKey = ((Number)order[pos++]);
+			Number billingAddressOrganisationKey = ((Number)order[pos++]);
+			Number billingAddressIdentityKey = ((Number)order[pos++]);
 			String billingAddressIdentifier = (String)order[pos++];
 			String purchseOrderNumber = (String)order[pos++];
 			String comment = (String)order[pos++];
@@ -510,9 +519,11 @@ public class ACOrderDAO {
 				}
 			}
 			
+			boolean billingAddressProposal = billingAddressKey != null && billingAddressOrganisationKey == null && billingAddressIdentityKey == null;
+			
 			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), label, totalCurrencyCode,
 					orderAmount, orderCancellationFee, offersTotalAmount, offersCancellationFees,
-					billingAddressIdentifier, purchseOrderNumber, comment, creationDate,
+					billingAddressProposal, billingAddressIdentifier, purchseOrderNumber, comment, creationDate,
 					orderStatus, deliveryKey, resourceName, costCenterName, costCenterAccount, trxStatus, trxMethodIds,
 					pspTrxStatus, checkoutTrxStatus, checkoutOrderTrxStatus, username, userProperties);
 			items.add(item);

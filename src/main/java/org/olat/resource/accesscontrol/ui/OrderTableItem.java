@@ -61,6 +61,7 @@ public class OrderTableItem {
 	private final Price offersTotalAmount;
 	private final Price offersCancellationFees;
 	
+	private final boolean billingAddressProposal;
 	private final String billingAddressIdentifier;
 	private final String purchaseOrderNumber;
 	private final String comment;
@@ -77,8 +78,8 @@ public class OrderTableItem {
 	private Status status;
 	private List<AccessMethod> methods;
 	
-	public OrderTableItem(Long orderKey, String orderNr, String label,
-			Price orderAmount, Price orderCancellationFee, Price offersTotalAmount, Price offersCancellationFees,
+	public OrderTableItem(Long orderKey, String orderNr, String label, Price orderAmount, Price orderCancellationFee,
+			Price offersTotalAmount, Price offersCancellationFees, boolean billingAddressProposal,
 			String billingAddressIdentifier, String purchaseOrderNumber, String comment, Date creationDate,
 			OrderStatus orderStatus, Status status, Long deliveryKey, String resourceDisplayname, String costCenterName,
 			String costCenterAccount, String username, String[] userProperties, List<AccessMethod> methods) {
@@ -89,6 +90,7 @@ public class OrderTableItem {
 		this.offersTotalAmount = offersTotalAmount;
 		this.orderCancellationFee = orderCancellationFee;
 		this.offersCancellationFees = offersCancellationFees;
+		this.billingAddressProposal = billingAddressProposal;
 		this.billingAddressIdentifier = billingAddressIdentifier;
 		this.purchaseOrderNumber = purchaseOrderNumber;
 		this.comment = comment;
@@ -142,6 +144,10 @@ public class OrderTableItem {
 
 	public Price getOffersCancellationFees() {
 		return offersCancellationFees;
+	}
+
+	public boolean isBillingAddressProposal() {
+		return billingAddressProposal;
 	}
 
 	public String getBillingAddressIdentifier() {

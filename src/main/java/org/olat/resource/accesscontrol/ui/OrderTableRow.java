@@ -121,6 +121,10 @@ public class OrderTableRow {
 		return item.getCostCenterAccount();
 	}
 	
+	public boolean isBillingAddressProposal() {
+		return item.isBillingAddressProposal();
+	}
+	
 	public String getBillingAddressIdentifier() {
 		return item.getBillingAddressIdentifier();
 	}

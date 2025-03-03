@@ -331,15 +331,15 @@ public class ACOrderManagerTest extends OlatTestCase {
 		acTransactionManager.update(accessTransaction2, AccessTransactionStatus.CANCELED);
 
 		long start = System.nanoTime();
-		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null, null, 0, -1, null);
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null, null, false, 0, -1, null);
 		CodeHelper.printMilliSecondTime(start, "Order itemized");
 		Assert.assertNotNull(items);
 		
 		//check the order by
 		for(OrderCol col:OrderCol.values()) {
 			if(col.sortable()) {
-				List<RawOrderItem> rawItems = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null,
-						null, null, 0, -1, null, new SortKey(col.sortKey(), false));
+				List<RawOrderItem> rawItems = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null,
+						null, false, 0, -1, null, new SortKey(col.sortKey(), false));
 				Assert.assertNotNull(rawItems);
 			}
 		}
@@ -368,7 +368,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		long start = System.nanoTime();
-		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null, null, 0, -1, null);
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null, null, false, 0, -1, null);
 		CodeHelper.printMilliSecondTime(start, "Order itemized");
 		Assert.assertNotNull(items);
 	}
@@ -398,12 +398,18 @@ public class ACOrderManagerTest extends OlatTestCase {
 				.getUserPropertyHandlersFor(OrdersAdminController.class.getCanonicalName(), true);
 		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, order.getKey(),
 				DateUtils.addDays(new Date(), -2), DateUtils.addDays(new Date(), 2),
-				OrderStatus.values(), null, null,
+				OrderStatus.values(), null, null, false,
 				0, 256, userPropertyHandlers);
 		
 		Assertions.assertThat(items)
 			.hasSize(1)
 			.allMatch(item -> order.getKey().equals(item.getOrderKey()));
+		
+		// Syntax check only
+		acOrderManager.findNativeOrderItems(randomOres, null, order.getKey(),
+				DateUtils.addDays(new Date(), -2), DateUtils.addDays(new Date(), 2),
+				OrderStatus.values(), null, null, true,
+				0, 256, userPropertyHandlers);
 	}
 	
 	@Test

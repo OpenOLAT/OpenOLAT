@@ -258,7 +258,7 @@ public class OrderDetailController extends FormBasicController {
 	private void initStatus(FormLayoutContainer layoutCont) {
 		try(StringOutput status = new StringOutput()) {
 			OrderStatusRenderer statusRenderer = new OrderStatusRenderer(getTranslator());
-			List<OrderTableItem> items = acService.findOrderItems(null, delivery, order.getKey(), null, null, OrderStatus.values(), null, null, 0, 1, null);
+			List<OrderTableItem> items = acService.findOrderItems(null, delivery, order.getKey(), null, null, OrderStatus.values(), null, null, false, 0, 1, null);
 			Status consolidatedStatus; 
 			if(items.size() == 1) {
 				consolidatedStatus = items.get(0).getStatus();

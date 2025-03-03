@@ -827,14 +827,14 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	public boolean isAccessRefusedByStatus(RepositoryEntry entry, IdentityRef identity) {
 		return !RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())
 					&& !findOrderItems(entry.getOlatResource(), identity, null, null, null, new OrderStatus[] { OrderStatus.PAYED },
-							null, null, 0, 1, null).isEmpty();
+							null, null, false, 0, 1, null).isEmpty();
 	}
 	
 	@Override
 	public boolean isAccessRefusedByStatus(CurriculumElement element, IdentityRef identity) {
 		return !Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD).contains(element.getElementStatus())
 				&& !findOrderItems(element.getResource(), identity, null, null, null, new OrderStatus[] { OrderStatus.PAYED },
-						null, null, 0, 1, null).isEmpty();
+						null, null, false, 0, 1, null).isEmpty();
 	}
 
 	@Override
@@ -1232,9 +1232,10 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
-			Date from, Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
-			int firstResult, int maxResults, List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy) {
+	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from,
+			Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
+			boolean billingAddressProposal, int firstResult, int maxResults,
+			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy) {
 		List<AccessMethod> methods = methodManager.getAllMethods();
 		Map<String,AccessMethod> methodMap = new HashMap<>();
 		for(AccessMethod method:methods) {
@@ -1242,7 +1243,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 
 		List<RawOrderItem> rawOrders = orderManager.findNativeOrderItems(resource, delivery, orderNr, from, to, status,
-				methodsKeys, offerAccessKeys, firstResult, maxResults, userPropertyHandlers, orderBy);
+				methodsKeys, offerAccessKeys, billingAddressProposal,firstResult, maxResults, userPropertyHandlers, orderBy);
 		List<OrderTableItem> items = new ArrayList<>(rawOrders.size());
 		for(RawOrderItem rawOrder:rawOrders) {
 			String orderStatusStr = rawOrder.getOrderStatus();
@@ -1274,10 +1275,11 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			
 			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(), offerLabel,
 					rawOrder.getOrderAmount(), rawOrder.getOrderCancellationFee(), rawOrder.getOffersTotalAmount(),
-					rawOrder.getOffersCancellationFees(), rawOrder.getBillingAddressIdentifier(),
-					rawOrder.getPurchaseOrderNumber(), rawOrder.getComment(), rawOrder.getCreationDate(), orderStatus,
-					finalStatus, rawOrder.getDeliveryKey(), resourceDisplayName, costCenteryName, costCenteryAccount,
-					rawOrder.getUsername(), rawOrder.getUserProperties(), orderMethods);
+					rawOrder.getOffersCancellationFees(), rawOrder.isBillingAddressProposal(),
+					rawOrder.getBillingAddressIdentifier(), rawOrder.getPurchaseOrderNumber(), rawOrder.getComment(),
+					rawOrder.getCreationDate(), orderStatus, finalStatus, rawOrder.getDeliveryKey(),
+					resourceDisplayName, costCenteryName, costCenteryAccount, rawOrder.getUsername(),
+					rawOrder.getUserProperties(), orderMethods);
 			items.add(item);
 		}
 
@@ -1386,7 +1388,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			header.addCell(4, "Method");
 			header.addCell(5, "Total");
 			
-			List<OrderTableItem> orders = findOrderItems(null, identity, null, null, null, null, null, null, 0, -1, null);
+			List<OrderTableItem> orders = findOrderItems(null, identity, null, null, null, null, null, null, false, 0, -1, null);
 			for(OrderTableItem order:orders) {
 				exportNoteData(order, sheet, workbook, locale);
 			}

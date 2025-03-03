@@ -90,6 +90,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
+import org.olat.resource.accesscontrol.ui.OrdersDataSource.PresetDelegate;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -104,7 +105,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  30 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OrdersAdminController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate, ForgeDelegate {
+public class OrdersAdminController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate, PresetDelegate, ForgeDelegate {
 
 	private static final String CMD_TOOLS = "odtools";
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
@@ -113,6 +114,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	protected static final String USER_PROPS_ID = OrdersAdminController.class.getCanonicalName();
 	
 	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab billingAddressProposalTab;
 	
 	private FormLink exportButton;
 	private FormLink bulkPayButton;
@@ -224,7 +226,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier, new BillingAddressCellRenderer()));
 		}
 		
 		if(!readOnly) {
@@ -232,7 +234,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 
-		dataSource = new OrdersDataSource(acService, resource, null, methods, userPropertyHandlers, this);
+		dataSource = new OrdersDataSource(acService, resource, null, methods, userPropertyHandlers, this, this);
 		if(resource == null) {
 			Calendar cal = CalendarUtils.getStartOfDayCalendar(getLocale());
 			cal.add(Calendar.MONTH, -1);
@@ -312,7 +314,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 					OrdersDataSource.FILTER_OFFER, offersValues, true);
 			filters.add(offerFilter);
 		}
-
+		
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
@@ -374,7 +376,21 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		errorTab.setFiltersExpanded(true);
 		tabs.add(errorTab);
 		
+		if (acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE)) {
+			billingAddressProposalTab = FlexiFiltersTabFactory.tab("proposal", translate("filter.billing.address.proposal"),
+					TabSelectionBehavior.nothing);
+			tabs.add(billingAddressProposalTab);
+		}
+		
 		tableEl.setFilterTabs(true, tabs);
+	}
+
+	@Override
+	public boolean isFilterAddressProposal() {
+		if (billingAddressProposalTab != null && tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == billingAddressProposalTab) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -666,7 +682,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			}
 			
 			if ((row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT)
-					&& row.getBillingAddressIdentifier() != null) {
+					&& (row.isBillingAddressProposal() || row.getBillingAddressIdentifier() != null)) {
 				changeBillingAddressLink = addLink("billing.address.change", "billing.address.change", "o_icon o_icon-fw o_icon_billing_address", links);
 			}
 			
@@ -706,4 +722,5 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			}
 		}
 	}
+	
 }

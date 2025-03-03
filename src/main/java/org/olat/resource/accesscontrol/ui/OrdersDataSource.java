@@ -63,6 +63,7 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	private Date from;
 	private final OLATResource resource;
 	private final IdentityRef delivery;
+	private final PresetDelegate presetDelegate;
 	private final ForgeDelegate delegate;
 	private final List<AccessMethod> methods;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -71,10 +72,11 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	
 	public OrdersDataSource(ACService acService, OLATResource resource, IdentityRef delivery,
 			List<AccessMethod> methods, List<UserPropertyHandler> userPropertyHandlers,
-			ForgeDelegate delegate) {
+			PresetDelegate presetDelegate, ForgeDelegate delegate) {
 		this.acService = acService;
 		this.resource = resource;
 		this.delivery = delivery;
+		this.presetDelegate = presetDelegate;
 		this.delegate = delegate;
 		this.methods = methods;
 		this.userPropertyHandlers = userPropertyHandlers;
@@ -149,9 +151,11 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 		}
 		
 		List<Long> filterOfferAccess = getFilterMethods(filters, FILTER_OFFER);
-
+		
+		boolean filterAddressProposal = presetDelegate != null? presetDelegate.isFilterAddressProposal(): false;
+		
 		List<OrderTableItem> items = acService.findOrderItems(resource, delivery, refNo, from, to, states,
-				filterMethods, filterOfferAccess, firstResult, maxResults, userPropertyHandlers, orderBy);
+				filterMethods, filterOfferAccess, filterAddressProposal, firstResult, maxResults, userPropertyHandlers, orderBy);
 		List<OrderTableRow> rows = new ArrayList<>(items.size());
 		for(OrderTableItem item:items) {
 			OrderTableRow row = new OrderTableRow(item);
@@ -201,7 +205,7 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 				
 				if(filterValues.contains(OrderStatus.PAYED.name())) {
 					List<Long> methodsWithPayment = methods.stream()
-							.filter(method -> method.isPaymentMethod())
+							.filter(AccessMethod::isPaymentMethod)
 							.map(AccessMethod::getKey)
 							.toList();
 					methodsKeys.addAll(methodsWithPayment);
@@ -245,6 +249,12 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	public interface ForgeDelegate {
 		
 		void forge(OrderTableRow row);
+		
+	}
+	
+	public interface PresetDelegate {
+		
+		boolean isFilterAddressProposal();
 		
 	}
 }

@@ -76,7 +76,7 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 			case costCenterAccount -> order.getCostCenterAccount();
 			case purchaseOrderNumber -> order.getPurchaseOrderNumber();
 			case comment -> order.getComment();
-			case billingAddressIdentifier -> order.getBillingAddressIdentifier();
+			case billingAddressIdentifier -> order;
 			case summary -> order.getResourceDisplayname();
 			case tools -> order.getToolsLink();
 			default -> order;

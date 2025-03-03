@@ -344,7 +344,7 @@ public interface ACService {
 			OrderStatus[] statuss);
 
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
-			OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys, int firstResult, int maxResults,
+			OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys, boolean billingAddressProposal, int firstResult, int maxResults,
 			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy);
 	
 	public boolean hasOrder(OfferRef offer);

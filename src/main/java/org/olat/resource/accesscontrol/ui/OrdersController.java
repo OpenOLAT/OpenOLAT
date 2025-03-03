@@ -150,7 +150,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier, new BillingAddressCellRenderer()));
 		}
 		
 		if(settings.withTools()) {
@@ -158,7 +158,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 
-		dataSource = new OrdersDataSource(acService, resource, identity, List.of(), null, this);
+		dataSource = new OrdersDataSource(acService, resource, identity, List.of(), null, null, this);
 		dataModel = new OrdersDataModel(dataSource, getLocale(), userManager, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
