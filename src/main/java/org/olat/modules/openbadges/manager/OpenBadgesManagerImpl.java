@@ -1972,15 +1972,29 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public boolean showBadgesEditTab(RepositoryEntry courseEntry, CourseNode courseNode) {
 		if (!isEnabled()) {
+			if (log.isDebugEnabled()) {
+				log.debug("Badges disabled");
+			}
 			return false;
 		}
 
 		BadgeEntryConfiguration badgeEntryConfiguration = getConfiguration(courseEntry);
 		if (!badgeEntryConfiguration.isAwardEnabled()) {
+			if (log.isDebugEnabled()) {
+				log.debug("Badges disabled for course {}", courseEntry.getKey());
+			}
 			return false;
 		}
 
 		if (!AssessmentHelper.checkIfNodeIsAssessable(courseEntry, courseNode)) {
+			if (log.isDebugEnabled()) {
+				log.debug("Badges disabled for course {} and node {} (not assessable)", 
+						courseEntry.getKey(), courseNode.getIdent());
+			}
+			return false;
+		}
+		
+		if (courseNode instanceof PFCourseNode) {
 			return false;
 		}
 		
@@ -1988,6 +2002,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return false;
 		}
 
+		if (log.isDebugEnabled()) {
+			log.debug("Badges enabled for course {} and node {}", courseEntry.getKey(), courseNode.getIdent());
+		}
 		return true;
 	}
 
@@ -2017,6 +2034,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 		
 		if (courseNode instanceof PFCourseNode) {
+			if (log.isDebugEnabled()) {
+				log.debug("Badges disabled for course {} and node {} (participant folder)", 
+						courseEntry.getKey(), courseNode.getIdent());
+			}
 			return false;
 		}
 
