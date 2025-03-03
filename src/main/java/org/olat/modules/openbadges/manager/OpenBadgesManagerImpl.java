@@ -1991,10 +1991,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			return false;
 		}
 		
-		if (courseNode instanceof PFCourseNode) {
-			return false;
-		}
-
 		return true;
 	}
 
