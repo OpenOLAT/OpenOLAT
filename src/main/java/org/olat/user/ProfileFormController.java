@@ -791,7 +791,7 @@ public class ProfileFormController extends FormBasicController {
 		if (changeMailUMDialogCtrl != null && changeMailUMDialogCtrl.getIsNotifyUser()) {
 			// Notify user via email
 			String subject = translate("email.change.subject");
-			String bodyUserManager = translate("email.change.body.usermanager");
+			String bodyUserManager = translate("email.change.body.usermanager", userManager.getUserDisplayName(identityToModify.getUser()), WebappHelper.getMailConfig("mailSupport"));
 			return sendEmail(ureq, subject, bodyUserManager, currentEmail);
 		} else if (changeMailUMDialogCtrl != null && !changeMailUMDialogCtrl.getIsNotifyUser()) {
 			// Directly update user email without notification
