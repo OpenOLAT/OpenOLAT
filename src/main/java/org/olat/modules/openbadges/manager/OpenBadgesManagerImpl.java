@@ -1983,6 +1983,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (!AssessmentHelper.checkIfNodeIsAssessable(courseEntry, courseNode)) {
 			return false;
 		}
+		
+		if (courseNode instanceof PFCourseNode) {
+			return false;
+		}
 
 		return true;
 	}
