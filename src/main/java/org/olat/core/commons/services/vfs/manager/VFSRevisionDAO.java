@@ -217,7 +217,7 @@ public class VFSRevisionDAO {
 		sb.append("  from vfsrevision rev");
 		sb.and().append(" rev.metadata.key in (");
 		sb.append(" select metadata.key");
-		sb.append("  from filemetadata metadatay");
+		sb.append("  from filemetadata metadata");
 		sb.append(" where metadata.key != :parentKey");
 		sb.append(" and metadata.relativePath like :relativePath");
 		if (deleted != null) {
