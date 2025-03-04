@@ -53,10 +53,7 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date: Apr 22, 2004
@@ -68,11 +65,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BCCourseNodeRunController extends BasicController implements Activateable2 {
 
 	private FolderController folderCtrl;
-	
-	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
-	private RepositoryService repositoryService;
 
 	public BCCourseNodeRunController(UserRequest ureq, WindowControl wContr, UserCourseEnvironment userCourseEnv, BCCourseNode courseNode, NodeEvaluation ne) {
 		super(ureq, wContr);
