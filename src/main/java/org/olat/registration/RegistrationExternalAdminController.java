@@ -58,11 +58,6 @@ public class RegistrationExternalAdminController extends FormBasicController {
 		StaticTextElement regExampleStaticEl = uifactory.addStaticTextElement("admin.registration.code.reg", generateExampleCode(), externalContainer);
 		regExampleStaticEl.setVisible(registrationModule.isSelfRegistrationLinkEnabled());
 		regExampleStaticEl.setElementCssClass("o_code_self_reg");
-
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		uifactory.addFormSubmitButton("save", buttonsCont);
-		formLayout.add(buttonsCont);
 	}
 
 	private String generateExampleCode() {
