@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -49,6 +50,7 @@ import org.olat.modules.curriculum.manager.CurriculumAccountingDAO;
 import org.olat.modules.curriculum.model.CurriculumAccountingSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
+import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerRootController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
@@ -204,6 +206,13 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
 			searchParams.setCurriculum(curriculum);
 			searchParams.setCurriculumElement(curriculumElement);
+			if (curriculum == null && curriculumElement == null) {
+				CurriculumSearchParameters params = new CurriculumSearchParameters();
+				params.setCurriculumAdmin(doer);
+				List<Curriculum> ownedCurriculums = curriculumService.getCurriculums(params);
+				searchParams.setCurriculums(ownedCurriculums.stream().map(Curriculum::getKey)
+						.map(CurriculumRefImpl::new).collect(Collectors.toList()));
+			}
 			if (getDurationTimeUnit() != null) {
 				int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
 				searchParams.setFromDate(getDurationTimeUnit().fromDate(new Date(), duration));

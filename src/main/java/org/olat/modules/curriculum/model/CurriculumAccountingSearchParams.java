@@ -20,10 +20,12 @@
 package org.olat.modules.curriculum.model;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRef;
 
 /**
  * 
@@ -38,6 +40,7 @@ public class CurriculumAccountingSearchParams {
 	private CurriculumElement curriculumElement;
 	private Date fromDate;
 	private Date toDate;
+	private List<CurriculumRef> curriculums;
 
 	public Identity getIdentity() {
 		return identity;
@@ -77,5 +80,13 @@ public class CurriculumAccountingSearchParams {
 
 	public Date getToDate() {
 		return toDate;
+	}
+
+	public void setCurriculums(List<CurriculumRef> curriculums) {
+		this.curriculums = curriculums;
+	}
+
+	public List<CurriculumRef> getCurriculums() {
+		return curriculums;
 	}
 }

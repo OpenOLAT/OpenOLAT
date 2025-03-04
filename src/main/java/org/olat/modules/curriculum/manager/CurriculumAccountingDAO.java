@@ -26,6 +26,7 @@ import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.model.CurriculumAccountingSearchParams;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
@@ -77,6 +78,9 @@ public class CurriculumAccountingDAO {
 		if(searchParams.getCurriculum() != null) {
 			sb.and().append("cur.key = :curriculumKey");
 		}
+		if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
+			sb.and().append("cur.key in (:curriculumKeys)");
+		}
 		if(searchParams.getCurriculumElement() != null) {
 			sb.and().append("ce.key = :curriculumElementKey");
 		}
@@ -94,6 +98,10 @@ public class CurriculumAccountingDAO {
 		}
 		if(searchParams.getCurriculum() != null) {
 			query.setParameter("curriculumKey", searchParams.getCurriculum().getKey());
+		}
+		if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
+			List<Long> curriculumKeys = searchParams.getCurriculums().stream().map(CurriculumRef::getKey).toList();
+			query.setParameter("curriculumKeys", curriculumKeys);
 		}
 		if(searchParams.getCurriculumElement() != null) {
 			query.setParameter("curriculumElementKey", searchParams.getCurriculumElement().getKey());
