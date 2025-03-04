@@ -57,6 +57,7 @@ import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.modules.sharedfolder.SharedFolderDisplayController;
 import org.olat.modules.sharedfolder.SharedFolderEditorController;
 import org.olat.modules.sharedfolder.SharedFolderManager;
+import org.olat.modules.sharedfolder.SharedFolderRuntimeController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -67,7 +68,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.CorruptedCourseController;
-import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
@@ -194,7 +194,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 	 */
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
-		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,
+		return new SharedFolderRuntimeController(ureq, wControl, re, reSecurity,
 				(uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
 			OLATResource res = entry.getOlatResource();
 			VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
@@ -205,7 +205,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 			if(sfContainer == null || !sfContainer.exists()) {
 				sfdCtr = new CorruptedCourseController(uureq, wwControl);
 			} else {
-				boolean canEdit = security.isEntryAdmin() || security.isCourseCoach();
+				boolean canEdit = !security.isReadOnly() && (security.isEntryAdmin() || security.isCourseCoach());
 				if(canEdit) {
 					sfdCtr = new SharedFolderEditorController(entry, uureq, wwControl);
 				} else {
