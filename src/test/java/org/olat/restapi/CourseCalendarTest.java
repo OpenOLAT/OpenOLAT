@@ -35,9 +35,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -97,7 +97,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	 * SetUp is called before each test.
 	 */
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		try {
 			// create course and persist as OLATResourceImpl
 			auth1 = JunitTestHelper.createAndPersistRndUser("rest-course-cal-one");
@@ -114,17 +114,14 @@ public class CourseCalendarTest extends OlatRestTestCase {
 			CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
 			KalendarRenderWrapper calendarWrapper = calManager.getCourseCalendar(course);
 			
-			Calendar cal = Calendar.getInstance();
+			ZonedDateTime begin = ZonedDateTime.now();
 			for(int i=0; i<2; i++) {
-				Date begin = cal.getTime();
-				cal.add(Calendar.HOUR_OF_DAY, 1);
-				Date end = cal.getTime();
+				ZonedDateTime end = begin.plusHours(1);
 				String eventId = UUID.randomUUID().toString();
 				KalendarEvent event = new KalendarEvent(eventId, null, "Unit test " + i, begin, end);
 				calManager.addEventTo(calendarWrapper.getKalendar(), event);
-				cal.add(Calendar.DATE, 1);
+				begin = begin.plusDays(1);
 			}
-			
 		} catch (Exception e) {
 			log.error("Exception in setUp(): ", e);
 		}
@@ -304,11 +301,10 @@ public class CourseCalendarTest extends OlatRestTestCase {
 		//create an event if the event is saved
 		KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course1);
 		
-		Calendar cal = Calendar.getInstance();
-		Date begin = cal.getTime();
-		cal.add(Calendar.HOUR_OF_DAY, 1);
+		ZonedDateTime begin = ZonedDateTime.now();
+		ZonedDateTime end = begin.plusHours(1);
 		String id = UUID.randomUUID().toString();
-		KalendarEvent kalEvent = new KalendarEvent(id, null, "Subject (" + id + ")", begin, cal.getTime());
+		KalendarEvent kalEvent = new KalendarEvent(id, null, "Subject (" + id + ")", begin, end);
 		calendarManager.addEventTo(calendarWrapper.getKalendar(), kalEvent);
 
 		//check if the event exists

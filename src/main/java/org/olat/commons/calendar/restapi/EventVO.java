@@ -29,6 +29,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
+import org.olat.core.util.DateUtils;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -80,8 +81,8 @@ public class EventVO {
 		description = event.getDescription();
 		location = event.getLocation();
 		color = event.getColor();
-		begin = event.getBegin();
-		end = event.getEnd();
+		begin = DateUtils.toDate(event.getBegin());
+		end = DateUtils.toDate(event.getEnd());
 		allDayEvent = event.isAllDayEvent();
 		liveStreamUrl = event.getLiveStreamUrl();
 		calendarId = event.getCalendar().getType() + "_" + event.getCalendar().getCalendarID();

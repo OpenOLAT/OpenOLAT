@@ -19,12 +19,14 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
@@ -37,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -61,6 +64,8 @@ public class BigBlueButtonMeetingsCalendarController extends FormBasicController
 			"o_cal_maroon", "o_cal_grey"
 		};
 
+	@Autowired
+	private CalendarModule calendarModule;
 	
 	public BigBlueButtonMeetingsCalendarController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "meetings_calendar");		
@@ -106,7 +111,9 @@ public class BigBlueButtonMeetingsCalendarController extends FormBasicController
 			}
 			// Create a calendar event with the room name as subject
 			String eventId = CodeHelper.getGlobalForeverUniqueID();
-			KalendarEvent newEvent = new KalendarEvent(eventId, null, template.getName(), meeting.getStartDate(), meeting.getEndDate());
+			ZonedDateTime zStart = DateUtils.toZonedDateTime(meeting.getStartDate(), calendarModule.getDefaultZoneId());
+			ZonedDateTime zEnd = DateUtils.toZonedDateTime(meeting.getEndDate(), calendarModule.getDefaultZoneId());
+			KalendarEvent newEvent = new KalendarEvent(eventId, null, template.getName(), zStart, zEnd);
 			newEvent.setDescription(meeting.getName());
 			// Add to template calendar
 			calendars.get(meeting.getTemplate().getKey()).addEvent(newEvent);	

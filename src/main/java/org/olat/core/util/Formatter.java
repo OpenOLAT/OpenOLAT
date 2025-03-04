@@ -35,6 +35,11 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.ZonedDateTime;
+import java.time.chrono.Chronology;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.FormatStyle;
 import java.time.format.TextStyle;
 import java.util.Calendar;
 import java.util.Date;
@@ -88,6 +93,13 @@ public class Formatter {
 	private final DateFormat longDateTimeFormat;
 	private final DateFormat shortTimeFormat;
 	private final DateFormat mediumTimeFormat;
+	
+
+	private final DateTimeFormatter shortTimeFormatter;
+	private final DateTimeFormatter shortDateFormatter;
+	private final DateTimeFormatter shortDateWithDayFormatter;
+	private final DateTimeFormatter shortDateTimeFormatter;
+	private final DateTimeFormatter longDateTimeFormatter;
 
 	/**
 	 * Constructor for Formatter.
@@ -98,6 +110,8 @@ public class Formatter {
 		// Date only formats
 		shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
 		shortDateFormat.setLenient(false);
+		
+		
 		
 		shortDateWithDayFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
 		shortDateWithDayFormat.setLenient(false);
@@ -123,8 +137,43 @@ public class Formatter {
 			String pattern = sdf.toPattern().replaceAll("y+","yyyy");
 			sdf.applyPattern(pattern); 
 		}
+		
 		longDateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
 		longDateTimeFormat.setLenient(false);
+		
+		shortTimeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).localizedBy(locale);
+		
+		
+		String shortDateWithDayPattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, Chronology.ofLocale(locale), locale);
+		shortDateWithDayFormatter = DateTimeFormatter.ofPattern("EEE, " + enhanceYear(shortDateWithDayPattern), locale);
+		String shortDatePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, null, Chronology.ofLocale(locale), locale);
+		shortDateFormatter = DateTimeFormatter.ofPattern(enhanceYear(shortDatePattern), locale);
+		String shortDateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.SHORT, Chronology.ofLocale(locale), locale);
+		shortDateTimeFormatter = DateTimeFormatter.ofPattern(enhanceYear(shortDateTimePattern), locale);
+		
+		longDateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.LONG).localizedBy(locale);
+	}
+	
+	/**
+	 * Ensure 4 digits year.
+	 * 
+	 * @param pattern
+	 * @return
+	 */
+	private static String enhanceYear(String pattern) {
+		if(pattern.contains("yyyy")) {
+			return pattern;
+		}
+		if(pattern.contains("yyy")) {
+			return pattern.replace("yyy","yyyy");
+		}
+		if(pattern.contains("yy")) {
+			return pattern.replace("yy","yyyy");
+		}
+		if(pattern.contains("y+")) {
+			return pattern.replace("y+","yyyy");
+		}
+		return pattern;
 	}
 
 	/**
@@ -184,11 +233,21 @@ public class Formatter {
 		}
 	}
 	
+	public String formatDate(ZonedDateTime date) {
+		if (date == null) return null;
+		return shortDateFormatter.format(date);
+	}
+	
 	public String formatDateWithDay(Date date) {
 		if (date == null) return null;
 		synchronized (shortDateWithDayFormat) {
 			return shortDateWithDayFormat.format(date);
 		}
+	}
+	
+	public String formatDateWithDay(ZonedDateTime date) {
+		if (date == null) return null;
+		return shortDateWithDayFormatter.format(date);
 	}
 
 	/**
@@ -237,6 +296,12 @@ public class Formatter {
 			return shortDateTimeFormat.format(date);
 		}
 	}
+	
+	public String formatDateAndTime(ZonedDateTime date) {
+		if (date == null) return null;
+		return shortDateTimeFormatter.format(date);
+	}
+	
 
 	/**
 	 * Formats the given date in a long size with date and time, e.g. Tuesday,
@@ -251,6 +316,11 @@ public class Formatter {
 		synchronized (longDateTimeFormat) {
 			return longDateTimeFormat.format(date);
 		}
+	}
+	
+	public String formatDateAndTimeLong(ZonedDateTime date) {
+		if (date == null) return null;
+		return longDateTimeFormatter.format(date);
 	}
 	
 	
@@ -361,6 +431,11 @@ public class Formatter {
 		synchronized (shortTimeFormat) {
 			return shortTimeFormat.format(d);
 		}
+	}
+	
+	public String formatTimeShort(ZonedDateTime d) {
+		if(d == null) return "";
+		return shortTimeFormatter.format(d);
 	}
 	
 	public String dayOfWeekName(Date date) {

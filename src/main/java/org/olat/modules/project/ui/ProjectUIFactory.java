@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -137,6 +138,10 @@ public class ProjectUIFactory {
 	
 	public static String getNoTitle(Translator translator) {
 		return translator.translate("no.title");
+	}
+	
+	public static ProjFormattedDateRange formatRange(Translator translator, ZonedDateTime start, ZonedDateTime end) {
+		return formatRange(translator, DateUtils.toDate(start),  DateUtils.toDate(end));
 	}
 	
 	public static ProjFormattedDateRange formatRange(Translator translator, Date start, Date end) {

@@ -20,12 +20,11 @@
 
 package org.olat.course.nodes.cal;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -40,6 +39,7 @@ import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.DateUtils;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -79,23 +79,23 @@ public class CourseCalendarPeekViewController extends BasicController {
 	private void init(UserRequest ureq, CalCourseNode courseNode, UserCourseEnvironment courseEnv, CalSecurityCallback secCallback) {
 		CourseCalendars myCal = CourseCalendars.createCourseCalendarsWrapper(ureq, getWindowControl(), courseEnv, secCallback);
 
-		Date refDate;
+		ZonedDateTime refDate;
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		if (CalEditController.getAutoDate(config)) {
-			refDate = new Date();
+			refDate = ZonedDateTime.now();
 		} else {
-			refDate = CalEditController.getStartDate(config);
-			if (refDate == null) refDate = new Date();
+			refDate = DateUtils.toZonedDateTime(CalEditController.getStartDate(config));
+			if (refDate == null) {
+				refDate = ZonedDateTime.now();
+			}
 		}
 		
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(refDate);
-		cal.add(Calendar.YEAR, 1);
+		ZonedDateTime endPeriod = refDate.plusYears(1);
 
 		List<KalendarEvent> nextEvents = new ArrayList<>();
 		for (KalendarRenderWrapper calendar : myCal.getCalendars()) {
 			Collection<KalendarEvent> events = calendarManager
-					.getEvents(calendar.getKalendar(), refDate, cal.getTime(), calendar.isPrivateEventsVisible());
+					.getEvents(calendar.getKalendar(), refDate, endPeriod, calendar.isPrivateEventsVisible());
 			for (KalendarEvent event : events) {
 				if (refDate.compareTo(event.getBegin()) <= 0) {
 					nextEvents.add(event);
@@ -129,8 +129,8 @@ public class CourseCalendarPeekViewController extends BasicController {
 	public class KalendarEventComparator implements Comparator<KalendarEvent> {
 		@Override
 		public int compare(KalendarEvent o1, KalendarEvent o2) {
-			Date b1 = o1.getBegin();
-			Date b2 = o2.getBegin();
+			ZonedDateTime b1 = o1.getBegin();
+			ZonedDateTime b2 = o2.getBegin();
 			if (b1 == null) return -1;
 			if (b2 == null) return 1;
 			return b1.compareTo(b2);

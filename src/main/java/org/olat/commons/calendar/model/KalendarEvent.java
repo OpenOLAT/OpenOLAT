@@ -25,15 +25,16 @@
 
 package org.olat.commons.calendar.model;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarUtils;
 
-import net.fortuna.ical4j.model.Recur.Frequency;
+import net.fortuna.ical4j.transform.recurrence.Frequency;
 
 public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 
@@ -53,17 +54,20 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	
 	private String id;
 	
-	transient private Kalendar kalendar;
+	private Kalendar kalendar;
 	
 	private String subject;
 	private String description;
-	private Date begin, end;
-	private Date immutableBegin, immutableEnd;
+	private ZonedDateTime begin;
+	private ZonedDateTime end;
+	private ZonedDateTime immutableBegin;
+	private ZonedDateTime immutableEnd;
 	private boolean isAllDayEvent;
 	private String location;
 	private String color;
 	private List<KalendarEventLink> kalendarEventLinks;
-	private long created, lastModified;
+	private long created;
+	private long lastModified;
 	private String createdBy;
 	private int classification;
 	
@@ -72,7 +76,7 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	private String[] participants;
 	private String sourceNodeId;
 
-	private Date occurenceDate;
+	private ZonedDateTime occurenceDate;
 	private String recurrenceId;
 	private String recurrenceRule;
 	private String recurrenceExc;
@@ -95,7 +99,7 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	 * @param begin
 	 * @param end
 	 */
-	public KalendarEvent(String id, String recurrenceId, String subject, Date begin, Date end) {
+	public KalendarEvent(String id, String recurrenceId, String subject, ZonedDateTime begin, ZonedDateTime end) {
 		this.id = id;
 		this.recurrenceId = recurrenceId;
 		this.subject = subject;
@@ -114,12 +118,12 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	 * @param begin
 	 * @param duration
 	 */
-	public KalendarEvent(String id, String subject, Date begin, int duration) {
+	public KalendarEvent(String id, String subject, ZonedDateTime begin, int duration) {
 		this.id = id;
 		this.subject = subject;
 		this.begin = begin;
 		immutableBegin = begin;
-		end = new Date(begin.getTime() + duration);
+		end = begin.plus(duration, ChronoUnit.MILLIS);
 		immutableEnd = end;
 		isAllDayEvent = false;
 		kalendarEventLinks = new ArrayList<>();
@@ -147,19 +151,19 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	 * 
 	 * @return
 	 */
-	public Date getOccurenceDate() {
+	public ZonedDateTime getOccurenceDate() {
 		return occurenceDate;
 	}
 	
-	public void setOccurenceDate(Date occurenceDate) {
+	public void setOccurenceDate(ZonedDateTime occurenceDate) {
 		this.occurenceDate = occurenceDate;
 	}
 	
-	public Date getBegin() {
+	public ZonedDateTime getBegin() {
 		return begin;
 	}
 	
-	public void setBegin(Date begin) {
+	public void setBegin(ZonedDateTime begin) {
 		this.begin = begin;
 	}
 	
@@ -170,7 +174,7 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	 * 
 	 * @return The original begin date of the event.
 	 */
-	public Date getImmutableBegin() {
+	public ZonedDateTime getImmutableBegin() {
 		return immutableBegin;
 	}
 	
@@ -181,7 +185,7 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	 * 
 	 * @return The original begin date of the event.
 	 */
-	public Date getImmutableEnd() {
+	public ZonedDateTime getImmutableEnd() {
 		return immutableEnd;
 	}
 	
@@ -193,11 +197,11 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		this.description = description;
 	}
 	
-	public Date getEnd() {
+	public ZonedDateTime getEnd() {
 		return end;
 	}
 	
-	public void setEnd(Date end) {
+	public void setEnd(ZonedDateTime end) {
 		this.end = end;
 	}
 	
@@ -298,21 +302,11 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	}
 	
 	public boolean isToday() {
-		Calendar cal = Calendar.getInstance();
-		int todayDay = cal.get(Calendar.DAY_OF_YEAR);
-		int todayYear = cal.get(Calendar.YEAR);
-		
-		cal.setTime(begin);
-		int startDay = cal.get(Calendar.DAY_OF_YEAR);
-		int startYear = cal.get(Calendar.YEAR);
-		boolean today = (todayDay == startDay) && (todayYear == startYear);
-		if(end != null) {
-			cal.setTime(end);
-			int endDay = cal.get(Calendar.DAY_OF_YEAR);
-			int endYear = cal.get(Calendar.YEAR);
-			today &= (todayDay == endDay) && (todayYear == endYear);
+		LocalDate now = LocalDate.now();
+		boolean today = begin.toLocalDate().equals(now);
+		if(today && end != null) {
+			today &= end.toLocalDate().equals(now);
 		}
-		//an event without end date finish the same day (3.6.1. Event Component, https://tools.ietf.org/html/rfc5545#section-3.6.1)
 		return today;
 	}
 	
@@ -326,12 +320,8 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 			//an event without end date finish the same day (3.6.1. Event Component, https://tools.ietf.org/html/rfc5545#section-3.6.1)
 			oneDay = true; //if a duration, the constructor make it an end date
 		} else {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(begin);
-			int startDay = cal.get(Calendar.DAY_OF_YEAR);
-			cal.setTime(end);
-			int endDay = cal.get(Calendar.DAY_OF_YEAR);
-			oneDay = (endDay - startDay == 0);
+			oneDay = (end.getDayOfYear() - begin.getDayOfYear() == 0)
+					&& begin.getYear() == end.getYear();
 		}
 		return oneDay;
 	}
@@ -414,8 +404,8 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		this.liveStreamUrl = liveStreamUrl;
 	}
 
-	public void addRecurrenceExc(Date excDate) {
-		List<Date> excDates = CalendarUtils.getRecurrenceExcludeDates(recurrenceExc);
+	public void addRecurrenceExc(ZonedDateTime excDate) {
+		List<ZonedDateTime> excDates = CalendarUtils.getRecurrenceExcludeDates(recurrenceExc);
 		excDates.add(excDate);
 		String excRule = CalendarUtils.getRecurrenceExcludeRule(excDates);
 		setRecurrenceExc(excRule);

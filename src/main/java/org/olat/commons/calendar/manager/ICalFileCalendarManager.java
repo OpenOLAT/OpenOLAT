@@ -35,7 +35,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,6 +49,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
@@ -67,6 +73,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
@@ -82,38 +89,36 @@ import org.springframework.stereotype.Service;
 
 import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.DateList;
-import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.Parameter;
+import net.fortuna.ical4j.model.CalendarDateFormat;
+import net.fortuna.ical4j.model.ComponentList;
+import net.fortuna.ical4j.model.ParameterList;
 import net.fortuna.ical4j.model.Period;
-import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.Recur;
-import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.parameter.Value;
-import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Clazz;
 import net.fortuna.ical4j.model.property.Color;
 import net.fortuna.ical4j.model.property.Contact;
 import net.fortuna.ical4j.model.property.Created;
+import net.fortuna.ical4j.model.property.DateListProperty;
 import net.fortuna.ical4j.model.property.Description;
-import net.fortuna.ical4j.model.property.DtStart;
+import net.fortuna.ical4j.model.property.DtEnd;
 import net.fortuna.ical4j.model.property.Duration;
 import net.fortuna.ical4j.model.property.ExDate;
 import net.fortuna.ical4j.model.property.LastModified;
 import net.fortuna.ical4j.model.property.Location;
-import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.RRule;
 import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.model.property.Summary;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Url;
-import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.model.property.XProperty;
+import net.fortuna.ical4j.model.property.immutable.ImmutableCalScale;
+import net.fortuna.ical4j.model.property.immutable.ImmutableVersion;
 
 @Service
 public class ICalFileCalendarManager implements CalendarManager, InitializingBean {
@@ -132,8 +137,6 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	private static final String ICAL_RRULE = "RRULE";
 	/** property to exclude events from recurrence */
 	private static final String ICAL_EXDATE = "EXDATE";
-	
-	private TimeZone tz;
 	
 	@Autowired
 	private UserManager userManager;
@@ -161,8 +164,6 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// set parser to relax (needed for allday events
 		// see http://sourceforge.net/forum/forum.php?thread_id=1253735&forum_id=368291
 		// made in module System.setProperty("ical4j.unfolding.relaxed", "true");
-		// initialize timezone
-		tz = calendarModule.getDefaultTimeZone();
 		calendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "calendar");
 	}
 	
@@ -476,16 +477,15 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	}
 
 	protected Calendar buildCalendar(Kalendar kalendar) {
-		Calendar calendar = new Calendar();
-		// add standard propeties
-		calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 3.1//EN"));
-		calendar.getProperties().add(Version.VERSION_2_0);
-		calendar.getProperties().add(CalScale.GREGORIAN);
-		for (Iterator<KalendarEvent> iter = kalendar.getEvents().iterator(); iter.hasNext();) {
-			KalendarEvent kEvent = iter.next();
-			VEvent vEvent = getVEvent(kEvent);
-			calendar.getComponents().add(vEvent);
-		}
+		Calendar calendar = new Calendar().withDefaults()
+			.withProdId("-//Ben Fortuna//iCal4j 4.1//EN")
+			.withProperty(ImmutableVersion.VERSION_2_0)
+			.withProperty(ImmutableCalScale.GREGORIAN)
+			.getFluentTarget();
+		
+		List<VEvent> vEvents =  kalendar.getEvents().stream()
+				.map(this::getVEvent).toList();
+		calendar.setComponentList(new ComponentList<>(vEvents));
 		return calendar;
 	}
 	
@@ -494,30 +494,32 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		KalendarEvent rootEvent = recurEvent.getCalendar().getEvent(recurEvent.getID(), null);
 		VEvent vEvent = getVEvent(recurEvent);
 		
-		PropertyList<Property> vEventProperties = vEvent.getProperties();
+		List<Property> vEventProperties = new ArrayList<>(vEvent.getProperties());
 		for(Iterator<Property> objIt=vEventProperties.iterator(); objIt.hasNext(); ) {
 			Property property = objIt.next();
 			if(property instanceof RRule || property instanceof ExDate) {
 				objIt.remove();
 			}
 		}
-
+		
+		
 		try {
 			Kalendar calendar = recurEvent.getCalendar();
-			Date startDate = recurEvent.getOccurenceDate();
+			ZonedDateTime startDate = recurEvent.getOccurenceDate();
 			String startString = CalendarUtils.formatRecurrenceDate(startDate, rootEvent.isAllDayEvent());
-			RecurrenceId recurId;
+			RecurrenceId<Temporal> recurId;
 			if(rootEvent.isAllDayEvent()) {
-				recurId = new RecurrenceId(tz);
-				recurId.setDate(CalendarUtils.createDate(startDate));
+				recurId = new RecurrenceId<>();
+				recurId.setDate(startDate);
 			} else {
-				recurId = new RecurrenceId(startString, tz);
+				recurId = new RecurrenceId<>(startString);
 			}
 			vEventProperties.add(recurId);
+			vEvent.setPropertyList(new PropertyList(vEventProperties));
 			KalendarEvent kEvent = getKalendarEvent(vEvent);
 			kEvent.setKalendar(calendar);
 			return kEvent;
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
@@ -527,48 +529,48 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		VEvent vEvent;
 		if (!kEvent.isAllDayEvent()) {
 			// regular VEvent
-			DateTime dtBegin = new DateTime(kEvent.getBegin());
+			ZonedDateTime dtBegin = kEvent.getBegin();
+			ZoneId tz = calendarModule.getDefaultZoneId();
 			if(tz != null) {
-				dtBegin.setTimeZone(tz);
+				dtBegin = dtBegin.withZoneSameInstant(tz);
 			}
 
-			Date kEventEnd = kEvent.getEnd();
+			ZonedDateTime kEventEnd = kEvent.getEnd();
 			if(kEventEnd == null) {
 				vEvent = new VEvent(dtBegin, kEvent.getSubject());
 			} else {
-				DateTime dtEnd = new DateTime(kEventEnd);
+				ZonedDateTime dtEnd = kEventEnd;
 				if(tz != null) {
-					dtEnd.setTimeZone(tz);
+					dtEnd = dtEnd.withZoneSameInstant(tz);
 				}
 				vEvent = new VEvent(dtBegin, dtEnd, kEvent.getSubject());
 			}
 		} else {
 			// AllDay VEvent
-			net.fortuna.ical4j.model.Date dtBegin = CalendarUtils.createDate(kEvent.getBegin());
+			ZonedDateTime dtBegin = kEvent.getBegin();
 			// adjust end date: ICal end dates for all day events are on the next day
-			Date adjustedEndDate = new Date(kEvent.getEnd().getTime() + (1000 * 60 * 60 * 24));
-			net.fortuna.ical4j.model.Date dtEnd = CalendarUtils.createDate(adjustedEndDate);
-			vEvent = new VEvent(dtBegin, dtEnd, kEvent.getSubject());
+			ZonedDateTime adjustedEndDate = kEvent.getEnd().plus((1000 * 60 * 60 * 24), ChronoUnit.MILLIS);// .getTime() + (1000 * 60 * 60 * 24));
+			vEvent = new VEvent(dtBegin, adjustedEndDate, kEvent.getSubject());
 		}
-		
+
+		List<Property> vEventProperties = new ArrayList<>(vEvent.getProperties());
 		if(kEvent.getCreated() > 0) {
-			Created created = new Created(new DateTime(kEvent.getCreated()));
-			vEvent.getProperties().add(created);
+			Created created = new Created(new Date(kEvent.getCreated()).toInstant());
+			vEventProperties.add(created);
 		}
 
 		if( (kEvent.getCreatedBy() != null) && !kEvent.getCreatedBy().trim().isEmpty()) {
 			Contact contact = new Contact();
 			contact.setValue(kEvent.getCreatedBy());
-			vEvent.getProperties().add(contact);
+			vEventProperties.add(contact);
 		}
 
 		if(kEvent.getLastModified() > 0) {
-			LastModified lastMod = new LastModified(new DateTime(kEvent.getLastModified()));
-			vEvent.getProperties().add(lastMod);
+			LastModified lastMod = new LastModified(new Date(kEvent.getLastModified()).toInstant());
+			vEventProperties.add(lastMod);
 		}
 
 		// Uid
-		PropertyList<Property> vEventProperties = vEvent.getProperties();
 		vEventProperties.add(new Uid(kEvent.getID()));
 		
 		// clazz
@@ -662,17 +664,17 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		String recurenceId = kEvent.getRecurrenceID();
 		if(StringHelper.containsNonWhitespace(recurenceId)) {
 			try {
-				RecurrenceId recurId;
+				RecurrenceId<Temporal> recurId;
 				// VALUE=DATE recurrence id need to be specially saved
 				if(recurenceId.length() < 9) {
-					recurId = new RecurrenceId(tz);
-					recurId.setDate(CalendarUtils.createDate(new net.fortuna.ical4j.model.Date(recurenceId)));
+					ParameterList pList = new ParameterList(List.of(new Value("DATE")));
+					recurId = new RecurrenceId<>(pList, recurenceId);
 				} else {
-					recurId = new RecurrenceId(recurenceId, tz);
+					recurId = new RecurrenceId<>(recurenceId);
 				}
 				
 				vEventProperties.add(recurId);
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				log.error("cannot create recurrence ID: {}", recurenceId, e);
 			}
 		}
@@ -681,10 +683,10 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		String recurrence = kEvent.getRecurrenceRule();
 		if(recurrence != null && !recurrence.equals("")) {
 			try {
-				Recur recur = new Recur(recurrence);
-				RRule rrule = new RRule(recur);
+				Recur<Temporal> recur = new Recur<>(recurrence);
+				RRule<Temporal> rrule = new RRule<>(recur);
 				vEventProperties.add(rrule);
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				log.error("cannot create recurrence rule: {}", recurrence, e);
 			}
 		}
@@ -692,11 +694,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// recurrence exclusions
 		String recurrenceExc = kEvent.getRecurrenceExc();
 		if(recurrenceExc != null && !recurrenceExc.equals("")) {
-			ExDate exdate = new ExDate();
 			try {
-				exdate.setValue(recurrenceExc);
-				vEventProperties.add(exdate);
-			} catch (ParseException e) {
+				vEventProperties.add(new ExDate<>(recurrenceExc));
+			} catch (Exception e) {
 				log.error("", e);
 			}
 		}
@@ -709,7 +709,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			vEventProperties.add(new XProperty(ICAL_X_OLAT_VIDEO_STREAM_URL_TEMPLATE_KEY, kEvent.getLiveStreamUrlTemplateKey().toString()));
 		}
 		
-		return vEvent;
+		PropertyList propertyList = new PropertyList(vEventProperties);
+		return new VEvent(propertyList);
 	}
 	
 	@Override
@@ -730,53 +731,49 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		if (eventsummary != null)
 			subject = eventsummary.getValue();
 		// start
-		DtStart dtStart = event.getStartDate();
-		Date start = dtStart.getDate();
+		ZonedDateTime start = CalendarUtils.convertDateProperty(event.getDateTimeStart(), calendarModule.getDefaultZoneId());
 		Duration dur = event.getDuration();
 		// end
-		Date end = null;
+		DtEnd<Temporal> dtEnd = null;
 		if (dur != null) {
-			end = event.getEndDate().getDate();
-		} else if(event.getEndDate(false) != null) { 
-			end = event.getEndDate(false).getDate();
+			dtEnd = event.getDateTimeEnd();
+		} else if(event.getEndDate(false).isPresent()) { 
+			dtEnd = event.getEndDate(false).orElse(null);
 		}
+		ZonedDateTime end = dtEnd == null ? null : CalendarUtils.convertDateProperty(dtEnd, calendarModule.getDefaultZoneId());
 
 		// check all day event first
 		boolean isAllDay = false;
-		Parameter dateParameter = null;
-		Object allDayProperty = event.getProperties().getProperty(Property.DTSTART);
-		if (allDayProperty instanceof Property) {
-			dateParameter = ((Property) allDayProperty).getParameter(Value.DATE.getName());
-		}
-		if (dateParameter != null) {
+		
+		Property allDayProperty = event.getProperty(Property.DTSTART).orElse(null);
+		boolean dateParameter = allDayProperty != null && allDayProperty.getParameter(Value.DATE.getName()).isPresent();
+		if (dateParameter) {
 			isAllDay = true;
 			
 			//Make sure the time of the dates are 00:00 localtime because DATE fields in iCal are GMT 00:00 
 			//Note that start date and end date can have different offset because of daylight saving switch
-			java.util.TimeZone timezone = java.util.GregorianCalendar.getInstance().getTimeZone();
-			start = new Date(start.getTime() - timezone.getOffset(start.getTime()));
-			end   = new Date(end.getTime() - timezone.getOffset(end.getTime()));
+			//java.util.TimeZone timezone = java.util.GregorianCalendar.getInstance().getTimeZone();
+			//start = new Date(start.getTime() - timezone.getOffset(start.getTime()));
+			//end   = new Date(end.getTime() - timezone.getOffset(end.getTime()));
 			
 			// adjust end date: ICal sets end dates to the next day
-			end = new Date(end.getTime() - (1000 * 60 * 60 * 24));
-		} else if(start != null && end != null && (end.getTime() - start.getTime()) == (24 * 60 * 60 * 1000)) {
+			end = end.minus((1000 * 60 * 60 * 24), ChronoUnit.MILLIS);
+		} else if(start != null && end != null && ChronoUnit.MILLIS.between(start, end) == (24 * 60 * 60 * 1000)) {
 			//check that start has no hour, no minute and no second
-			java.util.Calendar cal = java.util.Calendar.getInstance();
-			cal.setTime(start);
-			isAllDay = cal.get(java.util.Calendar.HOUR_OF_DAY) == 0 && cal.get(java.util.Calendar.MINUTE) == 0
-					&& cal.get(java.util.Calendar.SECOND) == 0 && cal.get(java.util.Calendar.MILLISECOND) == 0;
+			isAllDay = start.getHour() == 0 && start.getMinute() == 0
+					&& start.getSecond() == 0 && start.get(ChronoField.MILLI_OF_SECOND) == 0;
 			// adjust end date: ICal sets end dates to the next day
-			end = new Date(end.getTime() - (1000 * 60 * 60 * 24));
+			end = end.minus((1000 * 60 * 60 * 24), ChronoUnit.MILLIS);
 		}
 		
-		Uid eventuid = event.getUid();
+		Uid eventuid = event.getUid().orElse(null);
 		String uid;
 		if (eventuid != null) {
 			uid = eventuid.getValue();
 		} else {
 			uid = CodeHelper.getGlobalForeverUniqueID();
 		}
-		RecurrenceId eventRecurenceId = event.getRecurrenceId();
+		RecurrenceId<Temporal> eventRecurenceId = event.getRecurrenceId();
 		String recurrenceId = null;
 		if(eventRecurenceId != null) {
 			recurrenceId = eventRecurenceId.getValue();
@@ -799,37 +796,36 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// created/last modified
 		Created created = event.getCreated();
 		if (created != null) {
-			calEvent.setCreated(created.getDate().getTime());
+			calEvent.setCreated(created.getDate().toEpochMilli());
 		}
 		// created/last modified
-		Contact contact = (Contact)event.getProperty(Property.CONTACT);
+		Contact contact = event.getContact();
 		if (contact != null) {
 			calEvent.setCreatedBy(contact.getValue());
 		}
 		
 		LastModified lastModified = event.getLastModified();
 		if (lastModified != null) {
-			calEvent.setLastModified(lastModified.getDate().getTime());
+			calEvent.setLastModified(lastModified.getDate().getEpochSecond());
 		}
 		
 		Description description = event.getDescription();
 		if(description != null) {
 			calEvent.setDescription(description.getValue());
 		}
-		
 		// location
 		Location location = event.getLocation();
 		if (location != null) {
 			calEvent.setLocation(location.getValue());
 		}
 		
-		Object colorProperty = event.getProperties().getProperty(Color.PROPERTY_NAME);
-		if (colorProperty instanceof Property) {
-			calEvent.setColor( ((Property) colorProperty).getValue());
+		Property colorProperty = event.getProperty(Color.PROPERTY_NAME).orElse(null);
+		if (colorProperty != null) {
+			calEvent.setColor(colorProperty.getValue());
 		}
 		
 		// links if any
-		PropertyList<Property> linkProperties = event.getProperties(ICAL_X_OLAT_LINK);
+		List<Property> linkProperties = event.getProperties(ICAL_X_OLAT_LINK);
 		List<KalendarEventLink> kalendarEventLinks = new ArrayList<>();
 		for (Iterator<Property> iter = linkProperties.iterator(); iter.hasNext();) {
 			XProperty linkProperty = (XProperty) iter.next();
@@ -853,15 +849,15 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		}
 		calEvent.setKalendarEventLinks(kalendarEventLinks);
 		
-		Property comment = event.getProperty(ICAL_X_OLAT_COMMENT);
+		Property comment = event.getProperty(ICAL_X_OLAT_COMMENT).orElse(null);
 		if (comment != null)
 			calEvent.setComment(comment.getValue());
 		
-		Property numParticipants = event.getProperty(ICAL_X_OLAT_NUMPARTICIPANTS);
+		Property numParticipants = event.getProperty(ICAL_X_OLAT_NUMPARTICIPANTS).orElse(null);
 		if (numParticipants != null)
 			calEvent.setNumParticipants(Integer.parseInt(numParticipants.getValue()));
 		
-		Property participants = event.getProperty(ICAL_X_OLAT_PARTICIPANTS);
+		Property participants = event.getProperty(ICAL_X_OLAT_PARTICIPANTS).orElse(null);
 		if (participants != null) {
 			StringTokenizer strTok = new StringTokenizer(participants.getValue(), "§", false);
 			String[] parts = new String[strTok.countTokens()];
@@ -871,13 +867,13 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			calEvent.setParticipants(parts);
 		}
 		
-		Property sourceNodId = event.getProperty(ICAL_X_OLAT_SOURCENODEID);
+		Property sourceNodId = event.getProperty(ICAL_X_OLAT_SOURCENODEID).orElse(null);
 		if (sourceNodId != null) {
 			calEvent.setSourceNodeId(sourceNodId.getValue());
 		}
 		
 		//managed properties
-		Property managed = event.getProperty(ICAL_X_OLAT_MANAGED);
+		Property managed = event.getProperty(ICAL_X_OLAT_MANAGED).orElse(null);
 		if(managed != null) {
 			String value = managed.getValue();
 			if("true".equals(value)) {
@@ -886,70 +882,49 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			CalendarManagedFlag[] values = CalendarManagedFlag.toEnum(value);
 			calEvent.setManagedFlags(values);
 		}
-		Property externalId = event.getProperty(ICAL_X_OLAT_EXTERNAL_ID);
+		Property externalId = event.getProperty(ICAL_X_OLAT_EXTERNAL_ID).orElse(null);
 		if(externalId != null) {
 			calEvent.setExternalId(externalId.getValue());
 		}
-		Property externalSource = event.getProperty(ICAL_X_OLAT_EXTERNAL_SOURCE);
+		Property externalSource = event.getProperty(ICAL_X_OLAT_EXTERNAL_SOURCE).orElse(null);
 		if(externalSource != null) {
 			calEvent.setExternalSource(externalSource.getValue());
 		}
 		
 		// recurrence
-		if (event.getProperty(ICAL_RRULE) != null) {
-			calEvent.setRecurrenceRule(event.getProperty(ICAL_RRULE).getValue());
+		Property recurence = event.getProperty(ICAL_RRULE).orElse(null);
+		if (recurence instanceof RRule<?> rrule) {
+			String recurenceValue = recurence.getValue();
+			if(rrule.getRecur().getUntil() instanceof LocalDate localDate
+					&& rrule.getRecur().getCount() == -1) {
+				ZonedDateTime occurenceDate = CalendarUtils.convertTemporal(localDate, calendarModule.getDefaultZoneId());
+				Recur<Temporal> recur = new Recur.Builder<>(new Recur<>(recurenceValue))
+						.until(occurenceDate)
+						.count(-1)
+						.build();
+				calEvent.setRecurrenceRule(recur.toString());
+			} else {
+				calEvent.setRecurrenceRule(recurence.getValue());
+			}
 		}
 
 		// recurrence exclusions
-		if (event.getProperty(ICAL_EXDATE) != null) {
-			calEvent.setRecurrenceExc(event.getProperty(ICAL_EXDATE).getValue());
+		Property exDate = event.getProperty(ICAL_EXDATE).orElse(null);
+		if (exDate != null) {
+			calEvent.setRecurrenceExc(exDate.getValue());
 		}
 		
 		// video stream
-		Property liveStreamUrl = event.getProperty(ICAL_X_OLAT_VIDEO_STREAM_URL);
+		Property liveStreamUrl = event.getProperty(ICAL_X_OLAT_VIDEO_STREAM_URL).orElse(null);
 		if(liveStreamUrl != null) {
 			calEvent.setLiveStreamUrl(liveStreamUrl.getValue());
 		}
 		
-		Property liveStreamUrlTemplateKey = event.getProperty(ICAL_X_OLAT_VIDEO_STREAM_URL_TEMPLATE_KEY);
+		Property liveStreamUrlTemplateKey = event.getProperty(ICAL_X_OLAT_VIDEO_STREAM_URL_TEMPLATE_KEY).orElse(null);
 		if (liveStreamUrlTemplateKey != null)
 			calEvent.setLiveStreamUrlTemplateKey(Long.parseLong(liveStreamUrlTemplateKey.getValue()));
 		
 		return calEvent;
-	}
-
-	@Override
-	public KalendarEvent getRecurringInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent) {
-		boolean isRecurring= isRecurringInPeriod(periodStart, periodEnd, kEvent);
-		KalendarEvent recurEvent = null;
-
-		if(isRecurring) {
-			java.util.Calendar periodStartCal = java.util.Calendar.getInstance();
-			java.util.Calendar eventBeginCal = java.util.Calendar.getInstance();
-			
-			periodStartCal.setTime(periodStart);
-			eventBeginCal.setTime(kEvent.getBegin());
-			
-			Long duration = kEvent.getEnd().getTime() - kEvent.getBegin().getTime();
-
-			java.util.Calendar beginCal = java.util.Calendar.getInstance();
-			beginCal.setTime(kEvent.getBegin());
-			beginCal.set(java.util.Calendar.YEAR, periodStartCal.get(java.util.Calendar.YEAR));
-			beginCal.set(java.util.Calendar.MONTH, periodStartCal.get(java.util.Calendar.MONTH));
-			beginCal.set(java.util.Calendar.DAY_OF_MONTH, periodStartCal.get(java.util.Calendar.DAY_OF_MONTH));
-
-			recurEvent = kEvent.clone();
-			recurEvent.setBegin(beginCal.getTime());
-			recurEvent.setEnd(new Date(beginCal.getTime().getTime() + duration));
-		}
-
-		return recurEvent;
-	}
-
-	@Override
-	public boolean isRecurringInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent) {
-		DateList recurDates = getRecurringsInPeriod(periodStart, periodEnd, kEvent);
-		return (recurDates != null && !recurDates.isEmpty());
 	}
 
 	@Override
@@ -1064,8 +1039,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				if(StringHelper.containsNonWhitespace(recurrenceId)) {
 					loadedCal.removeEvent(kalendarEvent);
 					KalendarEvent rootEvent = loadedCal.getEvent(kalendarEvent.getID(), null);
-					if(rootEvent != null && kalendarEvent instanceof KalendarRecurEvent) {
-						Date recurrenceDate = ((KalendarRecurEvent)kalendarEvent).getOccurenceDate();
+					if(rootEvent != null && kalendarEvent instanceof KalendarRecurEvent krEvent) {
+						ZonedDateTime recurrenceDate = krEvent.getOccurenceDate();
 						rootEvent.addRecurrenceExc(recurrenceDate);
 					}
 				} else {
@@ -1094,7 +1069,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		OLATResourceable calOres = getOresHelperFor(cal);
 		Boolean removeSuccessful = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(calOres, () -> {
 			String uid = kalendarEvent.getID();
-			Date occurenceDate = kalendarEvent.getBegin();
+			ZonedDateTime occurenceDate = kalendarEvent.getBegin();
 	
 			Kalendar loadedCal = getCalendarFromCache(cal.getType(), cal.getCalendarID());
 			KalendarEvent rootEvent = loadedCal.getEvent(kalendarEvent.getID(), null);
@@ -1103,7 +1078,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			for(KalendarEvent kEvent:loadedCal.getEvents()) {
 				if(uid.equals(kEvent.getID())
 						&& kEvent.getOccurenceDate() != null
-						&& occurenceDate.equals(kEvent.getOccurenceDate())) {
+						&& occurenceDate.isEqual(kEvent.getOccurenceDate())) {
 					loadedCal.removeEvent(kEvent);
 				}
 			}
@@ -1123,27 +1098,31 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			boolean successfullyPersist = false;
 			try {
 				String uid = kalendarEvent.getID();
-				Date occurenceDate = kalendarEvent.getOccurenceDate();
+				ZonedDateTime occurenceDateTime = kalendarEvent.getOccurenceDate();
 
 				Kalendar loadedCal = getCalendarFromCache(cal.getType(), cal.getCalendarID());
 				KalendarEvent rootEvent = loadedCal.getEvent(kalendarEvent.getID(), null);
 				String rRule = rootEvent.getRecurrenceRule();
 				
-				Recur recur = new Recur(rRule);
-				recur.setUntil(CalendarUtils.createDate(occurenceDate));
-				RRule rrule = new RRule(recur);
+				//iCal4j 3: RRULE:FREQ=DAILY;UNTIL=20250306;COUNT=-1
+				ZonedDateTime occurenceDate = occurenceDateTime.truncatedTo(ChronoUnit.DAYS);
+				Recur<Temporal> recur = new Recur.Builder<>(new Recur<>(rRule))
+					.until(occurenceDate)
+					.count(-1)
+					.build();
+				RRule<Temporal> rrule = new RRule<>(recur);
 				rootEvent.setRecurrenceRule(rrule.getValue());
 				
 				for(KalendarEvent kEvent:loadedCal.getEvents()) {
 					if(uid.equals(kEvent.getID())
 							&& StringHelper.containsNonWhitespace(kEvent.getRecurrenceID())
-							&& occurenceDate.before(kEvent.getBegin())) {
+							&& occurenceDateTime.isBefore(kEvent.getBegin())) {
 						loadedCal.removeEvent(kEvent);
 					}
 				}
 				
 				successfullyPersist = persistCalendar(loadedCal);
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				log.error("", e);
 			}
 			return Boolean.valueOf(successfullyPersist);
@@ -1187,23 +1166,18 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		Kalendar reloadedCal = getCalendarFromCache(cal.getType(), cal.getCalendarID());
 		
 		if(StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceRule())) {
-			Date oldBegin = kalendarEvent.getImmutableBegin();
-			Date oldEnd = kalendarEvent.getImmutableEnd();
+			ZonedDateTime oldBegin = kalendarEvent.getImmutableBegin();
+			ZonedDateTime oldEnd = kalendarEvent.getImmutableEnd();
 			
 			KalendarEvent originalEvent = reloadedCal.getEvent(kalendarEvent.getID(), null);
 
-			Date newBegin = kalendarEvent.getBegin();
-			Date newEnd = kalendarEvent.getEnd();
-			long beginDiff = newBegin.getTime() - oldBegin.getTime();
-			long endDiff = newEnd.getTime() - oldEnd.getTime();
+			ZonedDateTime newBegin = kalendarEvent.getBegin();
+			ZonedDateTime newEnd = kalendarEvent.getEnd();
+			long beginDiff = ChronoUnit.MILLIS.between(oldBegin, newBegin);
+			long endDiff = ChronoUnit.MILLIS.between(oldEnd, newEnd);
 
-			java.util.Calendar cl = java.util.Calendar.getInstance();
-			cl.setTime(originalEvent.getBegin());
-			cl.add(java.util.Calendar.MILLISECOND, (int)beginDiff);
-			kalendarEvent.setBegin(cl.getTime());
-			cl.setTime(originalEvent.getEnd());
-			cl.add(java.util.Calendar.MILLISECOND, (int)endDiff);
-			kalendarEvent.setEnd(cl.getTime());
+			kalendarEvent.setBegin(originalEvent.getBegin().plus(beginDiff, ChronoUnit.MILLIS));
+			kalendarEvent.setEnd(originalEvent.getEnd().plus(endDiff, ChronoUnit.MILLIS));
 
 			List<KalendarEvent> exEvents = new ArrayList<>();
 			List<KalendarEvent> allEvents = reloadedCal.getEvents();
@@ -1213,35 +1187,29 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				}
 			}
 			
-			if(exEvents.size() > 0) {
+			if(!exEvents.isEmpty()) {
 				for(KalendarEvent exEvent:exEvents) {
 					try {
 						reloadedCal.removeEvent(exEvent);
 						String recurrenceId = exEvent.getRecurrenceID();
 						
-						RecurrenceId recurId = new RecurrenceId(recurrenceId, tz);
-						Date currentRecurrence = recurId.getDate();
-						java.util.Calendar calc = java.util.Calendar.getInstance();
-						calc.clear();
-						calc.setTime(currentRecurrence);
-						if(beginDiff > 0) {
-							calc.add(java.util.Calendar.MILLISECOND, (int)beginDiff);
-						}
-						
-						Date newRecurrenceDate = calc.getTime();
+						RecurrenceId<Temporal> recurId = new RecurrenceId<>(recurrenceId);
+						ZonedDateTime currentRecurrence = CalendarUtils
+								.convertTemporal(recurId.getDate(), calendarModule.getDefaultZoneId());
+						ZonedDateTime newRecurrenceDate = currentRecurrence.plus(beginDiff, ChronoUnit.MILLIS);
 						
 						boolean allDay = kalendarEvent.isAllDayEvent();
-						RecurrenceId newRecurId;
+						RecurrenceId<Temporal> newRecurId;
 						if(allDay) {
-							newRecurId = new RecurrenceId(tz);
-							newRecurId.setDate(CalendarUtils.createDate(newRecurrenceDate));
+							newRecurId = new RecurrenceId<>();
+							newRecurId.setDate(newRecurrenceDate);
 						} else {
 							String startString = CalendarUtils.formatRecurrenceDate(newRecurrenceDate, false);
-							newRecurId = new RecurrenceId(startString, tz);
+							newRecurId = new RecurrenceId<>(startString);
 						}
 						exEvent.setRecurrenceID(newRecurId.getValue());
 						reloadedCal.addEvent(exEvent);
-					} catch (ParseException e) {
+					} catch (Exception e) {
 						log.error("", e);
 					}
 				}
@@ -1304,17 +1272,17 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	}
 	
 	@Override
-	public List<KalendarEvent> getEvents(Kalendar calendar, Date from, Date to, boolean privateEventsVisible) {
+	public List<KalendarEvent> getEvents(Kalendar calendar, ZonedDateTime from, ZonedDateTime to, boolean privateEventsVisible) {
 		List<KalendarEvent> allEvents = calendar.getEvents();
 		List<KalendarEvent> events = new ArrayList<>(128);
 		
 		// first pass, collect edited recurring events
-		Map<String,List<Date>> idToRecurringStartDateEvents = new HashMap<>();
+		Map<String,List<ZonedDateTime>> idToRecurringStartDateEvents = new HashMap<>();
 		for(KalendarEvent event:allEvents) {
 			if(StringHelper.containsNonWhitespace(event.getRecurrenceID()) && isInRange(from, to, event)) {
 				VEvent vEvent = getVEvent(event);
-				RecurrenceId recurrenceId = vEvent.getRecurrenceId();
-				net.fortuna.ical4j.model.Date recurenceIdDate = recurrenceId.getDate();
+				RecurrenceId<Temporal> recurrenceId = vEvent.getRecurrenceId();
+				ZonedDateTime recurenceIdDate = CalendarUtils.convertTemporal(recurrenceId.getDate(), calendarModule.getDefaultZoneId());
 				idToRecurringStartDateEvents
 					.computeIfAbsent(event.getID(), id -> new ArrayList<>())
 					.add(recurenceIdDate);
@@ -1332,7 +1300,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			}
 
 			if (StringHelper.containsNonWhitespace(event.getRecurrenceRule())) {
-				List<Date> recurringStartDateEvents = idToRecurringStartDateEvents.get(event.getID());
+				ZoneId tz = calendarModule.getDefaultZoneId();
+				List<ZonedDateTime> recurringStartDateEvents = idToRecurringStartDateEvents.get(event.getID());
 				List<KalendarRecurEvent> recurringEvents = getRecurringEventsInPeriod(event, from, to, recurringStartDateEvents, tz);
 				if(!recurringEvents.isEmpty()) {
 					idToRecurringEvents.put(event.getID(), recurringEvents);
@@ -1354,24 +1323,13 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			String id = event.getID();
 			if(idToRecurringEvents.containsKey(id)) {
 				VEvent vEvent = getVEvent(event);
-				RecurrenceId recurrenceId = vEvent.getRecurrenceId();
-				net.fortuna.ical4j.model.Date startDate = recurrenceId.getDate();
-				if(startDate instanceof net.fortuna.ical4j.model.DateTime) {
-					List<KalendarRecurEvent> recurringEvents = idToRecurringEvents.get(id);
-					for(KalendarRecurEvent recurEvent:recurringEvents) {
-						Date beginDate = recurEvent.getBegin();
-						if(startDate.equals(beginDate)) {
-							recurEvent.setRecurrenceEvent(event);
-						}
-					}
-				} else {
-					List<KalendarRecurEvent> recurringEvents = idToRecurringEvents.get(id);
-					for(KalendarRecurEvent recurEvent:recurringEvents) {
-						Date beginDate = recurEvent.getBegin();
-						net.fortuna.ical4j.model.Date occDate = CalendarUtils.createDate(beginDate);
-						if(occDate.equals(startDate)) {
-							recurEvent.setRecurrenceEvent(event);
-						}
+				RecurrenceId<Temporal> recurrenceId = vEvent.getRecurrenceId();
+				ZonedDateTime startDate = CalendarUtils.convertTemporal(recurrenceId.getDate(), calendarModule.getDefaultZoneId());
+				List<KalendarRecurEvent> recurringEvents = idToRecurringEvents.get(id);
+				for(KalendarRecurEvent recurEvent:recurringEvents) {
+					ZonedDateTime beginDate = recurEvent.getBegin();
+					if(startDate.equals(beginDate)) {
+						recurEvent.setRecurrenceEvent(event);
 					}
 				}
 			}
@@ -1380,9 +1338,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		return events;
 	}
 
-	private final boolean isInRange(Date from, Date to, KalendarEvent event) {
-		Date begin = event.getBegin();
-		Date end = CalendarUtils.endOf(event);
+	private final boolean isInRange(ZonedDateTime from, ZonedDateTime to, KalendarEvent event) {
+		ZonedDateTime begin = event.getBegin();
+		ZonedDateTime end = CalendarUtils.endOf(event);
 
 		if(begin != null && end != null) {
 			if(from.compareTo(begin) <= 0 && to.compareTo(end) >= 0) {
@@ -1406,38 +1364,60 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		return false;
 	}
 	
-	private Date calculateRecurringStartPeriod(Date periodStart, List<Date> recurringIdDates) {
+	private ZonedDateTime calculateRecurringStartPeriod(ZonedDateTime periodStart, List<ZonedDateTime> recurringIdDates) {
 		if(recurringIdDates != null && !recurringIdDates.isEmpty()) {
-			for(Date recurringIdDate:recurringIdDates) {
-				if(recurringIdDate.before(periodStart)) {
-					java.util.Calendar cal = java.util.Calendar.getInstance();
-					cal.setTime(recurringIdDate);
-					cal.add(java.util.Calendar.DATE, -2);// make sure the date is included
-					periodStart = cal.getTime();
+			for(ZonedDateTime recurringIdDate:recurringIdDates) {
+				if(recurringIdDate.isBefore(periodStart)) {
+					// make sure the date is included
+					periodStart = recurringIdDate.minusDays(2) ;
 				}
 			}
 		}
 		return periodStart;
 	}
 	
-	private Date calculateRecurringEndPeriod(Date periodEnd, List<Date> recurringIdDates) {
+	private ZonedDateTime calculateRecurringEndPeriod(ZonedDateTime periodEnd, List<ZonedDateTime> recurringIdDates) {
 		if(recurringIdDates != null && !recurringIdDates.isEmpty()) {
-			for(Date recurringIdDate:recurringIdDates) {
-				if(recurringIdDate.after(periodEnd)) {
-					java.util.Calendar cal = java.util.Calendar.getInstance();
-					cal.setTime(recurringIdDate);
-					cal.add(java.util.Calendar.DATE, 2);// make sure the date is included
-					periodEnd = cal.getTime();
+			for(ZonedDateTime recurringIdDate:recurringIdDates) {
+				if(recurringIdDate.isAfter(periodEnd)) {
+					// make sure the date is included
+					periodEnd = recurringIdDate.plusDays(2);
 				}
 			}
 		}
 		return periodEnd;
 	}
 	
+	private List<ZonedDateTime> getExDates(VEvent vEvent) {
+		List<Property> exDateProps = vEvent.getProperties(Property.EXDATE);
+		List<ZonedDateTime> exDates = new ArrayList<>();
+		for(Property exDateProp:exDateProps) {
+			if(exDateProp instanceof DateListProperty dateList) {
+				@SuppressWarnings("unchecked")
+				List<Temporal> dates = dateList.getDates();
+				for(Temporal date:dates) {
+					exDates.add(CalendarUtils.convertTemporal(date, calendarModule.getDefaultZoneId()));
+				}
+			}
+		}
+		return exDates;
+	}
+	
+	private boolean isEx(Period<Temporal> period, List<ZonedDateTime> exDates) {
+		ZonedDateTime pStart = CalendarUtils.convertTemporal(period.getStart(), calendarModule.getDefaultZoneId());
+		for(ZonedDateTime exDate:exDates) {
+			//ical4j 3 checks for DATE too
+			if(period.includes(exDate) || DateUtils.isSameDay(pStart, exDate)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private final List<KalendarRecurEvent> getRecurringEventsInPeriod(KalendarEvent kEvent,
-			Date periodStart, Date periodEnd, List<Date> recurringIdDates, TimeZone userTz) {
+			ZonedDateTime periodStart, ZonedDateTime periodEnd, List<ZonedDateTime> recurringIdDates, ZoneId userTz) {
 		VEvent vEvent = getVEvent(kEvent);
-		if(vEvent.getEndDate(false) == null || vEvent.getStartDate().getDate().after(vEvent.getEndDate().getDate())) {
+		if(vEvent.getEndDate(false).isEmpty()) {
 			return Collections.emptyList();
 		}
 		
@@ -1445,96 +1425,44 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		periodEnd = calculateRecurringEndPeriod(periodEnd, recurringIdDates);
 
 		//calculate the events in the specified period
-        Period recurringPeriod = new Period(new DateTime(periodStart), new DateTime(periodEnd));
-		PeriodList periodList = vEvent.calculateRecurrenceSet(recurringPeriod);
-		List<KalendarRecurEvent> recurringEvents = new ArrayList<>(periodList.size());
-		for(Object obj : periodList) {
-			Period period = (Period)obj;
-			Date date = period.getStart();
-
-			java.util.Calendar eventStartCal = java.util.Calendar.getInstance();
-			eventStartCal.clear();
-			eventStartCal.setTime(kEvent.getBegin());
-			
-			java.util.Calendar eventEndCal = java.util.Calendar.getInstance();
-			eventEndCal.clear();
-			eventEndCal.setTime(kEvent.getEnd());
-			
-			java.util.Calendar recurStartCal = java.util.Calendar.getInstance();
-			recurStartCal.clear();
-			if(userTz == null) {
-				recurStartCal.setTimeInMillis(date.getTime());
-			} else {
-				recurStartCal.setTimeInMillis(date.getTime() - userTz.getOffset(date.getTime()));
+        Period<ZonedDateTime> recurringPeriod = new Period<>(periodStart, periodEnd);
+		Set<Period<Temporal>> periodList = vEvent.calculateRecurrenceSet(recurringPeriod);
+		List<KalendarRecurEvent> recurringEvents = new ArrayList<>();
+		List<ZonedDateTime> exDates = getExDates(vEvent);
+		
+		for(Period<Temporal> period : periodList) {
+			ZonedDateTime date = ZonedDateTime.from(period.getStart());
+			if(isEx(period, exDates)) {
+				continue;
 			}
-			long duration = kEvent.getEnd().getTime() - kEvent.getBegin().getTime();
-
-			java.util.Calendar beginCal = java.util.Calendar.getInstance();
-			beginCal.clear();
-			beginCal.set(recurStartCal.get(java.util.Calendar.YEAR), recurStartCal.get(java.util.Calendar.MONTH), recurStartCal.get(java.util.Calendar.DATE), 
-				eventStartCal.get(java.util.Calendar.HOUR_OF_DAY), eventStartCal.get(java.util.Calendar.MINUTE), eventStartCal.get(java.util.Calendar.SECOND));
 			
-			java.util.Calendar endCal = java.util.Calendar.getInstance();
-			endCal.clear();
-			endCal.setTimeInMillis(beginCal.getTimeInMillis() + duration);
+			ZonedDateTime recurStartCal;
+			if(userTz == null) {
+				recurStartCal = date;
+			} else {
+				recurStartCal = date.withZoneSameInstant(userTz);
+			}
+			long duration = ChronoUnit.MILLIS.between(kEvent.getBegin(), kEvent.getEnd());
+
+			ZonedDateTime beginCal = recurStartCal;
+			ZonedDateTime endCal = recurStartCal.plus(duration, ChronoUnit.MILLIS);
 
 			boolean original = false;
-			if(kEvent.getBegin().compareTo(beginCal.getTime()) == 0) {
+			if(kEvent.getBegin().isEqual(beginCal)) {
 				original = true; //prevent doubled events
 			}
 
-			Date recurrenceEnd = getRecurrenceEndDate(kEvent.getRecurrenceRule());
-			if(kEvent.isAllDayEvent() && recurrenceEnd != null && recurStartCal.getTime().after(recurrenceEnd)) {
+			ZonedDateTime recurrenceEnd = getRecurrenceEndDate(kEvent.getRecurrenceRule());
+			if(kEvent.isAllDayEvent() && recurrenceEnd != null && recurStartCal.isAfter(recurrenceEnd)) {
 				continue; //workaround for ical4j-bug in all day events
 			}
 		
-			KalendarRecurEvent recurEvent = new KalendarRecurEvent(kEvent.getID(), original, kEvent.getSubject(), beginCal.getTime(), endCal.getTime());
-			recurEvent.setOccurenceDate(beginCal.getTime());
+			KalendarRecurEvent recurEvent = new KalendarRecurEvent(kEvent.getID(), original, kEvent.getSubject(), beginCal, endCal);
+			recurEvent.setOccurenceDate(beginCal);
 			recurEvent.setSourceEvent(kEvent);
 			recurringEvents.add(recurEvent);
 		}
 		return recurringEvents;
-	}
-	
-	private final DateList getRecurringsInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent) {
-		DateList recurDates = null;
-		String recurrenceRule = kEvent.getRecurrenceRule();
-		if(StringHelper.containsNonWhitespace(recurrenceRule)) {
-			try {
-				Recur recur = new Recur(recurrenceRule);
-				net.fortuna.ical4j.model.Date periodStartDate = CalendarUtils.createDate(periodStart);
-				net.fortuna.ical4j.model.Date periodEndDate = CalendarUtils.createDate(periodEnd);
-				net.fortuna.ical4j.model.Date eventStartDate = CalendarUtils.createDate(kEvent.getBegin());
-				recurDates = recur.getDates(eventStartDate, periodStartDate, periodEndDate, Value.DATE);
-			} catch (ParseException e) {
-				log.error("cannot restore recurrence rule: " + recurrenceRule, e);
-			}
-			
-			String recurrenceExc = kEvent.getRecurrenceExc();
-			if(recurrenceExc != null && !recurrenceExc.equals("")) {
-				try {
-					ExDate exdate = new ExDate();
-					// expected date+time format: 
-					// 20100730T100000
-					// unexpected all-day format:
-					// 20100730
-					// see OLAT-5645
-					if (recurrenceExc.length() > 8) {
-						exdate.setValue(recurrenceExc);
-					} else {
-						exdate.getParameters().replace(Value.DATE);
-						exdate.setValue(recurrenceExc);
-					}
-					for( Object date : exdate.getDates() ) {
-						if(recurDates.contains(date)) recurDates.remove(date);
-					}
-				} catch (ParseException e) {
-					log.error("cannot restore excluded dates for this recurrence: " + recurrenceExc, e);
-				}
-			}
-		}
-		
-		return recurDates;
 	}
 	
 	/**
@@ -1543,24 +1471,15 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	 * @return date of recurrence end
 	 */
 	@Override
-	public Date getRecurrenceEndDate(String rule) {
-		if (rule != null) {
+	public ZonedDateTime getRecurrenceEndDate(String rule) {
+		if (StringHelper.containsNonWhitespace(rule)) {
 			try {
-				TimeZone ltz = calendarModule.getDefaultTimeZone();
-				Recur recur = new Recur(rule);
-				Date dUntil = recur.getUntil();
-				DateTime dtUntil = dUntil == null ? null : new DateTime(dUntil.getTime());
-				if(dtUntil != null) {
-					if(ltz != null) {
-						dtUntil.setTimeZone(ltz);
-					}
-					return dtUntil;
-				}
-			} catch (ParseException e) {
-				log.error("cannot restore recurrence rule", e);
+				Recur<Temporal> recur = new Recur<>(rule);
+				return CalendarUtils.convertTemporal(recur.getUntil(), calendarModule.getDefaultZoneId());
+			} catch (Exception e) {
+				log.error("Cannot restore recurrence rule: {}", rule, e);
 			}
 		}
-		
 		return null;
 	}
 	
@@ -1588,24 +1507,19 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			}
 			
 			if(recurrenceEnd != null) {
-				java.util.Calendar recurEndCal = java.util.Calendar.getInstance();
-				recurEndCal.setTimeZone(tz);
-				recurEndCal.setTime(recurrenceEnd);
-				recurEndCal = CalendarUtils.getEndOfDay(recurEndCal);
-				
-				long recTime = recurEndCal.getTimeInMillis() - tz.getOffset(recurEndCal.getTimeInMillis());
-				DateTime recurEndDT = new DateTime(recTime);
-				if(tz != null) {
-					recurEndDT.setTimeZone(tz);
-				}
-				sb.append(";").append(KalendarEvent.UNTIL).append("=").append(recurEndDT.toString());
+				ZonedDateTime recurrenceEndDateTime = DateUtils.toZonedDateTime(recurrenceEnd, calendarModule.getDefaultZoneId());
+				recurrenceEndDateTime = DateUtils.getEndOfDay(recurrenceEndDateTime)
+						.withSecond(0)
+						.withZoneSameInstant(ZoneId.of("UTC"));
+				String recurrenceEndStr = CalendarDateFormat.FLOATING_DATE_TIME_FORMAT.format(recurrenceEndDateTime);
+				sb.append(";").append(KalendarEvent.UNTIL).append("=").append(recurrenceEndStr).append("Z");
 			}
 			
 			try {
-				Recur recur = new Recur(sb.toString());
-				RRule rrule = new RRule(recur);
+				Recur<Temporal> recur = new Recur<>(sb.toString());
+				RRule<Temporal> rrule = new RRule<>(recur);
 				return rrule.getValue();
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				log.error("cannot create recurrence rule: {}", recurrence, e);
 			}
 		}

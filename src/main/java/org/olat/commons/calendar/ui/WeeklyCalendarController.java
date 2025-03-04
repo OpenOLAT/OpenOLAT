@@ -25,6 +25,7 @@
 
 package org.olat.commons.calendar.ui;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.CalendarNotificationManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
@@ -83,6 +85,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -132,6 +135,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	
 	private ILoggingAction calLoggingAction;
 	
+	@Autowired
+	private CalendarModule calendarModule;
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
@@ -238,7 +243,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			for(KalendarRenderWrapper wrapper:calendarWrappers) {
 				KalendarEvent event = wrapper.getKalendar().getEvent(eventId, recurenceId);
 				if(event != null) {
-					setFocus(event.getBegin());
+					setFocus(DateUtils.toDate(event.getBegin()));
 					break;
 				}
 			}
@@ -480,9 +485,9 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			}
 		} else if(resourceType.startsWith("path")) {
 			String eventId = BusinessControlFactory.getInstance().getPath(entry);
-			Date eventDate = getDateOfEvent(eventId);
+			ZonedDateTime eventDate = getDateOfEvent(eventId);
 			if(eventDate != null) {
-				calendarEl.setFocusDate(eventDate);
+				calendarEl.setFocusDate(DateUtils.toDate(eventDate));
 			}
 		}
 	}
@@ -517,7 +522,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		return alwaysVisible;
 	}
 	
-	private Date getDateOfEvent(String eventId) {
+	private ZonedDateTime getDateOfEvent(String eventId) {
 		for(KalendarRenderWrapper calendarWrapper:calendarWrappers) {
 			List<KalendarEvent> events = calendarWrapper.getKalendar().getEvents();
 			for(KalendarEvent event:events) {
@@ -734,20 +739,18 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		}
 	}
 	
-	private Date doMove(Date date, Long dayDelta, Long minuteDelta) {
+	private ZonedDateTime doMove(ZonedDateTime date, Long dayDelta, Long minuteDelta) {
 		if(date == null) {
 			return date;
 		}
-		
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		if(dayDelta != null) {
-			cal.add(Calendar.DATE, dayDelta.intValue());
+
+		if(dayDelta != null && dayDelta.longValue() != 0) {
+			date = date.plusDays(dayDelta.longValue());
 		}
-		if(minuteDelta != null) {
-			cal.add(Calendar.MINUTE, minuteDelta.intValue());
+		if(minuteDelta != null && minuteDelta.longValue() != 0) {
+			date = date.plusMinutes(minuteDelta.longValue());
 		}
-		return cal.getTime();
+		return date;
 	}
 
 	/**
@@ -804,12 +807,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		if(!isReadOnly) {
 			// create new KalendarEvent
 			KalendarEvent newEvent;
-			Date begin = addEvent.getStartDate();
+			ZonedDateTime begin = DateUtils.toZonedDateTime(addEvent.getStartDate(), calendarModule.getDefaultZoneId());
 			String eventId = CodeHelper.getGlobalForeverUniqueID();
 			if(addEvent.getEndDate() == null) {
 				newEvent = new KalendarEvent(eventId, "", begin, (1000 * 60 * 60 * 1));
 			} else {
-				newEvent = new KalendarEvent(eventId, null, "", begin, addEvent.getEndDate());
+				ZonedDateTime end = DateUtils.toZonedDateTime(addEvent.getEndDate(), calendarModule.getDefaultZoneId());
+				newEvent = new KalendarEvent(eventId, null, "", begin, end);
 			}
 
 			if (calendarWrapper != null &&

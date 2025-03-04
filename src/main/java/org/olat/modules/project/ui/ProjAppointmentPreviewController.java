@@ -19,7 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -115,7 +115,7 @@ public class ProjAppointmentPreviewController extends BasicController {
 			};
 			mainVC.contextPut("recurrence", recurrence);
 			
-			Date recurrenceEnd = calendarManager.getRecurrenceEndDate(appointment.getRecurrenceRule());
+			ZonedDateTime recurrenceEnd = calendarManager.getRecurrenceEndDate(appointment.getRecurrenceRule());
 			if (recurrenceEnd != null) {
 				String formatRecurrenceEnd = Formatter.getInstance(getLocale()).formatDateAndTimeLong(recurrenceEnd);
 				formatRecurrenceEnd = translate("until.date", formatRecurrenceEnd);

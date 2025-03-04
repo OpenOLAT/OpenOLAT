@@ -44,6 +44,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -132,7 +133,7 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 					for (KalendarEvent kalendarEvent : calEvents) {
 						if (showEvent(compareDate, kalendarEvent)) {
 							log.debug("found a KalendarEvent: {} with time: {} modified before: {}",
-									kalendarEvent.getSubject(), kalendarEvent.getBegin(), compareDate.toString());
+									kalendarEvent.getSubject(), kalendarEvent.getBegin(), compareDate);
 							// found a modified event in this calendar
 							Date modDate = null;
 							if(kalendarEvent.getLastModified() > 0) {
@@ -140,7 +141,7 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 							} else if(kalendarEvent.getCreated() > 0) {
 								modDate = new Date(kalendarEvent.getCreated());
 							} else if(kalendarEvent.getBegin() != null) {
-								modDate = kalendarEvent.getBegin();
+								modDate = DateUtils.toDate(kalendarEvent.getBegin());
 							}
 							
 							String subject = kalendarEvent.getSubject();
@@ -241,11 +242,11 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 				title = translator.translate("cal.notifications.header.course", getDisplayName(subscriber.getPublisher()));
 			} else if (type.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
 				BusinessGroup group = businessGroupDao.load(id);
-				title = translator.translate("cal.notifications.header.group", new String[]{group.getName()});
+				title = translator.translate("cal.notifications.header.group", group.getName());
 			}
 			return title;
 		} catch (Exception e) {
-			log.error("Error while creating calendar notifications for subscriber: " + subscriber.getKey(), e);
+			log.error("Error while creating calendar notifications for subscriber: {}", subscriber.getKey(), e);
 			checkPublisher(subscriber.getPublisher());
 			return "-";
 		}

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.teams.manager;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.OAuth2Tokens;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
@@ -36,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -78,6 +81,8 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 	private TeamsUserDAO teamsUserDao;
 	@Autowired
 	private MicrosoftGraphDAO graphDao;
+	@Autowired
+	private CalendarModule calendarModule;
 	@Autowired
 	private TeamsMeetingDAO teamsMeetingDao;
 	@Autowired
@@ -321,8 +326,8 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 				} else {
 					event.setSubject(meeting.getSubject());
 					event.setDescription(meeting.getDescription());
-					event.setBegin(meeting.getStartDate());
-					event.setEnd(meeting.getEndDate());
+					event.setBegin(DateUtils.toZonedDateTime(meeting.getStartDate(), calendarModule.getDefaultZoneId()));
+					event.setEnd(DateUtils.toZonedDateTime(meeting.getEndDate(), calendarModule.getDefaultZoneId()));
 					event.setManagedFlags(managedFlags);
 					if(event.getKalendarEventLinks() == null || event.getKalendarEventLinks().isEmpty()) {
 						KalendarEventLink eventLink = generateEventLink(meeting);
@@ -340,7 +345,9 @@ public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeleta
 		
 		if(!meeting.isPermanent()) {
 			String eventId = CodeHelper.getGlobalForeverUniqueID();
-			KalendarEvent newEvent = new KalendarEvent(eventId, null, meeting.getSubject(), meeting.getStartDate(), meeting.getEndDate());
+			ZonedDateTime zStart = DateUtils.toZonedDateTime(meeting.getStartDate(), calendarModule.getDefaultZoneId());
+			ZonedDateTime zEnd = DateUtils.toZonedDateTime(meeting.getEndDate(), calendarModule.getDefaultZoneId());
+			KalendarEvent newEvent = new KalendarEvent(eventId, null, meeting.getSubject(), zStart, zEnd);
 			newEvent.setDescription(meeting.getDescription());
 			newEvent.setManagedFlags(managedFlags);
 			newEvent.setExternalId(externalId);

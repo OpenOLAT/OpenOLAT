@@ -24,11 +24,14 @@ import static org.olat.core.util.DateUtils.toDate;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 
@@ -241,5 +244,21 @@ public class DateUtilsTest {
 				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime()))
 		.isFalse();
 	}
+	
 
+	@Test
+	public void shouldZonedDateTimeToDate() {
+		ZonedDateTime zdate = ZonedDateTime.of(2020, 2, 25, 13, 30, 0, 0, ZoneId.of("Europe/London"));
+		Date date = DateUtils.toDate(zdate, ZoneId.of("Europe/Zurich"));
+		Date ggdate = new GregorianCalendar(2020, 1, 25, 14, 30, 0).getTime();
+		Assertions.assertThat(date).isEqualTo(ggdate);	
+	}
+	
+	@Test
+	public void shouldDateToZonedDateTime() {
+		Date date = new GregorianCalendar(2020, 1, 25, 14, 30, 0).getTime();
+		ZonedDateTime toDate = DateUtils.toZonedDateTime(date, ZoneId.of("Europe/Zurich"));
+		ZonedDateTime refDate = ZonedDateTime.of(2020, 2, 25, 14, 30, 0, 0, ZoneId.of("Europe/Zurich"));
+		Assertions.assertThat(toDate).isEqualTo(refDate);	
+	}
 }

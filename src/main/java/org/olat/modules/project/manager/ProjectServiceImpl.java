@@ -22,6 +22,7 @@ package org.olat.modules.project.manager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -49,6 +50,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.commons.persistence.DB;
@@ -219,6 +221,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private ProjTagDAO tagDao;
 	@Autowired
 	private TagService tagService;
+	@Autowired
+	private CalendarModule calendarModule;
 	@Autowired
 	private NotificationsManager notificationManager;
 	
@@ -2138,8 +2142,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	private void addAppointmentSingleExclusion(Identity doer, ProjectBCFactory bcFactory, boolean createActivity,
 			ProjAppointment reloadedAppointment, Date exclusionDate) {
-		List<Date> exclisionDates = CalendarUtils.getRecurrenceExcludeDates(reloadedAppointment.getRecurrenceExclusion());
-		exclisionDates.add(exclusionDate);
+		List<ZonedDateTime> exclisionDates = CalendarUtils.getRecurrenceExcludeDates(reloadedAppointment.getRecurrenceExclusion());
+		exclisionDates.add(DateUtils.toZonedDateTime(exclusionDate, calendarModule.getDefaultZoneId()));
 		String recurrenceExclusion = CalendarUtils.getRecurrenceExcludeRule(exclisionDates);
 		updateReloadedAppointment(doer, bcFactory, createActivity, reloadedAppointment, reloadedAppointment.getRecurrenceId(),
 				reloadedAppointment.getStartDate(), reloadedAppointment.getEndDate(),

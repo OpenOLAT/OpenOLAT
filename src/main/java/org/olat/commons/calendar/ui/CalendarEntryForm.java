@@ -27,6 +27,7 @@ package org.olat.commons.calendar.ui;
 
 import static org.olat.core.util.ArrayHelper.emptyStrings;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,6 +64,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.livestream.LiveStreamService;
@@ -195,8 +197,8 @@ public class CalendarEntryForm extends FormBasicController {
 	
 		doUpdateColor(kalendarEvent);
 		
-		startEl.setDate(kalendarEvent.getBegin());
-		endEl.setDate(kalendarEvent.getEnd());
+		startEl.setDate(DateUtils.toDate(kalendarEvent.getBegin()));
+		endEl.setDate(DateUtils.toDate(kalendarEvent.getEnd()));
 		boolean allDay = kalendarEvent.isAllDayEvent();
 		if (allDay) {
 			allDayEvent.toggleOn();
@@ -214,9 +216,9 @@ public class CalendarEntryForm extends FormBasicController {
 			String recurrence = CalendarUtils.getRecurrence(kalendarEvent.getRecurrenceRule());
 			if(recurrence != null && !recurrence.equals("") && !recurrence.equals(RECURRENCE_NONE)) {
 				chooseRecurrence.select(recurrence, true);
-				Date recurEnd = calendarManager.getRecurrenceEndDate(kalendarEvent.getRecurrenceRule());
+				ZonedDateTime recurEnd = calendarManager.getRecurrenceEndDate(kalendarEvent.getRecurrenceRule());
 				if(recurEnd != null) {
-					recurrenceEnd.setDate(recurEnd);
+					recurrenceEnd.setDate(DateUtils.toDate(recurEnd));
 				}
 			} else {
 				chooseRecurrence.select(RECURRENCE_NONE, true);
@@ -280,8 +282,8 @@ public class CalendarEntryForm extends FormBasicController {
 		event.setColor(CalendarColors.colorFromColorClass(colorCssClass));
 
 		// date / time
-		event.setBegin(startEl.getDate());
-		event.setEnd(endEl.getDate());
+		event.setBegin(startEl.getZonedDateTime());
+		event.setEnd(endEl.getZonedDateTime());
 		event.setLastModified(new Date().getTime());
 		if(event.getCreated() == 0) {
 			event.setCreated(new Date().getTime());
@@ -392,7 +394,7 @@ public class CalendarEntryForm extends FormBasicController {
 		startEl.setDateChooserTimeEnabled(!event.isAllDayEvent());
 		startEl.setValidDateCheck("form.error.date");
 		startEl.setMandatory(true);
-		startEl.setDate(event.getBegin());
+		startEl.setZonedDateTime(event.getBegin());
 		startEl.setEnabled(!managedDates);
 		startEl.setElementCssClass("o_sel_cal_begin");
 		
@@ -401,7 +403,7 @@ public class CalendarEntryForm extends FormBasicController {
 		endEl.setDateChooserTimeEnabled(!event.isAllDayEvent());
 		endEl.setValidDateCheck("form.error.date");
 		endEl.setMandatory(true);
-		endEl.setDate(event.getEnd());
+		endEl.setZonedDateTime(event.getEnd());
 		endEl.setEnabled(!managedDates);
 		endEl.setElementCssClass("o_sel_cal_end");
 		
@@ -418,9 +420,9 @@ public class CalendarEntryForm extends FormBasicController {
 		recurrenceEnd.setDateChooserTimeEnabled(false);
 		recurrenceEnd.setMandatory(true);
 		recurrenceEnd.setElementCssClass("o_sel_cal_until");
-		Date recurEnd = calendarManager.getRecurrenceEndDate(event.getRecurrenceRule());
+		ZonedDateTime recurEnd = calendarManager.getRecurrenceEndDate(event.getRecurrenceRule());
 		if(recurEnd != null) {
-			recurrenceEnd.setDate(recurEnd);
+			recurrenceEnd.setZonedDateTime(recurEnd);
 		}
 		recurrenceEnd.setEnabled(!managedDates);
 		recurrenceEnd.setVisible(!chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE));

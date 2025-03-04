@@ -19,10 +19,8 @@
  */
 package org.olat.commons.calendar.ui.components;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
@@ -41,6 +39,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -52,9 +51,10 @@ import org.olat.core.util.StringHelper;
 public class FullCalendarMapper implements Mapper {
 	
 	private static final Logger log = Tracing.createLoggerFor(FullCalendarMapper.class);
-	private static final DateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
-	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-	
+	private static final DateTimeFormatter formatLocalDate = DateTimeFormatter.ISO_LOCAL_DATE;
+	private static final DateTimeFormatter formatLocalDateTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+	private static final DateTimeFormatter formatOffsetDateTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
 	private final FullCalendarComponent fcC;
 	private final CalendarManager calendarManager;
 	
@@ -86,17 +86,17 @@ public class FullCalendarMapper implements Mapper {
 			String start = request.getParameter("start");
 			String end = request.getParameter("end");
 			
-			Date startDate = null;
+			ZonedDateTime startDate = null;
 			if(StringHelper.isLong(start)) {
 				long startTime = Long.parseLong(start);
-				startDate = new Date(startTime * 1000);
+				startDate = DateUtils.toZonedDateTime(new Date(startTime * 1000));
 			} else if(StringHelper.containsNonWhitespace(start)) {
 				startDate = parseDate(start);
 			}
-			Date endDate = null;
+			ZonedDateTime endDate = null;
 			if(StringHelper.isLong(end)) {
 				long time = Long.parseLong(end);
-				endDate = new Date(time * 1000);
+				endDate = DateUtils.toZonedDateTime(new Date(time * 1000));
 			} else if(StringHelper.containsNonWhitespace(end)) {
 				endDate = parseDate(end);
 			}
@@ -122,7 +122,7 @@ public class FullCalendarMapper implements Mapper {
 		return calendarId;
 	}
 	
-	private void collectKalendarEvents(JSONArray ja, String calendarId, Date from, Date to) throws JSONException {
+	private void collectKalendarEvents(JSONArray ja, String calendarId, ZonedDateTime from, ZonedDateTime to) throws JSONException {
 		KalendarRenderWrapper cal =  fcC.getCalendar(calendarId);
 		if(cal != null) {
 			boolean privateEventsVisible = cal.isPrivateEventsVisible();
@@ -175,10 +175,8 @@ public class FullCalendarMapper implements Mapper {
 		}
 		if(event.getEnd() != null) {
 			if(allDay) {
-				Calendar calEnd = Calendar.getInstance();
-				calEnd.setTime(event.getEnd());
-				calEnd.add(Calendar.DATE, 1);
-				jsonEvent.put("end", formatDate(calEnd.getTime()));
+				ZonedDateTime calEnd = event.getEnd().plusDays(1);
+				jsonEvent.put("end", formatDate(calEnd));
 			} else {
 				jsonEvent.put("end", formatDateTime(event.getEnd()));
 			}
@@ -235,24 +233,18 @@ public class FullCalendarMapper implements Mapper {
 		}
 	}
 	
-	private String formatDateTime(Date date) {
-		synchronized(formatDateTime) {
-			return formatDateTime.format(date);
-		}
+	private String formatDateTime(ZonedDateTime date) {
+		return formatLocalDateTime.format(date);
 	}
 	
-	private String formatDate(Date date) {
-		synchronized(formatDate) {
-			return formatDate.format(date);
-		}
+	private String formatDate(ZonedDateTime date) {
+		return formatLocalDate.format(date);
 	}
 	
-	private Date parseDate(String date) {
+	private ZonedDateTime parseDate(String date) {
 		try {
-			synchronized(formatDate) {
-				return formatDate.parse(date);
-			}
-		} catch (ParseException e) {
+			return ZonedDateTime.from(formatOffsetDateTime.parse(date));
+		} catch (Exception e) {
 			log.error("Cannot parse Fullcalendar date: {}", date, e);
 			return null;
 		}

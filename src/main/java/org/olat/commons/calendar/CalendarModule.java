@@ -19,6 +19,8 @@
  */
 package org.olat.commons.calendar;
 
+import java.time.ZoneId;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.Tracing;
@@ -54,8 +56,8 @@ public class CalendarModule extends AbstractSpringModule {
 	private static final String CALENDAR_COURSE_ELEMENT_ENABLED = "calendar.course.element.enabled";
 	private static final String MANAGED_CAL_ENABLED = "managedCalendars";
 	
+	private ZoneId defaultZoneId;
 	private TimeZone defaultTimeZone;
-	private TimeZoneRegistry timeZoneRegistry;
 	
 	@Value("${calendar.enabled:true}")
 	private boolean enabled;
@@ -85,8 +87,9 @@ public class CalendarModule extends AbstractSpringModule {
 		System.setProperty(CompatibilityHints.KEY_RELAXED_UNFOLDING, "true");
 		System.setProperty(CompatibilityHints.KEY_RELAXED_PARSING, "true");
 		String defaultTimeZoneID = java.util.TimeZone.getDefault().getID();
-		log.info("Calendar time zone: {}", defaultTimeZoneID);
-		timeZoneRegistry = TimeZoneRegistryFactory.getInstance().createRegistry();
+		defaultZoneId = ZoneId.systemDefault();
+		log.info("Calendar time zone: {} - {}", defaultTimeZoneID, defaultZoneId.getId());
+		TimeZoneRegistry timeZoneRegistry = TimeZoneRegistryFactory.getInstance().createRegistry();
 		defaultTimeZone = timeZoneRegistry.getTimeZone(defaultTimeZoneID);
 		if(defaultTimeZone == null) {
 			log.error("Cannot match the JVM default time zone to an ical4j time zone: {}", defaultTimeZoneID);
@@ -133,6 +136,10 @@ public class CalendarModule extends AbstractSpringModule {
 	
 	public TimeZone getDefaultTimeZone() {
 		return defaultTimeZone;
+	}
+	
+	public ZoneId getDefaultZoneId() {
+		return defaultZoneId;
 	}
 
 	public boolean isEnabled() {

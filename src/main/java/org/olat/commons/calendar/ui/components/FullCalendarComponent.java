@@ -20,14 +20,13 @@
 package org.olat.commons.calendar.ui.components;
 
 import java.text.Normalizer;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.core.CoreSpringFactory;
@@ -40,7 +39,7 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 
 /**
  * 
@@ -50,9 +49,9 @@ import org.olat.core.logging.Tracing;
  */
 public class FullCalendarComponent extends AbstractComponent implements Disposable {
 	
-	private static final Logger log = Tracing.createLoggerFor(FullCalendarComponent.class);
 	private static final FullCalendarComponentRenderer RENDERER = new FullCalendarComponentRenderer();
-	private static final SimpleDateFormat occurenceDateFormat = new SimpleDateFormat("yyyyMMdd'T'hhmmss");
+	
+	private static final DateTimeFormatter OCCURENCE_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'T'hhmmss");
 
 	public static final String CALENDAR_ID_SEP = "_xCalOOlaCx_";
 	public static final String RECURRENCE_ID_SEP = "_xRecOOceRx_";
@@ -209,22 +208,6 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 		return CalendarEventId.valueOf(eventId);
 	}
 	
-	public Date getCalendarEventOccurenceDate(String eventId) {
-		Date startDate = null;
-		int occIndex = eventId.indexOf(OCCURRENCE_ID_SEP);
-		if(occIndex > 0) {
-			String dateStr = eventId.substring(occIndex + OCCURRENCE_ID_SEP.length());
-			try {
-				synchronized(occurenceDateFormat) {
-					startDate = occurenceDateFormat.parse(dateStr);
-				}
-			} catch (ParseException e) {
-				log.error("Cannot parse start date of occurence: {}", dateStr, e);
-			}
-		}
-		return startDate;
-	}
-	
 	public String getCalendarEventOccurenceId(String eventId) {
 		int occIndex = eventId.indexOf(OCCURRENCE_ID_SEP);
 		if(occIndex > 0) {
@@ -280,11 +263,14 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 	public List<KalendarEvent> getCalendarRenderWrapper(Date from, Date to) {
 		List<KalendarEvent> events = new ArrayList<>();
 		
+		ZonedDateTime zfrom = DateUtils.toZonedDateTime(from);
+		ZonedDateTime zto = DateUtils.toZonedDateTime(to);
+		
 		for(KalendarRenderWrapper cal:calendars) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
-				Date end = event.getEnd();
-				Date begin = event.getBegin();
-				if(from.compareTo(begin) <= 0 && to.compareTo(end) >= 0) {
+				ZonedDateTime end = event.getEnd();
+				ZonedDateTime begin = event.getBegin();
+				if(zfrom.compareTo(begin) <= 0 && zto.compareTo(end) >= 0) {
 					events.add(event);
 				}
 			}
@@ -329,10 +315,7 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 			sb.append(normalizeId(kEvent.getRecurrenceID()));
 		} else if(kEvent instanceof KalendarRecurEvent) {
 			sb.append(OCCURRENCE_ID_SEP);
-			String subIdent;
-			synchronized(occurenceDateFormat) {
-				subIdent = occurenceDateFormat.format(kEvent.getBegin());
-			}
+			String subIdent = OCCURENCE_DATE_FORMATTER.format(kEvent.getBegin());
 			sb.append(normalizeId(subIdent));
 		}
 		return sb.toString();

@@ -22,6 +22,7 @@ package org.olat.course.nodes.livestream.manager;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -52,6 +53,7 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.course.nodes.cal.CourseCalendars;
@@ -174,11 +176,14 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 	}
 
 	private List<? extends LiveStreamEvent> getLiveStreamEvents(CourseCalendars calendars, Date from, Date to, boolean syncUrl) {
+		ZonedDateTime zfrom = DateUtils.toZonedDateTime(from);
+		ZonedDateTime zto = DateUtils.toZonedDateTime(to);
+		
 		List<LiveStreamEvent> liveStreamEvents = new ArrayList<>();
 		for (KalendarRenderWrapper cal : calendars.getCalendars()) {
 			if(cal != null) {
 				boolean privateEventsVisible = cal.isPrivateEventsVisible();
-				List<KalendarEvent> events = calendarManager.getEvents(cal.getKalendar(), from, to, privateEventsVisible);
+				List<KalendarEvent> events = calendarManager.getEvents(cal.getKalendar(), zfrom, zto, privateEventsVisible);
 				for(KalendarEvent event:events) {
 					if(!privateEventsVisible && event.getClassification() == KalendarEvent.CLASS_PRIVATE) {
 						continue;
@@ -204,9 +209,9 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 		LiveStreamEventImpl liveStreamEvent = new LiveStreamEventImpl();
 		liveStreamEvent.setId(event.getID());
 		liveStreamEvent.setAllDayEvent(event.isAllDayEvent());
-		liveStreamEvent.setBegin(event.getBegin());
-		Date end = CalendarUtils.endOf(event);
-		liveStreamEvent.setEnd(end);
+		liveStreamEvent.setBegin(DateUtils.toDate(event.getBegin()));
+		ZonedDateTime end = CalendarUtils.endOf(event);
+		liveStreamEvent.setEnd(DateUtils.toDate(end));
 		liveStreamEvent.setLiveStreamUrl(event.getLiveStreamUrl());
 		if (syncUrl && event.getLiveStreamUrlTemplateKey() != null) {
 			Long key = Long.valueOf(event.getLiveStreamUrlTemplateKey());

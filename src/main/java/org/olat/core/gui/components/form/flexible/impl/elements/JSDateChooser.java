@@ -26,6 +26,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.text.ParseException;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.DateChooserOrientation;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 
@@ -254,6 +256,15 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		return getDate(getValue(), hour, minute);
 	}
 	
+	@Override
+	public ZonedDateTime getZonedDateTime() {
+		Date d = getDate();
+		if(d != null) {
+			return DateUtils.toZonedDateTime(d);
+		}
+		return null;
+	}
+	
 	public int getHour() {
 		return hour;
 	}
@@ -316,6 +327,15 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 			log.error("", e);
 		}
 		return d;
+	}
+
+	@Override
+	public void setZonedDateTime(ZonedDateTime dateTime) {
+		if(dateTime != null) {
+			setDate(DateUtils.toDate(dateTime));
+		} else {
+			setDate(null);
+		}
 	}
 
 	@Override

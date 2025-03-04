@@ -19,7 +19,8 @@
  */
 package de.bps.course.nodes.den;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -86,10 +87,9 @@ public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> i
 		case 1:
 			return event.getBegin();
 		case 2:
-			Date begin = event.getBegin();
-			Date end = event.getEnd();
-			long milliSeconds = denManager.getDuration(begin, end);
-			
+			ZonedDateTime begin = event.getBegin();
+			ZonedDateTime end = event.getEnd();
+			long milliSeconds = ChronoUnit.MILLIS.between(begin, end);
 			return denManager.formatDuration(milliSeconds, translator);
 		case 3:
 			//location

@@ -19,8 +19,9 @@
  */
 package org.olat.commons.calendar.ui;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -28,7 +29,6 @@ import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarEventDateComparator;
 import org.olat.commons.calendar.ui.components.KalendarEventRenderWrapper;
@@ -38,6 +38,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 
@@ -116,9 +117,12 @@ public class CalendarPrintMapper implements Mapper {
 	}
 	
 	private void collectEvents(List<KalendarEventRenderWrapper> eventList, List<KalendarRenderWrapper> wrappers) {
+		ZonedDateTime zfrom = DateUtils.toZonedDateTime(from);
+		ZonedDateTime zto = DateUtils.toZonedDateTime(to);
+		
 		for (KalendarRenderWrapper calendarWrapper:wrappers) {
 			if (calendarWrapper.isVisible()) {
-				List<KalendarEvent> events = calendarManager.getEvents(calendarWrapper.getKalendar(), from, to, true);
+				List<KalendarEvent> events = calendarManager.getEvents(calendarWrapper.getKalendar(), zfrom, zto, true);
 				for (KalendarEvent event : events) {
 					//private filter???
 					eventList.add(new KalendarEventRenderWrapper(event, calendarWrapper));
@@ -164,13 +168,13 @@ public class CalendarPrintMapper implements Mapper {
 		
 		Collections.sort(eventList, new KalendarEventDateComparator());
 		
-		Date currentDate = null;
+		ZonedDateTime currentDate = null;
 		List<KalendarEventRenderWrapper> eventByDayList = new ArrayList<>();
 		for(KalendarEventRenderWrapper event:eventList) {
-			Date begin = event.getEvent().getBegin();
-			Date normalizedBegin = CalendarUtils.removeTime(begin);
+			ZonedDateTime begin = event.getEvent().getBegin();
+			ZonedDateTime normalizedBegin = begin.truncatedTo(ChronoUnit.DAYS);
 			//same day?
-			if(currentDate == null || currentDate.before(normalizedBegin)) {
+			if(currentDate == null || currentDate.isBefore(normalizedBegin)) {
 				renderDay(sb, currentDate, eventByDayList);
 				eventByDayList.clear();
 				currentDate = normalizedBegin;
@@ -182,14 +186,11 @@ public class CalendarPrintMapper implements Mapper {
 		sb.append("</ul></fieldset><div class='clearfix'>&nbsp;</div></div>");
 	}
 	
-	private void renderDay(StringBuilder sb, Date date, List<KalendarEventRenderWrapper> eventList) {
+	private void renderDay(StringBuilder sb, ZonedDateTime date, List<KalendarEventRenderWrapper> eventList) {
 		if(eventList.isEmpty()) return;
 		
-		Date dayStart = date;
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(dayStart);
-		cal.add(Calendar.DAY_OF_YEAR, 1);
-		Date dayEnd = cal.getTime();
+		ZonedDateTime dayStart = date;
+		ZonedDateTime dayEnd = dayStart.plusDays(1l);
 
 		sb.append("<li><span class='o_cal_date'>")
 		  .append(StringHelper.formatLocaleDateFull(dayStart, translator.getLocale()))
@@ -200,7 +201,7 @@ public class CalendarPrintMapper implements Mapper {
 		sb.append("</ul></li>");
 	}
 
-	private void renderEvent(StringBuilder sb, KalendarEventRenderWrapper eventWrapper, Date dayStart, Date dayEnd) {
+	private void renderEvent(StringBuilder sb, KalendarEventRenderWrapper eventWrapper, ZonedDateTime dayStart, ZonedDateTime dayEnd) {
 		KalendarEvent event = eventWrapper.getEvent();
 		
 		// check if event is private and user allowed to see it 
@@ -220,12 +221,12 @@ public class CalendarPrintMapper implements Mapper {
 			sb.append(translator.translate("cal.form.allday"));
 		} else {
 			// set start and end times for events spanning more than one day
-			Date begin = event.getBegin();
-			Date end = event.getEnd();
-			if (begin.before(dayStart)) {
+			ZonedDateTime begin = event.getBegin();
+			ZonedDateTime end = event.getEnd();
+			if (begin.isBefore(dayStart)) {
 				begin = dayStart;
 			}
-			if (end == null || end.after(dayEnd)) {
+			if (end == null || end.isAfter(dayEnd)) {
 				end = dayEnd;
 			}
 			sb.append(StringHelper.formatLocaleTime(begin, translator.getLocale()));

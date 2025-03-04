@@ -30,6 +30,16 @@ import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,15 +56,16 @@ import org.olat.core.util.StringHelper;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.DateList;
+import net.fortuna.ical4j.model.ParameterList;
 import net.fortuna.ical4j.model.Recur;
-import net.fortuna.ical4j.model.WeekDayList;
+import net.fortuna.ical4j.model.WeekDay;
+import net.fortuna.ical4j.model.property.DateProperty;
 import net.fortuna.ical4j.model.property.ExDate;
 
 public class CalendarUtils {
 	private static final Logger log = Tracing.createLoggerFor(CalendarUtils.class);
-	private static final SimpleDateFormat ical4jDateFormatter = new SimpleDateFormat("yyyyMMdd");
-	private static final SimpleDateFormat ical4jDateTimeFormatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
-	private static final SimpleDateFormat occurenceDateTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
+	private static final DateTimeFormatter ical4jDateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+	private static final DateTimeFormatter occurenceDateTimeFormat = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss");
 
 	private static final DateFormat iso8601Date = new SimpleDateFormat("yyyy-MM-dd");
 	private static final DateFormat iso8601DateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -132,6 +143,15 @@ public class CalendarUtils {
 		return getEndOfDay(cal).getTime();
 	}
 	
+	public static ZonedDateTime endOfDay(ZonedDateTime date) {
+		if(date == null) return null;
+		return date
+				.withHour(23)
+				.withMinute(59)
+				.withSecond(59)
+				.with(ChronoField.MILLI_OF_SECOND, 0l);
+	}
+	
 	/**
 	 * Get the end of a KalendarEvent. If the event is all day, this method adjusts
 	 * the end under some circumstances. If the event has no end, the returned end
@@ -141,8 +161,8 @@ public class CalendarUtils {
 	 * @param event
 	 * @return
 	 */
-	public static Date endOf(KalendarEvent event) {
-		Date end = event.getEnd();
+	public static ZonedDateTime endOf(KalendarEvent event) {
+		ZonedDateTime end = event.getEnd();
 		if (event.isAllDayEvent()) {
 			if (end == null) {
 				if (event.getBegin() != null) {
@@ -153,6 +173,37 @@ public class CalendarUtils {
 			}
 		}
 		return end;
+	}
+	
+	public static ZonedDateTime convertDateProperty(DateProperty<Temporal> property, ZoneId zone) {
+		Temporal temporal = property.getDate();
+		return convertTemporal(temporal, zone);
+	}
+	
+	public static ZonedDateTime convertTemporal(Temporal temporal, ZoneId zone) {
+		ZonedDateTime zDateTime;
+		if(temporal == null) {
+			zDateTime = null;
+		} else if(temporal instanceof ZonedDateTime ltStart) {
+			zDateTime = ltStart;
+		} else if(temporal instanceof OffsetDateTime offsetStart) {
+			zDateTime = ZonedDateTime.from(offsetStart);
+		} else if(temporal instanceof LocalDateTime ltStart) {
+			zDateTime = ZonedDateTime.of(ltStart, zone);
+		} else if(temporal instanceof LocalDate ltStart) {
+			LocalTime zero = LocalTime.of(0, 0, 0, 0);
+			zDateTime = ZonedDateTime.of(ltStart, zero, zone);
+		} else if(temporal instanceof Instant instantUTC) {
+			zDateTime = ZonedDateTime.ofInstant(instantUTC, ZoneId.of("UTC"));
+		} else {
+			log.error("Cannot convert temporal {} to ZonedDateTime", temporal);
+			zDateTime = null;
+		}
+		return zDateTime;
+	}
+	
+	public static boolean isMidnight(ZonedDateTime date) {
+		return date.getHour() + date.getMinute() + date.getSecond() == 0;
 	}
 	
 	public static boolean isMidnight(Date date) {
@@ -184,9 +235,9 @@ public class CalendarUtils {
 	public static String getRecurrence(String rule) {
 		if (rule != null) {
 			try {
-				Recur recur = new Recur(rule);
+				Recur<Temporal> recur = new Recur<>(rule);
 				String frequency = recur.getFrequency().name();
-				WeekDayList wdl = recur.getDayList();
+				List<WeekDay> wdl = recur.getDayList();
 				Integer interval = recur.getInterval();
 				if((wdl != null && !wdl.isEmpty())) {
 					// we only support one rule with daylist
@@ -198,7 +249,7 @@ public class CalendarUtils {
 					// native supportet rule
 					return frequency;
 				}
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				log.error("cannot restore recurrence rule", e);
 			}
 		}
@@ -211,18 +262,18 @@ public class CalendarUtils {
 	 * @param recurrenceExc
 	 * @return list with excluded dates
 	 */
-	public static List<Date> getRecurrenceExcludeDates(String recurrenceExc) {
-		List<Date> recurExcDates = new ArrayList<>();
+	public static List<ZonedDateTime> getRecurrenceExcludeDates(String recurrenceExc) {
+		List<ZonedDateTime> recurExcDates = new ArrayList<>();
 		if(recurrenceExc != null && !recurrenceExc.equals("")) {
 			try {
-				net.fortuna.ical4j.model.ParameterList pl = new net.fortuna.ical4j.model.ParameterList();
-				ExDate exdate = new ExDate(pl, recurrenceExc);
-				DateList dl = exdate.getDates();
-				for( Object date : dl ) {
-					Date excDate = (Date)date;
+				ParameterList pl = new ParameterList();
+				ExDate<Temporal> exdate = new ExDate<>(pl, recurrenceExc);
+				List<Temporal> dl = exdate.getDates();
+				for( Temporal date : dl ) {
+					ZonedDateTime excDate = ZonedDateTime.from(date);
 					recurExcDates.add(excDate);
 				}
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				log.error("cannot restore recurrence exceptions", e);
 			}
 		}
@@ -235,55 +286,23 @@ public class CalendarUtils {
 	 * @param dates
 	 * @return string with exclude rule
 	 */
-	public static String getRecurrenceExcludeRule(List<Date> dates) {
+	public static String getRecurrenceExcludeRule(List<ZonedDateTime> dates) {
 		if(dates != null && !dates.isEmpty()) {
-			DateList dl = new DateList();
-			for( Date date : dates ) {
-				net.fortuna.ical4j.model.Date dd = CalendarUtils.createDate(date);
-				dl.add(dd);
-			}
-			ExDate exdate = new ExDate(dl);
+			DateList<ZonedDateTime> dl = new DateList<>(dates);
+			ExDate<ZonedDateTime> exdate = new ExDate<>(dl);
 			return exdate.getValue();
 		}
 		
 		return null;
 	}
 	
-	public static net.fortuna.ical4j.model.Date createDate(Date date) {
-		try {
-			String toString;
-			synchronized(ical4jDateFormatter) {//cluster_OK only to optimize memory/speed
-				toString = ical4jDateFormatter.format(date);
-			}
-			return new net.fortuna.ical4j.model.Date(toString);
-		} catch (ParseException e) {
-			return null;
-		}
-	}
-	
-	public static net.fortuna.ical4j.model.DateTime createDateTime(Date date) {
-		try {
-			String toString;
-			synchronized(ical4jDateTimeFormatter) {//cluster_OK only to optimize memory/speed
-				toString = ical4jDateTimeFormatter.format(date);
-			}
-			return new net.fortuna.ical4j.model.DateTime(toString);
-		} catch (ParseException e) {
-			return null;
-		}
-	}
-	
-	public static String formatRecurrenceDate(Date date, boolean allDay) {
+	public static String formatRecurrenceDate(Temporal date, boolean allDay) {
 		try {
 			String toString;
 			if(allDay) {
-				synchronized(ical4jDateFormatter) {//cluster_OK only to optimize memory/speed
-					toString = ical4jDateFormatter.format(date);
-				}
+				toString = ical4jDateFormatter.format(date);
 			} else {
-				synchronized(occurenceDateTimeFormat) {//cluster_OK only to optimize memory/speed
-					toString = occurenceDateTimeFormat.format(date);
-				}
+				toString = occurenceDateTimeFormat.format(date);
 			}
 			return toString;
 		} catch (Exception e) {

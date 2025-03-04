@@ -28,6 +28,7 @@ package org.olat.commons.calendar;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -369,32 +370,15 @@ public interface CalendarManager {
 	public Kalendar getCalendar(String type, String calendarID);
 	
 
-	public List<KalendarEvent> getEvents(Kalendar calendar, Date from, Date to, boolean privateEventsVisible);
+	public List<KalendarEvent> getEvents(Kalendar calendar, ZonedDateTime from, ZonedDateTime to, boolean privateEventsVisible);
 
-	/**
-	 * Get the recurring event
-	 * @param today
-	 * @param kEvent
-	 * @return affected <code>KalendarEvent</code> or <code>null</code> if not recurring in period
-	 */
-	public KalendarEvent getRecurringInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent);
-	
-	/**
-	 * Check if the event recurs within the given period
-	 * @param periodStart
-	 * @param periodEnd
-	 * @param kEvent
-	 * @return <code>true</code> if event recurs in the given period, otherwise <code>false</code>
-	 */
-	public boolean isRecurringInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent);
-	
 	/**
 	 * Return the last date (until) of a recurrence rule.
 	 * 
 	 * @param rule
 	 * @return
 	 */
-	public Date getRecurrenceEndDate(String rule);
+	public ZonedDateTime getRecurrenceEndDate(String rule);
 	
 	/**
 	 * The method set the recurrence rule until the end of the day.

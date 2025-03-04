@@ -19,6 +19,8 @@
  */
 package de.bps.course.nodes.den;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -31,6 +33,7 @@ import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
@@ -51,6 +54,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -387,29 +391,26 @@ public class DENManager {
 	protected List<KalendarEvent> generateDates(
 			String subjectStr, String commentStr, String locationStr, String durationStr, String pauseStr,
 			Date begin, int retakes, int numParticipants, List<KalendarEvent> dataList, String denCourseNodeId) {
-		Date nextEvent = null;
+
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		ZonedDateTime nextEvent = DateUtils.toZonedDateTime(begin, calendarModule.getDefaultZoneId());
 		for (int i = 0; i < retakes; i++) {
 			StringTokenizer strTok = new StringTokenizer(durationStr, ":", false);
 			//duration in milliseconds
 			int duration = 1000*60*60*Integer.parseInt(strTok.nextToken()) + 1000*60*Integer.parseInt(strTok.nextToken());
 			strTok = new StringTokenizer(pauseStr, ":", false);
 			//pause in milliseconds
-			int pause = 1000*60*60*Integer.parseInt(strTok.nextToken()) + 1000*60*Integer.parseInt(strTok.nextToken());
+			int pause = 1000 * 60 * 60 * Integer.parseInt(strTok.nextToken()) + 1000*60*Integer.parseInt(strTok.nextToken());
 			KalendarEvent newEvent;
 			String evnetId = CodeHelper.getGlobalForeverUniqueID();
-			if(nextEvent == null) {
-				newEvent = new KalendarEvent(evnetId, subjectStr, begin, duration);
-			} else {
-				newEvent = new KalendarEvent(evnetId, subjectStr, nextEvent, duration);
-			}
+			newEvent = new KalendarEvent(evnetId, subjectStr, nextEvent, duration);
 			newEvent.setNumParticipants(numParticipants);
 			newEvent.setLocation(locationStr);
 			newEvent.setComment(commentStr);
 			newEvent.setSourceNodeId(denCourseNodeId);
 			dataList.add(newEvent);
 			//prepare next Event
-			long newTime = newEvent.getEnd().getTime() + pause;
-			nextEvent = new Date(newTime);
+			nextEvent = newEvent.getEnd().plus(pause, ChronoUnit.MILLIS);
 		}
 		
 		return dataList;
@@ -424,10 +425,12 @@ public class DENManager {
 	 */
 	protected List<KalendarEvent> updateDateInList(String subjectStr, String commentStr, String locationStr, String durationStr,
 			Date begin, int numParticipants, List<KalendarEvent> dataList, int index) {
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
 		StringTokenizer strTok = new StringTokenizer(durationStr, ":", false);
 		int duration = 1000*60*60*Integer.parseInt(strTok.nextToken()) + 1000*60*Integer.parseInt(strTok.nextToken());
 		KalendarEvent oldEvent = dataList.get(index);
-		KalendarEvent newEvent = new KalendarEvent(oldEvent.getID(), subjectStr, begin, duration);
+		ZonedDateTime zBegin = DateUtils.toZonedDateTime(begin, calendarModule.getDefaultZoneId());
+		KalendarEvent newEvent = new KalendarEvent(oldEvent.getID(), subjectStr, zBegin, duration);
 		newEvent.setNumParticipants(numParticipants);
 		newEvent.setLocation(locationStr);
 		newEvent.setComment(commentStr);
@@ -446,32 +449,33 @@ public class DENManager {
 	 * @param selectedDates
 	 * @return list with actualized KalendarEvents
 	 */
-	protected List<KalendarEvent> updateMultipleDatesInList(String subjectStr, String commentStr, String locationStr,	String movementGapStr,
+	protected List<KalendarEvent> updateMultipleDatesInList(String subjectStr, String commentStr, String locationStr, String movementGapStr,
 			int numParticipants, List<KalendarEvent> dataList, BitSet selectedDates) {
 		for (int i = 0; i < dataList.size(); i++) {
 			if(selectedDates.get(i)) {
 				KalendarEvent oldEvent = dataList.get(i);
 				StringTokenizer strTok = new StringTokenizer(movementGapStr.substring(1), ":", false);
-				int gap = 1000*60*60*Integer.parseInt(strTok.nextToken()) + 1000*60*Integer.parseInt(strTok.nextToken());
-				Date newBegin, newEnd;
+				int gap = 1000 * 60 * 60 * Integer.parseInt(strTok.nextToken()) + 1000 * 60 * Integer.parseInt(strTok.nextToken());
+				ZonedDateTime newBegin;
+				ZonedDateTime newEnd;
 				if(movementGapStr.startsWith("+")) {
-					newBegin = new Date(oldEvent.getBegin().getTime() + gap);
-					newEnd = new Date(oldEvent.getEnd().getTime() + gap);
+					newBegin = oldEvent.getBegin().plus(gap, ChronoUnit.MILLIS);
+					newEnd = oldEvent.getEnd().plus(gap, ChronoUnit.MILLIS);
 				} else {
-					newBegin = new Date(oldEvent.getBegin().getTime() - gap);
-					newEnd = new Date(oldEvent.getEnd().getTime() - gap);
+					newBegin = oldEvent.getBegin().minus(gap, ChronoUnit.MILLIS);
+					newEnd = oldEvent.getEnd().minus(gap, ChronoUnit.MILLIS);
 				}
 				String eventId = oldEvent.getID();
-				KalendarEvent newEvent = new KalendarEvent(eventId, null, subjectStr.equals(new String()) ? oldEvent.getSubject() : subjectStr, newBegin, newEnd);
+				KalendarEvent newEvent = new KalendarEvent(eventId, null, subjectStr.equals("") ? oldEvent.getSubject() : subjectStr, newBegin, newEnd);
 				if(numParticipants != 0)
 					newEvent.setNumParticipants(numParticipants);
 				else
 					newEvent.setNumParticipants(oldEvent.getNumParticipants());
-				if(!locationStr.equals(new String()))
+				if(!locationStr.equals(""))
 					newEvent.setLocation(locationStr);
 				else
 					newEvent.setLocation(oldEvent.getLocation());
-				if(!commentStr.equals(new String()))
+				if(!commentStr.equals(""))
 					newEvent.setComment(commentStr);
 				else
 					newEvent.setComment(oldEvent.getComment());
@@ -772,9 +776,9 @@ public class DENManager {
 	 * @return String with duration in format "hh:mm"
 	 */
 	protected String getDurationAsString(KalendarEvent event) {
-		Date begin = event.getBegin();
-		Date end = event.getEnd();
-		long duration = end.getTime() - begin.getTime();
+		ZonedDateTime begin = event.getBegin();
+		ZonedDateTime end = event.getEnd();
+		long duration = ChronoUnit.MILLIS.between(begin, end);
 		long hours = (long)Math.floor(duration / 1000 / 60 / 60);
 		long minutes = (duration / 1000 / 60 % 60);
 		StringBuilder sbHours = new StringBuilder();
@@ -789,7 +793,7 @@ public class DENManager {
 		if(sbHours.length() > 2 || sbMinutes.length() > 2)
 			return "00:00";
 		
-		return new String(sbHours + ":" + sbMinutes);
+		return sbHours + ":" + sbMinutes;
 	}
 	
 	/**

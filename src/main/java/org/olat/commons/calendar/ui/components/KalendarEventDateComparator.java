@@ -25,8 +25,8 @@
 
 package org.olat.commons.calendar.ui.components;
 
+import java.time.ZonedDateTime;
 import java.util.Comparator;
-import java.util.Date;
 
 
 public class KalendarEventDateComparator implements Comparator<KalendarEventRenderWrapper> {
@@ -43,8 +43,8 @@ public class KalendarEventDateComparator implements Comparator<KalendarEventRend
 
 	@Override
 	public int compare(KalendarEventRenderWrapper event0, KalendarEventRenderWrapper event1) {
-		Date startEvent0 = event0.getEvent().getBegin();
-		Date startEvent1 = event1.getEvent().getBegin();
+		ZonedDateTime startEvent0 = event0.getEvent().getBegin();
+		ZonedDateTime startEvent1 = event1.getEvent().getBegin();
 		return startEvent0.compareTo(startEvent1);
 	}
 }

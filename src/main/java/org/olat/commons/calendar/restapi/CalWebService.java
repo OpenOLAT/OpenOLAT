@@ -25,6 +25,7 @@ import static org.olat.commons.calendar.restapi.CalendarWSHelper.processEvents;
 import static org.olat.commons.calendar.restapi.CalendarWSHelper.transfer;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,14 +50,19 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -65,9 +71,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.olat.group.BusinessGroup;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 
 /**
  * 
@@ -228,25 +231,32 @@ public class CalWebService {
 		
 		List<KalendarEvent> kalEventToAdd = new ArrayList<>();
 		List<KalendarEvent> kalEventToUpdate = new ArrayList<>();
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
 		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		
+		
 		
 		for(EventVO event:events) {
 			KalendarEvent kalEvent;
 			if(!StringHelper.containsNonWhitespace(event.getId())) {
 				String id = UUID.randomUUID().toString();
-				kalEvent = new KalendarEvent(id, event.getRecurrenceId(), event.getSubject(), event.getBegin(), event.getEnd());
+				ZonedDateTime zBegin = DateUtils.toZonedDateTime(event.getBegin(), calendarModule.getDefaultZoneId());
+				ZonedDateTime zEnd = DateUtils.toZonedDateTime(event.getEnd(), calendarModule.getDefaultZoneId());
+				kalEvent = new KalendarEvent(id, event.getRecurrenceId(), event.getSubject(), zBegin, zEnd);
 				transfer(event, kalEvent);
 				kalEventToAdd.add(kalEvent);
 			} else {
 				kalEvent = calendar.getKalendar().getEvent(event.getId(), event.getRecurrenceId());
 				if(kalEvent == null) {
-					kalEvent = new KalendarEvent(event.getId(), event.getRecurrenceId(), event.getSubject(), event.getBegin(), event.getEnd());
+					ZonedDateTime zBegin = DateUtils.toZonedDateTime(event.getBegin(), calendarModule.getDefaultZoneId());
+					ZonedDateTime zEnd = DateUtils.toZonedDateTime(event.getEnd(), calendarModule.getDefaultZoneId());
+					kalEvent = new KalendarEvent(event.getId(), event.getRecurrenceId(), event.getSubject(), zBegin, zEnd);
 					transfer(event, kalEvent);
 					kalEventToAdd.add(kalEvent);
 				} else {
-					kalEvent.setBegin(event.getBegin());
-					kalEvent.setEnd(event.getEnd());
+					kalEvent.setBegin(DateUtils.toZonedDateTime(event.getBegin()));
+					kalEvent.setEnd(DateUtils.toZonedDateTime(event.getEnd()));
 					kalEvent.setSubject(event.getSubject());
 					transfer(event, kalEvent);
 					kalEventToUpdate.add(kalEvent);

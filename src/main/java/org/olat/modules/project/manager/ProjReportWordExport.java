@@ -22,6 +22,7 @@ package org.olat.modules.project.manager;
 import java.io.File;
 import java.io.OutputStream;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -377,21 +378,24 @@ public class ProjReportWordExport {
 		Kalendar kalendar = projectService.getAppointmentsKalendar(appointments);
 		Date from = dateRange.getFrom() != null? dateRange.getFrom(): project.getCreationDate();
 		Date to = dateRange.getTo() != null? dateRange.getTo(): DateUtils.addYears(new Date(), 10);
-		List<KalendarEvent> appointmentEvents = calendarManager.getEvents(kalendar, from, to, true);
+		List<KalendarEvent> appointmentEvents = calendarManager.getEvents(kalendar,
+				DateUtils.toZonedDateTime(from), DateUtils.toZonedDateTime(to), true);
 		if (appointmentEvents.isEmpty()) {
 			return;
 		}
 		
 		document.appendHeading1(translator.translate("report.appointments.title"), null);
 		
+		ZonedDateTime now = ZonedDateTime.now();
+		
 		appointmentEvents.sort((e1, e2) -> e2.getBegin().compareTo(e1.getBegin()));
-		if (appointmentEvents.get(0).getBegin().after(new Date())) {
+		if (appointmentEvents.get(0).getBegin().isAfter(now)) {
 			document.appendHeading2(translator.translate("report.appointments.future"), null);
 		}
 		
 		boolean inPast = false;
 		for (KalendarEvent event : appointmentEvents) {
-			if (!inPast && event.getBegin().before(new Date())) {
+			if (!inPast && event.getBegin().isBefore(now)) {
 				document.appendHeading2(translator.translate("report.appointments.past"), null);
 				inPast = true;
 			}

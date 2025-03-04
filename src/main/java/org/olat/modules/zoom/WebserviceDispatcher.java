@@ -20,6 +20,7 @@
 package org.olat.modules.zoom;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,7 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
@@ -138,13 +140,16 @@ public class WebserviceDispatcher implements Dispatcher {
         if (!calendarModule.isManagedCalendars()) {
             calendarModule.setManagedCalendars(true);
         }
+        
+        ZonedDateTime zStart = DateUtils.toZonedDateTime(event.getStartDate(), calendarModule.getDefaultZoneId());
+        ZonedDateTime zEnd = DateUtils.toZonedDateTime(event.getEndDate(), calendarModule.getDefaultZoneId());
 
         KalendarEvent existingEvent = calendar.getEvent(event.getMeetingId(), null);
         if (existingEvent != null) {
             existingEvent.setDescription("");
             existingEvent.setSubject(event.name);
-            existingEvent.setBegin(event.getStartDate());
-            existingEvent.setEnd(event.getEndDate());
+            existingEvent.setBegin(zStart);
+            existingEvent.setEnd(zEnd);
             if (existingEvent.getKalendarEventLinks() == null || existingEvent.getKalendarEventLinks().isEmpty()) {
                 KalendarEventLink calendarEventLink = generateEventLink(event, zoomConfig, course, businessGroup);
                 if (calendarEventLink != null) {
@@ -152,9 +157,9 @@ public class WebserviceDispatcher implements Dispatcher {
                 }
             }
             calendarManager.updateEventFrom(calendar, existingEvent);
-            log.debug("Updated calendar event for meeting " + event.getMeetingId());
+            log.debug("Updated calendar event for meeting {}", event.getMeetingId());
         } else {
-            KalendarEvent calendarEvent = new KalendarEvent(event.getMeetingId(), null, event.name, event.getStartDate(), event.getEndDate());
+            KalendarEvent calendarEvent = new KalendarEvent(event.getMeetingId(), null, event.name, zStart, zEnd);
             calendarEvent.setDescription("");
             calendarEvent.setManagedFlags(managedFlags);
             KalendarEventLink calendarEventLink = generateEventLink(event, zoomConfig, course, businessGroup);
@@ -162,7 +167,7 @@ public class WebserviceDispatcher implements Dispatcher {
                 calendarEvent.setKalendarEventLinks(List.of(calendarEventLink));
             }
             calendarManager.addEventTo(calendar, calendarEvent);
-            log.debug("Added calendar event for meeting " + event.getMeetingId());
+            log.debug("Added calendar event for meeting {}", event.getMeetingId());
         }
     }
 

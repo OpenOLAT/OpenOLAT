@@ -27,8 +27,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
@@ -38,9 +41,7 @@ import org.olat.core.logging.Tracing;
 
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
-import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.RecurrenceId;
@@ -212,20 +213,17 @@ public class CalendarImportTest {
         assertNotNull(rootEvent);
         assertNotNull(exceptionEvent);
         
-        java.util.Date startDate = CalendarUtils.getDate(2016, java.util.Calendar.OCTOBER, 10);
-        DateTime start = new DateTime(startDate);
-        java.util.Date endDate = CalendarUtils.getDate(2016, java.util.Calendar.NOVEMBER, 10);
-        DateTime end = new DateTime(endDate);
+        ZonedDateTime start = ZonedDateTime.of(2016, java.util.Calendar.OCTOBER, 10, 0, 0, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime end = ZonedDateTime.of(2016, java.util.Calendar.NOVEMBER, 10, 0, 0, 0, 0, ZoneId.systemDefault());
         
-        Period period = new Period(start, end);
-        PeriodList pList = rootEvent.calculateRecurrenceSet(period);
-        for(Object obj:pList) {
-        	Period p = (Period)obj;
+        Period<ZonedDateTime> period = new Period<>(start, end);
+        Set<Period<Temporal>> pList = rootEvent.calculateRecurrenceSet(period);
+        for(Period<Temporal> p:pList) {
         	log.info("Period: {}", p.getStart());
         }
         
-        RecurrenceId recurrenceId = exceptionEvent.getRecurrenceId();
-        Date recurrenceDate = recurrenceId.getDate();
+        RecurrenceId<Temporal> recurrenceId = exceptionEvent.getRecurrenceId();
+        ZonedDateTime recurrenceDate = ZonedDateTime.from(recurrenceId.getDate());
         log.info("Recurrence: {}", recurrenceDate);
         exceptionEvent.getSequence();
 	}

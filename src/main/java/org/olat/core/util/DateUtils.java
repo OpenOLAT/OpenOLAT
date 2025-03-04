@@ -24,6 +24,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -51,17 +53,40 @@ public class DateUtils {
 		
 		return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
 	}
+	
+	public static Date toDate(ZonedDateTime zonedDateTime) {
+		if (zonedDateTime == null) return null;
+		return toDate(zonedDateTime, ZoneId.systemDefault());
+	}
+	
+	public static Date toDate(ZonedDateTime zonedDateTime, ZoneId zone) {
+		if (zonedDateTime == null) return null;
+		return Date.from(zonedDateTime.withZoneSameInstant(zone).toInstant());
+	}
  
 	public static LocalDate toLocalDate(Date date) {
 		if (date == null) return null;
-		
 		return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+	}
+	
+	public static LocalDate toLocalDate(ZonedDateTime dateTime) {
+		if (dateTime == null) return null;
+		return dateTime.withZoneSameLocal(ZoneId.systemDefault()).toLocalDate();
 	}
  
 	public static LocalDateTime toLocalDateTime(Date date) {
 		if (date == null) return null;
-		
 		return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+	}
+	
+	public static ZonedDateTime toZonedDateTime(Date date) {
+		if (date == null) return null;
+		return toZonedDateTime(date, ZoneId.systemDefault());
+	}
+	
+	public static ZonedDateTime toZonedDateTime(Date date, ZoneId zone) {
+		if (date == null) return null;
+		return ZonedDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()), zone);
 	}
 	
 	public static boolean isSameDate(Date date1, Date date2) {
@@ -94,6 +119,11 @@ public class DateUtils {
 				cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR));
 	}
 	
+	public static boolean isSameDay(ZonedDateTime date1, ZonedDateTime date2) {
+		return date1.getYear() == date2.getYear()
+				&& date1.getDayOfYear() == date2.getDayOfYear();
+	}
+	
 	public static boolean isSameTime(Date date1, Date date2) {
 		Calendar cal1 = Calendar.getInstance();
 		cal1.setTime(date1);
@@ -120,6 +150,33 @@ public class DateUtils {
 		calendar.set(Calendar.SECOND, seconds);
 		calendar.set(Calendar.MILLISECOND, 0);
 		return calendar.getTime();
+	}
+	
+	public static ZonedDateTime getZonedDateTime(int year, int month, int days) {
+		return ZonedDateTime.of(year, month, days, 0, 0, 0, 0, ZoneId.systemDefault());
+	}
+	
+	public static ZonedDateTime setZonedTime(ZonedDateTime date, int hour, int minutes, int seconds) {
+		if (date == null) {
+			return null;
+		}
+		return date
+				.withHour(hour)
+				.withMinute(minutes)
+				.withSecond(seconds)
+				.with(ChronoField.MILLI_OF_SECOND, 0l);
+	}
+	
+	public static ZonedDateTime setZonedTime(Date date, int hour, int minutes, int seconds) {
+		if (date == null) {
+			return null;
+		}
+		
+		return DateUtils.toZonedDateTime(date)
+				.withHour(hour)
+				.withMinute(minutes)
+				.withSecond(seconds)
+				.with(ChronoField.MILLI_OF_SECOND, 0l);
 	}
 	
 	public static Date truncateSeconds(Date date) {
@@ -185,6 +242,20 @@ public class DateUtils {
 		calendar.set(Calendar.SECOND, 59);
 		calendar.set(Calendar.MILLISECOND, 999);
 		return calendar.getTime();
+	}
+	
+	public static LocalDateTime getEndOfDay(LocalDateTime cal) {
+		return cal.withHour(23)
+				  .withMinute(59)
+				  .withSecond(59)
+				  .withNano(0);
+	}
+	
+	public static ZonedDateTime getEndOfDay(ZonedDateTime cal) {
+		return cal.withHour(23)
+				  .withMinute(59)
+				  .withSecond(59)
+				  .withNano(0);
 	}
 	
 	public static Date getStartOfYear(Date date) {
@@ -334,6 +405,19 @@ public class DateUtils {
 			}
 		} else {
 			if (end2.before(start1)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public static boolean isOverlapping(ZonedDateTime start1, ZonedDateTime end1, ZonedDateTime start2, ZonedDateTime end2) {
+		if (start1.isBefore(start2)) {
+			if (end1.isBefore(start2)) {
+				return false;
+			}
+		} else {
+			if (end2.isBefore(start1)) {
 				return false;
 			}
 		}

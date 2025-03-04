@@ -19,17 +19,23 @@
  */
 package org.olat.core.util;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.test.OlatTestCase;
 
 /**
  * This was the test code mebbed in the main method of the Formatter class
  * 
  */
-public class FormatterTest {
+public class FormatterTest extends OlatTestCase {
 	
 	@Test
 	public void testEscapeHtml() {
@@ -174,6 +180,38 @@ public class FormatterTest {
 		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears("some other stuff on 1.2.22"), "some other stuff on 1.2.22");
 		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears(""), "");
 		Assert.assertEquals(Formatter.formatTwoDigitsYearsAsFourDigitsYears(null), null);
+	}
+	
+	@Test
+	public void testDateTimeShortDateFormat() {
+		Calendar cal = Calendar.getInstance();
+		cal.set(2025, 0, 12, 12, 23, 34);
+		Date date = cal.getTime();
+		String value = Formatter.getInstance(Locale.GERMAN).formatDate(date);
+		Assert.assertEquals("12.01.2025", value);
+	}
+	
+	@Test
+	public void testZonedDateTimeShortDateFormat() {
+		ZonedDateTime date = ZonedDateTime.of(2025, 1, 12, 12, 23, 34, 456, ZoneId.systemDefault());
+		String value = Formatter.getInstance(Locale.GERMAN).formatDate(date);
+		Assert.assertEquals("12.01.2025", value);
+	}
+	
+	@Test
+	public void testDateTimeShortDateTimeFormat() {
+		Calendar cal = Calendar.getInstance();
+		cal.set(2025, 0, 12, 12, 23, 34);
+		Date date = cal.getTime();
+		String value = Formatter.getInstance(Locale.GERMAN).formatDateAndTime(date);
+		Assert.assertEquals("12.01.2025, 12:23", value);
+	}
+	
+	@Test
+	public void testZonedDateTimeShortDateTimeFormat() {
+		ZonedDateTime date = ZonedDateTime.of(2025, 1, 12, 12, 23, 34, 456, ZoneId.systemDefault());
+		String value = Formatter.getInstance(Locale.GERMAN).formatDateAndTime(date);
+		Assert.assertEquals("12.01.2025, 12:23", value);
 	}
 	
 }

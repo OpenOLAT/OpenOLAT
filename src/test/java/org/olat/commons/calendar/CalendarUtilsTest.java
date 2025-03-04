@@ -19,6 +19,9 @@
  */
 package org.olat.commons.calendar;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,5 +51,18 @@ public class CalendarUtilsTest {
 		long minutes = CalendarUtils.convertSecondsToMinutes(Long.valueOf(360l));
 		Assert.assertEquals(6l, minutes);
 	}
+	
+	@Test
+	public void formatRecurrenceDateAllDay() {
+		ZonedDateTime date = ZonedDateTime.of(2018, 6, 5, 13, 45, 30, 0, ZoneId.systemDefault());
+		String val = CalendarUtils.formatRecurrenceDate(date, true);
+		Assert.assertEquals("20180605", val);
+	}
 
+	@Test
+	public void formatRecurrenceDateTime() {
+		ZonedDateTime date = ZonedDateTime.of(2018, 6, 5, 13, 45, 30, 500, ZoneId.systemDefault());
+		String val = CalendarUtils.formatRecurrenceDate(date, false);
+		Assert.assertEquals("20180605T134530", val);
+	}
 }

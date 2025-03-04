@@ -34,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.DateUtils;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 
@@ -114,7 +115,7 @@ public class DENManageDatesController extends BasicController {
 					editSingleDateForm.setComment(calEvent.getComment());
 					editSingleDateForm.setLocation(calEvent.getLocation());
 					editSingleDateForm.setNumParts(calEvent.getNumParticipants());
-					editSingleDateForm.setFormDate(calEvent.getBegin());
+					editSingleDateForm.setFormDate(DateUtils.toDate(calEvent.getBegin()));
 					editSingleDateForm.setDuration(denManager.getDurationAsString(calEvent));
 					
 					removeAsListenerAndDispose(editDateModalCntrll);

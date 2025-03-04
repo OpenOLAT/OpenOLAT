@@ -24,7 +24,7 @@
 */
 package org.olat.commons.calendar.model;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 /**
  * 
@@ -38,8 +38,8 @@ import java.util.Date;
 public class KalendarRecurEvent extends KalendarEvent {
 
 	private boolean original;
-
-	public KalendarRecurEvent(String id, boolean original, String subject, Date begin, Date end) {
+	
+	public KalendarRecurEvent(String id, boolean original, String subject, ZonedDateTime begin, ZonedDateTime end) {
 		super(id, null, subject, begin, end);
 		this.original = original;
 	}

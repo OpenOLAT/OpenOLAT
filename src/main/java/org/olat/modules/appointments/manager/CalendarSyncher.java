@@ -19,6 +19,7 @@
  */
 package org.olat.modules.appointments.manager;
 
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
@@ -64,6 +66,8 @@ public class CalendarSyncher {
 	private OrganizerDAO organizerDao;
 	@Autowired
 	private ParticipationDAO participationDao;
+	@Autowired
+	private CalendarModule calendarModule;
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
@@ -161,7 +165,9 @@ public class CalendarSyncher {
 		String eventId = UUID.randomUUID().toString();
 		Translator translator = createTranslator(identity);
 		String subject = getSubject(translator, appointment);
-		KalendarEvent event = new KalendarEvent(eventId, null, subject, appointment.getStart(), appointment.getEnd());
+		ZonedDateTime zStart = DateUtils.toZonedDateTime(appointment.getStart(), calendarModule.getDefaultZoneId());
+		ZonedDateTime zEnd = DateUtils.toZonedDateTime(appointment.getEnd(), calendarModule.getDefaultZoneId());
+		KalendarEvent event = new KalendarEvent(eventId, null, subject, zStart, zEnd);
 		String externalId = generateExternalId(appointment);
 		event.setExternalId(externalId);
 		String location = AppointmentsUIFactory.getDisplayLocation(translator, appointment);
@@ -188,12 +194,12 @@ public class CalendarSyncher {
 	private void updateDates(Appointment appointment, KalendarEvent event) {
 		if (DateUtils.isSameDate(appointment.getStart(), appointment.getEnd())) {
 			event.setAllDayEvent(true);
-			event.setBegin(DateUtils.setTime(appointment.getStart(), 0, 0, 0));
-			event.setEnd(DateUtils.setTime(appointment.getEnd(), 23,59,59));
+			event.setBegin(DateUtils.setZonedTime(appointment.getStart(), 0, 0, 0));
+			event.setEnd(DateUtils.setZonedTime(appointment.getEnd(), 23,59,59));
 		} else {
 			event.setAllDayEvent(false);
-			event.setBegin(appointment.getStart());
-			event.setEnd(appointment.getEnd());
+			event.setBegin(DateUtils.toZonedDateTime(appointment.getStart()));
+			event.setEnd(DateUtils.toZonedDateTime(appointment.getEnd()));
 		}
 	}
 	
@@ -210,8 +216,7 @@ public class CalendarSyncher {
 
 	private Translator createTranslator(Identity identity) {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
-		return translator;
+		return Util.createPackageTranslator(AppointmentsMainController.class, locale);
 	}
 	
 	private void updateEventDescription(Appointment appointment, KalendarEvent event) {

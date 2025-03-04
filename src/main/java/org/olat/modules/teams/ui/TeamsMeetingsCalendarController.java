@@ -19,9 +19,11 @@
  */
 package org.olat.modules.teams.ui;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
@@ -33,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsService;
@@ -48,6 +51,8 @@ public class TeamsMeetingsCalendarController extends FormBasicController {
 	
 	@Autowired
 	private TeamsService teamsService;
+	@Autowired
+	private CalendarModule calendarModule;
 	
 	public TeamsMeetingsCalendarController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "meetings_calendar");		
@@ -71,7 +76,9 @@ public class TeamsMeetingsCalendarController extends FormBasicController {
 
 			// Create a calendar event with the room name as subject
 			String eventId = "teams.meeting." + meeting.getKey();
-			KalendarEvent newEvent = new KalendarEvent(eventId, null, meeting.getSubject(), meeting.getStartDate(), meeting.getEndDate());
+			ZonedDateTime zStart = DateUtils.toZonedDateTime(meeting.getStartDate(), calendarModule.getDefaultZoneId());
+			ZonedDateTime zEnd = DateUtils.toZonedDateTime(meeting.getEndDate(), calendarModule.getDefaultZoneId());
+			KalendarEvent newEvent = new KalendarEvent(eventId, null, meeting.getSubject(), zStart, zEnd);
 			newEvent.setDescription(meeting.getSubject());
 			calendar.addEvent(newEvent);	
 		}

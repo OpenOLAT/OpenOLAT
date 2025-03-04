@@ -20,6 +20,7 @@
 package org.olat.commons.calendar.ui.components;
 
 import java.text.ParseException;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 
 
@@ -307,13 +309,9 @@ public class FullCalendarElement extends FormItemImpl implements Disposable {
 	private KalendarRecurEvent getCurrenceKalendarEvent(KalendarRenderWrapper cal, String eventId) {
 		boolean privateEventsVisible = cal.isPrivateEventsVisible();
 		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
-		Date currentDate = component.getCurrentDate();
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(currentDate);
-		calendar.add(Calendar.MONTH, -12);
-		Date from = calendar.getTime();
-		calendar.add(Calendar.MONTH, +36);
-		Date to = calendar.getTime();
+		ZonedDateTime currentDate = DateUtils.toZonedDateTime(component.getCurrentDate());
+		ZonedDateTime from = currentDate.minusYears(1);
+		ZonedDateTime to = currentDate.plusYears(3);
 		
 		List<KalendarEvent> events = calendarManager.getEvents(cal.getKalendar(), from, to, privateEventsVisible);
 		for(KalendarEvent event:events) {

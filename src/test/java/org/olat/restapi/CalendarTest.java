@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -38,7 +39,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.UriBuilder;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -64,6 +64,7 @@ import org.olat.commons.calendar.ui.ExternalLinksController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -122,21 +123,20 @@ public class CalendarTest extends OlatRestTestCase {
 			Assert.assertTrue(courseConfig.isCalendarEnabled());
 			KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course);
 			
-			Calendar cal = Calendar.getInstance();
+			ZonedDateTime cal = DateUtils.toZonedDateTime(new Date());
 			for(int i=0; i<10; i++) {
-				Date begin = cal.getTime();
-				cal.add(Calendar.HOUR_OF_DAY, 1);
-				Date end = cal.getTime();
+				ZonedDateTime begin = cal;
+				ZonedDateTime end = cal.plusHours(1);
 				KalendarEvent event = new KalendarEvent(UUID.randomUUID().toString(), null, "Unit test " + i, begin, end);
 				calendarManager.addEventTo(calendarWrapper.getKalendar(), event);
-				cal.add(Calendar.DATE, 1);
+				cal = cal.plusDays(1);
 			}
 
-			cal = Calendar.getInstance();
-			cal.add(Calendar.MONTH, -1);
-			Date begin2 = cal.getTime();
-			cal.add(Calendar.HOUR_OF_DAY, 1);
-			Date end2 = cal.getTime();
+			cal = DateUtils.toZonedDateTime(new Date());
+			cal = cal.minusMonths(1);
+			ZonedDateTime begin2 = cal;
+			cal = cal.plusHours(1);
+			ZonedDateTime end2 = cal;
 			KalendarEvent event2 = new KalendarEvent(UUID.randomUUID().toString(), null, "Unit test 2", begin2, end2);
 			calendarManager.addEventTo(calendarWrapper.getKalendar(), event2);
 			
@@ -591,8 +591,10 @@ public class CalendarTest extends OlatRestTestCase {
 		EventVO event = new EventVO();
 		Calendar cal = Calendar.getInstance();
 		event.setBegin(cal.getTime());
+		ZonedDateTime begin = DateUtils.toZonedDateTime(cal.getTime());
 		cal.add(Calendar.HOUR_OF_DAY, 1);
 		event.setEnd(cal.getTime());
+		ZonedDateTime end = DateUtils.toZonedDateTime(cal.getTime());
 		event.setSubject(random());
 		event.setAllDayEvent(true);
 		event.setDescription(random());
@@ -613,8 +615,8 @@ public class CalendarTest extends OlatRestTestCase {
 		Kalendar kalendar = calendarManager.getCourseCalendar(course).getKalendar();
 		KalendarEvent kalendarEvent = kalendar.getEvents().get(0);
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(kalendarEvent.getBegin()).isEqualTo(event.getBegin());
-		softly.assertThat(kalendarEvent.getEnd()).isEqualTo(event.getEnd());
+		softly.assertThat(kalendarEvent.getBegin()).isEqualTo(begin);
+		softly.assertThat(kalendarEvent.getEnd()).isEqualTo(end);
 		softly.assertThat(kalendarEvent.getSubject()).isEqualTo(event.getSubject());
 		softly.assertThat(kalendarEvent.isAllDayEvent()).isEqualTo(event.isAllDayEvent());
 		softly.assertThat(kalendarEvent.getDescription()).isEqualTo(event.getDescription());
@@ -647,7 +649,9 @@ public class CalendarTest extends OlatRestTestCase {
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("cal-perso");
 		
 		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(identity.getIdentity());
-		KalendarEvent event = new KalendarEvent(UUID.randomUUID().toString(), null, "Unit with links" , new Date(), DateUtils.addDays(new Date(), 1));
+		ZonedDateTime begin = ZonedDateTime.now();
+		ZonedDateTime end = begin.plusDays(1);
+		KalendarEvent event = new KalendarEvent(UUID.randomUUID().toString(), null, "Unit with links" , begin, end);
 		KalendarEventLink link = new KalendarEventLink("appointments", "app-01", "Termin", "https://www.openolat.org", "o_icon");
 		event.setKalendarEventLinks(List.of(link));
 		calendarManager.addEventTo(calendarWrapper.getKalendar(), event);
@@ -740,7 +744,8 @@ public class CalendarTest extends OlatRestTestCase {
 		
 		//check if the event is saved
 		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(id2.getIdentity());
-		KalendarEvent kalEvent = new KalendarEvent(UUID.randomUUID().toString(), null, "Rendez-vous", new Date(), new Date());
+		ZonedDateTime now = ZonedDateTime.now();
+		KalendarEvent kalEvent = new KalendarEvent(UUID.randomUUID().toString(), null, "Rendez-vous", now, now);
 		calendarManager.addEventTo(calendarWrapper.getKalendar(), kalEvent);
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString())
@@ -756,7 +761,7 @@ public class CalendarTest extends OlatRestTestCase {
 		//check if the event is saved
 		Collection<KalendarEvent> savedEvents = calendarWrapper.getKalendar().getEvents();
 		for(KalendarEvent savedEvent:savedEvents) {
-			Assert.assertFalse(savedEvent.getID().equals(kalEvent.getID()));
+			Assert.assertNotEquals(kalEvent.getID(), savedEvent.getID());
 		}
 	}
 	

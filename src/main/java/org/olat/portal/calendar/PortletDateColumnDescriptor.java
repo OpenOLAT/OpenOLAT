@@ -25,20 +25,20 @@
 package org.olat.portal.calendar;
 
 import java.text.DateFormat;
-import java.util.Calendar;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
 
 /**
  * @author Christian Guretzki
  */
-class PortletDateColumnDescriptor extends DefaultColumnDescriptor implements ColumnDescriptor {
+class PortletDateColumnDescriptor extends DefaultColumnDescriptor {
 
 	private DateFormat timeFormat;
 	private DateFormat dateOnlyFormat;
@@ -65,24 +65,24 @@ class PortletDateColumnDescriptor extends DefaultColumnDescriptor implements Col
 	@Override
 	public void renderValue(StringOutput sb, int row, Renderer renderer) {
 		Object val = getModelData(row);
-		if (val instanceof KalendarEvent) {
-			KalendarEvent event = (KalendarEvent)val;
+		if (val instanceof KalendarEvent event) {
 			if (event.isToday() && event.isAllDayEvent()) {
 				sb.append( translator.translate("calendar.today.all.day") );
 			} else if (event.isToday()) {
 				sb.append( translator.translate("calendar.title") +" "+ timeFormat.format(event.getBegin()) + " - " + timeFormat.format(event.getEnd()) );
 			} else if (event.isAllDayEvent()) {
-				Calendar tomorrow = Calendar.getInstance();
-				tomorrow.add(Calendar.DATE, 1);
-				if (event.getBegin().before( new Date() ) ) {
+				ZonedDateTime now = DateUtils.toZonedDateTime(new Date());
+				ZonedDateTime tomorrow = now.plusDays(1);
+				
+				if (event.getBegin().isBefore(now) ) {
 					sb.append( translator.translate("calendar.today.all.day") );
-					if ( event.getEnd().after( tomorrow.getTime() ) ) {
+					if ( event.getEnd().isAfter(tomorrow) ) {
 						sb.append( " - ");
 						sb.append( dateOnlyFormat.format(event.getEnd()));
 					}
 				} else {
 					sb.append( dateOnlyFormat.format(event.getBegin()));
-					if ( event.getEnd().after( tomorrow.getTime() ) ) {
+					if ( event.getEnd().isAfter(tomorrow) ) {
 						sb.append( " - ");
 						sb.append( dateOnlyFormat.format(event.getEnd()));
 					}
@@ -103,9 +103,9 @@ class PortletDateColumnDescriptor extends DefaultColumnDescriptor implements Col
 	public int compareTo(int rowa, int rowb) {
 		Object a = table.getTableDataModel().getValueAt(rowa,dataColumn);
 		Object b = table.getTableDataModel().getValueAt(rowb,dataColumn);
-		if ( (a instanceof KalendarEvent) && (b instanceof KalendarEvent) ) {
-			Date begin0 = ((KalendarEvent) a).getBegin();
-			Date begin1 = ((KalendarEvent) b).getBegin();
+		if (a instanceof KalendarEvent ea && b instanceof KalendarEvent be) {
+			ZonedDateTime begin0 = ea.getBegin();
+			ZonedDateTime begin1 = be.getBegin();
 			return begin0.compareTo(begin1);
 		}
 		return 0;

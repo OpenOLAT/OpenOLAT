@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -475,8 +476,8 @@ public class ProjActivityLogController extends ActivityLogController {
 							getTranslatedRecurrenceRule(afterRecurrence));
 				}
 				
-				Date beforeRecurrenceEnd = calendarManager.getRecurrenceEndDate(before.getRecurrenceRule());
-				Date afterRecurrenceEnd = calendarManager.getRecurrenceEndDate(after.getRecurrenceRule());
+				ZonedDateTime beforeRecurrenceEnd = calendarManager.getRecurrenceEndDate(before.getRecurrenceRule());
+				ZonedDateTime afterRecurrenceEnd = calendarManager.getRecurrenceEndDate(after.getRecurrenceRule());
 				if (!Objects.equals(beforeRecurrenceEnd, afterRecurrenceEnd)) {
 					addRow(rows, activity, "activity.log.message.edit.recurrence.end",
 							formatter.formatDate(beforeRecurrenceEnd),

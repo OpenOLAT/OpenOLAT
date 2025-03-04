@@ -22,6 +22,7 @@ package org.olat.modules.project.ui;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -159,9 +160,9 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		recurrenceEndEl = uifactory.addDateChooser("recurrence.end", "cal.form.recurrence.ends", null, formLayout);
 		recurrenceEndEl.setMandatory(true);
 		String recurrenceRule = appointment != null? appointment.getRecurrenceRule(): null;
-		Date recurrenceEnd = calendarManager.getRecurrenceEndDate(recurrenceRule);
+		ZonedDateTime recurrenceEnd = calendarManager.getRecurrenceEndDate(recurrenceRule);
 		if (recurrenceEnd != null) {
-			recurrenceEndEl.setDate(recurrenceEnd);
+			recurrenceEndEl.setZonedDateTime(recurrenceEnd);
 		}
 		
 		String location =appointment != null?  appointment.getLocation(): null;

@@ -21,6 +21,7 @@ package org.olat.modules.lecture.manager;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -45,6 +46,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -55,6 +57,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -164,6 +167,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	private LectureModule lectureModule;
 	@Autowired
 	private CalendarManager calendarMgr;
+	@Autowired
+	private CalendarModule calendarModule;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
@@ -1954,7 +1959,10 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	private KalendarEvent createEvent(LectureBlock lectureBlock, RepositoryEntry entry) {
 		String eventId = UUID.randomUUID().toString();
 		String title = lectureBlock.getTitle();
-		KalendarEvent event = new KalendarEvent(eventId, null, title, lectureBlock.getStartDate(), lectureBlock.getEndDate());
+
+		ZonedDateTime zStart = DateUtils.toZonedDateTime(lectureBlock.getStartDate(), calendarModule.getDefaultZoneId());
+		ZonedDateTime zEnd = DateUtils.toZonedDateTime(lectureBlock.getEndDate(), calendarModule.getDefaultZoneId());
+		KalendarEvent event = new KalendarEvent(eventId, null, title, zStart, zEnd);
 		event.setExternalId(generateExternalId(lectureBlock, entry));
 		event.setLocation(lectureBlock.getLocation());
 		updateEventDescription(lectureBlock, event);
@@ -1973,8 +1981,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		event.setSubject(lectureBlock.getTitle());
 		event.setLocation(lectureBlock.getLocation());
 		updateEventDescription(lectureBlock, event);
-		event.setBegin(lectureBlock.getStartDate());
-		event.setEnd(lectureBlock.getEndDate());
+		event.setBegin(DateUtils.toZonedDateTime(lectureBlock.getStartDate()));
+		event.setEnd(DateUtils.toZonedDateTime(lectureBlock.getEndDate()));
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 		return true;
 	}

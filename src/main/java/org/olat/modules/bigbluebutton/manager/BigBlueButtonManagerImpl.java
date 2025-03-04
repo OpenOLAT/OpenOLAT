@@ -21,6 +21,7 @@ package org.olat.modules.bigbluebutton.manager;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -45,6 +46,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
@@ -139,6 +141,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	private DB dbInstance;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private CalendarModule calendarModule;
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
@@ -868,8 +872,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 				} else {
 					event.setSubject(meeting.getName());
 					event.setDescription(meeting.getDescription());
-					event.setBegin(meeting.getStartDate());
-					event.setEnd(meeting.getEndDate());
+					event.setBegin(DateUtils.toZonedDateTime(meeting.getStartDate()));
+					event.setEnd(DateUtils.toZonedDateTime(meeting.getEndDate()));
 					event.setManagedFlags(managedFlags);
 					if(event.getKalendarEventLinks() == null || event.getKalendarEventLinks().isEmpty()) {
 						KalendarEventLink eventLink = generateEventLink(meeting);
@@ -887,7 +891,9 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		
 		if(!meeting.isPermanent()) {
 			String eventId = CodeHelper.getGlobalForeverUniqueID();
-			KalendarEvent newEvent = new KalendarEvent(eventId, null, meeting.getName(), meeting.getStartDate(), meeting.getEndDate());
+			ZonedDateTime zStart = DateUtils.toZonedDateTime(meeting.getStartDate(), calendarModule.getDefaultZoneId());
+			ZonedDateTime zEnd = DateUtils.toZonedDateTime(meeting.getEndDate(), calendarModule.getDefaultZoneId());
+			KalendarEvent newEvent = new KalendarEvent(eventId, null, meeting.getName(), zStart, zEnd);
 			newEvent.setDescription(meeting.getDescription());
 			newEvent.setManagedFlags(managedFlags);
 			newEvent.setExternalId(externalId);

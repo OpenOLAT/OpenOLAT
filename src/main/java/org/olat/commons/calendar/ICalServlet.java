@@ -29,9 +29,11 @@ package org.olat.commons.calendar;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -58,17 +60,14 @@ import org.olat.core.util.i18n.I18nManager;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
-import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateList;
 import net.fortuna.ical4j.model.Parameter;
+import net.fortuna.ical4j.model.ParameterList;
 import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.PropertyList;
-import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.parameter.TzId;
-import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.DtStart;
 import net.fortuna.ical4j.model.property.ExDate;
@@ -97,6 +96,10 @@ public class ICalServlet extends HttpServlet {
 	
 	private static final int TTL_MINUTES = 15;
 	private static final ConcurrentMap<String,VTimeZone> outlookVTimeZones = new ConcurrentHashMap<>();
+	
+	private CalendarModule calendarModule;
+	private CalendarManager calendarManager;
+	
 
 	/**
 	 * Default constructor.
@@ -104,10 +107,26 @@ public class ICalServlet extends HttpServlet {
 	public ICalServlet() {
 		//
 	}
+	
+	private CalendarModule getCalendarModule() {
+		if(calendarModule == null) {
+			calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		}
+		return calendarModule;
+	}
+	
+	private CalendarManager getCalendarManager() {
+		if(calendarManager == null) {
+			calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
+		}
+		return calendarManager;
+	}
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		Tracing.setHttpRequest(req);
+		getCalendarModule();
+		getCalendarManager();
 		try {
 			super.service(req, resp);
 		} finally {
@@ -261,13 +280,12 @@ public class ICalServlet extends HttpServlet {
 			out.write(':');
 			out.write(Calendar.VCALENDAR);
 			out.write(Strings.LINE_SEPARATOR);
-			out.write(Version.VERSION_2_0.toString());
+			out.write(Version.VALUE_2_0);
 			
 			boolean calScale = false;
 			for (Iterator<?> propIter = calendar.getProperties().iterator(); propIter.hasNext();) {
 				Object pobject = propIter.next();
-				if(pobject instanceof Property) {
-					Property property = (Property)pobject;
+				if(pobject instanceof Property property) {
 					if(Property.VERSION.equals(property.getName())) {
 						//we force version 2.0
 					} else if(Property.CALSCALE.equals(property.getName())) {
@@ -280,7 +298,7 @@ public class ICalServlet extends HttpServlet {
 			}
 			
 			if(!calScale) {
-				out.write(CalScale.GREGORIAN.toString());
+				out.write(CalScale.VALUE_GREGORIAN);
 			}
 	
 			outputTTL(agent, out);
@@ -321,8 +339,8 @@ public class ICalServlet extends HttpServlet {
 				out.write(':');
 				out.write(Calendar.VCALENDAR);
 				out.write(Strings.LINE_SEPARATOR);
-				out.write(Version.VERSION_2_0.toString());
-				out.write(CalScale.GREGORIAN.toString());
+				out.write(Version.VALUE_2_0);
+				out.write(CalScale.VALUE_GREGORIAN);
 				
 				outputTTL(agent, out);
 	
@@ -413,9 +431,9 @@ public class ICalServlet extends HttpServlet {
 	private void outputCalendarComponents(Calendar calendar, Writer out, Agent agent, Set<String> timezoneIds)
 	throws IOException {
 		try {
-			ComponentList<CalendarComponent> events = calendar.getComponents();
-			for (final Iterator<CalendarComponent> i = events.iterator(); i.hasNext();) {
-				outputCalendarComponent(i.next(), out, agent, timezoneIds);
+			List<CalendarComponent> events = calendar.getComponents();
+			for (CalendarComponent event:events) {
+				outputCalendarComponent(event, out, agent, timezoneIds);
 			}
 		} catch (IOException | OLATRuntimeException e) {
 			log.error("", e);
@@ -423,13 +441,13 @@ public class ICalServlet extends HttpServlet {
 	}
 	
 	private void outputCalendarComponent(CalendarComponent component, Writer out, Agent agent, Set<String> timezoneIds) throws IOException {
-		if (component instanceof VEvent) {
-			rewriteExDate((VEvent)component);
+		if (component instanceof VEvent vEvent) {
+			component = rewriteExDate(vEvent);
 		}
 
 		String event = component.toString();
-		if (agent == Agent.outlook && component instanceof VEvent) {
-			event = quoteTimeZone(event, (VEvent)component, timezoneIds);
+		if (agent == Agent.outlook && component instanceof VEvent vEvent) {
+			event = quoteTimeZone(event, vEvent, timezoneIds);
 		}
 		if(agent == Agent.googleCalendar) {
 			event = event.replace("CLASS:PRIVATE" + Strings.LINE_SEPARATOR, "");
@@ -445,61 +463,50 @@ public class ICalServlet extends HttpServlet {
 	 * 
 	 * @param event The event to rewrite
 	 */
-	private void rewriteExDate(VEvent event) {
-		DtStart start = event.getStartDate();
-		ExDate exDate = (ExDate)event.getProperties().getProperty(Property.EXDATE);
+	private VEvent rewriteExDate(VEvent event) {
+		DtStart<Temporal> start = event.getDateTimeStart();
+		@SuppressWarnings("unchecked")
+		ExDate<Temporal> exDate = (ExDate<Temporal>)event.getProperty(Property.EXDATE).orElse(null);
 
 		if(exDate != null && start != null) {
-			Date startDate = start.getDate();
-			java.util.Calendar startCal = java.util.Calendar.getInstance();
-			startCal.setTime(startDate);
-				
-			TimeZone startZone = start.getTimeZone();
-			TimeZone exZone = exDate.getTimeZone();
-			DateList dateList = exDate.getDates();
-			
-			java.util.Calendar excCal = java.util.Calendar.getInstance();
-
-			Parameter dateParameter = ((Property) event.getProperties().getProperty(Property.DTSTART))
-					.getParameter(Value.DATE.getName());
-			boolean dateOnly = dateParameter != null;
-
-			DateList newDateList = dateOnly ? new DateList(Value.DATE) : new DateList();
-			for(Object obj:dateList) {
-				Date d = (Date)obj;
-				if(dateOnly) {
-					newDateList.add(CalendarUtils.createDate(d));
-				} else {
-					excCal.setTime(d);
-					if(excCal.get(java.util.Calendar.HOUR_OF_DAY) != startCal.get(java.util.Calendar.HOUR_OF_DAY)) {
-						excCal.set(java.util.Calendar.HOUR_OF_DAY, startCal.get(java.util.Calendar.HOUR_OF_DAY));
-						excCal.set(java.util.Calendar.MINUTE, startCal.get(java.util.Calendar.MINUTE));
-						excCal.set(java.util.Calendar.SECOND, startCal.get(java.util.Calendar.SECOND));
-						d = excCal.getTime();
-					}
-					newDateList.add(CalendarUtils.createDateTime(d));
+			ZonedDateTime startDate = CalendarUtils.convertDateProperty(start, getCalendarModule().getDefaultZoneId());
+			ZoneId zone = startDate.getZone();
+			if(zone == null) {
+				zone = getCalendarModule().getDefaultZoneId();
+			}
+			List<Temporal> dateList = exDate.getDates();
+			List<ZonedDateTime> list = new ArrayList<>();
+			for(Temporal obj:dateList) {
+				ZonedDateTime d = CalendarUtils.convertTemporal(obj, zone);
+				if(d != null) {
+					list.add(d);
 				}
 			}
 			
-			ExDate newExDate = new ExDate(newDateList);
-			if(exZone == null && startZone != null) {
-				newExDate.setTimeZone(startZone);
-			}
-			
-			event.getProperties().remove(exDate);
-			event.getProperties().add(newExDate);
+			// EXDATE;TZID=Europe/Zurich:20250221T150000
+			// EXDATE;TZID=America/Los_Angeles:20240902T190000
+			ParameterList pList = new ParameterList(List.of(new TzId(zone.getId())));
+			DateList<ZonedDateTime> dList = new DateList<>(list);
+			ExDate<ZonedDateTime> newExDate = new ExDate<>(pList, dList);
+			event = event.remove(exDate);
+			event = event.add(newExDate);
 		}
+		return event;
 	}
 	
 	private String quoteTimeZone(String event, VEvent vEvent, Set<String> timezoneIds) {
-		if(vEvent == null || vEvent.getStartDate().getTimeZone() == null
-				|| vEvent.getStartDate().getTimeZone().getVTimeZone() == null) {
-			return event;
-		}
+		if(vEvent == null) return event;
+		
+		DtStart<Temporal> start = vEvent.getDateTimeStart();
+		if(start.getDate() == null) return event;
+		
+		ZonedDateTime zonedStart = ZonedDateTime.from(start.getDate());
+		if(zonedStart.getZone() == null) return event;
 
-		String timezoneId = vEvent.getStartDate().getTimeZone().getID();
+		String timezoneId = zonedStart.getZone().getId();
 		timezoneIds.add(timezoneId);
-		TzId tzId = (TzId)vEvent.getStartDate().getParameter(Parameter.TZID);
+		
+		TzId tzId = (TzId)start.getParameter(Parameter.TZID).orElse(null);
 		String tzidReplacement = "TZID=\"" + timezoneId + "\"";	
 		return event.replace(tzId.toString(), tzidReplacement);
 	}
@@ -507,9 +514,8 @@ public class ICalServlet extends HttpServlet {
 	private void updateUUID(Calendar calendar, String prefix) {
 		for (Iterator<?> eventIter = calendar.getComponents().iterator(); eventIter.hasNext();) {
 			Object comp = eventIter.next();
-			if (comp instanceof VEvent) {
-				VEvent event = (VEvent)comp;
-				Uid uid = event.getUid();
+			if (comp instanceof VEvent event) {
+				Uid uid = event.getUid().orElse(null);
 				if(uid != null) {
 					String newUid = prefix.concat(uid.getValue());
 					uid.setValue(newUid);
@@ -519,12 +525,10 @@ public class ICalServlet extends HttpServlet {
 	}
 	
 	private void updateUrlProperties(Calendar calendar) {
-		for (Iterator<?> eventIter = calendar.getComponents().iterator(); eventIter.hasNext();) {
-			Object comp = eventIter.next();
-			if (comp instanceof VEvent) {
-				VEvent event = (VEvent)comp;
-				
-				PropertyList<Property> ooLinkProperties = event.getProperties(CalendarManager.ICAL_X_OLAT_LINK);
+		for (Iterator<CalendarComponent> eventIter = calendar.getComponents().iterator(); eventIter.hasNext();) {
+			CalendarComponent comp = eventIter.next();
+			if (comp instanceof VEvent event) {
+				List<Property> ooLinkProperties = event.getProperties(CalendarManager.ICAL_X_OLAT_LINK);
 				if(ooLinkProperties.isEmpty()) {
 					continue;
 				}
@@ -550,7 +554,7 @@ public class ICalServlet extends HttpServlet {
 								urlProperty.setValue(uri);
 								event.getProperties().add(urlProperty);
 								break;
-							} catch (URISyntaxException e) {
+							} catch (Exception e) {
 								log.error("Invalid URL:{}", uri);
 							}
 						}
@@ -569,7 +573,7 @@ public class ICalServlet extends HttpServlet {
         	try {
 				URL resource = ResourceLoader.getResource("zoneinfo-outlook/" + id + ".ics");
 				Calendar calendar = buildCalendar(resource);
-				return calendar == null ? null : (VTimeZone)calendar.getComponent(Component.VTIMEZONE);
+				return calendar == null ? null : (VTimeZone)calendar.getComponent(Component.VTIMEZONE).orElse(null);
 			} catch (Exception e) {
 				log.error("", e);
 				return null;

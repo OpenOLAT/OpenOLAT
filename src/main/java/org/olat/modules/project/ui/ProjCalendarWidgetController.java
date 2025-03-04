@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -205,23 +206,26 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		Map<String, ProjAppointment> appointmentIdentToAppointment = appointments.stream()
 				.collect(Collectors.toMap(ProjAppointment::getIdentifier, Function.identity()));
 		
+		ZonedDateTime startWindow = ZonedDateTime.now().minusYears(30);
+		ZonedDateTime endWindow = ZonedDateTime.now().plusYears(10);
+		
 		Kalendar kalendar = projectService.getAppointmentsKalendar(appointments);
 		List<KalendarEvent> appointmentEvents = calendarManager.getEvents(kalendar,
-				DateUtils.addYears(new Date(), -30), DateUtils.addYears(new Date(), 10), true);
+				startWindow, endWindow, true);
 		count += appointmentEvents.size();
 		
-		Date todayStart = DateUtils.setTime(new Date(), 0, 0, 0);
-		Date todayNow = new Date();
-		Date todayEnd = DateUtils.setTime(new Date(), 23, 59, 59);
-		appointmentEvents.removeIf(event -> todayNow.after(event.isAllDayEvent()? DateUtils.setTime(event.getEnd(), 23, 59, 59): event.getEnd()));
+		ZonedDateTime todayStart = DateUtils.setZonedTime(ZonedDateTime.now(), 0, 0, 0);
+		ZonedDateTime todayNow = ZonedDateTime.now();
+		ZonedDateTime todayEnd = DateUtils.setZonedTime(ZonedDateTime.now(), 23, 59, 59);
+		appointmentEvents.removeIf(event -> todayNow.isAfter(event.isAllDayEvent()? DateUtils.setZonedTime(event.getEnd(), 23, 59, 59): event.getEnd()));
 		appointmentEvents.sort(Comparator.comparing(KalendarEvent::getBegin)
 				.thenComparing(Comparator.comparing(KalendarEvent::getEnd)));
 		
 		List<CalendarWidgetRow> todayRows = new ArrayList<>();
 		List<CalendarWidgetRow> nextRows = new ArrayList<>(5);
 		for (KalendarEvent event : appointmentEvents) {
-			Date eventBegin = event.isAllDayEvent()? DateUtils.setTime(event.getBegin(), 0, 0, 1): event.getBegin();
-			Date eventEnd = event.isAllDayEvent()? DateUtils.setTime(event.getEnd(), 23, 59, 59): event.getEnd();
+			ZonedDateTime eventBegin = event.isAllDayEvent()? DateUtils.setZonedTime(event.getBegin(), 0, 0, 1): event.getBegin();
+			ZonedDateTime eventEnd = event.isAllDayEvent()? DateUtils.setZonedTime(event.getEnd(), 23, 59, 59): event.getEnd();
 			if (DateUtils.isOverlapping(eventBegin, eventEnd, todayNow, todayEnd)) {
 				if (event.isAllDayEvent()) {
 					CalendarWidgetRow row = new CalendarWidgetRow(
@@ -231,7 +235,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 							getEventColorCss(event));
 					forgeDisplayNameLink(row, event, appointmentIdentToAppointment.get(event.getExternalId()));
 					todayRows.add(row);
-				} else if (event.getBegin().before(todayStart)) {
+				} else if (event.getBegin().isBefore(todayStart)) {
 					CalendarWidgetRow row = new CalendarWidgetRow(
 							ProjectUIFactory.getDisplayName(getTranslator(), event), 
 							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(todayStart),
@@ -248,7 +252,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 					forgeDisplayNameLink(row, event, appointmentIdentToAppointment.get(event.getExternalId()));
 					todayRows.add(row);
 				}
-			} else if(nextRows.size() < 5 && todayEnd.before(event.getBegin())) {
+			} else if(nextRows.size() < 5 && todayEnd.isBefore(event.getBegin())) {
 				String dueName = "<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(event.getBegin());
 				if (!event.isAllDayEvent()) {
 					dueName += " <i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(event.getBegin());
@@ -404,8 +408,8 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			case once: {
 				KalendarEvent occurenceEvent = calendarManager.createKalendarEventRecurringOccurence(kalendarRecurEvent);
 				ProjAppointment appointment = projectService.createAppointmentOcurrence(getIdentity(), bcFactory,
-						kalendarRecurEvent.getExternalId(), occurenceEvent.getRecurrenceID(), occurenceEvent.getBegin(),
-						occurenceEvent.getEnd());
+						kalendarRecurEvent.getExternalId(), occurenceEvent.getRecurrenceID(),
+						DateUtils.toDate(occurenceEvent.getBegin()), DateUtils.toDate(occurenceEvent.getEnd()));
 				doEditAppointment(ureq, appointment.getIdentifier());
 				break;
 			}

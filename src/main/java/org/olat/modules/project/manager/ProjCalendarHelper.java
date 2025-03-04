@@ -19,19 +19,23 @@
  */
 package org.olat.modules.project.manager;
 
-import java.text.ParseException;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjMilestone;
@@ -62,11 +66,15 @@ public class ProjCalendarHelper {
 	private static final CalendarManagedFlag[] CAL_MANAGED_FLAGS = new CalendarManagedFlag[] { CalendarManagedFlag.all };
 	
 	@Autowired
+	private CalendarModule calendarModule;
+	@Autowired
 	private CalendarManager calendarManager;
 	
 	public KalendarEvent toEvent(ProjAppointment appointment) {
+		ZonedDateTime zStart = DateUtils.toZonedDateTime(appointment.getStartDate(), calendarModule.getDefaultZoneId());
+		ZonedDateTime zEnd = DateUtils.toZonedDateTime(appointment.getEndDate(), calendarModule.getDefaultZoneId());
 		KalendarEvent event = new KalendarEvent(appointment.getEventId(), appointment.getRecurrenceId(),
-				appointment.getSubject(), appointment.getStartDate(), appointment.getEndDate());
+				appointment.getSubject(), zStart, zEnd);
 		toEvent(appointment, event);
 		return event;
 	}
@@ -115,8 +123,8 @@ public class ProjCalendarHelper {
 	private void updateEvent(ProjectBCFactory bcFactory, ProjAppointment appointment, KalendarEvent event) {
 		toEvent(appointment, event);
 		event.setSubject(appointment.getSubject());
-		event.setBegin(appointment.getStartDate());
-		event.setEnd(appointment.getEndDate());
+		event.setBegin(DateUtils.toZonedDateTime(appointment.getStartDate(), calendarModule.getDefaultZoneId()));
+		event.setEnd(DateUtils.toZonedDateTime(appointment.getEndDate(), calendarModule.getDefaultZoneId()));
 		addKalendarEventLinks(bcFactory, appointment, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 	}
@@ -145,11 +153,11 @@ public class ProjCalendarHelper {
 	@SuppressWarnings("deprecation")
 	public String getExclusionRecurrenceRule(String recurrenceRule, Date exclusionDate) {
 		try {
-			Recur recur = new Recur(recurrenceRule);
-			recur.setUntil(CalendarUtils.createDate(exclusionDate));
-			RRule rrule = new RRule(recur);
+			Recur<Temporal> recur = new Recur<>(recurrenceRule);
+			recur.setUntil(DateUtils.toZonedDateTime(exclusionDate, calendarModule.getDefaultZoneId()));
+			RRule<Temporal> rrule = new RRule<>(recur);
 			return rrule.getValue();
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			log.debug("", e);
 		}
 		return null;
@@ -157,27 +165,22 @@ public class ProjCalendarHelper {
 	
 	public String getUpdatedOccurenceId(String appointmentRecurrendeId, boolean allDay, int beginDiff) {
 		try {
-			RecurrenceId currentReccurenceId = new RecurrenceId(appointmentRecurrendeId);
-			Date currentRecurrenceDate = currentReccurenceId.getDate();
-			java.util.Calendar calc = java.util.Calendar.getInstance();
-			calc.clear();
-			calc.setTime(currentRecurrenceDate);
-			if (beginDiff > 0) {
-				calc.add(java.util.Calendar.MILLISECOND, beginDiff);
-			}
+			RecurrenceId<Temporal> currentReccurenceId = new RecurrenceId<>(appointmentRecurrendeId);
 			
-			Date newRecurrenceDate = calc.getTime();
+			//TODO calendar
+			Temporal currentRecurrenceDate = currentReccurenceId.getDate();
+			Temporal newRecurrenceDate = currentRecurrenceDate.plus(beginDiff, ChronoUnit.MILLIS);
 			
-			RecurrenceId newRecurrenceId;
+			RecurrenceId<Temporal> newRecurrenceId;
 			if(allDay) {
-				newRecurrenceId = new RecurrenceId((CalendarUtils.createDate(newRecurrenceDate)));
+				newRecurrenceId = new RecurrenceId<>(newRecurrenceDate);
 			} else {
-				newRecurrenceId = new RecurrenceId(CalendarUtils.formatRecurrenceDate(newRecurrenceDate, false));
+				newRecurrenceId = new RecurrenceId<>(CalendarUtils.formatRecurrenceDate(newRecurrenceDate, false));
 			}
 			
 			return newRecurrenceId.getValue();
 			
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			log.error("", e);
 		}
 		
@@ -185,8 +188,9 @@ public class ProjCalendarHelper {
 	}
 	
 	public KalendarEvent toEvent(ProjMilestone milestone) {
+		ZonedDateTime zDueDate = DateUtils.toZonedDateTime(milestone.getDueDate(), calendarModule.getDefaultZoneId());
 		KalendarEvent event = new KalendarEvent(milestone.getIdentifier(), null, getSubjectIcon(milestone),
-				milestone.getDueDate(), milestone.getDueDate());
+				zDueDate, zDueDate);
 		toEvent(milestone, event);
 		return event;
 	}
@@ -239,7 +243,7 @@ public class ProjCalendarHelper {
 	private void updateEvent(ProjectBCFactory bcFactory, ProjMilestone milestone, KalendarEvent event) {
 		toEvent(milestone, event);
 		event.setSubject(getSubjectIcon(milestone));
-		event.setBegin(milestone.getDueDate());
+		event.setBegin(DateUtils.toZonedDateTime(milestone.getDueDate(), calendarModule.getDefaultZoneId()));
 		addKalendarEventLinks(bcFactory, milestone, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 	}

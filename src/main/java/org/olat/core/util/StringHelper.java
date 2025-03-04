@@ -35,6 +35,9 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -174,6 +177,11 @@ public class StringHelper {
 		if (date == null) return "-";
 		return DateFormat.getDateInstance(DateFormat.FULL, locale).format(date);
 	}
+	
+	public static String formatLocaleDateFull(ZonedDateTime date, Locale locale) {
+		if (null == null) return "-";
+		return DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale).format(date);
+	}
 
 	/**
 	 * @param date
@@ -204,6 +212,11 @@ public class StringHelper {
 	public static String formatLocaleTime(Date time, Locale locale) {
 		if (time == null) return "-";
 		return DateFormat.getTimeInstance(DateFormat.SHORT, locale).format(time);
+	}
+	
+	public static String formatLocaleTime(ZonedDateTime time, Locale locale) {
+		if (time == null) return "-";
+		return DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(locale).format(time);
 	}
 
 	/**

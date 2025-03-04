@@ -25,6 +25,7 @@
 */
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 /**
@@ -44,6 +45,11 @@ public interface DateChooser extends TextElement {
 	 * @param date
 	 */
 	public void setDate(Date date);
+	
+
+	public ZonedDateTime getZonedDateTime();
+	
+	public void setZonedDateTime(ZonedDateTime dateTime);
 	
 	/**
 	 * @return The initial date. Used to compare the difference between the new and initial date.

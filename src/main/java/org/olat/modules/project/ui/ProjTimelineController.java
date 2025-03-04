@@ -21,6 +21,7 @@ package org.olat.modules.project.ui;
 
 import static org.olat.modules.project.ui.ProjectUIFactory.templateSuffix;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -521,7 +522,9 @@ public class ProjTimelineController extends FormBasicController
 				.collect(Collectors.toMap(ProjAppointment::getIdentifier, Function.identity()));
 		
 		Kalendar kalendar = projectService.getAppointmentsKalendar(appointments);
-		List<KalendarEvent> appointmentEvents = calendarManager.getEvents(kalendar, project.getCreationDate(), DateUtils.addYears(new Date(), 10), true);
+
+		List<KalendarEvent> appointmentEvents = calendarManager.getEvents(kalendar,
+				DateUtils.toZonedDateTime(project.getCreationDate()), ZonedDateTime.now().plusYears(10), true);
 		
 		for (KalendarEvent appointmentEvent : appointmentEvents) {
 			ProjTimelineRow row = createAppointmentRow(appointmentEvent, appointmentIdentToAppointment.get(appointmentEvent.getExternalId()));
@@ -552,7 +555,7 @@ public class ProjTimelineController extends FormBasicController
 		link.setUserObject(appointment.getArtefact());
 		row.setMessageItem(link);
 		
-		row.setDate(DateUtils.addSeconds(kalendarEvent.getBegin(), 5));
+		row.setDate(DateUtils.toDate(kalendarEvent.getBegin().plusSeconds(5)));
 		row.setFormattedDate(activityRowsFactory.getFormattedDate(row.getDate(), !appointment.isAllDay()));
 		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
 		row.setActionTarget(ActionTarget.appointment);

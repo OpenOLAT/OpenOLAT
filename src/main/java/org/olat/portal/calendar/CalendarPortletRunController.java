@@ -26,8 +26,8 @@
 package org.olat.portal.calendar;
 
 import java.text.DateFormat;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -58,6 +58,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -124,10 +125,8 @@ public class CalendarPortletRunController extends BasicController {
 	}
 
 	private List<KalendarEvent> getMatchingEvents(UserRequest ureq, WindowControl wControl) {
-		Date startDate = new Date();
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.DAY_OF_YEAR, cal.get(Calendar.DAY_OF_YEAR) + 7);
-		Date endDate = cal.getTime();
+		ZonedDateTime startDate = DateUtils.toZonedDateTime(new Date());
+		ZonedDateTime endDate = startDate.plusDays(7);
 		List<KalendarEvent> events = new ArrayList<>();
 		List<KalendarRenderWrapper> calendars = personalCalendarManager.getListOfCalendarWrappers(ureq, wControl);
 		for (Iterator<KalendarRenderWrapper> iter = calendars.iterator(); iter.hasNext();) {
@@ -145,8 +144,8 @@ public class CalendarPortletRunController extends BasicController {
 		// sort events
 		Collections.sort(events, new Comparator<KalendarEvent>() {
 			public int compare(KalendarEvent arg0, KalendarEvent arg1) {
-				Date begin0 = arg0.getBegin();
-				Date begin1 = arg1.getBegin();
+				ZonedDateTime begin0 = arg0.getBegin();
+				ZonedDateTime begin1 = arg1.getBegin();
 				return begin0.compareTo(begin1);
 			}
 		});
@@ -175,7 +174,7 @@ public class CalendarPortletRunController extends BasicController {
 					int rowid = te.getRowId();
 					KalendarEvent kalendarEvent = ((EventsModel)tableController.getTableDataModel()).getObject(rowid);
 					String resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][calendar:0]"
-							+ BusinessControlFactory.getInstance().getContextEntryStringForDate(kalendarEvent.getBegin());
+							+ BusinessControlFactory.getInstance().getContextEntryStringForDate(DateUtils.toDate(kalendarEvent.getBegin()));
 					BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 					WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 					NewControllerFactory.getInstance().launch(ureq, bwControl);

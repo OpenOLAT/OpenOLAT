@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
@@ -44,6 +43,7 @@ import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -103,8 +103,8 @@ public class CalendarDetailsController extends BasicController {
 	
 	private void addDateToMainVC() {
 		Locale locale = getLocale();
-		Date begin = calEvent.getBegin();
-		Date end = calEvent.getEnd();
+		Date begin = DateUtils.toDate(calEvent.getBegin());
+		Date end = DateUtils.toDate(calEvent.getEnd());
 		
 		boolean sameDay = DateUtils.isSameDay(begin, end);
 		if (sameDay) {

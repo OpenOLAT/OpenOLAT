@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -389,14 +390,17 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				Map<String, ProjAppointmentInfo> appointmentIdentToAppointment = appointmentInfos.stream()
 						.collect(Collectors.toMap(info ->info.getAppointment().getIdentifier(), Function.identity()));
 				
+				ZonedDateTime startWindow = ZonedDateTime.now().minusYears(10);
+				ZonedDateTime endWindow = ZonedDateTime.now().plusYears(10);
+				
 				List<KalendarEvent> readWriteEvents = calendarManager.getEvents(appointmentReadWriteKalendar,
-						DateUtils.addYears(new Date(), -10), DateUtils.addYears(new Date(), 10), true);
+						startWindow, endWindow, true);
 				for (KalendarEvent event : readWriteEvents) {
 					ProjCalendarRow row = createAppointmentRow(ureq, event, appointmentIdentToAppointment.get(event.getExternalId()), true);
 					rows.add(row);
 				}
 				List<KalendarEvent> readOnlyEvents = calendarManager.getEvents(appointmentReadOnlyKalendar,
-						DateUtils.addYears(new Date(), -10), DateUtils.addYears(new Date(), 10), true);
+						startWindow, endWindow, true);
 				for (KalendarEvent event : readOnlyEvents) {
 					ProjCalendarRow row = createAppointmentRow(ureq, event, appointmentIdentToAppointment.get(event.getExternalId()), false);
 					rows.add(row);
@@ -573,11 +577,11 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		
 		if (event != null) {
 			if (event.isAllDayEvent()) {
-				row.setStartDate(DateUtils.setTime(event.getBegin(), 0, 0, 0));
-				row.setEndDate(DateUtils.setTime(event.getEnd(), 23, 59, 59));
+				row.setStartDate(DateUtils.setTime(DateUtils.toDate(event.getBegin()), 0, 0, 0));
+				row.setEndDate(DateUtils.setTime(DateUtils.toDate(event.getEnd()), 23, 59, 59));
 			} else {
-				row.setStartDate(event.getBegin());
-				row.setEndDate(event.getEnd());
+				row.setStartDate(DateUtils.toDate(event.getBegin()));
+				row.setEndDate(DateUtils.toDate(event.getEnd()));
 			}
 		} else {
 			if (appointment.isAllDay() && appointment.getStartDate() != null) {
@@ -1059,7 +1063,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			case once: {
 				KalendarEvent occurenceEvent = calendarManager.createKalendarEventRecurringOccurence(kalendarRecurEvent);
 				ProjAppointment appointment = projectService.createAppointmentOcurrence(getIdentity(),bcFactory, kalendarRecurEvent.getExternalId(),
-						occurenceEvent.getRecurrenceID(), occurenceEvent.getBegin(), occurenceEvent.getEnd());
+						occurenceEvent.getRecurrenceID(), DateUtils.toDate(occurenceEvent.getBegin()), DateUtils.toDate(occurenceEvent.getEnd()));
 				doEditAppointment(ureq, appointment.getIdentifier());
 				break;
 			}
@@ -1132,7 +1136,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			case once: {
 				KalendarEvent occurenceEvent = calendarManager.createKalendarEventRecurringOccurence(kalendarRecurEvent);
 				projectService.createMovedAppointmentOcurrence(getIdentity(), bcFactory, kalendarRecurEvent.getExternalId(),
-						occurenceEvent.getRecurrenceID(), occurenceEvent.getBegin(), occurenceEvent.getEnd(), days,
+						occurenceEvent.getRecurrenceID(), DateUtils.toDate(occurenceEvent.getBegin()), DateUtils.toDate(occurenceEvent.getEnd()), days,
 						minutes, moveStartDate);
 				break;
 			}
@@ -1195,14 +1199,14 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private void doDeleteAppointment(UserRequest ureq, KalendarEvent kalendarEvent, Cascade cascade) {
 		switch(cascade) {
 			case all: 
-				projectService.deleteAppointmentSoftly(getIdentity(), bcFactory, kalendarEvent.getExternalId(), kalendarEvent.getOccurenceDate());
+				projectService.deleteAppointmentSoftly(getIdentity(), bcFactory, kalendarEvent.getExternalId(), DateUtils.toDate(kalendarEvent.getOccurenceDate()));
 				break;
 			case single: {
-				projectService.addAppointmentExclusion(getIdentity(), bcFactory, kalendarEvent.getExternalId(), kalendarEvent.getBegin(), true);
+				projectService.addAppointmentExclusion(getIdentity(), bcFactory, kalendarEvent.getExternalId(), DateUtils.toDate(kalendarEvent.getBegin()), true);
 				break;
 			}
 			case future: {
-				projectService.addAppointmentExclusion(getIdentity(), bcFactory, kalendarEvent.getExternalId(), kalendarEvent.getBegin(), false);
+				projectService.addAppointmentExclusion(getIdentity(), bcFactory, kalendarEvent.getExternalId(), DateUtils.toDate(kalendarEvent.getBegin()), false);
 				break;
 			}
 		}
