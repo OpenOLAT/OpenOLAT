@@ -242,7 +242,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		if(numOfBusinessGroups > 0) {
 			if(sb.length() > 0) sb.append(" ");
 			String i18n = numOfBusinessGroups == 1 ? "mode.target.business.group" : "mode.target.business.groups";
-			sb.append(translate(i18n, StringHelper.escapeHtml(sb.toString())));
+			sb.append(translate(i18n, gpString.toString()));
 		}
 		
 		// curriculum elements
@@ -260,7 +260,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		if(numOfCurriculums > 0) {
 			if(sb.length() > 0) sb.append(" ");
 			String i18n = numOfCurriculums == 1 ? "mode.target.curriculum.element" : "mode.target.curriculum.elements";
-			sb.append(translate(i18n, StringHelper.escapeHtml(curString.toString())));
+			sb.append(translate(i18n, curString.toString()));
 		}
 		return sb.toString();
 	}

@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
+import org.olat.repository.DefaultCycleBadgeRenderer;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -87,7 +88,7 @@ public class LifecycleAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.validFrom.i18nKey(), LCCols.validFrom.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.validTo.i18nKey(), LCCols.validTo.ordinal()));
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.defaultCycle.i18nKey(), LCCols.defaultCycle.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LCCols.defaultCycle, new DefaultCycleBadgeRenderer()));
 		FlexiCellRenderer delRenderer = new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("delete"), "delete-cycle"), null);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", LCCols.delete.ordinal(), "delete-cycle", delRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate(LCCols.edit.i18nKey()), "edit-lifecycle"));
