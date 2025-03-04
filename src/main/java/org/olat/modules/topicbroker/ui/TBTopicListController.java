@@ -667,7 +667,7 @@ public abstract class TBTopicListController extends FormBasicController implemen
 						link.setUserObject(topicLeaf);
 						
 						DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(), roles, topicLeaf,
-								customField.getVfsMetadata(), false, DocEditorService.MODES_EDIT);
+								customField.getVfsMetadata(), false, DocEditorService.MODES_VIEW);
 						if (editorInfo.isNewWindow()) {
 							link.setNewWindow(true, true, false);
 						}
