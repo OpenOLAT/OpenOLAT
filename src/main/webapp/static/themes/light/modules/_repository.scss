@@ -70,29 +70,34 @@
 			}
 			
 			.o_header_offers {
-				max-width: math.div($o-page-width-max, 3);
 				margin-top: auto;
 			}
 			
 			.o_start_wrapper {
+				.o_start_message {
+					width: $o-ac-offers-container-max-width;
+					max-width: $o-ac-offers-container-max-width;
+				}
 				.o_start_inner {
-					width: 100%;
 					>.o_button_call_to_action {
+						max-width: $o-ac-offers-container-max-width;
 						margin-top: 0;
 						flex-grow: 2;
 					}
-				
+					
 					display: flex;
 					gap: 20px;
-					flex-wrap: wrap;
 					align-items: center;
+				}
+			}
+			.o_start_wrapper {
+				container-type: inline-size;
+				container-name: o_start_wrapper;
+			}
+			@container o_start_wrapper (max-width: 440px) {
+				.o_start_inner {
+					flex-wrap: wrap;
 					justify-content: center;
-					
-					@media (max-width: math.div($o-page-width-max, 3)) {
-						.o_button_call_to_action {
-							width: 100%;
-						}
-					}
 				}
 			}
 		}
