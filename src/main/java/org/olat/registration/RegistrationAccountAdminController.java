@@ -82,6 +82,8 @@ public class RegistrationAccountAdminController extends FormBasicController {
 	private final String[] propertyValues;
 	private final String[] pendingPropertyKeys;
 	private final String[] pendingPropertyValues;
+	private Map<Long, String> courseNames = new HashMap<>();
+	private List<Long> courseKeys;
 	private final boolean orgEmailDomainEnabled;
 
 	private SingleSelection organisationsEl;
@@ -261,8 +263,7 @@ public class RegistrationAccountAdminController extends FormBasicController {
 		autoEnrolmentCoursesContainer.setVisible(registrationModule.isAutoEnrolmentCoursesEnabled());
 		openCourseBrowserLink = uifactory.addFormLink("auto.enrolment.select.courses", autoEnrolmentCoursesContainer, Link.BUTTON_XSMALL);
 
-		Map<Long, String> courseNames = new HashMap<>();
-		List<Long> courseKeys = new ArrayList<>(registrationModule.getAutoEnrolmentCourseKeys());
+		courseKeys = new ArrayList<>(registrationModule.getAutoEnrolmentCourseKeys());
 		for (Iterator<Long> courseIt = courseKeys.iterator(); courseIt.hasNext(); ) {
 			Long courseKey = courseIt.next();
 			RepositoryEntry entry = repositoryService.loadByKey(courseKey);
@@ -579,6 +580,8 @@ public class RegistrationAccountAdminController extends FormBasicController {
 
 		if (!autoEnrolmentCoursesEl.isOn()) {
 			registrationModule.saveCourseKeys(Collections.emptyList());
+			courseKeys.clear();
+			courseNames.clear();
 		}
 		registrationModule.setAutoEnrolmentCoursesEnabled(autoEnrolmentCoursesEl.isOn());
 	}
