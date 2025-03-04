@@ -22,7 +22,6 @@ package org.olat.modules.coach.ui;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRelationshipService;
-import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -90,8 +89,6 @@ public class CoachMainRootController extends BasicController implements Activate
 	private LectureModule lectureModule;
 	@Autowired
 	private GradingModule gradingModule;
-	@Autowired
-	private OrganisationModule organisationModule;
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
 	
