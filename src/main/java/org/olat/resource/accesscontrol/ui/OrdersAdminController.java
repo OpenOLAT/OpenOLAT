@@ -22,6 +22,7 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -453,9 +454,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(bulkPayButton == source) {
-			doBulkSetPaid();
+			doBulkSetPaid(ureq);
 		} else if(bulkCancelButton == source) {
-			doBulkCancel();
+			doBulkCancel(ureq);
 		} else if(exportButton == source) {
 			doExport(ureq);
 		} else if(tableEl == source) {
@@ -497,12 +498,14 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source instanceof OrderDetailController) {
 			if(event == Event.CHANGED_EVENT) {
-				loadModel();
+				Set<Long> detailsOrderKeys = getOpenOrderKeys();
+				tableEl.reloadData();
+				openOrders(ureq, detailsOrderKeys);
 			}
 		} else if (addressSelectionCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				if (addressSelectionCtrl.getUserObject() instanceof OrderTableRow row) {
-					updateBillingAddress(row, addressSelectionCtrl.getBillingAddress());
+					updateBillingAddress(ureq, row, addressSelectionCtrl.getBillingAddress());
 				}
 			}
 			cmc.deactivate();
@@ -572,7 +575,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		row.setDetailsController(null);
 	}
 	
-	private void doBulkSetPaid() {
+	private void doBulkSetPaid(UserRequest ureq) {
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		List<OrderTableRow> selectedRows = dataModel.getObjects(selectedIndex);
 		List<OrderTableRow> rows = selectedRows.stream()
@@ -582,11 +585,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		if(rows.isEmpty()) {
 			showWarning("warning.no.order.to.pay");
 		} else {
-			doSetPaid(rows);
+			doSetPaid(ureq, rows);
 		}
 	}
 	
-	private void doSetPaid(List<OrderTableRow> rows) {
+	private void doSetPaid(UserRequest ureq, List<OrderTableRow> rows) {
 		for(OrderTableRow row:rows) {
 			Order order = acService.loadOrderByKey(row.getOrderKey());
 			if(order != null) {
@@ -595,11 +598,13 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		}
 
 		showInfo("info.order.set.as.paid");
+		Set<Long> detailsOrderKeys = getOpenOrderKeys();
 		tableEl.deselectAll();
 		tableEl.reloadData();
+		openOrders(ureq, detailsOrderKeys);
 	}
 	
-	private void doBulkCancel() {
+	private void doBulkCancel(UserRequest ureq) {
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		List<OrderTableRow> selectedRows = dataModel.getObjects(selectedIndex);
 		List<OrderTableRow> rows = selectedRows.stream()
@@ -609,11 +614,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		if(rows.isEmpty()) {
 			showWarning("warning.no.order.to.cancel");
 		} else {
-			doCancelOrder(rows);
+			doCancelOrder(ureq, rows);
 		}
 	}
 	
-	private void doCancelOrder(List<OrderTableRow> rows) {
+	private void doCancelOrder(UserRequest ureq, List<OrderTableRow> rows) {
 		for(OrderTableRow row:rows) {
 			Order order = acService.loadOrderByKey(row.getOrderKey());
 			MailPackage mailing = new MailPackage(false);
@@ -621,8 +626,10 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		}
 		
 		showInfo("info.order.set.as.cancelled");
+		Set<Long> detailsOrderKeys = getOpenOrderKeys();
 		tableEl.deselectAll();
 		tableEl.reloadData();
+		openOrders(ureq, detailsOrderKeys);
 	}
 	
 	private void doChangeBillingAddress(UserRequest ureq, OrderTableRow row) {
@@ -644,14 +651,15 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		cmc.activate();
 	}
 	
-	private void updateBillingAddress(OrderTableRow row, BillingAddress billingAddress) {
+	private void updateBillingAddress(UserRequest ureq, OrderTableRow row, BillingAddress billingAddress) {
 		Order order = acService.loadOrderByKey(row.getOrderKey());
 		if(order != null) {
 			acService.addBillingAddress(order, billingAddress);	
-			doCloseOrderDetails(row);
+			
 			showInfo("info.billing.address.change");
-			tableEl.deselectAll();
+			Set<Long> detailsOrderKeys = getOpenOrderKeys();
 			tableEl.reloadData();
+			openOrders(ureq, detailsOrderKeys);
 		}
 	}
 	
@@ -666,6 +674,29 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			reportResource = new AccountingReportResource(filename, resource, getLocale());
 		}
 		ureq.getDispatchResult().setResultingMediaResource(reportResource);
+	}
+
+	private Set<Long> getOpenOrderKeys() {
+		Set<Long> openOrderKeys = new HashSet<>(2);
+		for (OrderTableRow row : dataModel.getObjects()) {
+			if (row.getDetailsController() != null) {
+				openOrderKeys.add(row.getOrderKey());
+				// Close to dispose everything
+				doCloseOrderDetails(row);
+			}
+		}
+		return openOrderKeys;
+	}
+
+	private void openOrders(UserRequest ureq, Set<Long> detailsOrderKeys) {
+		tableEl.collapseAllDetails();
+		for (int i = 0; i < dataModel.getObjects().size(); i++) {
+			OrderTableRow row = dataModel.getObjects().get(i);
+			if (detailsOrderKeys.contains(row.getOrderKey())) {
+				tableEl.expandDetails(i);
+				doOpenOrderDetails(ureq, row);
+			}
+		}
 	}
 
 	private class ToolsController extends BasicController {
@@ -718,10 +749,10 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if(payLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
-				doSetPaid(List.of(row));
+				doSetPaid(ureq, List.of(row));
 			} else if(cancelLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
-				doCancelOrder(List.of(row));
+				doCancelOrder(ureq, List.of(row));
 			} else if(changeBillingAddressLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doChangeBillingAddress(ureq, row);

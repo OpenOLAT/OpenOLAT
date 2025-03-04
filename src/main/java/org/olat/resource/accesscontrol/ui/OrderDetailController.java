@@ -355,7 +355,7 @@ public class OrderDetailController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (addressSelectionCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				updateBillingAddress(addressSelectionCtrl.getBillingAddress());
+				updateBillingAddress(ureq, addressSelectionCtrl.getBillingAddress());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -418,9 +418,10 @@ public class OrderDetailController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void updateBillingAddress(BillingAddress billingAddress) {
+	private void updateBillingAddress(UserRequest ureq, BillingAddress billingAddress) {
 		order = acService.addBillingAddress(order, billingAddress);
 		billingAddressItem.setBillingAddress(billingAddress);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doSelectResource(UserRequest ureq) {
