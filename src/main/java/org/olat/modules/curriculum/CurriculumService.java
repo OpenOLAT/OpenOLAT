@@ -464,7 +464,7 @@ public interface CurriculumService {
 	
 	public void acceptPendingParticipation(ResourceReservation reservation, Identity identity, Identity actor);
 	
-	public void cancelPendingParticipation(ResourceReservation reservation, Identity identity, Identity actor);
+	public void cancelPendingParticipation(ResourceReservation reservation, Identity identity, Identity actor, String adminNote);
 	
 	public void updateCurriculumElementMemberships(Identity doer, Roles roles, List<CurriculumElementMembershipChange> changes, MailPackage mailing);
 	

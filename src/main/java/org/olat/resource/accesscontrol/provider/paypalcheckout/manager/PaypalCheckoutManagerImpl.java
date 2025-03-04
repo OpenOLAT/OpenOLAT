@@ -153,7 +153,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 		Offer offer = offerAccess.getOffer();
 		Price amount = offer.getPrice();
 
-		if(acService.reserveAccessToResource(delivery, offerAccess.getOffer(), offerAccess.getMethod(), null, delivery)) {
+		if(acService.reserveAccessToResource(delivery, offerAccess.getOffer(), offerAccess.getMethod(), null, delivery, null)) {
 			Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT, null, null, null);
 			PaypalCheckoutTransaction trx = transactionDao.createTransaction(amount, order, order.getParts().get(0), offerAccess.getMethod());
 			trx = checkoutProvider.createOrder(order, trx);
@@ -296,7 +296,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 					OLATResource resource = line.getOffer().getResource();
 					ResourceReservation reservation = acService.getReservation(identity, resource);
 					if(reservation != null) {
-						acService.removeReservation(identity, identity, reservation);
+						acService.removeReservation(identity, identity, reservation, null);
 						log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: {} to {}", reservation, identity);
 					}
 				}
@@ -344,7 +344,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 
 						ResourceReservation reservation = reservationDao.loadReservation(identity, line.getOffer().getResource());
 						if(reservation != null) {
-							acService.removeReservation(identity, identity, reservation);
+							acService.removeReservation(identity, identity, reservation, null);
 							log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: {} to {}", reservation, identity);
 						}
 					}
@@ -380,7 +380,7 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 	private void allowAccessToResource(Identity identity, OrderPart part, AccessTransaction transaction, PaypalCheckoutAccessMethod method) {
 		for(OrderLine line:part.getOrderLines()) {
 			MailPackage mailing = new MailPackage(line.getOffer().isConfirmationEmail());
-			if(acService.allowAccesToResource(identity, line.getOffer(), method, mailing, identity)) {
+			if(acService.allowAccesToResource(identity, line.getOffer(), method, mailing, identity, null)) {
 				log.info(Tracing.M_AUDIT, "Paypal Checkout payed access granted for: {} to {}", buildLogMessage(line, method), identity);
 				transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 			} else {

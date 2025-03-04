@@ -193,7 +193,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 		// Book the curriculum
 		MailPackage mailing = new MailPackage(false);
 		OrderAdditionalInfos infos = new OrderAdditionalInfos(null, null, billingAddress);
-		AccessResult result = acService.accessResource(delivery, offerAccess, OrderStatus.PAYED, infos, mailing, delivery);
+		AccessResult result = acService.accessResource(delivery, offerAccess, OrderStatus.PAYED, infos, mailing, delivery, null);
 		dbInstance.commitAndCloseSession();
 		return result;
 	}

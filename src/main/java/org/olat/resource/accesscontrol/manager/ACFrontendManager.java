@@ -562,12 +562,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 		
 		MailPackage mailing = new MailPackage(link.getOffer().isConfirmationEmail());
-		return accessResource(identity, link, orderStatus, argument, mailing, doer);
+		return accessResource(identity, link, orderStatus, argument, mailing, doer, null);
 	}
 
 	@Override
 	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus,
-			Object argument, MailPackage mailing, Identity doer) {
+			Object argument, MailPackage mailing, Identity doer, String adminNote) {
 		
 		if(link == null || link.getOffer() == null || link.getMethod() == null) {
 			log.info(Tracing.M_AUDIT, "Access refused (no offer) to: {} for {}", link, identity);
@@ -581,7 +581,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 
 		if(handler.checkArgument(link, argument)) {
-			if(allowAccesToResource(identity, link.getOffer(), link.getMethod(), mailing, doer)) {
+			if(allowAccesToResource(identity, link.getOffer(), link.getMethod(), mailing, doer, adminNote)) {
 				String purchaseOrderNumber = (argument instanceof OrderAdditionalInfos infos) ? infos.purchaseOrderNumber() : null;
 				String comment = (argument instanceof OrderAdditionalInfos infos) ? infos.comment() : null;
 				BillingAddress billingAddress = (argument instanceof OrderAdditionalInfos infos) ? infos.billingAddress() : null;
@@ -623,6 +623,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	
 	@Override
 	public void cancelOrder(Order order, Identity doer, String adminNote, MailPackage mailing) {
+		order.setCancellationFees(order.calculateFees());
 		order = orderManager.save(order, OrderStatus.CANCELED);
 		
 		List<OLATResource> deniedRessources = new ArrayList<>();
@@ -696,7 +697,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public void removeReservation(Identity ureqIdentity, Identity identity, ResourceReservation reservation) {
+	public void removeReservation(Identity ureqIdentity, Identity identity, ResourceReservation reservation, String adminNote) {
 		OLATResource resource = reservation.getResource();
 		reservationDao.deleteReservation(reservation);
 		if("BusinessGroup".equals(resource.getResourceableTypeName())) {
@@ -704,7 +705,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			businessGroupService.cancelPendingParticipation(ureqIdentity, reservation);
 		} else if("CurriculumElement".equals(resource.getResourceableTypeName())) {
 			dbInstance.commit();//needed to have the right number of participants to calculate upgrade from waiting list
-			curriculumService.cancelPendingParticipation(reservation, ureqIdentity, ureqIdentity);
+			curriculumService.cancelPendingParticipation(reservation, identity, ureqIdentity, adminNote);
 		}
 	}
 
@@ -729,14 +730,14 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method, MailPackage mailing, Identity doer) {
+	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method, MailPackage mailing, Identity doer, String adminNote) {
 		OLATResource resource = offer.getResource();
 		String resourceType = resource.getResourceableTypeName();
 		if("BusinessGroup".equals(resourceType)) {
 			return reserveAccessToBusinessGroup(identity, offer, resource, method);
 		}
 		if("CurriculumElement".equals(resourceType)) {
-			return reserveAccessToCurriculumElement(identity, offer, resource, mailing, doer);
+			return reserveAccessToCurriculumElement(identity, offer, resource, mailing, doer, adminNote);
 		}
 		RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
 		if (entry != null) {
@@ -752,7 +753,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		return false;
 	}
 
-	private boolean reserveAccessToCurriculumElement(Identity identity, Offer offer, OLATResource resource, MailPackage mailing, Identity doer) {
+	private boolean reserveAccessToCurriculumElement(Identity identity, Offer offer, OLATResource resource, MailPackage mailing,
+			Identity doer, String adminNote) {
 		boolean reserved = false;
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
 		if (curriculumElement != null) {
@@ -761,7 +763,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			if(!isParticipant) {
 				groupMembershipHistoryDao.createMembershipHistory(curriculumElement.getGroup(), identity,
 						GroupRoles.participant.name(), GroupMembershipStatus.reservation, true, null, null,
-						identity, null);
+						doer, adminNote);
 				reservationDao.createReservation(identity, CurriculumService.RESERVATION_PREFIX.concat("participant"),
 						null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
 				
@@ -838,7 +840,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method, MailPackage mailing, Identity doer) {
+	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method, MailPackage mailing,
+			Identity doer, String adminNote) {
 		//check if offer is ok: key is stupid but further check as date, validity...
 		if(offer.getKey() == null) {
 			return false;
@@ -851,7 +854,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 		
 		if (offer.isConfirmationByManagerRequired()) {
-			return reserveAccessToResource(identity, offer, method, mailing, doer);
+			return reserveAccessToResource(identity, offer, method, mailing, doer, adminNote);
 		}
 
 		String resourceType = resource.getResourceableTypeName();
@@ -952,7 +955,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 		ResourceReservation reservation = reservationDao.loadReservation(identity, resource);
 		if(reservation != null) {
-			removeReservation(identity, identity, reservation);
+			removeReservation(doer, identity, reservation, adminNote);
 			return true;
 		}
 		return false;

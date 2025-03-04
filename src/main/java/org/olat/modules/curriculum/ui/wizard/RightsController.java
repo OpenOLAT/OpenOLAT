@@ -350,6 +350,7 @@ public class RightsController extends StepFormBasicController {
 		}
 		
 		String adminNote = adminNoteEl.isVisible() ? adminNoteEl.getValue() : null;
+		membersContext.setAdminNote(adminNote);
 
 		// Apply a modification per element
 		List<MembershipModification> modifications = new ArrayList<>();

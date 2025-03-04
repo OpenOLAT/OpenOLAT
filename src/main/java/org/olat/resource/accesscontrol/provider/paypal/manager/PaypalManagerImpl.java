@@ -364,8 +364,8 @@ public class PaypalManagerImpl  implements PaypalManager {
 					OLATResource resource = line.getOffer().getResource();
 					ResourceReservation reservation = acService.getReservation(identity, resource);
 					if(reservation != null) {
-						acService.removeReservation(identity, identity, reservation);
-						log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: " + reservation + " to " + identity);
+						acService.removeReservation(identity, identity, reservation, null);
+						log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: {} to {}", reservation, identity);
 					}
 				}
 			}
@@ -427,12 +427,12 @@ public class PaypalManagerImpl  implements PaypalManager {
 					transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);
 					for(OrderLine line:part.getOrderLines()) {
 						acService.denyAccesToResource(identity, line.getOffer());
-						log.info(Tracing.M_AUDIT, "Paypal payed access revoked for: " + buildLogMessage(line, method) + " to " + identity);
+						log.info(Tracing.M_AUDIT, "Paypal payed access revoked for: {} to {}",  buildLogMessage(line, method), identity);
 
 						ResourceReservation reservation = reservationDao.loadReservation(identity, line.getOffer().getResource());
 						if(reservation != null) {
-							acService.removeReservation(identity, identity, reservation);
-							log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: " + reservation + " to " + identity);
+							acService.removeReservation(identity, identity, reservation, null);
+							log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: {} to {}", reservation, identity);
 						}
 					}
 				}
@@ -461,7 +461,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 					transaction = transactionManager.save(transaction);
 					for(OrderLine line:part.getOrderLines()) {
 						MailPackage mailing = new MailPackage(line.getOffer().isConfirmationEmail());
-						if(acService.allowAccesToResource(identity, line.getOffer(), method, mailing, identity)) {
+						if(acService.allowAccesToResource(identity, line.getOffer(), method, mailing, identity, null)) {
 							log.info(Tracing.M_AUDIT, "Paypal payed access granted for: {} to {}", buildLogMessage(line, method), identity);
 							transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 						} else {

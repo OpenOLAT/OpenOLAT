@@ -229,7 +229,8 @@ public class ACOrderManagerTest extends OlatTestCase {
 		Assert.assertEquals(order, retrievedOrder);
 		Assert.assertEquals(billingAddress, retrievedOrder.getBillingAddress());
 		Assertions.assertThat(retrievedOrder.getTotal().getAmount()).isEqualByComparingTo(BigDecimal.valueOf(10.0));
-		Assertions.assertThat(retrievedOrder.getCancellationFees().getAmount()).isEqualByComparingTo(BigDecimal.valueOf(2.0));
+		// Cancellation will be set only if cancelled
+		Assert.assertNull(retrievedOrder.getCancellationFees());
 
 		// Order part
 		List<OrderPart> parts = retrievedOrder.getParts();

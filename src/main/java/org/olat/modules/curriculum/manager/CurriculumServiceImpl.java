@@ -1022,11 +1022,14 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public void cancelPendingParticipation(ResourceReservation reservation, Identity identity, Identity actor) {
+	public void cancelPendingParticipation(ResourceReservation reservation, Identity identity, Identity actor, String adminNote) {
 		CurriculumRoles roles = ResourceToRoleKey.reservationToRole(reservation.getType());
 		CurriculumElement curriculumElement = curriculumElementDao.loadElementByResource(reservation.getResource());
 		CurriculumElementMembershipChange change = CurriculumElementMembershipChange.valueOf(identity, curriculumElement);
 		change.setNextStatus(roles, GroupMembershipStatus.cancel);
+		if(StringHelper.containsNonWhitespace(adminNote)) {
+			change.setAdminNote(roles, adminNote);
+		}
 		updateCurriculumElementMemberships(actor, null, List.of(change), null);
 	}
 

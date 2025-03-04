@@ -58,6 +58,8 @@ public class MembersContext {
 	private String orderComment;
 
 	private List<MembershipModification> modifications;
+	
+	private String adminNote;
 
 	private final CurriculumRoles roleToModify;
 	
@@ -194,6 +196,14 @@ public class MembersContext {
 
 	public void setModifications(List<MembershipModification> modifications) {
 		this.modifications = modifications;
+	}
+
+	public String getAdminNote() {
+		return adminNote;
+	}
+
+	public void setAdminNote(String adminNote) {
+		this.adminNote = adminNote;
 	}
 
 	public MailTemplate getMailTemplate() {

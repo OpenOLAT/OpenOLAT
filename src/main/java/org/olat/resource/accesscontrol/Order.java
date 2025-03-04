@@ -61,9 +61,18 @@ public interface Order {
 	
 	public Price getCancellationFees();
 	
+	public void setCancellationFees(Price fees);
+	
 	public List<OrderPart> getParts();
 	
 	public void recalculate();
+	
+	/**
+	 * Calculate the fees based on order parts and order lines.
+	 * 
+	 * @return A price for the fees or null
+	 */
+	public Price calculateFees();
 	
 	public BillingAddress getBillingAddress();
 	

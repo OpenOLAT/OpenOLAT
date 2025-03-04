@@ -198,7 +198,7 @@ public class PendingEnrollmentController extends FormBasicController implements 
 				if(reservation.getAccept().booleanValue()) {
 					acService.acceptReservationToResource(getIdentity(), reservation.getReservation());
 				} else {
-					acService.removeReservation(getIdentity(), getIdentity(), reservation.getReservation());
+					acService.removeReservation(getIdentity(), getIdentity(), reservation.getReservation(), null);
 				}
 			}
 		}

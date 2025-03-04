@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static org.olat.test.JunitTestHelper.createRandomResource;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,6 +70,7 @@ import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
+import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.resource.accesscontrol.provider.invoice.model.InvoiceAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
@@ -312,7 +314,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//id1 start payment process
-		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), null, null);
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), null, null, null);
 		Assert.assertTrue(reserved);
 		dbInstance.commitAndCloseSession();
 
@@ -368,7 +370,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//id1 try to reserve a place before the payment process
-		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), null, id1);
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), null, id1, null);
 		Assert.assertFalse(reserved);
 
 		if(!enabled) {
@@ -402,7 +404,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id try to reserve a place before the payment process, no problem, no limit
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), null, id);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), null, id, null);
 		Assert.assertTrue(reserved);
 	}
 	
@@ -433,7 +435,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		
 		//id try to reserve a place before the payment process, no problem, no limit
 		MailPackage mailing = new MailPackage(false);
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), mailing, id);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), mailing, id, null);
 		Assert.assertTrue(reserved);
 		
 		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
@@ -461,7 +463,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		MailPackage mailing = new MailPackage(true);
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), mailing, id);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), mailing, id, null);
 		Assert.assertTrue(reserved);
 		
 		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
@@ -495,6 +497,9 @@ public class ACFrontendManagerTest extends OlatTestCase {
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
 		Offer offer = acService.createOffer(implementationElement.getResource(), "Invoice curriculum element");
+		BigDecimal cancellingFeeAmount = new BigDecimal("10.00");
+		offer.setCancellingFee(new PriceImpl(cancellingFeeAmount, "CHF"));
+		offer.setPrice(new PriceImpl(new BigDecimal("20.00"), "CHF"));
 		offer = acService.save(offer);
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(InvoiceAccessMethod.class);
 		Assert.assertFalse(methods.isEmpty());
@@ -504,7 +509,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// Book the curriculum
-		AccessResult result = acService.accessResource(id, offerAccess, OrderStatus.PREPAYMENT, null, null, doer);
+		AccessResult result = acService.accessResource(id, offerAccess, OrderStatus.PREPAYMENT, null, null, doer, null);
 		Assert.assertTrue(result.isAccessible());
 		dbInstance.commitAndCloseSession();
 		
@@ -536,13 +541,17 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		List<GroupMembershipHistory> canceledHistory = groupMembershipHistoryDao.loadMembershipHistory(element.getGroup(), id);
 		Assertions.assertThat(canceledHistory)
 			.hasSize(2)
-			.filteredOn(point -> GroupMembershipStatus.cancel == point.getStatus())
+			.filteredOn(point -> GroupMembershipStatus.cancelWithFee == point.getStatus())
 			.hasSize(1);
 		
 		// Check email send
 		List<SmtpMessage> mails = getSmtpServer().getReceivedEmails();
 		Assertions.assertThat(mails)
 			.hasSize(1);
+		
+		Order reloadedOrder = acService.loadOrderByKey(order.getKey());
+		Assert.assertEquals(order, reloadedOrder);
+		Assert.assertNotNull(reloadedOrder.getCancellationFees());
 	}
 
 	@Test

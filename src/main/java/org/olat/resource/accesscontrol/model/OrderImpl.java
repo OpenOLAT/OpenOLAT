@@ -276,6 +276,7 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 		return cancellationFees;
 	}
 
+	@Override
 	public void setCancellationFees(Price cancellationFees) {
 		this.cancellationFees = (PriceImpl)cancellationFees;
 	}
@@ -295,27 +296,29 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 	@Override
 	public void recalculate() {
 		totalOrderLines = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
-		PriceImpl fees = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
 		for(OrderPart part : getParts()) {
 			((OrderPartImpl)part).recalculate(getCurrencyCode());
 			totalOrderLines = totalOrderLines.add(part.getTotalOrderLines());
-			
+		}
+
+		total = totalOrderLines.clone();
+		if(discount == null) {
+			discount = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
+		}
+	}
+	
+	@Override
+	public Price calculateFees() {
+		PriceImpl fees = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
+		for(OrderPart part : getParts()) {
 			if(part.getCancellationFees() != null) {
 				fees = fees.add(part.getCancellationFees());
 			}
 		}
-
-		total = totalOrderLines.clone();
-		
 		if(fees.getAmount().compareTo(BigDecimal.ZERO) == 0) {
-			cancellationFees = null;
-		} else {
-			cancellationFees = fees;
+			fees = null;
 		}
-		
-		if(discount == null) {
-			discount = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
-		}
+		return fees;
 	}
 
 	@Override

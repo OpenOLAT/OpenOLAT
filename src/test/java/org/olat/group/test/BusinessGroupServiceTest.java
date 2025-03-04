@@ -943,7 +943,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Assert.assertFalse(businessGroupService.hasRoles(id, group, GroupRoles.participant.name()));
 		
 		//accept reservation
-		acService.removeReservation(id, id, reservation);
+		acService.removeReservation(id, id, reservation, null);
 		dbInstance.commitAndCloseSession();
 		
 		//check that the user is not participant
@@ -973,7 +973,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//accept reservation
-		acService.removeReservation(id, id, reservation);
+		acService.removeReservation(id, id, reservation, null);
 		dbInstance.commitAndCloseSession();
 		
 		//check that the user is not participant

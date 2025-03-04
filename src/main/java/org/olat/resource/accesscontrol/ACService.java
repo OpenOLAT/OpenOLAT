@@ -192,10 +192,10 @@ public interface ACService {
 			Object argument, Identity doer);
 	
 	public AccessResult accessResource(Identity identity, OfferAccess link, OrderStatus orderStatus,
-			Object argument, MailPackage mailing, Identity doer);
+			Object argument, MailPackage mailing, Identity doer, String adminNote);
 
 	public boolean allowAccesToResource(Identity identity, Offer offer, AccessMethod method,
-			MailPackage mailing, Identity doer);
+			MailPackage mailing, Identity doer, String adminNote);
 
 	public boolean denyAccesToResource(Identity identity, Offer offer);
 	
@@ -252,7 +252,7 @@ public interface ACService {
 	 * @param method
 	 * @return
 	 */
-	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method, MailPackage mailing, Identity doer);
+	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method, MailPackage mailing, Identity doer, String adminNote);
 
 	/**
 	 * A user must sometimes explicitly accept a reservation.
@@ -266,7 +266,7 @@ public interface ACService {
 	 * @param identity
 	 * @param reservation
 	 */
-	public void removeReservation(Identity ureqIdentity, Identity identity, ResourceReservation reservation);
+	public void removeReservation(Identity ureqIdentity, Identity identity, ResourceReservation reservation, String adminNote);
 
 	public void cleanupReservations();
 

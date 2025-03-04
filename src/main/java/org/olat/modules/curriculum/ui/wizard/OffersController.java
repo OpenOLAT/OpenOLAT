@@ -79,6 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OffersController extends StepFormBasicController {
 	
 	private static final String NO_BOOKING  = "nob";
+	private static final String SELECT_ADDRESS  = "";
 	
 	private TextElement commentEl;
 	private SingleSelection bookingsEl;
@@ -160,6 +161,7 @@ public class OffersController extends StepFormBasicController {
 	}
 	
 	private boolean allowedByOrganisations(List<OrganisationRef> organisations, List<Organisation> offerOrganisations) {
+		if(organisations == null || organisations.isEmpty()) return false;
 		if(offerOrganisations == null || offerOrganisations.isEmpty()) return true;
 		
 		for(Organisation offerOrganisation:offerOrganisations) {
@@ -209,7 +211,7 @@ public class OffersController extends StepFormBasicController {
 	
 	private SelectionValues forgeBillingAddress() {
 		SelectionValues addressPK = new SelectionValues();
-		addressPK.add(SelectionValues.entry("", translate("select.billing.address")));
+		addressPK.add(SelectionValues.entry(SELECT_ADDRESS, translate("select.billing.address")));
 
 		Set<Organisation> organisations = new HashSet<>();
 		for(AccessInfos offer:validOffers) {
@@ -374,6 +376,26 @@ public class OffersController extends StepFormBasicController {
 		removeAsListenerAndDispose(cmc);
 		billingAddressCtrl = null;
 		cmc = null;
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		billingAdressEl.clearError();
+		if(billingAdressEl.isVisible()
+				&& (!billingAdressEl.isOneSelected() || SELECT_ADDRESS.equals(billingAdressEl.getSelectedKey()))) {
+			billingAdressEl.setErrorKey("form.mandatory.hover");
+			allOk &= false;
+		}
+		
+		bookingsEl.clearError();
+		if(bookingsEl.isVisible() && !bookingsEl.isOneSelected()) {
+			bookingsEl.setErrorKey("form.mandatory.hover");
+			allOk &= false;
+		}
+		
+		return allOk;
 	}
 
 	@Override
