@@ -518,7 +518,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
-			getWindowControl().setError(translate("login.error.inactive"));
+			getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
 		} else {
 			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 		}
@@ -626,7 +626,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 				DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 			} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
-				getWindowControl().setError(translate("login.error.inactive"));
+				getWindowControl().setError(translate("login.error.inactive", WebappHelper.getMailConfig("mailSupport")));
 			} else {
 				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 			}
