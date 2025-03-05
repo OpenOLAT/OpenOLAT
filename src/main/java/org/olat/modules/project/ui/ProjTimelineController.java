@@ -749,7 +749,7 @@ public class ProjTimelineController extends FormBasicController
 	@Override
 	public void addAvatarIcon(UserRequest ureq, ProjTimelineRow row, Identity member) {
 		UsersPortraitsComponent portraitComp = UserPortraitFactory.createUsersPortraits(ureq, "portrair_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
-		portraitComp.setUsers(userPortraitService.createPortraitUsers(List.of(member)));
+		portraitComp.setUsers(userPortraitService.createPortraitUsers(getLocale(), List.of(member)));
 		portraitComp.setSize(PortraitSize.small);
 		row.setIconItem(new ComponentWrapperElement(portraitComp));
 	}

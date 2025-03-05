@@ -21,6 +21,7 @@ package org.olat.user;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.instantMessaging.model.Presence;
@@ -38,8 +39,14 @@ public interface UserPortraitService {
 	public PortraitUser createPortraitUser(Long identityKey, String username, boolean portraitAvailable,
 			String portraitCacheIdentifier, String initials, String initialsCss, String displayName, Presence presence);
 	
-	public PortraitUser createPortraitUser(Identity identity);
+	public PortraitUser createPortraitUser(Locale locale, Identity identity);
+
+	public PortraitUser createGuestPortraitUser(Locale locale);
 	
-	public List<PortraitUser> createPortraitUsers(Collection<Identity> identities);
+	public PortraitUser createDeletedPortraitUser(Locale locale);
+	
+	public PortraitUser createUnknownPortraitUser(Locale locale);
+	
+	public List<PortraitUser> createPortraitUsers(Locale locale, Collection<Identity> identities);
 
 }

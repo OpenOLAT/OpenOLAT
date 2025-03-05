@@ -66,7 +66,7 @@ public class TaskPortraitController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("task_portrait");
 		
-		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(List.of(identity));
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), List.of(identity));
 		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "task_identity", mainVC, null, avatarMapperKey);
 		usersPortraitCmp.setSize(PortraitSize.medium);
 		usersPortraitCmp.setMaxUsersVisible(1);

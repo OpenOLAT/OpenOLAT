@@ -642,7 +642,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	}
 	
 	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, Set<Identity> members) {
-		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(new ArrayList<>(members));
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), new ArrayList<>(members));
 		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("involved"));
 		usersPortraitCmp.setSize(PortraitSize.small);

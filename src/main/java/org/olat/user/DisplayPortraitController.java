@@ -57,6 +57,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 
 	private final Identity portraitIdent;
 	private final boolean isDeletedUser;
+	private final boolean isGuestOnly;
 	private final String avatarBaseURL;
 	private final UserAvatarMapper mapper;
 	private OLATResourceable listenerOres;
@@ -75,7 +76,8 @@ public class DisplayPortraitController extends BasicController implements Generi
 		
 		// export data doesn't have a session, web catalog doesn't have roles
 		UserSession usess = ureq.getUserSession();
-		boolean isAnonymous = portraitIdent == null || (usess != null && usess.getRoles() != null && usess.getRoles().isGuestOnly());
+		isGuestOnly = usess != null && usess.getRoles() != null && usess.getRoles().isGuestOnly();
+		boolean isAnonymous = portraitIdent == null || isGuestOnly;
 		
 		mainVC.contextPut("canLinkToHomePage", (canLinkToHomePage && !isDeletedUser & !isAnonymous) ? Boolean.TRUE : Boolean.FALSE);
 		
@@ -108,7 +110,9 @@ public class DisplayPortraitController extends BasicController implements Generi
 	}
 	
 	private void loadPortrait() {
-		PortraitUser portraitUser = userPortraitService.createPortraitUser(portraitIdent);
+		PortraitUser portraitUser = isGuestOnly
+				? userPortraitService.createGuestPortraitUser(getLocale())
+				: userPortraitService.createPortraitUser(getLocale(), portraitIdent);
 		portraitComp.setPortraitUser(portraitUser);
 	}
 	

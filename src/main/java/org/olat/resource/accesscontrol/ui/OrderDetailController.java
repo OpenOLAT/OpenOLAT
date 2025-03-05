@@ -274,7 +274,7 @@ public class OrderDetailController extends FormBasicController {
 
 	private void initDeliveryForm(FormItemContainer formLayout, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			PortraitUser portraitUser = userPortraitService.createPortraitUser(delivery);
+			PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), delivery);
 			UserInfoProfileController profile = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, portraitUser);
 			listenTo(profile);
 			layoutCont.put("delivery-profile", profile.getInitialComponent());

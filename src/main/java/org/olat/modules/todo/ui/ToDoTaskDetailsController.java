@@ -120,14 +120,14 @@ public class ToDoTaskDetailsController extends FormBasicController {
 		assigneesCmp.setAriaLabel(translate("task.assigned"));
 		assigneesCmp.setLPortraitLayout(PortraitLayout.verticalPortraitsDisplayName);
 		assigneesCmp.setSize(PortraitSize.small);
-		assigneesCmp.setUsers(userPortraitService.createPortraitUsers(List.copyOf(assignees)));
+		assigneesCmp.setUsers(userPortraitService.createPortraitUsers(getLocale(), List.copyOf(assignees)));
 		
 		if (!delegatees.isEmpty()) {
 			UsersPortraitsComponent delegateesCmp = UserPortraitFactory.createUsersPortraits(ureq, "delegatees", flc.getFormItemComponent());
 			delegateesCmp.setAriaLabel(translate("task.delegated"));
 			delegateesCmp.setLPortraitLayout(PortraitLayout.verticalPortraitsDisplayName);
 			delegateesCmp.setSize(PortraitSize.small);
-			delegateesCmp.setUsers(userPortraitService.createPortraitUsers(List.copyOf(delegatees)));
+			delegateesCmp.setUsers(userPortraitService.createPortraitUsers(getLocale(), List.copyOf(delegatees)));
 		}
 		
 		flc.contextPut("startDate", ToDoUIFactory.getDateOrAnytime(getTranslator(), toDoTask.getStartDate()));

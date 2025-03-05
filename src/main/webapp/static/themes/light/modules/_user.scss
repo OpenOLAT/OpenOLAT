@@ -100,6 +100,10 @@
 	&.o_user_initials_light_green {
 		background-color: $o-proj-avatar-light_green-bg-color;
 	}
+	// For special user types like guests, deleted or unknown users
+	&.o_user_initials_grey {
+		background-color: $o-user-initials-base-bg-color;
+	}
 }
 
 

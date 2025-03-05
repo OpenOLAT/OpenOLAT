@@ -594,7 +594,7 @@ public class CNSParticipantListController extends FormBasicController implements
 	
 	private void doShowDetails(UserRequest ureq, CNSParticipantRow row) {
 		CNSParticipantDetailsController detailsCtrl = new CNSParticipantDetailsController(ureq, getWindowControl(),
-				mainForm, row.getIdentity(), profileConfig, userPortraitService.createPortraitUser(row.getIdentity()),
+				mainForm, row.getIdentity(), profileConfig, userPortraitService.createPortraitUser(getLocale(), row.getIdentity()),
 				coachCourseEnv.getCourseEnvironment(), courseEntry, childNodes, row.getSelectedEntries());
 		listenTo(detailsCtrl);
 		detailCtrls.add(detailsCtrl);

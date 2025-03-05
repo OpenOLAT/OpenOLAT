@@ -144,7 +144,7 @@ public class ProjNoteController extends FormBasicController {
 	}
 	
 	private void updateHeaderUI(UserRequest ureq) {
-		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(new ArrayList<>(noteInfo.getMembers()));
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), new ArrayList<>(noteInfo.getMembers()));
 		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "members", null, null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);

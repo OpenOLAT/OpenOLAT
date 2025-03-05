@@ -255,7 +255,7 @@ public class GTADocumentsController extends FormBasicController implements Flexi
 	}
 	
 	private void forgeUsersPortraits(UserRequest ureq, GTADocumentRow row, Identity initializedBy) {
-		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(List.of(initializedBy));
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), List.of(initializedBy));
 		UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_" + (++count), flc.getFormItemComponent(), null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);

@@ -22,8 +22,10 @@ package org.olat.user;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Presence;
@@ -65,7 +67,14 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 	}
 	
 	@Override
-	public PortraitUser createPortraitUser(Identity identity) {
+	public PortraitUser createPortraitUser(Locale locale, Identity identity) {
+		if (identity == null) {
+			return createUnknownPortraitUser(locale);
+		}
+		if (identity.getStatus() != null && identity.getStatus() >= Identity.STATUS_VISIBLE_LIMIT) {
+			return createDeletedPortraitUser(locale);
+		}
+		
 		String displayName = userManager.getUserDisplayName(identity);
 		String initials = userManager.getInitials(identity.getUser());
 		String initialsCss = userManager.getInitialsColorCss(identity.getKey());
@@ -94,10 +103,34 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 		return createPortraitUser(identity.getKey(), identity.getName(), portraitAvailable, portraitCacheIdentifier,
 				initials, initialsCss, displayName, presence);
 	}
+	
+	@Override
+	public PortraitUser createGuestPortraitUser(Locale locale) {
+		String initials = "<i class='o_icon o_ac_guest_icon'> </i>";
+		String initialsCss = "o_user_initials_grey";
+		String displayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.guest");
+		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, Presence.unavailable);
+	}
+	
+	@Override
+	public PortraitUser createDeletedPortraitUser(Locale locale) {
+		String initials = "<i class='o_icon o_icon_identity_deleted'> </i>";
+		String initialsCss = "o_user_initials_grey";
+		String displayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.unknown");
+		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, Presence.unavailable);
+	}
+	
+	@Override
+	public PortraitUser createUnknownPortraitUser(Locale locale) {
+		String initials = "?";
+		String initialsCss = "o_user_initials_grey";
+		String displayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.unknown");
+		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, Presence.unavailable);
+	}
 
 	@Override
-	public List<PortraitUser> createPortraitUsers(Collection<Identity> identities) {
-		return identities.stream().map(this::createPortraitUser).toList();
+	public List<PortraitUser> createPortraitUsers(Locale locale, Collection<Identity> identities) {
+		return identities.stream().map(identity -> createPortraitUser(locale, identity)).toList();
 	}
 	
 	private static final class PortraitUserImpl implements PortraitUser {
@@ -123,7 +156,7 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 			this.displayName = displayName;
 			this.presence = presence;
 		}
-
+		
 		@Override
 		public Long getIdentityKey() {
 			return identityKey;

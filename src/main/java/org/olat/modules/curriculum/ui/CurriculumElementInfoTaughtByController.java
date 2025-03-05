@@ -109,7 +109,7 @@ public class CurriculumElementInfoTaughtByController extends BasicController {
 		putInitialPanel(mainVC);
 		
 		Set<Identity> taughtBys = loadTaughtBys(curriculumElement, lectureBlocks);
-		Map<Long, PortraitUser> identityKeyToPortraitUser = userPortraitService.createPortraitUsers(taughtBys)
+		Map<Long, PortraitUser> identityKeyToPortraitUser = userPortraitService.createPortraitUsers(getLocale(), taughtBys)
 				.stream()
 				.collect(Collectors.toMap(PortraitUser::getIdentityKey, Function.identity()));
 		

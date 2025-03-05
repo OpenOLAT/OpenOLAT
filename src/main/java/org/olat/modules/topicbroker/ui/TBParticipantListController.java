@@ -506,7 +506,7 @@ public class TBParticipantListController extends FormBasicController implements 
 		}
 		
 		TBParticipantSelectionsController detailsCtrl = new TBParticipantSelectionsController(ureq, getWindowControl(),
-				mainForm, broker, participant, profileConfig, userPortraitService.createPortraitUser(participant.getIdentity()),
+				mainForm, broker, participant, profileConfig, userPortraitService.createPortraitUser(getLocale(), participant.getIdentity()),
 				row.getSelections(), secCallback.canEditSelections());
 		listenTo(detailsCtrl);
 		detailCtrls.add(detailsCtrl);

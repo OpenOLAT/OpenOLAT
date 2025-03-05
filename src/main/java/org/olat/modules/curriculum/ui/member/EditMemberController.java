@@ -161,7 +161,7 @@ public class EditMemberController extends FormBasicController {
 		}
 
 		// Profile
-		PortraitUser memberPortraitUser = userPortraitService.createPortraitUser(member);
+		PortraitUser memberPortraitUser = userPortraitService.createPortraitUser(getLocale(), member);
 		MemberUserDetailsController profile = new MemberUserDetailsController(ureq, getWindowControl(), mainForm,
 				member, profileConfig, memberPortraitUser);
 		listenTo(profile);

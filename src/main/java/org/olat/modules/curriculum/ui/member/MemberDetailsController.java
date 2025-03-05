@@ -148,7 +148,7 @@ public class MemberDetailsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			// Profile
-			PortraitUser memberPortraitUser = userPortraitService.createPortraitUser(member);
+			PortraitUser memberPortraitUser = userPortraitService.createPortraitUser(getLocale(), member);
 			MemberUserDetailsController profile = new MemberUserDetailsController(ureq, getWindowControl(), mainForm,
 					member, config.profileConfig(), memberPortraitUser);
 			listenTo(profile);

@@ -216,7 +216,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		updateCmdsUI();
 		
 		List<Identity> members = projectService.getMembers(project, ProjectRole.PROJECT_ROLES);
-		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(members);
+		List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), members);
 		usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users", mainVC, null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setUsers(portraitUsers);

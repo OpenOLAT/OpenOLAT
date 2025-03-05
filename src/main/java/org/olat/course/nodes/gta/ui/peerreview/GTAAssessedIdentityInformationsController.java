@@ -88,7 +88,7 @@ public class GTAAssessedIdentityInformationsController extends FormBasicControll
 			
 			// Portrait
 			Identity userToPortrait = anonym ? new TransientIdentity() : user;
-			List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(List.of(userToPortrait));
+			List<PortraitUser> portraitUsers = userPortraitService.createPortraitUsers(getLocale(), List.of(userToPortrait));
 			UsersPortraitsComponent usersPortraitCmp = UserPortraitFactory.createUsersPortraits(ureq, "users_id", flc.getFormItemComponent(), null, avatarMapperKey);
 			usersPortraitCmp.setAriaLabel(placeholderName);
 			usersPortraitCmp.setSize(PortraitSize.large);

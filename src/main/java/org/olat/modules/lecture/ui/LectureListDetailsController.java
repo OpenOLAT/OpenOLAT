@@ -242,7 +242,7 @@ public class LectureListDetailsController extends FormBasicController {
 		} else {
 			List<Identity> teachers = row.getTeachersList();
 			for(Identity teacher:teachers) {
-				PortraitUser teacherPortraitUser = userPortraitService.createPortraitUser(teacher);
+				PortraitUser teacherPortraitUser = userPortraitService.createPortraitUser(getLocale(), teacher);
 				UserInfoProfileController profile = new UserInfoProfileController(ureq, getWindowControl(), profileConfig, teacherPortraitUser);
 				listenTo(profile);
 				
