@@ -27,6 +27,6 @@ import org.olat.resource.accesscontrol.BillingAddress;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record OrderAdditionalInfos(String purchaseOrderNumber, String comment, BillingAddress billingAddress) {
+public record OrderAdditionalInfos(String purchaseOrderNumber, String comment, BillingAddress billingAddress, boolean hasCode) {
 	//
 }

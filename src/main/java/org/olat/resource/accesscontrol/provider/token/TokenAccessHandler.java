@@ -46,6 +46,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethodSecurityCallback;
 import org.olat.resource.accesscontrol.model.DefaultACSecurityCallback;
 import org.olat.resource.accesscontrol.model.OfferImpl;
+import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.token.ui.TokenAccessConfigurationController;
 import org.olat.resource.accesscontrol.provider.token.ui.TokenSubmitController;
@@ -121,11 +122,13 @@ public class TokenAccessHandler implements AccessMethodHandler {
 
 	@Override
 	public boolean checkArgument(OfferAccess link, Object argument) {
-		if(argument instanceof String && StringHelper.containsNonWhitespace((String)argument)) {
+		if(argument instanceof String token && StringHelper.containsNonWhitespace(token)) {
 			Offer offer = link.getOffer();
-			if(offer instanceof OfferImpl && argument.equals(((OfferImpl)offer).getToken())) {
+			if(offer instanceof OfferImpl impl && token.equals(impl.getToken())) {
 				return true;
 			}
+		} else if(argument instanceof OrderAdditionalInfos infos && infos.hasCode()) {
+			return true;
 		}
 		return false;
 	}

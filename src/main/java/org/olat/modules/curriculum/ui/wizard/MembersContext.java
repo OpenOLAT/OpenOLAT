@@ -171,8 +171,12 @@ public class MembersContext {
 		this.billingAddress = billingAddress;
 	}
 	
-	public OrderAdditionalInfos createOrderInfos() {
-		return new OrderAdditionalInfos(purchaseOrderNumber, orderComment, billingAddress);
+	/**
+	 * @param hasCode Has access code for Token Access Offer?
+	 * @return
+	 */
+	public OrderAdditionalInfos createOrderInfos(boolean hasCode) {
+		return new OrderAdditionalInfos(purchaseOrderNumber, orderComment, billingAddress, hasCode);
 	}
 
 	public boolean hasModifications() {
