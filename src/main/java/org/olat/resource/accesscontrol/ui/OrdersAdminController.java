@@ -326,7 +326,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			if(handler != null) {
 				StringBuilder val = new StringBuilder();
 				if(StringHelper.containsNonWhitespace(offer.getLabel())) {
-					val.append(offer.getLabel()).append(" \u00B7 ");
+					val.append(StringHelper.escapeHtml(offer.getLabel())).append(" \u00B7 ");
 				}
 				String methodName = handler.getMethodName(getLocale());
 				if(StringHelper.containsNonWhitespace(methodName)) {
@@ -640,7 +640,8 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			return;
 		}
 		
-		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, false, false, false, order.getDelivery(), null);
+		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, false, false,
+				false, order.getDelivery(), order.getBillingAddress());
 		addressSelectionCtrl.setUserObject(row);
 		listenTo(addressSelectionCtrl);
 		

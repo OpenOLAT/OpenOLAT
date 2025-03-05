@@ -408,7 +408,8 @@ public class OrderDetailController extends FormBasicController {
 	private void doChangeBillingAddress(UserRequest ureq) {
 		if (guardModalController(addressSelectionCtrl)) return;
 		
-		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, false, false, false, delivery, null);
+		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, false, false,
+				false, delivery, order.getBillingAddress());
 		listenTo(addressSelectionCtrl);
 		
 		String title = translate("billing.address.change");
@@ -421,6 +422,7 @@ public class OrderDetailController extends FormBasicController {
 	private void updateBillingAddress(UserRequest ureq, BillingAddress billingAddress) {
 		order = acService.addBillingAddress(order, billingAddress);
 		billingAddressItem.setBillingAddress(billingAddress);
+		showInfo("info.billing.address.change");
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
