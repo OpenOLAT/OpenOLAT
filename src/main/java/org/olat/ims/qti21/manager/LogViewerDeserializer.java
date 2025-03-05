@@ -510,7 +510,7 @@ public class LogViewerDeserializer {
 	}
 	
 	private Double toDouble(String value) {
-		return Double.valueOf(value);
+		return value == null || "NULL".equals(value) ? null : Double.valueOf(value);
 	}
 	
 	private String cutAtBeginning(String string, String toCut) {
