@@ -124,7 +124,7 @@ public class TBTopicDescriptionController extends BasicController {
 
 							DocEditorDisplayInfo editorInfo = docEditorService.getEditorInfo(getIdentity(),
 									ureq.getUserSession().getRoles(), topicLeaf, customField.getVfsMetadata(), false,
-									DocEditorService.MODES_EDIT);
+									DocEditorService.MODES_VIEW);
 							if (editorInfo.isNewWindow()) {
 								link.setNewWindow(true, true);
 							}
