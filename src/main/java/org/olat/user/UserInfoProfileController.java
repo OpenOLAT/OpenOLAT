@@ -19,7 +19,12 @@
  */
 package org.olat.user;
 
+import java.util.List;
+
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -51,6 +57,7 @@ public class UserInfoProfileController extends BasicController {
 	private Link visitingCardLink;
 	private Link emailLink;
 	private Link chatLink;
+	private Link userManagementLink;
 
 	private CloseableModalController cmc;
 	private HomePageDisplayController infoCtrl;
@@ -60,6 +67,8 @@ public class UserInfoProfileController extends BasicController {
 	
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private HomePageConfigManager homePageConfigManager;
 	@Autowired
@@ -100,12 +109,27 @@ public class UserInfoProfileController extends BasicController {
 		emailLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 		emailLink.setElementCssClass("o_nowrap");
 		emailLink.setAriaRole("button");
-		
+
 		if (profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey())) {
 			chatLink = LinkFactory.createLink("user.info.chat", mainVC, this);
 			chatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_chat");
 			chatLink.setElementCssClass("o_nowrap");
 			chatLink.setAriaRole("button");
+		}
+		
+		List<Organisation> manageableOrganisations = organisationService.getOrganisations(
+				getIdentity(), ureq.getUserSession().getRoles(),
+				OrganisationRoles.administrator, OrganisationRoles.principal,
+				OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
+		if (!manageableOrganisations.isEmpty()) {
+			List<Organisation> portraitUserOrganisations = organisationService.getOrganisations(
+					() -> portraitUser.getIdentityKey(), OrganisationRoles.valuesWithoutGuestAndInvitee());
+			if (portraitUserOrganisations.stream().anyMatch(organisation -> manageableOrganisations.contains(organisation))) {
+				userManagementLink = LinkFactory.createLink("user.info.user.management", mainVC, this);
+				userManagementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_external_link");
+				userManagementLink.setElementCssClass("o_nowrap");
+				userManagementLink.setAriaRole("button");
+			}
 		}
 	}
 
@@ -137,6 +161,8 @@ public class UserInfoProfileController extends BasicController {
 			doEmail(ureq);
 		} else if (source == chatLink) {
 			doChat(ureq);
+		} else if (source == userManagementLink) {
+			doOpenUserManagement(ureq);
 		}
 	}
 
@@ -191,6 +217,12 @@ public class UserInfoProfileController extends BasicController {
 		
 		OpenInstantMessageEvent e = new OpenInstantMessageEvent(buddy);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
+	}
+
+	private void doOpenUserManagement(UserRequest ureq) {
+		NewControllerFactory.getInstance().launch(
+				"[UserAdminSite:0][usearch:0][table:0][Identity:" + portraitUser.getIdentityKey() + "]",
+				ureq, getWindowControl());
 	}
 
 }
