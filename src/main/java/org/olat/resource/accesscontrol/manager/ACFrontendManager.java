@@ -1116,7 +1116,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		OfferAccess accessCopy = createOfferAccess(offerCopy, method);
 		accessCopy.setValidFrom(validFrom);
 		accessCopy.setValidTo(validTo);
-		return methodManager.save(accessCopy);
+		accessCopy = methodManager.save(accessCopy);
+		List<Organisation> organisations = getOfferOrganisations(offer);
+		if(organisations != null && !organisations.isEmpty()) {
+			updateOfferOrganisations(offerCopy, organisations);
+		}
+		return accessCopy;
 	}
 
 	@Override

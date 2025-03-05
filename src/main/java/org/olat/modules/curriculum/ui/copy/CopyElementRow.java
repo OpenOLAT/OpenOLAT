@@ -36,6 +36,7 @@ import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
  */
 public class CopyElementRow implements ComparableCurriculumElementRow {
 	
+	private boolean hasChildren;
 	private CopyElementRow parentElementRow;
 	private final CurriculumElementType type;
 	private final CurriculumElement curriculumElement;
@@ -135,6 +136,17 @@ public class CopyElementRow implements ComparableCurriculumElementRow {
 	
 	public void setParent(CopyElementRow row) {
 		this.parentElementRow = row;
+		if(row != null) {
+			row.setHasChildren(true);
+		}
+	}
+	
+	public boolean isHasChildren() {
+		return hasChildren;
+	}
+	
+	public void setHasChildren(boolean hasChildren) {
+		this.hasChildren = hasChildren;
 	}
 	
 	public String getTypeDisplayName() {

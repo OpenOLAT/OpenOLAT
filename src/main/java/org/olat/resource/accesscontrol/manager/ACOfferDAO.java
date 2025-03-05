@@ -282,6 +282,7 @@ public class ACOfferDAO {
 	public Offer copyAndPersistOffer(Offer offer, Date validFrom, Date validTo, OLATResource resource, String resourceName) {
 		Offer offerCopy = createOffer(resource, resourceName);
 		offerCopy.setAutoBooking(offer.isAutoBooking());
+		offerCopy.setPrice(offer.getPrice());
 		offerCopy.setCancellingFee(offer.getCancellingFee());
 		offerCopy.setCancellingFeeDeadlineDays(offer.getCancellingFeeDeadlineDays());
 		offerCopy.setCatalogPublish(offer.isCatalogPublish());

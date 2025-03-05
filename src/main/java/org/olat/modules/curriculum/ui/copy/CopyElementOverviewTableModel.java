@@ -44,6 +44,12 @@ public class CopyElementOverviewTableModel extends DefaultFlexiTreeTableDataMode
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		//
 	}
+	
+	@Override
+	public boolean hasChildren(int row) {
+		CopyElementRow elementRow = getObject(row);
+		return elementRow != null && elementRow.isHasChildren();
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {

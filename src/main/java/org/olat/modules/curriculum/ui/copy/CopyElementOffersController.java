@@ -28,7 +28,6 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.DateChooserOrientation;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -130,7 +129,6 @@ public class CopyElementOffersController extends StepFormBasicController {
 			validFromToEl.setSecondDate(true);
 			validFromToEl.setSecondDate(validTo);
 			validFromToEl.setSeparator("to.separator");
-			validFromToEl.setOrientation(DateChooserOrientation.top);
 			row.setValidFromToEl(validFromToEl);
 		}
 		
