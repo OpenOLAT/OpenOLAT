@@ -48,8 +48,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserInfoProfileController extends BasicController {
 
-	private final Link visitingCardLink;
-	private final Link emailLink;
+	private Link visitingCardLink;
+	private Link emailLink;
 	private Link chatLink;
 
 	private CloseableModalController cmc;
@@ -87,6 +87,10 @@ public class UserInfoProfileController extends BasicController {
 		userPortraitComp.setPortraitUser(portraitUser);
 		userPortraitComp.setDisplayPresence(profileConfig.isChatEnabled() && !portraitUser.getIdentityKey().equals(getIdentity().getKey()));
 
+		if (portraitUser.getIdentityKey() < 0) {
+			return;
+		}
+		
 		visitingCardLink = LinkFactory.createLink("user.info.visiting.card", mainVC, this);
 		visitingCardLink.setIconLeftCSS("o_icon o_icon-fw o_icon_visiting_card");
 		visitingCardLink.setElementCssClass("o_nowrap");

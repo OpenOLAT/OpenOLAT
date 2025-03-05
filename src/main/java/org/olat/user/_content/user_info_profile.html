@@ -7,8 +7,12 @@
 			$name
 		</div>
 		<div class="o_user_info_profile_cmds">
-			$r.render("user.info.visiting.card")
-			$r.render("user.info.email")
+			#if($r.available("user.info.visiting.card") && $r.visible("user.info.visiting.card"))
+				$r.render("user.info.visiting.card")
+			#end
+			#if($r.available("user.info.email") && $r.visible("user.info.email"))
+				$r.render("user.info.email")
+			#end
 			#if($r.available("user.info.chat") && $r.visible("user.info.chat"))
 				$r.render("user.info.chat")
 			#end
