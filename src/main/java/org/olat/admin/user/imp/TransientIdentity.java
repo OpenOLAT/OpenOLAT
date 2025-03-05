@@ -44,6 +44,7 @@ public class TransientIdentity implements Identity, User {
 	private String login;
 	private String password;
 	private String language;
+	private Integer status;
 	private Date expirationDate;
 	
 	private Map<String, String> properties = new HashMap<>();
@@ -134,9 +135,13 @@ public class TransientIdentity implements Identity, User {
 
 	@Override
 	public Integer getStatus() {
-		return null;
+		return status;
 	}
 	
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+
 	@Override
 	public Date getPlannedInactivationDate() {
 		return null;

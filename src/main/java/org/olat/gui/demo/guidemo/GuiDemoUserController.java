@@ -110,7 +110,7 @@ public class GuiDemoUserController extends BasicController {
 
 		
 		// User infos
-		DisplayPortraitController portrait1Ctrl = new DisplayPortraitController(ureq, getWindowControl(), getIdentity(), true, true, false, true);
+		DisplayPortraitController portrait1Ctrl = new DisplayPortraitController(ureq, getWindowControl(), getIdentity(), PortraitSize.large, true);
 		listenTo(portrait1Ctrl);
 		mainVC.put("infos-portrait-1", portrait1Ctrl.getInitialComponent());
 		Rows additionalRows = Rows.builder()
@@ -119,7 +119,6 @@ public class GuiDemoUserController extends BasicController {
 		UserShortDescription userShortDescrCtrl = new UserShortDescription(ureq, getWindowControl(), getIdentity(), additionalRows);
 		mainVC.put("infos-description-1", userShortDescrCtrl.getInitialComponent());
 		listenTo(userShortDescrCtrl);
-	
 		
 		// User avatars
 		UsersAvatarController avatar1Ctrl = new UsersAvatarController(ureq, getWindowControl(), new HashSet<>(identities));

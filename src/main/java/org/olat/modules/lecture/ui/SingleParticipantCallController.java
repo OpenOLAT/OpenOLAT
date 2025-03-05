@@ -57,6 +57,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.component.ImmunityProofLevelCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -142,7 +143,7 @@ public class SingleParticipantCallController extends FormBasicController {
 			
 			layoutCont.contextPut("checks", checks);
 		
-			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), calledIdentity, true, false);
+			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), calledIdentity, PortraitSize.large, false);
 			listenTo(portraitCtr);
 			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
 

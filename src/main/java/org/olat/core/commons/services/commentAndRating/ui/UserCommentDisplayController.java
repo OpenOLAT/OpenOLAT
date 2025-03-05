@@ -22,8 +22,6 @@ package org.olat.core.commons.services.commentAndRating.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.creator.UserAvatarDisplayControllerCreator;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
@@ -57,8 +55,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -246,16 +246,13 @@ public class UserCommentDisplayController extends BasicController {
 	}
 
 	private void initPortraits(UserRequest ureq) {
-		if (CoreSpringFactory.containsBean(UserAvatarDisplayControllerCreator.class.getName())) {
-			UserAvatarDisplayControllerCreator avatarControllerCreator = (UserAvatarDisplayControllerCreator) CoreSpringFactory.getBean(UserAvatarDisplayControllerCreator.class);
-			Controller avatarCtrl = avatarControllerCreator.createController(ureq, getWindowControl(), userComment.getCreator(), false, true);
-			listenTo(avatarCtrl);
-			userCommentDisplayVC.put("avatarCtrl", avatarCtrl.getInitialComponent());
+		Controller avatarCtrl = new DisplayPortraitController(ureq, getWindowControl(), userComment.getCreator(), PortraitSize.small, true);
+		listenTo(avatarCtrl);
+		userCommentDisplayVC.put("avatarCtrl", avatarCtrl.getInitialComponent());
 
-			Controller avatarCtrlOwn = avatarControllerCreator.createController(ureq, getWindowControl(), getIdentity(), false, true);
-			listenTo(avatarCtrlOwn);
-			userCommentDisplayVC.put("avatarCtrlOwn", avatarCtrlOwn.getInitialComponent());
-		}
+		Controller avatarCtrlOwn = new DisplayPortraitController(ureq, getWindowControl(), getIdentity(), PortraitSize.small, true);
+		listenTo(avatarCtrlOwn);
+		userCommentDisplayVC.put("avatarCtrlOwn", avatarCtrlOwn.getInitialComponent());
 	}
 
 	private void initLinks() {

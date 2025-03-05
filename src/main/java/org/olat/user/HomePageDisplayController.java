@@ -55,6 +55,7 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,6 +67,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Comment: This controller displays the users visiting card
  */
 public class HomePageDisplayController extends BasicController {
+	
+	private static final int LOGO_MAX_HEIGHT = DisplayPortraitManager.HEIGHT_BIG / 2;
 	private static final String usageIdentifyer = HomePageConfig.class.getCanonicalName();
 	
 	private Link imLink;
@@ -132,7 +135,7 @@ public class HomePageDisplayController extends BasicController {
 			.append("/url/HomeSite/").append(homeIdentity.getKey());
 		mainVC.contextPut("extLink", extLink);
 
-		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, true, false);
+		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, PortraitSize.medium, false);
 		listenTo(dpc); // auto dispose
 		mainVC.put("image", dpc.getInitialComponent());
 		
@@ -161,7 +164,7 @@ public class HomePageDisplayController extends BasicController {
 			if (logo != null) {
 				ImageComponent logoCmp = new ImageComponent(usess, "logo");
 				logoCmp.setMedia(logo);
-				logoCmp.setMaxWithAndHeightToFitWithin(200, 66);
+				logoCmp.setMaxWithAndHeightToFitWithin(200, LOGO_MAX_HEIGHT);
 				mainVC.put("logo", logoCmp);				
 			}
 		}

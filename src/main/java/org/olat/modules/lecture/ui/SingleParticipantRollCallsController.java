@@ -57,8 +57,8 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.immunityproof.ImmunityProof;
 import org.olat.modules.immunityproof.ImmunityProofModule;
-import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
+import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
@@ -77,6 +77,7 @@ import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.modules.lecture.ui.component.LectureBlockTimesCellRenderer;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -159,7 +160,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("date", getDate());
 			
-			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), calledIdentity, true, false);
+			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), calledIdentity, PortraitSize.large, false);
 			listenTo(portraitCtr);
 			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
 			

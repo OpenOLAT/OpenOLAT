@@ -165,22 +165,15 @@
 }
 
 .o_user_infos {
-	position:relative;
+	display: flex;
+	align-items: start;
+	
 	min-height:100px;
-	
-	.o_user_portrait {
-		position:absolute;
-		top:0;
-		left:15px;
-		width:100px;
-		height:100px;
-	} 
-	.o_user_infos_inner {
-		margin:0 30px 0 100px;
+	.o_portrait {
+		margin: 0 15px;
 	}
-	
-	.o_user_infos_inner table, .o_user_infos_inner h3 {
-		margin:0 30px 15px 30px;
+	.o_user_infos_inner {
+		flex-grow: 2;
 	}
 }
 

@@ -89,6 +89,7 @@ import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.ProfileFormController;
 import org.olat.user.PropFoundEvent;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.UserPropertiesController;
 import org.olat.user.ui.admin.ReloadIdentityEvent;
 import org.olat.user.ui.admin.UserAccountController;
@@ -713,7 +714,7 @@ public class UserAdminController extends BasicController implements Activateable
 	 */
 	private void exposeUserDataToVC(UserRequest ureq, Identity identity, Roles roles) {
 		removeAsListenerAndDispose(portraitCtr);
-		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), identity, true, true);
+		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), identity, PortraitSize.large, true);
 		myContent.put("portrait", portraitCtr.getInitialComponent());
 		removeAsListenerAndDispose(userShortDescrCtr);
 		

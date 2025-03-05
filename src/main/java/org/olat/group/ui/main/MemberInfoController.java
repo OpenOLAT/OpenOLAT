@@ -49,6 +49,7 @@ import org.olat.group.model.BusinessGroupMembershipInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -105,7 +106,7 @@ public class MemberInfoController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 		
-			Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), identity, true, false);
+			Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), identity, PortraitSize.large, false);
 			listenTo(dpc); // auto dispose
 			layoutCont.put("image", dpc.getInitialComponent());
 			layoutCont.contextPut("fullname", StringHelper.escapeHtml(userManager.getUserDisplayName(identity)));

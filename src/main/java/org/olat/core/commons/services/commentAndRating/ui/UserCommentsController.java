@@ -22,8 +22,6 @@ package org.olat.core.commons.services.commentAndRating.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.creator.UserAvatarDisplayControllerCreator;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
@@ -38,6 +36,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.winmgr.functions.FunctionCommand;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
+import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -114,8 +114,7 @@ public class UserCommentsController extends BasicController {
 		if (securityCallback.canCreateComments()) {
 			handleRebuildNewCommentForm(ureq);
 
-			UserAvatarDisplayControllerCreator avatarControllerCreator = (UserAvatarDisplayControllerCreator) CoreSpringFactory.getBean(UserAvatarDisplayControllerCreator.class);
-			Controller avatarCtrl = avatarControllerCreator.createController(ureq, getWindowControl(), getIdentity(), false, true);
+			Controller avatarCtrl = new DisplayPortraitController(ureq, getWindowControl(), getIdentity(), PortraitSize.small, true);
 			listenTo(avatarCtrl);
 			userCommentsVC.put("avatarCtrl", avatarCtrl.getInitialComponent());
 		}

@@ -39,9 +39,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.modules.ceditor.Page;
-import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.ceditor.ContentElement;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -49,6 +49,7 @@ import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.ui.event.AccessRightsEvent;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -104,7 +105,7 @@ public class AccessRightsEditController extends FormBasicController {
 		if(member != null && formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 
-			Controller portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), member, true, true);
+			Controller portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), member, PortraitSize.large, true);
 			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
 			listenTo(portraitCtr);
 			Controller userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), member);

@@ -117,6 +117,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -658,7 +659,7 @@ public class MessageListController extends BasicController implements GenericEve
 		
 		if(!guestOnly && !m.isGuest() && creator != null && !StringHelper.containsNonWhitespace(m.getPseudonym())) {
 			// add portrait to map for later disposal and key for rendering in velocity
-			DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(), creator, true, true, false, true);
+			DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(), creator, PortraitSize.large, true);
 			messageView.setPortrait(portrait);
 			mainVC.put("portrait_".concat(keyString), portrait.getInitialComponent());
 		  

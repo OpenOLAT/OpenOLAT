@@ -75,6 +75,7 @@ public class UserPortraitComponent extends AbstractComponent {
 
 	public void setPortraitUser(PortraitUser portraitUser) {
 		this.portraitUser = portraitUser;
+		setDirty(true);
 	}
 
 	public PortraitSize getSize() {
@@ -83,6 +84,7 @@ public class UserPortraitComponent extends AbstractComponent {
 
 	public void setSize(PortraitSize size) {
 		this.size = size;
+		setDirty(true);
 	}
 
 	public boolean isDisplayPresence() {
@@ -91,6 +93,7 @@ public class UserPortraitComponent extends AbstractComponent {
 
 	public void setDisplayPresence(boolean displayPresence) {
 		this.displayPresence = displayPresence;
+		setDirty(true);
 	}
 
 }

@@ -54,6 +54,7 @@ import org.olat.modules.lecture.ui.wizard.AbsenceNotice3LecturesEntriesStep;
 import org.olat.modules.lecture.ui.wizard.AbsenceNoticeCancelStepCallback;
 import org.olat.modules.lecture.ui.wizard.AbsenceNoticeFinishStepCallback;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -101,7 +102,7 @@ public class IdentityProfileController extends BasicController implements Activa
 			mainVC.put("back", backLink);
 		}
 		
-		DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), profiledIdentity, true, false);
+		DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), profiledIdentity, PortraitSize.large, false);
 		listenTo(portraitCtr);
 		mainVC.put("portrait", portraitCtr.getInitialComponent());
 		UserShortDescription userDescr = new UserShortDescription(ureq, getWindowControl(), profiledIdentity);

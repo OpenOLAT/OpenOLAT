@@ -415,11 +415,8 @@ ul.o_dropdown {
 		background-size: cover;
 	}
 }
-.o_portrait_name { 
-	margin-top: $padding-base-vertical;
-}
 .o_block_inline, .o_block_inline_right, .o_block_inline_left, .o_block_inline_both {
-	.o_portait, .o_portrait_name, .o_portrait_image {
+	.o_portait, .o_portrait_image {
 		display: inline-block;
 	}
 }

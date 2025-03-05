@@ -61,7 +61,7 @@ public class UserPortraitRenderer extends DefaultComponentRenderer {
 		if (portraitUser.isPortraitAvailable()) {
 			sb.append("<img class=\"o_user_portrait_image\" src=\"");
 			boolean large = PortraitSize.large == opc.getSize() || PortraitSize.medium == opc.getSize();
-			sb.append(UserAvatarMapper.createPathFor(opc.getAvatarMapperUrl(), () -> portraitUser.getIdentityKey(), portraitUser.getUsername(), large));
+			sb.append(UserAvatarMapper.createPathFor(opc.getAvatarMapperUrl(), () -> portraitUser.getIdentityKey(), portraitUser.getPortraitCacheIdentifier(), large));
 			sb.append("\" alt=\"");
 			sb.append(opc.getCompTranslator().translate("user.portrait.alt", StringHelper.escapeHtml(portraitUser.getDisplayName())));
 			sb.append("\"");

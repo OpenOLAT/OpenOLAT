@@ -43,6 +43,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -75,7 +76,7 @@ public class AssessedIdentityLargeInfosController extends BasicController {
 		mainVC = createVelocityContainer("user_infos_large");
 		mainVC.contextPut("user", assessedIdentity.getUser());
 
-		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), assessedIdentity, true, true);
+		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), assessedIdentity, PortraitSize.large, true);
 		mainVC.put("portrait", portraitCtr.getInitialComponent());
 		listenTo(portraitCtr);
 

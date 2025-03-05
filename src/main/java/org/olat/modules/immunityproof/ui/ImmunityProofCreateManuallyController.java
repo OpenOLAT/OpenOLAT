@@ -47,6 +47,7 @@ import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofType;
 import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.immunityproof.ui.event.ImmunityProofAddedEvent;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -116,7 +117,7 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 			String page = Util.getPackageVelocityRoot(getClass()) + "/immunity_proof_user_details.html";
 			userInfoLayout = FormLayoutContainer.createCustomFormLayout("immunity_proof_user_details", getTranslator(), page);
 			
-			DisplayPortraitController displayPortraitController = new DisplayPortraitController(ureq, getWindowControl(), editedIdentity, true, true);
+			DisplayPortraitController displayPortraitController = new DisplayPortraitController(ureq, getWindowControl(), editedIdentity, PortraitSize.large, true);
 			userInfoLayout.put("portrait", displayPortraitController.getInitialComponent());
 
 			UserShortDescription userShortDescriptionController = new UserShortDescription(ureq, getWindowControl(), editedIdentity, ImmunityProofModule.USER_PROPERTY_HANDLER);

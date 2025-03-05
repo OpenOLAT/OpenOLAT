@@ -37,6 +37,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 
 /**
  * 
@@ -57,7 +58,7 @@ public class CoachedIdentityLargeInfosController extends BasicController {
 		mainVC = createVelocityContainer("user_infos_large");
 		mainVC.contextPut("user", coachedIdentity.getUser());
 
-		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), coachedIdentity, true, true);
+		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), coachedIdentity, PortraitSize.large, true);
 		mainVC.put("portrait", portraitCtr.getInitialComponent());
 		listenTo(portraitCtr);
 		

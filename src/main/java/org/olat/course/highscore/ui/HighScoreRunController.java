@@ -64,6 +64,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -300,9 +301,8 @@ public class HighScoreRunController extends FormBasicController{
 					mainVC.contextPut("number"+ (i + 1), sizePerPos);
 					for (int j = 0; j < sizePerPos; j++) {
 						Identity currentID = allPodium.get(i).get(j).getIdentity();
-						boolean choosePortrait = !anonymous || ownIdentity.equals(currentID);
 						DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(),
-								currentID, false, choosePortrait, !choosePortrait);
+								currentID, PortraitSize.small, !ownIdentity.equals(currentID));
 						listenTo(portrait);
 						Component portraitComponent = portrait.getInitialComponent();
 						mainVC.put("portrait" + (i + 1) + "-" + (j + 1), portraitComponent);
@@ -313,7 +313,7 @@ public class HighScoreRunController extends FormBasicController{
 						Identity currentID = allPodium.get(i).get(j).getIdentity();
 						if (ownIdentity.equals(currentID)) {
 							DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(),
-									currentID, true, true, false);
+									currentID, PortraitSize.large, false);
 							listenTo(portrait);
 							mainVC.put("portrait" + (i + 1), portrait.getInitialComponent());
 						}

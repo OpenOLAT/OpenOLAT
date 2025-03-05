@@ -84,6 +84,7 @@ import org.olat.modules.fo.Pseudonym;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.ui.events.ErrorEditMessage;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -299,7 +300,7 @@ public class MessageEditController extends FormBasicController {
 		Identity creator = parentMessage.getCreator();
 		if(creator != null) {
 			replyMsgLayout.contextPut("identity", creator);
-			portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), creator, true, true);
+			portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), creator, PortraitSize.large, true);
 			replyMsgLayout.put("portrait", portraitCtr.getInitialComponent());
 		}
 	}

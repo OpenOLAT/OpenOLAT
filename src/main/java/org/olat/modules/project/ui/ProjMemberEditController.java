@@ -36,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectRole;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 
 /**
  * 
@@ -64,7 +65,7 @@ public class ProjMemberEditController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 		
-			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), member, true, false);
+			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), member, PortraitSize.large, false);
 			listenTo(portraitCtr);
 			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
 			

@@ -138,9 +138,6 @@
         </property>
 	</bean>
 
-	<bean id="org.olat.core.commons.creator.UserAvatarDisplayControllerCreator"
-		class="org.olat.user.UserAvatarDisplayControllerCreatorImpl"/>
-
 	<bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager"/>
 	<bean class="org.olat.user.DisplayPortraitManager"/>
 	

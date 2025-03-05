@@ -51,6 +51,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -132,7 +133,7 @@ public class OlatTopNavController extends BasicController implements LockableCon
 	}
 	
 	private Component getPortraitCmp(UserRequest ureq) {
-		Controller ctr = new DisplayPortraitController(ureq, getWindowControl(), getIdentity(), false, false, false, true);
+		Controller ctr = new DisplayPortraitController(ureq, getWindowControl(), getIdentity(), PortraitSize.small, false);
 		listenTo(ctr);
 		return ctr.getInitialComponent();
 	}

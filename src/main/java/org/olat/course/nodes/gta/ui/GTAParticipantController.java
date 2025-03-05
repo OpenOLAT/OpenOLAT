@@ -82,6 +82,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.forms.EvaluationFormProvider;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -144,7 +145,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(gtaNode, userCourseEnv);
 			if(assessmentEntry != null && assessmentEntry.getCoach() != null) {
 				Identity coachIdentity = assessmentEntry.getCoach();
-				DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), coachIdentity, true, true);
+				DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), coachIdentity, PortraitSize.large, true);
 				mainVC.put("portrait", portraitCtr.getInitialComponent());
 				listenTo(portraitCtr);
 				

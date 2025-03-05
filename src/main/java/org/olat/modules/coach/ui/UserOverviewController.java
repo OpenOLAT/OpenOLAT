@@ -92,6 +92,7 @@ import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageDisplayController;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent.PortraitSize;
 import org.olat.user.ui.admin.UserAccountController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -184,7 +185,7 @@ public class UserOverviewController extends BasicController implements Activatea
 	@Autowired
 	private CatalogV2Module catalogV2Module;
 	@Autowired
-	private ACReservationDAO reservationDAO;;
+	private ACReservationDAO reservationDAO;
 
 	public UserOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 								  StudentStatEntry statEntry, Identity mentee, int index, int numOfStudents, String role, RoleSecurityCallback roleSecurityCallback) {
@@ -268,7 +269,7 @@ public class UserOverviewController extends BasicController implements Activatea
 		mainVC.put("user_details", userDetailsToggleController.getInitialComponent());
 
 		removeAsListenerAndDispose(displayPortraitController);
-		displayPortraitController = new DisplayPortraitController(ureq, getWindowControl(), identity, true, true);
+		displayPortraitController = new DisplayPortraitController(ureq, getWindowControl(), identity, PortraitSize.large, true);
 		userDetails.put("portrait", displayPortraitController.getInitialComponent());
 
 		removeAsListenerAndDispose(userShortDescriptionController);
