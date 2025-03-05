@@ -20,6 +20,7 @@
 
 package org.olat.resource.accesscontrol.ui;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -44,7 +45,7 @@ import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutSta
  * 
  * <P>
  * Initial Date:  20 avr. 2011 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class OrderTableItem {
 	
@@ -223,9 +224,10 @@ public class OrderTableItem {
 		 * Especially for invoices, invoice sent but not payed
 		 */
 		OPEN,
-		CANCELED;
+		CANCELED,
+		CANCELED_WITH_FEE;
 		
-		public static final Status getStatus(String orderStatus, String trxStatus, String pspTrxStatus, List<AccessMethod> orderMethods) {
+		public static final Status getStatus(String orderStatus, Price cancellationFee, String trxStatus, String pspTrxStatus, List<AccessMethod> orderMethods) {
 			boolean warning = false;
 			boolean error = false;
 			boolean canceled = false;
@@ -289,6 +291,10 @@ public class OrderTableItem {
 				return Status.WARNING;
 			}
 			if(canceled) {
+				if(cancellationFee != null && cancellationFee.getAmount() != null
+						&& BigDecimal.ZERO.compareTo(cancellationFee.getAmount()) < 0) {
+					return Status.CANCELED_WITH_FEE;
+				}
 				return Status.CANCELED;
 			} 
 			

@@ -263,7 +263,7 @@ public class OrderDetailController extends FormBasicController {
 			if(items.size() == 1) {
 				consolidatedStatus = items.get(0).getStatus();
 			} else {
-				consolidatedStatus = Status.getStatus(order.getOrderStatus().name(), "", "", orderMethods);
+				consolidatedStatus = Status.getStatus(order.getOrderStatus().name(), order.getCancellationFees(), "", "", orderMethods);
 			}
 			statusRenderer.renderStatus(status, consolidatedStatus);
 			layoutCont.contextPut("orderStatus", status.toString());

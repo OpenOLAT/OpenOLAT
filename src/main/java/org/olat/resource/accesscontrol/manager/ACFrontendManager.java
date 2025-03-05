@@ -1270,7 +1270,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				}
 			}
 			
-			Status finalStatus = Status.getStatus(orderStatusStr,  rawOrder.getTrxStatus(), pspTrxStatus, orderMethods);
+			Status finalStatus = Status.getStatus(orderStatusStr, rawOrder.getOrderCancellationFee(), rawOrder.getTrxStatus(), pspTrxStatus, orderMethods);
 			String offerLabel = deduplicate(rawOrder.getLabel());
 			String resourceDisplayName = deduplicate(rawOrder.getResourceName());
 			String costCenteryName = deduplicate(rawOrder.getCostCenterName());
