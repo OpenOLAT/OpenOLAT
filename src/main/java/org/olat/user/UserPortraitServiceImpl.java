@@ -109,7 +109,7 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 		String initials = "<i class='o_icon o_ac_guest_icon'> </i>";
 		String initialsCss = "o_user_initials_grey";
 		String displayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.guest");
-		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, Presence.unavailable);
+		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, null);
 	}
 	
 	@Override
@@ -117,7 +117,7 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 		String initials = "<i class='o_icon o_icon_identity_deleted'> </i>";
 		String initialsCss = "o_user_initials_grey";
 		String displayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.unknown");
-		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, Presence.unavailable);
+		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, null);
 	}
 	
 	@Override
@@ -125,7 +125,7 @@ public class UserPortraitServiceImpl implements UserPortraitService {
 		String initials = "?";
 		String initialsCss = "o_user_initials_grey";
 		String displayName = Util.createPackageTranslator(UserPortraitComponent.class, locale).translate("user.unknown");
-		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, Presence.unavailable);
+		return new PortraitUserImpl(Long.valueOf(-1), null, false, null, initials, initialsCss, displayName, null);
 	}
 
 	@Override
