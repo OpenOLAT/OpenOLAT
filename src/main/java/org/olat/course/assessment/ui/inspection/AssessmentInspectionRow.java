@@ -27,6 +27,7 @@ import org.olat.course.assessment.AssessmentInspection;
 import org.olat.course.assessment.AssessmentInspectionConfiguration;
 import org.olat.course.assessment.AssessmentInspectionStatusEnum;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.user.UserPortraitComponent;
 
 /**
  * 
@@ -45,6 +46,7 @@ public class AssessmentInspectionRow {
 	private final String courseNodeIconCssClass;
 	
 	private final AssessmentEntryStatus assessmentStatus;
+	private UserPortraitComponent portraitComp;
 	private FormLink toolsButton;
 	private FormLink cancelButton;
 	
@@ -121,6 +123,14 @@ public class AssessmentInspectionRow {
 
 	public AssessmentEntryStatus getAssessmentStatus() {
 		return assessmentStatus;
+	}
+
+	public UserPortraitComponent getPortraitComp() {
+		return portraitComp;
+	}
+
+	public void setPortraitComp(UserPortraitComponent portraitComp) {
+		this.portraitComp = portraitComp;
 	}
 
 	public FormLink getToolsButton() {

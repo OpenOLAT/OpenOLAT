@@ -71,7 +71,7 @@ implements SortableFlexiTableDataModel<AssessmentInspectionRow> {
 	@Override
 	public Object getValueAt(AssessmentInspectionRow row, int col) {
 		switch(COLS[col]) {
-			case portrait: return row.getAssessedIdentity();
+			case portrait: return row.getPortraitComp();
 			case onlineStatus: return getOnlineStatus(row);
 			case participant: return row.getFullName();
 			case courseNode: return row;

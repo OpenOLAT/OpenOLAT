@@ -43,7 +43,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.PortraitCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -93,8 +92,13 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.PortraitUser;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
+import org.olat.user.UserPortraitComponent;
+import org.olat.user.UserPortraitComponent.PortraitSize;
+import org.olat.user.UserPortraitFactory;
+import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -155,6 +159,8 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 	@Autowired
 	private UserSessionManager sessionManager;
 	@Autowired
+	private UserPortraitService userPortraitService;
+	@Autowired
 	private AssessmentInspectionService inspectionService;
 	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
@@ -187,8 +193,7 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		
 		boolean courseOverview = (courseNode == null);
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!courseOverview, OverviewCols.portrait,
-				new PortraitCellRenderer(avatarMapperKey)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!courseOverview, OverviewCols.portrait));
 		if(imModule.isOnlineStatusEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(!courseOverview, OverviewCols.onlineStatus,
 					new RosterEntryStatusCellRenderer()));
@@ -369,9 +374,15 @@ public class AssessmentInspectionOverviewController extends FormBasicController 
 		CourseNode cNode = course.getRunStructure().getNode(courseNodeIdent);
 		CourseNodeConfiguration courseNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(cNode.getType());
 		
-		String fullName = userManager.getUserDisplayName(inspectionEntry.identity());
-		AssessmentInspectionRow row = new AssessmentInspectionRow(fullName, inspectionEntry.inspection(),
+		PortraitUser portraitUser = userPortraitService.createPortraitUser(getLocale(), inspectionEntry.identity());
+		AssessmentInspectionRow row = new AssessmentInspectionRow(portraitUser.getDisplayName(), inspectionEntry.inspection(),
 				inspectionEntry.assessmentStatus(), cNode.getShortTitle(), courseNodeConfig.getIconCSSClass());
+		
+		UserPortraitComponent portraitComp= UserPortraitFactory.createUserPortrait("portrait_" + portraitUser.getIdentityKey(), null, getLocale(), avatarMapperKey.getUrl());
+		portraitComp.setSize(PortraitSize.small);
+		portraitComp.setDisplayPresence(false);
+		portraitComp.setPortraitUser(portraitUser);
+		row.setPortraitComp(portraitComp);
 		
 		FormLink cancelLink = uifactory.addFormLink("cancel_" + (++counter), "cancel", "", null, null, Link.NONTRANSLATED);
 		cancelLink.setIconLeftCSS("o_icon o_icon_cancel o_icon-fws o_icon-lg");
