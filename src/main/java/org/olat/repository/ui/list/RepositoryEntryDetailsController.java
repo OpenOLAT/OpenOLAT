@@ -157,7 +157,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		boolean anonym = ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isGuestOnly();
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey());
-		UserCommentsAndRatingsController commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, secCallback, null, secCallback.canViewComments(), false, true);
+		UserCommentsAndRatingsController commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, secCallback, null, secCallback.canViewComments(), true, true);
 
 		listenTo(commentsCtrl);
 		return commentsCtrl;

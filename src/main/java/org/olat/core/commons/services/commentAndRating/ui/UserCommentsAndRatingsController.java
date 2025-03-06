@@ -210,10 +210,12 @@ public class UserCommentsAndRatingsController extends BasicController implements
 		if (commentsCountLink != null) {
 			commentsCount = commentAndRatingService.countComments(ores, oresSubPath);
 			commentsCountLink.setCustomDisplayText(translate("comments.count", commentsCount.toString()));		
-			String css = commentsCount > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+			String css = commentsCount > 0l ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
 			commentsCountLink.setCustomEnabledLinkCSS("o_comments");
 			commentsCountLink.setIconLeftCSS(css);
-			userCommentsAndRatingsVC.contextPut("commentsCount", commentsCount);
+			
+			String legendI18n = commentsCount > 1l ? "comments.legend.plural" : "comments.legend.singular";
+			userCommentsAndRatingsVC.contextPut("commentsCountLegend", translate(legendI18n, commentsCount.toString()));
 		}
 	}
 	

@@ -22,10 +22,12 @@ package org.olat.login;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -45,12 +47,17 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
@@ -83,6 +90,8 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 	private UserModule userModule;
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private I18nManager i18nManager;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
@@ -271,6 +280,7 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		int loginStatus = AuthHelper.doLogin(identity, provider, ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			// it's ok
+			updateLanguage(ureq, identity);
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 		} else if (loginStatus == AuthHelper.LOGIN_INACTIVE) {
@@ -278,6 +288,19 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		} else {
 			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 		}
+	}
+	
+	private void updateLanguage(UserRequest ureq, Identity identity) {
+		String lang = identity.getUser().getPreferences().getLanguage();
+		Locale loc = i18nManager.getLocaleOrDefault(lang);
+
+		MultiUserEvent mue = new LanguageChangedEvent(loc, ureq);
+		setLocale(loc, true);
+		ureq.getUserSession().setLocale(loc);
+		ureq.getUserSession().putEntry(LocaleNegotiator.NEGOTIATED_LOCALE, loc);
+		
+		OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(mue, wrappedLocale);
 	}
 
 	private void doStart(Controller source) {
