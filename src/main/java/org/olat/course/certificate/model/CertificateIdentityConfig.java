@@ -29,6 +29,9 @@ import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2025-01-13<br>
+ * 
+ * A certificate with extra information about the user who received the certificate, the course the certificate
+ * is related to, and configuration data for certificates of the course (if the course is still active).
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */

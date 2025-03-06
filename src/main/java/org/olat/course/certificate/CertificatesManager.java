@@ -181,10 +181,29 @@ public interface CertificatesManager {
 	
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource);
 
+	/**
+	 * Returns certificates of courses that 'identity' is a coach for.
+	 * 
+	 * @param identity The logged-in identity.
+	 * @param userPropertyHandlers User properties that should be set for each result entry.
+	 * @param from The start date of the date range to consider for the returned result.
+	 * @param to The end date of the date range to consider for the returned result.
+	 * @return A list of certificates enhanced with data about the certificate recipient and the related course.
+	 */
 	public List<CertificateIdentityConfig> getCertificatesForGroups(Identity identity, 
 																	List<UserPropertyHandler> userPropertyHandlers, 
 																	Date from, Date to);
 
+	/**
+	 * Returns certificates of users that 'identity' somehow is a manager for through organizational mapping.
+	 * For instance, it includes certificates of users for whom 'identity' acts as an education manager.
+	 * 
+	 * @param identity The logged-in identity.
+	 * @param userPropertyHandlers User properties that should be set for each result entry.
+	 * @param from The start date of the date range to consider for the returned result.
+	 * @param to The end date of the date range to consider for the returned result.
+	 * @return A list of certificates enhanced with data about the certificate recipient and the related course.
+	 */
 	public List<CertificateIdentityConfig> getCertificatesForOrganizations(Identity identity, 
 																		   List<UserPropertyHandler> userPropertyHandlers, 
 																		   Date from, Date to);

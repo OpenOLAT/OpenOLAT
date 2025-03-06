@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
@@ -45,6 +47,7 @@ import org.olat.modules.curriculum.model.RepositoryEntryInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -258,7 +261,7 @@ public class CurriculumRepositoryEntryRelationDAO {
 	 * The method return all the elements of the curriculum and if
 	 * needed with an empty list of repository entries.
 	 * 
-	 * @param curriculum The curriculum
+	 * @param curriculums A list of curriculum objects
 	 * @return A map of curriculum element to their repository entries
 	 */
 	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(List<? extends CurriculumRef> curriculums,
@@ -313,5 +316,36 @@ public class CurriculumRepositoryEntryRelationDAO {
 			.stream()
 			.map(rawObject -> new CurriculumElementKeyToRepositoryEntryKey((Long)rawObject[0], (Long)rawObject[1]))
 			.toList();
+	}
+
+	/**
+	 * Returns a map that associates a repository entry with a set of curriculum elements that refer to the repository entry.
+	 * It uses the group relationship where a repository entry is part of the curriculum element group.
+	 *
+	 * @param repositoryEntries A collection of repository entries to retrieve the curriculum elements for.
+	 * @return A map with repository entries (typically courses) as keys and sets of curriculum elements as values.
+	 */
+	public Map<RepositoryEntryRef, Set<CurriculumElement>> getCurriculumElementsForRepositoryEntries(Collection<RepositoryEntryRef> repositoryEntries) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct ce, re.key from curriculumelement ce");
+		sb.append(" inner join repoentrytogroup r2g on r2g.group.key = ce.group.key");
+		sb.append(" inner join repositoryentry re on r2g.entry.key = re.key");
+		sb.append(" left join fetch ce.type ceType ");
+		sb.append(" where re.key in (:reKeys)");
+
+		List<Long> reKeys = repositoryEntries.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("reKeys", reKeys).getResultList();
+
+		Map<RepositoryEntryRef, Set<CurriculumElement>> result = new HashMap<>();
+		for (Object[] rawObject : rawObjects) {
+			CurriculumElement curriculumElement = (CurriculumElement) rawObject[0];
+			Long repositoryEntryKey = (Long) rawObject[1];
+			RepositoryEntryRef repositoryEntryRef = new RepositoryEntryRefImpl(repositoryEntryKey);
+			Set<CurriculumElement> curriculumElements = result.computeIfAbsent(repositoryEntryRef, k -> new HashSet<>());
+			curriculumElements.add(curriculumElement);
+		}
+		return result;
 	}
 }
