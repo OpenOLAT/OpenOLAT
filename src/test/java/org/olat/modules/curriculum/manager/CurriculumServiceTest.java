@@ -76,7 +76,7 @@ import com.dumbster.smtp.SmtpMessage;
 /**
  * 
  * Initial date: 18 juin 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CurriculumServiceTest extends OlatTestCase {
@@ -405,6 +405,52 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertEquals("Hello curriculum 25", copiedLectureBlock.getTitle());
 		Assert.assertEquals("COPY-1-EV-1", copiedLectureBlock.getExternalRef());
 		Assert.assertNull(copiedLectureBlock.getExternalId());
+	}
+	
+	/**
+	 * If the curriculum element has course and template, only links the
+	 * template and copy the lecture blocks back to the curriculum element.
+	 */
+	@Test
+	public void copyCurriculumElementCourseTemplateAndLectureBlock() {
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-26");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-26", "Curriculum 26", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-to-copy-1", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		RepositoryEntry template = JunitTestHelper.createRandomRepositoryEntry(actor);
+		boolean addTemplate = curriculumService.addRepositoryTemplate(element, template);
+		dbInstance.commit();
+		Assert.assertTrue(addTemplate);
+		
+		RepositoryEntry course = JunitTestHelper.createRandomRepositoryEntry(actor);
+		AddRepositoryEntry addCourse = curriculumService.addRepositoryEntry(element, course, false);
+		dbInstance.commit();
+		Assert.assertTrue(addCourse.entryAdded());
+		
+		LectureBlock lectureBlock = lectureService.createLectureBlock(element, course);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setExternalId("ELEM-COURSE-ID");
+		lectureBlock.setExternalRef("LEM-COURSE-1-EV-1");
+		lectureBlock.setTitle("Hello curriculum 26");
+		lectureBlock = lectureService.save(lectureBlock, null);
+		dbInstance.commit();
+		Assert.assertNotNull(lectureBlock);
+		
+		CurriculumCopySettings copySettings = new CurriculumCopySettings();
+		copySettings.setCopyResources(CopyResources.resource);
+		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element, copySettings, actor);
+		dbInstance.commit();
+		
+		List<RepositoryEntry> templates = curriculumService.getRepositoryTemplates(copiedElement);
+		Assertions.assertThat(templates)
+			.hasSize(1)
+			.containsExactly(template);
+		
+		List<LectureBlock> copiedLectureBlocks = lectureService.getLectureBlocks(copiedElement, false);
+		Assertions.assertThat(copiedLectureBlocks)
+			.hasSize(1);
 	}
 	
 	@Test

@@ -524,6 +524,20 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		CurriculumElement clone = curriculumElementDao.copyCurriculumElement(elementToClone,
 				identifier, displayName, beginDate, endDate, parentElement, curriculum);
 		
+		boolean hasTemplates = false;
+		if(settings.getCopyResources() == CopyResources.relation
+				|| settings.getCopyResources() == CopyResources.resource) {
+			List<RepositoryEntry> templates = getRepositoryTemplates(elementToClone);
+			for(RepositoryEntry template:templates) {
+				addRepositoryTemplate(clone, template);
+				hasTemplates |= true;
+			}
+		}
+		
+		// Tracks lecture blocks already copied
+		Set<Long> lectureBlocksCloned = new HashSet<>();
+		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
+		
 		if(settings.getCopyResources() == CopyResources.relation) {
 			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
 			for(RepositoryEntry entry:entries) {
@@ -531,21 +545,29 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				fireRepositoryEntryAddedEvent(clone, entry);
 			}
 		} else if(settings.getCopyResources() == CopyResources.resource) {
-			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
-			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);// prevent service to service link at startup
-			for(RepositoryEntry entry:entries) {
-				if(repositoryService.canCopy(entry, doer)) {
-					String externalRef = settings.evaluateIdentifier(entry.getExternalRef());
-					RepositoryEntry entryCopy = repositoryService.copy(entry, doer, entry.getDisplayname(), externalRef);
-					repositoryEntryRelationDao.createRelation(clone.getGroup(), entryCopy);
-					fireRepositoryEntryAddedEvent(clone, entryCopy);
+			if(hasTemplates) {
+				List<LectureBlock> allBlocks = lectureBlockDao.getLectureBlocks(elementToClone);
+				for(LectureBlock blockToCopy:allBlocks) {
+					if(elementToClone.equals(blockToCopy.getCurriculumElement())) {
+						Date start = settings.shiftDate(blockToCopy.getStartDate());
+						Date end = settings.shiftDate(blockToCopy.getEndDate());
+						String externalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
+						lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
+						lectureBlocksCloned.add(blockToCopy.getKey());
+					}
+				}
+			} else {
+				List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
+				RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);// prevent service to service link at startup
+				for(RepositoryEntry entry:entries) {
+					if(repositoryService.canCopy(entry, doer)) {
+						String externalRef = settings.evaluateIdentifier(entry.getExternalRef());
+						RepositoryEntry entryCopy = repositoryService.copy(entry, doer, entry.getDisplayname(), externalRef);
+						repositoryEntryRelationDao.createRelation(clone.getGroup(), entryCopy);
+						fireRepositoryEntryAddedEvent(clone, entryCopy);
+					}
 				}
 			}
-		}
-		
-		List<RepositoryEntry> templates = getRepositoryTemplates(elementToClone);
-		for(RepositoryEntry template:templates) {
-			addRepositoryTemplate(clone, template);
 		}
 		
 		if(settings.isCopyOffers()) {
@@ -561,13 +583,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		
 		if(settings.isCopyStandaloneEvents()) {
-			LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 			List<LectureBlock> lectureBlocksToCopy = lectureBlockDao.getLectureBlocks(elementToClone);
 			for(LectureBlock blockToCopy:lectureBlocksToCopy) {
+				if(lectureBlocksCloned.contains(blockToCopy.getKey())) continue; // Don't clone twice the same lecture block
+				
 				Date start = settings.shiftDate(blockToCopy.getStartDate());
 				Date end = settings.shiftDate(blockToCopy.getEndDate());
 				String externalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
 				lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
+				lectureBlocksCloned.add(blockToCopy.getKey());
 			}
 		}
 		
