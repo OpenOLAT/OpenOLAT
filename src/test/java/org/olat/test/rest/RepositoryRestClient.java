@@ -118,8 +118,7 @@ public class RepositoryRestClient {
 	 */
 	public RepositoryEntryVO deployResourceBySoftKey(File archive, String displayname, String softKey)
 	throws URISyntaxException, IOException {
-		RestConnection conn = new RestConnection(deploymentUrl);
-		assertTrue(conn.login(username, password));
+		RestConnection conn = new RestConnection(deploymentUrl, username, password);
 		
 		// Check first if ressource already exists
 		List<RepositoryEntryVO> entries = getResourceByExternalId(conn, softKey);
@@ -166,8 +165,7 @@ public class RepositoryRestClient {
 	
 	public RepositoryEntryVO deployResource(File archive, String resourcename, String displayname)
 	throws URISyntaxException, IOException {
-		RestConnection conn = new RestConnection(deploymentUrl);
-		assertTrue(conn.login(username, password));
+		RestConnection conn = new RestConnection(deploymentUrl, username, password);
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo").path("entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -197,8 +195,7 @@ public class RepositoryRestClient {
 	public CourseVO deployCourse(File archive, String resourcename, String displayname)
 	throws URISyntaxException, IOException {
 		
-		RestConnection conn = new RestConnection(deploymentUrl);
-		assertTrue(conn.login(username, password));
+		RestConnection conn = new RestConnection(deploymentUrl, username, password);
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("repo/courses").build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);

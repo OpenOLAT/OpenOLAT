@@ -85,8 +85,7 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getReminders_repo()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-rem-1");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -113,8 +112,7 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getReminders_course()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-rem-1");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(creator);
@@ -145,8 +143,7 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(creator));
+		RestConnection conn = new RestConnection(creator);
 		
 		ReminderVO reminderVo = new ReminderVO();
 		reminderVo.setDescription("Hello, I'm a reminder");
@@ -225,8 +222,7 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 		
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(creator));
+		RestConnection conn = new RestConnection(creator);
 		
 		ReminderVO reminderVo = new ReminderVO();
 		reminderVo.setKey(reminder.getKey());
@@ -301,8 +297,7 @@ public class RemindersWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void deleteReminder() 
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-rem-1");
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-rem-1");

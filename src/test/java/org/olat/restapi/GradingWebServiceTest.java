@@ -20,7 +20,6 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,8 +79,7 @@ public class GradingWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void testWithGrading() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getGradingUriBuilder().path("assignments").path("tests").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -104,9 +102,8 @@ public class GradingWebServiceTest extends OlatRestTestCase {
 		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
 		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment, new Date(), new Date());
 		dbInstance.commit();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getGradingUriBuilder().path("test").path(entry.getKey().toString()).path("assignments").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -143,9 +140,8 @@ public class GradingWebServiceTest extends OlatRestTestCase {
 		AssessmentEntry assessment = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
 		GradingAssignment assignment = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment, new Date(), new Date());
 		dbInstance.commit();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getGradingUriBuilder().path("test").path(entry.getKey().toString()).path("assignments")
 				.path(assignment.getKey().toString()).path("uservisibility").build();

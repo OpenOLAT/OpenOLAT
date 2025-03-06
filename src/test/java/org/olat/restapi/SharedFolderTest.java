@@ -86,8 +86,7 @@ public class SharedFolderTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void getDirectories() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("shared-owner-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
@@ -125,8 +124,7 @@ public class SharedFolderTest extends OlatRestTestCase {
 		copyFileInResourceFolder(container, "portrait.jpg", "2_");
 		
 		// owner want to upload a file
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(owner));
+		RestConnection conn = new RestConnection(owner);
 		
 		//create single page
 		URL fileUrl = CoursesFoldersTest.class.getResource("certificate.pdf");
@@ -150,8 +148,7 @@ public class SharedFolderTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void getFiles() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("shared-owner-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
@@ -181,8 +178,7 @@ public class SharedFolderTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void getFolders_deep() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("shared-owner-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
@@ -215,8 +211,7 @@ public class SharedFolderTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void getFolders_notFound() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("shared-owner-");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
@@ -252,8 +247,7 @@ public class SharedFolderTest extends OlatRestTestCase {
 		copyFileInResourceFolder(container, "certificate.pdf", "2_");
 		
 		// owner want to upload a file
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(owner));
+		RestConnection conn = new RestConnection(owner);
 		
 		//create single page
 		URL fileUrl = CoursesFoldersTest.class.getResource("certificate.pdf");
@@ -292,8 +286,7 @@ public class SharedFolderTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// participant want to see the file
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(participant));
+		RestConnection conn = new RestConnection(participant);
 
 		// check directories
 		URI uri = UriBuilder.fromUri(getFolderURI(sharedFolder)).path("files").build();
@@ -338,8 +331,7 @@ public class SharedFolderTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// participant want to upload a file
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(participant));
+		RestConnection conn = new RestConnection(participant);
 		
 		URL fileUrl = CoursesFoldersTest.class.getResource("certificate.pdf");
 		File file = new File(fileUrl.toURI());

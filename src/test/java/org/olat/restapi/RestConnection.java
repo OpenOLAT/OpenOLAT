@@ -44,7 +44,6 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
@@ -63,10 +62,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
+import org.olat.user.restapi.UserVO;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -98,7 +99,7 @@ public class RestConnection {
 	private final BasicCookieStore cookieStore = new BasicCookieStore();
 	private final BasicCredentialsProvider provider = new BasicCredentialsProvider();
 	private final CloseableHttpClient httpclient;
-
+	
 	private String securityToken;
 	
 	public RestConnection() {
@@ -106,6 +107,18 @@ public class RestConnection {
 				.setDefaultCookieStore(cookieStore)
 				.setDefaultCredentialsProvider(provider)
 				.build();
+	}
+	
+	public RestConnection(String username, String password) {
+		httpclient = HttpClientBuilder.create()
+				.setDefaultCookieStore(cookieStore)
+				.setDefaultCredentialsProvider(provider)
+				.build();
+		provider.setCredentials(new AuthScope(HOST, PORT), new UsernamePasswordCredentials(username, password));
+	}
+
+	public RestConnection(IdentityWithLogin identity) {
+		this(identity.getLogin(), identity.getPassword());
 	}
 	
 	public RestConnection(boolean enableCookieStore, boolean enableCredentialProvider) {
@@ -160,6 +173,24 @@ public class RestConnection {
 		return securityToken;
 	}
 	
+	/**
+	 * Call the protected method /users/me to authenticate.
+	 * 
+	 * @return A security token if login successful
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public String callMeForSecurityToken() throws IOException, URISyntaxException {
+		URI request = getContextURI().path("/users/me").build();
+		HttpGet method = createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		securityToken = getSecurityToken(response);
+		UserVO vo = parse(response, UserVO.class);
+		Assert.assertNotNull(vo);
+		return securityToken;
+	}
+	
 	public String getSecurityToken(HttpResponse response) {
 		if(response == null) return null;
 		
@@ -175,35 +206,6 @@ public class RestConnection {
 		}
 	}
 	
-
-	public boolean login(IdentityWithLogin identity) throws IOException, URISyntaxException {
-		return login(identity.getLogin(), identity.getPassword());
-	}
-
-	public boolean login(String username, String password) throws IOException, URISyntaxException {
-		URI uri = getContextURI().path("auth").path(username).queryParam("password", password).build();
-		
-		//provider credentials
-		provider.setCredentials(new AuthScope(HOST, PORT), new UsernamePasswordCredentials(username, password));
-		provider.setCredentials(new AuthScope(uri.getHost(), uri.getPort()), new UsernamePasswordCredentials(username, password));
-
-		int code = -1;
-		HttpGet httpget = new HttpGet(uri);
-		try(CloseableHttpResponse response = httpclient.execute(httpget)) {
-			Header header = response.getFirstHeader(RestSecurityHelper.SEC_TOKEN);
-			if(header != null) {
-				securityToken = header.getValue();
-			}
-			
-		    HttpEntity entity = response.getEntity();
-		    code = response.getStatusLine().getStatusCode();
-		    EntityUtils.consume(entity);
-		} catch(IOException e) {
-			log.error("", e);
-		}
-	    return code == 200;
-	}
-	
 	public <U> U get(URI uri, Class<U> cl) throws IOException, URISyntaxException {
 		HttpGet get = createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = execute(get);
@@ -212,7 +214,7 @@ public class RestConnection {
 			return parse(entity, cl);
 		} else {
 			EntityUtils.consume(response.getEntity());
-			log.error("get return: " + response.getStatusLine().getStatusCode());
+			log.error("get return: {}", response.getStatusLine().getStatusCode());
 			return null;
 		}
 	}

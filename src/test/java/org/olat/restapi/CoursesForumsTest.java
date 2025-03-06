@@ -21,7 +21,6 @@ package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -33,7 +32,6 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -68,15 +66,11 @@ public class CoursesForumsTest  extends OlatRestTestCase {
 	private static CourseNode forumNode;
 	private static Identity admin;
 	
-	private RestConnection conn;
-	
 	@Autowired
 	private DB dbInstance;
 	
 	@Before
-	public void setUp() throws Exception {
-		conn = new RestConnection();
-		
+	public void setUp() {
 		admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
 		course1 = CourseFactory.loadCourse(courseEntry);
@@ -96,22 +90,9 @@ public class CoursesForumsTest  extends OlatRestTestCase {
 		dbInstance.intermediateCommit();
 	}
 	
-  @After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-		}
-	}
-	
 	@Test
 	public void testGetForumInfo() throws IOException, URISyntaxException {
-		boolean loggedIN = conn.login("administrator", "openolat");
-		assertTrue(loggedIN);
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getNodeURI()).build();
 		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -119,12 +100,13 @@ public class CoursesForumsTest  extends OlatRestTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		ForumVO forum = conn.parse(response, ForumVO.class);
 		assertNotNull(forum);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetForumsInfo() throws IOException, URISyntaxException {
-		boolean loggedIN = conn.login("administrator", "openolat");
-		assertTrue(loggedIN);
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getNodesURI()).build();
 		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -135,12 +117,13 @@ public class CoursesForumsTest  extends OlatRestTestCase {
 		assertEquals(1, forums.getTotalCount());
 		assertNotNull(forums.getForums());
 		assertEquals(1, forums.getForums().length);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetForum() throws IOException, URISyntaxException {
-		boolean loggedIN = conn.login("administrator", "openolat");
-		assertTrue(loggedIN);
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getForumURI()).path("threads").build();
 		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
@@ -148,6 +131,8 @@ public class CoursesForumsTest  extends OlatRestTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		MessageVOes threads = conn.parse(response, MessageVOes.class);
 		assertNotNull(threads);
+		
+		conn.shutdown();
 	}
 	
 	private URI getNodeURI() {

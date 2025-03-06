@@ -19,8 +19,6 @@
  */
 package org.olat.restapi;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -80,8 +78,7 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(relationRole);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("relations").path("roles").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -113,8 +110,7 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		vo.setManagedFlags("delete");
 		vo.setRights(Collections.singletonList(CourseRightsEnum.viewCourseCalendar.name()));
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("relations").path("roles").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -171,8 +167,7 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		vo.setManagedFlags("all");
 		vo.setRights(Collections.singletonList(CourseRightsEnum.viewEfficiencyStatement.name()));
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("relations")
 				.path("roles").build();
@@ -229,8 +224,7 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		vo.setManagedFlags("all");
 		vo.setRights(Collections.singletonList(CourseRightsEnum.viewEfficiencyStatement.name()));
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("relations")
 				.path("roles").path(relationRole.getKey().toString()).build();
@@ -279,9 +273,8 @@ public class RelationRolesWebServiceTest extends OlatRestTestCase {
 		RelationRole relationRole = identityRelationshipService.createRole(role, rights);
 		dbInstance.commit();
 		Assert.assertNotNull(relationRole);
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("relations")
 				.path("roles").path(relationRole.getKey().toString()).build();

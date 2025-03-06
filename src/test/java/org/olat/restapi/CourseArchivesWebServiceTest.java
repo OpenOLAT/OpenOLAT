@@ -54,8 +54,7 @@ public class CourseArchivesWebServiceTest extends OlatRestTestCase {
 		IdentityWithLogin auth = JunitTestHelper.createAndPersistRndUser("rest-course-exp-1");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth.getIdentity());
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses")
 				.path(courseEntry.getOlatResource().getResourceableId().toString()).path("archives").build();
@@ -71,8 +70,7 @@ public class CourseArchivesWebServiceTest extends OlatRestTestCase {
 		IdentityWithLogin auth = JunitTestHelper.createAndPersistRndUser("rest-course-exp-2");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth.getIdentity());
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses")
 				.path(courseEntry.getOlatResource().getResourceableId().toString()).path("archives").build();
@@ -94,8 +92,7 @@ public class CourseArchivesWebServiceTest extends OlatRestTestCase {
 		IdentityWithLogin auth = JunitTestHelper.createAndPersistRndUser("rest-course-exp-2");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(auth.getIdentity());
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		CourseArchiveOptionsVO archiveOptions = new CourseArchiveOptionsVO();
 		archiveOptions.setTitle("Placeholder name");

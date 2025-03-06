@@ -81,8 +81,7 @@ public class UserEfficiencyStatementWebServiceTest extends OlatRestTestCase {
 		
 		
 		// get the statement
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users")
 				.path(assessedIdentity.getKey().toString())
@@ -120,8 +119,7 @@ public class UserEfficiencyStatementWebServiceTest extends OlatRestTestCase {
 		statementVO.setStatementXml("<org.olat.course.assessment.EfficiencyStatement></org.olat.course.assessment.EfficiencyStatement>");
 		
 		// create the statement
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users")
 				.path(assessedIdentity.getKey().toString())
@@ -178,8 +176,7 @@ public class UserEfficiencyStatementWebServiceTest extends OlatRestTestCase {
 		statementVO.setIdentityKey(assessedIdentity.getKey());
 		
 		// create the statement
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users")
 				.path(assessedIdentity.getKey().toString())
@@ -214,8 +211,7 @@ public class UserEfficiencyStatementWebServiceTest extends OlatRestTestCase {
 		statementVO.setIdentityKey(assessedIdentity.getKey());
 		
 		// create the statement
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users")
 				.path(assessedIdentity.getKey().toString())

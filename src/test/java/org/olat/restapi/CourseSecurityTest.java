@@ -27,7 +27,6 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -41,7 +40,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,7 +70,6 @@ public class CourseSecurityTest extends OlatRestTestCase {
 	
 	private Identity admin, id1, auth1, auth2;
 	private ICourse course;
-	private RestConnection conn;
 	
 	@Autowired
 	private DB dbInstance;
@@ -83,8 +80,7 @@ public class CourseSecurityTest extends OlatRestTestCase {
 	 * SetUp is called before each test.
 	 */
 	@Before
-	public void setUp() throws Exception {
-		conn = new RestConnection();
+	public void setUp() {
 		try {
 			// create course and persist as OLATResourceImpl
 			admin = JunitTestHelper.findIdentityByLogin("administrator");
@@ -105,26 +101,13 @@ public class CourseSecurityTest extends OlatRestTestCase {
 			
 			dbInstance.closeSession();
 		} catch (Exception e) {
-			log.error("Exception in setUp(): " + e);
-		}
-	}
-	
-	@After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-			e.printStackTrace();
-			throw e;
+			log.error("Exception in setUp():", e);
 		}
 	}
 	
 	@Test
 	public void testAdminCanEditCourse() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an structure node
 		URI newStructureUri = getElementsUri(course).path("structure")
@@ -135,11 +118,13 @@ public class CourseSecurityTest extends OlatRestTestCase {
 		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testIdCannotEditCourse() throws IOException, URISyntaxException {
-		assertTrue(conn.login("id-c-s-0", "A6B7C8"));
+		RestConnection conn = new RestConnection("id-c-s-0", "A6B7C8");
 		
 		//create an structure node
 		URI newStructureUri = getElementsUri(course).path("structure")
@@ -150,12 +135,14 @@ public class CourseSecurityTest extends OlatRestTestCase {
 		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testAuthorCannotEditCourse() throws IOException, URISyntaxException {
 		//author but not owner
-		assertTrue(conn.login("id-c-s-1", "A6B7C8"));
+		RestConnection conn = new RestConnection("id-c-s-1", "A6B7C8");
 		
 		//create an structure node
 		URI newStructureUri = getElementsUri(course).path("structure")
@@ -166,12 +153,14 @@ public class CourseSecurityTest extends OlatRestTestCase {
 		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testAuthorCanEditCourse() throws IOException, URISyntaxException {
 		//author and owner
-		assertTrue(conn.login("id-c-s-2", "A6B7C8"));
+		RestConnection conn = new RestConnection("id-c-s-2", "A6B7C8");
 		
 		//create an structure node
 		URI newStructureUri = getElementsUri(course).path("structure")
@@ -182,6 +171,8 @@ public class CourseSecurityTest extends OlatRestTestCase {
 		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
 	}
 	
 	private UriBuilder getCoursesUri() {

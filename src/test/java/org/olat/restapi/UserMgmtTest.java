@@ -319,8 +319,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 
 	@Test
 	public void testGetUsers() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -341,8 +340,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testFindUsersByLogin() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("login","administrator")
@@ -368,8 +366,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("user-rest");
 		Assert.assertNotNull(id);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("login", id.getLogin()).build();
@@ -394,8 +391,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("u-rest-manual");
 		Assert.assertNotNull(id);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("login", id.getLogin()).build();
@@ -421,8 +417,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		Identity identity = securityManager.setExternalId(id.getIdentity(), externalId);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("externalId", externalId)
@@ -459,8 +454,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_INACTIVE, identity);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("externalId", externalId)
@@ -499,8 +493,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		loginDeniedIdentity = securityManager.saveIdentityStatus(loginDeniedIdentity, Identity.STATUS_LOGIN_DENIED, loginDeniedIdentity);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("status", Integer.toString(Identity.STATUS_INACTIVE))
@@ -525,8 +518,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("user-auth-name");
 		Assert.assertNotNull(id);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("authProvider", "OLAT")
@@ -555,8 +547,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		securityManager.createAndPersistAuthentication(id.getIdentity(), "Shib", BaseSecurity.DEFAULT_ISSUER, null, shibIdent, null, null);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("authProvider", "Shib")
@@ -602,8 +593,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(identity);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("externalId", "a-non-existing-external-key")
@@ -622,8 +612,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testFindUsersByProperty() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("telMobile","39847592")
@@ -642,8 +631,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testFindAdminByAuth() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users")
 				.queryParam("authUsername","administrator")
@@ -663,8 +651,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void findByUsername() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("username")
 				.queryParam("username","administrator").build();
@@ -679,8 +666,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void findByUsernameCheckProperties() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		IdentityWithLogin meLogin = JunitTestHelper.createAndPersistRndUser("rest-users");
 		Identity me = meLogin.getIdentity();
@@ -706,8 +692,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void getUserLifecycle() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		IdentityWithLogin identityLogin = JunitTestHelper.createAndPersistRndUser("rest-life-user-1");
 		Identity identity  = identityLogin.getIdentity();
@@ -731,8 +716,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void updateUserLifecycle() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		IdentityWithLogin identityLogin = JunitTestHelper.createAndPersistRndUser("rest-life-user-2");
 		Identity identity  = identityLogin.getIdentity();
@@ -762,8 +746,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void reactivateUserLifecycle() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		// Create an inactive user
 		IdentityWithLogin identityLogin = JunitTestHelper.createAndPersistRndUser("rest-life-user-2");
@@ -821,8 +804,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		homePageConfigManager.saveConfigTo(me, hpc);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(meLogin.getLogin(), meLogin.getPassword()));
+		RestConnection conn = new RestConnection(meLogin.getLogin(), meLogin.getPassword());
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/me").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -840,8 +822,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetUser() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -858,8 +839,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetUserNotAdmin() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id2.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -882,8 +862,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		securityManager.setExternalId(managedId, externalId);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("managed").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -912,8 +891,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		securityManager.setExternalId(managedId, externalId);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("managed").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -930,8 +908,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	 */
 	@Test	
 	public void testGetRawJsonUser() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -948,8 +925,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	 */
 	@Test	
 	public void testGetRawXmlUser() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_XML, true);
@@ -962,8 +938,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testCreateUser() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UserVO vo = new UserVO();
 		String username = UUID.randomUUID().toString();
@@ -998,8 +973,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testCreateUser_emptyLogin() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UserVO vo = new UserVO();
 		vo.setLogin("");
@@ -1025,8 +999,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testCreateUser_special() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UserVO vo = new UserVO();
 		vo.setLogin("tes @-()_" + CodeHelper.getForeverUniqueID());
@@ -1055,8 +1028,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testCreateUser2() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UserVO vo = new UserVO();
 		vo.setLogin(UUID.randomUUID().toString());
@@ -1093,8 +1065,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testCreateUser_emailWithTrailingSpace() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UserVO vo = new UserVO();
 		String username = UUID.randomUUID().toString();
@@ -1128,8 +1099,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testCreateUser_same_email() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		String email = UUID.randomUUID() + "@frentix.com";
 		
@@ -1182,8 +1152,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testCreateUser_same_login() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		UserVO vo = new UserVO();
 		String username = UUID.randomUUID().toString();
@@ -1231,8 +1200,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testCreateUserWithValidationError() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		String login = "rest-809-" + UUID.randomUUID();
 		
@@ -1268,8 +1236,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testCreateAndUpdateUser() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		String username = UUID.randomUUID().toString();
 		String email = UUID.randomUUID() + "@frentix.com";
@@ -1331,8 +1298,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testCreateAndUpdateUser_same_email() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		String email = UUID.randomUUID() + "@frentix.com";
 		
@@ -1425,9 +1391,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		organisationService.addMember(organisation, id, OrganisationRoles.user, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		Assert.assertEquals("inst" + login + "@openolat.com", id.getUser().getInstitutionalEmail());
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		// set the institutional email empty 
 		UserVO updateVo = new UserVO();
@@ -1463,8 +1428,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		organisationService.addMember(organisation, id, OrganisationRoles.rolesmanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 	
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(login, "2change-very-often"));
+		RestConnection conn = new RestConnection(login, "2change-very-often");
 		
 		String newEmail = login + "@on.frentix.com";
 		// Find administrator
@@ -1495,8 +1459,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 	public void testDeleteUser() throws IOException, URISyntaxException {
 		Identity idToDelete = JunitTestHelper.createAndPersistIdentityAsUser("user-to-delete-" + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		//delete an authentication token
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + idToDelete.getKey()).build();
@@ -1516,8 +1480,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		//create an author
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-");
 		dbInstance.commitAndCloseSession();
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//get roles of author
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + author.getKey() + "/roles").build();
@@ -1541,8 +1505,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		//create an author
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-");
 		dbInstance.commitAndCloseSession();
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//get roles of author
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + author.getKey() + "/roles").build();
@@ -1557,8 +1521,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void getRoles_itself() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 
 		URI rolesUri = UriBuilder.fromUri(getContextURI())
 			.path("users").path(id1.getKey().toString()).path("roles").build();
@@ -1575,8 +1538,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void getRoles_notItself() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 
 		URI rolesUri = UriBuilder.fromUri(getContextURI())
 			.path("users").path(id2.getKey().toString()).path("roles").build();
@@ -1592,8 +1554,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		//create an author
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		RolesVO roles = new RolesVO();
 		roles.setAuthor(true);
@@ -1626,8 +1588,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		//create an author
 		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("status-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//get roles of author
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + user.getKey() + "/status").build();
@@ -1646,8 +1608,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		//create a user
 		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("login-denied-1-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		StatusVO status = new StatusVO();
 		status.setStatus(101);
@@ -1682,8 +1644,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("login-denied-2");
 		IdentityWithLogin hacker = JunitTestHelper.createAndPersistRndUser("login-denied-2");
 		dbInstance.commitAndCloseSession();
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(hacker));
+		
+		RestConnection conn = new RestConnection(hacker);
 		
 		StatusVO status = new StatusVO();
 		status.setStatus(101);
@@ -1707,9 +1669,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		prefsId.getUser().getPreferences().setLanguage("fr");
 		userManager.updateUserFromIdentity(prefsId);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//get preferences of author
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + prefsId.getKey() + "/preferences").build();
@@ -1730,9 +1691,8 @@ public class UserMgmtTest extends OlatRestTestCase {
 		prefsId.getUser().getPreferences().setLanguage("de");
 		userManager.updateUserFromIdentity(prefsId);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		PreferencesVO prefsVo = new PreferencesVO();
 		prefsVo.setLanguage("fr");
@@ -1757,8 +1717,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserForums() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
 				.queryParam("start", 0).queryParam("limit", 20).build();
@@ -1793,8 +1752,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroupForum() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
 				.path("group").path(g1.getKey().toString())
@@ -1813,8 +1771,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserCourseForum() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
 				.path("course").path(demoCourse.getResourceableId().toString()).path(demoForumNode.getIdent())
@@ -1833,8 +1790,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserFolders() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders").build();
 
@@ -1875,8 +1831,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroupFolder() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
 				.path("group").path(g2.getKey().toString()).build();
@@ -1897,8 +1852,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserBCCourseNodeFolder() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
 				.path("course").path(demoCourse.getResourceableId().toString()).path(demoBCCourseNode.getIdent()).build();
@@ -1920,8 +1874,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserPersonalFolder() throws Exception {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders").path("personal").build();
 
@@ -1939,8 +1892,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testOtherUserPersonalFolder() throws Exception {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("folders").path("personal").build();
 
@@ -1958,8 +1910,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testOtherUserPersonalFolderOfId3() throws Exception {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id3.getKey().toString()).path("folders").path("personal").build();
 
@@ -1980,8 +1931,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroup() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//retrieve all groups
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey() + "/groups").build();
@@ -1997,8 +1947,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroup_managed() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//retrieve managed groups
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
@@ -2016,8 +1965,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroup_notManaged() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//retrieve free groups
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
@@ -2035,8 +1983,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroup_externalId() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//retrieve g1
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
@@ -2057,8 +2004,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroupWithPaging() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//retrieve all groups
 		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
@@ -2081,8 +2027,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		IdentityWithLogin alien = JunitTestHelper.createAndPersistRndUser("user-group-alien-");
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(alien));
+		RestConnection conn = new RestConnection(alien);
 		
 		//retrieve all groups
 		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
@@ -2098,8 +2043,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroup_checkAllowedAccess() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		//retrieve all groups
 		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
@@ -2118,8 +2062,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroup_owner() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//retrieve all groups
 		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString())
@@ -2139,8 +2082,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroup_participant() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//retrieve all groups
 		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString())
@@ -2160,8 +2102,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUserGroupInfosWithPaging() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//retrieve all groups
 		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups").path("infos")
@@ -2184,8 +2125,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		URL portraitUrl = UserMgmtTest.class.getResource("portrait.jpg");
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		//upload portrait
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey() + "/portrait").build();
@@ -2253,8 +2193,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		URL portraitUrl = UserMgmtTest.class.getResource("portrait.jpg");
 		Assert.assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(id));
+		RestConnection conn = new RestConnection(id);
 		
 		//upload portrait
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -2294,8 +2233,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 		URL portraitUrl = UserMgmtTest.class.getResource("portrait.jpg");
 		Assert.assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(id));
+		RestConnection conn = new RestConnection(id);
 		
 		//upload portrait
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -2333,8 +2271,7 @@ public class UserMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void rename() throws URISyntaxException, IOException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("portrait-3");
 		String newUsername = UUID.randomUUID().toString();

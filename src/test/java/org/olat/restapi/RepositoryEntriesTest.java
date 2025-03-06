@@ -111,8 +111,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 
 	@Test
 	public void getEntries() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -126,8 +125,8 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	
 	@Test
 	public void getEntriesWithPaging() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.queryParam("start", "0").queryParam("limit", "25").build();
 		
@@ -153,9 +152,8 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(entry, level);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.queryParam("taxonomyLevelKey", level.getKey()).build();
 		
@@ -175,8 +173,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	public void getEntry() throws IOException, URISyntaxException {
 		RepositoryEntry re = createRepository(null, "Test GET repo entry");
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries/" + re.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -193,8 +190,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		IdentityWithLogin author = JunitTestHelper.createAndPersistRndAuthor("rest-author-1");
 		RepositoryEntry re = createRepository(author.getIdentity(), "Test GET repo entry");
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(author));
+		RestConnection conn = new RestConnection(author);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries/" + re.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -212,8 +208,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		IdentityWithLogin author2 = JunitTestHelper.createAndPersistRndAuthor("rest-author-3");
 		RepositoryEntry re = createRepository(author1.getIdentity(), "Test GET repo entry");
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(author2));
+		RestConnection conn = new RestConnection(author2);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries/" + re.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -231,8 +226,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		re = dbInstance.getCurrentEntityManager().merge(re);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.queryParam("managed", "true").build();
@@ -255,9 +249,8 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	public void updateRepositoryEntry() throws IOException, URISyntaxException {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		RepositoryEntryVO repoVo = new RepositoryEntryVO();
 		repoVo.setKey(re.getKey());
@@ -295,9 +288,8 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 	public void updateRepositoryEntry_lifecycle() throws IOException, URISyntaxException {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		RepositoryEntryVO repoVo = new RepositoryEntryVO();
 		repoVo.setKey(re.getKey());
@@ -353,8 +345,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -387,8 +378,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -426,8 +416,8 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		String externalId = softKey + "-Ext-ID";
 		String externalRef = softKey + "Ext-Ref";
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpEntity entity = MultipartEntityBuilder.create()
@@ -467,8 +457,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);

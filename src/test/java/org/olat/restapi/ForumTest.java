@@ -136,8 +136,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetThreads() throws IOException, URISyntaxException  {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("threads").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -153,8 +152,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetThreadsWithPaging() throws IOException, URISyntaxException  {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("threads")
 				.queryParam("start", "0").queryParam("limit", "2").build();
@@ -172,8 +170,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetThread() throws IOException, URISyntaxException  {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -189,8 +186,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetThreadWithPaging() throws IOException, URISyntaxException  {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 				.queryParam("start", "0").queryParam("limit", "2").build();
@@ -208,8 +204,7 @@ public class ForumTest extends OlatRestTestCase {
 
 	@Test
 	public void testNewThread() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("threads").queryParam("authorKey", id1.getKey())
 			.queryParam("title", "New thread")
@@ -238,8 +233,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testNewMessage() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())
@@ -269,8 +263,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testNewMessageWithEntity() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		ReplyVO vo = new ReplyVO();
 		vo.setTitle("Reply with attachment");
@@ -313,8 +306,7 @@ public class ForumTest extends OlatRestTestCase {
 			log.error("", e);
 		}
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -343,8 +335,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUploadAttachment() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())
@@ -389,8 +380,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUploadAttachmentOutOfBox() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())
@@ -424,8 +414,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUpload64Attachment() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())
@@ -472,8 +461,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testReplyWithTwoAttachments() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 
 		ReplyVO vo = new ReplyVO();
 		vo.setTitle("Reply with attachment");
@@ -548,8 +536,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUploadAttachmentWithFile64VO() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())
@@ -600,8 +587,7 @@ public class ForumTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUploadAttachmentAndRename() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())

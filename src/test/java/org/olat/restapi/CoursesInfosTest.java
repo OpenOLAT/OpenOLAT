@@ -26,7 +26,6 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -58,9 +57,8 @@ public class CoursesInfosTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetCourseInfos() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
 		URI uri = conn.getContextURI().path("repo").path("courses").path("infos").build();
 
 		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
@@ -79,8 +77,7 @@ public class CoursesInfosTest extends OlatRestTestCase {
 				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = conn.getContextURI().path("repo").path("courses").path("infos").path(course.getResourceableId().toString()).build();
 

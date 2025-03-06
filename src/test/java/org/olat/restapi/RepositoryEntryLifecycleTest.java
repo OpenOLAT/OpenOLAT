@@ -21,7 +21,6 @@ package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,10 +36,10 @@ import jakarta.ws.rs.core.UriBuilder;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -80,8 +79,7 @@ public class RepositoryEntryLifecycleTest extends OlatRestTestCase  {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve the public life cycles
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/lifecycle").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);

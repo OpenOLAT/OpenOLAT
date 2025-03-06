@@ -78,8 +78,7 @@ public class EfficiencyStatementTest extends OlatRestTestCase {
 		Assert.assertNotNull(statement);
 		
 		// get the statement
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(resource.getKey().toString())
@@ -100,8 +99,7 @@ public class EfficiencyStatementTest extends OlatRestTestCase {
 
 	@Test
 	public void putEfficiencyStatement() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-3");
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-4");
@@ -137,8 +135,7 @@ public class EfficiencyStatementTest extends OlatRestTestCase {
 	
 	@Test
 	public void putEfficiencyStatement_standalone() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-3");
 		dbInstance.commitAndCloseSession();
@@ -183,8 +180,7 @@ public class EfficiencyStatementTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void putEfficiencyStatement_standalone_alt() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-3");
 		dbInstance.commitAndCloseSession();

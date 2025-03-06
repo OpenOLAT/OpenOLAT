@@ -45,8 +45,7 @@ public class BigBlueButtonTemplatesWebServiceTest extends OlatRestTestCase {
 	public void getStatistics()
 	throws IOException, URISyntaxException  {
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("bigbluebutton").path("templates").path("statistics").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);

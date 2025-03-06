@@ -102,8 +102,7 @@ public class LecturesBlockRollCallTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// REST call
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").path("rollcalls")
 				.queryParam("hasAbsences", "true")
@@ -148,8 +147,7 @@ public class LecturesBlockRollCallTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// GET REST call
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").path("rollcalls")
 				.path(rollCall.getKey().toString()).build();
@@ -189,8 +187,7 @@ public class LecturesBlockRollCallTest extends OlatRestTestCase {
 		rollCallVo.setIdentityKey(id.getKey());
 		rollCallVo.setLectureBlockKey(lectureBlock.getKey());
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").path("rollcalls").build();
 		HttpPost postMethod = conn.createPost(uri, MediaType.APPLICATION_JSON);

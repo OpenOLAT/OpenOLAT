@@ -19,8 +19,6 @@
  */
 package org.olat.restapi;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -28,6 +26,9 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -56,9 +57,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
-
 /**
  * 
  * Initial date: 16 déc. 2022<br>
@@ -86,8 +84,7 @@ public class BusinessGroupInvitationsWebServiceTest extends OlatRestTestCase {
 				BusinessGroup.BUSINESS_TYPE, null, null, false, false, null);
 		dbInstance.commit();
 	
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		String email = "cedric.ferro@" + UUID.randomUUID();
 		URI uri = UriBuilder.fromUri(getContextURI())
@@ -122,8 +119,7 @@ public class BusinessGroupInvitationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(businessGroup);
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		String email = "hal.f@" + UUID.randomUUID();
 		InvitationVO invitationVo = new InvitationVO();
@@ -175,8 +171,7 @@ public class BusinessGroupInvitationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(invitation);
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		InvitationVO invitationVo = new InvitationVO();
 		invitationVo.setKey(invitation.getKey());
@@ -231,8 +226,7 @@ public class BusinessGroupInvitationsWebServiceTest extends OlatRestTestCase {
 				.path("groups").path(businessGroup.getKey().toString()).path("invitations")
 				.build();
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
@@ -268,8 +262,7 @@ public class BusinessGroupInvitationsWebServiceTest extends OlatRestTestCase {
 				.path("invitations").path(invitation.getKey().toString())
 				.build();
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
@@ -305,8 +298,7 @@ public class BusinessGroupInvitationsWebServiceTest extends OlatRestTestCase {
 				.path("invitations").path(invitation.getKey().toString())
 				.build();
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());

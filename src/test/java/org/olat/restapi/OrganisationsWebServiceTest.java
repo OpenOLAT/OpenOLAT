@@ -20,7 +20,6 @@
 package org.olat.restapi;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,9 +93,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Organisation organisation = organisationService.createOrganisation("REST Organisation", "REST-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -121,9 +119,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		organisation.setExternalId(externalId);
 		organisation = organisationService.updateOrganisation(organisation);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations")
 				.queryParam("externalId", externalId).build();
@@ -142,9 +139,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 5", "REST-5-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -159,8 +155,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void createOrganisation()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation", "REST-p-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
@@ -217,8 +212,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateOrganisation()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 2 ", "REST-p-2-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
@@ -276,8 +270,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateOrganisationWithKey()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 6", "REST-p-6-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 7", "REST-p-7-organisation", "", parentOrganisation, null, JunitTestHelper.getDefaultActor());
@@ -320,8 +313,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateAndMoveOrganisation()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 4 ", "REST-p-4-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
@@ -357,8 +349,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateAndMoveOrganisation_members()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
@@ -440,8 +431,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateAndMoveRootOrganisation()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Organisation rootOrganisation = organisationService.createOrganisation("ROOT Organisation 10", "REST-p-10-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		Organisation rootOrganisation2 = organisationService.createOrganisation("REST Organisation 10.1", "REST-p-10-1-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -480,8 +470,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		organisationService.addMember(organisation, admin.getIdentity(), OrganisationRoles.administrator, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(admin));
+		RestConnection conn = new RestConnection(admin);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
@@ -498,9 +487,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
@@ -518,9 +506,8 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 53", "REST-53-organisation", "", null, null, JunitTestHelper.getDefaultActor());
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
@@ -535,8 +522,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void getMembers_users()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-11");
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 5", "REST-p-5-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -558,8 +544,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void addMember_principal()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-12");
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 6", "REST-p-6-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -582,8 +567,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void addMembers_author()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-14");
 		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-15");
@@ -612,8 +596,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void removeMember_administrator()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-13");
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 7", "REST-p-7-organisation", "", null, null, JunitTestHelper.getDefaultActor());
@@ -645,8 +628,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		repositoryService.addOrganisation(course, organisation);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path(organisation.getKey().toString())
 				.path("entries").build();
@@ -669,8 +651,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		organisationService.addMember(organisation, member, OrganisationRoles.author, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
 				.path("user").path(member.getKey().toString()).build();
@@ -702,8 +683,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		organisationService.addMember(otherOrganisation, member, OrganisationRoles.rolesmanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
 				.path("rolesmanager").path(member.getKey().toString()).build();
@@ -729,8 +709,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		organisationService.addMember(otherOrganisation, member, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
 				.path("usermanager").path(member.getKey().toString()).build();
@@ -756,8 +735,7 @@ public class OrganisationsWebServiceTest extends OlatRestTestCase {
 		organisationService.addMember(otherOrganisation, member, OrganisationRoles.usermanager, JunitTestHelper.getDefaultActor());
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
 				.path("usermanager").path(member.getKey().toString())

@@ -184,8 +184,7 @@ public class ContactsTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetContactsRest() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("rest-contacts-two", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-contacts-two", "A6B7C8");
 
 		UriBuilder uri = UriBuilder.fromUri(getContextURI()).path("contacts").queryParam("start", "0").queryParam("limit", "10");
 		HttpGet method = conn.createGet(uri.build(), MediaType.APPLICATION_JSON, true);

@@ -27,15 +27,12 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -44,8 +41,6 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
@@ -54,7 +49,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
 import org.olat.test.OlatRestTestCase;
@@ -77,70 +71,6 @@ public class AuthenticationTest extends OlatRestTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
-
-	@Test
-	public void testSessionCookieLogin() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		
-		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("administrator").queryParam("password", "openolat").build();
-		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, true);
-		HttpResponse code = conn.execute(method);
-		assertEquals(200, code.getStatusLine().getStatusCode());
-		String response = EntityUtils.toString(code.getEntity());
-		assertTrue(response.startsWith("<hello"));
-		assertTrue(response.endsWith("Hello administrator</hello>"));
-	
-		List<Cookie> cookies = conn.getCookieStore().getCookies();
-		assertNotNull(cookies);
-		assertTrue(cookies.size() > 0);
-		
-		conn.shutdown();
-  }
-	
-	@Test
-	public void testSessionCookieLoginHttpClient4() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		
-		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("administrator").queryParam("password", "openolat").build();
-
-		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, true);
-		HttpResponse response = conn.execute(method);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		String hello = EntityUtils.toString(response.getEntity());
-		assertTrue(hello.startsWith("<hello"));
-		assertTrue(hello.endsWith("Hello administrator</hello>"));
-		List<org.apache.http.cookie.Cookie> cookies = conn.getCookieStore().getCookies();
-
-		assertNotNull(cookies);
-		assertFalse(cookies.isEmpty());
-		assertNotNull(response.getFirstHeader(RestSecurityHelper.SEC_TOKEN));
-		
-		conn.shutdown();
-  }
-	
-	@Test
-	public void testWrongPassword() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		
-		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("administrator").queryParam("password", "blabla").build();
-		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, true);
-		HttpResponse code = conn.execute(method);
-		assertEquals(401, code.getStatusLine().getStatusCode());
-		
-		conn.shutdown();
-	}
-	
-	@Test
-	public void testUnkownUser() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		
-		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("treuitr").queryParam("password", "blabla").build();
-		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, true);
-		HttpResponse code = conn.execute(method);
-		assertEquals(401, code.getStatusLine().getStatusCode());
-		
-		conn.shutdown();
-	}
 	
 	@Test
 	public void testBasicAuthentication() throws IOException, URISyntaxException {
@@ -176,21 +106,22 @@ public class AuthenticationTest extends OlatRestTestCase {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("rest-denied");
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id));
-		conn.shutdown();
-		
 		Identity savedIdentity = securityManager.saveIdentityStatus(id.getIdentity(), Identity.STATUS_LOGIN_DENIED, id.getIdentity());
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedIdentity);
 		
-		RestConnection conn2 = new RestConnection();
-		Assert.assertFalse(conn2.login(id.getLogin(), id.getPassword()));
-		conn2.shutdown();
+		// User try to see its profile
+		RestConnection conn = new RestConnection(id.getLogin(), id.getPassword());
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/me").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(401, response.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testBasicAuthentication_concurrent() throws IOException, URISyntaxException {
+	public void testBasicAuthentication_concurrent() {
 		
 		int numOfThreads = 25;
 		final CountDownLatch doneSignal = new CountDownLatch(numOfThreads);

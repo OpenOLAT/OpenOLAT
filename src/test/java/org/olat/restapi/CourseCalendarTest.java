@@ -130,8 +130,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	@Test
 	public void getCalendarEvents()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(auth1));
+		RestConnection conn = new RestConnection(auth1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course1.getResourceableId().toString()).path("calendar").path("events").build();
@@ -151,8 +150,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 				RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(auth1));
+		RestConnection conn = new RestConnection(auth1);
 
 		//create an event
 		EventVO event = new EventVO();
@@ -196,8 +194,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void putVisibleCalendarEvent() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(auth1));
+		RestConnection conn = new RestConnection(auth1);
 
 		//create an event
 		EventVO event = new EventVO();
@@ -232,10 +229,8 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void putCalendarEvents() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
-
-		Assert.assertTrue(conn.login("administrator", "openolat"));
 		
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin,
 				RepositoryEntryStatusEnum.preparation);
@@ -295,8 +290,7 @@ public class CourseCalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void deleteCalendarEvent() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(auth1));
+		RestConnection conn = new RestConnection(auth1);
 		
 		//create an event if the event is saved
 		KalendarRenderWrapper calendarWrapper = calendarManager.getCourseCalendar(course1);

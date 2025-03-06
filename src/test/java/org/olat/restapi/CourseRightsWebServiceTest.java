@@ -21,7 +21,6 @@ package org.olat.restapi;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.olat.restapi.repository.course.CourseRightsWebService.geRightsListWithRole;
 import static org.olat.restapi.repository.course.CourseRightsWebService.getRightsVOWithRole;
 
@@ -30,6 +29,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -62,9 +64,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * 
@@ -109,8 +108,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rights-1", defaultUnitTestOrganisation, null);
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		//create an contact node
 		URI rightsUri = UriBuilder.fromUri(getContextURI())
@@ -155,8 +153,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 		rightManager.addBGRight(CourseRights.RIGHT_DB, defGroup, entry.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		//create an contact node
 		URI rightsUri = UriBuilder.fromUri(getContextURI())
@@ -204,8 +201,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 		rightManager.addBGRight(CourseRights.RIGHT_DB, defGroup, entry.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		RightsVO newCoachRights = new RightsVO();
 		newCoachRights.setRole(BGRightsRole.tutor.name());
@@ -272,8 +268,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 		rightManager.addBGRight(CourseRights.RIGHT_DB, baseGroup1, entry.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		//create an contact node
 		URI rightsUri = UriBuilder.fromUri(getContextURI())
@@ -327,8 +322,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 		rightManager.addBGRight(CourseRights.RIGHT_DB, baseGroup1, entry.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		RightsVO newCoachRights = new RightsVO();
 		newCoachRights.setRole(BGRightsRole.tutor.name());
@@ -391,8 +385,7 @@ public class CourseRightsWebServiceTest extends OlatRestTestCase {
 				null, null, null, null, false, false, entry2);
 		Assert.assertNotNull(group1);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		RightsVO newCoachRights = new RightsVO();
 		newCoachRights.setRole(BGRightsRole.tutor.name());

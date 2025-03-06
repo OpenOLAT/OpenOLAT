@@ -86,8 +86,7 @@ public class CourseDBTest extends OlatRestTestCase {
 	
 	@Test
 	public void createEntry_putQuery() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth));
+		RestConnection conn = new RestConnection(auth);
 		
 		String category = createRndCategory();
 		String key = "myKeyName";
@@ -112,8 +111,7 @@ public class CourseDBTest extends OlatRestTestCase {
 	
 	@Test
 	public void createEntry_putQuery_repoKey() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth));
+		RestConnection conn = new RestConnection(auth);
 		
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", course.getResourceableId());
 		RepositoryEntry courseRe = repositoryManager.lookupRepositoryEntry(courseOres, true);
@@ -141,8 +139,7 @@ public class CourseDBTest extends OlatRestTestCase {
 	
 	@Test
 	public void createEntry_putJsonEntity() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth));
+		RestConnection conn = new RestConnection(auth);
 		
 		String category = createRndCategory();
 		
@@ -163,8 +160,7 @@ public class CourseDBTest extends OlatRestTestCase {
 	
 	@Test
 	public void createEntry_post() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth));
+		RestConnection conn = new RestConnection(auth);
 		
 		String category = createRndCategory();
 		String key = "postit";
@@ -197,8 +193,7 @@ public class CourseDBTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(entry);
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth));
+		RestConnection conn = new RestConnection(auth);
 
 		UriBuilder uri = getUriBuilder(course.getResourceableId(), category).path("values").path(key);
 		HttpGet get = conn.createGet(uri.build(), MediaType.APPLICATION_JSON, true);
@@ -216,8 +211,7 @@ public class CourseDBTest extends OlatRestTestCase {
 	
 	@Test
 	public void getUsedCategories() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(auth));
+		RestConnection conn = new RestConnection(auth);
 		
 		String category = createRndCategory();
 		

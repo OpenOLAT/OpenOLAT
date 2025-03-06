@@ -91,8 +91,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -114,8 +113,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -134,8 +132,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString()).path("levels").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -164,9 +161,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-2", "Taxonomy on rest", "PUT is cool", "PUT-tax-1");
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		String uid = UUID.randomUUID().toString();
 		TaxonomyLevelVO levelVo = new TaxonomyLevelVO();
@@ -211,9 +207,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("Sub-type", "Type for a sub level", "All is in the title", "TYP-23", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		String uid = UUID.randomUUID().toString();
 		TaxonomyLevelVO levelVo = new TaxonomyLevelVO();
@@ -269,9 +264,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("Sub-type", "Type for a sub level", "All is in the title", "TYP-27", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		TaxonomyLevelVO levelVo = new TaxonomyLevelVO();
 		levelVo.setKey(levelToUpdate.getKey());
@@ -318,9 +312,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		TaxonomyLevel levelToDelete = taxonomyService.createTaxonomyLevel("REST-Del-u-1", random(), "Ext-56", null, rootLevel, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("levels").path(levelToDelete.getKey().toString()).build();
@@ -351,9 +344,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		TaxonomyLevel levelToDelete = taxonomyService.createTaxonomyLevel("REST-Del-u-2", random(), "Ext-58", null, rootLevel, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("levels").path(rootLevel.getKey().toString()).build();
@@ -377,9 +369,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		TaxonomyLevelType type2 = taxonomyService.createTaxonomyLevelType("RESR-Type-2", "Type 2 on rest", "Type", "EXT-Type-2", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString()).path("types").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -409,9 +400,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		TaxonomyLevelType type = taxonomyService.createTaxonomyLevelType("REST-Type-3", "Type 3 on rest", "Type", "EXT-Type-3", true, taxonomy);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("types").path(type.getKey().toString()).build();
@@ -435,9 +425,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		newTypeVo.setDisplayName("REST-Type-5");
 		newTypeVo.setDescription("Unused description");
 		newTypeVo.setExternalId("EXT-type-5");
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("types").build();
@@ -467,9 +456,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		type = taxonomyService.updateTaxonomyLevelType(type, subTypes);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(taxonomy);
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("types").path(type.getKey().toString()).path("allowedSubTypes").build();
@@ -504,9 +492,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		dbInstance.commit();
 		type = taxonomyService.updateTaxonomyLevelType(type, Collections.singletonList(subType1));
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("types").path(type.getKey().toString()).path("allowedSubTypes").path(subType2.getKey().toString()).build();
@@ -547,9 +534,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		allowedSubTypes.add(subType3);
 		type = taxonomyService.updateTaxonomyLevelType(type, allowedSubTypes);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("types").path(type.getKey().toString()).path("allowedSubTypes").path(subType2.getKey().toString()).build();
@@ -592,8 +578,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// get the competences
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("levels").path(level.getKey().toString()).path("competences").build();
@@ -634,8 +619,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// get the competences
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("competences").path(id.getKey().toString()).build();
@@ -672,8 +656,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// get the competences
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("levels").path(level.getKey().toString()).path("competences")
@@ -697,9 +680,8 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-8", "Taxonomy on rest", "PUT is cool, yes!", "PUT-tax-2");
 		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-r-8", random(), "Ext-23", null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		TaxonomyCompetenceVO competenceVo = new TaxonomyCompetenceVO();
 		competenceVo.setIdentityKey(id.getKey());
@@ -746,8 +728,7 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// remove the competence
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
 				.path("levels").path(level.getKey().toString()).path("competences")

@@ -36,7 +36,7 @@ import org.olat.test.OlatRestTestCase;
 /**
  * 
  * Initial date: 5 Oct 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class DocumentPoolModuleWebServiceTest extends OlatRestTestCase {
@@ -44,9 +44,7 @@ public class DocumentPoolModuleWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void documentPoolModuleConfiguration()
 	throws IOException, URISyntaxException {
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("docpool").path("module").path("configuration").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);

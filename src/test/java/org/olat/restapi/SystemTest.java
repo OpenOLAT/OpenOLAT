@@ -64,8 +64,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testMonitoringStatus() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("status").build();
 		StatusVO stats = conn.get(systemUri, StatusVO.class);
@@ -80,8 +79,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testRuntimeStatisticsInfos() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("runtime").build();
 		RuntimeStatisticsVO runtimeStats = conn.get(systemUri, RuntimeStatisticsVO.class);
@@ -95,8 +93,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testSystemThreads() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("threads").build();
 		ThreadsVO threadInfos = conn.get(systemUri, ThreadsVO.class);
@@ -110,8 +107,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testSystemThreadDetails() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("threads").path("cpu").build();
 		ThreadVOes threadInfos = conn.get(systemUri, ThreadVOes.class);
@@ -131,8 +127,7 @@ public class SystemTest extends OlatRestTestCase {
 
 	@Test
 	public void testSystemMemory() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("memory").build();
 		MemoryVO memoryInfos = conn.get(systemUri, MemoryVO.class);
@@ -147,8 +142,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testSystemSessions() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("openolat").path("sessions").build();
 		SessionsVO sessionInfos = conn.get(systemUri, SessionsVO.class);
@@ -168,8 +162,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testSystemUserStatistics() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("openolat").path("users").build();
 		UserStatisticsVO userStats = conn.get(systemUri, UserStatisticsVO.class);
@@ -209,8 +202,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testSystemRepositoryStatistics() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("openolat").path("repository").build();
 		RepositoryStatisticsVO repoStats = conn.get(systemUri, RepositoryStatisticsVO.class);
@@ -224,8 +216,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testSystemIndexerStatistics() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("openolat").path("indexer").build();
 		IndexerStatisticsVO indexerStats = conn.get(systemUri, IndexerStatisticsVO.class);
@@ -246,8 +237,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testSystemOpenOLATStatistics() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("openolat").build();
 		OpenOLATStatisticsVO stats = conn.get(systemUri, OpenOLATStatisticsVO.class);
@@ -266,8 +256,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testEnvironmentSystem() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("environment").build();
 		EnvironmentInformationsVO envInfos = conn.get(systemUri, EnvironmentInformationsVO.class);
@@ -287,8 +276,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testRuntimeStatsSystem() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("runtime").build();
 		RuntimeStatisticsVO runInfos = conn.get(systemUri, RuntimeStatisticsVO.class);
@@ -306,8 +294,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testRuntimeClassesStatsSystem() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("runtime").path("classes").build();
 		ClasseStatisticsVO classesInfos = conn.get(systemUri, ClasseStatisticsVO.class);
@@ -322,8 +309,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testRuntimeThreadsStatsSystem() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("runtime").path("threads").build();
 		ThreadStatisticsVO threadsInfos = conn.get(systemUri, ThreadStatisticsVO.class);
@@ -338,8 +324,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testRuntimeMemoryStatsSystem() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("runtime").path("memory").build();
 		MemoryStatisticsVO memoryInfos = conn.get(systemUri, MemoryStatisticsVO.class);
@@ -363,8 +348,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testReleaseInfos() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("release").build();
 		ReleaseInfosVO versionInfos = conn.get(systemUri, ReleaseInfosVO.class);
@@ -380,8 +364,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testDatabase() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("database").build();
 		DatabaseVO databaseInfos = conn.get(systemUri, DatabaseVO.class);
@@ -406,8 +389,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testTasks() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI tasksUri = conn.getContextURI().path("system").path("monitoring").path("openolat").path("tasks").build();
 		TasksVO infos = conn.get(tasksUri, TasksVO.class);
@@ -419,8 +401,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testMonitoringInfos() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("configuration").build();
 		MonitoringInfosVO databaseInfos = conn.get(systemUri, MonitoringInfosVO.class);
@@ -434,8 +415,7 @@ public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testVFSStats() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("revisionsSize").build();
 		VFSStatsVO revisionsInfos = conn.get(systemUri, VFSStatsVO.class);

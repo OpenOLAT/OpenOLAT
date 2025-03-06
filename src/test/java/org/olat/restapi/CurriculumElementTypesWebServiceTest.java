@@ -19,8 +19,6 @@
  */
 package org.olat.restapi;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -78,9 +76,8 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		CurriculumElementType type = curriculumService.createCurriculumElementType("TYPE-2", "Type 2", "", "");
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path("types").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -102,9 +99,8 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		CurriculumElementType type = curriculumService.createCurriculumElementType("rest-3-type", "REST Type 3", "A type for REST", "EXT-3");
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path("types").path(type.getKey().toString()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -123,8 +119,7 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void createCurriculumElementType()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		CurriculumElementTypeVO vo = new CurriculumElementTypeVO();
 		vo.setCssClass("o_icon_rest");
@@ -169,8 +164,7 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateCurriculumElementType()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		CurriculumElementType type = curriculumService.createCurriculumElementType("rest-5-type", "REST 5 Type", "A type for REST", "EXT-5");
 		dbInstance.commitAndCloseSession();
@@ -218,8 +212,7 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateCurriculumElementTypeWithKey()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		CurriculumElementType type = curriculumService.createCurriculumElementType("rest-6-type", "REST 6 Type", "A type for REST", "EXT-6");
 		dbInstance.commitAndCloseSession();
@@ -283,9 +276,8 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 		type = curriculumService.updateCurriculumElementType(type, subTypes);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(type);
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path("types")
 				.path(type.getKey().toString()).path("allowedSubTypes").build();
@@ -318,9 +310,8 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 		dbInstance.commit();
 		type = curriculumService.updateCurriculumElementType(type, Collections.singletonList(subType1));
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path("types").path(type.getKey().toString())
 				.path("allowedSubTypes").path(subType2.getKey().toString()).build();
@@ -360,9 +351,8 @@ public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 		allowedSubTypes.add(subType3);
 		type = curriculumService.updateCurriculumElementType(type, allowedSubTypes);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path("types").path(type.getKey().toString())
 				.path("allowedSubTypes").path(subType2.getKey().toString()).build();

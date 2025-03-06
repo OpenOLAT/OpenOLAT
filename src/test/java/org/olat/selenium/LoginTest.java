@@ -196,7 +196,7 @@ public class LoginTest extends Deployments {
 
 		// user log in via REST
 		UserRestClient userClient = new UserRestClient(adminClient.getRestURI(), user.getLogin(), user.getPassword());
-		String token = userClient.login(user.getLogin(), user.getPassword());
+		String token = userClient.callMeForSecurityToken();
 
 		// user uses its x-token to enter OpenOlat
 		String restRequest = deploymentUrl.toString() + "url/MyCoursesSite/0/My/0"

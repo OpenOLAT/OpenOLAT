@@ -103,8 +103,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCourseGroups() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-5", defaultUnitTestOrganisation, null);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
@@ -130,8 +129,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCourseGroupsUnkownId() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		Long courseId = 1l;
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + courseId + "/groups").build();
@@ -145,8 +143,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCourseGroup() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-6", defaultUnitTestOrganisation, null);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
@@ -168,8 +165,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void putCourseGroupRelation() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-7", defaultUnitTestOrganisation, null);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
@@ -204,8 +200,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void postCourseGroupRelation() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-8", defaultUnitTestOrganisation, null);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
@@ -240,8 +235,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void putNewCourseGroup() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-11", defaultUnitTestOrganisation, null);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
@@ -275,8 +269,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void removeCourseGroup() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-9", defaultUnitTestOrganisation, null);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
@@ -306,8 +299,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	public void basicSecurityDeleteCall() throws IOException, URISyntaxException {
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("rest-c-g-11");
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(identity));
+		RestConnection conn = new RestConnection(identity);
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-11", defaultUnitTestOrganisation, null);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);
@@ -328,8 +320,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 	@Test
 	public void basicSecurityPutCall() throws IOException, URISyntaxException {
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("rest-c-g-10");
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(identity));
+		RestConnection conn = new RestConnection(identity);
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-c-g-10", defaultUnitTestOrganisation, null);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(owner, defaultUnitTestOrganisation);

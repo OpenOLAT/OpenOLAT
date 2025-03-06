@@ -76,8 +76,7 @@ public class BigBlueButtonServerWebServiceTest extends OlatRestTestCase {
 		server = bigBlueButtonManager.updateServer(server);
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("bigbluebutton").path("servers").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -104,8 +103,7 @@ public class BigBlueButtonServerWebServiceTest extends OlatRestTestCase {
 		server = bigBlueButtonManager.updateServer(server);
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("bigbluebutton")
 				.path("servers").path(server.getKey().toString()).build();
@@ -134,8 +132,7 @@ public class BigBlueButtonServerWebServiceTest extends OlatRestTestCase {
 		vo.setEnabled(Boolean.TRUE);
 		vo.setCapacityFactory(Double.valueOf(2.1));
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));		
+		RestConnection conn = new RestConnection("administrator", "openolat");		
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("bigbluebutton").path("servers").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -178,8 +175,7 @@ public class BigBlueButtonServerWebServiceTest extends OlatRestTestCase {
 		vo.setEnabled(Boolean.FALSE);
 		vo.setCapacityFactory(Double.valueOf(12.5));
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));		
+		RestConnection conn = new RestConnection("administrator", "openolat");		
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("bigbluebutton").path("servers").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);

@@ -27,7 +27,6 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -89,8 +88,7 @@ public class MyForumsTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load my forums
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id));
+		RestConnection conn = new RestConnection(id);
 		
 		//subscribed to nothing
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id.getKey().toString()).path("forums").build();

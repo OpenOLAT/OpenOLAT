@@ -56,7 +56,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -118,7 +117,6 @@ public class GroupMgmtTest extends OlatRestTestCase {
 	private BusinessGroup g3, g4;
 	private OLATResource course;
 	private Message m1, m2, m3, m4, m5;
-	private RestConnection conn;
 
 	@Autowired
 	private DB dbInstance;
@@ -139,8 +137,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 	 * Set up a course with learn group and group area
 	 */
 	@Before
-	public void setUp() throws Exception {
-		conn = new RestConnection();
+	public void setUp() {
 		//create a course with learn group
 
 		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-one");
@@ -245,23 +242,9 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		dbInstance.intermediateCommit();
 	}
 	
-	@After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-			e.printStackTrace();
-			throw e;
-		}
-	}
-	
-	
 	@Test
 	public void testGetGroupsAdmin() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("groups").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -280,11 +263,13 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		assertTrue(keys.contains(g2.getKey()));
 		assertTrue(keys.contains(g3.getKey()));
 		assertTrue(keys.contains(g4.getKey()));
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetGroups() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-four", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-four", "A6B7C8");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("groups").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -303,11 +288,13 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		assertTrue(keys.contains(g2.getKey()));
 		assertFalse(keys.contains(g3.getKey()));
 		assertFalse(keys.contains(g4.getKey()));
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetGroupAdmin() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("groups").path(g1.getKey().toString()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -316,11 +303,13 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		GroupVO vo = conn.parse(response, GroupVO.class);
 		assertNotNull(vo);
 		assertEquals(vo.getKey(), g1.getKey());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetGroupInfos() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/infos").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -331,12 +320,14 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		assertEquals(Boolean.TRUE, vo.getHasWiki());
 		assertEquals("<p>Hello world</p>", vo.getNews());
 		assertNotNull(vo.getForumKey());
+		
+		conn.shutdown();
 	}
 	
 	//the web service generate the forum key
 	@Test
 	public void testGetGroupInfos2() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g2.getKey() + "/infos").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -347,11 +338,13 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		assertEquals(Boolean.FALSE, vo.getHasWiki());
 		assertNull(vo.getNews());
 		assertNotNull(vo.getForumKey());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetThreads() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-one", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-one", "A6B7C8");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/forum/threads").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -361,11 +354,12 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		
 		assertNotNull(messages);
 		assertEquals(2, messages.size());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetMessages() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-one", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-one", "A6B7C8");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/forum/posts/" + m1.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -375,11 +369,12 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		
 		assertNotNull(messages);
 		assertEquals(4, messages.size());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetGroupCalendarEvents() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an event
 		EventVO event = new EventVO();
@@ -403,6 +398,8 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		List<EventVO> vos = parseEventArray(response);
 		assertNotNull(vos);
+		
+		conn.shutdown();
 	}
 	
 	private List<EventVO> parseEventArray(HttpResponse response) {
@@ -417,7 +414,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUpdateCourseGroup() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		GroupVO vo = new GroupVO();
 		vo.setKey(g1.getKey());
@@ -440,11 +437,13 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		assertEquals(bg.getKey(), vo.getKey());
 		assertEquals(bg.getName(), "rest-g1-mod");
 		assertEquals(bg.getDescription(), "rest-g1 description");
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testCreateCourseGroup() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		GroupVO vo = new GroupVO();
 		vo.setName("rest-g5-new");
@@ -466,11 +465,13 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		assertEquals(bg.getKey(), newGroupVo.getKey());
 		assertEquals(bg.getName(), "rest-g5-new");
 		assertEquals(bg.getDescription(), "rest-g5 description");
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void createCourseGroupWithConfiguration() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create the group
 		GroupVO vo = new GroupVO();
@@ -526,11 +527,13 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		assertTrue(bg.isOwnersVisibleIntern());
 		assertFalse(bg.isParticipantsVisibleIntern());
 		assertFalse(bg.isWaitingListVisibleIntern());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void createCourseGroupWithNewsAndContact() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create the group
 		GroupVO vo = new GroupVO();
@@ -576,11 +579,13 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_WIKI));
 		// Check news tools access configuration
 		assertEquals("<p>News!</p>", tools.lookupNews());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void getGroupConfiguration() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-1");
 		BusinessGroup group = businessGroupService.createBusinessGroup(owner, "Configuration", "REST configuration",
@@ -604,12 +609,14 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		Assert.assertNotNull(config.getTools());
 		Assert.assertEquals(0, config.getTools().length);
 		Assert.assertNotNull(config.getToolsAccess());
-		Assert.assertTrue(config.getToolsAccess().isEmpty());	
+		Assert.assertTrue(config.getToolsAccess().isEmpty());
+		
+		conn.shutdown();
 	}
 		
 	@Test
 	public void getConfiguredGroupConfiguration() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach-2");
 		BusinessGroup group = businessGroupService.createBusinessGroup(owner, "Configuration", "REST configuration",
@@ -648,11 +655,12 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		Assert.assertEquals(Integer.valueOf(CollaborationTools.FOLDER_ACCESS_ALL), config.getToolsAccess().get(CollaborationTools.TOOL_FOLDER));	
 		Assert.assertEquals(Integer.valueOf(CollaborationTools.CALENDAR_ACCESS_OWNERS), config.getToolsAccess().get(CollaborationTools.TOOL_CALENDAR));	
 		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void updateDeleteNews() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create the group
 		GroupVO vo = new GroupVO();
@@ -703,14 +711,16 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		CollaborationTools reloadedCollabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
 		String deletedNews = reloadedCollabTools.lookupNews();
 		assertNull(deletedNews);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void getGroupStatus() throws IOException, URISyntaxException {
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "rest-g10", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
 		dbInstance.commitAndCloseSession();
-		
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + businessGroup.getKey() + "/status").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -720,6 +730,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		GroupLifecycleVO lifecycleVo = conn.parse(response, GroupLifecycleVO.class);
 		Assert.assertNotNull(lifecycleVo);
 		Assert.assertEquals(BusinessGroupStatusEnum.active.name(), lifecycleVo.getStatus());
+		conn.shutdown();
 	}
 	
 	@Test
@@ -728,8 +739,8 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		businessGroupLifecycleManager.deleteBusinessGroupSoftly(businessGroup, owner1, false);
 		dbInstance.commitAndCloseSession();
-		
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + businessGroup.getKey() + "/status").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -739,14 +750,16 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		GroupLifecycleVO lifecycleVo = conn.parse(response, GroupLifecycleVO.class);
 		Assert.assertNotNull(lifecycleVo);
 		Assert.assertEquals(BusinessGroupStatusEnum.trash.name(), lifecycleVo.getStatus());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void updateGroupStatus() throws IOException, URISyntaxException {
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "rest-g11", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
 		dbInstance.commitAndCloseSession();
-		
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + businessGroup.getKey() + "/status").build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
@@ -757,11 +770,13 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		GroupLifecycleVO lifecycleVo = conn.parse(response, GroupLifecycleVO.class);
 		Assert.assertNotNull(lifecycleVo);
 		Assert.assertEquals(BusinessGroupStatusEnum.inactive.name(), lifecycleVo.getStatus());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testDeleteCourseGroup() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
@@ -770,11 +785,13 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		
 		BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
 		assertNull(bg);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetParticipantsAdmin() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/participants").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -795,11 +812,12 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		}
 		assertNotNull(idKey1);
 		assertNotNull(idKey2);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetParticipants() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-four", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-four", "A6B7C8");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/participants").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -807,11 +825,12 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		
 		//g1 not authorized
 		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetOwnersAdmin() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/owners").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -831,21 +850,23 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		}
 		assertNotNull(idKey1);
 		assertNotNull(idKey2);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetOwners() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-four", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-four", "A6B7C8");
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/owners").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		//not authorized
 		assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatusLine().getStatusCode());
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testAddParticipant() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/participants/" + part3.getKey()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -862,16 +883,15 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		}
 		
 		assertTrue(found);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testRemoveParticipant() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/participants/" + part2.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
-		
-
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		List<Identity> participants = businessGroupService.getMembers(g1, GroupRoles.participant.name());
@@ -883,11 +903,12 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		}
 		
 		assertFalse(found);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testAddTutor() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/owners/" + owner3.getKey()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -903,11 +924,12 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		}
 		
 		assertTrue(found);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testRemoveTutor() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/owners/" + owner2.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
@@ -923,6 +945,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		}
 		
 		assertFalse(found);
+		conn.shutdown();
 	}
 	
 	protected List<UserVO> parseUserArray(HttpEntity body) {

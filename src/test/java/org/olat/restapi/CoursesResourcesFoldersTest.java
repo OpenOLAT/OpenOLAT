@@ -47,7 +47,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
@@ -70,12 +69,8 @@ public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 	private static ICourse course1;
 	private static Identity admin;
 	
-	private RestConnection conn;
-	
 	@Before
 	public void setUp() throws Exception {
-		conn = new RestConnection();
-		
 		admin = JunitTestHelper.findIdentityByLogin("administrator");
 		RepositoryEntry courseEntry = JunitTestHelper.deployEmptyCourse(admin, "Empty course",
 				RepositoryEntryStatusEnum.preparation);
@@ -93,18 +88,6 @@ public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 		DBFactory.getInstance().intermediateCommit();
 	}
 	
- 	@After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
-	
 	private void copyFileInResourceFolder(VFSContainer container, String filename, String prefix)
 	throws IOException {
 		VFSLeaf item = container.createChildLeaf(prefix + filename);	
@@ -118,7 +101,7 @@ public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetFiles() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -127,11 +110,14 @@ public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 		List<LinkVO> links = parseLinkArray(response.getEntity());
 		assertNotNull(links);
 		assertEquals(3, links.size());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetFilesDeeper() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).path("SubDir").path("SubSubDir").path("SubSubSubDir").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -141,11 +127,14 @@ public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 		assertNotNull(links);
 		assertEquals(1, links.size());
 		assertEquals("3_singlepage.html", links.get(0).getTitle());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetFileDeep() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).path("SubDir").path("SubSubDir").path("SubSubSubDir")
 			.path("3_singlepage.html").build();
 		HttpGet method = conn.createGet(uri, "*/*", true);
@@ -164,6 +153,7 @@ public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 			}
 		}
 		assertNotNull(contentType);
+		conn.shutdown();
 	}
 	
 	private URI getCourseFolderURI() {

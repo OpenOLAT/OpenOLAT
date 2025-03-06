@@ -172,8 +172,7 @@ public class CatalogTest extends OlatRestTestCase {
 
 	@Test
 	public void testGetRoots() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -188,8 +187,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetRootsWithPaging() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
@@ -207,8 +205,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetChild() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -224,8 +221,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetChildren() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(root1.getKey().toString()).path("children").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -240,8 +236,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetChildrenWithPaging() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(root1.getKey().toString()).path("children")
 				.queryParam("start", "0").queryParam("limit", "2").build();
@@ -260,8 +255,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testPutCategoryJson() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		CatalogEntryVO subEntry = new CatalogEntryVO();
 		subEntry.setName("Sub-entry-1");
@@ -294,8 +288,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testPutCategoryQuery() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 				.queryParam("name", "Sub-entry-2")
@@ -325,8 +318,7 @@ public class CatalogTest extends OlatRestTestCase {
 	public void testPutCatalogEntryJson() throws IOException, URISyntaxException {
 		RepositoryEntry re = createRepository("put-cat-entry-json", 6458438l);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		CatalogEntryVO subEntry = new CatalogEntryVO();
 		subEntry.setName("Sub-entry-1");
@@ -364,8 +356,7 @@ public class CatalogTest extends OlatRestTestCase {
 	public void testPutCatalogEntryQuery() throws IOException, URISyntaxException {
 		RepositoryEntry re = createRepository("put-cat-entry-query", 6458439l);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 				.queryParam("name", "Sub-entry-2")
@@ -396,8 +387,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUpdateCatalogEntryJson() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		CatalogEntryVO entry = new CatalogEntryVO();
 		entry.setName("Entry-1-b");
@@ -423,8 +413,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUpdateAndMoveCatalogEntryJson() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		CatalogEntryVO entry = new CatalogEntryVO();
 		entry.setName("Entry-2-moved-down");
@@ -453,8 +442,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUpdateCatalogEntryQuery() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
 		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
@@ -476,8 +464,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testUpdateCatalogEntryForm() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
 		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
@@ -499,8 +486,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testMoveCatalogEntryForm() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entryToMove1.getKey().toString()).build();
 		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
@@ -522,8 +508,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testDeleteCatalogEntry() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
 		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
@@ -541,8 +526,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetOwners() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).path("owners").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -562,8 +546,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetOwner() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//admin is owner
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
@@ -588,8 +571,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testAddOwner() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 			.path("owners").path(id1.getKey().toString()).build();
@@ -613,8 +595,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testRemoveOwner() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 			.path("owners").path(id1.getUser().getKey().toString()).build();
@@ -638,8 +619,7 @@ public class CatalogTest extends OlatRestTestCase {
 	
 	@Test
 	public void testBasicSecurityPutCall() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id2));
+		RestConnection conn = new RestConnection(id2);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 				.queryParam("name", "Not-sub-entry-3")

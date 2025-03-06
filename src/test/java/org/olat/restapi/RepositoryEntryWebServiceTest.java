@@ -20,7 +20,6 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.io.File;
@@ -65,9 +64,9 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
-import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryImportExportLinkEnum;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -128,8 +127,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void exportCourse()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("course-owner");
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(author);
 		dbInstance.closeSession();
@@ -156,9 +154,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry testEntry = courseHandler.importResource(author, null, "Test QTI 2.1", "", RepositoryEntryImportExportLinkEnum.WITH_REFERENCE, defOrganisation, Locale.ENGLISH, testFile, null);
 		dbInstance.closeSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(testEntry.getKey().toString()).path("file").build();
@@ -181,8 +178,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//get the owners
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").path(re.getKey().toString()).path("owners").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -212,8 +208,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//add an owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("owners").path(owner.getKey().toString())
@@ -244,9 +239,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		UserVO[] newOwners = new UserVO[2];
 		newOwners[0] = UserVOFactory.get(owner1);
 		newOwners[1] = UserVOFactory.get(owner2);
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("entries").path(re.getKey().toString()).path("owners").build();
@@ -274,8 +268,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("owners").path(owner.getKey().toString()).build();
@@ -302,8 +295,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//get the coaches
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").path(re.getKey().toString()).path("coaches").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -333,8 +325,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//add an owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("coaches").path(coach.getKey().toString())
@@ -362,8 +353,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//add an owner
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UserVO[] newCoaches = new UserVO[2];
 		newCoaches[0] = UserVOFactory.get(coach1);
@@ -395,8 +385,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("coaches").path(coach.getKey().toString()).build();
@@ -424,8 +413,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//get the coaches
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").path(re.getKey().toString()).path("participants").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -454,8 +442,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//add an owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("participants").path(participant.getKey().toString())
@@ -483,8 +470,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//add an owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		//add the 2 participants to the course
 		UserVO[] newParticipants = new UserVO[2];
@@ -519,8 +505,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("participants").path(participant.getKey().toString()).build();
@@ -551,8 +536,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("metadata").build();
@@ -596,8 +580,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		List<RepositoryEntryMyView> views = repositoryService.searchMyView(params, 0, -1);
 		Assert.assertTrue(views.isEmpty());
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		// Add a public offer
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -639,8 +622,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(1, views.size());
 		Assert.assertEquals(re.getKey(), views.get(0).getKey());
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		// Add a public offer
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -670,8 +652,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		repositoryManager.addOwners(owner, iae, re, new MailPackage(false));
 
 		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		// Changed the status
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -713,8 +694,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		repositoryManager.addOwners(owner, iae, re, new MailPackage(false));
 
 		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		// Changed the status
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -744,8 +724,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		repositoryManager.addOwners(owner, iae, re, new MailPackage(false));
 
 		//remove the owner
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Assert.assertEquals(RepositoryEntryStatusEnum.published, re.getEntryStatus());
 
@@ -776,9 +755,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	public void updateMetadata() throws IOException, URISyntaxException {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString()).path("metadata").build();
@@ -859,9 +837,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		repositoryManager.setImage(new VFSJavaIOFile(image), entry, admin);
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
 		//remove the owner
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("entries").path(entry.getKey().toString())
@@ -884,9 +861,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		repositoryManager.setImage(new VFSJavaIOFile(image), entry, admin);
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		//remove the owner
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("entries").path(entry.getKey().toString())
@@ -907,10 +882,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		//remove the owner
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("entries").path(entry.getKey().toString())
@@ -936,10 +909,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		//remove the owner
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("entries").path(entry.getKey().toString())
@@ -967,9 +938,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(re, level);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo/entries").path(re.getKey().toString())
@@ -993,9 +963,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-501", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -1023,9 +992,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		repositoryEntryToTaxonomyLevelDao.createRelation(entry, level);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -1060,9 +1028,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		List<TaxonomyLevel> levels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entry);
 		Assert.assertEquals(2, levels.size());
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())

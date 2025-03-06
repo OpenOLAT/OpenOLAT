@@ -165,8 +165,7 @@ public class CalendarTest extends OlatRestTestCase {
 
 	@Test
 	public void testGetCalendars() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -181,8 +180,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void testHijackCalendars() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("calendars").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -194,8 +192,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetEvents() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").path("events").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -210,8 +207,7 @@ public class CalendarTest extends OlatRestTestCase {
 
 	@Test
 	public void testGetEvents_onlyFuture() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").path("events")
 				.queryParam("onlyFuture", "true").build();
@@ -238,8 +234,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetEvents_paging() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").path("events")
 				.queryParam("start", "0").queryParam("limit", "5").build();
@@ -269,8 +264,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetCalendarEvents() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -295,8 +289,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetCalendarEvents_onlyFuture() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -321,8 +314,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetCalendarEvents_paging() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -352,8 +344,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void testOutputGetCalendarEvents() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id1));
+		RestConnection conn = new RestConnection(id1);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("calendars").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -389,8 +380,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void putCalendarEvent() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id2));
+		RestConnection conn = new RestConnection(id2);
 		
 		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("calendars").build();
 		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
@@ -438,8 +428,7 @@ public class CalendarTest extends OlatRestTestCase {
 	public void putCalendarEventWithLinks() throws IOException, URISyntaxException {
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("calendar-");
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(identity));
+		RestConnection conn = new RestConnection(identity);
 		
 		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString()).path("calendars").build();
 		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
@@ -497,8 +486,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void putCalendarEvents_forbidden() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id2));
+		RestConnection conn = new RestConnection(id2);
 		
 		//create an event
 		EventVO event = new EventVO();
@@ -525,8 +513,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void testPostCalendarEvents() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id2));
+		RestConnection conn = new RestConnection(id2);
 		
 		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("calendars").build();
 		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
@@ -572,8 +559,7 @@ public class CalendarTest extends OlatRestTestCase {
 	public void testAttributeMapping() throws IOException, URISyntaxException {
 		// create a user and login
 		IdentityWithLogin identity = JunitTestHelper.createAndPersistRndUser("cal-3");
-		RestConnection conn = new RestConnection();
-		conn.login(identity);
+		RestConnection conn = new RestConnection(identity);
 		
 		//create a course with a calendar
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identity.getIdentity(), RepositoryEntryStatusEnum.published);
@@ -656,8 +642,7 @@ public class CalendarTest extends OlatRestTestCase {
 		event.setKalendarEventLinks(List.of(link));
 		calendarManager.addEventTo(calendarWrapper.getKalendar(), event);
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(identity));
+		RestConnection conn = new RestConnection(identity);
 		
 		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(identity.getKey().toString()).path("calendars").build();
 		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
@@ -692,8 +677,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void testPutPersonalCalendarEvents() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id2));
+		RestConnection conn = new RestConnection(id2);
 		
 		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("calendars").build();
 		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
@@ -739,8 +723,7 @@ public class CalendarTest extends OlatRestTestCase {
 	
 	@Test
 	public void testDeletePersonalCalendarEvents() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id2));
+		RestConnection conn = new RestConnection(id2);
 		
 		//check if the event is saved
 		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(id2.getIdentity());

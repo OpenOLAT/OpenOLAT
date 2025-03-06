@@ -80,8 +80,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getUserCertificatesInformations() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("user-cert-1");
 		Identity author = JunitTestHelper.getDefaultAuthor();
@@ -122,8 +121,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getUserManagedCertificatesInfos() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("user-cert-6");
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
@@ -180,8 +178,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getUserManagedCertificatesInfosByExternalId() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("user-cert-6");
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
@@ -216,8 +213,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getUserCertificatePdf() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("user-cert-2");
 		Identity author = JunitTestHelper.getDefaultAuthor();
@@ -254,8 +250,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getUserCertificateInfos() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("user-cert-5");
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
@@ -296,8 +291,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void uploadCertificateStandalone() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-4");
 		dbInstance.commitAndCloseSession();
@@ -354,8 +348,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void deleteUserCertificate() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("user-cert-5");
 		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
@@ -382,8 +375,7 @@ public class UserCertificationWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void deleteUserCourseCertificate() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("user-cert-5");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity);

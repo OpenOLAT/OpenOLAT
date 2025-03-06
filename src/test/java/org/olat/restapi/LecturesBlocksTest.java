@@ -144,8 +144,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course.getResourceableId().toString()).path("lectureblocks").build();
@@ -176,8 +175,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString()).path("lectureblocks").build();
@@ -201,8 +199,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		String externalId = UUID.randomUUID().toString();
 		LectureBlockVO lectureBlockVo = new LectureBlockVO();
@@ -269,8 +266,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		String externalId = UUID.randomUUID().toString();
 		LectureBlockVO lectureBlockVo = new LectureBlockVO();
@@ -317,9 +313,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		dbInstance.commit();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString()).path("lectureblocks").path("configuration").build();
@@ -336,10 +331,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		dbInstance.commit();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
-		
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		RepositoryEntryLectureConfigurationVO configVo = new RepositoryEntryLectureConfigurationVO();
 		configVo.setLectureEnabled(Boolean.TRUE);
@@ -387,8 +380,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -411,8 +403,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -433,8 +424,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -468,8 +458,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
+		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
 				.path("lectureblocks").path(block.getKey().toString())
@@ -500,8 +490,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		lectureService.save(block, Collections.singletonList(defGroup));
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -536,8 +525,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		curriculumService.addRepositoryEntry(curriculumElement, entry, true);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -579,8 +567,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -641,8 +628,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		// add curriculum elements groups
 		URI cUri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
@@ -712,8 +698,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		curriculumService.addRepositoryEntry(curriculumElement, entry, true);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -753,9 +738,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		dbInstance.commit();
 		lectureService.save(block, Collections.singletonList(curriculumElement.getGroup()));
 		dbInstance.commit();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -781,9 +765,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		LectureBlock block = createLectureBlock(entry);
 		dbInstance.commit();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -811,9 +794,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		lectureService.addTeacher(block, teacher1);
 		lectureService.addTeacher(block, teacher2);
 		dbInstance.commit();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -848,8 +830,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		LectureBlock block = createLectureBlock(entryOrigin);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseOrigin.getResourceableId().toString())
 				.path("lectureblocks").path(block.getKey().toString())
@@ -886,9 +867,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		lectureBlockToTaxonomyLevelDao.createRelation(block, level);
 		dbInstance.commit();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -914,9 +894,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-200", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -948,9 +927,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
 		lectureBlockToTaxonomyLevelDao.createRelation(block, level);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())
@@ -989,9 +967,8 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		List<TaxonomyLevel> levels = lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(block);
 		Assert.assertEquals(2, levels.size());
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.path(entry.getKey().toString())

@@ -63,8 +63,7 @@ public class CoursePublishTest extends OlatRestTestCase {
 	
 	@Test
 	public void testGetCourse() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//deploy a test course
 		URL courseUrl = CoursePublishTest.class.getResource("myCourseWS.zip");

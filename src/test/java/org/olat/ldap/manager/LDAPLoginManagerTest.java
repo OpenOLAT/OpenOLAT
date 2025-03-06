@@ -21,7 +21,6 @@ package org.olat.ldap.manager;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -1527,8 +1526,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// change it back via REST
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		String newUsername = "cbraben";
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(id.getKey().toString())

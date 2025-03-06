@@ -74,15 +74,10 @@ public class UserRestClient {
 		this.password = password;
 	}
 	
-	public String login(String username, String login)
+	public String callMeForSecurityToken()
 	throws IOException, URISyntaxException {
-		RestConnection restConnection = new RestConnection(deploymentUrl);
-		String securityToken = null;
-		if(restConnection.login(username, login)) {
-			securityToken = restConnection.getSecurityToken();
-		}
-		restConnection.shutdown();
-		return securityToken;
+		RestConnection restConnection = new RestConnection(deploymentUrl, username, password);
+		return restConnection.callMeForSecurityToken();
 	}
 	
 	public UserVO createRandomUser()
@@ -92,8 +87,7 @@ public class UserRestClient {
 	
 	public UserVO createRandomUser(String name)
 	throws IOException, URISyntaxException {
-		RestConnection restConnection = new RestConnection(deploymentUrl);
-		assertTrue(restConnection.login(username, password));
+		RestConnection restConnection = new RestConnection(deploymentUrl, username, password);
 		UserVO user = createUser(restConnection, name, "Rnd", createRandomPwd());
 		restConnection.shutdown();
 		return user;
@@ -101,8 +95,7 @@ public class UserRestClient {
 	
 	public UserVO createRandomUserWithoutPassword(String name)
 	throws IOException, URISyntaxException {
-		RestConnection restConnection = new RestConnection(deploymentUrl);
-		assertTrue(restConnection.login(username, password));
+		RestConnection restConnection = new RestConnection(deploymentUrl, username, password);
 		UserVO user = createUser(restConnection, name, "Rnd", null);
 		restConnection.shutdown();
 		return user;
@@ -115,8 +108,7 @@ public class UserRestClient {
 	
 	public UserVO createAuthor(String name)
 	throws IOException, URISyntaxException {
-		RestConnection restConnection = new RestConnection(deploymentUrl);
-		assertTrue(restConnection.login(username, password));
+		RestConnection restConnection = new RestConnection(deploymentUrl, username, password);
 		
 		UserVO user = createUser(restConnection, name, "Auth", createRandomPwd());
 		
@@ -130,8 +122,7 @@ public class UserRestClient {
 	
 	public UserVO createPoolManager(String name)
 	throws IOException, URISyntaxException {
-		RestConnection restConnection = new RestConnection(deploymentUrl);
-		assertTrue(restConnection.login(username, password));
+		RestConnection restConnection = new RestConnection(deploymentUrl, username, password);
 		
 		UserVO user = createUser(restConnection, name, "Pool", createRandomPwd());
 		
@@ -167,8 +158,7 @@ public class UserRestClient {
 	 */
 	public UserVO createAdministrator()
 	throws IOException, URISyntaxException {
-		RestConnection restConnection = new RestConnection(deploymentUrl);
-		assertTrue(restConnection.login(username, password));
+		RestConnection restConnection = new RestConnection(deploymentUrl, username, password);
 
 		UserVO user = createUser(restConnection, "Admin", "", createRandomPwd());
 		
@@ -236,8 +226,7 @@ public class UserRestClient {
 	
 	public String createPasswordChangeLink(UserVO user)
 	throws URISyntaxException, IOException {
-		RestConnection restConnection = new RestConnection(deploymentUrl);
-		assertTrue(restConnection.login(username, password));
+		RestConnection restConnection = new RestConnection(deploymentUrl, username, password);
 		
 		URI request = getRestURIBuilder().path("pwchange").queryParam("identityKey", user.getKey()).build();
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -250,8 +239,7 @@ public class UserRestClient {
 	public InvitationVO createExternalUser(Long repositoryEntryKey, String firstName, String lastName,
 			String email, boolean registrationRequired, int expiration)
 	throws URISyntaxException, IOException {
-		RestConnection restConnection = new RestConnection(deploymentUrl);
-		assertTrue(restConnection.login(username, password));
+		RestConnection restConnection = new RestConnection(deploymentUrl, username, password);
 		
 		URI request = getRestURIBuilder()
 				.path("repo").path("entries")

@@ -20,7 +20,6 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,8 +90,7 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		assertNotNull(itemUrl);
 		File itemFile = new File(itemUrl.toURI());
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("qpool/items").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -121,9 +119,8 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-1");
 		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/qpool/items/" + item.getKey() + "/authors/").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -142,9 +139,8 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-2");
 		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/qpool/items/" + item.getKey() + "/authors/" + author.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -163,8 +159,7 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		QuestionItem item = questionDao.createAndPersist(author, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
 		Identity coAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("item-author-1");
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/qpool/items/" + item.getKey() + "/authors/" + coAuthor.getKey()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -190,8 +185,7 @@ public class QuestionPoolTest extends OlatRestTestCase {
 		questionItemDao.addAuthors(authors, item);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/qpool/items/" + item.getKey() + "/authors/" + coAuthor.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);

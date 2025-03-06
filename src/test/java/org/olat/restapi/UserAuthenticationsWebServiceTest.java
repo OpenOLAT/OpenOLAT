@@ -49,6 +49,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Encoder;
 import org.olat.login.auth.AuthenticationStatus;
 import org.olat.login.auth.OLATAuthManager;
@@ -82,8 +83,8 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getAuthentications() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		
 		Identity administrator = securityManager.findIdentityByLogin("administrator");
 		
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -101,7 +102,6 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void createAuthentications() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		Identity adminIdent = JunitTestHelper.findIdentityByLogin("administrator");
 		try {
 			Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API", BaseSecurity.DEFAULT_ISSUER);
@@ -112,8 +112,8 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 			//
 		}
 		dbInstance.commitAndCloseSession();
-		
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		AuthenticationVO vo = new AuthenticationVO();
 		vo.setAuthUsername("administrator");
@@ -158,9 +158,8 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-auth-2");
 		String authUsername = UUID.randomUUID().toString();
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		//set the first authentication
 		AuthenticationVO vo1 = new AuthenticationVO();
@@ -199,8 +198,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void deleteAuthentications() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an authentication token
 		Identity adminIdent = JunitTestHelper.findIdentityByLogin("administrator");
@@ -225,18 +223,20 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void updateAuthentication() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an authentication token
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("rest-auth-1");
 		Authentication authentication = securityManager
-				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", BaseSecurity.DEFAULT_ISSUER, null,
-						ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
+				.createAndPersistAuthentication(ident.getIdentity(), "REST-A-*", BaseSecurity.DEFAULT_ISSUER,
+						CodeHelper.getUniqueID(), ident.getLogin(), "credentials", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		conn.callMeForSecurityToken();
 		
 		//update an authentication token
 		String newUsername = ident.getLogin() + "-v2";
+		String newExternalId = "my-external-" + System.nanoTime();
 		// set the second which duplicates the first
 		AuthenticationVO vo = new AuthenticationVO();
 		vo.setKey(authentication.getKey());
@@ -244,7 +244,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		vo.setIdentityKey(ident.getKey());
 		vo.setProvider("REST-A-*");
 		vo.setCredential("my-credentials");
-		vo.setExternalId("my-external-id");
+		vo.setExternalId(newExternalId);
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(ident.getKey().toString()).path("authentications").build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
 		conn.addJsonEntity(method, vo);
@@ -256,7 +256,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(ident.getKey(), updatedAuthentication.getIdentityKey());
 		Assert.assertEquals("REST-A-*", updatedAuthentication.getProvider());
 		Assert.assertEquals(newUsername, updatedAuthentication.getAuthUsername());
-		Assert.assertEquals("my-external-id", updatedAuthentication.getExternalId());
+		Assert.assertEquals(newExternalId, updatedAuthentication.getExternalId());
 		// credentials are not updated, only the authentication user name
 		Assert.assertNotEquals("my-credentials", updatedAuthentication.getCredential());
 
@@ -272,8 +272,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void updateAuthenticationConflictProvider() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an authentication token
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("rest-auth-2");
@@ -309,8 +308,7 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void updateAuthenticationConflictIdentity() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an authentication token
 		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("rest-auth-3");
@@ -348,9 +346,8 @@ public class UserAuthenticationsWebServiceTest extends OlatRestTestCase {
 	public void changePassword() throws IOException, URISyntaxException {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-chg-pwd");
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("users").path(user.getKey().toString()).path("authentications").path("password")

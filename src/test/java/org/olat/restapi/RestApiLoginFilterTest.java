@@ -27,8 +27,6 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -45,6 +43,7 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.cookie.Cookie;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
@@ -78,12 +77,12 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testCookieAuthentication() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		conn.callMeForSecurityToken();
 		
-		assertTrue(conn.login("administrator", "openolat"));
 		List<Cookie> cookies = conn.getCookieStore().getCookies();
-		assertNotNull(cookies);
-		assertFalse(cookies.isEmpty());
+		Assert.assertNotNull(cookies);
+		Assert.assertFalse(cookies.isEmpty());
 		
 		conn.shutdown();
 	}
@@ -95,11 +94,10 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testTokenAuthentication() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-		
-		String securityToken = conn.getSecurityToken();
-		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		RestConnection conn = new RestConnection("administrator", "openolat");
+
+		String securityToken = conn.callMeForSecurityToken();
+		Assert.assertTrue(StringHelper.containsNonWhitespace(securityToken));
 		
 		conn.shutdown();
 	}
@@ -111,14 +109,18 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void testTokenAuthentication_user() throws IOException, URISyntaxException {
+	public void testTokenAuthenticationUser() throws IOException, URISyntaxException {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("x-token-1");
-		RestConnection conn = new RestConnection();
-		boolean loggedIn = conn.login(id);
-		String securityToken = conn.getSecurityToken();
+		RestConnection conn = new RestConnection(id);
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/me").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
 		//log user in
-		assertTrue(loggedIn);
-		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		String securityToken = conn.getSecurityToken(response);
+		Assert.assertTrue(StringHelper.containsNonWhitespace(securityToken));
 		conn.shutdown();
 	}
 	
@@ -129,10 +131,9 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testFollowTokenBasedDiscussion() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-		String securityToken = conn.getSecurityToken();
-		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		String securityToken = conn.callMeForSecurityToken();
+		Assert.assertTrue(StringHelper.containsNonWhitespace(securityToken));
 		conn.shutdown();
 		
 		//path is protected
@@ -142,8 +143,8 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 		method1.setHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
 		HttpResponse r1 = c1.execute(method1);
 		securityToken = c1.getSecurityToken(r1);
-		assertEquals(200, r1.getStatusLine().getStatusCode());
-		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		Assert.assertEquals(200, r1.getStatusLine().getStatusCode());
+		Assert.assertTrue(StringHelper.containsNonWhitespace(securityToken));
 		c1.shutdown();
 		
 		//path is protected
@@ -153,8 +154,8 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 		method2.setHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
 		HttpResponse r2 = c2.execute(method2);
 		securityToken = c2.getSecurityToken(r2);
-		assertEquals(200, r2.getStatusLine().getStatusCode());
-		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		Assert.assertEquals(200, r2.getStatusLine().getStatusCode());
+		Assert.assertTrue(StringHelper.containsNonWhitespace(securityToken));
 		c2.shutdown();
 		
 		//path is not protected
@@ -187,12 +188,10 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void testFollowTokenBasedDiscussion_flushSession() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-		String securityToken = conn.getSecurityToken();
+		RestConnection conn = new RestConnection("administrator", "openolat");
+		String securityToken = conn.callMeForSecurityToken();
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
 		conn.shutdown();
-		
 		
 		RestSecurityBeanImpl beanImpl = (RestSecurityBeanImpl)CoreSpringFactory.getImpl(RestSecurityBean.class);
 		beanImpl.clearCaches();

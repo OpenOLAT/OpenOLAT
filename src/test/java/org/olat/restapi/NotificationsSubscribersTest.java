@@ -99,8 +99,7 @@ public class NotificationsSubscribersTest extends OlatRestTestCase {
 		Assert.assertNotNull(forum);
 		
 		//put subscribers
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		PublisherVO subscribersVO = new PublisherVO();
 		//publisher data
@@ -170,8 +169,7 @@ public class NotificationsSubscribersTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//get the subscriber
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI subscribersUri = UriBuilder.fromUri(getContextURI()).path("notifications").path("subscribers")
 				.path(subsContext.getResName()).path(subsContext.getResId().toString()).path(subsContext.getSubidentifier()).build();

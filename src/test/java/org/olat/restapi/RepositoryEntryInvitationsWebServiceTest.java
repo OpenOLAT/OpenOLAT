@@ -19,8 +19,6 @@
  */
 package org.olat.restapi;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -29,6 +27,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -61,9 +62,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
-
 /**
  * 
  * Initial date: 16 déc. 2022<br>
@@ -91,9 +89,8 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 				RepositoryEntryStatusEnum.published);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Assert.assertNotNull(course);
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		String email = "john.v@" + UUID.randomUUID();
 		URI uri = UriBuilder.fromUri(getContextURI())
@@ -130,9 +127,8 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Assert.assertNotNull(entry);
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		String email = "hal.v@" + UUID.randomUUID();
 		InvitationVO invitationVo = new InvitationVO();
@@ -187,9 +183,8 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 		Invitation invitation = invitationService.findInvitation(tmpInvitation.getToken());
 		Assert.assertNotNull(invitation);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		InvitationVO invitationVo = new InvitationVO();
 		invitationVo.setKey(invitation.getKey());
@@ -247,8 +242,7 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 		id = securityManager.saveIdentityStatus(id, Identity.STATUS_INACTIVE, admin);
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("entries").path(courseEntry.getKey().toString()).path("invitations")
@@ -287,9 +281,8 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 				RepositoryEntryStatusEnum.published);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Assert.assertNotNull(course);
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		String email = existingInvitee.getUser().getEmail();
 		URI uri = UriBuilder.fromUri(getContextURI())
@@ -335,9 +328,9 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 		URI uri = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("entries").path(entry.getKey().toString()).path("invitations")
 				.build();
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
@@ -371,9 +364,9 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 				.path("repo").path("entries").path(entry.getKey().toString())
 				.path("invitations").path(invitation.getKey().toString())
 				.build();
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
@@ -406,9 +399,9 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 				.path("repo").path("entries").path(entry.getKey().toString())
 				.path("invitations").path(invitation.getKey().toString())
 				.build();
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
 		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());

@@ -81,8 +81,7 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		lectureService.addTeacher(block, author);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -123,8 +122,7 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		lectureService.addTeacher(block, author);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(user));
+		RestConnection conn = new RestConnection(user);
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -143,8 +141,7 @@ public class LecturesBlocksRootTest extends OlatRestTestCase {
 		lectureService.addTeacher(block, author);
 		dbInstance.commit();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		String date = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").format(new Date());
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("lectures").queryParam("date", date).build();

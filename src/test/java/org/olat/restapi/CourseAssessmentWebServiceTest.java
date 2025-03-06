@@ -88,8 +88,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCourseRootResultsAllParticipants() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		ICourse course = deployQtiCourse();
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -121,8 +120,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCourseRootResultsByIdentityKey() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		ICourse course = deployQtiCourse();
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -152,8 +150,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCourseNodeResults() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		ICourse course = deployQtiCourse();
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -185,8 +182,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCourseNodeResultsByIdentity() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		ICourse course = deployQtiCourse();
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -217,8 +213,7 @@ public class CourseAssessmentWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCourseNodeResultsByIdentityWithScore() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		ICourse course = deployGTACourse();
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

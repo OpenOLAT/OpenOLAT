@@ -28,7 +28,6 @@ package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOADRESSES;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOCOACHES;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS;
@@ -45,7 +44,6 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -77,15 +75,11 @@ public class CoursesContactElementTest extends OlatRestTestCase {
 	private ICourse course1;
 	private String rootNodeId;
 
-	private RestConnection conn;
-	
 	@Autowired
 	private DB dbInstance;
 	
 	@Before
-	public void setUp() throws Exception {
-		conn = new RestConnection();
-		
+	public void setUp() {
 		admin = JunitTestHelper.findIdentityByLogin("administrator");
 		
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
@@ -95,21 +89,9 @@ public class CoursesContactElementTest extends OlatRestTestCase {
 		rootNodeId = course1.getEditorTreeModel().getRootNode().getIdent();
 	}
 	
-  @After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-		}
-	}
-	
 	@Test
 	public void testBareBoneConfig() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an contact node
 		URI newContactUri = getElementsUri(course1).path("contact")
@@ -135,11 +117,13 @@ public class CoursesContactElementTest extends OlatRestTestCase {
 		assertEquals(contactNode.getInstruction(), "Contact-instruction-0");
 		assertEquals(contactNode.getInstructionalDesign(), "Contact-instructionalDesign-0");
 		assertEquals(contactNode.getParentId(), rootNodeId);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testFullConfig() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an contact node
 		URI newContactUri = getElementsUri(course1).path("contact")
@@ -183,6 +167,8 @@ public class CoursesContactElementTest extends OlatRestTestCase {
 
 		assertEquals(config.get(CONFIG_KEY_MSUBJECT_DEFAULT), "Hello by contact 1");
 		assertEquals(config.get(CONFIG_KEY_MBODY_DEFAULT), "Hello by contact 1 body");
+		
+		conn.shutdown();
 	}
 	
 	private UriBuilder getElementsUri(ICourse course) {

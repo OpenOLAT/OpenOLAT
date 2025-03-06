@@ -101,8 +101,7 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedMode);
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseEntry.getOlatResource().getResourceableId().toString())
 				.path("assessmentmodes").build();
@@ -136,8 +135,7 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		AssessmentMode savedMode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		// Search with the external ID
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
@@ -177,8 +175,7 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		assessmentModeVo.setIpList("192.168.1.1");
 		assessmentModeVo.setRestrictAccessIps(Boolean.TRUE);
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));	
+		RestConnection conn = new RestConnection("administrator", "openolat");	
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(courseEntry.getOlatResource().getResourceableId().toString())
@@ -245,8 +242,7 @@ public class CourseAssessmentModeWebServiceTest extends OlatRestTestCase {
 		assessmentModeVo.setElementList("90604173081887,90604173081892");
 		assessmentModeVo.setStartElement("90604173081892");
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));	
+		RestConnection conn = new RestConnection("administrator", "openolat");	
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);

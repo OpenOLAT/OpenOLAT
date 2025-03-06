@@ -77,7 +77,7 @@ public class CoursesQTIElementTest extends OlatRestTestCase {
 	 * SetUp is called before each test.
 	 */
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		try {
 			Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 			URL courseUrl = OlatRestTestCase.class.getResource("file_resources/course_with_qti21.zip");
@@ -85,15 +85,14 @@ public class CoursesQTIElementTest extends OlatRestTestCase {
 			course = CourseFactory.loadCourse(courseEntry);
 			dbInstance.closeSession();
 		} catch (Exception e) {
-			log.error("Exception in setUp(): " + e);
+			log.error("Exception in setUp():", e);
 		}
 	}
 	
 	@Test
 	public void changeResultsSettings()
 	throws IOException, SAXException, URISyntaxException, ParserConfigurationException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		// get the editor tree model
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/editortreemodel").build();

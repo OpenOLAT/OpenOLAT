@@ -80,8 +80,7 @@ public class UserCoursesTest extends OlatRestTestCase {
 		repositoryService.addRole(user.getIdentity(), courseRe, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(user));
+		RestConnection conn = new RestConnection(user);
 		
 		//without paging
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(user.getKey().toString()).path("courses").path("my").build();
@@ -116,8 +115,7 @@ public class UserCoursesTest extends OlatRestTestCase {
 		repositoryService.addRole(teacher.getIdentity(), courseRe, GroupRoles.coach.name());
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(teacher));
+		RestConnection conn = new RestConnection(teacher);
 		
 		//without paging
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users").path(teacher.getKey().toString()).path("/courses/teached").build();
@@ -151,8 +149,7 @@ public class UserCoursesTest extends OlatRestTestCase {
 		repositoryManager.setStatus(courseRe, RepositoryEntryStatusEnum.published);
         dbInstance.commitAndCloseSession();
         
-		RestConnection conn = new RestConnection();
-        Assert.assertTrue(conn.login(owner));
+		RestConnection conn = new RestConnection(owner);
         
         //without paging
         URI request = UriBuilder.fromUri(getContextURI()).path("/users").path(owner.getKey().toString()).path("/courses/owned").build();
@@ -187,8 +184,7 @@ public class UserCoursesTest extends OlatRestTestCase {
 		markManager.setMark(courseRe, me.getIdentity(), null, "[RepositoryEntry:" + courseRe.getKey() + "]");	
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(me));
+		RestConnection conn = new RestConnection(me);
 		
 		//without paging
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users").path(me.getKey().toString()).path("/courses/favorite").build();

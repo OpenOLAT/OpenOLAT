@@ -87,8 +87,7 @@ public class CertificationTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCertificate_file() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
 		dbInstance.commitAndCloseSession();
@@ -118,8 +117,7 @@ public class CertificationTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCertificate_head() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-11");
 		Identity unassessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-12");
@@ -155,8 +153,7 @@ public class CertificationTest extends OlatRestTestCase {
 	
 	@Test
 	public void generateCertificate() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("cert-2");
@@ -191,8 +188,7 @@ public class CertificationTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCertificateByExternalId() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
 		String externalId = UUID.randomUUID().toString();
@@ -227,8 +223,7 @@ public class CertificationTest extends OlatRestTestCase {
 
 	@Test
 	public void uploadCertificate() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
 		dbInstance.commitAndCloseSession();
@@ -276,8 +271,7 @@ public class CertificationTest extends OlatRestTestCase {
 	
 	@Test
 	public void uploadCertificate_standalone() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-1");
 		dbInstance.commitAndCloseSession();
@@ -325,8 +319,7 @@ public class CertificationTest extends OlatRestTestCase {
 	
 	@Test
 	public void deleteCertificate() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("cert-15");
 		Identity author = JunitTestHelper.getDefaultAuthor();

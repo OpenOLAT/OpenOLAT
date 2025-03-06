@@ -46,8 +46,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
@@ -72,35 +70,15 @@ import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class CoursesFoldersTest extends OlatRestTestCase {
-
-	private RestConnection conn;
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private RepositoryService repositoryService;
 	
-	@Before
-	public void setUp() throws Exception {
-		conn = new RestConnection();
-		dbInstance.intermediateCommit();
-	}
-	
-  @After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
-	
 	@Test
 	public void testGetFolderInfo() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		CourseWithBC courseWithBc = deployCourse();
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).build();
@@ -109,6 +87,8 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		FolderVO folder = conn.parse(response, FolderVO.class);
 		assertNotNull(folder);
+		
+		conn.shutdown();
 	}
 	
 	/**
@@ -119,7 +99,7 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 	@Test
 	public void testGetFolderInfoByUser() throws IOException, URISyntaxException {
 		IdentityWithLogin user = JunitTestHelper.createAndPersistRndUser("rest-user-bc");
-		assertTrue(conn.login(user));
+		RestConnection conn = new RestConnection(user);
 		
 		CourseWithBC courseWithBc = deployCourse();
 		repositoryService.addRole(
@@ -134,11 +114,13 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		FolderVO folder = conn.parse(response, FolderVO.class);
 		assertNotNull(folder);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetFoldersInfo() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		CourseWithBC courseWithBc = deployCourse();
 
 		URI uri = UriBuilder.fromUri(getNodesURI(courseWithBc)).build();
@@ -150,11 +132,13 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		assertEquals(1, folders.getTotalCount());
 		assertNotNull(folders.getFolders());
 		assertEquals(1, folders.getFolders().length);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUploadFile() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		CourseWithBC courseWithBc = deployCourse();
 		
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").build();
@@ -172,11 +156,13 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)courseWithBc.bcNode, courseWithBc.course.getCourseEnvironment());
 		VFSItem item = folder.resolve(file.getName());
 		assertNotNull(item);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUploadFile_withSpecialCharacter() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		CourseWithBC courseWithBc = deployCourse();
 		
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").build();
@@ -196,11 +182,13 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		VFSItem item = folder.resolve(filename);
 		assertNotNull(item);
 		assertEquals(filename, item.getName());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testCreateFolder() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		CourseWithBC courseWithBc = deployCourse();
 		
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").path("RootFolder").build();
@@ -212,11 +200,13 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		VFSItem item = folder.resolve("RootFolder");
 		assertNotNull(item);
 		assertTrue(item instanceof VFSContainer);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testCreateFolders() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		CourseWithBC courseWithBc = deployCourse();
 		
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").path("NewFolder1").path("NewFolder2").build();
@@ -233,11 +223,13 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		VFSItem item2 = newFolder1.resolve("NewFolder2");
 		assertNotNull(item2);
 		assertTrue(item2 instanceof VFSContainer);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testCreateFolders_tooMany() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		CourseWithBC courseWithBc = deployCourse();
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").path("RootFolder")
 				.path("Folder").path("Folder").path("Folder").path("Folder").path("Folder")
@@ -247,11 +239,13 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(406, response.getStatusLine().getStatusCode());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testCreateFolders_withSpecialCharacters() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		CourseWithBC courseWithBc = deployCourse();
 		
@@ -265,6 +259,8 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		VFSItem item = folder.resolve("RootFolder/F\u00FClder");
 		assertNotNull(item);
 		assertTrue(item instanceof VFSContainer);
+		
+		conn.shutdown();
 	}
 	
 	@Test
@@ -277,8 +273,9 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		if(item == null) {
 			folder.createChildContainer("FolderToDelete");
 		}
-		
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
+
 		
 		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").path("FolderToDelete").build();
 		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
@@ -287,6 +284,8 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		
 		VFSItem deletedItem = folder.resolve("FolderToDelete");
 		assertNull(deletedItem);
+		
+		conn.shutdown();
 	}
 	
 	private URI getNodeURI(CourseWithBC courseWithBc) {

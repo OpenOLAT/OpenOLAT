@@ -19,8 +19,6 @@
  */
 package org.olat.restapi;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -76,9 +74,8 @@ public class IdentityToIdentityRelationsWebServiceTest extends OlatRestTestCase 
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
 		IdentityToIdentityRelation relation = identityRelationshipService.addRelation(idSource, idTarget, relationRole, null, null);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(idSource.getKey().toString()).path("relations").path("source").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -106,9 +103,8 @@ public class IdentityToIdentityRelationsWebServiceTest extends OlatRestTestCase 
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
 		IdentityToIdentityRelation relation = identityRelationshipService.addRelation(idSource, idTarget, relationRole, null, null);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(idTarget.getKey().toString()).path("relations").path("target").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -142,8 +138,8 @@ public class IdentityToIdentityRelationsWebServiceTest extends OlatRestTestCase 
 		relationVo.setIdentityTargetKey(idTarget.getKey());
 		relationVo.setManagedFlagsString("all");
 		relationVo.setRelationRoleKey(relationRole.getKey());
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(idTarget.getKey().toString()).path("relations").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -179,9 +175,8 @@ public class IdentityToIdentityRelationsWebServiceTest extends OlatRestTestCase 
 		relationVo.setIdentityTargetKey(idTarget.getKey());
 		relationVo.setManagedFlagsString("all");
 		relationVo.setRelationRoleKey(relationRole.getKey());
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(idTarget.getKey().toString()).path("relations").build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
@@ -211,9 +206,8 @@ public class IdentityToIdentityRelationsWebServiceTest extends OlatRestTestCase 
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
 		IdentityToIdentityRelation relation = identityRelationshipService.addRelation(idSource, idTarget, relationRole, null, null);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").path(idTarget.getKey().toString())
 				.path("relations").path(relation.getKey().toString()).build();

@@ -64,8 +64,7 @@ public class DocEditorWebServiceTest extends OlatRestTestCase {
 	public void docEditorSessionQuery()
 	throws IOException, URISyntaxException {
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		String randomAppName = random();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("restuser1");

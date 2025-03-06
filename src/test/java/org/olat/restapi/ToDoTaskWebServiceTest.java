@@ -91,8 +91,7 @@ public class ToDoTaskWebServiceTest extends OlatRestTestCase {
 		toDoService.updateMember(doer, toDoTask4, List.of(), List.of(assignee));
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(assigneeName, assigneePw));
+		RestConnection conn = new RestConnection(assigneeName, assigneePw);
 		
 		URI uri = UriBuilder.fromUri(getContextURI())
 				.path("todotasks")
@@ -122,8 +121,7 @@ public class ToDoTaskWebServiceTest extends OlatRestTestCase {
 		toDoService.updateMember(doer, toDoTask, List.of(assignee), List.of());
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(assigneeName, assigneePw));
+		RestConnection conn = new RestConnection(assigneeName, assigneePw);
 		
 		URI uri = UriBuilder.fromUri(getContextURI())
 				.path("todotasks")

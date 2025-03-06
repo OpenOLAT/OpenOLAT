@@ -28,7 +28,6 @@ package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +46,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.After;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +58,6 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -98,7 +96,6 @@ public class GroupFoldersTest extends OlatRestTestCase {
 	private Identity owner1, owner2, part1, part2;
 	private BusinessGroup g1, g2;
 	private OLATResource course;
-	private RestConnection conn;
 
 	@Autowired
 	private RepositoryService repositoryService;
@@ -115,8 +112,7 @@ public class GroupFoldersTest extends OlatRestTestCase {
 	 * @see org.olat.test.OlatRestTestCase#setUp()
 	 */
 	@Before
-	public void setUp() throws Exception {
-		conn = new RestConnection();
+	public void setUp() {
 		//create a course with learn group
 		
 		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-one");
@@ -165,21 +161,9 @@ public class GroupFoldersTest extends OlatRestTestCase {
     	DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
 	}
 	
-  @After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
-	
 	@Test
 	public void testGetFolder() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-one", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-one", "A6B7C8");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -187,6 +171,8 @@ public class GroupFoldersTest extends OlatRestTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String content = EntityUtils.toString(response.getEntity());
 		Assert.assertTrue(StringHelper.containsNonWhitespace(content));
+		
+		conn.shutdown();
 	}
 	
 	@Test
@@ -206,8 +192,8 @@ public class GroupFoldersTest extends OlatRestTestCase {
 		}
 		assertNotNull(newFolder11);
 		
-		
-		assertTrue(conn.login("rest-one", "A6B7C8"));
+
+		RestConnection conn = new RestConnection("rest-one", "A6B7C8");
 		
 		//get root folder
 		URI request0 = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/").build();
@@ -252,6 +238,8 @@ public class GroupFoldersTest extends OlatRestTestCase {
 		List<FileVO> fileVos3 = parseFileArray(code3.getEntity());
 		assertNotNull(fileVos3);
 		assertEquals(1, fileVos3.size());
+		
+		conn.shutdown();
 	}
 	
 	@Test
@@ -276,7 +264,8 @@ public class GroupFoldersTest extends OlatRestTestCase {
 		}
 		
 		// get the file
-		assertTrue(conn.login("rest-one", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-one", "A6B7C8");
+		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g2.getKey() + "/folder/New_folder_2/portrait.jpg").build();
 		HttpGet method = conn.createGet(request, "*/*", true);
 		HttpResponse response = conn.execute(method);
@@ -284,6 +273,8 @@ public class GroupFoldersTest extends OlatRestTestCase {
 		byte[] byteArr = EntityUtils.toByteArray(response.getEntity());
 		Assert.assertNotNull(byteArr);
 		Assert.assertEquals(file.getSize(), byteArr.length);
+		
+		conn.shutdown();
 	}
 	
 	@Test
@@ -308,7 +299,7 @@ public class GroupFoldersTest extends OlatRestTestCase {
 		}
 		
 		// get the file
-		assertTrue(conn.login("rest-one", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-one", "A6B7C8");
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g2.getKey() + "/folder/metadata/Metadata_folder/portrait.jpg").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -320,32 +311,36 @@ public class GroupFoldersTest extends OlatRestTestCase {
 		Assert.assertEquals(file.getSize(), fileMetadataVO.getSize().longValue());
 		Assert.assertNotNull(fileMetadataVO.getHref());
 		Assert.assertNotNull(fileMetadataVO.getLastModified());
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testCreateFolder() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-one", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-one", "A6B7C8");
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/New_folder_1_1/New_folder_1_1_1").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
+		conn.shutdown();
 	}
 
 	@Test
 	public void testCreateFoldersWithSpecialCharacter() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-one", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-one", "A6B7C8");
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/New_folder_1_1/New_folder_1 1 2").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		FileVO file = conn.parse(response, FileVO.class);
 		assertNotNull(file);
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testCreateFoldersWithSpecialCharacter2() throws IOException, URISyntaxException {
-		assertTrue(conn.login("rest-one", "A6B7C8"));
+		RestConnection conn = new RestConnection("rest-one", "A6B7C8");
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/New_folder_1_1/").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpEntity entity = MultipartEntityBuilder.create()
@@ -361,5 +356,7 @@ public class GroupFoldersTest extends OlatRestTestCase {
 		assertNotNull(file.getHref());
 		assertNotNull(file.getTitle());
 		assertEquals("New folder 1 2 3", file.getTitle());
+		
+		conn.shutdown();
 	}
 }

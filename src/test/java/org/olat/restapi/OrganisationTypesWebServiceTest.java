@@ -19,8 +19,6 @@
  */
 package org.olat.restapi;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -74,9 +72,8 @@ public class OrganisationTypesWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("types").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -98,9 +95,8 @@ public class OrganisationTypesWebServiceTest extends OlatRestTestCase {
 	throws IOException, URISyntaxException {
 		OrganisationType type = organisationService.createOrganisationType("REST Type 2", "rest-2-type", "A type for REST");
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("types").path(type.getKey().toString()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -118,9 +114,7 @@ public class OrganisationTypesWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void createOrganisationType()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
-		
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		OrganisationTypeVO vo = new OrganisationTypeVO();
 		vo.setCssClass("o_icon_rest");
@@ -165,8 +159,7 @@ public class OrganisationTypesWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateOrganisationType()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
 		dbInstance.commitAndCloseSession();
@@ -214,8 +207,7 @@ public class OrganisationTypesWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateOrganisationTypeWithKey()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 
 		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
 		dbInstance.commitAndCloseSession();
@@ -267,9 +259,8 @@ public class OrganisationTypesWebServiceTest extends OlatRestTestCase {
 		type = organisationService.updateOrganisationType(type, subTypes);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(type);
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("types")
 				.path(type.getKey().toString()).path("allowedSubTypes").build();
@@ -302,9 +293,8 @@ public class OrganisationTypesWebServiceTest extends OlatRestTestCase {
 		dbInstance.commit();
 		type = organisationService.updateOrganisationType(type, Collections.singletonList(subType1));
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("types").path(type.getKey().toString())
 				.path("allowedSubTypes").path(subType2.getKey().toString()).build();
@@ -344,9 +334,8 @@ public class OrganisationTypesWebServiceTest extends OlatRestTestCase {
 		allowedSubTypes.add(subType3);
 		type = organisationService.updateOrganisationType(type, allowedSubTypes);
 		dbInstance.commitAndCloseSession();
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("types").path(type.getKey().toString())
 				.path("allowedSubTypes").path(subType2.getKey().toString()).build();

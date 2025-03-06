@@ -143,9 +143,8 @@ public class NotificationsTest extends OlatRestTestCase {
 		UserVO userVo = new UserVO();
 		userVo.setKey(userSubscriberId.getKey());
 		publisher.setUsers(List.of(userVo));
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));	
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").path("subscribers");
 		HttpPut method = conn.createPut(request.build(), MediaType.APPLICATION_JSON, true);
@@ -180,9 +179,8 @@ public class NotificationsTest extends OlatRestTestCase {
 		UserVO userVo = new UserVO();
 		userVo.setKey(userSubscriberId.getKey());
 		publisher.setUsers(List.of(userVo));
-		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));	
+
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").path("subscribers").path("initial");
 		HttpPut method = conn.createPut(request.build(), MediaType.APPLICATION_JSON, true);
@@ -230,8 +228,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		PublisherData publisherData = usersSubscriptionManager.getNewUsersPublisherData();
 		notificationManager.subscribe(userSubscriberId.getIdentity(), subContext, publisherData);
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(userSubscriberId));
+		RestConnection conn = new RestConnection(userSubscriberId);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("notifications").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -262,8 +259,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		PublisherData publisherData = usersSubscriptionManager.getNewUsersPublisherData();
 		notificationManager.subscribe(userSubscriberId.getIdentity(), subContext, publisherData);
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(userSubscriberId));
+		RestConnection conn = new RestConnection(userSubscriberId);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "User");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -300,8 +296,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		notificationManager.subscribe(userAndForumSubscriberId.getIdentity(), forumSubContext, forumPdata);
 		notificationManager.markPublisherNews(forumSubContext, userAndForumSubscriberId.getIdentity(), true);
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(userAndForumSubscriberId));
+		RestConnection conn = new RestConnection(userAndForumSubscriberId);
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
@@ -335,8 +330,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		notificationManager.subscribe(userAndForumSubscriberId.getIdentity(), forumSubContext, forumPdata);
 		notificationManager.markPublisherNews(forumSubContext, userAndForumSubscriberId.getIdentity(), true);
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(userAndForumSubscriberId));
+		RestConnection conn = new RestConnection(userAndForumSubscriberId);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "Forum");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -362,8 +356,7 @@ public class NotificationsTest extends OlatRestTestCase {
 	public void getNoNotifications() throws IOException, URISyntaxException {
 		IdentityWithLogin id3 = JunitTestHelper.createAndPersistRndUser("rest-notifications-test-5");
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id3));
+		RestConnection conn = new RestConnection(id3);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/notifications").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -399,8 +392,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//get the notification
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id));
+		RestConnection conn = new RestConnection(id);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -443,8 +435,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//get the notification
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id));
+		RestConnection conn = new RestConnection(id);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -492,8 +483,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//get the notification
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id));
+		RestConnection conn = new RestConnection(id);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -542,8 +532,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//get the notification
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(id));
+		RestConnection conn = new RestConnection(id);
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -582,8 +571,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// GET publisher
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications/publisher/BusinessGroup/" + group.getKey() + "/toolforum");
 		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);

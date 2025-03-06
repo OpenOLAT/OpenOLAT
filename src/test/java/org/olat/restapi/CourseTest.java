@@ -125,8 +125,7 @@ public class CourseTest extends OlatRestTestCase {
 				"REST-Course-1", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
-		RestConnection conn = new RestConnection();
-		assertTrue("Cannot login as administrator", conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		URI uri = conn.getContextURI().path("repo").path("courses").path(course.getResourceableId().toString()).build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -146,8 +145,7 @@ public class CourseTest extends OlatRestTestCase {
 				"REST-Course-2", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
-		RestConnection conn = new RestConnection();
-		assertTrue("Cannot login as administrator", conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		URI uri = conn.getContextURI().path("repo").path("courses").path(course.getResourceableId().toString()).path("configuration").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -169,8 +167,7 @@ public class CourseTest extends OlatRestTestCase {
 				"REST-Course-3", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
-		RestConnection conn = new RestConnection();
-		assertTrue("Cannot login as administrator", conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		CourseConfigVO config = new CourseConfigVO();
 		config.setCalendar(Boolean.TRUE);
@@ -202,8 +199,7 @@ public class CourseTest extends OlatRestTestCase {
 				"REST-Course-4", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseRe);
 
-		RestConnection conn = new RestConnection();
-		assertTrue("Cannot login as administrator", conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		//get repository entry information
 		URI repoUri = conn.getContextURI().path("repo").path("entries").path(courseRe.getKey().toString()).build();
@@ -234,8 +230,7 @@ public class CourseTest extends OlatRestTestCase {
 				"REST-Course-5", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/runstructure").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_XML, true);
@@ -255,8 +250,7 @@ public class CourseTest extends OlatRestTestCase {
 				"REST-Course-6", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/editortreemodel").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_XML, true);
@@ -277,8 +271,7 @@ public class CourseTest extends OlatRestTestCase {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.intermediateCommit();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
@@ -308,8 +301,7 @@ public class CourseTest extends OlatRestTestCase {
 				"REST-Course-8", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/authors/" + auth.getKey()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -332,8 +324,7 @@ public class CourseTest extends OlatRestTestCase {
 	
 	@Test
 	public void addAuthors() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(defaultUnitTestAdministrator.getIdentity(),
 				defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
@@ -344,8 +335,6 @@ public class CourseTest extends OlatRestTestCase {
 		UserVO[] newAuthors = new UserVO[2];
 		newAuthors[0] = UserVOFactory.get(author1);
 		newAuthors[1] = UserVOFactory.get(author2);
-
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course.getResourceableId().toString()).path("authors").build();
@@ -397,8 +386,7 @@ public class CourseTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//get them
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		URI uri = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/authors").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -434,8 +422,7 @@ public class CourseTest extends OlatRestTestCase {
 		//end setup
 		
 		//test
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/authors/" + auth1.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
@@ -469,8 +456,7 @@ public class CourseTest extends OlatRestTestCase {
 		dbInstance.intermediateCommit();
 		
 		//get them
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		URI uri = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/tutors").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -495,8 +481,7 @@ public class CourseTest extends OlatRestTestCase {
 				"REST-Course-12", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/tutors/" + auth.getKey()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -526,8 +511,7 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertTrue(isTutor);
 		
 		//test remove
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/tutors/" + coach.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
@@ -545,8 +529,7 @@ public class CourseTest extends OlatRestTestCase {
 	public void addCoaches() throws IOException, URISyntaxException {
 		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-coach-1");
@@ -590,8 +573,7 @@ public class CourseTest extends OlatRestTestCase {
 		dbInstance.intermediateCommit();
 		
 		//get them
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		URI uri = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/participants").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -616,8 +598,7 @@ public class CourseTest extends OlatRestTestCase {
 				"REST-Course-16", defaultUnitTestOrganisation, RepositoryEntryStatusEnum.preparation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/participants/" + auth.getKey()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -648,8 +629,7 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertTrue(isParticipant);
 		
 		//test remove
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/participants/" + participant.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
@@ -665,8 +645,7 @@ public class CourseTest extends OlatRestTestCase {
 	
 	@Test
 	public void addParticipants() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(defaultUnitTestAdministrator.getIdentity(),
 				defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
@@ -700,8 +679,7 @@ public class CourseTest extends OlatRestTestCase {
 	
 	@Test
 	public void getMetadata() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(defaultUnitTestAdministrator.getIdentity(),
 				defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
@@ -712,9 +690,6 @@ public class CourseTest extends OlatRestTestCase {
 				"Course description", "Course teaser", "Course objectives", "Course requirements", "Course credits", "DE", "Zurich", "5 days",
 				null, null, null, educationalType);
 		Assert.assertEquals("Course ref.", courseEntry.getExternalRef());
-
-		// Login as administrator
-		assertTrue(conn.login(defaultUnitTestAdministrator));
 
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("courses").path(course.getResourceableId().toString()).path("metadata").build();
@@ -760,9 +735,7 @@ public class CourseTest extends OlatRestTestCase {
 		repositoryManager.setImage(new VFSJavaIOFile(image), courseEntry, defaultUnitTestAdministrator.getIdentity());
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		//remove the owner
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("courses").path(course.getResourceableId().toString())
@@ -786,9 +759,7 @@ public class CourseTest extends OlatRestTestCase {
 		repositoryManager.setImage(new VFSJavaIOFile(image), courseEntry, defaultUnitTestAdministrator.getIdentity());
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		//remove the owner
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("courses").path(course.getResourceableId().toString())
@@ -812,8 +783,7 @@ public class CourseTest extends OlatRestTestCase {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commit();
 		
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("courses").path(course.getResourceableId().toString())
@@ -833,8 +803,7 @@ public class CourseTest extends OlatRestTestCase {
 	
 	@Test
 	public void updateStatus() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(defaultUnitTestAdministrator.getIdentity(),
 				defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
@@ -866,8 +835,7 @@ public class CourseTest extends OlatRestTestCase {
 	 */
 	@Test
 	public void closeCourse() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(defaultUnitTestAdministrator.getIdentity(),
 				defaultUnitTestOrganisation);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
@@ -898,8 +866,7 @@ public class CourseTest extends OlatRestTestCase {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
 
-		RestConnection conn = new RestConnection();
-		assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		
 		URI request = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("courses").path(course.getResourceableId().toString()).path("metadata").build();
@@ -969,8 +936,7 @@ public class CourseTest extends OlatRestTestCase {
 	
 	@Test
 	public void changedStatus_closed() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(defaultUnitTestAdministrator.getIdentity(),
 				defaultUnitTestOrganisation);
 		ICourse courseToClose = CourseFactory.loadCourse(courseEntry);
@@ -993,8 +959,7 @@ public class CourseTest extends OlatRestTestCase {
 	
 	@Test
 	public void changedStatus_deleted() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(defaultUnitTestAdministrator.getIdentity(),
 				defaultUnitTestOrganisation);
 		ICourse courseToClose = CourseFactory.loadCourse(courseEntry);
@@ -1018,8 +983,7 @@ public class CourseTest extends OlatRestTestCase {
 	@Test
 	public void exportCourse()
 	throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(defaultUnitTestAdministrator));
+		RestConnection conn = new RestConnection(defaultUnitTestAdministrator);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("course-owner");
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(author, defaultUnitTestOrganisation);
 		dbInstance.closeSession();
@@ -1043,8 +1007,7 @@ public class CourseTest extends OlatRestTestCase {
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(author.getIdentity());
 		dbInstance.closeSession();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(author));
+		RestConnection conn = new RestConnection(author);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course.getOlatResource().getResourceableId().toString()).path("file").build();
@@ -1066,8 +1029,7 @@ public class CourseTest extends OlatRestTestCase {
 		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
 		dbInstance.closeSession();
 
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login(otherUser));
+		RestConnection conn = new RestConnection(otherUser);
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(course.getOlatResource().getResourceableId().toString()).path("file").build();

@@ -49,9 +49,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.vfs.VFSContainer;
@@ -84,31 +82,11 @@ import org.olat.restapi.support.vo.elements.TestConfigVO;
 import org.olat.test.OlatRestTestCase;
 
 public class CoursesElementsTest extends OlatRestTestCase {
-
-	private RestConnection conn;
-	
-	@Before
-	public void startup() {
-		conn = new RestConnection();
-	}
-	
-  @After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-		}
-	}
 	
 	@Test
-	public void testCreateCoursePost() throws IOException, URISyntaxException{
-		assertTrue(conn.login("administrator", "openolat"));
-		
-		
+	public void testCreateCoursePost() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection("administrator", "openolat");
+
 		//create an empty course
 		URI uri = getCoursesUri().queryParam("shortTitle", "course3").queryParam("title", "course3 long name").build();
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
@@ -342,12 +320,13 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertEquals(contactNode.getInstruction(), "Contact-instruction-0");
 		assertEquals(contactNode.getInstructionalDesign(), "Contact-instructionalDesign-0");
 		assertEquals(contactNode.getParentId(), course.getEditorRootNodeId());
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testCreateCoursePut() throws IOException, URISyntaxException{
-		assertTrue(conn.login("administrator", "openolat"));
-		
+	public void testCreateCoursePut() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an empty course
 		URI uri = getCoursesUri().queryParam("shortTitle", "course3").queryParam("title", "course3 long name").build();
@@ -808,11 +787,13 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		VFSContainer taskFolder = VFSManager.olatRootContainer(taskFolderPath, null);
 		VFSLeaf singleFile = (VFSLeaf) taskFolder.resolve("/" + "singlepage.html");
 		assertNotNull(singleFile);
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUpdateRootNodeCoursePost() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an empty course
 		URI uri = getCoursesUri().queryParam("shortTitle", "course4").queryParam("title", "course4 long name").build();
@@ -857,11 +838,13 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertEquals(rootNode.getCourseNode().getShortTitle(), "Structure-0b");
 		assertEquals(rootNode.getCourseNode().getLongTitle(), "Structure-long-0b");
 		assertEquals(rootNode.getCourseNode().getObjectives(), "Structure-objectives-0b");
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testUpdateRootNodeCoursePostWithFile() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		//create an empty course
 		URI uri = getCoursesUri().queryParam("shortTitle", "course5").queryParam("title", "course5 long name").build();
@@ -916,6 +899,8 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertEquals(rootNode.getCourseNode().getShortTitle(), "Structure-0-with-file");
 		assertEquals(rootNode.getCourseNode().getLongTitle(), "Structure-long-0-with-file");
 		assertEquals(rootNode.getCourseNode().getObjectives(), "Structure-objectives-0-with-file");
+		
+		conn.shutdown();
 	}
 	
 	private UriBuilder getCoursesUri() {

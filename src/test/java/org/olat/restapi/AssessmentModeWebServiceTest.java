@@ -99,8 +99,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedMode);
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -133,8 +132,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedMode);
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		// Search with the external ID
 		URI request = UriBuilder.fromUri(getContextURI())
@@ -170,8 +168,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedMode);
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		// Search with the external ID
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes")
@@ -219,8 +216,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedMode);
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		// Search with the external ID
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes")
@@ -269,8 +265,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		pastMode = assessmentModeMgr.persist(pastMode);
 		dbInstance.commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));			
+		RestConnection conn = new RestConnection("administrator", "openolat");			
 		
 		// Search with the external ID
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes")
@@ -312,8 +307,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		assessmentModeVo.setBegin(begin);
 		assessmentModeVo.setEnd(DateUtils.addHours(begin, 2));
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));	
+		RestConnection conn = new RestConnection("administrator", "openolat");	
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -377,8 +371,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		};
 		assessmentModeVo.setCurriculumElements(elements);
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));	
+		RestConnection conn = new RestConnection("administrator", "openolat");	
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -435,8 +428,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		assessmentModeVo.setEnd(DateUtils.addHours(begin, 2));
 		assessmentModeVo.setFollowupTime(15);
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));	
+		RestConnection conn = new RestConnection("administrator", "openolat");	
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("assessmentmodes").build();
 		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
@@ -480,8 +472,7 @@ public class AssessmentModeWebServiceTest extends OlatRestTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedMode);
 		
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		// Search with the external ID
 		URI request = UriBuilder.fromUri(getContextURI())

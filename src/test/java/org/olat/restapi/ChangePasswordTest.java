@@ -55,8 +55,7 @@ public class ChangePasswordTest extends OlatRestTestCase {
 	
 	@Test
 	public void testRegistration() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RestConnection conn = new RestConnection("administrator", "openolat");
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("pwchange-1-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();
