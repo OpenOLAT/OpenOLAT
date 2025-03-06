@@ -319,6 +319,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.curriculum.manager.CurriculumElementIdentifierGeneratorTest.class,
 	org.olat.modules.curriculum.manager.CurriculumElementAuditLogDAOTest.class,
 	org.olat.modules.curriculum.manager.ParentBasedIdentifierGeneratorTest.class,
+	org.olat.modules.curriculum.manager.CurriculumAutomationServiceTest.class,
 	org.olat.modules.docpool.manager.DocumentPoolManagerTest.class,
 	org.olat.modules.forms.manager.EvaluationFormMangerImplTest.class,
 	org.olat.modules.forms.manager.EvaluationFormParticipationDAOTest.class,

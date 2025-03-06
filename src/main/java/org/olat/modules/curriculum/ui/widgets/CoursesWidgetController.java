@@ -152,7 +152,7 @@ public class CoursesWidgetController extends FormBasicController implements Flex
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		coursesLink = uifactory.addFormLink("curriculum.courses", formLayout);
+		coursesLink = uifactory.addFormLink("curriculum.courses", "tab.resources", null, formLayout, Link.LINK);
 		coursesLink.setIconRightCSS("o_icon o_icon-fw o_icon_course_next");
 		
 		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)) {

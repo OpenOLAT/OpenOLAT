@@ -1,3 +1,27 @@
+#if($r.isNotNull($instantiation) || $r.isNotNull($accessforCoach) || $r.isNotNull($published) || $r.isNotNull($finished))
+<div class="o_info_with_icon clearfix">
+	<h4>$r.translate("automation.overview")</h4>
+	<div class="o_automation">
+	#if($r.isNotNull($instantiation))
+		<div><strong>${instantiation.title()}</strong></div><p>${instantiation.date()} (${instantiation.text()}#if($r.visible(${instantiation.link()})) $r.render(${instantiation.link()})#end)</p>
+	#end
+	
+	#if($r.isTrue($separatorLabel))
+		<div><strong>$r.translate("automation.infos.label.access.status")</strong></div><p></p>
+	#end
+	#if($r.isNotNull($accessforCoach))
+		<div><strong>#if($r.isFalse($separatorLabel)) $r.translate("automation.infos.label.access.status") #end${accessforCoach.title()}</strong></div><p>${accessforCoach.date()} (${accessforCoach.text()}#if($r.visible(${accessforCoach.link()})) $r.render(${accessforCoach.link()})#end)</p>
+	#end
+	#if($r.isNotNull($published))
+	<div><strong>#if($r.isFalse($separatorLabel)) $r.translate("automation.infos.label.access.status") #end${published.title()}</strong></div><p>${published.date()} (${published.text()}#if($r.visible(${published.link()})) $r.render(${published.link()})#end)</p>
+	#end
+	#if($r.isNotNull($finished))
+	<div><strong>#if($r.isFalse($separatorLabel)) $r.translate("automation.infos.label.access.status") #end${finished.title()}</strong></div><p>${finished.date()} (${finished.text()}#if($r.visible(${finished.link()})) $r.render(${finished.link()})#end)</p>
+	#end
+	</div>
+</div>
+#end
+
 $r.render("resources")
 #if($r.available("templates"))
 <div class="o_block">

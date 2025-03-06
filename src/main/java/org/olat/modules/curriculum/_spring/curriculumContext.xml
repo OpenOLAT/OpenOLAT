@@ -74,4 +74,19 @@
 		<property name="durationUnit" value="month" />
 		<property name="duration" value="12" />
 	</bean>
+	
+	<bean id="curriculumAutomationTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+    	<property name="jobDetail" ref="curriculumAutomationJob.${cluster.singleton.services}" />
+    	<property name="cronExpression" value="0 45 2 * * ?"/>
+    	<property name="startDelay" value="45000" />
+	</bean>
+
+	<bean id="curriculumAutomationJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.modules.curriculum.manager.CurriculumAutomationJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="curriculumAutomationJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
 </beans>

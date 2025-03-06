@@ -39,6 +39,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -52,6 +53,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.TaughtBy;
+import org.olat.modules.curriculum.model.AutomationImpl;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
@@ -171,6 +173,36 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, element.getTaughtBys().size());
 		Assert.assertTrue(element.getTaughtBys().contains(TaughtBy.owners));
 		Assert.assertTrue(element.getTaughtBys().contains(TaughtBy.teachers));
+	}
+	
+	@Test
+	public void updateCurriculumElementAutomation() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1b", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1b", "1. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Assert.assertNotNull(element);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		element.setAutoInstantiation(AutomationImpl.valueOf(5, AutomationUnit.DAYS));
+		element.setAutoAccessForCoach(AutomationImpl.valueOf(6, AutomationUnit.WEEKS));
+		element.setAutoPublished(AutomationImpl.valueOf(7, AutomationUnit.MONTHS));
+		element.setAutoClosed(AutomationImpl.valueOf(8, AutomationUnit.YEARS));
+		element = curriculumElementDao.update(element);
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElement reloadedElement = curriculumElementDao.loadByKey(element.getKey());
+		Assert.assertNotNull(reloadedElement);
+		Assert.assertNotNull(reloadedElement.getAutoInstantiation());
+		Assert.assertEquals(5, reloadedElement.getAutoInstantiation().getValue().intValue());
+		Assert.assertEquals(AutomationUnit.DAYS, reloadedElement.getAutoInstantiation().getUnit());
+		Assert.assertEquals(6, reloadedElement.getAutoAccessForCoach().getValue().intValue());
+		Assert.assertEquals(AutomationUnit.WEEKS, reloadedElement.getAutoAccessForCoach().getUnit());
+		Assert.assertEquals(7, reloadedElement.getAutoPublished().getValue().intValue());
+		Assert.assertEquals(AutomationUnit.MONTHS, reloadedElement.getAutoPublished().getUnit());
+		Assert.assertEquals(8, reloadedElement.getAutoClosed().getValue().intValue());
+		Assert.assertEquals(AutomationUnit.YEARS, reloadedElement.getAutoClosed().getUnit());
 	}
 	
 	@Test

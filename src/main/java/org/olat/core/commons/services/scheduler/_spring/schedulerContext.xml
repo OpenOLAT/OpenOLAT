@@ -77,6 +77,7 @@ How to add a new job:
             <ref bean="oaiSeoTrigger" />
             <ref bean="infoMessageTrigger" />
             <ref bean="topicBrokerEnrollmentTrigger" />
+            <ref bean="curriculumAutomationTrigger" />
         </list>
     </property>
 </bean>

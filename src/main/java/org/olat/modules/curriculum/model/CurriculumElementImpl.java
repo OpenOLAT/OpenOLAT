@@ -26,7 +26,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -46,6 +48,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.Automation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -156,6 +159,23 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	
 	@Column(name="c_m_path_keys", nullable=true, insertable=true, updatable=true)
 	private String materializedPathKeys;
+	
+	@Embedded
+    @AttributeOverride(name="value", column = @Column(name="c_auto_instantiation"))
+    @AttributeOverride(name="unit", column = @Column(name="c_auto_instantiation_unit"))
+	private AutomationImpl autoInstantiation;
+	@Embedded
+    @AttributeOverride(name="value", column = @Column(name="c_auto_access_coach"))
+    @AttributeOverride(name="unit", column = @Column(name="c_auto_access_coach_unit"))
+	private AutomationImpl autoAccessForCoach;
+	@Embedded
+    @AttributeOverride(name="value", column = @Column(name="c_auto_published"))
+    @AttributeOverride(name="unit", column = @Column(name="c_auto_published_unit"))
+	private AutomationImpl autoPublished;
+	@Embedded
+    @AttributeOverride(name="value", column = @Column(name="c_auto_closed"))
+    @AttributeOverride(name="unit", column = @Column(name="c_auto_closed_unit"))
+	private AutomationImpl autoClosed;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group", nullable=false, insertable=true, updatable=false)
@@ -579,6 +599,55 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Override
 	public void setManagedFlags(CurriculumElementManagedFlag[] flags) {
 		managedFlagsString = CurriculumElementManagedFlag.toString(flags);
+	}
+
+	@Override
+	public Automation getAutoInstantiation() {
+		return autoInstantiation;
+	}
+
+	@Override
+	public void setAutoInstantiation(Automation autoInstantiation) {
+		this.autoInstantiation = (AutomationImpl)autoInstantiation;
+	}
+
+	@Override
+	public Automation getAutoAccessForCoach() {
+		return autoAccessForCoach;
+	}
+
+	@Override
+	public void setAutoAccessForCoach(Automation autoAccessForCoach) {
+		this.autoAccessForCoach = (AutomationImpl)autoAccessForCoach;
+	}
+
+	@Override
+	public Automation getAutoPublished() {
+		return autoPublished;
+	}
+
+	@Override
+	public void setAutoPublished(Automation autoPublished) {
+		this.autoPublished = (AutomationImpl)autoPublished;
+	}
+
+	@Override
+	public Automation getAutoClosed() {
+		return autoClosed;
+	}
+
+	@Override
+	public void setAutoClosed(Automation autoClosed) {
+		this.autoClosed = (AutomationImpl)autoClosed;
+	}
+	
+	@Transient
+	@Override
+	public boolean hasAutomation() {
+		return getAutoInstantiation() != null && getAutoInstantiation().getUnit() != null
+				|| getAutoAccessForCoach() != null && getAutoAccessForCoach().getUnit() != null
+				|| getAutoPublished() != null && getAutoPublished().getUnit() != null
+				|| getAutoClosed() != null && getAutoClosed().getUnit() != null;
 	}
 
 	@Override

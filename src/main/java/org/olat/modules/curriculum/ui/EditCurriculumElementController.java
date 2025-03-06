@@ -58,6 +58,8 @@ public class EditCurriculumElementController extends BasicController {
 	private final TooledStackedPanel toolbarPanel;
 	private final VelocityContainer mainVC;
 	private final ButtonGroupComponent segmentButtonsCmp;
+	
+	private Link automationLink;
 	private final Link metadataLink;
 	private final Link infosLink;
 	private final Link executionLink;
@@ -67,6 +69,7 @@ public class EditCurriculumElementController extends BasicController {
 	private EditCurriculumElementMetadataController metadataCtrl;
 	private EditCurriculumElementInfosController infoCtrl;
 	private EditCurriculumElementExecutionController executionCtrl;
+	private EditCurriculumElementAutomationController automationCtrl;
 	private EditCurriculumElementOptionsController optionsCtrl;
 	private CurriculumElementInfosController previewCtrl;
 	
@@ -112,6 +115,11 @@ public class EditCurriculumElementController extends BasicController {
 		segmentButtonsCmp.addButton(infosLink, false);
 		executionLink = LinkFactory.createLink("curriculum.element.execution", getTranslator(), this);
 		segmentButtonsCmp.addButton(executionLink, false);
+		
+		if(element.getParent() == null) {// Only implementations
+			automationLink = LinkFactory.createLink("curriculum.element.automation", getTranslator(), this);
+			segmentButtonsCmp.addButton(automationLink, false);
+		}
 		optionsLink = LinkFactory.createLink("curriculum.element.options", getTranslator(), this);
 		segmentButtonsCmp.addButton(optionsLink, false);
 		
@@ -146,6 +154,12 @@ public class EditCurriculumElementController extends BasicController {
 				exposeToVC();
 				fireEvent(ureq, event);
 			}
+		} else if (source == automationCtrl) {
+			if (Event.DONE_EVENT == event) {
+				element = automationCtrl.getCurriculumElement();
+				exposeToVC();
+				fireEvent(ureq, event);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -158,6 +172,8 @@ public class EditCurriculumElementController extends BasicController {
 			doOpenInfos(ureq);
 		} else if (source == executionLink) {
 			doOpenExecution(ureq);
+		} else if (source == automationLink) {
+			doOpenAutomation(ureq);
 		} else if (source == optionsLink) {
 			doOpenOptions(ureq);
 		} else if (source == previewButton) {
@@ -224,6 +240,15 @@ public class EditCurriculumElementController extends BasicController {
 		listenTo(executionCtrl);
 		mainVC.put("content", executionCtrl.getInitialComponent());
 		segmentButtonsCmp.setSelectedButton(executionLink);
+	}
+	
+	private void doOpenAutomation(UserRequest ureq) {
+		removeAsListenerAndDispose(automationCtrl);
+		
+		automationCtrl = new EditCurriculumElementAutomationController(ureq, getWindowControl(), element);
+		listenTo(automationCtrl);
+		mainVC.put("content", automationCtrl.getInitialComponent());
+		segmentButtonsCmp.setSelectedButton(automationLink);
 	}
 
 	private void doOpenOptions(UserRequest ureq) {

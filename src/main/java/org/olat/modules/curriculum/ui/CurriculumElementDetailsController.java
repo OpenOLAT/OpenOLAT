@@ -135,6 +135,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private final boolean canChildren;
 	private boolean canRepositoryEntries;
 	private CurriculumElement curriculumElement;
+	private final CurriculumElement implementationElement;
 	private final CurriculumSecurityCallback secCallback;
 	private final LecturesSecurityCallback lecturesSecCallback;
 	
@@ -158,6 +159,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		this.lecturesSecCallback = lecturesSecCallback;
 		canChildren = canChildren(curriculumElement);
 		canRepositoryEntries = canRepositoryEntries(curriculumElement);
+		implementationElement = getRootElement();
 		
 		mainVC = createVelocityContainer("curriculum_element_details");
 		tabPane = new TabbedPane("tabs", getLocale());
@@ -210,14 +212,13 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		nextImplementationButton.setIconLeftCSS("o_icon o_icon-fw o_icon_slide_forward");
 		nextImplementationButton.setTitle(translate("structure.implementation.next"));
 		
-		CurriculumElement rootElement = getRootElement();
-		NextPrevious nextPrevious = nextPreviousCurriculumElements(rootElement);
+		NextPrevious nextPrevious = nextPreviousCurriculumElements(implementationElement);
 		nextButton.setEnabled(nextPrevious.next() != null);
 		nextButton.setUserObject(nextPrevious.next());
 		previousButton.setEnabled(nextPrevious.previous() != null);
 		previousButton.setUserObject(nextPrevious.previous());
 		
-		NextPrevious nextPreviousImplementations = nextPreviousImplementations(rootElement);
+		NextPrevious nextPreviousImplementations = nextPreviousImplementations(implementationElement);
 		nextImplementationButton.setEnabled(nextPreviousImplementations.next() != null);
 		nextImplementationButton.setUserObject(nextPreviousImplementations.next());
 		previousImplementationButton.setEnabled(nextPreviousImplementations.previous() != null);
@@ -453,13 +454,13 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		}
 		
 		// Courses
-		resourcesTab = tabPane.addTab(ureq, translate("tab.resources"), uureq -> {
+		resourcesTab = tabPane.addTab(ureq, translate("tab.resources"), "o_sel_curriculum_resources", uureq -> {
 			WindowControl subControl = addToHistory(uureq, OresHelper
 					.createOLATResourceableType(CurriculumListManagerController.CONTEXT_RESOURCES), null);
 			resourcesCtrl = new CurriculumElementResourcesController(uureq, subControl, curriculumElement, secCallback);
 			listenTo(resourcesCtrl);
 			return resourcesCtrl.getInitialComponent();
-		});
+		}, true);
 		tabPane.setVisible(resourcesTab, canRepositoryEntries);
 		
 		// Events / lectures blocks
@@ -661,7 +662,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(structureCtrl == source || coursesWidgetCtrl == source || offersWidgetCtrl == source
-				|| lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source) {
+				|| lectureBlocksWidgetCtrl == source || lectureBlocksCtrl == source
+				|| resourcesCtrl == source) {
 			if(event instanceof ActivateEvent ae) {
 				activate(ureq, ae.getEntries(), null);
 			} else if(event instanceof CurriculumElementEvent) {

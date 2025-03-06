@@ -138,6 +138,25 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	
 	public void setManagedFlags(CurriculumElementManagedFlag[] flags);
 	
+	
+	public Automation getAutoInstantiation();
+
+	public void setAutoInstantiation(Automation instantiation);
+	
+	public Automation getAutoAccessForCoach();
+
+	public void setAutoAccessForCoach(Automation accessForCoach);
+
+	public Automation getAutoPublished();
+
+	public void setAutoPublished(Automation published);
+
+	public Automation getAutoClosed();
+
+	public void setAutoClosed(Automation closed);
+	
+	public boolean hasAutomation();
+	
 	/**
 	 * @return The position of an element as child of a parent element
 	 */

@@ -1161,3 +1161,14 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	margin-bottom: 220px;
 }
 
+.o_info_with_icon .o_automation {
+	display: grid;
+	grid-template-columns: 30% 70%;
+	column-gap: 1em;
+	row-gap: 5px;
+	
+	> div {
+		text-align: right;
+	}
+}
+
