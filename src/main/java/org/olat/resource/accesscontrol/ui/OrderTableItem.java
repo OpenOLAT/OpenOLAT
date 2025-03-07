@@ -206,6 +206,7 @@ public class OrderTableItem {
 	public enum Status {
 		ERROR,
 		WARNING,
+		WRITTEN_OFF,
 		OK,
 		/**
 		 * Same as OK but for a process with some payment
@@ -239,6 +240,8 @@ public class OrderTableItem {
 				canceled = true;
 			} else if(OrderStatus.ERROR.name().equals(orderStatus)) {
 				error = true;
+			} else if(OrderStatus.WRITTEN_OFF.name().equals(orderStatus)) {
+				return WRITTEN_OFF;
 			} else if(OrderStatus.PREPAYMENT.name().equals(orderStatus)) {
 				if((trxStatus != null && trxStatus.contains(PaypalCheckoutStatus.PENDING.name()))
 						|| (pspTrxStatus != null && pspTrxStatus.contains(PaypalCheckoutStatus.PENDING.name()))) {

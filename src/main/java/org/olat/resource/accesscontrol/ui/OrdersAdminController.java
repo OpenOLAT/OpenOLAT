@@ -66,6 +66,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
@@ -74,7 +76,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.reports.AccountingReportResource;
@@ -122,7 +123,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private FormLink exportButton;
 	private FormLink bulkPayButton;
 	private FormLink bulkSetOpenButton;
-	private FormLink bulkCancelButton;
 	private FlexiTableElement tableEl;
 	private OrdersDataSource dataSource;
 	private OrdersDataModel dataModel;
@@ -134,6 +134,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private PriceEditController priceEditCtrl;
 	private CancellationFeeEditController cancellationFeeEditCtrl;
 	private BillingAddressSelectionController addressSelectionCtrl;
+	private ConfirmationController setWrittenOffConfirmationCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	private boolean readOnly;
@@ -276,8 +277,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			tableEl.addBatchButton(bulkPayButton);
 			bulkSetOpenButton = uifactory.addFormLink("bulk.open", "set.open", null, formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkSetOpenButton);
-			bulkCancelButton = uifactory.addFormLink("bulk.cancel", "set.cancel", null, formLayout, Link.BUTTON);
-			tableEl.addBatchButton(bulkCancelButton);
 		}
 		
 		initFilters();
@@ -293,6 +292,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		rolesValues.add(SelectionValues.entry(OrdersDataSource.PSEUDO_STATUS_DONE, translate("order.status.ok")));
 		rolesValues.add(SelectionValues.entry(OrderStatus.PAYED.name(), translate("order.status.payed")));
 		rolesValues.add(SelectionValues.entry(OrderStatus.CANCELED.name(), translate("order.status.canceled")));
+		rolesValues.add(SelectionValues.entry(OrderStatus.WRITTEN_OFF.name(), translate("order.status.written.off")));
 		rolesValues.add(SelectionValues.entry(OrderStatus.ERROR.name(), translate("order.status.error")));
 		FlexiTableMultiSelectionFilter statusFilter = new FlexiTableMultiSelectionFilter(translate("filter.status"),
 				OrdersDataSource.FILTER_STATUS, rolesValues, true);
@@ -484,8 +484,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			doBulkSetPaid(ureq);
 		} else if(bulkSetOpenButton == source) {
 			doBulkSetOpen(ureq);
-		} else if(bulkCancelButton == source) {
-			doBulkCancel(ureq);
 		} else if(exportButton == source) {
 			doExport(ureq);
 		} else if(tableEl == source) {
@@ -549,6 +547,14 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (setWrittenOffConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (setWrittenOffConfirmationCtrl.getUserObject() instanceof OrderTableRow row) {
+					doSetWrittenOffOrder(ureq, row);
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(toolsCtrl == source) {
 			calloutCtrl.deactivate();
 			cleanUp();	
@@ -558,6 +564,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(setWrittenOffConfirmationCtrl);
 		removeAsListenerAndDispose(cancellationFeeEditCtrl);
 		removeAsListenerAndDispose(addressSelectionCtrl);
 		removeAsListenerAndDispose(detailController);
@@ -565,6 +572,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		setWrittenOffConfirmationCtrl = null;
 		cancellationFeeEditCtrl = null;
 		addressSelectionCtrl = null;
 		detailController = null;
@@ -644,7 +652,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		for(OrderTableRow row:rows) {
 			Order order = acService.loadOrderByKey(row.getOrderKey());
 			if(order != null) {
-				acService.changeOrderStatus(order, OrderStatus.PAYED);
+				if (order.getOrderStatus() != OrderStatus.PAYED) {
+					acService.changeOrderStatus(order, OrderStatus.PAYED);
+				}
 			}
 		}
 
@@ -671,7 +681,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		for(OrderTableRow row:rows) {
 			Order order = acService.loadOrderByKey(row.getOrderKey());
 			if(order != null) {
-				acService.changeOrderStatus(order, OrderStatus.PREPAYMENT);
+				if (order.getOrderStatus() != OrderStatus.PREPAYMENT) {
+					acService.changeOrderStatus(order, OrderStatus.PREPAYMENT);
+				}
 			}
 		}
 		
@@ -679,28 +691,29 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		loadModel(ureq);
 	}
 	
-	private void doBulkCancel(UserRequest ureq) {
-		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
-		List<OrderTableRow> selectedRows = dataModel.getObjects(selectedIndex);
-		List<OrderTableRow> rows = selectedRows.stream()
-				.filter(r -> OrderStatus.NEW == r.getOrderStatus() || OrderStatus.PREPAYMENT == r.getOrderStatus() || OrderStatus.PAYED == r.getOrderStatus())
-				.toList();
+	private void doConfirmWrittenOff(UserRequest ureq, OrderTableRow row) {
+		if (guardModalController(setWrittenOffConfirmationCtrl)) return;
 		
-		if(rows.isEmpty()) {
-			showWarning("warning.no.order.to.cancel");
-		} else {
-			doCancelOrder(ureq, rows);
-		}
+		setWrittenOffConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+				translate("set.written.off.text"), null,
+				translate("set.written.off.ok"), ButtonType.regular,
+				translate("set.written.off.cancel"), true);
+		setWrittenOffConfirmationCtrl.setUserObject(row);
+		listenTo(setWrittenOffConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				setWrittenOffConfirmationCtrl.getInitialComponent(), true, translate("set.written.off"), true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
-	private void doCancelOrder(UserRequest ureq, List<OrderTableRow> rows) {
-		for(OrderTableRow row:rows) {
-			Order order = acService.loadOrderByKey(row.getOrderKey());
-			MailPackage mailing = new MailPackage(false);
-			acService.cancelOrder(order, getIdentity(), null, mailing);
+	private void doSetWrittenOffOrder(UserRequest ureq, OrderTableRow row) {
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if (order.getOrderStatus() != OrderStatus.WRITTEN_OFF) {
+			acService.changeOrderStatus(order, OrderStatus.WRITTEN_OFF);
 		}
 		
-		showInfo("info.order.set.as.cancelled");
+		showInfo("info.order.set.as.written.off");
 		loadModel(ureq);
 	}
 	
@@ -813,7 +826,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		private Link editPriceLink;
 		private Link editCancallationFeeLink;
 		private Link changeBillingAddressLink;
-		private Link cancelLink;
+		private Link setWrittenOffLink;
 		private final VelocityContainer mainVC;
 		
 		private final OrderTableRow row;
@@ -849,7 +862,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 				if (!links.isEmpty()) {
 					links.add("-");
 				}
-				cancelLink = addLink("set.cancel", "set.cancel", "o_icon o_icon-fw o_icon_decline", links);
+				setWrittenOffLink = addLink("set.written.off", "set.written.off", "o_icon o_icon-fw o_ac_order_status_written_off_icon", links);
 			}
 			
 			mainVC.contextPut("links", links);
@@ -880,9 +893,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			} else if(editCancallationFeeLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doEditCancellationFee(ureq, row);
-			} else if(cancelLink == source) {
+			} else if(setWrittenOffLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
-				doCancelOrder(ureq, List.of(row));
+				doConfirmWrittenOff(ureq, row);
 			} else if(changeBillingAddressLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doChangeBillingAddress(ureq, row);

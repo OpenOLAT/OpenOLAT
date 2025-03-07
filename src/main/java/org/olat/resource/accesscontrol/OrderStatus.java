@@ -25,6 +25,7 @@ public enum OrderStatus {
 	PREPAYMENT,
 	PAYED,
 	CANCELED,
+	WRITTEN_OFF,
 	ERROR,
 
 }

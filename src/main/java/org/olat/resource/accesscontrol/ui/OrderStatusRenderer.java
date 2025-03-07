@@ -68,6 +68,9 @@ public class OrderStatusRenderer implements FlexiCellRenderer {
 			case WARNING:
 				render(sb, "order.status.warning", "o_ac_order_status_warning_icon", labelCss, "o_ac_order_status_warning");
 				break;
+			case WRITTEN_OFF:
+				render(sb, "order.status.written.off", "o_ac_order_status_written_off_icon", labelCss, "o_ac_order_status_written_off");
+				break;
 			case PENDING:
 				render(sb, "order.status.pending", "o_ac_order_status_pending_icon", labelCss, "o_ac_order_status_pending");
 				break;	

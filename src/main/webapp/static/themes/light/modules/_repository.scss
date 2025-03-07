@@ -405,6 +405,7 @@
 	&.o_ac_order_status_open {
 		@extend %o_labeled_light_yellow;
 	}
+	&.o_ac_order_status_written_off,
 	&.o_ac_order_status_canceled {
 		@extend %o_labeled_light_grey;
 	}
@@ -427,6 +428,7 @@
 	&.o_ac_order_status_open {
 		@extend %o_labeled_yellow;
 	}
+	&.o_ac_order_status_written_off,
 	&.o_ac_order_status_canceled {
 		@extend %o_labeled_grey;
 	}

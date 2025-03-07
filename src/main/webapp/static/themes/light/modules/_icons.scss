@@ -950,6 +950,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_order_status_open_icon { @include o-add-icon('hourglass-half', false);}
 .o_ac_order_status_pending_icon { @include o-add-icon('hourglass-half', false);}
 .o_ac_order_status_warning_icon { @include o-add-icon('exclamation-triangle');}
+.o_ac_order_status_written_off_icon { @include o-add-icon('file-circle-xmark');}
 .o_ac_billing_address_active_icon { @include o-add-icon('check');}
 .o_ac_billing_address_inactive_icon { @include o-add-icon('ban');}
 
