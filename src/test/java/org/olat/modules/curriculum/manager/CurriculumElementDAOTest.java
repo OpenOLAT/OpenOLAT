@@ -206,6 +206,88 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void copyCurriculumElementSimple() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-copy-el-1", "Type for copy", "First element", "AC-234");
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-to-copy-1", "1. Element to copy",
+				CurriculumElementStatus.active, new Date(), new Date(), null, type, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Assert.assertNotNull(element);
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElement copyElement = curriculumElementDao.copyCurriculumElement(element, "New identifier copy", "New displayname copy", new Date(), new Date(), null, curriculum);
+
+		//check
+		Assert.assertNotNull(copyElement.getKey());
+		Assert.assertNotNull(copyElement.getCreationDate());
+		Assert.assertNotNull(copyElement.getLastModified());
+		Assert.assertNotNull(copyElement.getBeginDate());
+		Assert.assertNotNull(copyElement.getEndDate());
+		Assert.assertEquals("New identifier copy", copyElement.getIdentifier());
+		Assert.assertEquals("New displayname copy", copyElement.getDisplayName());
+		
+		Assert.assertNull(copyElement.getAutoInstantiation());
+
+		Assert.assertEquals(curriculum, copyElement.getCurriculum());
+		Assert.assertEquals(type, copyElement.getType());
+		Assert.assertTrue(copyElement.getTaughtBys().isEmpty());
+	}
+	
+	@Test
+	public void copyCurriculumElement() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", false, null);
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-copy-el-1", "Type for copy", "First element", "AC-234");
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-to-copy-1", "1. Element to copy",
+				CurriculumElementStatus.active, new Date(), new Date(), null, type, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Assert.assertNotNull(element);
+		dbInstance.commitAndCloseSession();
+		
+		element.setAuthors("Marie Curie");
+		element.setMainLanguage("French");
+		element.setCredits("Team");
+		element.setDescription("Very precise");
+		element.setExpenditureOfWork("1 week");
+		element.setTaughtBys(Set.of(TaughtBy.teachers));
+		element.setAutoInstantiation(AutomationImpl.valueOf(5, AutomationUnit.DAYS));
+		element.setAutoAccessForCoach(AutomationImpl.valueOf(4, AutomationUnit.WEEKS));
+		element.setAutoPublished(AutomationImpl.valueOf(3, AutomationUnit.MONTHS));
+		element.setAutoClosed(AutomationImpl.valueOf(2, AutomationUnit.YEARS));
+		
+		CurriculumElement copyElement = curriculumElementDao.copyCurriculumElement(element, "New identifier copy", "New displayname copy", new Date(), new Date(), null, curriculum);
+
+		//check
+		Assert.assertNotNull(copyElement.getKey());
+		Assert.assertNotNull(copyElement.getCreationDate());
+		Assert.assertNotNull(copyElement.getLastModified());
+		Assert.assertNotNull(copyElement.getBeginDate());
+		Assert.assertNotNull(copyElement.getEndDate());
+		Assert.assertEquals("New identifier copy", copyElement.getIdentifier());
+		Assert.assertEquals("New displayname copy", copyElement.getDisplayName());
+		
+		Assert.assertEquals("Marie Curie", copyElement.getAuthors());
+		Assert.assertEquals("French", copyElement.getMainLanguage());
+		Assert.assertEquals("Team", copyElement.getCredits());
+		Assert.assertEquals("Very precise", copyElement.getDescription());
+		Assert.assertEquals("1 week", copyElement.getExpenditureOfWork());
+		
+		Assert.assertEquals(element.getAutoInstantiation().getValue(), copyElement.getAutoInstantiation().getValue());
+		Assert.assertEquals(element.getAutoInstantiation().getUnit(), copyElement.getAutoInstantiation().getUnit());
+		Assert.assertEquals(element.getAutoAccessForCoach().getValue(), copyElement.getAutoAccessForCoach().getValue());
+		Assert.assertEquals(element.getAutoAccessForCoach().getUnit(), copyElement.getAutoAccessForCoach().getUnit());
+		Assert.assertEquals(element.getAutoPublished().getValue(), copyElement.getAutoPublished().getValue());
+		Assert.assertEquals(element.getAutoPublished().getUnit(), copyElement.getAutoPublished().getUnit());
+		Assert.assertEquals(element.getAutoClosed().getValue(), copyElement.getAutoClosed().getValue());
+		Assert.assertEquals(element.getAutoClosed().getUnit(), copyElement.getAutoClosed().getUnit());
+		
+		Assert.assertEquals(curriculum, copyElement.getCurriculum());
+		Assert.assertEquals(type, copyElement.getType());
+		Assertions.assertThat(copyElement.getTaughtBys())
+			.hasSize(1)
+			.containsExactly(TaughtBy.teachers);
+	}
+	
+	@Test
 	public void loadByKey() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-2", "Curriculum for element", "Curriculum", false, null);
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-cur-el-2", "Type for", "First element", "AC-234");
