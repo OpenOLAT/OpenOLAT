@@ -621,10 +621,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				entry.getAuthors(), entry.getDescription(), entry.getTeaser(), entry.getObjectives(), entry.getRequirements(),
 				entry.getCredits(), entry.getMainLanguage(), entry.getLocation(), entry.getExpenditureOfWork(),
 				entry.getLifecycle(), null, null, entry.getEducationalType());
-		
+		instantiatedEntry = repositoryManager.setRuntimeType(instantiatedEntry, RepositoryEntryRuntimeType.curricular);
+
 		boolean hasRepositoryEntries = hasRepositoryEntries(curriculumElement);
 		boolean moveLectureBlocks = !hasRepositoryEntries;
-		addRepositoryEntry(curriculumElement, entry, moveLectureBlocks);
+		addRepositoryEntry(curriculumElement, instantiatedEntry, moveLectureBlocks);
 		return instantiatedEntry;
 	}
 

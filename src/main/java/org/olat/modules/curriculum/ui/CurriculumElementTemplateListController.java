@@ -260,7 +260,7 @@ class CurriculumElementTemplateListController extends FormBasicController implem
 		} else if(toolsCtrl == source) {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
-		} else if(cmc == source || toolsCalloutCtrl == source){
+		} else if(cmc == source || toolsCalloutCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
