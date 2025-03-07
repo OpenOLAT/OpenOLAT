@@ -866,6 +866,7 @@ public class QTI21Page {
 	
 	public QTI21Page endTest() {
 		By endBy = By.cssSelector("a.o_sel_end_testpart");
+		OOGraphene.waitElement(endBy, browser);
 		OOGraphene.clickAndWait(endBy, browser);
 		return confirm();
 	}
