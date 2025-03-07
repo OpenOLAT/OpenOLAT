@@ -52,6 +52,7 @@ public class CopyElementContext {
 		copySettings.setCopyOffers(true);
 		copySettings.setCopyResources(CopyResources.relation);
 		copySettings.setBaseIdentifier(curriculumElement.getIdentifier());
+		copySettings.setCopyTaxonomy(true);
 		
 		this.curriculumElement = curriculumElement;
 		this.descendants = descendants;

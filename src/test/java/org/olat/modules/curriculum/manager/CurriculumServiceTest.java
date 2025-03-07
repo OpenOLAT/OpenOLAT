@@ -56,6 +56,9 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.manager.QualityTestHelper;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -89,6 +92,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 	private ACService acService;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	@Autowired
 	private QualityTestHelper qualityTestHelper;
 	@Autowired
@@ -451,6 +456,33 @@ public class CurriculumServiceTest extends OlatTestCase {
 		List<LectureBlock> copiedLectureBlocks = lectureService.getLectureBlocks(copiedElement, false);
 		Assertions.assertThat(copiedLectureBlocks)
 			.hasSize(1);
+	}
+	
+	@Test
+	public void copyCurriculumElementWithTaxonomy() {
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-1");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-28", "Curriculum 28", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-to-copy-1", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		
+		Taxonomy taxonomy = taxonomyService.createTaxonomy("CURRICULUM-" + curriculum.getKey(), "Curriculum 28", null, null);
+		TaxonomyLevel taxonomyLevel = taxonomyService.createTaxonomyLevel("A-CURRICULUM-LEVEL", "A curriculum level", null, null, null, taxonomy);
+		curriculumService.updateTaxonomyLevels(element1, List.of(taxonomyLevel), List.of());
+		dbInstance.commit();
+		
+		CurriculumCopySettings copySettings = new CurriculumCopySettings();
+		copySettings.setCopyTaxonomy(true);
+		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element1, copySettings, actor);
+		dbInstance.commit();
+
+		Assert.assertEquals("Element to copy 1 (Copy)", copiedElement.getDisplayName());
+		
+		List<TaxonomyLevel> levelsOnCopiedElement = curriculumService.getTaxonomy(copiedElement);
+		Assertions.assertThat(levelsOnCopiedElement)
+			.hasSize(1)
+			.containsExactlyInAnyOrder(taxonomyLevel);
 	}
 	
 	/**

@@ -94,7 +94,6 @@ import org.olat.modules.curriculum.CurriculumElementMembershipEvent;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementRepositoryEntryEvent;
 import org.olat.modules.curriculum.CurriculumElementStatus;
-import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
@@ -152,6 +151,7 @@ import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryMyCourseQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.repository.manager.RepositoryTemplateRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
@@ -220,6 +220,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private RepositoryTemplateRelationDAO repositoryTemplateRelationDao;
+	@Autowired
+	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	@Autowired
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	@Autowired
@@ -584,6 +586,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 								lectureBlocksCloned.add(blockToCopy.getKey());
 							}
 						}
+						
+						if(settings.isCopyTaxonomy()) {
+							List<TaxonomyLevel> entryLevels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entry);
+							for(TaxonomyLevel entryLevel:entryLevels) {
+								repositoryEntryToTaxonomyLevelDao.createRelation(entryCopy, entryLevel);
+							}
+						}
 					}
 				}
 			}
@@ -615,10 +624,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		
 		if(settings.isCopyTaxonomy()) {
-			Set<CurriculumElementToTaxonomyLevel> taxonomyLevels = clone.getTaxonomyLevels();
-			for(CurriculumElementToTaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TaxonomyLevel level = taxonomyLevel.getTaxonomyLevel();
-				curriculumElementToTaxonomyLevelDao.createRelation(clone, level);	
+			List<TaxonomyLevel> taxonomyLevels = curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(elementToClone);
+			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
+				curriculumElementToTaxonomyLevelDao.createRelation(clone, taxonomyLevel);	
 			}
 		}
 		
