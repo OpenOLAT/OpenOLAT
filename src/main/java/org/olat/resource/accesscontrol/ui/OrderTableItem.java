@@ -57,10 +57,10 @@ public class OrderTableItem {
 	private final Long orderKey;
 	private final String orderNr;
 	private final String label;
-	private final Price orderAmount;
-	private final Price orderCancellationFee;
-	private final Price offersTotalAmount;
-	private final Price offersCancellationFees;
+	private final Price price;
+	private final Price priceLines;
+	private final Price cancellationFee;
+	private final Price cancellationFeeLines;
 	
 	private final boolean billingAddressProposal;
 	private final String billingAddressIdentifier;
@@ -79,18 +79,18 @@ public class OrderTableItem {
 	private Status status;
 	private List<AccessMethod> methods;
 	
-	public OrderTableItem(Long orderKey, String orderNr, String label, Price orderAmount, Price orderCancellationFee,
-			Price offersTotalAmount, Price offersCancellationFees, boolean billingAddressProposal,
+	public OrderTableItem(Long orderKey, String orderNr, String label, Price price, Price priceLines,
+			Price cancellationFee, Price cancellationFeeLines, boolean billingAddressProposal,
 			String billingAddressIdentifier, String purchaseOrderNumber, String comment, Date creationDate,
 			OrderStatus orderStatus, Status status, Long deliveryKey, String resourceDisplayname, String costCenterName,
 			String costCenterAccount, String username, String[] userProperties, List<AccessMethod> methods) {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
 		this.label = label;
-		this.orderAmount = orderAmount;
-		this.offersTotalAmount = offersTotalAmount;
-		this.orderCancellationFee = orderCancellationFee;
-		this.offersCancellationFees = offersCancellationFees;
+		this.price = price;
+		this.priceLines = priceLines;
+		this.cancellationFee = cancellationFee;
+		this.cancellationFeeLines = cancellationFeeLines;
 		this.billingAddressProposal = billingAddressProposal;
 		this.billingAddressIdentifier = billingAddressIdentifier;
 		this.purchaseOrderNumber = purchaseOrderNumber;
@@ -131,20 +131,20 @@ public class OrderTableItem {
 		return orderStatus;	
 	}
 	
-	public Price getOrderAmount() {
-		return orderAmount;
+	public Price getPrice() {
+		return price;
+	}
+
+	public Price getPriceLines() {
+		return priceLines;
 	}
 	
-	public Price getOrderCancellationFee() {
-		return orderCancellationFee;
+	public Price getCancellationFee() {
+		return cancellationFee;
 	}
 
-	public Price getOffersTotalAmount() {
-		return offersTotalAmount;
-	}
-
-	public Price getOffersCancellationFees() {
-		return offersCancellationFees;
+	public Price getCancellationFeeLines() {
+		return cancellationFeeLines;
 	}
 
 	public boolean isBillingAddressProposal() {

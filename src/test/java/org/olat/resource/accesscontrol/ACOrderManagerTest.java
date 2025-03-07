@@ -332,7 +332,8 @@ public class ACOrderManagerTest extends OlatTestCase {
 		acTransactionManager.update(accessTransaction2, AccessTransactionStatus.CANCELED);
 
 		long start = System.nanoTime();
-		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null, null, false, 0, -1, null);
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null,
+				null, false, false, 0, -1, null);
 		CodeHelper.printMilliSecondTime(start, "Order itemized");
 		Assert.assertNotNull(items);
 		
@@ -340,7 +341,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		for(OrderCol col:OrderCol.values()) {
 			if(col.sortable()) {
 				List<RawOrderItem> rawItems = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null,
-						null, false, 0, -1, null, new SortKey(col.sortKey(), false));
+						null, false, false, 0, -1, null, new SortKey(col.sortKey(), false));
 				Assert.assertNotNull(rawItems);
 			}
 		}
@@ -369,7 +370,8 @@ public class ACOrderManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		long start = System.nanoTime();
-		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null, null, false, 0, -1, null);
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, null,
+				null, false, false, 0, -1, null);
 		CodeHelper.printMilliSecondTime(start, "Order itemized");
 		Assert.assertNotNull(items);
 	}
@@ -399,7 +401,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 				.getUserPropertyHandlersFor(OrdersAdminController.class.getCanonicalName(), true);
 		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, order.getKey(),
 				DateUtils.addDays(new Date(), -2), DateUtils.addDays(new Date(), 2),
-				OrderStatus.values(), null, null, false,
+				OrderStatus.values(), null, null, false, false,
 				0, 256, userPropertyHandlers);
 		
 		Assertions.assertThat(items)
@@ -409,7 +411,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		// Syntax check only
 		acOrderManager.findNativeOrderItems(randomOres, null, order.getKey(),
 				DateUtils.addDays(new Date(), -2), DateUtils.addDays(new Date(), 2),
-				OrderStatus.values(), null, null, true,
+				OrderStatus.values(), null, null, true, true,
 				0, 256, userPropertyHandlers);
 	}
 	

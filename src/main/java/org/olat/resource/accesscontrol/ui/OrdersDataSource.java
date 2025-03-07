@@ -152,10 +152,12 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 		
 		List<Long> filterOfferAccess = getFilterMethods(filters, FILTER_OFFER);
 		
+		boolean filterAdjustedAmount = presetDelegate != null? presetDelegate.isFilterAdjustedAmount(): false;
 		boolean filterAddressProposal = presetDelegate != null? presetDelegate.isFilterAddressProposal(): false;
 		
 		List<OrderTableItem> items = acService.findOrderItems(resource, delivery, refNo, from, to, states,
-				filterMethods, filterOfferAccess, filterAddressProposal, firstResult, maxResults, userPropertyHandlers, orderBy);
+				filterMethods, filterOfferAccess, filterAdjustedAmount, filterAddressProposal, firstResult, maxResults,
+				userPropertyHandlers, orderBy);
 		List<OrderTableRow> rows = new ArrayList<>(items.size());
 		for(OrderTableItem item:items) {
 			OrderTableRow row = new OrderTableRow(item);
@@ -253,6 +255,8 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	}
 	
 	public interface PresetDelegate {
+		
+		public boolean isFilterAdjustedAmount();
 		
 		boolean isFilterAddressProposal();
 		

@@ -1090,6 +1090,8 @@ create table o_ac_order (
   discount_currency_code varchar(3),
   cancellation_fee_amount decimal,
   cancellation_fee_currency_code varchar(3),
+  cancellation_fee_lines_amount decimal,
+  cancellation_fee_lines_currency_code varchar(3),
   order_status VARCHAR(32) default 'NEW',
   purchase_order_number varchar(100),
   order_comment text,

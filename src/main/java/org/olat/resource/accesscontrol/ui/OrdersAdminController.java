@@ -116,10 +116,12 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	protected static final String USER_PROPS_ID = OrdersAdminController.class.getCanonicalName();
 	
 	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab adjustedAmountTab;
 	private FlexiFiltersTab billingAddressProposalTab;
 	
 	private FormLink exportButton;
 	private FormLink bulkPayButton;
+	private FormLink bulkSetOpenButton;
 	private FormLink bulkCancelButton;
 	private FlexiTableElement tableEl;
 	private OrdersDataSource dataSource;
@@ -129,6 +131,8 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private OrderDetailController detailController;
+	private PriceEditController priceEditCtrl;
+	private CancellationFeeEditController cancellationFeeEditCtrl;
 	private BillingAddressSelectionController addressSelectionCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
@@ -138,6 +142,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
 	private final String avatarMapperBaseURL;
 	private final List<AccessMethod> methods;
+	private final boolean isWithInvoice;
 
 	@Autowired
 	private ACService acService;
@@ -170,12 +175,15 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		methods = acService.getAvailableMethods();
 		
+		isWithInvoice = resource.getResourceableTypeName().equals(OresHelper.calculateTypeName(CurriculumElement.class))
+				&& acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE);
+		
 		detailsVC = createVelocityContainer("order_details");
 		
 		initForm(ureq);
 		
 		tableEl.setSelectedFilterTab(ureq, allTab);
-		loadModel();
+		resetModel();
 	}
 	
 	@Override
@@ -194,7 +202,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 
 	private void initTableForm(FormItemContainer formLayout, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderNr));
+		DefaultFlexiColumnModel ordernrCol = new DefaultFlexiColumnModel(OrderCol.orderNr);
+		ordernrCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(ordernrCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.status,
 				new OrderStatusRenderer(getTranslator())));
 		
@@ -219,16 +229,15 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderAmount));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offersTotalAmount));
-		if (isWithBillingAddress()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderCancellationFee));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.offersCancellationFees));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.totalAmountLines));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.totalAmount, new TotalAmountRenderer()));
+		if (isWithInvoice) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFees, new CancellationFeesRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.billingAddressIdentifier, new BillingAddressCellRenderer()));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier, new BillingAddressCellRenderer()));
 		}
 		
 		if(!readOnly) {
@@ -262,9 +271,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		String id = resource == null ? "orders-admin-list-v3" : "orders-resource-list-v3";
 		tableEl.setAndLoadPersistedPreferences(ureq, id);
 		
-		if(!readOnly) {
+		if(!readOnly && isWithInvoice) {
 			bulkPayButton = uifactory.addFormLink("bulk.pay", "set.paid", null, formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkPayButton);
+			bulkSetOpenButton = uifactory.addFormLink("bulk.open", "set.open", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(bulkSetOpenButton);
 			bulkCancelButton = uifactory.addFormLink("bulk.cancel", "set.cancel", null, formLayout, Link.BUTTON);
 			tableEl.addBatchButton(bulkCancelButton);
 		}
@@ -291,10 +302,16 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		SelectionValues methodsValues = new SelectionValues();
 		for(AccessMethod method:methods) {
 			AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
-			if(handler != null) {
-				methodsValues.add(SelectionValues.entry(method.getKey().toString(), handler.getMethodName(getLocale())));
+			if(handler != null && method.isVisibleInGui()) {
+				methodsValues.add(SelectionValues.entry(
+						method.getKey().toString(), handler.getMethodName(getLocale()),
+						null,
+						"o_icon o_icon-fw " + method.getMethodCssClass() + "_icon",
+						null,
+						true));
 			}
 		}
+		methodsValues.sort(SelectionValues.VALUE_ASC);
 		FlexiTableMultiSelectionFilter methodFilter = new FlexiTableMultiSelectionFilter(translate("filter.method"),
 				OrdersDataSource.FILTER_METHOD, methodsValues, true);
 		filters.add(methodFilter);
@@ -378,7 +395,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		errorTab.setFiltersExpanded(true);
 		tabs.add(errorTab);
 		
-		if (isWithBillingAddress()) {
+		if (isWithInvoice) {
+			adjustedAmountTab = FlexiFiltersTabFactory.tab("price.adjusted", translate("filter.adjusted.amount"),
+					TabSelectionBehavior.nothing);
+			tabs.add(adjustedAmountTab);
+			
 			billingAddressProposalTab = FlexiFiltersTabFactory.tab("proposal", translate("filter.billing.address.proposal"),
 					TabSelectionBehavior.nothing);
 			tabs.add(billingAddressProposalTab);
@@ -387,9 +408,12 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
-	private boolean isWithBillingAddress() {
-		return resource.getResourceableTypeName().equals(OresHelper.calculateTypeName(CurriculumElement.class))
-				&& acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE);
+	@Override
+	public boolean isFilterAdjustedAmount() {
+		if (adjustedAmountTab != null && tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == adjustedAmountTab) {
+			return true;
+		}
+		return false;
 	}
 	
 	@Override
@@ -402,11 +426,14 @@ public class OrdersAdminController extends FormBasicController implements Activa
 
 	@Override
 	public void forge(OrderTableRow row) {
-		OrderStatus status = row.getOrderStatus();
-		if(status == OrderStatus.NEW || status == OrderStatus.PREPAYMENT || status == OrderStatus.PAYED) {
-			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), CMD_TOOLS);
-			toolsLink.setUserObject(row);
-			row.setToolsLink(toolsLink);
+		if (!readOnly && isWithInvoice && row.isType(InvoiceAccessHandler.METHOD_TYPE)) {
+			OrderStatus status = row.getOrderStatus();
+			if (status == OrderStatus.NEW || status == OrderStatus.PREPAYMENT || status == OrderStatus.PAYED 
+					|| (status == OrderStatus.CANCELED && row.isWithCancellationFees())) {
+				FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), CMD_TOOLS);
+				toolsLink.setUserObject(row);
+				row.setToolsLink(toolsLink);
+			}
 		}
 	}
 	
@@ -434,7 +461,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		if(tab != null) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			activateFilters(subEntries);
-			loadModel();
+			resetModel();
 		}
 	}
 	
@@ -455,6 +482,8 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(bulkPayButton == source) {
 			doBulkSetPaid(ureq);
+		} else if(bulkSetOpenButton == source) {
+			doBulkSetOpen(ureq);
 		} else if(bulkCancelButton == source) {
 			doBulkCancel(ureq);
 		} else if(exportButton == source) {
@@ -480,7 +509,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 					doCloseOrderDetails(row);
 				}
 			} else if(event instanceof FlexiTableFilterTabEvent) {
-				loadModel();
+				resetModel();
 			}
 		 } else if(source instanceof FormLink link && CMD_TOOLS.equals(link.getCmd())
 				&& link.getUserObject() instanceof OrderTableRow row) {
@@ -498,10 +527,20 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source instanceof OrderDetailController) {
 			if(event == Event.CHANGED_EVENT) {
-				Set<Long> detailsOrderKeys = getOpenOrderKeys();
-				tableEl.reloadData();
-				openOrders(ureq, detailsOrderKeys);
+				loadModel(ureq);
 			}
+		} else if (priceEditCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				loadModel(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cancellationFeeEditCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				loadModel(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (addressSelectionCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				if (addressSelectionCtrl.getUserObject() instanceof OrderTableRow row) {
@@ -519,21 +558,32 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(cancellationFeeEditCtrl);
 		removeAsListenerAndDispose(addressSelectionCtrl);
 		removeAsListenerAndDispose(detailController);
+		removeAsListenerAndDispose(priceEditCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		cancellationFeeEditCtrl = null;
 		addressSelectionCtrl = null;
 		detailController = null;
+		priceEditCtrl = null;
 		calloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
 	}
 	
-	private void loadModel() {
+	private void resetModel() {
 		dataSource.reset();
 		tableEl.reset(true, true, true);
+	}
+	
+	private void loadModel(UserRequest ureq) {
+		Set<Long> detailsOrderKeys = getOpenOrderKeys();
+		tableEl.deselectAll();
+		tableEl.reloadData();
+		openOrders(ureq, detailsOrderKeys);
 	}
 	
 	private void doOpenTools(UserRequest ureq, OrderTableRow member, FormLink link) {
@@ -579,6 +629,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
 		List<OrderTableRow> selectedRows = dataModel.getObjects(selectedIndex);
 		List<OrderTableRow> rows = selectedRows.stream()
+				.filter(r -> r.isType(InvoiceAccessHandler.METHOD_TYPE))
 				.filter(r -> OrderStatus.NEW == r.getOrderStatus() || OrderStatus.PREPAYMENT == r.getOrderStatus())
 				.toList();
 		
@@ -598,10 +649,34 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		}
 
 		showInfo("info.order.set.as.paid");
-		Set<Long> detailsOrderKeys = getOpenOrderKeys();
-		tableEl.deselectAll();
-		tableEl.reloadData();
-		openOrders(ureq, detailsOrderKeys);
+		loadModel(ureq);
+	}
+	
+	private void doBulkSetOpen(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		List<OrderTableRow> selectedRows = dataModel.getObjects(selectedIndex);
+		List<OrderTableRow> rows = selectedRows.stream()
+				.filter(r -> r.isType(InvoiceAccessHandler.METHOD_TYPE))
+				.filter(r -> OrderStatus.PAYED == r.getOrderStatus())
+				.toList();
+		
+		if(rows.isEmpty()) {
+			showWarning("warning.no.order.to.open");
+		} else {
+			doSetOpen(ureq, rows);
+		}
+	}
+	
+	private void doSetOpen(UserRequest ureq, List<OrderTableRow> rows) {
+		for(OrderTableRow row:rows) {
+			Order order = acService.loadOrderByKey(row.getOrderKey());
+			if(order != null) {
+				acService.changeOrderStatus(order, OrderStatus.PREPAYMENT);
+			}
+		}
+		
+		showInfo("info.order.set.as.open");
+		loadModel(ureq);
 	}
 	
 	private void doBulkCancel(UserRequest ureq) {
@@ -626,10 +701,43 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		}
 		
 		showInfo("info.order.set.as.cancelled");
-		Set<Long> detailsOrderKeys = getOpenOrderKeys();
-		tableEl.deselectAll();
-		tableEl.reloadData();
-		openOrders(ureq, detailsOrderKeys);
+		loadModel(ureq);
+	}
+	
+	private void doEditPrice(UserRequest ureq, OrderTableRow row) {
+		if (guardModalController(priceEditCtrl)) return;
+		
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if (order == null) {
+			return;
+		}
+		
+		priceEditCtrl = new PriceEditController(ureq, getWindowControl(), order);
+		listenTo(priceEditCtrl);
+		
+		String title = translate("change.price");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), priceEditCtrl.getInitialComponent(),
+				true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doEditCancellationFee(UserRequest ureq, OrderTableRow row) {
+		if (guardModalController(cancellationFeeEditCtrl)) return;
+		
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if (order == null) {
+			return;
+		}
+		
+		cancellationFeeEditCtrl = new CancellationFeeEditController(ureq, getWindowControl(), order);
+		listenTo(cancellationFeeEditCtrl);
+		
+		String title = translate("change.cancellation.fee");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				cancellationFeeEditCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doChangeBillingAddress(UserRequest ureq, OrderTableRow row) {
@@ -658,9 +766,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			acService.addBillingAddress(order, billingAddress);	
 			
 			showInfo("info.billing.address.change");
-			Set<Long> detailsOrderKeys = getOpenOrderKeys();
-			tableEl.reloadData();
-			openOrders(ureq, detailsOrderKeys);
+			loadModel(ureq);
 		}
 	}
 	
@@ -703,8 +809,11 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private class ToolsController extends BasicController {
 
 		private Link payLink;
-		private Link cancelLink;
+		private Link setOpenLink;
+		private Link editPriceLink;
+		private Link editCancallationFeeLink;
 		private Link changeBillingAddressLink;
+		private Link cancelLink;
 		private final VelocityContainer mainVC;
 		
 		private final OrderTableRow row;
@@ -715,8 +824,19 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			mainVC = createVelocityContainer("tools");
 			
 			List<String> links = new ArrayList<>();
-			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT) {
-				payLink = addLink("set.paid", "set.paid", "o_icon o_icon-fw o_icon_pay", links);
+			if (row.isWithPrice()) {
+				if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT) {
+					payLink = addLink("set.paid", "set.paid", "o_icon o_icon-fw o_icon_pay", links);
+					editPriceLink = addLink("change.price", "change.price", "o_icon o_icon-fw o_icon_edit", links);
+				} else if (row.getOrderStatus() == OrderStatus.PAYED) {
+					setOpenLink = addLink("set.open", "set.open", "o_icon o_icon-fw o_icon_payment_open", links);
+				}
+			}
+			
+			if (row.isWithCancellationFees()) {
+				if (row.getOrderStatus() == OrderStatus.CANCELED) {
+					editCancallationFeeLink = addLink("change.cancellation.fee", "change.cancellation.fee", "o_icon o_icon-fw o_icon_edit", links);
+				}
 			}
 			
 			if ((row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT)
@@ -751,6 +871,15 @@ public class OrdersAdminController extends FormBasicController implements Activa
 			if(payLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doSetPaid(ureq, List.of(row));
+			} else if(setOpenLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doSetOpen(ureq, List.of(row));
+			} else if(editPriceLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doEditPrice(ureq, row);
+			} else if(editCancallationFeeLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doEditCancellationFee(ureq, row);
 			} else if(cancelLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doCancelOrder(ureq, List.of(row));

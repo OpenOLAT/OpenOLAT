@@ -572,7 +572,7 @@
 								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyEmail" />
 							</list>
 						</property>
 						<property name="mandatoryProperties">
@@ -585,7 +585,7 @@
 						<property name="adminViewOnlyProperties">
 							<set>
 								<ref bean="userPropertyUserNickName" />
-								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyEmail" />
 							</set>
 						</property>
 					</bean>

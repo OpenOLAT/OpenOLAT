@@ -118,6 +118,10 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
     @AttributeOverride(name="amount", column = @Column(name="cancellation_fee_amount"))
     @AttributeOverride(name="currencyCode", column = @Column(name="cancellation_fee_currency_code"))
 	private PriceImpl cancellationFees;
+	@Embedded
+    @AttributeOverride(name="amount", column = @Column(name="cancellation_fee_lines_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="cancellation_fee_lines_currency_code"))
+	private PriceImpl cancellationFeesLines;
 	
 	@Transient
 	private String currencyCode;
@@ -249,6 +253,7 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 		return total;
 	}
 
+	@Override
 	public void setTotal(Price total) {
 		this.total = (PriceImpl)total;
 	}
@@ -282,6 +287,16 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 	}
 
 	@Override
+	public PriceImpl getCancellationFeesLines() {
+		return cancellationFeesLines;
+	}
+
+	@Override
+	public void setCancellationFeesLines(Price cancellationFeesLines) {
+		this.cancellationFeesLines = (PriceImpl)cancellationFeesLines;
+	}
+
+	@Override
 	public List<OrderPart> getParts() {
 		if(parts == null) {
 			parts = new ArrayList<>();
@@ -295,30 +310,20 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 	
 	@Override
 	public void recalculate() {
+		// Should be only calculated when the order is created.
 		totalOrderLines = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
 		for(OrderPart part : getParts()) {
 			((OrderPartImpl)part).recalculate(getCurrencyCode());
 			totalOrderLines = totalOrderLines.add(part.getTotalOrderLines());
 		}
-
-		total = totalOrderLines.clone();
+		
+		// The total can be adjusted by an administrative person.
+		if (total == null) {
+			total = totalOrderLines.clone();
+		}
 		if(discount == null) {
 			discount = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
 		}
-	}
-	
-	@Override
-	public Price calculateFees() {
-		PriceImpl fees = new PriceImpl(BigDecimal.ZERO, getCurrencyCode());
-		for(OrderPart part : getParts()) {
-			if(part.getCancellationFees() != null) {
-				fees = fees.add(part.getCancellationFees());
-			}
-		}
-		if(fees.getAmount().compareTo(BigDecimal.ZERO) == 0) {
-			fees = null;
-		}
-		return fees;
 	}
 
 	@Override

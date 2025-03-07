@@ -53,26 +53,39 @@ public interface Order {
 	
 	public String getCurrencyCode();
 	
+	/**
+	 * Initially sum of the lines.
+	 * May be changed .
+	 */
 	public Price getTotal();
+	
+	public void setTotal(Price total);
 
+	/**
+	 * Sum of the lines
+	 */
 	public Price getTotalOrderLines();
 
 	public Price getDiscount();
 	
+	/*
+	 * Initially the same as getCancellationFeesLines().
+	 * May be changed.
+	 */
 	public Price getCancellationFees();
 	
 	public void setCancellationFees(Price fees);
 	
+	/**
+	 * Sum of the lines of applicable cancellation fees when canceling is done.
+	 */
+	public Price getCancellationFeesLines();
+	
+	public void setCancellationFeesLines(Price fees);
+	
 	public List<OrderPart> getParts();
 	
 	public void recalculate();
-	
-	/**
-	 * Calculate the fees based on order parts and order lines.
-	 * 
-	 * @return A price for the fees or null
-	 */
-	public Price calculateFees();
 	
 	public BillingAddress getBillingAddress();
 	

@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -115,6 +116,7 @@ import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.OfferAndAccessInfos;
 import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
+import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
@@ -623,20 +625,21 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	
 	@Override
 	public void cancelOrder(Order order, Identity doer, String adminNote, MailPackage mailing) {
-		order.setCancellationFees(order.calculateFees());
-		order = orderManager.save(order, OrderStatus.CANCELED);
-		
 		List<OLATResource> deniedRessources = new ArrayList<>();
 		Identity identity = order.getDelivery();
 		if(identity != null) {
 			identity.getUser();// Load it to send email
 		}
 		
+		PriceImpl orderFees = new PriceImpl(new BigDecimal("0"), order.getTotalOrderLines().getCurrencyCode());
 		for(OrderPart part:order.getParts()) {
 			for(OrderLine line:part.getOrderLines()) {
 				Offer offer = line.getOffer();
 				Date begin = getBeginDate(offer.getResource());
 				Price cancellationFee = getCancellationFee(line, begin, DateUtils.getStartOfDay(new Date()));
+				if (cancellationFee != null) {
+					orderFees = orderFees.add(cancellationFee);
+				}
 				GroupMembershipStatus nextStatus = cancellationFee != null
 						? GroupMembershipStatus.cancelWithFee
 						: GroupMembershipStatus.cancel;
@@ -645,6 +648,12 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				}
 			}
 		}
+		if (orderFees.getAmount().compareTo(BigDecimal.ZERO) == 0) {
+			orderFees = null;
+		}
+		order.setCancellationFeesLines(orderFees);
+		order.setCancellationFees(orderFees);
+		order = orderManager.save(order, OrderStatus.CANCELED);
 		
 		if(mailing != null && mailing.isSendEmail()) {
 			for(OLATResource deniedRessource:deniedRessources) {
@@ -661,7 +670,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 	}
 	
-	private Date getBeginDate(OLATResource resource) {
+	@Override
+	public Date getBeginDate(OLATResource resource) {
 		if("CurriculumElement".equals(resource.getResourceableTypeName())) {
 			CurriculumElement element = curriculumService.getCurriculumElement(resource);
 			return element == null ? null : element.getBeginDate();
@@ -679,7 +689,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Override
 	public Order changeOrderStatus(Order order, OrderStatus newStatus) {
 		log.info("Change order status {} ({}) from {} to {}", order.getOrderNr(), order.getKey(), order.getOrderStatus(), newStatus);
-		return orderManager.save(order, OrderStatus.PAYED);
+		return orderManager.save(order, newStatus);
 	}
 
 	@Override
@@ -829,14 +839,14 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	public boolean isAccessRefusedByStatus(RepositoryEntry entry, IdentityRef identity) {
 		return !RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())
 					&& !findOrderItems(entry.getOlatResource(), identity, null, null, null, new OrderStatus[] { OrderStatus.PAYED },
-							null, null, false, 0, 1, null).isEmpty();
+							null, null, false, false, 0, 1, null).isEmpty();
 	}
 	
 	@Override
 	public boolean isAccessRefusedByStatus(CurriculumElement element, IdentityRef identity) {
 		return !Arrays.asList(ACService.CESTATUS_ACTIVE_METHOD).contains(element.getElementStatus())
 				&& !findOrderItems(element.getResource(), identity, null, null, null, new OrderStatus[] { OrderStatus.PAYED },
-						null, null, false, 0, 1, null).isEmpty();
+						null, null, false, false, 0, 1, null).isEmpty();
 	}
 
 	@Override
@@ -1242,7 +1252,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Override
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from,
 			Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
-			boolean billingAddressProposal, int firstResult, int maxResults,
+			boolean filterAdjustedAmount, boolean billingAddressProposal, int firstResult, int maxResults,
 			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy) {
 		List<AccessMethod> methods = methodManager.getAllMethods();
 		Map<String,AccessMethod> methodMap = new HashMap<>();
@@ -1251,7 +1261,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 
 		List<RawOrderItem> rawOrders = orderManager.findNativeOrderItems(resource, delivery, orderNr, from, to, status,
-				methodsKeys, offerAccessKeys, billingAddressProposal,firstResult, maxResults, userPropertyHandlers, orderBy);
+				methodsKeys, offerAccessKeys, filterAdjustedAmount, billingAddressProposal, firstResult, maxResults,
+				userPropertyHandlers, orderBy);
 		List<OrderTableItem> items = new ArrayList<>(rawOrders.size());
 		for(RawOrderItem rawOrder:rawOrders) {
 			String orderStatusStr = rawOrder.getOrderStatus();
@@ -1275,15 +1286,15 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				}
 			}
 			
-			Status finalStatus = Status.getStatus(orderStatusStr, rawOrder.getOrderCancellationFee(), rawOrder.getTrxStatus(), pspTrxStatus, orderMethods);
+			Status finalStatus = Status.getStatus(orderStatusStr, rawOrder.getCancellationFee(), rawOrder.getTrxStatus(), pspTrxStatus, orderMethods);
 			String offerLabel = deduplicate(rawOrder.getLabel());
 			String resourceDisplayName = deduplicate(rawOrder.getResourceName());
 			String costCenteryName = deduplicate(rawOrder.getCostCenterName());
 			String costCenteryAccount = deduplicate(rawOrder.getCostCenterAccount());
 			
 			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(), offerLabel,
-					rawOrder.getOrderAmount(), rawOrder.getOrderCancellationFee(), rawOrder.getOffersTotalAmount(),
-					rawOrder.getOffersCancellationFees(), rawOrder.isBillingAddressProposal(),
+					rawOrder.getPrice(), rawOrder.getPriceLines(), rawOrder.getCancellationFee(),
+					rawOrder.getCancellationFeeLines(), rawOrder.isBillingAddressProposal(),
 					rawOrder.getBillingAddressIdentifier(), rawOrder.getPurchaseOrderNumber(), rawOrder.getComment(),
 					rawOrder.getCreationDate(), orderStatus, finalStatus, rawOrder.getDeliveryKey(),
 					resourceDisplayName, costCenteryName, costCenteryAccount, rawOrder.getUsername(),
@@ -1396,7 +1407,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			header.addCell(4, "Method");
 			header.addCell(5, "Total");
 			
-			List<OrderTableItem> orders = findOrderItems(null, identity, null, null, null, null, null, null, false, 0, -1, null);
+			List<OrderTableItem> orders = findOrderItems(null, identity, null, null, null, null, null, null, false, false, 0, -1, null);
 			for(OrderTableItem order:orders) {
 				exportNoteData(order, sheet, workbook, locale);
 			}
@@ -1429,7 +1440,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		row.addCell(col++, methodSb.toString());
 		for(AccessMethod method:methods) {
 			if(method.isPaymentMethod()) {
-				row.addCell(col++, PriceFormat.fullFormat(order.getOrderAmount()));
+				row.addCell(col++, PriceFormat.fullFormat(order.getPrice()));
 			}
 		}
 	}

@@ -343,11 +343,14 @@ public interface ACService {
 	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
 			OrderStatus[] statuss);
 
-	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
-			OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys, boolean billingAddressProposal, int firstResult, int maxResults,
+	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from,
+			Date to, OrderStatus[] status, List<Long> methodsKeys, List<Long> offerAccessKeys,
+			boolean filterAdjustedAmount, boolean filterAddressProposal, int firstResult, int maxResults,
 			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy);
 	
 	public boolean hasOrder(OfferRef offer);
+	
+	public Date getBeginDate(OLATResource resource);
 	
 	public Price getCancellationFee(OLATResource recource, Date resourceBeginDate, List<Order> orders);
 

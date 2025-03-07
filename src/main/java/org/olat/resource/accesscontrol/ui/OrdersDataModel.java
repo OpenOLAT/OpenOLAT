@@ -19,7 +19,6 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.Price;
-import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 import org.olat.user.UserManager;
 
@@ -68,10 +66,9 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 			case delivery -> getDelivery(order);
 			case methods -> order.getMethods();
 			case offerLabel -> order.getOfferLabel();
-			case orderAmount -> toPaymentPrice(order, order.getOrderAmount());
-			case orderCancellationFee -> toPaymentPrice(order, order.getOrderCancellationFee());
-			case offersTotalAmount -> toPaymentPrice(order, order.getOffersTotalAmount());
-			case offersCancellationFees -> toPaymentPrice(order, order.getOffersCancellationFees());
+			case totalAmountLines -> toPaymentPrice(order, order.getPriceLines());
+			case totalAmount -> order;
+			case cancellationFees -> order;
 			case costCenterName -> order.getCostCenterName();
 			case costCenterAccount -> order.getCostCenterAccount();
 			case purchaseOrderNumber -> order.getPurchaseOrderNumber();
@@ -95,23 +92,14 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		return userManager.getUserDisplayName(deliveryKey);
 	}
 	
-	private String toPaymentPrice(OrderTableRow order, Price value) {
-		if(hasPaymentMethods(order)) {
+	private String toPaymentPrice(OrderTableRow row, Price value) {
+		if(row.hasPaymentMethods()) {
 			String val = PriceFormat.fullFormat(value);
 			if(StringHelper.containsNonWhitespace(val)) {
 				return val;
 			}
 		}
 		return null;
-	}
-	
-	private boolean hasPaymentMethods(OrderTableRow order) {
-		boolean paymentMethod = false;
-		Collection<AccessMethod> methods = order.getMethods();
-		for(AccessMethod method:methods) {
-			paymentMethod |= method.isPaymentMethod();
-		}
-		return paymentMethod;
 	}
 	
 	public void updateModifications() {
@@ -134,10 +122,9 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		delivery("order.delivery", "delivery_id"),
 		methods("table.order.part.payment", "trxMethodIds"),
 		offerLabel("table.order.offer.label", null),
-		orderAmount("table.order.total", "total_amount"),
-		orderCancellationFee("order.cancellation.fee", "cancellation_fee_amount"),
-		offersTotalAmount("table.order.offers.total", "offers_amount"),
-		offersCancellationFees("table.order.offers.cancellation.fee", "offers_cancellation_fee_amount"),
+		totalAmountLines("access.info.price.original", "total_lines_amount"),
+		totalAmount("access.info.price", "total_amount"),
+		cancellationFees("order.cancellation.fee.charged", "cancellation_fee_amount"),
 		costCenterName("cost.center", "cost_center_names"),
 		costCenterAccount("cost.center.account", "cost_center_accounts"),
 		purchaseOrderNumber("order.purchase.number", "purchase_order_number"),

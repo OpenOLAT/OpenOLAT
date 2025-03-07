@@ -37,10 +37,10 @@ public class RawOrderItem {
 	private final Long orderKey;
 	private final String orderNr;
 	private final String label;
-	private final Price orderAmount;
-	private final Price orderCancellationFee;
-	private final Price offersTotalAmount;
-	private final Price offersCancellationFees;
+	private final Price price;
+	private final Price priceLines;
+	private final Price cancellationFee;
+	private final Price cancellationFeeLines;
 	private final boolean billingAddressProposal;
 	private final String billingAddressIdentifier;
 	private final String purchaseOrderNumber;
@@ -62,7 +62,7 @@ public class RawOrderItem {
 	private final String[] userProperties;
 	
 	public RawOrderItem(Long orderKey, String orderNr, String label, String totalCurrencyCode,
-			BigDecimal orderAmount, BigDecimal orderCancellationFee, BigDecimal offersTotalAmount, BigDecimal offersCancellationFees,
+			BigDecimal orderAmount, BigDecimal orderCancellationFee, BigDecimal orderAmountLines, BigDecimal orderCancellationFeeLines,
 			boolean billingAddressProposal, String billingAddressIdentifier, String purchaseOrderNumber,
 			String comment, Date creationDate, String orderStatus, Long deliveryKey, String resourceName,
 			String costCenterName, String costCenterAccount, String trxStatus, String trxMethodIds, String pspTrxStatus,
@@ -70,10 +70,10 @@ public class RawOrderItem {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
 		this.label = label;
-		this.orderAmount = new PriceImpl(orderAmount, totalCurrencyCode);
-		this.offersTotalAmount = new PriceImpl(offersTotalAmount, totalCurrencyCode);
-		this.orderCancellationFee = new PriceImpl(orderCancellationFee, totalCurrencyCode);
-		this.offersCancellationFees = new PriceImpl(offersCancellationFees, totalCurrencyCode);
+		this.price = new PriceImpl(orderAmount, totalCurrencyCode);
+		this.priceLines = new PriceImpl(orderAmountLines, totalCurrencyCode);
+		this.cancellationFee = new PriceImpl(orderCancellationFee, totalCurrencyCode);
+		this.cancellationFeeLines = new PriceImpl(orderCancellationFeeLines, totalCurrencyCode);
 		this.billingAddressProposal = billingAddressProposal;
 		this.billingAddressIdentifier = billingAddressIdentifier;
 		this.purchaseOrderNumber = purchaseOrderNumber;
@@ -105,24 +105,20 @@ public class RawOrderItem {
 		return label;
 	}
 
-	/**
-	 * Amount of the order, can be different at the sum of the offers prices
-	 * @return
-	 */
-	public Price getOrderAmount() {
-		return orderAmount;
+	public Price getPrice() {
+		return price;
 	}
 	
-	public Price getOrderCancellationFee() {
-		return orderCancellationFee;
+	public Price getPriceLines() {
+		return priceLines;
 	}
 	
-	public Price getOffersTotalAmount() {
-		return offersTotalAmount;
+	public Price getCancellationFee() {
+		return cancellationFee;
 	}
-
-	public Price getOffersCancellationFees() {
-		return offersCancellationFees;
+	
+	public Price getCancellationFeeLines() {
+		return cancellationFeeLines;
 	}
 
 	public boolean isBillingAddressProposal() {

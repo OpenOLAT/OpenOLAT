@@ -19,6 +19,8 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -96,21 +98,44 @@ public class OrderTableRow {
 	public List<AccessMethod> getMethods() {
 		return item.getMethods();
 	}
+	
+	public boolean isType(String type) {
+		return item.getMethods().stream().map(AccessMethod::getType).anyMatch(methodType -> methodType.equals(type));
+	}
 
-	public Price getOrderAmount() {
-		return item.getOrderAmount();
+	public Price getPrice() {
+		return item.getPrice();
 	}
 	
-	public Price getOrderCancellationFee() {
-		return item.getOrderCancellationFee();
+	public Price getPriceLines() {
+		return item.getPriceLines();
 	}
 	
-	public Price getOffersTotalAmount() {
-		return item.getOffersTotalAmount();
+	public boolean isWithPrice() {
+		return (getPriceLines() != null && getPriceLines().getAmount() != null && BigDecimal.ZERO.compareTo(getPriceLines().getAmount()) < 0)
+				|| (getPrice() != null && getPrice().getAmount() != null && BigDecimal.ZERO.compareTo(getPrice().getAmount()) < 0);
 	}
 	
-	public Price getOffersCancellationFees() {
-		return item.getOffersCancellationFees();
+	public boolean hasPaymentMethods() {
+		boolean paymentMethod = false;
+		Collection<AccessMethod> methods = getMethods();
+		for(AccessMethod method:methods) {
+			paymentMethod |= method.isPaymentMethod();
+		}
+		return paymentMethod;
+	}
+	
+	public Price getCancellationFee() {
+		return item.getCancellationFee();
+	}
+	
+	public Price getCancellationFeeLines() {
+		return item.getCancellationFeeLines();
+	}
+	
+	public boolean isWithCancellationFees() {
+		return (getCancellationFeeLines() != null && getCancellationFeeLines().getAmount() != null && BigDecimal.ZERO.compareTo(getCancellationFeeLines().getAmount()) < 0)
+				|| (getCancellationFee() != null && getCancellationFee().getAmount() != null && BigDecimal.ZERO.compareTo(getCancellationFee().getAmount()) < 0);
 	}
 
 	public String getCostCenterName() {

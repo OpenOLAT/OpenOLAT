@@ -26,11 +26,11 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -53,15 +53,17 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessTransaction;
-import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
@@ -79,6 +81,7 @@ import org.olat.user.UserInfoProfileController;
 import org.olat.user.UserPortraitService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+
 /**
  * 
  * Initial date: 27 janv. 2025<br>
@@ -90,13 +93,10 @@ public class OrderDetailController extends FormBasicController {
 	private static final String CMD_SELECT = "sel";
 	
 	private FormLink setPaidButton;
-	private DropdownItem moreDropdown;
-	private FormLink changeBillingAddressLink;
 	private FormLink selectResourceLink;
 	private BillingAddressItem billingAddressItem;
 	
 	private CloseableModalController cmc;
-	private BillingAddressSelectionController addressSelectionCtrl;
 	private TransactionDetailsController detailsCtlr;
 	
 	private int counter = 0;
@@ -181,15 +181,6 @@ public class OrderDetailController extends FormBasicController {
 			setPaidButton = uifactory.addFormLink("set.paid", formLayout, Link.BUTTON);
 			setPaidButton.setIconLeftCSS("o_icon o_icon-fw o_icon_pay");
 		}
-		
-		if (!readOnly && order.getBillingAddress() != null 
-				&& (order.getOrderStatus() == OrderStatus.NEW || order.getOrderStatus() == OrderStatus.PREPAYMENT)) {
-			moreDropdown = uifactory.addDropdownMenuMore("more", formLayout, getTranslator());
-			
-			changeBillingAddressLink = uifactory.addFormLink("billing.address.change", formLayout, Link.LINK);
-			changeBillingAddressLink.setIconLeftCSS("o_icon o_icon-fw o_icon_billing_address");
-			moreDropdown.addElement(changeBillingAddressLink);
-		}
 	}
 	
 	private void initMetadataForm(FormItemContainer formLayout) {
@@ -215,9 +206,15 @@ public class OrderDetailController extends FormBasicController {
 
 		Date creationDate = order.getCreationDate();
 		String creationDateStr = Formatter.getInstance(getLocale()).formatDateAndTime(creationDate);
-		uifactory.addStaticTextElement("creation-date", "order.creationDate", creationDateStr, formLayout);
+		uifactory.addStaticTextElement("creation-date", "table.order.creationDate", creationDateStr, formLayout);
 		
+		String priceI18nKey = "access.info.price";
+		String orderTotalLines = PriceFormat.fullFormat(order.getTotalOrderLines());
 		String orderTotal = PriceFormat.fullFormat(order.getTotal());
+		if (!Objects.equals(orderTotalLines, orderTotal)) {
+			orderTotal = orderTotalLines + "/"+ PriceFormat.format(order.getTotal());
+			priceI18nKey = "access.info.price.original.applicable";
+		}
 		String orderTotalStr;
 		if(acModule.isVatEnabled()) {
 			BigDecimal vat = acModule.getVat();
@@ -226,12 +223,36 @@ public class OrderDetailController extends FormBasicController {
 		} else {
 			orderTotalStr = translate("access.info.price.noVat", orderTotal);
 		}
-		uifactory.addStaticTextElement("order-total", "order.total", orderTotalStr, formLayout);
+		uifactory.addStaticTextElement("order-total", priceI18nKey, orderTotalStr, formLayout);
 		
-		Price cancellationFee = order.getCancellationFees();
-		if(cancellationFee != null && cancellationFee.getAmount() != null && BigDecimal.ZERO.compareTo(cancellationFee.getAmount()) < 0) {
-			String fee = PriceFormat.fullFormat(cancellationFee);
-			uifactory.addStaticTextElement("cancellation-fee", "order.cancellation.fee", fee, formLayout);
+		if (order.getOrderStatus() == OrderStatus.NEW
+				|| order.getOrderStatus() == OrderStatus.PREPAYMENT
+				|| order.getOrderStatus() == OrderStatus.PAYED) {
+			OrderLine orderLine = order.getParts().get(0).getOrderLines().get(0);
+			OLATResource resource = orderLine.getOffer().getResource();
+			if (OresHelper.calculateTypeName(CurriculumElement.class).equals(resource.getResourceableTypeName())) {
+				Price cancellationFee = orderLine.getCancellationFee();
+				if (cancellationFee != null) {
+					String cancellingFee = PriceFormat.fullFormat(orderLine.getCancellationFee());
+					Date resourceBeginDate = acService.getBeginDate(resource);
+					if (orderLine.getCancellingFeeDeadlineDays() != null && resourceBeginDate != null) {
+						Date deadline = DateUtils.addDays(resourceBeginDate, -orderLine.getCancellingFeeDeadlineDays());
+						cancellingFee += " (" + translate("cancelling.fee.free.until", Formatter.getInstance(getLocale()).formatDate(deadline)) + ")";
+					}
+					uifactory.addStaticTextElement("cancellation-fee", "order.cancellation.fee", cancellingFee, formLayout);
+				}
+			}
+		} else if(order.getCancellationFeesLines() != null
+				&& order.getCancellationFeesLines().getAmount() != null
+				&& BigDecimal.ZERO.compareTo(order.getCancellationFeesLines().getAmount()) < 0) {
+			String cancellationFeei18nKey = "order.cancellation.fee";
+			String feeLines = PriceFormat.fullFormat(order.getCancellationFeesLines());
+			String fee = PriceFormat.fullFormat(order.getCancellationFees());
+			if (!Objects.equals(feeLines, fee)) {
+				fee = feeLines + "/"+ PriceFormat.format(order.getCancellationFees());
+				cancellationFeei18nKey = "order.cancellation.fee.original.charged";
+			}
+			uifactory.addStaticTextElement("cancellation-fee", cancellationFeei18nKey, fee, formLayout);
 		}
 		
 		if(StringHelper.containsNonWhitespace(costCenterName)) {
@@ -258,7 +279,8 @@ public class OrderDetailController extends FormBasicController {
 	private void initStatus(FormLayoutContainer layoutCont) {
 		try(StringOutput status = new StringOutput()) {
 			OrderStatusRenderer statusRenderer = new OrderStatusRenderer(getTranslator());
-			List<OrderTableItem> items = acService.findOrderItems(null, delivery, order.getKey(), null, null, OrderStatus.values(), null, null, false, 0, 1, null);
+			List<OrderTableItem> items = acService.findOrderItems(null, delivery, order.getKey(), null, null,
+					OrderStatus.values(), null, null, false, false, 0, 1, null);
 			Status consolidatedStatus; 
 			if(items.size() == 1) {
 				consolidatedStatus = items.get(0).getStatus();
@@ -353,13 +375,7 @@ public class OrderDetailController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (addressSelectionCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				updateBillingAddress(ureq, addressSelectionCtrl.getBillingAddress());
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if (source == detailsCtlr) {
+		if (source == detailsCtlr) {
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
@@ -368,10 +384,8 @@ public class OrderDetailController extends FormBasicController {
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(addressSelectionCtrl);
 		removeAsListenerAndDispose(detailsCtlr);
 		removeAsListenerAndDispose(cmc);
-		addressSelectionCtrl = null;
 		detailsCtlr = null;
 		cmc = null;
 	}
@@ -382,8 +396,6 @@ public class OrderDetailController extends FormBasicController {
 			doSelectResource(ureq);
 		} else if(source == setPaidButton) {
 			doSetPaid(ureq);
-		} else if(source == changeBillingAddressLink) {
-			doChangeBillingAddress(ureq);
 		} else if(source instanceof FormLink link && CMD_SELECT.equals(link.getCmd())
 				&& link.getUserObject() instanceof OrderItemRow row) {
 			doOpenTransactionDetails(ureq, row);
@@ -402,27 +414,6 @@ public class OrderDetailController extends FormBasicController {
 			acService.changeOrderStatus(order, OrderStatus.PAYED);
 		}
 		showInfo("info.order.set.as.paid");
-		fireEvent(ureq, Event.CHANGED_EVENT);
-	}
-	
-	private void doChangeBillingAddress(UserRequest ureq) {
-		if (guardModalController(addressSelectionCtrl)) return;
-		
-		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, false, false,
-				false, delivery, order.getBillingAddress());
-		listenTo(addressSelectionCtrl);
-		
-		String title = translate("billing.address.change");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				addressSelectionCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void updateBillingAddress(UserRequest ureq, BillingAddress billingAddress) {
-		order = acService.addBillingAddress(order, billingAddress);
-		billingAddressItem.setBillingAddress(billingAddress);
-		showInfo("info.billing.address.change");
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
