@@ -68,7 +68,9 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 			case offerLabel -> order.getOfferLabel();
 			case totalAmountLines -> toPaymentPrice(order, order.getPriceLines());
 			case totalAmount -> order;
+			case price -> toPaymentPrice(order, order.getPrice());
 			case cancellationFees -> order;
+			case cancellationFee -> toPaymentPrice(order, order.getCancellationFee());
 			case costCenterName -> order.getCostCenterName();
 			case costCenterAccount -> order.getCostCenterAccount();
 			case purchaseOrderNumber -> order.getPurchaseOrderNumber();
@@ -124,7 +126,9 @@ public class OrdersDataModel extends DefaultFlexiTableDataSourceModel<OrderTable
 		offerLabel("table.order.offer.label", null),
 		totalAmountLines("access.info.price.original", "total_lines_amount"),
 		totalAmount("access.info.price", "total_amount"),
+		price("access.info.price", "total_amount"),
 		cancellationFees("order.cancellation.fee.charged", "cancellation_fee_amount"),
+		cancellationFee("order.cancellation.fee", "cancellation_fee_amount"),
 		costCenterName("cost.center", "cost_center_names"),
 		costCenterAccount("cost.center.account", "cost_center_accounts"),
 		purchaseOrderNumber("order.purchase.number", "purchase_order_number"),

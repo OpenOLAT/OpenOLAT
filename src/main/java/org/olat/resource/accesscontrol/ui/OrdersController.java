@@ -57,6 +57,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.resource.accesscontrol.ui.OrdersDataSource.ForgeDelegate;
@@ -141,10 +142,10 @@ public class OrdersController extends FormBasicController implements Activateabl
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.totalAmount));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.price));
 		
 		if (acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFees));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier, new BillingAddressCellRenderer()));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
@@ -258,8 +259,21 @@ public class OrdersController extends FormBasicController implements Activateabl
 		}
 	}
 	
+	private void doSetPaied(OrderTableRow row) {
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if(order != null) {
+			acService.changeOrderStatus(order, OrderStatus.PAYED);
+		}
+		
+		tableEl.deselectAll();
+		tableEl.reloadData();
+		
+		showInfo("info.order.set.as.paid");
+	}
+	
 	private class ToolsController extends BasicController {
 
+		private Link payLink;
 		private Link detailsLink;
 		private final VelocityContainer mainVC;
 		
@@ -272,7 +286,13 @@ public class OrdersController extends FormBasicController implements Activateabl
 			
 			List<String> links = new ArrayList<>();
 			detailsLink = addLink("details", "details", "o_icon o_icon-fw o_icon_circle_info", links);
-
+			
+			if (settings.canPay() && row.isWithPrice()) {
+				if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT) {
+					payLink = addLink("set.paid", "set.paid", "o_icon o_icon-fw o_icon_pay", links);
+				}
+			}
+			
 			mainVC.contextPut("links", links);
 			putInitialPanel(mainVC);
 		}
@@ -292,6 +312,9 @@ public class OrdersController extends FormBasicController implements Activateabl
 			if(detailsLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
 				doOpenDetails(ureq, row);
+			} else if(payLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doSetPaied(row);
 			}
 		}
 	}
