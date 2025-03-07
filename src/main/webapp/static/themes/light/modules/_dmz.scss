@@ -294,6 +294,12 @@ body.o_dmz {
 	.o_login_catalog {
 		.o_login_catalog_button {
 			@include button-variant($o-cat2-login-button-color, $o-cat2-login-button-bg, $o-cat2-login-button-border);
+			&:focus,
+			&:hover {
+			  color: $o-cat2-login-button-hover-color;
+			  background-color: $o-cat2-login-button-hover-bg;
+			  border-color: $o-cat2-login-button-hover-border;
+			}
 		}
 	
 		&+ .o_login_register_wrapper {
