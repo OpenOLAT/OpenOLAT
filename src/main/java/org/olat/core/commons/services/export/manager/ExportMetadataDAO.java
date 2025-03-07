@@ -213,7 +213,7 @@ public class ExportMetadataDAO {
 			  .append("   inner join relOrg.group relOrgGroup")
 			  .append("   inner join relOrgGroup.members relOrgMember")
 			  .append("   where relToOrg.metadata.key=exp.key")
-			  .append("   and relOrgMember.role ").in(params.getOrganisationRoles())
+			  .append("   and relOrgMember.role ").in(params.getOrganisationRoles().toArray())
 		      .append("   and relOrgMember.identity.key=:rolesIdentityKey")
 			  .append(" )")
 			  .append(" or exp.creator.key=:rolesIdentityKey")

@@ -5,6 +5,22 @@
 	                   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- Reports -->
+	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
+		<property name="order" value="1" />
+		<property name="i18nNameKey" value="report.name.openBookingOrdersLast4Weeks" />
+		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast4Weeks" />
+		<property name="duration" value="4" />
+		<property name="durationUnit" value="week" />
+	</bean>
+
+	<bean class="org.olat.modules.coach.reports.OpenBookingOrdersReportConfiguration">
+		<property name="order" value="2" />
+		<property name="i18nNameKey" value="report.name.openBookingOrdersLast12Months" />
+		<property name="i18nDescriptionKey" value="report.description.openBookingOrdersLast12Months" />
+		<property name="duration" value="12" />
+		<property name="durationUnit" value="month" />
+	</bean>
+
 	<bean class="org.olat.modules.coach.reports.AbsencesReportConfiguration">
 		<property name="order" value="10" />
 		<property name="i18nNameKey" value="report.name.absencesLast4Weeks" />

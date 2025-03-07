@@ -34,13 +34,13 @@ import jakarta.persistence.TemporalType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.NativeQueryBuilder;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.AssertException;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Offer;
@@ -644,28 +644,68 @@ public class ACOrderDAO {
 				.collect(Collectors.toMap(row -> (Long)row[0], row -> (Long)row[1]));
 	}
 	
-	public List<UserOrder> getUserBookingsForOrganizations(Identity identity, OrganisationRoles organisationRole, List<UserPropertyHandler> userPropertyHandlers) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct o ");
+	public List<UserOrder> getUserBookings(BookingOrdersSearchParams params, List<UserPropertyHandler> userPropertyHandlers) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct o, billingAddress, billingAddressOrg.identifier, billingAddressOrg.displayName,");
+		sb.append(" offer.resourceDisplayName, offer.resourceTypeName, offerCostCenter.name, offerCostCenter.account ");
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
 		}
-		sb.append(" from organisation org");
-		sb.append(" inner join org.group orgGroup");
-		sb.append(" inner join orgGroup.members mgmtMembership");
-		sb.append(" inner join orgGroup.members userMembership");
-		sb.append(" inner join acorder o on o.delivery = userMembership.identity");
-		sb.append(" inner join o.delivery.user user");
-		sb.append(" where mgmtMembership.identity.key = :identityKey ");
-		sb.append(" and mgmtMembership.role = '").append(organisationRole.name()).append("'");
-		sb.append(" and userMembership.role = 'user'");
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
-				.setParameter("identityKey", identity.getKey())
-				.getResultList().stream()
-				.map(objects -> mapToUserBooking(objects, userPropertyHandlers))
-				.toList();
+		if (params.getIdentity() != null && params.getOrganisationRoles() != null && !params.getOrganisationRoles().isEmpty()) {
+			sb.append(" from organisation org");
+			sb.append(" inner join org.group orgGroup");
+			sb.append(" inner join orgGroup.members mgmtMembership");
+			sb.append(" inner join orgGroup.members userMembership");
+		} else if (params.getIdentity() != null && params.getGroupRoles() != null && !params.getGroupRoles().isEmpty()) {
+			sb.append(" from repositoryentry entry");
+			sb.append(" inner join repoentrytogroup r2g on r2g.entry = entry");
+			sb.append(" inner join bgroupmember groupRoleMembership on groupRoleMembership.group = r2g.group");
+			sb.append(" inner join bgroupmember userMembership on userMembership.group = r2g.group");
+		} else {
+			throw new AssertException("Either organization or group roles must be set");
+		}
+		
+		sb.append(" inner join acorder o on o.delivery = userMembership.identity");
+		sb.append(" inner join fetch o.billingAddress billingAddress");
+		sb.append(" left join billingAddress.organisation billingAddressOrg");
+		sb.append(" inner join o.parts orderPart");
+		sb.append(" inner join orderPart.lines orderLine");
+		sb.append(" inner join orderLine.offer offer");
+		sb.append(" left join offer.costCenter offerCostCenter");
+		sb.append(" inner join o.delivery.user user");
+		
+		if (params.getIdentity() != null && params.getOrganisationRoles() != null && !params.getOrganisationRoles().isEmpty()) {
+			sb.and().append("mgmtMembership.identity.key = :identityKey ");
+			sb.and().append("mgmtMembership.role").in(params.getOrganisationRoles().toArray());
+			sb.and().append("userMembership.role = 'user'");
+		} else if (params.getIdentity() != null && params.getGroupRoles() != null && !params.getGroupRoles().isEmpty()) {
+			sb.and().append("groupRoleMembership.identity.key = :identityKey ");
+			sb.and().append("groupRoleMembership.role").in(params.getGroupRoles().toArray());
+			sb.and().append("userMembership.role = 'user'");
+		}
+		
+		if (params.getFromDate() != null) {
+			sb.and().append("o.creationDate >= :fromDate");
+		}
+		if (params.getToDate() != null) {
+			sb.and().append("o.creationDate <= :toDate");
+		}
+		
+		TypedQuery<Object[]> typedQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if (params.getIdentity() != null && params.getOrganisationRoles() != null && !params.getOrganisationRoles().isEmpty()) {
+			typedQuery.setParameter("identityKey", params.getIdentity().getKey());
+		} else if (params.getIdentity() != null && params.getGroupRoles() != null && !params.getGroupRoles().isEmpty()) {
+			typedQuery.setParameter("identityKey", params.getIdentity().getKey());
+		}
+		if (params.getFromDate() != null) {
+			typedQuery.setParameter("fromDate", params.getFromDate());
+		}
+		if (params.getToDate() != null) {
+			typedQuery.setParameter("toDate", params.getToDate());
+		}
+		return typedQuery.getResultList().stream().map(objects -> mapToUserBooking(objects, userPropertyHandlers)).toList();
 	}
 
 	private UserOrder mapToUserBooking(Object[] objects, List<UserPropertyHandler> userPropertyHandlers) {
@@ -674,6 +714,28 @@ public class ACOrderDAO {
 		if (objects[srcIdx++] instanceof Order order) {
 			userOrder.setOrder(order);
 		}
+		if (objects[srcIdx++] instanceof BillingAddress billingAddress) {
+			userOrder.setBillingAddress(billingAddress);
+		}
+		if (objects[srcIdx++] instanceof String billingAddressOrgId) {
+			userOrder.setBillingAddressOrgId(billingAddressOrgId);
+		}
+		if (objects[srcIdx++] instanceof String billingAddressOrgName) {
+			userOrder.setBillingAddressOrgName(billingAddressOrgName);
+		}
+		if (objects[srcIdx++] instanceof String offerName) {
+			userOrder.setOfferName(offerName);
+		}
+		if (objects[srcIdx++] instanceof String offerType) {
+			userOrder.setOfferType(offerType);
+		}
+		if (objects[srcIdx++] instanceof String offerCostCenter) {
+			userOrder.setOfferCostCenter(offerCostCenter);
+		}
+		if (objects[srcIdx++] instanceof String offerAccount) {
+			userOrder.setOfferAccount(offerAccount);
+		}
+
 		for (int dstIdx = 0; dstIdx < userPropertyHandlers.size() && srcIdx < objects.length; dstIdx++, srcIdx++) {
 			if (objects[srcIdx] instanceof String sourceString) {
 				userOrder.setIdentityProp(dstIdx, sourceString);

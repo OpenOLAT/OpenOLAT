@@ -21,8 +21,10 @@ package org.olat.resource.accesscontrol.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.core.id.User;
+import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
 
 /**
@@ -34,6 +36,13 @@ public class UserOrder {
 	User user;
 	Order order;
 	private List<String> identityProps;
+	private BillingAddress billingAddress;
+	private String billingAddressOrgId;
+	private String billingAddressOrgName;
+	private String offerName;
+	private String offerType;
+	private String offerCostCenter;
+	private String offerAccount;
 
 	public User getUser() {
 		return user;
@@ -49,6 +58,14 @@ public class UserOrder {
 
 	public void setOrder(Order order) {
 		this.order = order;
+	}
+
+	public void setBillingAddress(BillingAddress billingAddress) {
+		this.billingAddress = billingAddress;
+	}
+
+	public BillingAddress getBillingAddress() {
+		return billingAddress;
 	}
 
 	public void setIdentityProp(int index, String value) {
@@ -70,5 +87,65 @@ public class UserOrder {
 			return "";
 		}
 		return identityProps.get(index);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		UserOrder userOrder = (UserOrder) o;
+		return Objects.equals(order, userOrder.order);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(user, order, identityProps);
+	}
+
+	public void setBillingAddressOrgId(String billingAddressOrgId) {
+		this.billingAddressOrgId = billingAddressOrgId;
+	}
+
+	public String getBillingAddressOrgId() {
+		return billingAddressOrgId;
+	}
+
+	public void setBillingAddressOrgName(String billingAddressOrgName) {
+		this.billingAddressOrgName = billingAddressOrgName;
+	}
+
+	public String getBillingAddressOrgName() {
+		return billingAddressOrgName;
+	}
+
+	public void setOfferName(String offerName) {
+		this.offerName = offerName;
+	}
+
+	public String getOfferName() {
+		return offerName;
+	}
+
+	public void setOfferType(String offerType) {
+		this.offerType = offerType;
+	}
+
+	public String getOfferType() {
+		return offerType;
+	}
+
+	public void setOfferCostCenter(String offerCostCenter) {
+		this.offerCostCenter = offerCostCenter;
+	}
+
+	public String getOfferCostCenter() {
+		return offerCostCenter;
+	}
+
+	public void setOfferAccount(String offerAccount) {
+		this.offerAccount = offerAccount;
+	}
+
+	public String getOfferAccount() {
+		return offerAccount;
 	}
 }

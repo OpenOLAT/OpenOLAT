@@ -19,12 +19,14 @@
  */
 package org.olat.modules.coach.reports;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.manager.CurriculumDAO;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 
 /**
  * Initial date: 2025-02-04<br>
@@ -43,6 +45,8 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 	private final boolean curriculumElementCoach;
 	private final boolean curriculumElementMasterCoach;
 
+	private final boolean courseCoach;
+
 	public DefaultReportConfigurationAccessSecurityCallback(Identity identity, Roles roles, boolean coachingContext,
 															boolean curriculumContext) {
 		this.roles = roles;
@@ -56,6 +60,9 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 		CurriculumElementDAO curriculumElementDao = CoreSpringFactory.getImpl(CurriculumElementDAO.class);
 		curriculumElementCoach = curriculumElementDao.hasCurriculumElementRole(identity, CurriculumRoles.coach.name());
 		curriculumElementMasterCoach = curriculumDao.hasCurriculumRole(identity, CurriculumRoles.mastercoach.name());
+		
+		RepositoryEntryRelationDAO repositoryEntryRelationDao = CoreSpringFactory.getImpl(RepositoryEntryRelationDAO.class);
+		courseCoach = repositoryEntryRelationDao.hasRoleExpanded(identity, GroupRoles.coach.name());
 	}
 
 	@Override
@@ -90,6 +97,6 @@ public class DefaultReportConfigurationAccessSecurityCallback implements ReportC
 
 	@Override
 	public boolean isCourseCoach() {
-		return false;
+		return courseCoach;
 	}
 }
