@@ -70,7 +70,7 @@
 		<org.hibernate.version>6.5.3.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.2.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.5</org.glassfish.jaxb.runtime>
-		<apache.cxf>4.1.0</apache.cxf>
+		<apache.cxf>4.1.1</apache.cxf>
 		<apache.pdfbox>3.0.4</apache.pdfbox>
 		<apache.poi>5.4.0</apache.poi>
 		<apache.log4j>2.24.3</apache.log4j>
@@ -2331,7 +2331,7 @@
    		<dependency>
 			<groupId>io.github.sashirestela</groupId>
 			<artifactId>simple-openai</artifactId>
-			<version>3.19.0</version>
+			<version>3.19.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
