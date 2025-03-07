@@ -1483,6 +1483,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 	
 	@Override
+	public boolean hasLectureBlocks(RepositoryEntryRef entry) {
+		return lectureBlockDao.hasLectureBlocks(entry);
+	}
+
+	@Override
 	public List<LectureBlock> getLectureBlocks(CurriculumElementRef element, boolean followUpToRepositoryEntries) {
 		if(followUpToRepositoryEntries) {
 			return lectureBlockDao.getLectureBlocksUpToRepositoryEntries(element);

@@ -211,6 +211,18 @@ public class LectureBlockDAO {
 				.getResultList();
 	}
 	
+	public boolean hasLectureBlocks(RepositoryEntryRef entry) {
+		String query = "select block.key from lectureblock block where block.entry.key=:repoEntryKey";	
+		List<Long> firstBlock = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return firstBlock != null && !firstBlock.isEmpty()
+				&& firstBlock.get(0) != null && firstBlock.get(0).longValue() > 0;
+	}
+	
 	public List<LectureBlock> getLectureBlocksUpToRepositoryEntries(CurriculumElementRef curriculumElement) {
 		String query = """
 				select block from lectureblock block

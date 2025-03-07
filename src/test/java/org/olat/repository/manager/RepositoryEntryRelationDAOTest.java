@@ -265,6 +265,26 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasMembers() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("member-5b");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Cosmic expansion", "cos", "cos", null, null,
+				RepositoryEntryStatusEnum.coachpublished, RepositoryEntryRuntimeType.standalone, defOrganisation);
+		dbInstance.commit();
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
+
+		// Participant
+		boolean hasParticipants = repositoryEntryRelationDao.hasMembers(re, GroupRoles.participant.name());
+		Assert.assertTrue(hasParticipants);
+		
+		boolean hasParticipantsOrOwner = repositoryEntryRelationDao.hasMembers(re, GroupRoles.participant.name(), GroupRoles.owner.name());
+		Assert.assertTrue(hasParticipantsOrOwner);
+		
+		boolean hasOwners = repositoryEntryRelationDao.hasMembers(re, GroupRoles.owner.name());
+		Assert.assertFalse(hasOwners);
+	}
+	
+	@Test
 	public void getRepoKeyToCountMembers() {
 		Organisation organisation = organisationService.createOrganisation(random(), null, random(), null,
 				null, JunitTestHelper.getDefaultActor());

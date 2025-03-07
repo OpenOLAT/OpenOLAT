@@ -520,6 +520,7 @@ public interface RepositoryService {
 		groupWithOffersOrLtiExists,
 		groupWithOtherCoursesExists,
 		isTemplate,
+		lectureEnabled
 	}
 	
 	/**

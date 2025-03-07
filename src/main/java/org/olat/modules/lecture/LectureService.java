@@ -588,11 +588,18 @@ public interface LectureService {
 	
 	
 	/**
+	 * All lecture block of the specified repository entry
 	 * 
-	 * @param entry
-	 * @return
+	 * @param entry The repository entry (mandatory)
+	 * @return A list of lecture blocks
 	 */
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry);
+	
+	/**
+	 * @param entry The repository entry (mandatory)
+	 * @return true if the repository entry has at least one lecture block 
+	 */
+	public boolean hasLectureBlocks(RepositoryEntryRef entry);
 	
 	/**
 	 * 

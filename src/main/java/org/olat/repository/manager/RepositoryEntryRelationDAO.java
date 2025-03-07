@@ -45,6 +45,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.repository.RepositoryEntry;
@@ -393,6 +394,42 @@ public class RepositoryEntryRelationDAO {
 		
 		Number count = countQuery.getSingleResult();
 		return count == null ? 0 : count.intValue();
+	}
+	
+	/**
+	 * Check all the relations to find to find the first one.
+	 * 
+	 * @param re The repository entry (mandatory)
+	 * @param role The roles (mandatory)
+	 * @return true if at least one membership with the specified role si found 
+	 */
+	public boolean hasMembers(RepositoryEntryRef re, String... role) {
+		if(role == null || role.length == 0 || role[0] == null) return false;
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select memberships.key")
+		  .append(" from repositoryentry as v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as memberships")
+		  .where().append("v.key=:repoKey and memberships.role in (:roles)");
+		
+		List<String> roles = new ArrayList<>();
+		for(String r:role) {
+			if(StringHelper.containsNonWhitespace(r)) {
+				roles.add(r);
+			}
+		}
+
+		List<Long> firstMember = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repoKey", re.getKey())
+				.setParameter("roles", roles)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return firstMember != null && !firstMember.isEmpty()
+				&& firstMember.get(0) != null && firstMember.get(0).longValue() > 0;
 	}
 	
 	public Map<Long, Long> getRepoKeyToCountMembers(List<? extends RepositoryEntryRef> res, String... roles) {

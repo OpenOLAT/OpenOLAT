@@ -44,7 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 29 janv. 2024<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class EditRuntimeTypeController extends FormBasicController {
@@ -95,6 +95,8 @@ public class EditRuntimeTypeController extends FormBasicController {
 			case groupWithOffersOrLtiExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.groupWithOffersOrLtiExists")).append("</p>");
 			case groupWithOtherCoursesExists -> warnings.append("<p>").append(translate("change.runtime.type.warning.groupWithOtherCoursesExists")).append("</p>");
 			case isTemplate -> warnings.append("<p>").append(translate("change.runtime.type.warning.isTemplate")).append("</p>");
+			case lectureEnabled -> warnings.append("<p>").append(translate("change.runtime.type.warning.lectureEnabled")).append("</p>");
+			case wrongState, ok -> { /* Do nothing */}
 		}
 		if (warnings.isEmpty()) {
 			if(hasUserManager) {
@@ -131,6 +133,8 @@ public class EditRuntimeTypeController extends FormBasicController {
 					allowedRuntimeTypesAndDetails.runtimeTypes().contains(RepositoryEntryRuntimeType.curricular)));
 		}
 		if (possibleRuntimeTypes.contains(RepositoryEntryRuntimeType.template)) {
+			
+			
 			runtimeTypeKV.add(SelectionValues.entry(RepositoryEntryRuntimeType.template.name(),
 					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".title"),
 					translate("runtime.type." + RepositoryEntryRuntimeType.template.name() + ".desc"),

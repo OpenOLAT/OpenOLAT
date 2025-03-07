@@ -261,7 +261,7 @@ public class OverviewRepositoryListController extends BasicController implements
 			searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
 			searchParams.setOfferOrganisations(acService.getOfferOrganisations(searchParams.getIdentity()));
 			searchParams.setOfferValidAt(new Date());
-			searchParams.setRuntimeTypes(RepositoryEntryRuntimeType.notEmbedded());
+			searchParams.setRuntimeTypes(new RepositoryEntryRuntimeType[] { RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.standalone });
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Courses", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));

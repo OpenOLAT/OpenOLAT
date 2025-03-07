@@ -86,6 +86,7 @@ import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.invitation.manager.InvitationDAO;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.portfolio.PortfolioService;
@@ -1219,6 +1220,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 						runtimeTypes.add(RepositoryEntryRuntimeType.curricular);
 					}
 				}
+				
+				if(entry.getRuntimeType() == RepositoryEntryRuntimeType.standalone) {
+					RuntimeTypeCheckDetails templateCheckDetails = canSwitchStandaloneToTemplate(entry);
+					if(templateCheckDetails.equals(RuntimeTypeCheckDetails.ok) ) {
+						runtimeTypes.add(RepositoryEntryRuntimeType.template);
+					} else if(checkDetails.equals(RuntimeTypeCheckDetails.ok)) {
+						checkDetails = templateCheckDetails;
+					}
+				}
 			}
 		} else {
 			runtimeTypes.add(RepositoryEntryRuntimeType.embedded);
@@ -1226,6 +1236,23 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		}
 
 		return new RuntimeTypesAndCheckDetails(runtimeTypes, checkDetails);
+	}
+	
+	private RuntimeTypeCheckDetails canSwitchStandaloneToTemplate(RepositoryEntry entry) {
+		if(reToGroupDao.hasMembers(entry, GroupRoles.participant.name())) {
+			return RuntimeTypeCheckDetails.participantExists;
+		}
+		if(reToGroupDao.hasMembers(entry, GroupRoles.participant.name())) {
+			return RuntimeTypeCheckDetails.coachExists;
+		}
+		
+		// Don't use autowired here to prevent dependency cycles
+		if(CoreSpringFactory.getImpl(LectureModule.class).isEnabled()
+				&& CoreSpringFactory.getImpl(LectureService.class).getRepositoryEntryLectureConfiguration(entry).isLectureEnabled()
+				&& CoreSpringFactory.getImpl(LectureService.class).hasLectureBlocks(entry)) {
+			return RuntimeTypeCheckDetails.lectureEnabled;
+		}
+		return RuntimeTypeCheckDetails.ok;
 	}
 
 	private RuntimeTypeCheckDetails canSwitchToCurricular(RepositoryEntry entry) {
