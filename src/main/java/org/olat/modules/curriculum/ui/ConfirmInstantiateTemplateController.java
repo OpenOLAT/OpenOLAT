@@ -19,10 +19,14 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Date;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.DateChooserOrientation;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -49,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ConfirmInstantiateTemplateController extends FormBasicController {
 	
+	private DateChooser periodEl;
 	private TextElement externalRefEl;
 	private TextElement displayNameEl;
 	
@@ -81,8 +86,8 @@ public class ConfirmInstantiateTemplateController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("instantiate.template.info");
 		
-		String displayName = null;
-		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.displayName", 255, displayName, formLayout);
+		String displayName = element.getDisplayName();
+		displayNameEl = uifactory.addTextElement("displayName", "repository.entry.displayName", 255, displayName, formLayout);
 		displayNameEl.setInlineValidationOn(true);
 		displayNameEl.setMandatory(true);
 		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {
@@ -94,6 +99,14 @@ public class ConfirmInstantiateTemplateController extends FormBasicController {
 		externalRefEl.setInlineValidationOn(true);
 		externalRefEl.setMandatory(true);
 		
+		Date beginDate = element.getBeginDate();
+		Date endDate = element.getEndDate();
+		periodEl = uifactory.addDateChooser("cif.dates", "cif.dates", beginDate, formLayout);
+		periodEl.setSecondDate(true);
+		periodEl.setSecondDate(endDate);
+		periodEl.setSeparator("to.separator");
+		periodEl.setOrientation(DateChooserOrientation.top);
+
 		String type = translate("runtime.type." + RepositoryEntryRuntimeType.curricular);
 		uifactory.addStaticTextElement("cif.runtime.type", type, formLayout);
 		
@@ -133,6 +146,12 @@ public class ConfirmInstantiateTemplateController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
+		
+		periodEl.clearError();
+		if (periodEl.getDate() != null && periodEl.getSecondDate() != null && periodEl.getDate().after(periodEl.getSecondDate())) {
+			periodEl.setErrorKey("error.first.date.after.second.date");
+			allOk &= false;
+		}
 		
 		boolean displaynameOk = RepositoyUIFactory.validateTextElement(displayNameEl, true, 110);
 		if (displaynameOk) {
@@ -186,9 +205,10 @@ public class ConfirmInstantiateTemplateController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String displayname = displayNameEl.getValue();
 		String externalRef = externalRefEl.getValue();
-		
+		Date beginDate = periodEl.getDate();
+		Date endDate = periodEl.getSecondDate();		
 		instantiatedEntry = curriculumService.instantiateTemplate(template, element,
-				displayname, externalRef, getIdentity());
+				displayname, externalRef, beginDate, endDate, getIdentity());
 		
 		// Make sure all is committed before sending event
 		dbInstance.commit();

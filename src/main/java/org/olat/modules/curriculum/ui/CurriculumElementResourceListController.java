@@ -381,7 +381,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 			listenTo(confirmInstantiateCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmInstantiateCtrl.getInitialComponent(),
-					true, translate("instantiate.template"));
+					true, translate("instantiate.template.title"));
 			listenTo(cmc);
 			cmc.activate();
 		}

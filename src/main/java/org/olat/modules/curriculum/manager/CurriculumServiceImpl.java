@@ -149,9 +149,11 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryMyCourseQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.manager.RepositoryTemplateRelationDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
@@ -212,6 +214,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumElementAuditLogDAO curriculumElementAuditLogDao;
 	@Autowired
 	private CurriculumElementTypeToTypeDAO curriculumElementTypeToTypeDao;
+	@Autowired
+	private RepositoryEntryLifecycleDAO lifecycleDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
@@ -626,16 +630,31 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public RepositoryEntry instantiateTemplate(RepositoryEntry template, CurriculumElement curriculumElement, String displayName, String externalRef, Identity doer) {
+	public RepositoryEntry instantiateTemplate(RepositoryEntry template, CurriculumElement curriculumElement,
+			String displayName, String externalRef, Date beginDate, Date endDate, Identity doer) {
 		// prevent service to service link at startup
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		
 		RepositoryEntry entry = repositoryService.copy(template, doer, displayName, externalRef);
+		
+		// Lifecycle
+		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
+		if(beginDate != null || endDate != null) {
+			if(lifecycle == null || !lifecycle.isPrivateCycle()) {
+				String softKey = "lf_" + entry.getSoftkey();
+				lifecycle = lifecycleDao.create(entry.getDisplayname(), softKey, true, beginDate, endDate);
+			} else {
+				lifecycle.setValidFrom(beginDate);
+				lifecycle.setValidTo(endDate);
+				lifecycle = lifecycleDao.updateLifecycle(lifecycle);
+			}
+		}
+		
 		RepositoryEntry instantiatedEntry = repositoryManager.setDescriptionAndName(entry, displayName, externalRef,
 				entry.getAuthors(), entry.getDescription(), entry.getTeaser(), entry.getObjectives(), entry.getRequirements(),
 				entry.getCredits(), entry.getMainLanguage(), entry.getLocation(), entry.getExpenditureOfWork(),
-				entry.getLifecycle(), null, null, entry.getEducationalType());
+				lifecycle, null, null, entry.getEducationalType());
 		instantiatedEntry = repositoryManager.setRuntimeType(instantiatedEntry, RepositoryEntryRuntimeType.curricular);
 
 		boolean hasRepositoryEntries = hasRepositoryEntries(curriculumElement);

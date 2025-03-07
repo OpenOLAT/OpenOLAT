@@ -453,6 +453,59 @@ public class CurriculumServiceTest extends OlatTestCase {
 			.hasSize(1);
 	}
 	
+	/**
+	 * If the curriculum element has course and template, only links the
+	 * template and copy the lecture blocks back to the curriculum element.
+	 */
+	@Test
+	public void instantiateTemplate() {
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-27");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-27", "Curriculum 27", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-to-copy-1", "Element to copy 1",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.enabled, CurriculumLearningProgress.disabled, curriculum);
+		RepositoryEntry template = JunitTestHelper.createRandomRepositoryEntry(actor);
+		boolean addTemplate = curriculumService.addRepositoryTemplate(element, template);
+		dbInstance.commit();
+		Assert.assertTrue(addTemplate);
+		
+		LectureBlock lectureBlock = lectureService.createLectureBlock(element, null);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setExternalId("ELEM-COURSE-ID");
+		lectureBlock.setExternalRef("LEM-COURSE-1-EV-1");
+		lectureBlock.setTitle("Hello curriculum 26");
+		lectureBlock = lectureService.save(lectureBlock, null);
+		dbInstance.commit();
+		Assert.assertNotNull(lectureBlock);
+		
+		String displayName = "Course instance";
+		String externalRef = "CI-27";
+		Date beginDate = DateUtils.getStartOfDay(DateUtils.addDays(new Date(), 2));
+		Date endDate = DateUtils.getStartOfDay(DateUtils.addDays(new Date(), 22));
+		
+		RepositoryEntry instantiatedEntry = curriculumService.instantiateTemplate(template, element,
+				displayName, externalRef, beginDate, endDate, actor);
+		dbInstance.commit();
+		
+		List<RepositoryEntry> templates = curriculumService.getRepositoryTemplates(element);
+		Assertions.assertThat(templates)
+			.hasSize(1)
+			.containsExactly(template);
+		
+		List<RepositoryEntry> courses = curriculumService.getRepositoryEntries(element);
+		Assertions.assertThat(courses)
+			.hasSize(1)
+			.containsExactly(instantiatedEntry);
+		
+		RepositoryEntry course = courses.get(0);
+		Assert.assertEquals("Course instance", course.getDisplayname());
+		Assert.assertEquals("CI-27", course.getExternalRef());
+		Assert.assertNotNull(course.getLifecycle());
+		Assert.assertTrue(DateUtils.isSameDate(beginDate, course.getLifecycle().getValidFrom()));
+		Assert.assertTrue(DateUtils.isSameDate(endDate, course.getLifecycle().getValidTo()));
+	}
+	
 	@Test
 	public void deleteSoftlyCurriculum() {
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", false, null);

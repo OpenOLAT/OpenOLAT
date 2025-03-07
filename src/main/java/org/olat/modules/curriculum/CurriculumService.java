@@ -280,7 +280,7 @@ public interface CurriculumService {
 			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity identity);
 	
 	public RepositoryEntry instantiateTemplate(RepositoryEntry template, CurriculumElement curriculumElement,
-			String displayName, String externalRef, Identity doer);
+			String displayName, String externalRef, Date beginDate, Date endDate, Identity doer);
 	
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);

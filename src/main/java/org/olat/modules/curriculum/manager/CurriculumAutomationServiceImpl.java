@@ -80,9 +80,9 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 			
 			List<RepositoryEntry> templates = curriculumService.getRepositoryTemplates(element);
 			for(RepositoryEntry template:templates) {
-				String displayName = element.getDisplayName();
 				String externalRef = buildDefaultIdentifier(element, template);
-				curriculumService.instantiateTemplate(template, element, displayName, externalRef, null);
+				curriculumService.instantiateTemplate(template, element, element.getDisplayName(), externalRef,
+						element.getBeginDate(), element.getEndDate(), null);
 			}
 		}
 	}
