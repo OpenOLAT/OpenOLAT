@@ -68,7 +68,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private List<OrganisationRef> entryOrganisations;
 	private List<TaxonomyLevelRef> taxonomyLevels;
 	private List<Long> excludeEntryKeys;
-	private RepositoryEntryRuntimeType runtimeType;
+	private List<RepositoryEntryRuntimeType> runtimeTypes;
 	
 	public SearchAuthorRepositoryEntryViewParams(IdentityRef identity, Roles roles) {
 		this.identity = identity;
@@ -230,12 +230,12 @@ public class SearchAuthorRepositoryEntryViewParams {
 		this.educationalTypeKeys = educationalTypeKeys;
 	}
 
-	public RepositoryEntryRuntimeType getRuntimeType() {
-		return runtimeType;
+	public List<RepositoryEntryRuntimeType> getRuntimeTypes() {
+		return runtimeTypes;
 	}
 
-	public void setRuntimeType(RepositoryEntryRuntimeType runtimeType) {
-		this.runtimeType = runtimeType;
+	public void setRuntimeTypes(List<RepositoryEntryRuntimeType> runtimeTypes) {
+		this.runtimeTypes = runtimeTypes;
 	}
 
 	public IdentityRef getIdentity() {

@@ -50,7 +50,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.launcher.StaticHandler;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.controllers.RepositoryEntryFilter;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 
 /**
@@ -200,7 +202,7 @@ public class CatalogLauncherStaticEditController extends AbstractLauncherEditCon
 	private void doSelectResource(UserRequest ureq) {
 		guardModalController(selectResouceCtrl);
 		
-		selectResouceCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, null, null, null,
+		selectResouceCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, null, new StandaloneResourceFilter(), null,
 				translate("launcher.static.resources.add"), false, false, true, false, true, false, Can.all);
 		listenTo(selectResouceCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectResouceCtrl.getInitialComponent(), true);
@@ -303,5 +305,12 @@ public class CatalogLauncherStaticEditController extends AbstractLauncherEditCon
 		}
 		
 	}
-
+	
+	private static class StandaloneResourceFilter implements RepositoryEntryFilter {
+		@Override
+		public boolean accept(RepositoryEntry re) {
+			RepositoryEntryRuntimeType runtimeType = re.getRuntimeType();
+			return runtimeType == null || runtimeType == RepositoryEntryRuntimeType.standalone;
+		}
+	}
 }

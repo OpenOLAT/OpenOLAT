@@ -218,9 +218,9 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			case RUNTIMETYPE:
 				String runtimeType = ((FlexiTableSingleSelectionFilter)filter).getValue();
 				if(StringHelper.containsNonWhitespace(runtimeType)) {
-					searchParams.setRuntimeType(RepositoryEntryRuntimeType.valueOf(runtimeType));
+					searchParams.setRuntimeTypes(List.of(RepositoryEntryRuntimeType.valueOf(runtimeType)));
 				} else {
-					searchParams.setRuntimeType(null);
+					searchParams.setRuntimeTypes(null);
 				}
 				break;
 			case OERRELASE:

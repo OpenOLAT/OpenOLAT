@@ -349,6 +349,7 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		
 		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
 		searchParams.addResourceTypes("CourseModule");
+		searchParams.setRuntimeTypes(List.of(RepositoryEntryRuntimeType.standalone, RepositoryEntryRuntimeType.curricular));
 		repoSearchCtr = new AuthorListController(ureq, getWindowControl(), searchParams, tableConfig);
 		listenTo(repoSearchCtr);
 		repoSearchCtr.selectFilterTab(ureq, repoSearchCtr.getMyCoursesTab());
