@@ -84,6 +84,10 @@ public class CopyElementContext {
 		return allElements;
 	}
 	
+	public boolean hasOffersAndAccessInfos() {
+		return offersAndAccessInfos != null && !offersAndAccessInfos.isEmpty();
+	}
+	
 	public List<OfferAndAccessCopy> getOffersAndAccessInfos() {
 		return offersAndAccessInfos;
 	}

@@ -37,6 +37,8 @@ import org.olat.modules.curriculum.ui.CurriculumComposerController;
  */
 public class CopyElementDetailsController extends FormBasicController {
 
+	private final boolean hasTemplate;
+	
 	private final CopyElementDetailsResourcesController detailsResourcesCtrl;
 	private final CopyElementDetailsTemplatesController detailsTemplatesCtrl;
 	private final CopyElementDetailsLectureBlocksController lecturesBlocksCtrl;
@@ -46,13 +48,14 @@ public class CopyElementDetailsController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_CUSTOM, "element_details_view", rootForm);
 		setTranslator(Util.createPackageTranslator(CurriculumComposerController.class, getLocale()));
 
-		detailsResourcesCtrl = new CopyElementDetailsResourcesController(ureq, wControl, rootForm,
-				curriculumElement, context);
-		listenTo(detailsResourcesCtrl);
-		
 		detailsTemplatesCtrl = new CopyElementDetailsTemplatesController(ureq, wControl, rootForm,
-				curriculumElement);
+				curriculumElement, context);
 		listenTo(detailsTemplatesCtrl);
+		hasTemplate = detailsTemplatesCtrl.getNumOfTemplates() > 0;
+		
+		detailsResourcesCtrl = new CopyElementDetailsResourcesController(ureq, wControl, rootForm,
+				curriculumElement, context, hasTemplate);
+		listenTo(detailsResourcesCtrl);
 		
 		lecturesBlocksCtrl = new CopyElementDetailsLectureBlocksController(ureq, wControl, rootForm,
 				curriculumElement, context);
@@ -64,7 +67,7 @@ public class CopyElementDetailsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.add("resources", detailsResourcesCtrl.getInitialFormItem());
-		if(detailsTemplatesCtrl.getNumOfTemplates() > 0) {
+		if(hasTemplate) {
 			formLayout.add("templates", detailsTemplatesCtrl.getInitialFormItem());
 		}
 		formLayout.add("lecturesBlocks", lecturesBlocksCtrl.getInitialFormItem());

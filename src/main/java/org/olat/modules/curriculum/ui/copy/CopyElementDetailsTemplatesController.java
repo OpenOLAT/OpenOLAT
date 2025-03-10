@@ -55,16 +55,18 @@ public class CopyElementDetailsTemplatesController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private CopyElementDetailsResourcesTableModel tableModel;
 
+	private final CopyElementContext context;
 	private final CurriculumElement curriculumElement;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 
 	public CopyElementDetailsTemplatesController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			CurriculumElement curriculumElement) {
+			CurriculumElement curriculumElement, CopyElementContext context) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "element_details_templates", rootForm);
 		setTranslator(Util.createPackageTranslator(CurriculumComposerController.class, getLocale(),
 				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator())));
+		this.context = context;
 		this.curriculumElement = curriculumElement;
 		
 		initForm(ureq);
@@ -96,8 +98,12 @@ public class CopyElementDetailsTemplatesController extends FormBasicController {
 	private void loadModel() {
 		List<RepositoryEntry> templates = curriculumService.getRepositoryTemplates(curriculumElement);
 		List<CopyElementDetailsResourcesRow> rows = new ArrayList<>(templates.size());
+		final CopyResources copySetting = context.getCoursesEventsCopySetting();
+		final CopyResources copyTemplateSetting = copySetting == null || copySetting == CopyResources.dont
+				? CopyResources.dont
+				: CopyResources.relation;
 		for(RepositoryEntry template:templates) {
-			rows.add(new CopyElementDetailsResourcesRow(template, -1, CopyResources.relation));
+			rows.add(new CopyElementDetailsResourcesRow(template, -1, copyTemplateSetting));
 		}
 		
 		tableModel.setObjects(rows);

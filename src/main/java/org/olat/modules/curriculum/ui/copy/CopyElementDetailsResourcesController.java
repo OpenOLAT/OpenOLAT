@@ -54,6 +54,7 @@ public class CopyElementDetailsResourcesController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private CopyElementDetailsResourcesTableModel tableModel;
 
+	private final boolean hasTemplate;
 	private final CopyElementContext context;
 	private final CurriculumElement curriculumElement;
 	
@@ -61,11 +62,12 @@ public class CopyElementDetailsResourcesController extends FormBasicController {
 	private CurriculumService curriculumService;
 
 	public CopyElementDetailsResourcesController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			CurriculumElement curriculumElement, CopyElementContext context) {
+			CurriculumElement curriculumElement, CopyElementContext context, boolean hasTemplate) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "element_details_resources", rootForm);
 		setTranslator(Util.createPackageTranslator(CurriculumComposerController.class, getLocale(),
 				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator())));
 		this.context = context;
+		this.hasTemplate = hasTemplate;
 		this.curriculumElement = curriculumElement;
 		
 		initForm(ureq);
@@ -97,7 +99,9 @@ public class CopyElementDetailsResourcesController extends FormBasicController {
 	private void loadModel() {
 		List<RepositoryEntryInfos> entriesWithInfos = curriculumService.getRepositoryEntriesWithInfos(curriculumElement);
 		List<CopyElementDetailsResourcesRow> rows = new ArrayList<>(entriesWithInfos.size());
-		final CopyResources copySetting = context.getCoursesEventsCopySetting();
+		final CopyResources copySetting = hasTemplate
+				? CopyResources.dont
+				: context.getCoursesEventsCopySetting();
 		for(RepositoryEntryInfos entryWithInfos:entriesWithInfos) {
 			rows.add(new CopyElementDetailsResourcesRow(entryWithInfos.repositoryEntry(), entryWithInfos.numOfLectureBlocks(), copySetting));
 		}
