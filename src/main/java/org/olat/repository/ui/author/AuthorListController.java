@@ -333,7 +333,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		hasAuthorRight =  hasAdministratorRight || roles.isAuthor();
 		taxonomyEnabled = taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty();
 
-		dataSource = new AuthoringEntryDataSource(searchParams, this, taxonomyEnabled);
+		dataSource = new AuthoringEntryDataSource(searchParams, this, configuration, taxonomyEnabled);
 		initForm(ureq);
 		initTools(ureq, flc);
 	}
@@ -354,7 +354,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		hasAuthorRight =  hasAdministratorRight || roles.isAuthor();
 		taxonomyEnabled = taxonomyModule.isEnabled() && !repositoryModule.getTaxonomyRefs().isEmpty();
 
-		dataSource = new AuthoringEntryDataSource(searchParams, this, taxonomyEnabled);
+		dataSource = new AuthoringEntryDataSource(searchParams, this, configuration, taxonomyEnabled);
 		initForm(ureq);
 		initTools(ureq, flc);
 	}

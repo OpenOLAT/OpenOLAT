@@ -90,14 +90,17 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	private final UserManager userManager;
 	private final RepositoryService repositoryService;
 	private final LicenseService licenseService;
+	private final AuthorListConfiguration configuration;
 	private final AuthoringEntryDataSourceUIFactory uifactory;
 	private Integer count;
 	private final boolean taxonomyEnabled;
 	
 	public AuthoringEntryDataSource(SearchAuthorRepositoryEntryViewParams searchParams,
-			AuthoringEntryDataSourceUIFactory uifactory, boolean taxonomyEnabled) {
+			AuthoringEntryDataSourceUIFactory uifactory, AuthorListConfiguration configuration,
+			boolean taxonomyEnabled) {
 		this.searchParams = searchParams;
 		this.uifactory = uifactory;
+		this.configuration = configuration;
 		this.taxonomyEnabled = taxonomyEnabled;
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
@@ -220,7 +223,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				if(StringHelper.containsNonWhitespace(runtimeType)) {
 					searchParams.setRuntimeTypes(List.of(RepositoryEntryRuntimeType.valueOf(runtimeType)));
 				} else {
-					searchParams.setRuntimeTypes(null);
+					searchParams.setRuntimeTypes(configuration.getAllowedRuntimeTypes());
 				}
 				break;
 			case OERRELASE:
