@@ -47,6 +47,10 @@ public class LectureListRepositoryConfig {
 	public static final LectureListRepositoryConfig curriculumConfig() {
 		return new LectureListRepositoryConfig(true, false, false, false);
 	}
+	
+	public static final LectureListRepositoryConfig curriculumElementConfig() {
+		return new LectureListRepositoryConfig(false, true, true, true);
+	}
 
 	public boolean withScopes() {
 		return withScopes;

@@ -469,11 +469,11 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), uureq -> {
 				WindowControl subControl = addToHistory(uureq, OresHelper
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
-				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig();
+				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumElementConfig();
 				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, curriculumElement, config, lecturesSecCallback);
 				listenTo(lectureBlocksCtrl);
 				
-				List<ContextEntry> allFilter = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
+				List<ContextEntry> allFilter = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
 				lectureBlocksCtrl.activate(uureq, allFilter, null);
 				return lectureBlocksCtrl.getInitialComponent();
 			});

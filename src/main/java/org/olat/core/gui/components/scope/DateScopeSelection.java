@@ -156,16 +156,21 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 	}
 	
 	private void doOpenDropdownScope(UserRequest ureq, FormToggleComponent formToggle, DateScopeDropdown dropdownScope) {
-		formToggle.setOn(dropdownScope.getKey().equals(selectedKey));
-		
-		dropdownScopeCtrl = new DropdownDateScopeController(ureq, wControl, dropdownScope);
-		dropdownScopeCtrl.addControllerListener(this);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, dropdownScopeCtrl.getInitialComponent(),
-				formToggle.getFormDispatchId(), "", true, "",
-				new CalloutSettings(false, CalloutOrientation.bottom, true, null));
-		calloutCtrl.addControllerListener(this);
-		calloutCtrl.activate();
+		if(dropdownScope.getKey().equals(selectedKey) || dropdownScope.getPreselectedOption() == null) {
+			formToggle.setOn(dropdownScope.getKey().equals(selectedKey));
+			
+			dropdownScopeCtrl = new DropdownDateScopeController(ureq, wControl, dropdownScope);
+			dropdownScopeCtrl.addControllerListener(this);
+			
+			calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, dropdownScopeCtrl.getInitialComponent(),
+					formToggle.getFormDispatchId(), "", true, "",
+					new CalloutSettings(false, CalloutOrientation.bottom, true, null));
+			calloutCtrl.addControllerListener(this);
+			calloutCtrl.activate();
+		} else {
+			formToggle.setOn(true);
+			doSetDropdownScope(ureq, dropdownScope.getPreselectedOption(), dropdownScope);
+		}
 	}
 	
 	private void doSetDropdownScope(UserRequest ureq, DateScopeOption selectedOption, DateScopeDropdown dropdownScope) {
@@ -238,17 +243,21 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 	}
 	
 	private void doOpenCustomScope(UserRequest ureq, FormToggleComponent formToggle) {
-		formToggle.setOn(ADDITIONAL_IDENTIFIER.equals(selectedKey));
-		
-		DateRange dateRange = customDateScope != null? customDateScope.getDateRange(): null;
-		customScopeCtrl = new CustomDateScopeController(ureq, wControl, additionalDateScopes, dateRange, customScopeLimit);
-		customScopeCtrl.addControllerListener(this);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, customScopeCtrl.getInitialComponent(),
-				formToggle.getFormDispatchId(), "", true, "",
-				new CalloutSettings(false, CalloutOrientation.bottom, true, null));
-		calloutCtrl.addControllerListener(this);
-		calloutCtrl.activate();
+		if(ADDITIONAL_IDENTIFIER.equals(selectedKey) || customDateScope == null || customDateScope.getDateRange() == null) {
+			formToggle.setOn(ADDITIONAL_IDENTIFIER.equals(selectedKey));
+			
+			DateRange dateRange = customDateScope != null? customDateScope.getDateRange(): null;
+			customScopeCtrl = new CustomDateScopeController(ureq, wControl, additionalDateScopes, dateRange, customScopeLimit);
+			customScopeCtrl.addControllerListener(this);
+			
+			calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, customScopeCtrl.getInitialComponent(),
+					formToggle.getFormDispatchId(), "", true, "",
+					new CalloutSettings(false, CalloutOrientation.bottom, true, null));
+			calloutCtrl.addControllerListener(this);
+			calloutCtrl.activate();
+		} else {
+			doSetCustomScope(ureq, customDateScope.getDateRange());
+		}
 	}
 	
 	private void doSetCustomScope(UserRequest ureq, DateRange dateRange) {
