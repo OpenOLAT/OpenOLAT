@@ -181,6 +181,8 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		valueEl.setValue(val);
 		if(automation.getUnit() != null && unitPK.containsKey(automation.getUnit().name())) {
 			unitEl.select(automation.getUnit().name(), true);
+		} else {
+			unitEl.select(AutomationUnit.SAME_DAY.name(), true);
 		}
 	}
 	
@@ -199,8 +201,7 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 	}
 	
 	private void updateUI(FormToggle enabledEl, TextElement valueEl, SingleSelection unitEl) {
-		if(!enabledEl.isOn()) return;
-		if(unitEl.isOneSelected() && AutomationUnit.SAME_DAY.name().equals(unitEl.getSelectedKey())) {
+		if(!enabledEl.isOn() || (unitEl.isOneSelected() && AutomationUnit.SAME_DAY.name().equals(unitEl.getSelectedKey()))) {
 			valueEl.setValue("");
 			valueEl.setEnabled(false);
 		} else {
@@ -223,6 +224,7 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 	private boolean validateFormLogic(FormLayoutContainer container, FormToggle enabledEl, TextElement valueEl, SingleSelection unitEl) {
 		boolean allOk = true;
 		
+		container.clearError();
 		valueEl.clearError();
 		unitEl.clearError();
 		if(enabledEl.isOn()) {
