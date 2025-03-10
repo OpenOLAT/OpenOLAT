@@ -651,10 +651,8 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private void doSetPaid(UserRequest ureq, List<OrderTableRow> rows) {
 		for(OrderTableRow row:rows) {
 			Order order = acService.loadOrderByKey(row.getOrderKey());
-			if(order != null) {
-				if (order.getOrderStatus() != OrderStatus.PAYED) {
-					acService.changeOrderStatus(order, OrderStatus.PAYED);
-				}
+			if(order != null && order.getOrderStatus() != OrderStatus.PAYED) {
+				acService.changeOrderStatus(order, OrderStatus.PAYED);
 			}
 		}
 
@@ -680,10 +678,8 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private void doSetOpen(UserRequest ureq, List<OrderTableRow> rows) {
 		for(OrderTableRow row:rows) {
 			Order order = acService.loadOrderByKey(row.getOrderKey());
-			if(order != null) {
-				if (order.getOrderStatus() != OrderStatus.PREPAYMENT) {
-					acService.changeOrderStatus(order, OrderStatus.PREPAYMENT);
-				}
+			if(order != null && order.getOrderStatus() != OrderStatus.PREPAYMENT) {
+				acService.changeOrderStatus(order, OrderStatus.PREPAYMENT);
 			}
 		}
 		
@@ -709,7 +705,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	
 	private void doSetWrittenOffOrder(UserRequest ureq, OrderTableRow row) {
 		Order order = acService.loadOrderByKey(row.getOrderKey());
-		if (order.getOrderStatus() != OrderStatus.WRITTEN_OFF) {
+		if (order != null && order.getOrderStatus() != OrderStatus.WRITTEN_OFF) {
 			acService.changeOrderStatus(order, OrderStatus.WRITTEN_OFF);
 		}
 		
@@ -857,8 +853,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 				changeBillingAddressLink = addLink("billing.address.change", "billing.address.change", "o_icon o_icon-fw o_icon_billing_address", links);
 			}
 			
-			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT
-					|| row.getOrderStatus() == OrderStatus.PAYED) {
+			if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT) {
 				if (!links.isEmpty()) {
 					links.add("-");
 				}

@@ -33,6 +33,6 @@ import org.olat.user.UserInfoProfileConfig;
 public record MemberDetailsConfig(UserInfoProfileConfig profileConfig, List<CurriculumRoles> alwaysVisibleRoles,
 		boolean withEdit, boolean withAcceptDecline, boolean withHistory,
 		boolean withActivityColumns, boolean withConfirmationColumns,
-		boolean withOrders, boolean withOrdersDetails, boolean canPayOrder) {
+		boolean withOrders, boolean withOrdersDetails, boolean canEditOrder) {
 	//
 }

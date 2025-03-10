@@ -121,7 +121,7 @@ public class OrderDetailController extends FormBasicController {
 	private UserPortraitService userPortraitService;
 
 	public OrderDetailController(UserRequest ureq, WindowControl wControl, OrderTableItem orderItem,
-			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, boolean readOnly) {
+			UserAvatarMapper avatarMapper, String avatarMapperBaseURL, boolean readOnly, boolean showCostCenter) {
 		super(ureq, wControl, "order");
 		this.readOnly = readOnly;
 		// Reload to have the last status and transactions
@@ -130,8 +130,8 @@ public class OrderDetailController extends FormBasicController {
 		transactions = acService.findAccessTransactions(order);
 		orderMethods = orderItem.getMethods();
 		offerLabel = orderItem.getLabel();
-		costCenterName = orderItem.getCostCenterName();
-		costCenterAccount = orderItem.getCostCenterAccount();
+		costCenterName = showCostCenter? orderItem.getCostCenterName(): null;
+		costCenterAccount = showCostCenter? orderItem.getCostCenterAccount(): null;
 		
 		delivery = order.getDelivery();
 		profileConfig = userPortraitService.createProfileConfig();
@@ -238,6 +238,8 @@ public class OrderDetailController extends FormBasicController {
 					if (orderLine.getCancellingFeeDeadlineDays() != null && resourceBeginDate != null) {
 						Date deadline = DateUtils.addDays(resourceBeginDate, -orderLine.getCancellingFeeDeadlineDays());
 						cancellingFee += " (" + translate("cancelling.fee.free.until", Formatter.getInstance(getLocale()).formatDate(deadline)) + ")";
+					} else {
+						cancellingFee += " (" + translate("cancelling.fee.free.never") + ")";
 					}
 					uifactory.addStaticTextElement("cancellation-fee", "order.cancellation.fee", cancellingFee, formLayout);
 				}

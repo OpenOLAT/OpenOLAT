@@ -47,6 +47,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController;
+import org.olat.core.gui.control.generic.confirmation.ConfirmationController.ButtonType;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -56,6 +58,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.provider.invoice.InvoiceAccessHandler;
@@ -92,6 +95,10 @@ public class OrdersController extends FormBasicController implements Activateabl
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private OrderDetailController detailController;
+	private PriceEditController priceEditCtrl;
+	private CancellationFeeEditController cancellationFeeEditCtrl;
+	private BillingAddressSelectionController addressSelectionCtrl;
+	private ConfirmationController setWrittenOffConfirmationCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 
 	@Autowired
@@ -142,13 +149,24 @@ public class OrdersController extends FormBasicController implements Activateabl
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.price));
+		if (settings.canEditOrder()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.totalAmountLines));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.totalAmount, new TotalAmountRenderer()));
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.price));
+		}
 		
 		if (acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
+			if (settings.canEditOrder()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFees, new CancellationFeesRenderer()));
+			} else {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFee));
+			}
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.billingAddressIdentifier, new BillingAddressCellRenderer()));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
+			if (settings.canEditOrder()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
+			}
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.comment));
 		}
@@ -200,7 +218,35 @@ public class OrdersController extends FormBasicController implements Activateabl
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(toolsCtrl == source) {
+		if (priceEditCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				tableEl.reloadData();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cancellationFeeEditCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				tableEl.reloadData();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (addressSelectionCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (addressSelectionCtrl.getUserObject() instanceof OrderTableRow row) {
+					updateBillingAddress(row, addressSelectionCtrl.getBillingAddress());
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (setWrittenOffConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (setWrittenOffConfirmationCtrl.getUserObject() instanceof OrderTableRow row) {
+					doSetWrittenOffOrder(row);
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(toolsCtrl == source) {
 			calloutCtrl.deactivate();
 			cleanUp();	
 		} else if (detailController == source) {
@@ -212,11 +258,19 @@ public class OrdersController extends FormBasicController implements Activateabl
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(setWrittenOffConfirmationCtrl);
+		removeAsListenerAndDispose(cancellationFeeEditCtrl);
+		removeAsListenerAndDispose(addressSelectionCtrl);
 		removeAsListenerAndDispose(detailController);
+		removeAsListenerAndDispose(priceEditCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		setWrittenOffConfirmationCtrl = null;
+		cancellationFeeEditCtrl = null;
+		addressSelectionCtrl = null;
 		detailController = null;
+		priceEditCtrl = null;
 		calloutCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -247,7 +301,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		detailController = new OrderDetailController(ureq, bwControl, order,
-				avatarMapper, avatarMapperBaseURL, true);
+				avatarMapper, avatarMapperBaseURL, true, settings.canEditOrder());
 		listenTo(detailController);
 		if (stackPanel != null) {
 			stackPanel.pushController(order.getOrderNr(), detailController);
@@ -259,22 +313,127 @@ public class OrdersController extends FormBasicController implements Activateabl
 		}
 	}
 	
-	private void doSetPaied(OrderTableRow row) {
+	private void doSetPaid(OrderTableRow row) {
 		Order order = acService.loadOrderByKey(row.getOrderKey());
-		if(order != null) {
+		if(order != null && order.getOrderStatus() != OrderStatus.PAYED) {
 			acService.changeOrderStatus(order, OrderStatus.PAYED);
 		}
 		
-		tableEl.deselectAll();
 		tableEl.reloadData();
-		
 		showInfo("info.order.set.as.paid");
+	}
+	
+	private void doSetOpen(OrderTableRow row) {
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if(order != null && order.getOrderStatus() != OrderStatus.PREPAYMENT) {
+			acService.changeOrderStatus(order, OrderStatus.PREPAYMENT);
+		}
+		
+		tableEl.reloadData();
+		showInfo("info.order.set.as.open");
+	}
+	
+	private void doConfirmWrittenOff(UserRequest ureq, OrderTableRow row) {
+		if (guardModalController(setWrittenOffConfirmationCtrl)) return;
+		
+		setWrittenOffConfirmationCtrl = new ConfirmationController(ureq, getWindowControl(),
+				translate("set.written.off.text"), null,
+				translate("set.written.off.ok"), ButtonType.regular,
+				translate("set.written.off.cancel"), true);
+		setWrittenOffConfirmationCtrl.setUserObject(row);
+		listenTo(setWrittenOffConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				setWrittenOffConfirmationCtrl.getInitialComponent(), true, translate("set.written.off"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doSetWrittenOffOrder(OrderTableRow row) {
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if (order != null && order.getOrderStatus() != OrderStatus.WRITTEN_OFF) {
+			acService.changeOrderStatus(order, OrderStatus.WRITTEN_OFF);
+		}
+		
+		tableEl.reloadData();
+		showInfo("info.order.set.as.written.off");
+	}
+	
+	private void doEditPrice(UserRequest ureq, OrderTableRow row) {
+		if (guardModalController(priceEditCtrl)) return;
+		
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if (order == null) {
+			return;
+		}
+		
+		priceEditCtrl = new PriceEditController(ureq, getWindowControl(), order);
+		listenTo(priceEditCtrl);
+		
+		String title = translate("change.price");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), priceEditCtrl.getInitialComponent(),
+				true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doEditCancellationFee(UserRequest ureq, OrderTableRow row) {
+		if (guardModalController(cancellationFeeEditCtrl)) return;
+		
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if (order == null) {
+			return;
+		}
+		
+		cancellationFeeEditCtrl = new CancellationFeeEditController(ureq, getWindowControl(), order);
+		listenTo(cancellationFeeEditCtrl);
+		
+		String title = translate("change.cancellation.fee");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				cancellationFeeEditCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doChangeBillingAddress(UserRequest ureq, OrderTableRow row) {
+		if (guardModalController(addressSelectionCtrl)) return;
+		
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if (order == null) {
+			return;
+		}
+		
+		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, false, false,
+				false, order.getDelivery(), order.getBillingAddress());
+		addressSelectionCtrl.setUserObject(row);
+		listenTo(addressSelectionCtrl);
+		
+		String title = translate("billing.address.change");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				addressSelectionCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void updateBillingAddress(OrderTableRow row, BillingAddress billingAddress) {
+		Order order = acService.loadOrderByKey(row.getOrderKey());
+		if(order != null) {
+			acService.addBillingAddress(order, billingAddress);	
+			
+			tableEl.reloadData();
+			showInfo("info.billing.address.change");
+		}
 	}
 	
 	private class ToolsController extends BasicController {
 
-		private Link payLink;
 		private Link detailsLink;
+		private Link payLink;
+		private Link setOpenLink;
+		private Link editPriceLink;
+		private Link editCancallationFeeLink;
+		private Link changeBillingAddressLink;
+		private Link setWrittenOffLink;
 		private final VelocityContainer mainVC;
 		
 		private final OrderTableRow row;
@@ -287,11 +446,47 @@ public class OrdersController extends FormBasicController implements Activateabl
 			List<String> links = new ArrayList<>();
 			detailsLink = addLink("details", "details", "o_icon o_icon-fw o_icon_circle_info", links);
 			
-			if (settings.canPay() && row.isWithPrice()) {
+			if (settings.canEditOrder()) {
+				if (row.isWithPrice()) {
+					if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT) {
+						if (!links.isEmpty()) {
+							links.add("-");
+						}
+						payLink = addLink("set.paid", "set.paid", "o_icon o_icon-fw o_icon_pay", links);
+						editPriceLink = addLink("change.price", "change.price", "o_icon o_icon-fw o_icon_edit", links);
+					} else if (row.getOrderStatus() == OrderStatus.PAYED) {
+						if (!links.isEmpty()) {
+							links.add("-");
+						}
+						setOpenLink = addLink("set.open", "set.open", "o_icon o_icon-fw o_icon_payment_open", links);
+					}
+				}
+				
+				if (row.isWithCancellationFees()) {
+					if (row.getOrderStatus() == OrderStatus.CANCELED) {
+						if (!links.isEmpty()) {
+							links.add("-");
+						}
+						editCancallationFeeLink = addLink("change.cancellation.fee", "change.cancellation.fee", "o_icon o_icon-fw o_icon_edit", links);
+					}
+				}
+				
+				if ((row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT)
+						&& (row.isBillingAddressProposal() || row.getBillingAddressIdentifier() != null)) {
+					if (!links.isEmpty()) {
+						links.add("-");
+					}
+					changeBillingAddressLink = addLink("billing.address.change", "billing.address.change", "o_icon o_icon-fw o_icon_billing_address", links);
+				}
+				
 				if(row.getOrderStatus() == OrderStatus.NEW || row.getOrderStatus() == OrderStatus.PREPAYMENT) {
-					payLink = addLink("set.paid", "set.paid", "o_icon o_icon-fw o_icon_pay", links);
+					if (links.size() > 1) {
+						links.add("-");
+					}
+					setWrittenOffLink = addLink("set.written.off", "set.written.off", "o_icon o_icon-fw o_ac_order_status_written_off_icon", links);
 				}
 			}
+			
 			
 			mainVC.contextPut("links", links);
 			putInitialPanel(mainVC);
@@ -314,7 +509,22 @@ public class OrdersController extends FormBasicController implements Activateabl
 				doOpenDetails(ureq, row);
 			} else if(payLink == source) {
 				fireEvent(ureq, Event.CLOSE_EVENT);
-				doSetPaied(row);
+				doSetPaid(row);
+			} else if(setOpenLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doSetOpen(row);
+			} else if(editPriceLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doEditPrice(ureq, row);
+			} else if(editCancallationFeeLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doEditCancellationFee(ureq, row);
+			} else if(setWrittenOffLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doConfirmWrittenOff(ureq, row);
+			} else if(changeBillingAddressLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doChangeBillingAddress(ureq, row);
 			}
 		}
 	}

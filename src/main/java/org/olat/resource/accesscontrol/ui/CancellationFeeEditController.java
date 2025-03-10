@@ -101,7 +101,14 @@ public class CancellationFeeEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		order = acService.loadOrderByKey(order.getKey());
-		order.setCancellationFees(new PriceImpl(new BigDecimal(cancellationFeeEl.getValue()), order.getCancellationFeesLines().getCurrencyCode()));
+		
+		String currencyCode = "CHF";
+		if (order.getCancellationFeesLines() != null && order.getCancellationFeesLines().getCurrencyCode() != null) {
+			currencyCode = order.getCancellationFeesLines().getCurrencyCode();
+		} if (order.getCancellationFees() != null && order.getCancellationFees().getCurrencyCode() != null) {
+			currencyCode = order.getCancellationFees().getCurrencyCode();
+		}
+		order.setCancellationFees(new PriceImpl(new BigDecimal(cancellationFeeEl.getValue()), currencyCode));
 		order = acService.updateOrder(order);
 		
 		fireEvent(ureq, Event.DONE_EVENT);

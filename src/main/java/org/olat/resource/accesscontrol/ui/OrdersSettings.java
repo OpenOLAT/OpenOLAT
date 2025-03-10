@@ -27,14 +27,14 @@ package org.olat.resource.accesscontrol.ui;
  */
 public class OrdersSettings {
 	
-	private final boolean canPay;
+	private final boolean canEditOrder;
 	
 	private final boolean withTools;
 	private final boolean withActivities;
 	private final boolean withResourceDisplayName;
 	
-	private OrdersSettings(boolean withActivities, boolean withTools, boolean withResourceDisplayName, boolean canPay) {
-		this.canPay = canPay;
+	private OrdersSettings(boolean withActivities, boolean withTools, boolean withResourceDisplayName, boolean canEditOrder) {
+		this.canEditOrder = canEditOrder;
 		this.withTools = withTools;
 		this.withActivities = withActivities;
 		this.withResourceDisplayName = withResourceDisplayName;
@@ -44,12 +44,12 @@ public class OrdersSettings {
 		return new OrdersSettings(false, true, true, false);
 	}
 	
-	public static OrdersSettings valueOf(boolean withActivities, boolean withTools, boolean withResourceDisplayName, boolean canPay) {
-		return new OrdersSettings(withActivities, withTools, withResourceDisplayName, canPay);
+	public static OrdersSettings valueOf(boolean withActivities, boolean withTools, boolean withResourceDisplayName, boolean canEditOrder) {
+		return new OrdersSettings(withActivities, withTools, withResourceDisplayName, canEditOrder);
 	}
 	
-	public boolean canPay() {
-		return canPay;
+	public boolean canEditOrder() {
+		return canEditOrder;
 	}
 	
 	public boolean withTools() {
