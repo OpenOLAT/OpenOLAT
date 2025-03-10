@@ -57,6 +57,8 @@ public class TotalAmountRenderer implements FlexiCellRenderer {
 					target.append("\"><i class=\"o_icon o_icon_info-fw o_icon_info\"></i> ");
 					target.append(amount);
 					target.append("</span>");
+				} else {
+					target.append(amount);
 				}
 			}
 		}
