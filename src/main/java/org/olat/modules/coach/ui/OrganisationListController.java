@@ -98,9 +98,7 @@ public class OrganisationListController extends AbstactCoachListController {
     	if(organisations.isEmpty()) {
     		model.setObjects(List.of());
     	} else {
-    		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
-        	params.setOrganisations(getFilteredOrganisations(tableEl.getFilters()));
-        	List<StudentStatEntry> students = coachingService.getUsersStatistics(params, userPropertyHandlers, getLocale());
+        	List<StudentStatEntry> students = getUserStatistics();
         	model.setObjects(students);
         	if(StringHelper.containsNonWhitespace(tableEl.getQuickSearchString())) {
         		model.search(tableEl.getQuickSearchString());
@@ -108,8 +106,29 @@ public class OrganisationListController extends AbstactCoachListController {
     	}
         tableEl.reset(true, true, true);
     }
-    
-    private List<Organisation> getFilteredOrganisations(List<FlexiTableFilter> filters) {
+
+	private List<StudentStatEntry> getUserStatistics() {
+		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
+		params.setOrganisations(getFilteredOrganisations(tableEl.getFilters()));
+		List<StudentStatEntry> courseStats = coachingService.getUsersStatistics(params, userPropertyHandlers, getLocale());
+		List<StudentStatEntry> userProperties = coachingService.getUsersByOrganization(userPropertyHandlers, getIdentity(), 
+				getFilteredOrganisations(tableEl.getFilters()), organisationRole, getLocale());
+
+		Set<Long> courseStatsIdentityKeys = courseStats.stream().map(StudentStatEntry::getIdentityKey).collect(Collectors.toSet());
+		List<StudentStatEntry> result = new ArrayList<>(courseStats);
+		for (StudentStatEntry studentStatEntry : userProperties) {
+			if (courseStatsIdentityKeys.contains(studentStatEntry.getIdentityKey())) {
+				continue;
+			}
+			if (studentStatEntry.getIdentityKey() == getIdentity().getKey()) {
+				continue;
+			}
+			result.add(studentStatEntry);
+		}
+		return result;
+	}
+
+	private List<Organisation> getFilteredOrganisations(List<FlexiTableFilter> filters) {
     	FlexiTableFilter organisationsFilter = FlexiTableFilter.getFilter(filters, FILTER_ORGANISATIONS);
 		if(organisationsFilter != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)organisationsFilter).getValues();

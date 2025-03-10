@@ -31,12 +31,14 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -119,6 +121,11 @@ public class CoachingServiceImpl implements CoachingService {
 	@Override
 	public List<StudentStatEntry> getUserStatistics(IdentityRef source, RelationRole relationRole, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		return coachingDao.getUserStatistics(source, relationRole, userPropertyHandlers, locale);
+	}
+
+	@Override
+	public List<StudentStatEntry> getUsersByOrganization(List<UserPropertyHandler> userPropertyHandlers, Identity identity, List<Organisation> organisations, OrganisationRoles organisationRole, Locale locale) {
+		return coachingDao.getUsersByOrganization(userPropertyHandlers, identity, organisations, organisationRole, locale);
 	}
 
 	@Override

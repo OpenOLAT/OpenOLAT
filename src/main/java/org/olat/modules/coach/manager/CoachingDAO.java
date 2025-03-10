@@ -37,12 +37,14 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.NativeQueryBuilder;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -1000,7 +1002,47 @@ public class CoachingDAO {
 		}
 		return !rawList.isEmpty();
 	}
-	
+
+	public List<StudentStatEntry> getUsersByOrganization(List<UserPropertyHandler> userPropertyHandlers,
+														 Identity identity, List<Organisation> organisations,
+														 OrganisationRoles organisationRole, Locale locale) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct ident.key");
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
+		}
+		sb.append(" from organisation org");
+		sb.append(" inner join org.group orgGroup");
+		sb.append(" inner join orgGroup.members mgmtMembership");
+		sb.append(" inner join orgGroup.members userMembership");
+		sb.append(" inner join userMembership.identity ident");
+		sb.append(" inner join ident.user user");
+		sb.and().append("org.key in (:orgKeys)");
+		sb.and().append("mgmtMembership.identity.key = :identityKey");
+		sb.and().append("mgmtMembership.role").in(organisationRole);
+		sb.and().append("userMembership.role = 'user'");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("orgKeys", organisations.stream().map(Organisation::getKey).toList())
+				.getResultList().stream()
+				.map(objects -> mapToUser(objects, userPropertyHandlers, locale))
+				.toList();
+	}
+
+	private StudentStatEntry mapToUser(Object[] objects, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		int srcIdx = 0;
+		int nbProperties = userPropertyHandlers.size();
+		String[] userProperties = new String[nbProperties];
+
+		Long identityKey = (Long) objects[srcIdx++];
+		for (int propIdx = 0; propIdx < nbProperties; propIdx++) {
+			userProperties[propIdx] = (String) objects[srcIdx++];
+		}
+		return new StudentStatEntry(identityKey, userPropertyHandlers, userProperties, locale);
+	}
+
 	/**
 	 * Search all participants without restrictions on coach or owner relations.
 	 * 

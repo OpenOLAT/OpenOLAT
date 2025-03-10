@@ -23,9 +23,11 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -61,6 +63,8 @@ public interface CoachingService {
 	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
 
 	public List<StudentStatEntry> getUserStatistics(IdentityRef source, RelationRole relationRole, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
+	
+	public List<StudentStatEntry> getUsersByOrganization(List<UserPropertyHandler> userPropertyHandlers, Identity identity, List<Organisation> organisations, OrganisationRoles organisationRole, Locale locale);
 	
 	public List<RepositoryEntry> getUserCourses(Identity student);
 
