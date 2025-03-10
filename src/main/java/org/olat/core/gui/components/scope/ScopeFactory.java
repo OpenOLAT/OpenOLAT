@@ -124,6 +124,17 @@ public class ScopeFactory {
 			return this;
 		}
 		
+		public DateScopesBuilder lastMonths(int numOfMonths) {
+			numOfMonths = Math.abs(numOfMonths);
+			DateRange dateRange = new DateRange(DateUtils.getStartOfDay(DateUtils.addMonth(new Date(), - numOfMonths)), DateUtils.getStartOfDay(new Date()));
+			String displayName = numOfMonths == 1
+					? translator.translate("date.scope.last.month")
+					: translator.translate("date.scope.last.months", String.valueOf(numOfMonths));
+			String hint = translator.translate("date.scope.last.month.hint", formatter.formatDate(dateRange.getFrom()));
+			dateScopes.add(createDateScope("scope." + counter++, displayName, hint, dateRange));
+			return this;
+		}
+		
 		public DateScopesBuilder toEndOfMonth() {
 			LocalDate lastDayOfMonth = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth());
 			String nameOfMonth = Month.from(lastDayOfMonth).getDisplayName(TextStyle.FULL_STANDALONE, translator.getLocale());
@@ -153,6 +164,13 @@ public class ScopeFactory {
 			String displayName = translator.translate("date.scope.christmas.newyear");
 			String hint = formatDateRange(dateRange);
 			dateScopes.add(createDateScope("scope." + counter++, displayName, hint, dateRange));
+			return this;
+		}
+		
+		public DateScopesBuilder todayAndUpcoming() {
+			DateRange dateRange = new DateRange(DateUtils.getStartOfDay(new Date()), null);
+			String displayName = translator.translate("date.scope.today.and.upcoming");
+			dateScopes.add(createDateScope("scope." + counter++, displayName, null, dateRange));
 			return this;
 		}
 		

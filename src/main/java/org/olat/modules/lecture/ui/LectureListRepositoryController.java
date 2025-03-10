@@ -67,6 +67,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.scope.DateScope;
+import org.olat.core.gui.components.scope.FormDateScopeSelection;
+import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -87,6 +90,7 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
@@ -161,6 +165,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private FlexiTableElement tableEl;
 	private LectureListRepositoryDataModel tableModel;
 	private final VelocityContainer detailsVC;
+	private FormDateScopeSelection scopeEl;
 
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab pastTab;
@@ -193,6 +198,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private final boolean lectureManagementManaged;
 	private final CurriculumElement curriculumElement;
 	private final LecturesSecurityCallback secCallback;
+	private final LectureListRepositoryConfig config;
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);
 	private final String avatarMapperBaseURL;
 
@@ -205,11 +211,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	@Autowired
 	private CurriculumService curriculumService;
 	
-	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, LecturesSecurityCallback secCallback) {
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl,
+			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
 		entry = null;
 		curriculum = null;
 		curriculumElement = null;
+		this.config = config;
 		this.secCallback = secCallback;
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
@@ -219,11 +227,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		updateUI();
 	}
 	
-	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, LecturesSecurityCallback secCallback) {
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
 		this.entry = entry;
 		curriculum = null;
 		curriculumElement = null;
+		this.config = config;
 		this.secCallback = secCallback;
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
@@ -233,11 +243,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		updateUI();
 	}
 	
-	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement, LecturesSecurityCallback secCallback) {
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, CurriculumElement curriculumElement,
+			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
 		this.entry = null;
 		curriculum = curriculumElement == null ? null : curriculumElement.getCurriculum();
 		this.curriculumElement = curriculumElement;
+		this.config = config;
 		this.secCallback = secCallback;
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
@@ -247,11 +259,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		updateUI();
 	}
 	
-	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, Curriculum curriculum, LecturesSecurityCallback secCallback) {
+	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, Curriculum curriculum,
+			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "admin_repository_lectures");
 		entry = null;
 		this.curriculum = curriculum;
 		curriculumElement = null;
+		this.config = config;
 		this.secCallback = secCallback;
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
@@ -264,6 +278,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initButtonsForm(formLayout);
+		initScopes(formLayout);
 		initTableForm(formLayout, ureq);
 	}
 	
@@ -369,6 +384,15 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		initFiltersPresets();
 	}
 	
+	private void initScopes(FormItemContainer formLayout) {
+		List<DateScope> scopes = ScopeFactory.dateScopesBuilder(getLocale())
+				.todayAndUpcoming()
+				.lastMonths(3)
+				.build();
+		scopeEl = uifactory.addDateScopeSelection(getWindowControl(), "scope", null, formLayout, scopes, getLocale());
+		scopeEl.setVisible(config.withScopes());
+	}
+	
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
@@ -403,6 +427,31 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
+	private boolean scopeInFuture() {
+		boolean withPast = true;
+		
+		if(scopeEl.isVisible()) {
+			Date now = DateUtils.getStartOfDay(new Date());
+			DateRange range = scopeEl.getSelectedDateRange();
+			if(range != null && range.getFrom() != null && range.getFrom().compareTo(now) >= 0) {
+				withPast = false;
+			}
+		}
+		return withPast;
+	}
+	
+	private boolean scopeInPast() {
+		boolean withPast = false;
+		if(scopeEl.isVisible()) {
+			Date now = DateUtils.getStartOfDay(new Date());
+			DateRange range = scopeEl.getSelectedDateRange();
+			if(range != null && range.getTo() != null && range.getTo().compareTo(now) <= 0) {
+				withPast = true;
+			}
+		}
+		return withPast;
+	}
+	
 	private void initFiltersPresets() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		Map<String,FlexiFiltersTab> map = new HashMap<>();
@@ -414,11 +463,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		tabs.add(allTab);
 		map.put(ALL_TAB_ID.toLowerCase(), allTab);
 		
-		relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
-				TabSelectionBehavior.nothing, List.of());
-		relevantTab.setFiltersExpanded(true);
-		tabs.add(relevantTab);
-		map.put(RELEVANT_TAB_ID.toLowerCase(), relevantTab);
+		if(config.withFilterPresetRelevant()) {
+			relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+					TabSelectionBehavior.nothing, List.of());
+			relevantTab.setFiltersExpanded(true);
+			tabs.add(relevantTab);
+			map.put(RELEVANT_TAB_ID.toLowerCase(), relevantTab);
+		}
 		
 		todayTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TODAY_TAB_ID, translate("filter.today"),
 				TabSelectionBehavior.nothing, List.of());
@@ -432,11 +483,13 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		tabs.add(upcomingTab);
 		map.put(UPCOMING_TAB_ID.toLowerCase(), upcomingTab);
 		
-		pastTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PAST_TAB_ID, translate("filter.past"),
-				TabSelectionBehavior.nothing, List.of());
-		pastTab.setFiltersExpanded(true);
-		tabs.add(pastTab);
-		map.put(PAST_TAB_ID.toLowerCase(), pastTab);
+		if(scopeInFuture()) {
+			pastTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PAST_TAB_ID, translate("filter.past"),
+					TabSelectionBehavior.nothing, List.of());
+			pastTab.setFiltersExpanded(true);
+			tabs.add(pastTab);
+			map.put(PAST_TAB_ID.toLowerCase(), pastTab);
+		}
 		
 		withoutTeachersTab = FlexiFiltersTabFactory.tabWithImplicitFilters(WITHOUT_TEACHERS_TAB_ID, translate("filter.without.teachers"),
 				TabSelectionBehavior.nothing, List.of());
@@ -444,19 +497,23 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		tabs.add(withoutTeachersTab);
 		map.put(WITHOUT_TEACHERS_TAB_ID.toLowerCase(), withoutTeachersTab);
 		
-		pendingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PENDING_TAB_ID, translate("filter.pending"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLL_CALL_STATUS,
-						List.of(LectureRollCallStatus.open.name(), LectureRollCallStatus.reopen.name()))));
-		pendingTab.setFiltersExpanded(true);
-		tabs.add(pendingTab);
-		map.put(PENDING_TAB_ID.toLowerCase(), pendingTab);
-		
-		closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CLOSED_TAB_ID, translate("filter.closed"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLL_CALL_STATUS,
-						List.of(LectureRollCallStatus.closed.name(), LectureRollCallStatus.autoclosed.name()))));
-		closedTab.setFiltersExpanded(true);
-		tabs.add(closedTab);
-		map.put(CLOSED_TAB_ID.toLowerCase(), closedTab);
+		if(config.withFilterPresetPending()) {
+			pendingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PENDING_TAB_ID, translate("filter.pending"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLL_CALL_STATUS,
+							List.of(LectureRollCallStatus.open.name(), LectureRollCallStatus.reopen.name()))));
+			pendingTab.setFiltersExpanded(true);
+			tabs.add(pendingTab);
+			map.put(PENDING_TAB_ID.toLowerCase(), pendingTab);
+		}
+
+		if(config.withFilterPresetClosed()) {
+			closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(CLOSED_TAB_ID, translate("filter.closed"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(FILTER_ROLL_CALL_STATUS,
+							List.of(LectureRollCallStatus.closed.name(), LectureRollCallStatus.autoclosed.name()))));
+			closedTab.setFiltersExpanded(true);
+			tabs.add(closedTab);
+			map.put(CLOSED_TAB_ID.toLowerCase(), closedTab);
+		}
 		
 		tableEl.setFilterTabs(true, tabs);
 		tabsMap = Map.copyOf(map);
@@ -482,6 +539,17 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			components.add(lectureRow.getDetailsController().getInitialFormItem().getComponent());
 		}
 		return components;
+	}
+	
+	private void selectScope(UserRequest ureq) {
+		boolean asc = !scopeInPast();
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), asc));
+		tableEl.setSortSettings(options);
+		
+		initFiltersPresets();
+		tableEl.setSelectedFilterTab(ureq, allTab);
+		loadModel(ureq);
 	}
 
 	public void loadModel(UserRequest ureq) {
@@ -570,6 +638,12 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			searchParams.setInSomeCurriculum(true);
 			searchParams.setLectureConfiguredRepositoryEntry(false);
 			searchParams.setManager(getIdentity());
+		}
+		
+		if(scopeEl.isEnabled() && scopeEl.isSelected()) {
+			DateRange range = scopeEl.getSelectedDateRange();
+			searchParams.setStartDate(range.getFrom());
+			searchParams.setEndDate(range.getTo());
 		}
 		
 		FlexiTableFilter filter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_ROLL_CALL_STATUS);
@@ -702,6 +776,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			doToggleLevels(ureq, false);
 		} else if(thisLevelButton == source) {
 			doToggleLevels(ureq, true);
+		} else if (source == scopeEl) {
+			selectScope(ureq);
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();

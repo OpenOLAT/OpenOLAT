@@ -175,7 +175,8 @@ public class LectureRepositoryAdminController extends BasicController implements
 		if(lecturesCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("LectureBlocks");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			lecturesCtrl = new LectureListRepositoryController(ureq, swControl, entry, secCallback);
+			LectureListRepositoryConfig config = LectureListRepositoryConfig.repositoryEntryConfig();
+			lecturesCtrl = new LectureListRepositoryController(ureq, swControl, entry, config, secCallback);
 			listenTo(lecturesCtrl);
 			lecturesCtrl.activate(ureq, entries, null);
 		} else {

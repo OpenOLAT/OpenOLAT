@@ -61,6 +61,7 @@ import org.olat.modules.curriculum.ui.member.CurriculumUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -183,11 +184,12 @@ public class CurriculumDetailsController extends BasicController implements Acti
 			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), uureq -> {
 				WindowControl subControl = addToHistory(uureq, OresHelper
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
-				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, curriculum, lecturesSecCallback);
+				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig();
+				lectureBlocksCtrl = new LectureListRepositoryController(uureq, subControl, curriculum, config, lecturesSecCallback);
 				listenTo(lectureBlocksCtrl);
 
-				List<ContextEntry> relevantFilter = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
-				lectureBlocksCtrl.activate(uureq, relevantFilter, null);
+				List<ContextEntry> allFilter = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
+				lectureBlocksCtrl.activate(uureq, allFilter, null);
 				return lectureBlocksCtrl.getInitialComponent();
 			});
 		}

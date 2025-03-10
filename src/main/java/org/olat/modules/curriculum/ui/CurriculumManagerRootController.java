@@ -47,6 +47,7 @@ import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.LectureBlocksWidgetController;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.LectureListRepositoryConfig;
 import org.olat.modules.lecture.ui.LectureListRepositoryController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -150,7 +151,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		} else if("Lectures".equalsIgnoreCase(type) || "Events".equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			if(subEntries.isEmpty()) {
-				subEntries = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
+				subEntries = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
 			}
 			doOpenLecturesBlocks(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if("Reports".equalsIgnoreCase(type)) {
@@ -178,7 +179,7 @@ public class CurriculumManagerRootController extends BasicController implements 
 		} else if (source == implementationsLink){
 			doOpenImplementationsAllFilter(ureq);
 		} else if (source == lecturesBlocksLink) {
-			List<ContextEntry> relevant = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
+			List<ContextEntry> relevant = BusinessControlFactory.getInstance().createCEListFromString("[All:0]");
 			doOpenLecturesBlocks(ureq).activate(ureq, relevant, null);
 		} else if(source == reportsLink) {
 			doOpenReports(ureq);
@@ -231,8 +232,11 @@ public class CurriculumManagerRootController extends BasicController implements 
 	private LectureListRepositoryController doOpenLecturesBlocks(UserRequest ureq) {
 		toolbarPanel.popUpToRootController(ureq);
 		removeAsListenerAndDispose(lecturesCtrl);
-		
-		lecturesCtrl = new LectureListRepositoryController(ureq, getWindowControl(), lecturesSecCallback);
+
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Events", 0L);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumConfig();
+		lecturesCtrl = new LectureListRepositoryController(ureq, bwControl, config, lecturesSecCallback);
 		listenTo(lecturesCtrl);
 		toolbarPanel.pushController(translate("curriculum.lectures"), lecturesCtrl);
 		return lecturesCtrl;
