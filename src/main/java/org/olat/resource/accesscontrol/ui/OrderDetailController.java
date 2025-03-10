@@ -208,22 +208,25 @@ public class OrderDetailController extends FormBasicController {
 		String creationDateStr = Formatter.getInstance(getLocale()).formatDateAndTime(creationDate);
 		uifactory.addStaticTextElement("creation-date", "table.order.creationDate", creationDateStr, formLayout);
 		
-		String priceI18nKey = "access.info.price";
-		String orderTotalLines = PriceFormat.fullFormat(order.getTotalOrderLines());
-		String orderTotal = PriceFormat.fullFormat(order.getTotal());
-		if (!Objects.equals(orderTotalLines, orderTotal)) {
-			orderTotal = orderTotalLines + "/"+ PriceFormat.format(order.getTotal());
-			priceI18nKey = "access.info.price.original.applicable";
+		if (orderMethods.stream().anyMatch(AccessMethod::isPaymentMethod)) {
+			String priceI18nKey = "access.info.price";
+			String orderTotalLines = PriceFormat.fullFormat(order.getTotalOrderLines());
+			String orderTotal = PriceFormat.fullFormat(order.getTotal());
+			if (!Objects.equals(orderTotalLines, orderTotal)) {
+				orderTotal = orderTotalLines + "/"+ PriceFormat.format(order.getTotal());
+				priceI18nKey = "access.info.price.original.applicable";
+			}
+			String orderTotalStr;
+			if(acModule.isVatEnabled()) {
+				BigDecimal vat = acModule.getVat();
+				String vatStr = vat == null ? "" : vat.setScale(3, RoundingMode.HALF_EVEN).toPlainString();
+				orderTotalStr = translate("access.info.price.vat", orderTotal, vatStr);
+			} else {
+				orderTotalStr = translate("access.info.price.noVat", orderTotal);
+			}
+			uifactory.addStaticTextElement("order-total", priceI18nKey, orderTotalStr, formLayout);
 		}
-		String orderTotalStr;
-		if(acModule.isVatEnabled()) {
-			BigDecimal vat = acModule.getVat();
-			String vatStr = vat == null ? "" : vat.setScale(3, RoundingMode.HALF_EVEN).toPlainString();
-			orderTotalStr = translate("access.info.price.vat", orderTotal, vatStr);
-		} else {
-			orderTotalStr = translate("access.info.price.noVat", orderTotal);
-		}
-		uifactory.addStaticTextElement("order-total", priceI18nKey, orderTotalStr, formLayout);
+		
 		
 		if (order.getOrderStatus() == OrderStatus.NEW
 				|| order.getOrderStatus() == OrderStatus.PREPAYMENT
@@ -247,7 +250,7 @@ public class OrderDetailController extends FormBasicController {
 		} else if(order.getCancellationFeesLines() != null
 				&& order.getCancellationFeesLines().getAmount() != null
 				&& BigDecimal.ZERO.compareTo(order.getCancellationFeesLines().getAmount()) < 0) {
-			String cancellationFeei18nKey = "order.cancellation.fee";
+			String cancellationFeei18nKey = "order.cancellation.fee.charged";
 			String feeLines = PriceFormat.fullFormat(order.getCancellationFeesLines());
 			String fee = PriceFormat.fullFormat(order.getCancellationFees());
 			if (!Objects.equals(feeLines, fee)) {

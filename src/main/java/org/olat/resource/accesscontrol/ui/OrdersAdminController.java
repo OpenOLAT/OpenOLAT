@@ -114,7 +114,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
 	
 	protected static final int USER_PROPS_OFFSET = 500;
-	protected static final String USER_PROPS_ID = OrdersAdminController.class.getCanonicalName();
+	protected static final String USER_PROPS_ID = OrdersDataModel.class.getCanonicalName();
 	
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab adjustedAmountTab;

@@ -41,6 +41,7 @@ public class OrderTableRow {
 	private final OrderTableItem item;
 	
 	private Status modifiedStatus;
+	private Price modifiedCancellingFees;
 	private OrderModificationSummary modificationsSummary;
 	
 	private FormLink toolsLink;
@@ -126,9 +127,13 @@ public class OrderTableRow {
 	}
 	
 	public Price getCancellationFee() {
-		return item.getCancellationFee();
+		return modifiedCancellingFees != null? modifiedCancellingFees: item.getCancellationFee();
 	}
 	
+	public void setModifiedCancellingFees(Price modifiedCancellingFees) {
+		this.modifiedCancellingFees = modifiedCancellingFees;
+	}
+
 	public Price getCancellationFeeLines() {
 		return item.getCancellationFeeLines();
 	}

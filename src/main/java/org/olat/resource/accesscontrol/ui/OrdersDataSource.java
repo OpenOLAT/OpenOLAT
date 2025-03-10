@@ -171,20 +171,22 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	protected OrderTableRow updateModifications(OrderTableRow row) {
 		OrderModification modification = modifications.get(row.getOrderKey());
 		if(modification != null) {
-			Status modifiedStatus = getStatus(modification.nextStatus());
+			row.setModifiedCancellingFees(modification.cancellationFee());
+			Status modifiedStatus = getStatus(row, modification.nextStatus());
 			row.setModifiedStatus(modifiedStatus);
 			row.setModificationsSummary(new OrderModificationSummary(modifiedStatus != null));
 		} else {
 			row.setModifiedStatus(null);
 			row.setModificationsSummary(null);
+			row.setModifiedCancellingFees(null);
 		}
 		return row;
 	}
 	
-	private Status getStatus(OrderStatus nextStatus) {
+	private Status getStatus(OrderTableRow row, OrderStatus nextStatus) {
 		return switch(nextStatus) {
 			case PAYED -> Status.OK;
-			case CANCELED -> Status.CANCELED;
+			case CANCELED -> row.getCancellationFee() != null && !row.getCancellationFee().isEmpty()? Status.CANCELED_WITH_FEE: Status.CANCELED;
 			case ERROR -> Status.ERROR;
 			default -> null;
 		};

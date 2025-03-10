@@ -390,7 +390,8 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 			List<Order> ongoingOrders = acService.findOrders(row.getIdentity(), selectedCurriculumElement.getResource(),
 					OrderStatus.NEW, OrderStatus.PREPAYMENT, OrderStatus.PAYED);
 			List<OrderModification> orderModifications = ongoingOrders.stream()
-					.map(order -> new OrderModification(order.getKey(), OrderStatus.CANCELED))
+					.map(order -> new OrderModification(order.getKey(), OrderStatus.CANCELED,
+							acService.getCancellationFee(selectedCurriculumElement.getResource(), selectedCurriculumElement.getBeginDate(), List.of(order))))
 					.toList();
 			detailsCtrl.setOrderModifications(orderModifications);
 		}
@@ -398,7 +399,7 @@ public class AcceptDeclineMembershipsController extends FormBasicController impl
 		row.setDetailsController(detailsCtrl);
 		flc.add(detailsCtrl.getInitialFormItem());
 	}
-	
+
 	private final List<MembershipModification> buildAcceptDeclineModification(CurriculumRoles role, List<ResourceReservation> rowReservations) {
 		List<MembershipModification> modifications = new ArrayList<>();
 		Map<OLATResource, CurriculumElement> resourceToCurriculumElements = curriculumElements.stream()

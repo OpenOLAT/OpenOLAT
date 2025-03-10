@@ -20,6 +20,7 @@
 package org.olat.resource.accesscontrol.ui;
 
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.Price;
 
 /**
  * 
@@ -27,6 +28,6 @@ import org.olat.resource.accesscontrol.OrderStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record OrderModification(Long orderKey, OrderStatus nextStatus) {
+public record OrderModification(Long orderKey, OrderStatus nextStatus, Price cancellationFee) {
 	//
 }

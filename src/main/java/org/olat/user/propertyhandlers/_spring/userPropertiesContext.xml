@@ -564,7 +564,7 @@
 					</bean>
 				</entry>
 
-				<entry key="org.olat.resource.accesscontrol.ui.OrdersAdminController">
+				<entry key="org.olat.resource.accesscontrol.ui.OrdersDataModel">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Booking list" />
 						<property name="propertyHandlers">

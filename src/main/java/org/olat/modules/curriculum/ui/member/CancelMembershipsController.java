@@ -414,7 +414,8 @@ public class CancelMembershipsController extends FormBasicController implements 
 		List<Order> ongoingOrders = acService.findOrders(row.getIdentity(), selectedCurriculumElement.getResource(),
 				OrderStatus.PREPAYMENT, OrderStatus.PAYED);
 		List<OrderModification> orderModifications = ongoingOrders.stream()
-				.map(order -> new OrderModification(order.getKey(), OrderStatus.CANCELED))
+				.map(order -> new OrderModification(order.getKey(), OrderStatus.CANCELED,
+						acService.getCancellationFee(selectedCurriculumElement.getResource(), selectedCurriculumElement.getBeginDate(), List.of(order))))
 				.toList();
 		detailsCtrl.setOrderModifications(orderModifications);
 		
