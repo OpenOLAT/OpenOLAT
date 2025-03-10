@@ -57,7 +57,7 @@ import org.olat.resource.accesscontrol.model.OrderImpl;
 import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
-import org.olat.resource.accesscontrol.ui.OrdersAdminController;
+import org.olat.resource.accesscontrol.ui.OrdersDataModel;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -398,7 +398,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager
-				.getUserPropertyHandlersFor(OrdersAdminController.class.getCanonicalName(), true);
+				.getUserPropertyHandlersFor(OrdersDataModel.class.getCanonicalName(), true);
 		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, order.getKey(),
 				DateUtils.addDays(new Date(), -2), DateUtils.addDays(new Date(), 2),
 				OrderStatus.values(), null, null, false, false,
