@@ -30,12 +30,14 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.DateRange;
 
 /**
  * 
@@ -164,6 +166,11 @@ public class RepositoryEntryLifecycle implements Persistable, CreateInfo, Modifi
 	public void setValidTo(Date validTo) {
 		this.validTo = validTo;
 	}
+	
+	@Transient
+	public DateRange getDateRange() {
+		return new DateRange(getValidFrom(), getValidTo());
+	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -171,14 +178,14 @@ public class RepositoryEntryLifecycle implements Persistable, CreateInfo, Modifi
 			return true;
 		}
 		if(obj instanceof RepositoryEntryLifecycle relc) {
-			return key != null && key.equals(relc.key);
+			return getKey() != null && getKey().equals(relc.getKey());
 		}
 		return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return key == null ? 48790 : key.hashCode();
+		return getKey() == null ? 48790 : getKey().hashCode();
 	}
 
 	@Override

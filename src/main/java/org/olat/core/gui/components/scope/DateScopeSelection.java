@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleComponent;
+import org.olat.core.gui.components.scope.DateScopeDropdown.DateScopeOption;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Disposable;
@@ -52,6 +53,7 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 	private final Translator dateScopeTranslator;
 	private CloseableCalloutWindowController calloutCtrl;
 	private CustomDateScopeController customScopeCtrl;
+	private DropdownDateScopeController dropdownScopeCtrl;
 	
 	private DateRange customScopeLimit;
 	private List<DateScope> additionalDateScopes;
@@ -103,6 +105,15 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 			}
 			calloutCtrl.deactivate();
 			cleanUp();
+		} else if (dropdownScopeCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doSetDropdownScope(ureq, dropdownScopeCtrl.getSelectedOption(), dropdownScopeCtrl.getDropdownScope());
+			}
+			if (event == DropdownDateScopeController.RESET_EVENT) {
+				doResetDropdownScope(ureq, dropdownScopeCtrl.getDropdownScope());
+			}
+			calloutCtrl.deactivate();
+			cleanUp();
 		} else if (calloutCtrl == source) {
 			cleanUp();
 		}
@@ -116,6 +127,7 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 	private void cleanUp() {
 		calloutCtrl = cleanUp(calloutCtrl);
 		customScopeCtrl = cleanUp(customScopeCtrl);
+		dropdownScopeCtrl = cleanUp(dropdownScopeCtrl);
 	}
 	
 	private <T extends Controller> T cleanUp(T ctrl) {
@@ -130,6 +142,8 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 	protected void doToggleItem(UserRequest ureq, ScopeItem scopeItem) {
 		if (ADDITIONAL_IDENTIFIER.equals(scopeItem.getKey())) {
 			doOpenCustomScope(ureq, scopeItem.getToggle());
+		} else if(scopeItem.getScope() instanceof DateScopeDropdown dropdownScope) {
+			doOpenDropdownScope(ureq, scopeItem.getToggle(), dropdownScope);
 		} else {
 			DateRange dateRange = null;
 			String deselectedKey = doSetSelectedKey(scopeItem);
@@ -137,6 +151,88 @@ public class DateScopeSelection extends ScopeSelection implements ControllerEven
 			if (scopeItem.getToggle().isOn()) {
 				dateRange = ((DateScope)scopeItem.getScope()).getDateRange();
 			}
+			fireEvent(ureq, new DateScopeEvent(deselectedKey, selectedKey, dateRange));
+		}
+	}
+	
+	private void doOpenDropdownScope(UserRequest ureq, FormToggleComponent formToggle, DateScopeDropdown dropdownScope) {
+		formToggle.setOn(dropdownScope.getKey().equals(selectedKey));
+		
+		dropdownScopeCtrl = new DropdownDateScopeController(ureq, wControl, dropdownScope);
+		dropdownScopeCtrl.addControllerListener(this);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, dropdownScopeCtrl.getInitialComponent(),
+				formToggle.getFormDispatchId(), "", true, "",
+				new CalloutSettings(false, CalloutOrientation.bottom, true, null));
+		calloutCtrl.addControllerListener(this);
+		calloutCtrl.activate();
+	}
+	
+	private void doSetDropdownScope(UserRequest ureq, DateScopeOption selectedOption, DateScopeDropdown dropdownScope) {
+		final DateScope selectedScope = selectedOption.scope();
+		String deselectedKey = selectedKey;
+		String selectedScopeKey = dropdownScope.getKey();
+		selectedKey = selectedScopeKey;
+		
+		int index = -1;
+		List<ScopeItem> scopeItems = new ArrayList<>(getScopeItems());
+		for (int i = 0; i < scopeItems.size(); i++) {
+			ScopeItem scopeItem = scopeItems.get(i);
+			if(selectedScopeKey.equals(scopeItem.getKey())) {
+				index = i;
+			} else if (scopeItem.getToggle().isOn()) {
+				deselectedKey = scopeItem.getKey();
+				toggleOff(scopeItem);
+			}
+		}
+
+		DateScopeDropdown dropdownDateScope = ScopeFactory.createDropdownDateScope(selectedScopeKey, selectedScope.getDisplayName(),
+				ScopeFactory.formatDateRange(dateScopeTranslator, Formatter.getInstance(dateScopeTranslator.getLocale()), selectedScope.getDateRange()),
+				selectedOption, dropdownScope.getDropdownLabel(), dropdownScope.getOptions(), dropdownScope.getInitialOption());
+	
+		ScopeItem scopeItem = createScopeItem(dropdownDateScope);
+		scopeItem.getToggle().toggleOn();
+		
+		scopeItems.set(index, scopeItem);
+		setScopeItems(scopeItems);
+
+		setDirty(true);
+		fireEvent(ureq, new DateScopeEvent(deselectedKey, selectedScopeKey, selectedScope.getDateRange()));
+	}
+
+	private void doResetDropdownScope(UserRequest ureq, DateScopeDropdown dropdownScope) {
+		if (dropdownScope.getKey().equals(selectedKey)) {
+			toggleOffAll();
+			String deselectedKey = selectedKey;
+			DateRange dateRange = null;
+			if (isAllowNoSelection()) {
+				selectedKey = null;
+			} else {
+				ScopeItem scopeItem = getScopeItems().get(0);
+				dateRange = ((DateScope)scopeItem.getScope()).getDateRange();
+				setSelectedKey(scopeItem.getKey());
+			}
+			
+			DateScopeOption initialOption = dropdownScope.getInitialOption();
+			DateScope initialScope = initialOption.scope();
+			DateScopeDropdown dropdownDateScope = ScopeFactory.createDropdownDateScope(dropdownScope.getKey(), initialScope.getDisplayName(),
+					ScopeFactory.formatDateRange(dateScopeTranslator, Formatter.getInstance(dateScopeTranslator.getLocale()), initialScope.getDateRange()),
+					initialOption, dropdownScope.getDropdownLabel(), dropdownScope.getOptions(), initialOption);
+		
+			ScopeItem scopeItem = createScopeItem(dropdownDateScope);
+			
+			int index = -1;
+			List<ScopeItem> scopeItems = new ArrayList<>(getScopeItems());
+			for (int i = 0; i < scopeItems.size(); i++) {
+				if(deselectedKey.equals(scopeItems.get(i).getKey())) {
+					index = i;
+				} 
+			}
+			
+			scopeItems.set(index, scopeItem);
+			setScopeItems(scopeItems);
+			setDirty(true);
+
 			fireEvent(ureq, new DateScopeEvent(deselectedKey, selectedKey, dateRange));
 		}
 	}

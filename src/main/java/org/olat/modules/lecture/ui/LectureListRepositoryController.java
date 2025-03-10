@@ -68,6 +68,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.scope.DateScope;
+import org.olat.core.gui.components.scope.DateScopeDropdown.DateScopeOption;
 import org.olat.core.gui.components.scope.FormDateScopeSelection;
 import org.olat.core.gui.components.scope.ScopeFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -127,6 +128,8 @@ import org.olat.modules.lecture.ui.event.EditLectureBlockRowEvent;
 import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -210,6 +213,8 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	private LectureService lectureService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryEntryLifecycleDAO lifecycleDao;
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl,
 			LectureListRepositoryConfig config, LecturesSecurityCallback secCallback) {
@@ -385,12 +390,47 @@ public class LectureListRepositoryController extends FormBasicController impleme
 	}
 	
 	private void initScopes(FormItemContainer formLayout) {
+		List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
+		
+		DateScopeOption preselectedOption = null;
+		List<DateScopeOption> cyclesScopes = new ArrayList<>();
+		for(RepositoryEntryLifecycle cycle:cycles) {
+			String label = cycle.getLabel();
+			if(StringHelper.containsNonWhitespace(cycle.getSoftKey())) {
+				label = cycle.getSoftKey();
+			}
+			DateScope scope = ScopeFactory.createDateScope("cycle_" + cycle.getKey(), label, null, cycle.getDateRange());
+			DateScopeOption option = new DateScopeOption(getSelectionName(cycle), scope);
+			cyclesScopes.add(option);
+			
+			if(preselectedOption == null || cycle.isDefaultPublicCycle()) {
+				preselectedOption = option;
+			}
+		}
+		
+		String dropdownLabel = translate("cif.dates.public");
 		List<DateScope> scopes = ScopeFactory.dateScopesBuilder(getLocale())
 				.todayAndUpcoming()
+				.dropdown(dropdownLabel, cyclesScopes, preselectedOption)
 				.lastMonths(3)
 				.build();
 		scopeEl = uifactory.addDateScopeSelection(getWindowControl(), "scope", null, formLayout, scopes, getLocale());
 		scopeEl.setVisible(config.withScopes());
+	}
+	
+	private String getSelectionName(RepositoryEntryLifecycle cycle) {
+		StringBuilder sb = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(cycle.getLabel())) {
+			sb.append(cycle.getLabel());
+		}
+		
+		if(StringHelper.containsNonWhitespace(cycle.getSoftKey())) {
+			if(sb.length() > 0) {
+				sb.append(" \u00B7 ");
+			}
+			sb.append(cycle.getSoftKey());
+		}
+		return sb.toString();
 	}
 	
 	private void initFilters() {

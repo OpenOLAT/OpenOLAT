@@ -82,3 +82,7 @@ form .o_form {
 		padding-top: ($padding-base-vertical + 1);
 	}
 }
+
+dialog .o_scopes_dropdown {
+	min-width: 400px;
+}

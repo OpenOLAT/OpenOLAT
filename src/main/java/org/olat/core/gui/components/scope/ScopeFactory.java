@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.components.ComponentEventListener;
+import org.olat.core.gui.components.scope.DateScopeDropdown.DateScopeOption;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -82,6 +83,11 @@ public class ScopeFactory {
 	
 	public static DateScope createDateScope(String identifier, String displayName, String hint, DateRange dateRange) {
 		return new DateScopeImpl(identifier, displayName, hint, dateRange);
+	}
+	
+	public static DateScopeDropdown createDropdownDateScope(String identifier, String displayName, String hint,
+			DateScopeOption preselectedOption, String dropdownLabel, List<DateScopeOption> selectionOfScopes, DateScopeOption initialOption) {
+		return new DateScopeDropdown(identifier, displayName, hint, preselectedOption, dropdownLabel, selectionOfScopes, initialOption);
 	}
 	
 	public static String formatDateRange(Translator translator, Formatter formatter, DateRange dateRange) {
@@ -171,6 +177,20 @@ public class ScopeFactory {
 			DateRange dateRange = new DateRange(DateUtils.getStartOfDay(new Date()), null);
 			String displayName = translator.translate("date.scope.today.and.upcoming");
 			dateScopes.add(createDateScope("scope." + counter++, displayName, null, dateRange));
+			return this;
+		}
+		
+		public DateScopesBuilder dropdown(String dropdownLabel, List<DateScopeOption> subListOfScopes, DateScopeOption preselectedScope) {
+			if(!subListOfScopes.isEmpty()) {
+				if(preselectedScope == null) {
+					preselectedScope = subListOfScopes.get(0);
+				}
+				String displayName = preselectedScope.scope().getDisplayName();
+				DateRange dateRange = preselectedScope.scope().getDateRange();
+				String hint = formatDateRange(dateRange);
+				dateScopes.add(createDropdownDateScope("scope." + counter++, displayName, hint,
+						preselectedScope, dropdownLabel, subListOfScopes, preselectedScope));
+			}
 			return this;
 		}
 		
