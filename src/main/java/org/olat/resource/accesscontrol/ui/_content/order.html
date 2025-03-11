@@ -43,16 +43,16 @@
 			#if($r.available("order-comment"))
 				$r.render("order-comment","vertical")
 			#end
-			#if($r.available("billing-address"))
-				$r.render("billing-address","vertical")
-			#end
 			$r.render("orderItemList")
 		</div>
 		<div class="o_ac_order_details_content_right">
-			<div class="">
+			<div class="o_ac_order_user">
 				<label>$r.translate("order.details.delivery")</label>
 				$r.render("delivery-profile")
 			</div>
+			#if($r.available("billing-address"))
+				$r.render("billing-address","vertical")
+			#end
 		</div>
 	</div>
 </div>

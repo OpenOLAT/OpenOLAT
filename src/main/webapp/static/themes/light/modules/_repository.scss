@@ -355,19 +355,42 @@
 			order: 2;
 		}
 		.o_ac_order_details_content_right {
-			max-with: 300px;
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 20px;
+		}
+	}
+	
+	@container o_ac_order_details_container (min-width: 700px) {
+		.o_ac_order_details_content {
+			.o_ac_order_details_content_right {
+				grid-template-columns: 1fr 1fr;
+			
+				.o_ac_billing_address {
+					max-width: unset;
+				}
+			}
 		}
 	}
 	
 	@container o_ac_order_details_container (min-width: 840px) {
 		.o_ac_order_details_content {
 			flex-direction: row;
-		}
-		.o_ac_order_details_content_left {
-			order: 1;
-		}
-		.o_ac_order_details_content_right {
-			order: 2;
+			.o_ac_order_details_content_left {
+				order: 1;
+			}
+			.o_ac_order_details_content_right {
+				order: 2;
+				
+				display: flex;
+				flex-wrap: wrap;
+				align-content: start;
+				max-width: 350px;
+				
+				>div:not(.o_ac_order_user) {
+					width: 100%;
+				}
+			}
 		}
 	}
 	
