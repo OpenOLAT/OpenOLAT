@@ -233,7 +233,12 @@ public class EditLectureBlockController extends FormBasicController {
 			titleEl.setFocus(true);
 		}
 
-		String externalRef = lectureBlock == null ? null : lectureBlock.getExternalRef();
+		String externalRef = null;
+		if(lectureBlock == null || lectureBlock.getKey() == null) {
+			externalRef = curriculumElement == null ? null : curriculumElement.getIdentifier();
+		} else {
+			externalRef = lectureBlock.getExternalRef();
+		}
 		externalRefEl = uifactory.addTextElement("externalref", "lecture.external.ref", 128, externalRef, formLayout);
 		externalRefEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.externalRef));
 
