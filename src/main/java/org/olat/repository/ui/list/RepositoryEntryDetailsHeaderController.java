@@ -253,7 +253,7 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				doLeave(ureq);
 				if (!closeTabOnLeave) {
-					fireEvent(ureq, new LeavingEvent());
+					fireEvent(ureq, new LeavingEvent(entry));
 				}
 			}
 		}

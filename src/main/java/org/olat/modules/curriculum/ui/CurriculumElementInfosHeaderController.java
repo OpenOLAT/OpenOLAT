@@ -397,7 +397,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			}
 		}
 		
-		fireEvent(ureq, new LeavingEvent());
+		fireEvent(ureq, new LeavingEvent(element));
 	}
 	
 }

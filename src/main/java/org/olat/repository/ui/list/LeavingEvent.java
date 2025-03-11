@@ -20,6 +20,8 @@
 package org.olat.repository.ui.list;
 
 import org.olat.core.gui.control.Event;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -30,9 +32,30 @@ import org.olat.core.gui.control.Event;
 public class LeavingEvent extends Event {
 
 	private static final long serialVersionUID = -12672894980545992L;
-
-	public LeavingEvent() {
+	
+	private final RepositoryEntry repositoryEntry;
+	private final CurriculumElement curriculumElement;
+	
+	public LeavingEvent(RepositoryEntry repositoryEntry) {
+		this(repositoryEntry, null);
+	}
+	
+	public LeavingEvent(CurriculumElement curriculumElement) {
+		this(null, curriculumElement);
+	}
+	
+	public LeavingEvent(RepositoryEntry repositoryEntry, CurriculumElement curriculumElement) {
 		super("leaving");
+		this.repositoryEntry = repositoryEntry;
+		this.curriculumElement = curriculumElement;
+	}
+
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
+	}
+
+	public CurriculumElement getCurriculumElement() {
+		return curriculumElement;
 	}
 
 }

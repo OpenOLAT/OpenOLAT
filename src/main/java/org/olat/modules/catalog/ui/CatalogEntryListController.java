@@ -743,9 +743,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 				}
 			} else if (event instanceof BookEvent bookEvent) {
 				doBook(ureq, bookEvent.getResourceKey());
-			} else if (event instanceof LeavingEvent) {
-				stackPanel.popUpToController(this);
-				loadModel(false);
+			} else if (event instanceof LeavingEvent leavingEvent) {
+				doLeaved(ureq, leavingEvent.getRepositoryEntry(), leavingEvent.getCurriculumElement());
 			}
 		} else if (authCtrl == source) {
 			lightboxCtrl.deactivate();
@@ -1050,6 +1049,16 @@ public class CatalogEntryListController extends FormBasicController implements A
 					doStart(ureq, row);
 				}
 			}
+		}
+	}
+	
+	private void doLeaved(UserRequest ureq, RepositoryEntry repositoryEntry, CurriculumElement curriculumElement) {
+		stackPanel.popUpToController(this);
+		loadModel(false);
+		if (repositoryEntry != null) {
+			doOpenDetails(ureq, repositoryEntry);
+		} else if (curriculumElement != null) {
+			doOpenDetails(ureq, curriculumElement);
 		}
 	}
 	
