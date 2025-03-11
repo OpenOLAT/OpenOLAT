@@ -390,8 +390,9 @@ public class WebAuthnAuthenticationForm extends FormBasicController {
 		
 		pass.setVisible(showPassword);
 		pass.setFocus(showPassword);
-
-		usernameEl.contextPut("username", loginEl.getValue());
+		
+		String escapedUsername = StringHelper.escapeForHtmlAttribute(loginEl.getValue());
+		usernameEl.contextPut("username", escapedUsername);
 		usernameEl.setVisible(showPassword);
 		recoveryKeyEl.setVisible(false);
 		
