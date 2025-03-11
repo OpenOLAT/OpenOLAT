@@ -83,11 +83,12 @@ public class QTI21ConfigurationCEPage {
 		By showResultsBy = By.cssSelector("div.o_sel_qti_show_results input[type='checkbox']");
 		WebElement showResultsEl = browser.findElement(showResultsBy);
 		OOGraphene.check(showResultsEl, show);
-		By resultsLevelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='metadata']");
-		OOGraphene.waitElement(resultsLevelBy, browser);
+		OOGraphene.waitBusy(browser);
+		By resultsLevelCheckedBy = By.xpath("//div[contains(@class,'o_sel_qti_show_results')]//input[@type='checkbox'][@checked='checked']");
+		OOGraphene.waitElement(resultsLevelCheckedBy, browser);
 
 		if(options.isMetadata()) {
-			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='metadata']");
+			By levelBy = By.xpath("//fieldset[contains(@class,'o_sel_qti_show_results_options')]//input[@type='checkbox'][@value='metadata']");
 			browser.findElement(levelBy).click();
 			OOGraphene.waitBusy(browser);
 		}

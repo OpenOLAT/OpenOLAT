@@ -663,10 +663,12 @@ public interface LectureService {
 	public boolean hasLecturesAsTeacher(RepositoryEntryRef entry, Identity identity);
 	
 	/**
-	 * Check if the user has a roll call to do. Now.
+	 * Check if the user has a roll call to do. Now. The method
+	 * will check the configuration of the course, lecture enbaled, roll
+	 * call enabled with default and override.
 	 * 
 	 * @param identity The teacher
-	 * @return true if a roll call need to be done
+	 * @return A list of lecture blocks
 	 */
 	public List<LectureBlock> getRollCallAsTeacher(Identity identity);
 	
