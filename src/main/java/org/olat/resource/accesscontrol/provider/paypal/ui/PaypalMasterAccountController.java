@@ -20,14 +20,12 @@
  */
 package org.olat.resource.accesscontrol.provider.paypal.ui;
 
-import java.math.BigDecimal;
 import java.net.UnknownHostException;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -60,9 +58,6 @@ public class PaypalMasterAccountController extends FormBasicController {
 	private TextElement applicationIdEl;
 	private TextElement firstReceiverEl;
 	private TextElement deviceIpEl;
-	private TextElement vatNumberEl;
-	private TextElement vatRateEl;
-	private MultipleSelectionElement vatEnabledEl;
 	private SingleSelection currencyEl;
 	
 	private FormLink checkButton;
@@ -73,9 +68,6 @@ public class PaypalMasterAccountController extends FormBasicController {
 	private PaypalManager paypalManager;
 	@Autowired
 	private AccessControlModule acModule;
-	
-	private static final String[] vatKeys = new String[]{"on"};
-	private final String[] vatValues;
 	
 	private static final String[] currencies = new String[] {
 		"",
@@ -105,7 +97,6 @@ public class PaypalMasterAccountController extends FormBasicController {
 	
 	public PaypalMasterAccountController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		vatValues = new String[]{ translate("vat.on") };
 		initForm(ureq);
 	}
 	
@@ -126,20 +117,6 @@ public class PaypalMasterAccountController extends FormBasicController {
 				currencyEl.select("", true);
 			}
 			
-			vatEnabledEl = uifactory.addCheckboxesHorizontal("vat.enabled", "vat.enabled", formLayout, vatKeys, vatValues);
-			vatEnabledEl.addActionListener(FormEvent.ONCHANGE);
-			if(acModule.isVatEnabled()) {
-				vatEnabledEl.select(vatKeys[0], true);
-			}
-			
-			String vatNr = acModule.getVatNumber();
-			vatNumberEl = uifactory.addTextElement("vat.nr", "vat.nr", 255, vatNr, formLayout);
-			
-			BigDecimal vatRate = acModule.getVat();
-			String vatRateStr = vatRate == null ? "" : vatRate.toPlainString();
-			vatRateEl = uifactory.addTextElement("vat.rate", "vat.rate", 5, vatRateStr, formLayout);
-			vatRateEl.setDisplaySize(5);
-
 			uifactory.addSpacerElement("paypal-space", formLayout, false);
 			
 			String firstReceiver = paypalModule.getPaypalFirstReceiverEmailAddress();
@@ -179,24 +156,6 @@ public class PaypalMasterAccountController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean vatEnabled = vatEnabledEl.isMultiselect() && vatEnabledEl.isSelected(0);
-		acModule.setVatEnabled(vatEnabled);
-		
-		String vatNr = vatNumberEl.getValue();
-		acModule.setVatNumber(vatNr);
-		
-		String vatRate = vatRateEl.getValue();
-		if(StringHelper.containsNonWhitespace(vatRate)) {
-			try {
-				acModule.setVat(new BigDecimal(vatRate));
-			} catch (Exception e) {
-				//error
-				vatRateEl.setErrorKey("");
-			}
-		} else {
-			acModule.setVat(BigDecimal.ZERO);
-		}
-		
 		String currency = currencyEl.isOneSelected() ? currencyEl.getSelectedKey() : "";
 		paypalModule.setPaypalCurrency(currency);
 		
@@ -232,15 +191,6 @@ public class PaypalMasterAccountController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == checkButton) {
 			checkCredentials();
-		} else if (source == vatEnabledEl) {
-			if (vatEnabledEl.isSelected(0)) {
-				vatNumberEl.setEnabled(true);
-				vatRateEl.setEnabled(true);
-			} else {
-				vatNumberEl.setEnabled(false);
-				vatRateEl.setEnabled(false);				
-				vatRateEl.setValue(null);
-			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

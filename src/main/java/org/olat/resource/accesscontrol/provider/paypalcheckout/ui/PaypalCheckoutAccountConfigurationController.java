@@ -19,7 +19,6 @@
  */
 package org.olat.resource.accesscontrol.provider.paypalcheckout.ui;
 
-import java.math.BigDecimal;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.List;
@@ -62,9 +61,6 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement pendingReviewEl;
 	private MultipleSelectionElement preferredCountriesEl;
-	private TextElement vatRateEl;
-	private TextElement vatNumberEl;
-	private MultipleSelectionElement vatEnabledEl;
 	
 	private final List<String> paypalCurrencies;
 
@@ -116,21 +112,6 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		} else {
 			currencyEl.select("CHF", true);
 		}
-
-		String[] vatValues = new String[]{ translate("vat.on") };
-		vatEnabledEl = uifactory.addCheckboxesHorizontal("vat.enabled", "vat.enabled", formLayout, onKeys, vatValues);
-		vatEnabledEl.addActionListener(FormEvent.ONCHANGE);
-		if(acModule.isVatEnabled()) {
-			vatEnabledEl.select(onKeys[0], true);
-		}
-		
-		String vatNr = acModule.getVatNumber();
-		vatNumberEl = uifactory.addTextElement("vat.nr", "vat.nr", 255, vatNr, formLayout);
-		
-		BigDecimal vatRate = acModule.getVat();
-		String vatRateStr = vatRate == null ? "" : vatRate.toPlainString();
-		vatRateEl = uifactory.addTextElement("vat.rate", "vat.rate", 5, vatRateStr, formLayout);
-		vatRateEl.setDisplaySize(5);
 		
 		SelectionValues countries = getCountries();
 		preferredCountriesEl = uifactory.addCheckboxesDropdown("countries", "paypal.preferred.countries", formLayout,
@@ -182,11 +163,6 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		smartButtonsEl.setVisible(enabled);
 		pendingReviewEl.setVisible(enabled);
 		preferredCountriesEl.setVisible(enabled);
-		vatEnabledEl.setVisible(enabled);
-		
-		boolean vatEnabled = enabled && vatEnabledEl.isAtLeastSelected(1);
-		vatRateEl.setVisible(vatEnabled);
-		vatNumberEl.setVisible(vatEnabled);
 	}
 
 	@Override
@@ -219,12 +195,12 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == enableEl || source == vatEnabledEl) {
+		if(source == enableEl) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	private String getPreferredCountries() {
 		StringBuilder sb = new StringBuilder();
 		for(String country:preferredCountriesEl.getSelectedKeys()) {
@@ -238,29 +214,6 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 	protected void formOK(UserRequest ureq) {
 		boolean enabled = enableEl.isAtLeastSelected(1);
 		acModule.setPaypalCheckoutEnabled(enabled);
-		
-		if(enabled) {// VAT is multi modules, don't remove it if paypal is disabled
-			boolean vatEnabled = vatEnabledEl.isSelected(0);
-			acModule.setVatEnabled(vatEnabled);
-			if(vatEnabled) {
-				String vatNr = vatNumberEl.getValue();
-				acModule.setVatNumber(vatNr);
-				String vatRate = vatRateEl.getValue();
-				if(StringHelper.containsNonWhitespace(vatRate)) {
-					try {
-						acModule.setVat(new BigDecimal(vatRate));
-					} catch (Exception e) {
-						//error
-						vatRateEl.setErrorKey("");
-					}
-				} else {
-					acModule.setVat(BigDecimal.ZERO);
-				}
-			} else {
-				acModule.setVatNumber("");
-				acModule.setVat(BigDecimal.ZERO);
-			}
-		}
 		
 		if(enabled) {
 			paypalModule.setClientId(clientIdEl.getValue());

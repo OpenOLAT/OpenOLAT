@@ -102,6 +102,11 @@
 	<!-- The payment parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
 		<property name="order" value="7410" />
+		<property name="actionController">
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.resource.accesscontrol.ui.PaymentAdminController"/>
+			</bean>
+		</property>
 		<property name="navigationKey" value="payments" />
 		<property name="nodeIdentifierIfParent" value="paymentsParent" />
 		<property name="translationPackage" value="org.olat.admin" />

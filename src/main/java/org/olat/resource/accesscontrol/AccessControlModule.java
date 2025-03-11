@@ -20,7 +20,6 @@
 
 package org.olat.resource.accesscontrol;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +55,18 @@ import org.springframework.stereotype.Service;
 public class AccessControlModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final Logger log = Tracing.createLoggerFor(AccessControlModule.class);
+	
+	public enum VAT { inclusive, exclusive, disabled;
+		
+		public static final VAT toVAT(String value) {
+			return switch (value) {
+			case "true" -> VAT.inclusive; // legacy
+			case "inclusive" -> VAT.inclusive;
+			case "exclusiv" -> VAT.exclusive;
+			default -> VAT.disabled;
+			};
+		}
+	}
 
 	public static final String AC_ENABLED = "resource.accesscontrol.enabled";
 	public static final String AC_HOME_ENABLED = "resource.accesscontrol.home.overview";
@@ -104,10 +115,11 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private boolean paypalEnabled;
 	@Value("${method.paypal.checkout.enabled:false}")
 	private boolean paypalCheckoutEnabled;
-	@Value("${vat.enabled:false}")
-	private boolean vatEnabled;
+	@Value("${vat.enabled:disabled}")
+	private String vatEnabled;
+	private VAT vat;
 	@Value("${vat.rate:7.0}")
-	private BigDecimal vatRate;
+	private String vatRate;
 	@Value("${vat.number:1}")
 	private String vatNumber;
 
@@ -217,22 +229,12 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 
 		String vatEnabledObj = getStringPropertyValue(VAT_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(vatEnabledObj)) {
-			vatEnabled = "true".equals(vatEnabledObj);
+			vatEnabled = vatEnabledObj;
+			vat = VAT.toVAT(vatEnabledObj);
 		}
-
-		String vatRateObj = getStringPropertyValue(VAT_RATE, true);
-		if(StringHelper.containsNonWhitespace(vatRateObj)) {
-			try {
-				vatRate = new BigDecimal(vatRateObj);
-			} catch (Exception e) {
-				log.error("Error parsing the VAT: " + vatRateObj, e);
-			}
-		}
-
-		String vatNrObj = getStringPropertyValue(VAT_NR, true);
-		if(StringHelper.containsNonWhitespace(vatNrObj)) {
-			vatNumber = vatNrObj;
-		}
+		
+		vatRate = getStringPropertyValue(VAT_RATE, vatRate);
+		vatNumber = getStringPropertyValue(VAT_NR, vatNumber);
 	}
 	
 	private void updateAccessMethods() {
@@ -382,23 +384,24 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 			setStringProperty(AC_PARTICIPANTS_LEFT_MESSAGE_PERCENTAGE, String.valueOf(participantsLeftMessagePercentage), true);
 		}
 	}
-
-	public boolean isVatEnabled() {
-		return vatEnabled;
+	
+	public VAT getVat() {
+		return vat;
 	}
 
-	public void setVatEnabled(boolean vatEnabled) {
-		if(this.vatEnabled != vatEnabled) {
-			setStringProperty(VAT_ENABLED, Boolean.toString(vatEnabled), true);
-		}
+	public void setVat(VAT vat) {
+		this.vat = vat;
+		setStringProperty(VAT_ENABLED, vat.name(), true);
+		
 	}
 
-	public BigDecimal getVat() {
+	public String getVatRate() {
 		return vatRate;
 	}
-
-	public void setVat(BigDecimal vatRate) {
-		setStringProperty(VAT_RATE, vatRate.toPlainString(), true);
+	
+	public void setVatRate(String vatRate) {
+		this.vatRate = vatRate;
+		setStringProperty(VAT_RATE, vatRate, true);
 	}
 
 	public String getVatNumber() {

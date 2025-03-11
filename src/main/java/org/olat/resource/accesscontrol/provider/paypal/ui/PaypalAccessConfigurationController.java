@@ -26,13 +26,11 @@ import java.util.Collection;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
@@ -55,11 +53,6 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 	
 	private TextElement priceEl;
 	private SingleSelection currencyEl;
-	private MultipleSelectionElement vatEnabledEl;
-	
-	private static final String[] vatKeys = new String[]{"on"};
-	private final String[] vatValues;
-	
 	
 	private static final String[] currencies = new String[] {
 		"AUD",
@@ -88,14 +81,11 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 	
 	@Autowired
 	private PaypalModule paypalModule;
-	@Autowired
-	private AccessControlModule acModule;
 	
 	public PaypalAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link,
 			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
 			boolean edit) {
 		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogInfo, edit);
-		vatValues = new String[]{ translate("vat.on") };
 		initForm(ureq);
 	}
 
@@ -131,12 +121,6 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 				currencyEl.select("CHF", true);
 			}
 		}
-		
-		vatEnabledEl = uifactory.addCheckboxesHorizontal("vat.enabled", "vat.enabled", formLayout, vatKeys, vatValues);
-		if(acModule.isVatEnabled()) {
-			vatEnabledEl.select(vatKeys[0], true);
-		}
-		vatEnabledEl.setEnabled(false);
 	}
 
 	@Override

@@ -25,14 +25,12 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.CatalogInfo;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
@@ -52,13 +50,7 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 	
 	private TextElement priceEl;
 	private SingleSelection currencyEl;
-	private MultipleSelectionElement vatEnabledEl;
 	
-	private static final String[] vatKeys = new String[]{"on"};
-	private final String[] vatValues;
-	
-	@Autowired
-	private AccessControlModule acModule;
 	@Autowired
 	private PaypalCheckoutModule paypalModule;
 	
@@ -66,7 +58,6 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 			boolean offerOrganisationsSupported, Collection<Organisation> offerOrganisations, CatalogInfo catalogInfo,
 			boolean edit) {
 		super(ureq, wControl, link, offerOrganisationsSupported, offerOrganisations, catalogInfo, edit);
-		vatValues = new String[]{ translate("vat.on") };
 		initForm(ureq);
 	}
 
@@ -105,12 +96,6 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 				currencyEl.select("CHF", true);
 			}
 		}
-		
-		vatEnabledEl = uifactory.addCheckboxesHorizontal("vat.enabled", "vat.enabled", formLayout, vatKeys, vatValues);
-		if(acModule.isVatEnabled()) {
-			vatEnabledEl.select(vatKeys[0], true);
-		}
-		vatEnabledEl.setEnabled(false);
 	}
 
 	@Override

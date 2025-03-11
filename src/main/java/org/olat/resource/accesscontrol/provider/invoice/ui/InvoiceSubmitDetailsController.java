@@ -19,9 +19,6 @@
  */
 package org.olat.resource.accesscontrol.provider.invoice.ui;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -118,14 +115,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 		}
 		
 		if (offer.getPrice() != null && offer.getPrice().getAmount() != null) {
-			String price = PriceFormat.fullFormat(offer.getPrice());
-			if (acModule.isVatEnabled()) {
-				BigDecimal vat = acModule.getVat();
-				String vatStr = vat == null ? "" : vat.setScale(3, RoundingMode.HALF_EVEN).toPlainString();
-				price = translate("access.info.price.vat", price, vatStr);
-			} else {
-				price = translate("access.info.price.noVat", price);
-			}
+			String price = PriceFormat.fullFormatVat(getTranslator(), acModule, offer.getPrice());
 			uifactory.addStaticTextElement("price", price, formLayout);
 		}
 		

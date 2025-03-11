@@ -45,7 +45,7 @@ public class InvoiceAdminController extends BasicController {
 	private Link costCentersLink;
 	private final SegmentViewComponent segmentView;
 
-	private InvoiceAdminConfigController configCtrl;
+	private InvoiceAdminConfigsController configCtrl;
 	private CostCenterListController costCentersCtrl;
 	
 	public InvoiceAdminController(UserRequest ureq, WindowControl wControl) {
@@ -81,7 +81,7 @@ public class InvoiceAdminController extends BasicController {
 
 	private void doOpenConfig(UserRequest ureq) {
 		if (configCtrl == null) {
-			configCtrl = new InvoiceAdminConfigController(ureq, getWindowControl());
+			configCtrl = new InvoiceAdminConfigsController(ureq, getWindowControl());
 			listenTo(configCtrl);
 		}
 		mainVC.put("segmentCmp", configCtrl.getInitialComponent());

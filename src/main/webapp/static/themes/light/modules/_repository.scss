@@ -482,6 +482,11 @@
 		}
 	}
 }}
+.o_ac_rate_config {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
 
 
 tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,

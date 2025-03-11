@@ -51,7 +51,7 @@ public class PaypalCheckoutAdminController extends BasicController implements Ac
 	private SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
-	private PaypalCheckoutAccountConfigurationController accountController;
+	private PaypalCheckoutAdminConfigController configCtrl;
 	private PaypalCheckoutTransactionsController transactionsController;
 	
 	public PaypalCheckoutAdminController(UserRequest ureq, WindowControl wControl) {
@@ -90,15 +90,15 @@ public class PaypalCheckoutAdminController extends BasicController implements Ac
 	}
 	
 	private void doOpenAccountSettings(UserRequest ureq) {
-		if(accountController == null) {
+		if(configCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("transactions", 0l);
 			WindowControl bwControl = addToHistory(ureq, ores, null);
-			accountController = new PaypalCheckoutAccountConfigurationController(ureq, bwControl);
-			listenTo(accountController);
+			configCtrl = new PaypalCheckoutAdminConfigController(ureq, bwControl);
+			listenTo(configCtrl);
 		} else {
-			addToHistory(ureq, accountController);
+			addToHistory(ureq, configCtrl);
 		}
-		mainVC.put("segmentCmp", accountController.getInitialComponent());
+		mainVC.put("segmentCmp", configCtrl.getInitialComponent());
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("configuration", 0l);
 		addToHistory(ureq, ores, null);

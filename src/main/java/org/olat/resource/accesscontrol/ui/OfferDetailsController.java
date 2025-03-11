@@ -19,9 +19,6 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -56,14 +53,7 @@ public class OfferDetailsController extends BasicController {
 		
 		Price price = offer.getPrice();
 		if (price != null && !price.isEmpty()) {
-			String priceStr = "<span class=\"o_ac_offer_price_ammount\">" + PriceFormat.fullFormat(price) + "</span>";
-			if(acModule.isVatEnabled()) {
-				BigDecimal vat = acModule.getVat();
-				String vatStr = vat == null ? "" : vat.setScale(3, RoundingMode.HALF_EVEN).toPlainString();
-				priceStr = translate("access.info.price.vat", priceStr, vatStr);
-			} else {
-				priceStr = translate("access.info.price.noVat", priceStr);
-			}
+			String priceStr = PriceFormat.fullFormatVat(getTranslator(), acModule, price, "o_ac_offer_price_ammount");
 			mainVC.contextPut("price", priceStr);
 		}
 		

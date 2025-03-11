@@ -23,7 +23,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.AccessControlModule.VAT;
 import org.olat.resource.accesscontrol.Price;
 
 /**
@@ -111,4 +115,47 @@ public class PriceFormat {
 
 		return isoCurrencyCode + '\u00A0' + price.getAmount().setScale(2, RoundingMode.HALF_EVEN).toString();
 	}
+	
+	public static String fullFormatVat(Translator translator, AccessControlModule acModule, Price price) {
+		return fullFormatVat(translator, acModule, price, null);
+	}
+	
+	public static String fullFormatVat(Translator translator, AccessControlModule acModule, Price price, String priceCss) {
+		return fullFormatVat(translator, acModule, fullFormat(price), priceCss);
+	}
+	
+	public static String fullFormatVat(Translator translator, AccessControlModule acModule, String priceFormatted, String priceCss) {
+		String fullFormat = priceFormatted;
+		if (StringHelper.containsNonWhitespace(fullFormat)) {
+			if (StringHelper.containsNonWhitespace(priceCss)) {
+				fullFormat = "<span class=\"" + priceCss + "\">" + fullFormat + "</span>";
+			}
+			String formatVat = formatVat(translator, acModule);
+			if (StringHelper.containsNonWhitespace(formatVat)) {
+				fullFormat = translator.translate("price.vat", fullFormat, formatVat);
+			}
+		}
+		
+		return fullFormat;
+	}
+	
+	public static final String formatVat(Translator translator, AccessControlModule module) {
+		return formatVat(translator, module.getVat(), StringHelper.escapeHtml(module.getVatRate()));
+	}
+	
+	public static final String formatVat(Translator translator, VAT vat, String rate) {
+		if (VAT.inclusive == vat) {
+			if (StringHelper.containsNonWhitespace(rate)) {
+				return translator.translate("vat.inclusive.abbr.rate", rate);
+			}
+			return translator.translate("vat.inclusive.abbr");
+		} else if (VAT.exclusive == vat) {
+			if (StringHelper.containsNonWhitespace(rate)) {
+				return translator.translate("vat.exclusive.abbr.rate", rate);
+			}
+			return translator.translate("vat.exclusive.abbr");
+		}
+		return null;
+	}
+	
 }
