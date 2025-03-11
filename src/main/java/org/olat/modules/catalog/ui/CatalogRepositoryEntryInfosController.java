@@ -19,7 +19,6 @@
  */
 package org.olat.modules.catalog.ui;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -69,10 +68,7 @@ public class CatalogRepositoryEntryInfosController extends RepositoryEntryDetail
 	@Override
 	protected void doStart(UserRequest ureq) {
 		try {
-			if (getIdentity() != null) {
-				String businessPath = "[RepositoryEntry:" + getEntry().getKey() + "]";
-				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-			} else {
+			if (getIdentity() == null) {
 				doShowLogin(ureq);
 			}
 		} catch (CorruptedCourseException e) {

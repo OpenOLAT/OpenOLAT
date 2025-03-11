@@ -1028,12 +1028,6 @@ public class CatalogEntryListController extends FormBasicController implements A
 		
 		if (repositoryEntry != null) {
 			doOpenDetails(ureq, repositoryEntry);
-			if (repositoryManager.isAllowed(ureq, repositoryEntry).canLaunch()) {
-				CatalogEntryRow row = dataModel.getObjectByResourceKey(repositoryEntry.getOlatResource().getKey());
-				if (row != null) {
-					doStart(ureq, row);
-				}
-			}
 		}
 	}
 
@@ -1042,13 +1036,6 @@ public class CatalogEntryListController extends FormBasicController implements A
 		
 		if (element != null) {
 			doOpenDetails(ureq, element);
-			boolean isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(getIdentity())).isEmpty();
-			if (isMember) {
-				CatalogEntryRow row = dataModel.getObjectByResourceKey(element.getResource().getKey());
-				if (row != null) {
-					doStart(ureq, row);
-				}
-			}
 		}
 	}
 	
