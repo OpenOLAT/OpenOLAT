@@ -307,26 +307,30 @@ public class PublicLoginAuthProvidersController extends MainLayoutBasicControlle
 		for(Controller ctrl:authenticationCtrlList) {
 			ctrl.getInitialComponent().setVisible(source == ctrl);
 		}
-		registerLink.setVisible(false);
-		content.contextPut("startLogin", Boolean.TRUE);
-		content.setDirty(true);
-
+		if (registerLink != null) {			
+			registerLink.setVisible(false);
+		}
 		if(changePasswordLink != null) {
 			changePasswordLink.setVisible(true);
 		}
+		
+		content.contextPut("startLogin", Boolean.TRUE);
+		content.setDirty(true);
 	}
 
 	private void doBack() {
 		for(Controller ctrl:authenticationCtrlList) {
 			ctrl.getInitialComponent().setVisible(true);
 		}
-		registerLink.setVisible(true);
-		content.contextPut("startLogin", Boolean.FALSE);
-		content.setDirty(true);
-
+		if (registerLink != null) {			
+			registerLink.setVisible(true);
+		}
 		if(changePasswordLink != null) {
 			changePasswordLink.setVisible(!loginModule.isOlatProviderLoginButton());
 		}
+		
+		content.contextPut("startLogin", Boolean.FALSE);
+		content.setDirty(true);
 	}
 
 	@Override
