@@ -110,6 +110,7 @@ public class OrganisationListController extends AbstactCoachListController {
 	private List<StudentStatEntry> getUserStatistics() {
 		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
 		params.setOrganisations(getFilteredOrganisations(tableEl.getFilters()));
+		params.setIgnoreInheritedOrgMemberships(true);
 		List<StudentStatEntry> courseStats = coachingService.getUsersStatistics(params, userPropertyHandlers, getLocale());
 		List<StudentStatEntry> userProperties = coachingService.getUsersByOrganization(userPropertyHandlers, getIdentity(), 
 				getFilteredOrganisations(tableEl.getFilters()), organisationRole, getLocale());

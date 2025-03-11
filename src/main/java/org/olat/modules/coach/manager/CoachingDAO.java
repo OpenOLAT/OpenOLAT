@@ -34,6 +34,7 @@ import jakarta.persistence.FlushModeType;
 import jakarta.persistence.Query;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -1020,6 +1021,8 @@ public class CoachingDAO {
 		sb.and().append("org.key in (:orgKeys)");
 		sb.and().append("mgmtMembership.identity.key = :identityKey");
 		sb.and().append("mgmtMembership.role").in(organisationRole);
+		sb.and().append("userMembership.inheritanceModeString").in(GroupMembershipInheritance.root, GroupMembershipInheritance.none);
+		sb.and().append("userMembership.identity.key <> :identityKey");
 		sb.and().append("userMembership.role = 'user'");
 		
 		return dbInstance.getCurrentEntityManager()
@@ -1239,8 +1242,12 @@ public class CoachingDAO {
 		if(params.hasOrganisations()) {
 			sb.append(" and exists (select orgtomember.id from o_bs_group_member as orgtomember ")
 			  .append("  inner join o_org_organisation as org on (org.fk_group=orgtomember.fk_group_id)")
-			  .append("  where orgtomember.fk_identity_id=id_participant.id and org.id in (:organisationKey))");
+			  .append("  where orgtomember.fk_identity_id=id_participant.id and org.id in (:organisationKey)");
 			
+			if (params.isIgnoreInheritedOrgMemberships()) {
+				sb.append("  and orgtomember.g_inheritance_mode").in(GroupMembershipInheritance.root, GroupMembershipInheritance.none);
+			}
+			sb.append(")");
 			Set<Long> organisationKeys = params.getOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toSet());
 			queryParams.put("organisationKey", organisationKeys);
 		}

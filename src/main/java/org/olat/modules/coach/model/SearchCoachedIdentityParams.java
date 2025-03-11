@@ -38,7 +38,8 @@ public class SearchCoachedIdentityParams {
 	private Long identityKey;
 	private Map<String,String> userProperties;
 	private List<OrganisationRef> organisations;
-	
+	private boolean ignoreInheritedOrgMemberships;
+
 	public String getLogin() {
 		return login;
 	}
@@ -85,5 +86,13 @@ public class SearchCoachedIdentityParams {
 		} else {
 			this.organisations = new ArrayList<>(organisations);
 		}
+	}
+
+	public void setIgnoreInheritedOrgMemberships(boolean ignoreInheritedOrgMemberships) {
+		this.ignoreInheritedOrgMemberships = ignoreInheritedOrgMemberships;
+	}
+
+	public boolean isIgnoreInheritedOrgMemberships() {
+		return ignoreInheritedOrgMemberships;
 	}
 }
