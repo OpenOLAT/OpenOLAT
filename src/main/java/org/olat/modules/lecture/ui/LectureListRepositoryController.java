@@ -680,7 +680,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			searchParams.setManager(getIdentity());
 		}
 		
-		if(scopeEl.isEnabled() && scopeEl.isSelected()) {
+		if(scopeEl.isVisible() && scopeEl.isEnabled() && scopeEl.isSelected()) {
 			DateRange range = scopeEl.getSelectedDateRange();
 			searchParams.setStartDate(range.getFrom());
 			searchParams.setEndDate(range.getTo());
@@ -726,7 +726,7 @@ public class LectureListRepositoryController extends FormBasicController impleme
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
 		Date now = ureq.getRequestTimestamp();
 		if(selectedTab == relevantTab) {
-			searchParams.setStartDate(now);
+			searchParams.setStartDate(DateUtils.getStartOfDay(now));
 		} else if(selectedTab == todayTab) {
 			searchParams.setStartDate(DateUtils.getStartOfDay(now));
 			searchParams.setEndDate(DateUtils.getEndOfDay(now));
