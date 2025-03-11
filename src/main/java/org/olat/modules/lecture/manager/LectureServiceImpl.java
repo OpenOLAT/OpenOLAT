@@ -1535,7 +1535,15 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public List<LectureBlock> getRollCallAsTeacher(Identity identity) {
-		return lectureBlockDao.getRollCallAsTeacher(identity);
+		List<LectureBlock> lectureBlocks = lectureBlockDao.getRollCallAsTeacher(identity);
+		List<LectureBlock> enabledLectureBlocks = new ArrayList<>();
+		for(LectureBlock lectureBlock:lectureBlocks) {
+			RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(lectureBlock.getEntry());
+			if(ConfigurationHelper.isRollCallEnabled(config, lectureModule)) {
+				enabledLectureBlocks.add(lectureBlock);
+			}
+		}
+		return enabledLectureBlocks;
 	}
 
 	@Override
