@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,29 +14,17 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.model;
-
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementRef;
+package org.olat.modules.curriculum.ui.copy;
 
 /**
  * 
- * Initial date: 29 juin 2018<br>
+ * Initial date: 12 mars 2025<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record CurriculumElementInfos(CurriculumElement curriculumElement, Curriculum curriculum,
-		long numOfResources, long numOfTemplates, long numOfLectureBlocks, long numOfLectureBlocksWithEntry,
-		long numOfParticipants, long numOfCoaches, long numOfOwners,
-		long numOfCurriculumElementOwners, long numOfMasterChoaches, long numOfPending)
-implements CurriculumElementRef {
-	
-	@Override
-	public Long getKey() {
-		return curriculumElement.getKey();
-	}
+public record CopyInfos(long effective, long total) {
+
 }

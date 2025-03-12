@@ -41,8 +41,9 @@ public class CopyElementRow implements ComparableCurriculumElementRow {
 	private final CurriculumElementType type;
 	private final CurriculumElement curriculumElement;
 	
-	private final long numOfResources;
-	private final long numOfLectureBlocks;
+	private final CopyInfos numOfResources;
+	private final CopyInfos numOfTemplates;
+	private final CopyInfos numOfLectureBlocks;
 	
 	private DateChooser beginDateEl;
 	private DateChooser endDateEl;
@@ -51,11 +52,12 @@ public class CopyElementRow implements ComparableCurriculumElementRow {
 	private CopyElementDetailsController detailsCtrl;
 	
 	public CopyElementRow(CurriculumElement curriculumElement, CopyElementSetting setting,
-			long numOfResources, long numOfLectureBlocks) {
+			CopyInfos numOfResources, CopyInfos numOfTemplates, CopyInfos numOfLectureBlocks) {
 		this.curriculumElement = curriculumElement;
 		this.type = curriculumElement.getType();
 		this.numOfLectureBlocks = numOfLectureBlocks;
 		this.numOfResources = numOfResources;
+		this.numOfTemplates = numOfTemplates;
 		this.setting = setting;
 	}
 
@@ -114,11 +116,15 @@ public class CopyElementRow implements ComparableCurriculumElementRow {
 		this.endDateEl = endDateEl;
 	}
 
-	public long getNumOfResources() {
+	public CopyInfos getNumOfResources() {
 		return numOfResources;
 	}
+	
+	public CopyInfos getNumOfTemplates() {
+		return numOfTemplates;
+	}
 
-	public long getNumOfLectureBlocks() {
+	public CopyInfos getNumOfLectureBlocks() {
 		return numOfLectureBlocks;
 	}
 

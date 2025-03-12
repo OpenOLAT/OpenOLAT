@@ -56,6 +56,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyElementSetting;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementInfosSearchParams;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
@@ -112,8 +113,12 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.beginDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.endDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.type));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfResources));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfLectureBlocks));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfResources,
+				new CopyInfosCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfTemplates,
+				new CopyInfosCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyElementCols.numOfLectureBlocks,
+				new CopyInfosCellRenderer()));
 		
 		tableModel = new CopyElementOverviewTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "elements", tableModel, 2000, true, getTranslator(), formLayout);
@@ -153,10 +158,37 @@ public class CopyElementOverviewController extends StepFormBasicController imple
 	
 	private CopyElementRow forgeRow(CurriculumElementInfos elementWithInfos) {
 		CurriculumElement element = elementWithInfos.curriculumElement();
-		long numOfLectureBlocks = elementWithInfos.numOfLectureBlocks();
-		long numOfResources = elementWithInfos.numOfResources();
+		
+		long effectiveLecturesBlocks = 0l;
+		long lectureBlocks = elementWithInfos.numOfLectureBlocks();
+		long lectureBlocksStandalone = elementWithInfos.numOfLectureBlocks() - elementWithInfos.numOfLectureBlocksWithEntry();
+		long lectureBlocksWithEntry = elementWithInfos.numOfLectureBlocksWithEntry();
+		if(context.getCoursesEventsCopySetting() == CopyResources.resource
+				|| context.getCoursesEventsCopySetting() == CopyResources.relation) {
+			effectiveLecturesBlocks += lectureBlocksWithEntry;
+		}
+		if(context.isStandaloneEventsCopySetting()) {
+			effectiveLecturesBlocks += lectureBlocksStandalone;
+		}
+		CopyInfos numOfLectureBlocks = new CopyInfos(effectiveLecturesBlocks, lectureBlocks);
+		
+		long effectiveTemplates = 0l;
+		long templates = elementWithInfos.numOfTemplates();
+		if(context.getCoursesEventsCopySetting() == CopyResources.relation
+				|| context.getCoursesEventsCopySetting() == CopyResources.resource) {
+			effectiveTemplates = templates;
+		}
+		long resources = elementWithInfos.numOfResources();
+		long effectiveResources = 0l;
+		if((context.getCoursesEventsCopySetting() == CopyResources.relation)
+				|| (context.getCoursesEventsCopySetting() == CopyResources.resource && effectiveTemplates == 0)) {
+			effectiveResources = resources;
+		}
+		CopyInfos numOfResources = new CopyInfos(effectiveResources, resources);
+		CopyInfos numOfTemplates = new CopyInfos(effectiveTemplates, templates);
+		
 		CopyElementSetting setting = calculateSetting(element);
-		CopyElementRow row = new CopyElementRow(element, setting, numOfResources, numOfLectureBlocks);
+		CopyElementRow row = new CopyElementRow(element, setting, numOfResources, numOfTemplates, numOfLectureBlocks);
 		
 		Date beginDate = context.shiftDate(element.getBeginDate());
 		DateChooser beginDateEl = uifactory.addDateChooser("begin.date." + (++counter), null, beginDate, flc);

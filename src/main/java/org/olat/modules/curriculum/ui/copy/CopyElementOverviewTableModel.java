@@ -62,6 +62,7 @@ public class CopyElementOverviewTableModel extends DefaultFlexiTreeTableDataMode
 			case endDate -> elementRow.getEndDateEl();
 			case type -> elementRow.getTypeDisplayName();
 			case numOfResources -> elementRow.getNumOfResources();
+			case numOfTemplates -> elementRow.getNumOfTemplates();
 			case numOfLectureBlocks -> elementRow.getNumOfLectureBlocks();
 			default -> "ERROR";
 		};
@@ -75,6 +76,7 @@ public class CopyElementOverviewTableModel extends DefaultFlexiTreeTableDataMode
 		endDate("table.header.end.date"),
 		type("table.header.type"),
 		numOfResources("table.header.num.of.courses"),
+		numOfTemplates("table.header.num.of.templates"),
 		numOfLectureBlocks("table.header.num.of.lecture.blocks");
 		
 		private final String i18nKey;
