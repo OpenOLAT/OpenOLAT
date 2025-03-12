@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_ABSENCES;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_ELEMENT;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_IMPLEMENTATIONS;
 import static org.olat.modules.curriculum.ui.CurriculumListManagerController.CONTEXT_LECTURES;
@@ -68,12 +69,14 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.event.ActivateEvent;
 import org.olat.modules.curriculum.ui.event.CurriculumElementEvent;
 import org.olat.modules.curriculum.ui.event.SelectCurriculumElementRowEvent;
+import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesController;
 import org.olat.modules.curriculum.ui.member.CurriculumElementUserManagementController;
 import org.olat.modules.curriculum.ui.reports.CurriculumReportsController;
 import org.olat.modules.curriculum.ui.widgets.CoursesWidgetController;
@@ -101,6 +104,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private int resourcesTab;
 	private int structuresTab;
 	private int userManagerTab;
+	private int absencesTab;
 	private int offersTab;
 	private int metadataTab;
 
@@ -123,6 +127,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 	private CurriculumDashboardController overviewCtrl;
 	private CurriculumElementOffersController offersCtrl;
 	private EditCurriculumElementController editMetadataCtrl;
+	private CurriculumElementLecturesController absencesCtrl;
 	private LectureListRepositoryController lectureBlocksCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CurriculumElementResourcesController resourcesCtrl;
@@ -508,6 +513,16 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			return editMetadataCtrl.getInitialComponent();
 		});
 		
+		// Absences
+		if(CurriculumLectures.isEnabled(curriculumElement, curriculumElement.getType())) {
+			absencesTab = tabPane.addTab(ureq, translate("tab.absences"), uureq -> {
+				absencesCtrl = new CurriculumElementLecturesController(uureq, getWindowControl(), toolbarPanel,
+						curriculum, curriculumElement, false, secCallback);
+				listenTo(absencesCtrl);
+				return absencesCtrl.getInitialComponent();
+			});
+		}
+		
 		// Reports
 		if(secCallback.canCurriculumReports(curriculum)) {	
 			tabPane.addTab(ureq, translate("curriculum.reports"), uureq -> {
@@ -582,6 +597,8 @@ public class CurriculumElementDetailsController extends BasicController implemen
 			tabPane.setSelectedPane(ureq, offersTab);
 		} else if(CONTEXT_METADATA.equalsIgnoreCase(type) && metadataTab > 0) {
 			tabPane.setSelectedPane(ureq, metadataTab);
+		} else if(CONTEXT_ABSENCES.equalsIgnoreCase(type) && absencesTab > 0) {
+			tabPane.setSelectedPane(ureq, absencesTab);
 		} else if(CONTEXT_ELEMENT.equalsIgnoreCase(type) || "CurriculumElement".equalsIgnoreCase(type)) {
 			if(entries.size() > 1 && "Lectures".equalsIgnoreCase(entries.get(1).getOLATResourceable().getResourceableTypeName())) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());

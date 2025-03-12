@@ -805,7 +805,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if("calendars".equals(cmd)) {
 				doOpenCalendars(ureq, (CurriculumElementRow)link.getUserObject());
 			} else if("lectures".equals(cmd) && link.getUserObject() instanceof CurriculumElementRow row) {
-				doOpenCurriculumElementLectures(ureq, row);
+				doOpenCurriculumElementAbsences(ureq, row);
 			} else if("quality.preview".equals(cmd)) {
 				doOpenQualityPreview(ureq, (CurriculumElementRow)link.getUserObject());
 			} else if("learning.progress".equals(cmd)) {
@@ -892,8 +892,8 @@ public class CurriculumComposerController extends FormBasicController implements
 		doOpenCurriculumElementDetails(ureq, row, overview);
 	}
 	
-	private void doOpenCurriculumElementLectures(UserRequest ureq, CurriculumElementRow row) {
-		List<ContextEntry> overview = BusinessControlFactory.getInstance().createCEListFromString("[Lectures:0]");
+	private void doOpenCurriculumElementAbsences(UserRequest ureq, CurriculumElementRow row) {
+		List<ContextEntry> overview = BusinessControlFactory.getInstance().createCEListFromString("[Absences:0]");
 		doOpenCurriculumElementDetails(ureq, row, overview);
 	}
 	
