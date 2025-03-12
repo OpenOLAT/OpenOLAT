@@ -161,7 +161,11 @@ class CurriculumElementResourceListController extends FormBasicController implem
 		tableEl.setMultiSelect(true);
 		tableEl.setCssDelegate(this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-resource-list-v2");
-				
+		
+		// empty behavior
+		String[] emptyI18nArgs = {
+				curriculumElementType == null ? "" : curriculumElementType.getDisplayName()
+			};
 		// special rights for managers
 		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)
 				&& (curriculumElementType == null || curriculumElementType.getMaxRepositoryEntryRelations() != 0)) {
@@ -171,15 +175,13 @@ class CurriculumElementResourceListController extends FormBasicController implem
 			// 2) remove
 			removeResourcesButton = uifactory.addFormLink("remove.resources", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(removeResourcesButton);
-			// empty behavior
-			String[] emptyI18nArgs = {
-					curriculumElementType == null ? "" : curriculumElementType.getDisplayName()
-				};
+			
 			tableEl.setEmptyTableSettings("table.resources.empty", "table.resources.empty.hint", "o_CourseModule_icon",
 					"add.resource", "o_icon_add", true, emptyI18nArgs);
 		} else {			
 			// default empty message with out create hint
-			tableEl.setEmptyTableSettings("table.resources.empty", null, "o_CourseModule_icon");
+			tableEl.setEmptyTableSettings("table.resources.empty", null, "o_CourseModule_icon",
+					null, null, false, emptyI18nArgs);
 		}
 	}
 

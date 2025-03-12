@@ -73,7 +73,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
 			List<CurriculumElementRow> views = new CurriculumComposerTableSortDelegate(orderBy, this, locale).sort();
-			super.setObjects(views);
+			setFilteredObjects(views);
 		}
 	}
 
