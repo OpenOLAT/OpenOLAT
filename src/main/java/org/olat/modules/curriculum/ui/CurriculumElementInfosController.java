@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -46,6 +47,7 @@ import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureBlocksTimelineController;
 import org.olat.repository.ui.author.MediaContainerFilter;
 import org.olat.repository.ui.list.LeavingEvent;
+import org.olat.repository.ui.list.RepositoryEntryDetailsHeaderController;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.OffersController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -186,7 +188,9 @@ public class CurriculumElementInfosController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == headerCtrl) {
-			if (event instanceof BookEvent) {
+			if (event == RepositoryEntryDetailsHeaderController.START_EVENT) {
+				doStart(ureq);
+			} else if (event instanceof BookEvent) {
 				fireEvent(ureq, event);
 			} else if (event == AccessEvent.ACCESS_OK_EVENT) {
 				fireEvent(ureq, new BookedEvent(element));
@@ -233,6 +237,11 @@ public class CurriculumElementInfosController extends BasicController {
 				mainVC.contextPut("taughtbyOpen", taughtbyOpen);
 			}
 		}
+	}
+	
+	private void doStart(UserRequest ureq) {
+		String businessPath = "[MyCoursesSite:0][Curriculum:0][Curriculum:" + element.getCurriculum().getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
 }
