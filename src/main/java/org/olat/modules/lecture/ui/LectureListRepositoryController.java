@@ -510,20 +510,22 @@ public class LectureListRepositoryController extends FormBasicController impleme
 			tabs.add(relevantTab);
 			map.put(RELEVANT_TAB_ID.toLowerCase(), relevantTab);
 		}
+
+		if(!scopeInPast()) {
+			todayTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TODAY_TAB_ID, translate("filter.today"),
+					TabSelectionBehavior.nothing, List.of());
+			todayTab.setFiltersExpanded(true);
+			tabs.add(todayTab);
+			map.put(TODAY_TAB_ID.toLowerCase(), todayTab);
+			
+			upcomingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(UPCOMING_TAB_ID, translate("filter.next.days"),
+					TabSelectionBehavior.nothing, List.of());
+			upcomingTab.setFiltersExpanded(true);
+			tabs.add(upcomingTab);
+			map.put(UPCOMING_TAB_ID.toLowerCase(), upcomingTab);
+		}
 		
-		todayTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TODAY_TAB_ID, translate("filter.today"),
-				TabSelectionBehavior.nothing, List.of());
-		todayTab.setFiltersExpanded(true);
-		tabs.add(todayTab);
-		map.put(TODAY_TAB_ID.toLowerCase(), todayTab);
-		
-		upcomingTab = FlexiFiltersTabFactory.tabWithImplicitFilters(UPCOMING_TAB_ID, translate("filter.next.days"),
-				TabSelectionBehavior.nothing, List.of());
-		upcomingTab.setFiltersExpanded(true);
-		tabs.add(upcomingTab);
-		map.put(UPCOMING_TAB_ID.toLowerCase(), upcomingTab);
-		
-		if(scopeInFuture()) {
+		if(scopeInFuture() && !scopeInPast()) {
 			pastTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PAST_TAB_ID, translate("filter.past"),
 					TabSelectionBehavior.nothing, List.of());
 			pastTab.setFiltersExpanded(true);

@@ -132,7 +132,8 @@ public class ScopeFactory {
 		
 		public DateScopesBuilder lastMonths(int numOfMonths) {
 			numOfMonths = Math.abs(numOfMonths);
-			DateRange dateRange = new DateRange(DateUtils.getStartOfDay(DateUtils.addMonth(new Date(), - numOfMonths)), DateUtils.getStartOfDay(new Date()));
+			DateRange dateRange = new DateRange(DateUtils.getStartOfDay(DateUtils.addMonth(new Date(), - numOfMonths)),
+					DateUtils.getEndOfDay(DateUtils.addDays(new Date(), -1)));
 			String displayName = numOfMonths == 1
 					? translator.translate("date.scope.last.month")
 					: translator.translate("date.scope.last.months", String.valueOf(numOfMonths));
