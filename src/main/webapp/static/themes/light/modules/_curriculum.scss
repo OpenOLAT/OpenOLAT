@@ -1161,6 +1161,18 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	margin-bottom: 220px;
 }
 
+.o_curriculum_copy_options {
+	word-break: break-word;
+	
+	ul {
+		padding-left: 14px;
+		list-style: disc;
+	}
+	&.o_radio_cards_wrapper .o_radio_cards label .o_radio_card .o_radio_icon.o_icon {
+		width: 35px;
+	}
+}
+
 .o_info_with_icon .o_automation {
 	display: grid;
 	grid-template-columns: 30% 70%;

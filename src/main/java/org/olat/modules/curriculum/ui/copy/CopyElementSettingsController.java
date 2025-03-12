@@ -92,18 +92,24 @@ public class CopyElementSettingsController extends StepFormBasicController {
 	
 	private void initOptionsForm(FormItemContainer formLayout) {
 		SelectionValues eventsPK = new SelectionValues();
-		eventsPK.add(SelectionValues.entry(CopyResources.resource.name(), translate("copy.events.copy")));
-		eventsPK.add(SelectionValues.entry(CopyResources.relation.name(), translate("copy.events.reuse")));
-		eventsPK.add(SelectionValues.entry(CopyResources.dont.name(), translate("copy.events.none")));
-		courseEventsEl = uifactory.addRadiosHorizontal("copy.courses.with.events", "copy.courses.with.events", formLayout,
-				eventsPK.keys(), eventsPK.values());
+		eventsPK.add(SelectionValues.entry(CopyResources.resource.name(),
+				translate("copy.resources.resource"), translate("copy.resources.resource.desc"), "o_icon o_icon_copy", null, true));
+		eventsPK.add(SelectionValues.entry(CopyResources.relation.name(),
+				translate("copy.resources.relation"), translate("copy.resources.relation.desc"), "o_icon o_icon_recycle", null, true));
+		eventsPK.add(SelectionValues.entry(CopyResources.dont.name(),
+				translate("copy.events.none"), translate("copy.events.none.desc"), "o_icon o_icon_ban", null, true));
+		courseEventsEl = uifactory.addCardSingleSelectHorizontal("copy.courses.with.events", formLayout,
+				eventsPK.keys(), eventsPK.values(), eventsPK.descriptions(), eventsPK.icons());
+		courseEventsEl.setElementCssClass("o_curriculum_copy_options");
 		courseEventsEl.select(CopyResources.resource.name(), true);
 		
 		SelectionValues standalonePK = new SelectionValues();
-		standalonePK.add(SelectionValues.entry(CopyResources.resource.name(), translate("copy.events.copy")));
-		standalonePK.add(SelectionValues.entry(CopyResources.dont.name(), translate("copy.events.none")));
-		standaloneEventsEl = uifactory.addRadiosHorizontal("copy.standalone.events", "copy.standalone.events", formLayout,
-				standalonePK.keys(), standalonePK.values());
+		standalonePK.add(SelectionValues.entry(CopyResources.resource.name(),
+				translate("copy.events.copy"), translate("copy.events.copy.desc"), "o_icon o_icon_copy", null, true));
+		standalonePK.add(SelectionValues.entry(CopyResources.dont.name(),
+				translate("copy.events.none"), translate("copy.events.none.desc"), "o_icon o_icon_ban", null, true));
+		standaloneEventsEl = uifactory.addCardSingleSelectHorizontal("copy.standalone.events", "copy.standalone.events", formLayout,
+				standalonePK.keys(), standalonePK.values(), standalonePK.descriptions(), standalonePK.icons());
 		standaloneEventsEl.select(CopyResources.resource.name(), true);
 	}
 
