@@ -64,5 +64,10 @@ public class RepositoryEntryInfosController extends RepositoryEntryDetailsContro
 			}
 		}
 	}
+	
+	@Override
+	protected void doBooked(UserRequest ureq) {
+		doStart(ureq);
+	}
 
 }

@@ -880,9 +880,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(event == Event.DONE_EVENT) {
 				popToRoot(ureq);
 				cleanUp();
-				if(getRuntimeController() == null) {
-					doRun(ureq, reSecurity);
-				}
+				doPostSuccessfullAccess(ureq);
 			}
 		} else if(confirmDeleteCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
@@ -925,7 +923,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		removeAsListenerAndDispose(membersEditController);
 		removeAsListenerAndDispose(confirmRestoreCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
-		removeAsListenerAndDispose(accessController);
 		removeAsListenerAndDispose(confirmCloseCtrl);
 		removeAsListenerAndDispose(copyWrapperCtrl);
 		removeAsListenerAndDispose(detailsCtrl);
@@ -936,7 +933,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		membersEditController = null;
 		confirmRestoreCtrl = null;
 		confirmDeleteCtrl = null;
-		accessController = null;
 		confirmCloseCtrl = null;
 		copyWrapperCtrl = null;
 		detailsCtrl = null;
@@ -964,6 +960,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		reloadSecurity(ureq);
 		launchContent(ureq);
 		cleanUp();
+		removeAsListenerAndDispose(accessController);
+		accessController = null;
 		initToolbar();
 	}
 	

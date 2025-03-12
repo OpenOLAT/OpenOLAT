@@ -178,7 +178,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 			} else if (event instanceof LeavingEvent) {
 				fireEvent(ureq, event);
 			} else if (event == AccessEvent.ACCESS_OK_EVENT) {
-				doStart(ureq);
+				doBooked(ureq);
 				fireEvent(ureq, new BookedEvent(entry));
 			} else if (event == OffersController.LOGIN_EVENT) {
 				fireEvent(ureq, new BookEvent(entry.getOlatResource().getKey()));
@@ -194,7 +194,9 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	protected RepositoryEntry getEntry() {
 		return entry;
 	}
-
+	
 	protected abstract void doStart(UserRequest ureq);
 	
+	protected abstract void doBooked(UserRequest ureq);
+
 }
