@@ -2065,7 +2065,12 @@ div.o_qti_statistics {
 	.matchInteraction input + i,
 	.hottextInteraction .hottext input + i,
 	.inlineChoiceInteraction input + i {
-  		@include o-make-icon();
+  		display: inline;
+		font-family: $fa-style-family;
+		font-weight: 400;
+		font-style: normal;
+		font-variant: normal;
+		line-height: 1;
 	}
 	
 	.hottextInteraction .hottext input + i  {
@@ -2080,28 +2085,28 @@ div.o_qti_statistics {
 	.matchInteraction.match_true_false input[type="checkbox"][disabled] + i,
 	.hottextInteraction .hottext input[type="radio"][disabled] + i,
 	.inlineChoiceInteraction input[type="radio"][disabled] + i {
-		@include o-add-icon('circle',false,true);
-		display: inline;
+		@include o-add-icon('circle',false);
+  		display: inline;
 	}
 	.choiceInteraction input[type="radio"][disabled]:checked + i,
 	.matchInteraction input[type="radio"][disabled]:checked + i,
 	.matchInteraction.match_true_false input[type="checkbox"][disabled]:checked + i,
 	.hottextInteraction .hottext input[type="radio"][disabled]:checked + i,
 	.inlineChoiceInteraction input[type="radio"][disabled]:checked + i {
-		@include o-add-icon('dot-circle',false,true);
-		display: inline;
+		@include o-add-icon('dot-circle',false);
+  		display: inline;
 	}
 	.choiceInteraction input[type="checkbox"][disabled] + i,
 	.matchInteraction input[type="checkbox"][disabled] + i,
 	.hottextInteraction .hottext input[type="checkbox"][disabled] + i {
-		@include o-add-icon('square',false,true);
-		display: inline;
+		@include o-add-icon('square',false);
+  		display: inline;
 	}
 	.choiceInteraction input[type="checkbox"][disabled]:checked + i,
 	.matchInteraction input[type="checkbox"][disabled]:checked + i,
 	.hottextInteraction .hottext input[type="checkbox"][disabled]:checked + i {
-		@include o-add-icon('check-square',false,true);
-		display: inline;
+		@include o-add-icon('check-square',false);
+  		display: inline;
 	}
 	
 	span.inlineChoiceInteraction.o_qti_offline {
