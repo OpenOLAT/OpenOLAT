@@ -163,7 +163,8 @@ public class CurriculumDAO {
 		  .append(" inner join curElement.group as bGroup")
 		  .append(" inner join bGroup.members membership")
 		  .append(" where membership.identity.key=:memberKey and membership.role ").in(CurriculumRoles.participant, CurriculumRoles.coach, CurriculumRoles.owner)
-		  .append(" and curElement.status='active' and exists (select v from repoentrytogroup as rel")
+		  .append(" and curElement.status ").in(CurriculumElementStatus.confirmed, CurriculumElementStatus.active)
+		  .append(" and exists (select v from repoentrytogroup as rel")
 		  .append("  inner join rel.entry as v")
 		  .append("  where curElement.group.key=rel.group.key and v.status ").in(RepositoryEntryStatusEnum.published)
 		  .append(" )");
