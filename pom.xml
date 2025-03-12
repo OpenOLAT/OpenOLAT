@@ -2164,7 +2164,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.31.0</version>
+			<version>6.32.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
@@ -2186,7 +2186,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.15.3</version>
+			<version>1.15.4</version>
 		</dependency>
 		<!-- End Microsoft Graph -->
 		<!-- Lucene dependencies -->
@@ -2342,7 +2342,7 @@
    		<dependency>
 			<groupId>io.github.sashirestela</groupId>
 			<artifactId>simple-openai</artifactId>
-			<version>3.19.1</version>
+			<version>3.19.3</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
