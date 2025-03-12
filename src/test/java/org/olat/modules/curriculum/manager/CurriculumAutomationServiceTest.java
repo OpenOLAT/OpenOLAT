@@ -45,11 +45,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 6 mars 2025<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CurriculumAutomationServiceTest extends OlatTestCase {
-	
 
 	@Autowired
 	private DB dbInstance;
@@ -138,6 +137,42 @@ public class CurriculumAutomationServiceTest extends OlatTestCase {
 		Assert.assertTrue(course.getExternalRef().contains("Element-2-1"));
 		Assert.assertEquals("2.1 Element", course.getDisplayname());
 	}
+	
+	
+	@Test
+	public void instatiateSameDay() {
+		Date beginDate = DateUtils.getStartOfDay(new Date());
+		Date endDate = DateUtils.addDays(beginDate, 10);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-automation-2b", "Curriculum for automation same day", "Curriculum", false, null);
+		CurriculumElement implementation = curriculumElementDao.createCurriculumElement("Element-2-b", "12b Element Same Day",
+				CurriculumElementStatus.confirmed, beginDate, endDate, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		implementation.setAutoInstantiation(AutomationImpl.valueOf(null, AutomationUnit.SAME_DAY));
+		implementation = curriculumElementDao.update(implementation);
+		dbInstance.commit();
+		// save 1 child
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-2-b-1", "2.b.1 Element",
+				CurriculumElementStatus.active, null, null, implementation, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		
+		RepositoryEntry template = JunitTestHelper.createRandomRepositoryEntry(JunitTestHelper.getDefaultActor());
+		curriculumService.addRepositoryTemplate(element1, template);
+		dbInstance.commit();
+		
+		// Run the instantiation process
+		automationService.instantiate();
+		
+		List<RepositoryEntry> courses = curriculumService.getRepositoryEntries(element1);
+		Assertions.assertThat(courses)
+			.hasSize(1);
+		
+		RepositoryEntry course = courses.get(0);
+		Assert.assertNotNull(course);
+		Assert.assertTrue(course.getExternalRef().contains("Element-2-b-1"));
+		Assert.assertEquals("2.b.1 Element", course.getDisplayname());
+	}
+	
 	
 	@Test
 	public void loadElementsToAccessForCoach() {

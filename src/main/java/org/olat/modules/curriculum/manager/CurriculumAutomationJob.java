@@ -19,8 +19,10 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumAutomationService;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
@@ -34,10 +36,16 @@ import org.quartz.JobExecutionException;
  */
 @DisallowConcurrentExecution
 public class CurriculumAutomationJob extends JobWithDB {
+	
+	private static final Logger log = Tracing.createLoggerFor(CurriculumAutomationJob.class);
 
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
 		CurriculumAutomationService automationService = CoreSpringFactory.getImpl(CurriculumAutomationService.class);
-		System.out.println("Do it: " + automationService);
+		log.info("Start curriculum automation");
+		automationService.instantiate();
+		automationService.accessForCoach();
+		automationService.publish();
+		automationService.close();
 	}
 }
