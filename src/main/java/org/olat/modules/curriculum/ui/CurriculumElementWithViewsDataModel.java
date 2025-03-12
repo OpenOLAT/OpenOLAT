@@ -79,16 +79,20 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 	private boolean active(CurriculumElementWithViewsRow row) {
 		boolean active = true;
 		if(row.isCurriculumElementOnly() || row.isCurriculumElementWithEntry()) {
-			active = row.getCurriculumElementStatus() == CurriculumElementStatus.active;
+			active = isActive(row.getCurriculumElementStatus());
 		}
 		if(active) {
 			for(CurriculumElementWithViewsRow parent=row.getParent(); parent != null; parent=parent.getParent()) {
 				if(parent.isCurriculumElementOnly() || parent.isCurriculumElementWithEntry()) {
-					active &= row.getCurriculumElementStatus() == CurriculumElementStatus.active;
+					active &= isActive(row.getCurriculumElementStatus());
 				}
 			}
 		}
 		return active;
+	}
+	
+	private boolean isActive(CurriculumElementStatus status) {
+		return status == CurriculumElementStatus.confirmed || status == CurriculumElementStatus.active;
 	}
 	
 	@Override
