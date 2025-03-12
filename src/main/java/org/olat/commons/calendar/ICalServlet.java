@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
@@ -100,7 +101,6 @@ public class ICalServlet extends HttpServlet {
 	private CalendarModule calendarModule;
 	private CalendarManager calendarManager;
 	
-
 	/**
 	 * Default constructor.
 	 */
@@ -230,7 +230,7 @@ public class ICalServlet extends HttpServlet {
 			log.error("", e);
 		}
 
-		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
+		CalendarManager calendarManager = getCalendarManager();
 		if(CalendarManager.TYPE_USER_AGGREGATED.equals(calendarType)) {
 			// check the authentication token
 			CalendarUserConfiguration config = calendarManager.getCalendarUserConfiguration(Long.parseLong(userName));
@@ -415,8 +415,7 @@ public class ICalServlet extends HttpServlet {
 	private void outputCalendar(CalendarFileInfos fileInfos, Writer out, Agent agent, Set<String> timezoneIds)
 	throws IOException {
 		try {
-			CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
-			Calendar calendar = calendarManager.readCalendar(fileInfos.getCalendarFile());
+			Calendar calendar = getCalendarManager().readCalendar(fileInfos.getCalendarFile());
 			updateUrlProperties(calendar);
 			
 			String prefix = fileInfos.getType() + "-" + fileInfos.getCalendarId() + "-";
@@ -500,13 +499,17 @@ public class ICalServlet extends HttpServlet {
 		DtStart<Temporal> start = vEvent.getDateTimeStart();
 		if(start.getDate() == null) return event;
 		
-		ZonedDateTime zonedStart = ZonedDateTime.from(start.getDate());
-		if(zonedStart.getZone() == null) return event;
-
-		String timezoneId = zonedStart.getZone().getId();
-		timezoneIds.add(timezoneId);
+		Temporal temporal = start.getDate();
+		if(temporal instanceof LocalDate) {
+			return event;
+		}
 		
 		TzId tzId = (TzId)start.getParameter(Parameter.TZID).orElse(null);
+		if(tzId == null) {
+			return event;
+		}
+		String timezoneId = tzId.getValue();
+		timezoneIds.add(timezoneId);
 		String tzidReplacement = "TZID=\"" + timezoneId + "\"";	
 		return event.replace(tzId.toString(), tzidReplacement);
 	}
@@ -572,6 +575,9 @@ public class ICalServlet extends HttpServlet {
     	return outlookVTimeZones.computeIfAbsent(id, timeZoneId -> {
         	try {
 				URL resource = ResourceLoader.getResource("zoneinfo-outlook/" + id + ".ics");
+				if(resource == null) {
+					return null;
+				}
 				Calendar calendar = buildCalendar(resource);
 				return calendar == null ? null : (VTimeZone)calendar.getComponent(Component.VTIMEZONE).orElse(null);
 			} catch (Exception e) {

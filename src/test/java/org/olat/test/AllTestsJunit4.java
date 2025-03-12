@@ -99,6 +99,7 @@ import org.junit.runners.Suite;
 	org.olat.user.UserPropertiesTest.class,
 	org.olat.commons.calendar.CalendarImportTest.class,
 	org.olat.commons.calendar.CalendarUtilsTest.class,
+	org.olat.commons.calendar.ICalServletTest.class,
 	org.olat.commons.calendar.manager.ImportedCalendarDAOTest.class,
 	org.olat.commons.calendar.manager.ImportedToCalendarDAOTest.class,
 	org.olat.commons.calendar.manager.ICalFileCalendarManagerTest.class,
