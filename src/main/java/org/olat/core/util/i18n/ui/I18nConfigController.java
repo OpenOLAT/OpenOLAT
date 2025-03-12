@@ -36,11 +36,13 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.ArrayHelper;
+import org.olat.core.util.PriceAmountFormat;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.i18n.I18nModule.GenderStrategy;
@@ -74,6 +76,8 @@ class I18nConfigController extends FormBasicController {
 	private CloseableModalController cmc;
 	private Controller subCtr;
 	private Map<String, SingleSelection> genderStrategies;
+	private SingleSelection numberFormatDropdown;
+	private SelectionValues numberFormatKV;
 	
 	@Autowired
 	private I18nManager i18nMgr;
@@ -175,6 +179,8 @@ class I18nConfigController extends FormBasicController {
 		flc.contextPut("translatedLanguages", translatedLanguages);
 		flc.contextPut("availablelangKeys", availablelangKeys);
 		
+		initNumberFormat(formLayout);
+
 		//
 		// Add create / delete links, but only when translation tool is configured
 		if (i18nModule.isTransToolEnabled()) {
@@ -185,6 +191,18 @@ class I18nConfigController extends FormBasicController {
 		importPackageLink = uifactory.addFormLink("configuration.management.package.import", formLayout, Link.BUTTON);
 		exportPackageLink = uifactory.addFormLink("configuration.management.package.export", formLayout, Link.BUTTON);
 
+	}
+
+	private void initNumberFormat(FormItemContainer formLayout) {
+		numberFormatKV = new SelectionValues();
+		for (PriceAmountFormat format : PriceAmountFormat.values()) {
+			numberFormatKV.add(SelectionValues.entry(format.name(), format.getDisplayString()));
+		}
+		PriceAmountFormat priceAmountFormat = i18nModule.getPriceAmountFormat();		
+		numberFormatDropdown = uifactory.addDropdownSingleselect("configuration.number.format", formLayout, 
+				numberFormatKV.keys(), numberFormatKV.values(), null);
+		numberFormatDropdown.addActionListener(FormEvent.ONCHANGE);
+		numberFormatDropdown.select(priceAmountFormat.name(), true);
 	}
 
 	/**
@@ -211,6 +229,9 @@ class I18nConfigController extends FormBasicController {
 			// Make sure this language is in the list of enabled languages
 			enabledLangSelection.select(langKey, true);
 			i18nModule.getEnabledLanguageKeys().add(langKey);
+
+		} else if (source == numberFormatDropdown) {
+			i18nModule.setPriceAmountFormat(PriceAmountFormat.valueOf(numberFormatDropdown.getSelectedKey()));
 
 		} else if (source == enabledLangSelection) {
 			// Get enabled values, make sure the default language is enabled and

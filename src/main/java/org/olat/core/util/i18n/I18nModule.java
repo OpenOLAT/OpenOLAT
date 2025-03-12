@@ -49,6 +49,7 @@ import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.PriceAmountFormat;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -98,6 +99,7 @@ public class I18nModule extends AbstractSpringModule {
 	private static final String CONFIG_LANGUAGES_ENABLED = "enabledLanguages";
 	private static final String CONFIG_LANGUAGES_ENABLED_ALL = "all";
 	private static final String CONFIG_DEFAULT_LANG = "defaultLanguage";
+	private static final String CONFIG_PRICE_AMOUNT_FORMAT = "priceAmountFormat";
 	
 	@Value("${enabledLanguages}")
 	private String enabledLanguages;
@@ -155,6 +157,7 @@ public class I18nModule extends AbstractSpringModule {
 
 	// Reference to instance for static methods
 	private final CoordinatorManager coordinatorManager;
+	private PriceAmountFormat priceAmountFormat = PriceAmountFormat.apostrophePoint;
 
 	@Autowired
 	public I18nModule(CoordinatorManager coordinatorManager, WebappHelper webappHelper) {
@@ -259,6 +262,8 @@ public class I18nModule extends AbstractSpringModule {
 		
 		// Initialize how gendering shall be done
 		doInitGenderStrategies();
+		
+		doInitPriceAmountFormat();
 		
 		log.info("Configured i18nModule with default language::" + getDefaultLocale().toString() + " and the reference languages '"
 				+ referenceLanguages + "' and the following enabled languages: " + enabledLanguagesKeys.toString());
@@ -647,6 +652,13 @@ public class I18nModule extends AbstractSpringModule {
 				log.error("Locale for key::{} not found in allLocales.",langKey );
 			}
 		}		
+	}
+	
+	private void doInitPriceAmountFormat() {
+		String priceAmountFormatObj = getStringPropertyValue(CONFIG_PRICE_AMOUNT_FORMAT, true);
+		if (StringHelper.containsNonWhitespace(priceAmountFormatObj)) {
+			priceAmountFormat = PriceAmountFormat.valueOf(priceAmountFormatObj);
+		}
 	}
 
 	//
@@ -1045,6 +1057,15 @@ public class I18nModule extends AbstractSpringModule {
 	 */
 	public File getTransToolApplicationOptLanguagesSrcDir() {
 		return transToolApplicationOptLanguagesSrcDir;
+	}
+
+	public PriceAmountFormat getPriceAmountFormat() {
+		return priceAmountFormat;
+	}
+
+	public void setPriceAmountFormat(PriceAmountFormat priceAmountFormat) {
+		this.priceAmountFormat = priceAmountFormat;
+		setStringProperty(CONFIG_PRICE_AMOUNT_FORMAT, priceAmountFormat.name(), true);
 	}
 
 	/**

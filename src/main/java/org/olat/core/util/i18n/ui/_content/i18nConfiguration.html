@@ -32,6 +32,18 @@
 		#end
 		</div>
 	</fieldset>
+	
+	<fieldset class="o_block">
+		<legend>$r.translate("configuration.formats")</legend>
+		<div class="row form-horizontal">
+			<div class="form-group clearfix">
+				$r.render("configuration.number.format", "label", "col-sm-3")
+				<div class="col-sm-9">
+					$r.render("configuration.number.format")
+				</div>
+			</div>
+		</div>
+	</fieldset>
 
 	<fieldset class="o_block">
 		<legend>$r.translate("configuration.management")</legend>

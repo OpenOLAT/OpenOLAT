@@ -23,9 +23,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.PriceAmountFormat;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessControlModule.VAT;
 import org.olat.resource.accesscontrol.Price;
@@ -113,7 +116,13 @@ public class PriceFormat {
 			isoCurrencyCode = "CHF";
 		}
 
-		return isoCurrencyCode + '\u00A0' + price.getAmount().setScale(2, RoundingMode.HALF_EVEN).toString();
+		return isoCurrencyCode + '\u00A0' + formatAmount(price.getAmount().setScale(2, RoundingMode.HALF_EVEN));
+	}
+	
+	private static String formatAmount(BigDecimal amount) {
+		I18nModule i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+		PriceAmountFormat priceAmountFormat = i18nModule.getPriceAmountFormat();
+		return priceAmountFormat.format(amount);
 	}
 	
 	public static String fullFormatVat(Translator translator, AccessControlModule acModule, Price price) {
