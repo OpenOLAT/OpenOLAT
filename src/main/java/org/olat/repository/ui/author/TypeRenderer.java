@@ -32,6 +32,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.repository.ui.list.InPreparationRow;
 import org.olat.repository.ui.list.RepositoryEntryRow;
 
 /**
@@ -47,14 +48,16 @@ public class TypeRenderer implements FlexiCellRenderer {
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 
 		String type = null;
-		if (cellValue instanceof RepositoryEntryShort) { // add image and typename code
-			type = ((RepositoryEntryShort)cellValue).getResourceType();
-		} else if(cellValue instanceof RepositoryEntry) {
-			type = ((RepositoryEntry)cellValue).getOlatResource().getResourceableTypeName();
-		} else if(cellValue instanceof RepositoryEntryRow) {
-			type = ((RepositoryEntryRow)cellValue).getOLATResourceable().getResourceableTypeName();
-		} else if(cellValue instanceof CatalogEntryRow) {
-			type = ((CatalogEntryRow)cellValue).getOlatResource().getResourceableTypeName();
+		if (cellValue instanceof RepositoryEntryShort repositoryEntry) { // add image and typename code
+			type = repositoryEntry.getResourceType();
+		} else if(cellValue instanceof RepositoryEntry repositoryEntry) {
+			type = repositoryEntry.getOlatResource().getResourceableTypeName();
+		} else if(cellValue instanceof RepositoryEntryRow repositoryEntryRow) {
+			type = repositoryEntryRow.getOLATResourceable().getResourceableTypeName();
+		} else if(cellValue instanceof CatalogEntryRow catalogEntryRow) {
+			type = catalogEntryRow.getOlatResource().getResourceableTypeName();
+		} else if(cellValue instanceof InPreparationRow inPreparationRow) {
+			type = inPreparationRow.getOlatResource().getResourceableTypeName();
 		}
 		
 		if(type == null) {
@@ -67,30 +70,34 @@ public class TypeRenderer implements FlexiCellRenderer {
 		String cssClass = "";
 		boolean managed = false;
 		RepositoryEntryStatusEnum status = null;
-		if(cellValue instanceof AuthoringEntryRow) {
-			AuthoringEntryRow re = (AuthoringEntryRow) cellValue;
+		if(cellValue instanceof AuthoringEntryRow re) {
 			cssClass = RepositoyUIFactory.getIconCssClass(re.getResourceType());
 			managed = re.isManaged();
 			status = re.getEntryStatus();
-		} else if (cellValue instanceof RepositoryEntryShort) {
-			RepositoryEntryShort re = (RepositoryEntryShort) cellValue;
+		} else if (cellValue instanceof RepositoryEntryShort re) {
 			cssClass = RepositoyUIFactory.getIconCssClass(re.getResourceType());
 			status = re.getEntryStatus();
-		} else if (cellValue instanceof RepositoryEntry) {
-			RepositoryEntry re = (RepositoryEntry) cellValue;
+		} else if (cellValue instanceof RepositoryEntry re) {
 			cssClass = RepositoyUIFactory.getIconCssClass(re.getOlatResource().getResourceableTypeName());
 			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
 			status = re.getEntryStatus();
-		} else if (cellValue instanceof RepositoryEntryRow) {
-			RepositoryEntryRow re = (RepositoryEntryRow) cellValue;
+		} else if (cellValue instanceof RepositoryEntryRow re) {
 			cssClass = RepositoyUIFactory.getIconCssClass(re.getOLATResourceable().getResourceableTypeName());
 			managed = false;// no indication for this type of row
 			status = re.getStatus();
-		} else if(cellValue instanceof CatalogEntryRow) {
-			CatalogEntryRow re = (CatalogEntryRow) cellValue;
+		} else if(cellValue instanceof CatalogEntryRow re) {
 			cssClass = RepositoyUIFactory.getIconCssClass(re.getOlatResource().getResourceableTypeName());
 			managed = false;// no indication for this type of row
 			status = re.getStatus();
+		} else if(cellValue instanceof InPreparationRow re) {
+			if(re.getCurriculumElementKey() != null) {
+				cssClass = "o_icon_curriculum_element";
+				status = RepositoryEntryStatusEnum.preparation;
+			} else {
+				cssClass = RepositoyUIFactory.getIconCssClass(re.getOlatResource().getResourceableTypeName());
+				status = re.getRepositoryEntryStatus();
+			}
+			managed = false;// no indication for this type of row
 		}
 		
 		if(renderer == null) {

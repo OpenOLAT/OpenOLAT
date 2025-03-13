@@ -42,7 +42,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.AccessDeniedFactory;
 import org.olat.repository.ui.AccessDeniedFactory.AccessDeniedMessage;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -67,8 +66,6 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
-	@Autowired
-	protected RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 

@@ -286,8 +286,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof RepositoryEntryMyCourseImpl) {
-			RepositoryEntryMyCourseImpl relc = (RepositoryEntryMyCourseImpl)obj;
+		if(obj instanceof RepositoryEntryMyCourseImpl relc) {
 			return getKey() != null && getKey().equals(relc.getKey());
 		}
 		return false;

@@ -37,7 +37,7 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.repository.ui.list.OverviewRepositoryCurriculumListController;
+import org.olat.repository.ui.list.OverviewRepositoryListController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -72,7 +72,7 @@ public class MyCoursesSite extends AbstractSiteInstance {
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(myCoursesOres));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, myCoursesOres, new StateSite(this), wControl, true);
-		return new OverviewRepositoryCurriculumListController(ureq, bwControl);
+		return new OverviewRepositoryListController(ureq, bwControl);
 	}
 
 	@Override
