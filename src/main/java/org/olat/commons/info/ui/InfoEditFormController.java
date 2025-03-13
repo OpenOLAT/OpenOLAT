@@ -57,6 +57,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.co.ContactForm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,8 @@ public class InfoEditFormController extends FormBasicController {
 	private final InfoMessage infoMessage;
 
 	@Autowired
+	private MailModule mailModule;
+	@Autowired
 	private InfoMessageFrontendManager infoMessageManager;
 	
 	public InfoEditFormController(UserRequest ureq, WindowControl wControl, Form mainForm, boolean showTitle, InfoMessage infoMessage) {
@@ -105,6 +108,7 @@ public class InfoEditFormController extends FormBasicController {
 		this.showTitle = showTitle;
 		this.infoMessage = infoMessage;
 		this.attachmentPath = infoMessage.getAttachmentPath();
+		this.contactAttachmentMaxSizeInMb = mailModule.getMaxSizeForAttachement();
 		if (this.attachmentPath != null) {
 			attachementTempDir = FileUtils.createTempDir("attachements", null, null);
 			for (File file : infoMessageManager.getAttachmentFiles(infoMessage)) {
@@ -144,7 +148,8 @@ public class InfoEditFormController extends FormBasicController {
 		
 		attachmentEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "attachment", formLayout);
 		attachmentEl.setDeleteEnabled(true);
-		attachmentEl.setMaxUploadSizeKB(5000, "attachment.max.size", new String[] { "5000" });
+		int contactAttachmentMaxSizeInKb = contactAttachmentMaxSizeInMb * 1000;
+		attachmentEl.setMaxUploadSizeKB(contactAttachmentMaxSizeInKb, "attachment.max.size", new String[] { Integer.toString(contactAttachmentMaxSizeInKb) });
 		
 		attachmentEl.addActionListener(FormEvent.ONCHANGE);
 		
