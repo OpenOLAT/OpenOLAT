@@ -448,7 +448,7 @@ public class CatalogQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadRepositoryEntries_filterBy_RepositoryEntryKeys() {
+	public void shouldLoadRepositoryEntries_filterBy_ResourceKeys() {
 		TestCatalogItem catalogItem = createCatalogItem(3, true);
 		
 		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
@@ -458,7 +458,9 @@ public class CatalogQueriesTest extends OlatTestCase {
 						catalogItem.getRepositoryEntry(1),
 						catalogItem.getRepositoryEntry(2));
 		
-		searchParams.setRepositoryEntries(List.of(catalogItem.getRepositoryEntry(0), catalogItem.getRepositoryEntry(1)));
+		searchParams.setResourceKeys(List.of(
+				catalogItem.getRepositoryEntry(0).getOlatResource().getKey(),
+				catalogItem.getRepositoryEntry(1).getOlatResource().getKey()));
 		assertThat(sut.loadRepositoryEntries(searchParams))
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
@@ -711,6 +713,26 @@ public class CatalogQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(sut.loadCurriculumElements(catalogItem.getSearchParams())).doesNotContain(catalogItem.getCurriculumElement());
+	}
+	
+	@Test
+	public void shouldLoadCurriculumElements_filterBy_ResourceKey() {
+		TestCatalogItem catalogItem = createCatalogItem(3, false);
+		
+		CatalogEntrySearchParams searchParams = catalogItem.getSearchParams();
+		assertThat(sut.loadCurriculumElements(searchParams))
+				.containsExactlyInAnyOrder(
+						catalogItem.getCurriculumElement(0),
+						catalogItem.getCurriculumElement(1),
+						catalogItem.getCurriculumElement(2));
+		
+		searchParams.setResourceKeys(List.of(
+				catalogItem.getCurriculumElement(0).getResource().getKey(),
+				catalogItem.getCurriculumElement(1).getResource().getKey()));
+		assertThat(sut.loadCurriculumElements(searchParams))
+				.containsExactlyInAnyOrder(
+						catalogItem.getCurriculumElement(0),
+						catalogItem.getCurriculumElement(1));
 	}
 	
 	@Test

@@ -466,6 +466,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			
 			if (!accessMethodTypes.isEmpty()) {
 				row.setAccessMethodTypes(accessMethodTypes);
+				row.setAccessPriceMethods(priceMethods);
 				row.setAutoBooking(autoBooking);
 			}
 			

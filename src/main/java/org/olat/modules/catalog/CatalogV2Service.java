@@ -21,9 +21,13 @@ package org.olat.modules.catalog;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 
 /**
  * 
@@ -36,6 +40,9 @@ public interface CatalogV2Service {
 	public void excludeLevelsWithoutEntries(List<TaxonomyLevel> taxonomyLevels, List<CatalogEntry> entries);
 
 	public List<CatalogEntry> getCatalogEntries(CatalogEntrySearchParams searchParams);
+	
+	public Map<OLATResource, List<OLATResourceAccess>> getResourceToResourceAccess(List<OLATResource> resources,
+			List<? extends OrganisationRef> offerOrganisations);
 	
 	public List<CatalogLauncherHandler> getCatalogLauncherHandlers();
 

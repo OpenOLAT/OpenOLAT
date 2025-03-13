@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.curriculum.Curriculum;
@@ -30,6 +31,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
+import org.olat.repository.ui.PriceMethod;
 
 /**
  * 
@@ -52,6 +54,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	private final long numOfCurriculumElementOwners;
 	private final long numOfMasterCoaches;
 	private final long numOfPending;
+	private List<PriceMethod> accessPriceMethods;
 	
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
@@ -277,6 +280,14 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		return numOfPending;
 	}
 	
+	public List<PriceMethod> getAccessPriceMethods() {
+		return accessPriceMethods;
+	}
+
+	public void setAccessPriceMethods(List<PriceMethod> accessPriceMethods) {
+		this.accessPriceMethods = accessPriceMethods;
+	}
+
 	@Override
 	public String getCrump() {
 		return element.getDisplayName();

@@ -75,8 +75,8 @@ public class CatalogQueries {
 		appendAccessSubSelectRE(sb, addParams, searchParams.isWebPublish(), searchParams.isGuestOnly(),
 				searchParams.getOfferValidAt(), searchParams.getOfferOrganisations());
 
-		if (searchParams.getRepositoryEntryKeys() != null && !searchParams.getRepositoryEntryKeys().isEmpty()) {
-			sb.and().append("v.key in :repositoryEntryKeys");
+		if (searchParams.getResourceKeys() != null && !searchParams.getResourceKeys().isEmpty()) {
+			sb.and().append("res.key in :resourceKeys");
 		}
 		
 		if (searchParams.getLauncherResourceTypes() != null && !searchParams.getLauncherResourceTypes().isEmpty()) {
@@ -214,8 +214,8 @@ public class CatalogQueries {
 			query.setParameter("offerOrganisationKeys", searchParams.getOfferOrganisations().stream()
 					.map(OrganisationRef::getKey).collect(Collectors.toList()));
 		}
-		if (searchParams.getRepositoryEntryKeys() != null && !searchParams.getRepositoryEntryKeys().isEmpty()) {
-			query.setParameter("repositoryEntryKeys", searchParams.getRepositoryEntryKeys());
+		if (searchParams.getResourceKeys() != null && !searchParams.getResourceKeys().isEmpty()) {
+			query.setParameter("resourceKeys", searchParams.getResourceKeys());
 		}
 		if (searchParams.getLauncherResourceTypes() != null && !searchParams.getLauncherResourceTypes().isEmpty()) {
 			query.setParameter("resourceTypes", searchParams.getLauncherResourceTypes());
@@ -282,6 +282,10 @@ public class CatalogQueries {
 		appendAccessSubSelectCE(sb, addParams, searchParams.isWebPublish(), searchParams.getOfferValidAt(),
 				searchParams.getOfferOrganisations());
 		sb.and().append("(curriculum.status is null or curriculum.status ").in(CurriculumStatus.active.name()).append(")");
+		
+		if (searchParams.getResourceKeys() != null && !searchParams.getResourceKeys().isEmpty()) {
+			sb.and().append("res.key in :resourceKeys");
+		}
 		
 		if (searchParams.getLauncherResourceTypes() != null && !searchParams.getLauncherResourceTypes().isEmpty()) {
 			sb.and().append("res.resName in :resourceTypes");
@@ -362,6 +366,9 @@ public class CatalogQueries {
 				&& !searchParams.getOfferOrganisations().isEmpty()) {
 			query.setParameter("offerOrganisationKeys", searchParams.getOfferOrganisations().stream()
 					.map(OrganisationRef::getKey).collect(Collectors.toList()));
+		}
+		if (searchParams.getResourceKeys() != null && !searchParams.getResourceKeys().isEmpty()) {
+			query.setParameter("resourceKeys", searchParams.getResourceKeys());
 		}
 		if (searchParams.getLauncherResourceTypes() != null && !searchParams.getLauncherResourceTypes().isEmpty()) {
 			query.setParameter("resourceTypes", searchParams.getLauncherResourceTypes());

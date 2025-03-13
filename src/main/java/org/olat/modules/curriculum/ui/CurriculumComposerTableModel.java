@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusin
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 
@@ -83,6 +84,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			List<Long> typesKeys = List.of();
 			List<Long> curriculumsKeys = List.of();
 			List<CurriculumElementStatus> status = List.of();
+			boolean withOffersOnly = false;
 			Long searchLong = StringHelper.isLong(searchString) ? Long.valueOf(searchString) : null;
 			searchString = StringHelper.containsNonWhitespace(searchString) ? searchString.toLowerCase() : null;
 			
@@ -113,12 +115,18 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 				}
 			}
 			
+			FlexiTableFilter offerFilter = FlexiTableFilter.getFilter(filters, CurriculumComposerController.FILTER_OFFER);
+			if (offerFilter instanceof FlexiTableOneClickSelectionFilter extendedFilter) {
+				withOffersOnly = extendedFilter.isSelected();
+			}
+			
 			List<CurriculumElementRow> filteredRows = new ArrayList<>(backupRows.size());
 			for(CurriculumElementRow row:backupRows) {
 				boolean accept = (accept(row, searchLong) || accept(row, searchString))
 						&& acceptCurriculum(row, curriculumsKeys)
 						&& acceptStatus(row, status)
-						&& acceptTypes(row,  typesKeys);
+						&& acceptTypes(row, typesKeys)
+						&& acceptWithOffers(row, withOffersOnly);
 				
 				row.setAcceptedByFilter(accept);
 				if(accept) {
@@ -137,7 +145,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			setUnfilteredObjects();
 		}
 	}
-	
+
 	private void reconstructParentLine(List<CurriculumElementRow> rows) {
 		Set<CurriculumElementRow> rowSet = new HashSet<>(rows);
 		for(int i=0; i<rows.size(); i++) {
@@ -175,6 +183,13 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 	private boolean acceptTypes(CurriculumElementRow row, List<Long> elementTypesList) {
 		return elementTypesList.isEmpty()
 				|| (row.getCurriculumElementTypeKey() != null && elementTypesList.contains(row.getCurriculumElementTypeKey()));
+	}
+	
+	private boolean acceptWithOffers(CurriculumElementRow row, boolean withOffersOnly) {
+		if (withOffersOnly) {
+			return row.getAccessPriceMethods() != null && !row.getAccessPriceMethods().isEmpty();
+		}
+		return true;
 	}
 	
 	public CurriculumElementRow getCurriculumElementRowByKey(Long elementKey) {
@@ -243,6 +258,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			case numOfCurriculumElementOwners -> element.getNumOfCurriculumElementOwners();
 			case numOfMasterCoaches -> element.getNumOfMasterCoaches();
 			case numOfPending -> element.getNumOfPending();
+			case offers -> element;
 			case calendars -> element.getCalendarsLink();
 			case lectures -> element.getLecturesLink();
 			case qualityPreview -> element.getQualityPreviewLink();
@@ -282,6 +298,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 		qualityPreview("table.header.quality.preview"),
 		learningProgress("table.header.learning.progress"),
 		status("table.header.status"),
+		offers("table.header.offers"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;
@@ -297,7 +314,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 
 		@Override
 		public boolean sortable() {
-			return this != tools && this != structure;
+			return this != offers && this != tools && this != structure;
 		}
 
 		@Override

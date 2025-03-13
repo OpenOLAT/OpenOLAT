@@ -25,7 +25,7 @@
 					<div class="o_repo_entry_card o_card #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end" onClick="$r.openJavaScriptCommand("select", false, true), 'key', '$row.key');" role="link">
 						<div class="o_visual">
 							#if($row.isThumbnailAvailable())
-								<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
+								<img src="${row.getThumbnailRelPath()}" alt="" />
 							#else
 								<div class="o_visual_not_available"></div>
 							#end
@@ -38,27 +38,27 @@
 						<div class="o_meta">
 							<div class="o_ext_ref">
 								#if ($row.getExternalRef())
-									$r.escapeHtml($r.xssScan($row.getExternalRef()))
+									$r.escapeHtml($row.getExternalRef())
 								#end
 							</div>
 							<h4 class="o_title o_card_title">$r.render("$row.getDisplayNameLinkName()")</h4>
 							#if($r.isNotEmpty($row.teaser))
-								<div class="o_teaser">$r.xssScan($row.teaser)</div>
+								<div class="o_teaser">$r.escapeHtml($row.teaser)</div>
 							#end
 							#if($r.isNotEmpty($row.authors))
-								<div class="o_authors o_flex_item_max">$r.xssScan($row.authors)</div>
+								<div class="o_authors o_flex_item_max">$r.escapeHtml($row.authors)</div>
 							#end
 							#if($r.isNotEmpty($row.expenditureOfWork))
-								<div class="o_exp_work o_flex_item_max">$r.xssScan($row.expenditureOfWork)</div>
+								<div class="o_exp_work o_flex_item_max">$r.escapeHtml($row.expenditureOfWork)</div>
 							#end
 							#if($r.isNotEmpty($row.language))
-								<div class="o_language o_flex_item_max">$r.xssScan($row.language)</div>
+								<div class="o_language o_flex_item_max">$r.escapeHtml($row.language)</div>
 							#end
 							#if($r.isNotEmpty($row.executionPeriod))
 								<div class="o_execution_period o_flex_item_max">$row.executionPeriod</div>
 							#end
 							#if($r.isNotEmpty($row.location))
-								<div class="o_location o_flex_item_max">$r.xssScan($row.location)</div>
+								<div class="o_location o_flex_item_max">$r.escapeHtml($row.location)</div>
 							#end
 							#if($row.taxonomyLevels && !$row.taxonomyLevels.empty)
 								<div class="o_taxonomy_levels">

@@ -121,7 +121,11 @@ public class CatalogBCFactory {
 	}
 
 	public static OLATResourceable createOfferOres(OLATResource resource) {
-		return OresHelper.createOLATResourceableInstance(ORES_TYPE_OFFER, resource.getKey());
+		return createOfferOres(resource.getKey());
+	}
+	
+	public static OLATResourceable createOfferOres(Long key) {
+		return OresHelper.createOLATResourceableInstance(ORES_TYPE_OFFER, key);
 	}
 	
 	public static boolean isOfferType(OLATResourceable ores) {

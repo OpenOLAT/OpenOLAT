@@ -194,7 +194,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		
 		// CurriculumElements
 		List<OLATResource> ceResourcesWithAC = List.of();
-		if (curriculumModule.isEnabled() && searchParams.getRepositoryEntryKeys() == null || searchParams.getRepositoryEntryKeys().isEmpty()) {
+		if (curriculumModule.isEnabled()) {
 			List<CurriculumElement> curriculumElements = queries.loadCurriculumElements(searchParams);
 			
 			ceResourcesWithAC = new ArrayList<>(curriculumElements.size());
@@ -222,7 +222,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		List<OLATResource> oresGuestAccess = loadResourceGuestAccess(resourcesWithAC, searchParams.isWebPublish());
 		
 		resourcesWithAC.addAll(ceResourcesWithAC);
-		Map<OLATResource, List<OLATResourceAccess>> resourceToResourceAccess = loadResourceToResourceAccess(resourcesWithAC, searchParams.getOfferOrganisations());
+		Map<OLATResource, List<OLATResourceAccess>> resourceToResourceAccess = getResourceToResourceAccess(resourcesWithAC, searchParams.getOfferOrganisations());
 		Set<OLATResource> resourceWithReservation = loadResourceWithReservation(resourcesWithAC, searchParams.getMember());
 		
 		for (CatalogEntry entry : catalogEntries) {
@@ -299,11 +299,12 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		return List.of();
 	}
 
-	private Map<OLATResource, List<OLATResourceAccess>> loadResourceToResourceAccess(
-			List<OLATResource> resourcesWithAC, List<? extends OrganisationRef> offerOrganisations) {
+	@Override
+	public Map<OLATResource, List<OLATResourceAccess>> getResourceToResourceAccess(
+			List<OLATResource> resource, List<? extends OrganisationRef> offerOrganisations) {
 		if (!acModule.isEnabled()) return Collections.emptyMap();
 		
-		return acService.filterResourceWithAC(resourcesWithAC, offerOrganisations).stream()
+		return acService.filterResourceWithAC(resource, offerOrganisations).stream()
 				.collect(Collectors.groupingBy(OLATResourceAccess::getResource));
 	}
 	

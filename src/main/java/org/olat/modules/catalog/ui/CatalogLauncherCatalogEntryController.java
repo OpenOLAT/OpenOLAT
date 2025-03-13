@@ -20,7 +20,9 @@
 package org.olat.modules.catalog.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.olat.NewControllerFactory;
@@ -49,6 +51,9 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
+import org.olat.modules.curriculum.CurriculumElementFileType;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntryEducationalType;
@@ -66,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogLauncherRepositoryEntriesController extends BasicController implements Controller {
+public class CatalogLauncherCatalogEntryController extends BasicController implements Controller {
 	
 	public static final int PREFERRED_NUMBER_CARDS = 15;
 	private static final String[] SWIPER_JS = new String[] { "js/swiper/swiper-bundle.min.js" };
@@ -77,16 +82,21 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 	
 	private final List<CatalogEntry> entries;
 	private final CatalogEntryState state;
-	private final MapperKey mapperThumbnailKey;
+	private final MapperKey repositoryEntryMapperKey;
+	private final CurriculumElementImageMapper curriculumElementImageMapper;
+	private final String curriculumElementImageMapperUrl;
+	private final Map<Long, CatalogEntry> resourceKeyToEntry;
 
 	@Autowired
 	private CatalogV2Module catalogModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
 	private MapperService mapperService;
 
-	public CatalogLauncherRepositoryEntriesController(UserRequest ureq, WindowControl wControl,
+	public CatalogLauncherCatalogEntryController(UserRequest ureq, WindowControl wControl,
 			List<CatalogEntry> entries, String title, boolean showMore, boolean webCatalog,
 			CatalogEntryState state) {
 		super(ureq, wControl);
@@ -95,9 +105,12 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		// Two times the with of the card in mobile view.
-		this.mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(900, 600));
+		this.repositoryEntryMapperKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(900, 600));
+		this.curriculumElementImageMapper = new CurriculumElementImageMapper(curriculumService);
+		this.curriculumElementImageMapperUrl = registerCacheableMapper(ureq, CurriculumElementImageMapper.DEFAULT_ID,
+				curriculumElementImageMapper, CurriculumElementImageMapper.DEFAULT_EXPIRATION_TIME);
 		
-		mainVC = createVelocityContainer("launch_repository_entry");
+		mainVC = createVelocityContainer("launch_catalog_entry");
 		
 		JSAndCSSComponent js = new JSAndCSSComponent("js", SWIPER_JS, null);
 		mainVC.put("js", js);
@@ -108,16 +121,13 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			emptyState.setIconCss("o_CourseModule_icon");
 		}
 		
+		resourceKeyToEntry = new HashMap<>(entries.size());
 		List<LauncherItem> items = new ArrayList<>(entries.size());
 		for (CatalogEntry entry : entries) {
 			LauncherItem item = new LauncherItem();
 			
-			appendRepositoryEntryData(item, entry);
-			
-			VFSLeaf image = repositoryManager.getImage(entry.getRepositoryEntryKey(), entry.getOlatResource());
-			if (image != null) {
-				item.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl() , image));
-			}
+			appendMetadata(item, entry);
+			appendThumbnail(entry, item);
 			
 			String id = "o_dml_" + CodeHelper.getRAMUniqueID();
 			Link displayNameLink = LinkFactory.createLink(id, id, "open", null, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
@@ -134,6 +144,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			item.setDisplayNameLink(displayNameLink);
 			
 			items.add(item);
+			resourceKeyToEntry.put(entry.getOlatResource().getKey(), entry);
 		}
 		mainVC.contextPut("items", items);
 		
@@ -152,8 +163,8 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		putInitialPanel(mainVC);
 	}
 
-	private void appendRepositoryEntryData(LauncherItem item, CatalogEntry entry) {
-		item.setKey(entry.getRepositoryEntryKey());
+	private void appendMetadata(LauncherItem item, CatalogEntry entry) {
+		item.setKey(entry.getOlatResource().getKey());
 		item.setEducationalType(entry.getEducationalType());
 		if (catalogModule.getCardView().contains(CatalogCardView.externalRef)) {
 			item.setExternalRef(entry.getExternalRef());
@@ -206,13 +217,28 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			item.setExpenditureOfWork(entry.getExpenditureOfWork());
 		}
 	}
+	
+	private void appendThumbnail(CatalogEntry entry, LauncherItem item) {
+		if (entry.getRepositoryEntryKey() != null) {
+			VFSLeaf image = repositoryManager.getImage(entry.getRepositoryEntryKey(), entry.getOlatResource());
+			if (image != null) {
+				item.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(repositoryEntryMapperKey.getUrl() , image));
+			}
+		} else if (entry.getCurriculumElementKey() != null) {
+			String imageUrl = curriculumElementImageMapper.getImageUrl(curriculumElementImageMapperUrl,
+					() -> entry.getCurriculumElementKey(), CurriculumElementFileType.teaserImage);
+			if (imageUrl != null) {
+				item.setThumbnailRelPath(imageUrl);
+			}
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if ("select".equals(event.getCommand())) {
 			String key = ureq.getParameter("key");
-			Long repositoryEntryKey = Long.valueOf(key);
-			launchOrOpen(ureq, repositoryEntryKey);
+			Long resourceKey = Long.valueOf(key);
+			launchOrOpen(ureq, resourceKey);
 		} else if (source == titleLink) {
 			fireEvent(ureq, new OpenSearchEvent(state, null));
 		} else if (source == showAllLink) {
@@ -226,17 +252,23 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		}
 	}
 	
-	private void launchOrOpen(UserRequest ureq, Long repositoryEntryKey) {
-		if (canLaunch(repositoryEntryKey)) {
-			boolean started = doStart(ureq, repositoryEntryKey);
+	private void launchOrOpen(UserRequest ureq, Long resourceKey) {
+		CatalogEntry catalogEntry = resourceKeyToEntry.get(resourceKey);
+		
+		if (canLaunch(catalogEntry.getRepositoryEntryKey())) {
+			boolean started = doStart(ureq, catalogEntry.getRepositoryEntryKey());
 			if (started) {
 				return;
 			}
 		}
-		fireEvent(ureq, new OpenSearchEvent(state, repositoryEntryKey));
+		fireEvent(ureq, new OpenSearchEvent(state, resourceKey));
 	}
 	
 	private boolean canLaunch(Long repositoryEntryKey) {
+		if (repositoryEntryKey == null) {
+			return false;
+		}
+		
 		Optional<CatalogEntry> found = entries.stream()
 				.filter(re -> re.getRepositoryEntryKey() != null && re.getRepositoryEntryKey().equals(repositoryEntryKey))
 				.findFirst();

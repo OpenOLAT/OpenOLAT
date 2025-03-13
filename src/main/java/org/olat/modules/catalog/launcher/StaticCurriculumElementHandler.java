@@ -41,26 +41,30 @@ import org.olat.modules.catalog.CatalogLauncherHandler;
 import org.olat.modules.catalog.ui.CatalogEntryState;
 import org.olat.modules.catalog.ui.CatalogLauncherCatalogEntryController;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
-import org.olat.modules.catalog.ui.admin.CatalogLauncherStaticEditController;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
+import org.olat.modules.catalog.ui.admin.CatalogLauncherStaticCurriculumElementEditController;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 8 Jun 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 12 Mar 2025<br>
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
 @Service
-public class StaticHandler implements CatalogLauncherHandler {
+public class StaticCurriculumElementHandler implements CatalogLauncherHandler {
 	
-	public static final String TYPE = "static";
+	public static final String TYPE = "staticcurriculumelement";
 	private static final String SEPARTOR = ",";
 	
 	@Autowired
-	private RepositoryService repositoryService;
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private CurriculumService curriculumService;
 
 	@Override
 	public String getType() {
@@ -69,12 +73,12 @@ public class StaticHandler implements CatalogLauncherHandler {
 
 	@Override
 	public boolean isEnabled() {
-		return true;
+		return curriculumModule.isEnabled();
 	}
 
 	@Override
 	public int getSortOrder() {
-		return 120;
+		return 122;
 	}
 
 	@Override
@@ -84,42 +88,42 @@ public class StaticHandler implements CatalogLauncherHandler {
 
 	@Override
 	public String getTypeI18nKey() {
-		return "launcher.static.type";
+		return "launcher.staticce.type";
 	}
 
 	@Override
 	public String getAddI18nKey() {
-		return "launcher.static.add";
+		return "launcher.staticce.add";
 	}
 
 	@Override
 	public String getEditI18nKey() {
-		return "launcher.static.edit";
+		return "launcher.staticce.edit";
 	}
 
 	@Override
 	public String getDetails(Translator translator, CatalogLauncher catalogLauncher) {
-		List<RepositoryEntry> repositoryEntries = getRepositoryEntries(catalogLauncher);
-		return translator.translate("launcher.static.num.resources", String.valueOf(repositoryEntries.size()));
+		List<CurriculumElement> curriculumElements = getCurriculumElements(catalogLauncher);
+		return translator.translate("launcher.staticce.num", String.valueOf(curriculumElements.size()));
 	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, CatalogLauncher catalogLauncher) {
-		return new CatalogLauncherStaticEditController(ureq, wControl, this, catalogLauncher);
+		return new CatalogLauncherStaticCurriculumElementEditController(ureq, wControl, this, catalogLauncher);
 	}
 
 	@Override
 	public Controller createRunController(UserRequest ureq, WindowControl wControl, Translator translator,
 			CatalogLauncher catalogLauncher, List<CatalogEntry> catalogEntries, boolean webPublish) {
-		Map<Long, CatalogEntry> keyToRe = catalogEntries.stream()
-				.filter(entry -> entry.getRepositoryEntryKey() != null)
-				.collect(Collectors.toMap(CatalogEntry::getRepositoryEntryKey, Function.identity()));
+		Map<Long, CatalogEntry> keyToCe = catalogEntries.stream()
+				.filter(entry -> entry.getCurriculumElementKey() != null)
+				.collect(Collectors.toMap(CatalogEntry::getCurriculumElementKey, Function.identity()));
 
-		List<Long> reKeys = getRepositoryEntryKeys(catalogLauncher);
+		List<Long> ceKeys = getCurriculumElementKeys(catalogLauncher);
 		
 		// Keep sort order
-		List<CatalogEntry> launcherEntries = reKeys.stream()
-				.map(key -> keyToRe.get(key))
+		List<CatalogEntry> launcherEntries = ceKeys.stream()
+				.map(key -> keyToCe.get(key))
 				.filter(Objects::nonNull)
 				.limit(PREFERRED_NUMBER_CARDS)
 				.collect(Collectors.toList());
@@ -128,9 +132,9 @@ public class StaticHandler implements CatalogLauncherHandler {
 		}
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
-		
-		Collection<Long> resourceKeys = reKeys.stream()
-				.map(key -> keyToRe.get(key))
+
+		Collection<Long> resourceKeys = ceKeys.stream()
+				.map(key -> keyToCe.get(key))
 				.filter(Objects::nonNull)
 				.map(ce -> ce.getOlatResource().getKey())
 				.toList();
@@ -141,20 +145,21 @@ public class StaticHandler implements CatalogLauncherHandler {
 				webPublish, state);
 	}
 
-	public List<RepositoryEntry> getRepositoryEntries(CatalogLauncher catalogLauncher) {
-		List<Long> reKeys = getRepositoryEntryKeys(catalogLauncher);
-		Map<Long, RepositoryEntry> keyToRe = repositoryService.loadByKeys(reKeys).stream()
-				.collect(Collectors.toMap(RepositoryEntry::getKey, Function.identity()));
+	public List<CurriculumElement> getCurriculumElements(CatalogLauncher catalogLauncher) {
+		List<Long> ceKeys = getCurriculumElementKeys(catalogLauncher);
+		List<CurriculumElementRefImpl> ceRefs = ceKeys.stream().map(CurriculumElementRefImpl::new).toList();
+		Map<Long, CurriculumElement> keyToRe = curriculumService.getCurriculumElements(ceRefs).stream()
+				.collect(Collectors.toMap(CurriculumElement::getKey, Function.identity()));
 		
 		// Keep sort order
-		List<RepositoryEntry> entries = reKeys.stream()
+		List<CurriculumElement> elements = ceKeys.stream()
 				.map(key -> keyToRe.get(key))
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
-		return entries;
+		return elements;
 	}
 
-	private List<Long> getRepositoryEntryKeys(CatalogLauncher catalogLauncher) {
+	private List<Long> getCurriculumElementKeys(CatalogLauncher catalogLauncher) {
 		if (catalogLauncher == null || !StringHelper.containsNonWhitespace(catalogLauncher.getConfig())) {
 			return new ArrayList<>(1);
 		}
@@ -166,9 +171,9 @@ public class StaticHandler implements CatalogLauncherHandler {
 		return reKeys;
 	}
 
-	public String getConfig(List<RepositoryEntry> repositoryEntries) {
-		return !repositoryEntries.isEmpty()
-				? repositoryEntries.stream().map(re -> re.getKey().toString()).collect(Collectors.joining(SEPARTOR))
+	public String getConfig(List<CurriculumElement> curriculumElements) {
+		return !curriculumElements.isEmpty()
+				? curriculumElements.stream().map(ce -> ce.getKey().toString()).collect(Collectors.joining(SEPARTOR))
 				: null;
 	}
 

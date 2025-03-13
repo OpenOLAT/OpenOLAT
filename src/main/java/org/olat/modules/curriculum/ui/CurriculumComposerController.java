@@ -130,9 +130,10 @@ public class CurriculumComposerController extends FormBasicController implements
 	private static final String ALL_TAB_ID = "All";
 	private static final String RELEVANT_TAB_ID = "Relevant";
 
-	protected static final String FILTER_TYPE = "Type";
-	protected static final String FILTER_STATUS = "Status";
-	protected static final String FILTER_CURRICULUM = "Curriculum";
+	static final String FILTER_TYPE = "Type";
+	static final String FILTER_OFFER = "Offer";
+	static final String FILTER_STATUS = "Status";
+	static final String FILTER_CURRICULUM = "Curriculum";
 	
 	protected static final String CMD_MEMBERS = "members";
 	protected static final String CMD_PENDING = "pending";

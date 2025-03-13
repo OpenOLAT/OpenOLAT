@@ -32,11 +32,11 @@ public class OpenSearchEvent extends Event {
 	private static final long serialVersionUID = 4636493413853121556L;
 	
 	private final CatalogEntryState state;
-	private final Long infoRepositoryEntryKey;
+	private final Long infoResourceKey;
 
-	public OpenSearchEvent(CatalogEntryState state, Long infoRepositoryEntryKey) {
+	public OpenSearchEvent(CatalogEntryState state, Long infoResourceKey) {
 		super("open.search");
-		this.infoRepositoryEntryKey = infoRepositoryEntryKey;
+		this.infoResourceKey = infoResourceKey;
 		this.state = state;
 	}
 
@@ -44,8 +44,8 @@ public class OpenSearchEvent extends Event {
 		return state;
 	}
 
-	public Long getInfoRepositoryEntryKey() {
-		return infoRepositoryEntryKey;
+	public Long getInfoResourceKey() {
+		return infoResourceKey;
 	}
 	
 }

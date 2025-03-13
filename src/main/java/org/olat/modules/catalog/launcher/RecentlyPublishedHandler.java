@@ -19,7 +19,7 @@
  */
 package org.olat.modules.catalog.launcher;
 
-import static org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController.PREFERRED_NUMBER_CARDS;
+import static org.olat.modules.catalog.ui.CatalogLauncherCatalogEntryController.PREFERRED_NUMBER_CARDS;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -37,7 +37,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogLauncherHandler;
-import org.olat.modules.catalog.ui.CatalogLauncherRepositoryEntriesController;
+import org.olat.modules.catalog.ui.CatalogLauncherCatalogEntryController;
 import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.catalog.ui.admin.CatalogLauncherRecentlyPublishedEditController;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -168,7 +168,7 @@ public class RecentlyPublishedHandler implements CatalogLauncherHandler {
 		}
 		
 		String launcherName = CatalogV2UIFactory.translateLauncherName(translator, this, catalogLauncher);
-		return new CatalogLauncherRepositoryEntriesController(ureq, wControl, launcherEntries, launcherName, false,
+		return new CatalogLauncherCatalogEntryController(ureq, wControl, launcherEntries, launcherName, false,
 				webPublish, null);
 	}
 	

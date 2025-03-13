@@ -159,12 +159,12 @@ public class CatalogMainController extends BasicController implements Activateab
 		} else if (source == launchersCtrl) {
 			if (event instanceof OpenSearchEvent ose) {
 				headerSearchCtrl.setSearchString(null);
-				String header = ose.getState() != null? ose.getState().getSpecialFilterRepositoryEntryLabel(): null;
+				String header = ose.getState() != null? ose.getState().getSpecialFilterLabel(): null;
 				headerSearchCtrl.setHeaderOnly(header);
 				doSearch(ureq, null, ose.getState());
 				List<ContextEntry> entries = null;
-				if (ose.getInfoRepositoryEntryKey() != null) {
-					entries = BusinessControlFactory.getInstance().createCEListFromString(CatalogBCFactory.createInfosOres(() -> ose.getInfoRepositoryEntryKey()));
+				if (ose.getInfoResourceKey() != null) {
+					entries = BusinessControlFactory.getInstance().createCEListFromString(CatalogBCFactory.createOfferOres(ose.getInfoResourceKey()));
 				}
 				catalogRepositoryEntryListCtrl.activate(ureq, entries, null);
 			} else if (event instanceof OpenTaxonomyEvent) {
@@ -236,7 +236,7 @@ public class CatalogMainController extends BasicController implements Activateab
 				WindowControl swControl = addToHistory(ureq, CatalogBCFactory.createSearchOres(), null);
 				CatalogEntrySearchParams searchParams = defaultSearchParams.copy();
 				if (catalogEntryState != null) {
-					searchParams.setRepositoryEntryKeys(catalogEntryState.getSpecialFilterRepositoryEntryKeys());
+					searchParams.setResourceKeys(catalogEntryState.getSpecialFilterResourceKeys());
 				}
 				boolean withSearch = catalogEntryState != null;
 				CatalogEntryListParams listParams = new CatalogEntryListParams();
@@ -244,7 +244,7 @@ public class CatalogMainController extends BasicController implements Activateab
 				catalogRepositoryEntryListCtrl = new CatalogEntryListController(ureq, swControl, stackPanel, searchParams, listParams);
 				listenTo(catalogRepositoryEntryListCtrl);
 				String crumbName = catalogEntryState != null
-						? catalogEntryState.getSpecialFilterRepositoryEntryLabel()
+						? catalogEntryState.getSpecialFilterLabel()
 						: translate("search.results");
 				stackPanel.pushController(crumbName, catalogRepositoryEntryListCtrl);
 				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());

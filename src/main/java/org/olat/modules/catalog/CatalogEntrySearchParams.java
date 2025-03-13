@@ -24,12 +24,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -48,7 +46,7 @@ public class CatalogEntrySearchParams {
 	private Date offerValidAt;
 	
 	// Filter
-	private Collection<Long> repositoryEntryKeys;
+	private Collection<Long> resourceKeys;
 	private Collection<String>launcherResourceTypes;
 	private Collection<Long> launcherEducationalTypeKeys;
 	private List<TaxonomyLevel> launcherTaxonomyLevels;
@@ -100,19 +98,15 @@ public class CatalogEntrySearchParams {
 	public void setOfferValidAt(Date offerValidAt) {
 		this.offerValidAt = offerValidAt;
 	}
-
-	public Collection<Long> getRepositoryEntryKeys() {
-		return repositoryEntryKeys;
-	}
-
-	public void setRepositoryEntryKeys(Collection<Long> repositoryEntryKeys) {
-		this.repositoryEntryKeys = repositoryEntryKeys;
-	}
-
-	public void setRepositoryEntries(List<? extends RepositoryEntryRef> repositoryEntries) {
-		this.repositoryEntryKeys = repositoryEntries.stream().map(RepositoryEntryRef::getKey).collect(Collectors.toList());
-	}
 	
+	public Collection<Long> getResourceKeys() {
+		return resourceKeys;
+	}
+
+	public void setResourceKeys(Collection<Long> resourceKeys) {
+		this.resourceKeys = resourceKeys;
+	}
+
 	public Collection<String> getLauncherResourceTypes() {
 		return launcherResourceTypes;
 	}
@@ -153,8 +147,8 @@ public class CatalogEntrySearchParams {
 		}
 		
 		// Filter
-		if (repositoryEntryKeys != null) {
-			copy.repositoryEntryKeys = new ArrayList<>(this.repositoryEntryKeys);
+		if (this.resourceKeys != null) {
+			copy.resourceKeys = new ArrayList<>(this.resourceKeys);
 		}
 		if (this.launcherResourceTypes != null) {
 			copy.launcherResourceTypes = Set.copyOf(this.launcherResourceTypes);

@@ -34,32 +34,32 @@ public class CatalogEntryState implements StateEntry {
 	
 	private static final long serialVersionUID = 6075616697161891923L;
 	
-	private String specialFilterRepositoryEntryLabel;
-	private Collection<Long> specialFilterRepositoryEntryKeys;
+	private String specialFilterLabel;
+	private Collection<Long> specialFilterResourceKeys;
 	
-	public String getSpecialFilterRepositoryEntryLabel() {
-		return specialFilterRepositoryEntryLabel;
+	public String getSpecialFilterLabel() {
+		return specialFilterLabel;
 	}
 
-	public void setSpecialFilterRepositoryEntryLabel(String specialFilterRepositoryEntryLabel) {
-		this.specialFilterRepositoryEntryLabel = specialFilterRepositoryEntryLabel;
+	public void setSpecialFilterLabel(String specialFilterLabel) {
+		this.specialFilterLabel = specialFilterLabel;
 	}
 
-	public Collection<Long> getSpecialFilterRepositoryEntryKeys() {
-		return specialFilterRepositoryEntryKeys;
+	public Collection<Long> getSpecialFilterResourceKeys() {
+		return specialFilterResourceKeys;
 	}
 
-	public void setSpecialFilterRepositoryEntryKeys(Collection<Long> specialFilterRepositoryEntryKeys) {
-		this.specialFilterRepositoryEntryKeys = specialFilterRepositoryEntryKeys;
+	public void setSpecialFilterResourceKeys(Collection<Long> specialFilterResourceKeys) {
+		this.specialFilterResourceKeys = specialFilterResourceKeys;
 	}
 
 	@Override
 	public StateEntry clone() {
 		CatalogEntryState clone = new CatalogEntryState();
 		
-		clone.specialFilterRepositoryEntryLabel = this.specialFilterRepositoryEntryLabel;
-		if (specialFilterRepositoryEntryKeys != null) {
-			clone.specialFilterRepositoryEntryKeys = new ArrayList<>(this.specialFilterRepositoryEntryKeys);
+		clone.specialFilterLabel = this.specialFilterLabel;
+		if (this.specialFilterResourceKeys != null) {
+			clone.specialFilterResourceKeys = new ArrayList<>(this.specialFilterResourceKeys);
 		}
 		
 		return clone;
