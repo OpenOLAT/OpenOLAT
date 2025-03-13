@@ -31,7 +31,7 @@
 					#set($responseValue = $set1Identifier + " " + $set2Identifier)
 					#set($responseChecked = $r.getResponseValue($interaction.responseIdentifier))
                 	<td class="control">
-                  		<input id="oo_${set1Identifier}_${set2Identifier}" aria-labelledby="${set1Identifier} ${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked #end #if($r.isItemSessionEnded()) disabled #end><i class="o_icon o_icon_check_off"> </i>
+                  		<input id="oo_${set1Identifier}_${set2Identifier}" aria-labelledby="${set1Identifier} ${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked="checked" #end #if($r.isItemSessionEnded()) disabled #end><i> </i> 
                 		$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
                 		$r.renderDirectedScoreAttribute($interaction, $choice1.identifier, $choice2.identifier)
                 	</td>
