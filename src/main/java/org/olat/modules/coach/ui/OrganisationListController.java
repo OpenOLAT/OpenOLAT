@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
@@ -150,7 +151,12 @@ public class OrganisationListController extends AbstactCoachListController {
 
     @Override
     protected UserOverviewController selectStudent(UserRequest ureq, StudentStatEntry studentStat) {
-        Identity student = securityManager.loadIdentityByKey(studentStat.getIdentityKey());
+		Identity student = securityManager.loadIdentityByKey(studentStat.getIdentityKey());
+		if (!allowedToManageUser(student)) {
+			showWarning("error.select.no.permission");
+			return null;
+		}
+
         OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, student.getKey());
         WindowControl bwControl = addToHistory(ureq, ores, null);
         
@@ -162,4 +168,22 @@ public class OrganisationListController extends AbstactCoachListController {
         stackPanel.pushController(displayName, userCtrl);
         return userCtrl;
     }
+
+	private boolean allowedToManageUser(Identity user) {
+		Roles userRoles = securityManager.getRoles(user);
+
+		if (userRoles.isMoreThanUser()) {
+			return false;
+		}
+
+		if (!userRoles.hasRole(OrganisationRoles.user)) {
+			return false;
+		}
+		
+		if (userRoles.isInvitee() || userRoles.hasRole(OrganisationRoles.guest)) {
+			return false;
+		}
+
+		return true;
+	}
 }

@@ -204,7 +204,9 @@ public abstract class AbstactCoachListController extends FormBasicController imp
             for (StudentStatEntry entry : model.getObjects()) {
                 if (identityKey.equals(entry.getIdentityKey())) {
                     Activateable2 selectedCtrl = selectStudent(ureq, entry);
-                    selectedCtrl.activate(ureq, entries.subList(1, entries.size()), ce.getTransientState());
+                    if (selectedCtrl != null) {
+                        selectedCtrl.activate(ureq, entries.subList(1, entries.size()), ce.getTransientState());
+                    }
                     break;
                 }
             }
