@@ -131,11 +131,10 @@ public class RepositoryEntryListController extends FormBasicController
 	private final List<Link> orderByLinks = new ArrayList<>();
 	private List<RepositoryEntryEducationalType> educationalTypes;
 	
-	private boolean withSearch;
-	private boolean withPresets;
-	private boolean withSavedSettings;
+	private final RepositoryEntryListConfig config;
 	
 	private FlexiFiltersTab myTab;
+	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab bookmarkTab;
 
 	private final String name;
@@ -168,17 +167,15 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
 			SearchMyRepositoryEntryViewParams searchParams, boolean load, 
-			boolean withSearch, boolean withPresets, boolean withSavedSettings, String name, BreadcrumbPanel stackPanel) {
+			RepositoryEntryListConfig config, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(OpenAccessOfferController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		this.name = name;
+		this.config = config;
 		this.stackPanel = stackPanel;
-		this.withSearch = withSearch;
-		this.withPresets = withPresets;
-		this.withSavedSettings = withSavedSettings;
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
@@ -207,6 +204,10 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	public FlexiFiltersTab getMyEntriesPreset() {
 		return myTab;
+	}
+	
+	public FlexiFiltersTab getAllPreset() {
+		return allTab;
 	}
 	
 	public void reloadRows() {
@@ -266,10 +267,10 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
-		tableEl.setSearchEnabled(withSearch);
+		tableEl.setSearchEnabled(config.withSearch());
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
-		if (withSearch) {
+		if (config.withSearch()) {
 			tableEl.setEmptyTableSettings("table.search.empty", "table.search.empty.hint", "o_CourseModule_icon");			
 		} else {
 			tableEl.setEmptyTableSettings("table.list.empty", "table.list.empty.hint", "o_CourseModule_icon");			
@@ -278,7 +279,7 @@ public class RepositoryEntryListController extends FormBasicController
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		
-		if(withPresets) {
+		if(config.withPresets()) {
 			educationalTypes = repositoryManager.getAllEducationalTypes();
 			initFiltersPresets();
 			initFiltersButtons();
@@ -289,7 +290,7 @@ public class RepositoryEntryListController extends FormBasicController
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-v2-".concat(name));
 		
-		if (!withSavedSettings) {
+		if (!config.withSavedSettings()) {
 			SortKey sortKey = new SortKey(OrderBy.custom.name(), true);
 			tableEl.sort(sortKey);
 		}
@@ -322,7 +323,7 @@ public class RepositoryEntryListController extends FormBasicController
 	private void initFiltersPresets() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		// bookmarks
-		if(!guestOnly) {
+		if(!guestOnly && config.presets().withFavoritePreset()) {
 			bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitAndDefaultFilters("Bookmarks", translate("search.mark"),
 					TabSelectionBehavior.reloadData,
 					List.of(FlexiTableFilterValue.valueOf(FilterButton.MARKED, "marked")),
@@ -331,47 +332,56 @@ public class RepositoryEntryListController extends FormBasicController
 			tabs.add(bookmarkTab);
 		}
 		
-		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.active"),
-				TabSelectionBehavior.reloadData, List.of(
-						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
-						FlexiTableFilterValue.valueOf(FilterButton.STATUS, FilterStatus.ACTIVE.name())));
-		myTab.setElementCssClass("o_sel_mycourses_my");
-		tabs.add(myTab);
+		if(config.presets().withAllPreset()) {
+			allTab = FlexiFiltersTabFactory.tabWithImplicitFilters("All", translate("search.all"),
+					TabSelectionBehavior.reloadData, List.of(
+							FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
+			allTab.setElementCssClass("o_sel_mycourses_all");
+			tabs.add(allTab);
+		}
 		
-		for(RepositoryEntryEducationalType educationalType:educationalTypes) {
-			if(educationalType.isPresetMyCourses()) {
-				String id = educationalType.getIdentifier().replace(".", "").replace("-", "").replace(" ", "");
-				String i18nKey = RepositoyUIFactory.getPresetI18nKey(educationalType);
-				String typeName = translate(i18nKey);
-				if(typeName.equals(i18nKey) || typeName.length() > 255) {
-					typeName = translate(RepositoyUIFactory.getI18nKey(educationalType));
+		if(config.presets().withMyPreset()) {
+			myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.active"),
+					TabSelectionBehavior.reloadData, List.of(
+							FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
+							FlexiTableFilterValue.valueOf(FilterButton.STATUS, FilterStatus.ACTIVE.name())));
+			myTab.setElementCssClass("o_sel_mycourses_my");
+			tabs.add(myTab);
+		}
+		
+		if(config.presets().withEducationalTypesPreset()) {
+			for(RepositoryEntryEducationalType educationalType:educationalTypes) {
+				if(educationalType.isPresetMyCourses()) {
+					String id = educationalType.getIdentifier().replace(".", "").replace("-", "").replace(" ", "");
+					String i18nKey = RepositoyUIFactory.getPresetI18nKey(educationalType);
+					String typeName = translate(i18nKey);
+					if(typeName.equals(i18nKey) || typeName.length() > 255) {
+						typeName = translate(RepositoyUIFactory.getI18nKey(educationalType));
+					}
+					FlexiFiltersTab typeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(id, typeName,
+							TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.EDUCATIONALTYPE, List.of(educationalType.getKey().toString()))));
+					tabs.add(typeTab);
 				}
-				FlexiFiltersTab typeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(id, typeName,
-						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.EDUCATIONALTYPE, List.of(educationalType.getKey().toString()))));
-				tabs.add(typeTab);
 			}
 		}
 		
-		FlexiFiltersTab prepTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Preparation", translate("search.preparation"),
-				TabSelectionBehavior.reloadData, List.of(
-						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned"),
-						FlexiTableFilterValue.valueOf(FilterButton.STATUS, FilterStatus.PREPARATION.name())));
-		prepTab.setElementCssClass("o_sel_mycourses_preparation");
-		tabs.add(prepTab);
-		
-		FlexiFiltersTab closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Closed", translate("search.courses.closed"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, FilterStatus.CLOSED.name()),
-						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
-		closedTab.setElementCssClass("o_sel_mycourses_closed");
-		tabs.add(closedTab);
+		if(config.presets().withClosedPreset()) {
+			FlexiFiltersTab closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Closed", translate("search.courses.closed"),
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, FilterStatus.CLOSED.name()),
+							FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
+			closedTab.setElementCssClass("o_sel_mycourses_closed");
+			tabs.add(closedTab);
+		}
 		
 		// search
-		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.courses.student"), TabSelectionBehavior.clear);
-		searchTab.setElementCssClass("o_sel_mycourses_search");
-		searchTab.setPosition(FlexiFilterTabPosition.right);
-		searchTab.setFiltersExpanded(true);
-		searchTab.setLargeSearch(true);
-		tabs.add(searchTab);
+		if(config.presets().withSearch()) {
+			FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.courses.student"), TabSelectionBehavior.clear);
+			searchTab.setElementCssClass("o_sel_mycourses_search");
+			searchTab.setPosition(FlexiFilterTabPosition.right);
+			searchTab.setFiltersExpanded(true);
+			searchTab.setLargeSearch(true);
+			tabs.add(searchTab);
+		}
 		
 		tableEl.setFilterTabs(true, tabs);
 	}

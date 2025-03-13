@@ -19,17 +19,17 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
-import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
-import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.scope.Scope;
+import org.olat.core.gui.components.scope.ScopeEvent;
+import org.olat.core.gui.components.scope.ScopeFactory;
+import org.olat.core.gui.components.scope.ScopeSelection;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -46,18 +46,20 @@ import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.curriculum.ui.CurriculumListController;
-import org.olat.repository.CatalogEntry;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.ui.CurriculumElementListController;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
-import org.olat.repository.manager.CatalogManager;
+import org.olat.repository.manager.RepositoryEntryMyImplementationsQueries;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.catalog.CatalogNodeController;
 import org.olat.repository.ui.list.RepositoryEntryListConfig.RepositoryEntryListPresets;
@@ -67,43 +69,45 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 28.01.2014<br>
+ * Initial date: 13 mars 2025<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OverviewRepositoryListController extends BasicController implements Activateable2, GenericEventListener {
+public class OverviewRepositoryCurriculumListController extends BasicController implements Activateable2, GenericEventListener {
 
-	private static final String OVERVIEW_PATH = "[MyCoursesSite:0]";
-	
+	private static final String CMD_MY_COURSES = "MyCourses";
+	private static final String CMD_IN_PREPARATION = "InPreparation";
+	private static final String CMD_IMPLEMENTATION = "Implementation";
+
+	private final List<Scope> scopes;
 	private final VelocityContainer mainVC;
-	private final SegmentViewComponent segmentView;
-	private final Link coursesLink;
-	private Link catalogLink;
-	private Link curriculumLink;
+	private final ScopeSelection scopesSelection;
 	private BreadcrumbedStackedPanel entriesStackPanel;
+	private BreadcrumbedStackedPanel inPreparationStackPanel;
+	private BreadcrumbedStackedPanel implementationStackPanel;
 	
 	private Controller currentCtrl;
 	private CatalogNodeController catalogCtrl;
 	private RepositoryEntryListController entriesCtrl;
+	private RepositoryEntryListController inPreparationCtrl;
+	private CurriculumElementListController elementListCtrl;
 	
 	private boolean entriesDirty;
 	private final boolean guestOnly;
-	private final boolean withCurriculums;
 	
 	private final EventBus eventBus;
 	
 	@Autowired
-	private CatalogManager catalogManager;
-	@Autowired
-	private RepositoryModule repositoryModule;
+	private ACService acService;
 	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
-	private ACService acService;
+	private RepositoryEntryMyImplementationsQueries myImplementationsQueries;
+
 	
-	public OverviewRepositoryListController(UserRequest ureq, WindowControl wControl) {
+	public OverviewRepositoryCurriculumListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		
@@ -112,48 +116,29 @@ public class OverviewRepositoryListController extends BasicController implements
 		MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
 		mainPanel.setDomReplaceable(false);
 		mainPanel.setCssClass("o_sel_my_repository_entries");
-
-		mainVC = createVelocityContainer("overview");
+		mainVC = createVelocityContainer("overview_scopes");
 		mainPanel.setContent(mainVC);
-		
-		withCurriculums = withCurriculumTab();
-		boolean withCatalog = repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled();
-		mainVC.contextPut("withSegments", Boolean.valueOf(withCurriculums || withCatalog));
-		
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		segmentView.setReselect(true);
 
-		coursesLink = LinkFactory.createLink("search.mycourses.student", mainVC, this);
-		coursesLink.setUrl(BusinessControlFactory.getInstance()
-				.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[My:0]"));
-		coursesLink.setElementCssClass("o_sel_mycourses_my");
-		segmentView.addSegment(coursesLink, false);
+		scopes = new ArrayList<>();
+		scopes.add(ScopeFactory.createScope(CMD_MY_COURSES, translate("search.mycourses.student"),
+				null, "o_icon o_icon-fw o_CourseModule_icon"));
 		
-		if(withCurriculums) {
-			curriculumLink = LinkFactory.createLink("search.curriculums", mainVC, this);
-			curriculumLink.setUrl(BusinessControlFactory.getInstance()
-					.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[Curriculum:0]"));
-			curriculumLink.setElementCssClass("o_sel_mycurriculums");
-			segmentView.addSegment(curriculumLink, false);
+		if(curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
+			List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity());
+			for(CurriculumElement implementation:implementations) {
+				scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATION + implementation.getKey().toString(),
+					implementation.getDisplayName(), null, "o_icon o_icon-fw o_icon_curriculum"));
+			}
 		}
-
-		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled()) {
-			catalogLink = LinkFactory.createLink("search.catalog", mainVC, this);
-			catalogLink.setUrl(BusinessControlFactory.getInstance()
-					.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[Catalog:0]"));
-			catalogLink.setElementCssClass("o_sel_mycourses_catalog");
-			segmentView.addSegment(catalogLink, false);
-		}
+		
+		scopes.add(ScopeFactory.createScope(CMD_IN_PREPARATION, translate("search.preparation"),
+				null, "o_icon o_icon-fw o_ac_offer_pending_icon"));
+		scopesSelection = ScopeFactory.createScopeSelection("scopes", mainVC, this, scopes);
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
 		
 		putInitialPanel(mainPanel);
-	}
-	
-	private boolean withCurriculumTab() {
-		return curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()
-				&& curriculumService.hasCurriculums(getIdentity());
 	}
 	
 	@Override
@@ -167,36 +152,34 @@ public class OverviewRepositoryListController extends BasicController implements
 			}
 		} else {
 			ContextEntry entry = entries.get(0);
-			String segment = entry.getOLATResourceable().getResourceableTypeName();
+			String scope = entry.getOLATResourceable().getResourceableTypeName();
+			Long key = entry.getOLATResourceable().getResourceableId();
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			if(("Catalog".equalsIgnoreCase(segment) || "CatalogEntry".equalsIgnoreCase(segment))
-					&& catalogLink != null) {
-				CatalogNodeController ctrl = doOpenCatalog(ureq);
-				if(ctrl != null) {
-					ctrl.activate(ureq, entries, entry.getTransientState());
-					segmentView.select(catalogLink);
-				} else if(currentCtrl == null) {
-					activateMyEntries(ureq);
-				}
-			} else if("Curriculum".equalsIgnoreCase(segment) && curriculumLink != null) {
-				CurriculumListController ctrl = doOpenCurriculum(ureq);
-				if(ctrl != null) {
-					ctrl.activate(ureq, subEntries, entry.getTransientState());
-					segmentView.select(curriculumLink);
-				} else if(currentCtrl == null) {
-					activateMyEntries(ureq);
-				}
+
+			if("InPreparation".equalsIgnoreCase(scope)) {
+				RepositoryEntryListController listCtrl = doOpenInPreparation(ureq);
+				scopesSelection.setSelectedKey(CMD_IN_PREPARATION);
+				listCtrl.activate(ureq, subEntries, state);
+			} else if("Implementation".equalsIgnoreCase(scope) && hasImplementationScope(key)) {
+				doOpenImplementation(ureq, entry.getOLATResourceable().getResourceableId());
+				scopesSelection.setSelectedKey(CMD_IMPLEMENTATION + key.toString());
 			} else {
 				RepositoryEntryListController listCtrl = doOpenEntries(ureq);
-				segmentView.select(coursesLink);
+				scopesSelection.setSelectedKey(CMD_MY_COURSES);
 				listCtrl.activate(ureq, subEntries, state);
 			}
 		}
 	}
 	
+	private boolean hasImplementationScope(Long key) {
+		final String id = CMD_IMPLEMENTATION + key.toString();
+		return scopes.stream()
+				.anyMatch(scope -> id.equalsIgnoreCase(scope.getKey()));
+	}
+	
 	private void activateMyEntries(UserRequest ureq) {
 		RepositoryEntryListController listCtrl = doOpenEntries(ureq);
-		segmentView.select(coursesLink);
+		scopesSelection.setSelectedKey(CMD_MY_COURSES);
 
 		if(guestOnly) {
 			listCtrl.selectFilterTab(ureq, listCtrl.getMyEntriesPreset());
@@ -227,23 +210,18 @@ public class OverviewRepositoryListController extends BasicController implements
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
+		if(source == scopesSelection) {
+			if(event instanceof ScopeEvent se) {
 				cleanUp();
-				SegmentViewEvent sve = (SegmentViewEvent)event;
-				String segmentCName = sve.getComponentName();
-				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == coursesLink) {
-					if(entriesCtrl == null) {
-						activateMyEntries(ureq);
-					} else {
-						doOpenEntries(ureq);
-					}
-				} else if (clickedLink == catalogLink) {
-					doOpenCatalog(ureq);
-				} else if (clickedLink == curriculumLink) {
-					doOpenCurriculum(ureq);
+				if(CMD_MY_COURSES.equals(se.getSelectedKey())) {
+					activateMyEntries(ureq);
+				} else if(CMD_IN_PREPARATION.equals(se.getSelectedKey())) {
+					doOpenInPreparation(ureq);
+				} else if(se.getSelectedKey().startsWith(CMD_IMPLEMENTATION)) {
+					Long implementationKey = Long.valueOf(se.getSelectedKey().replace(CMD_IMPLEMENTATION, ""));
+					doOpenImplementation(ureq, implementationKey);
 				}
+				
 			}
 		}
 	}
@@ -253,13 +231,14 @@ public class OverviewRepositoryListController extends BasicController implements
 		catalogCtrl = null;
 	}
 	
-	
 	private RepositoryEntryListController doOpenEntries(UserRequest ureq) {
 		if(entriesCtrl == null) {
 			SearchMyRepositoryEntryViewParams searchParams
 				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 			searchParams.setMembershipMandatory(true);
-			searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
+			searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {
+					RepositoryEntryStatusEnum.review, RepositoryEntryStatusEnum.coachpublished, RepositoryEntryStatusEnum.published
+				});
 			searchParams.setOfferOrganisations(acService.getOfferOrganisations(searchParams.getIdentity()));
 			searchParams.setOfferValidAt(new Date());
 			searchParams.setRuntimeTypes(new RepositoryEntryRuntimeType[] { RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.standalone });
@@ -279,54 +258,55 @@ public class OverviewRepositoryListController extends BasicController implements
 		
 		entriesDirty = false;
 		currentCtrl = entriesCtrl;
-		mainVC.put("segmentCmp", entriesStackPanel);
+		mainVC.put("component", entriesStackPanel);
 		return entriesCtrl;
 	}
 	
-	private CatalogNodeController doOpenCatalog(UserRequest ureq) {
-		if(!repositoryModule.isCatalogEnabled() || !repositoryModule.isCatalogBrowsingEnabled()) {
-			return null;
-		}
-		cleanUp();
-
-		List<CatalogEntry> entries = catalogManager.getRootCatalogEntries();
-		CatalogEntry rootEntry = null;
-		if(!entries.isEmpty()) {
-			rootEntry = entries.get(0);
+	private RepositoryEntryListController doOpenInPreparation(UserRequest ureq) {
+		if(inPreparationCtrl == null) {
+			SearchMyRepositoryEntryViewParams searchParams
+				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+			searchParams.setMembershipMandatory(true);
+			searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.preparation });
+			searchParams.setOfferOrganisations(acService.getOfferOrganisations(searchParams.getIdentity()));
+			searchParams.setOfferValidAt(new Date());
+			searchParams.setRuntimeTypes(new RepositoryEntryRuntimeType[] { RepositoryEntryRuntimeType.curricular, RepositoryEntryRuntimeType.standalone });
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("InPreparation", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			inPreparationStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
+			RepositoryEntryListConfig config = new RepositoryEntryListConfig(true, true, true,
+					new RepositoryEntryListPresets(true, false, false, false, false, false));
+			inPreparationCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, false, config, "my", inPreparationStackPanel);
+			inPreparationStackPanel.pushController(translate("search.mycourses.student"), inPreparationCtrl);
+			listenTo(inPreparationCtrl);
+			inPreparationCtrl.selectFilterTab(ureq, inPreparationCtrl.getAllPreset());
+		} else if(entriesDirty) {
+			inPreparationCtrl.reloadRows();
 		}
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Catalog", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		BreadcrumbedStackedPanel catalogStackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
-		catalogCtrl = new CatalogNodeController(ureq, bwControl, getWindowControl(), rootEntry, catalogStackPanel, false);
-		catalogStackPanel.pushController(translate("search.catalog"), catalogCtrl);
-		listenTo(catalogCtrl);
-		currentCtrl = catalogCtrl;
-
-		addToHistory(ureq, catalogCtrl);
-		mainVC.put("segmentCmp", catalogStackPanel);
-		return catalogCtrl;
+		entriesDirty = false;
+		currentCtrl = inPreparationCtrl;
+		mainVC.put("component", inPreparationStackPanel);
+		return inPreparationCtrl;
 	}
 	
-	private CurriculumListController doOpenCurriculum(UserRequest ureq) {
-		if(!withCurriculums) {
-			return null;
-		}
-		cleanUp();
+	private CurriculumElementListController doOpenImplementation(UserRequest ureq, Long implementationKey) {
+		implementationStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Curriculum", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		BreadcrumbedStackedPanel curriculumStackPanel = new BreadcrumbedStackedPanel("curriculumstack", getTranslator(), this);
-		CurriculumListController curriculumListCtrl = new CurriculumListController(ureq, bwControl, curriculumStackPanel);
-		curriculumStackPanel.pushController(translate("search.curriculums"), curriculumListCtrl);
-		listenTo(curriculumListCtrl);
-		currentCtrl = curriculumListCtrl;
+		CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(implementationKey));
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Implementation", element.getKey());
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		CurriculumSecurityCallback secCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
+		elementListCtrl = new CurriculumElementListController(ureq, swControl, implementationStackPanel,
+				getIdentity(), element.getCurriculum(), element, secCallback);
+		listenTo(elementListCtrl);
+		implementationStackPanel.pushController(element.getDisplayName(), elementListCtrl);
 		
-		addToHistory(ureq, curriculumListCtrl);
-		mainVC.put("segmentCmp", curriculumStackPanel);
-		curriculumListCtrl.activate(ureq, null, null);
-		return curriculumListCtrl;
+		entriesDirty = false;
+		currentCtrl = elementListCtrl;
+		mainVC.put("component", implementationStackPanel);
+		return elementListCtrl;
 	}
 }

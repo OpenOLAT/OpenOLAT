@@ -41,7 +41,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -134,6 +133,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private final CurriculumRef curriculum;
 	private final MapperKey mapperThumbnailKey;
 	private final Identity assessedIdentity;
+	private final CurriculumElement rootElement;
 	private final CurriculumSecurityCallback secCallback;
 	
 	private RepositoryEntryDetailsController detailsCtrl;
@@ -159,13 +159,15 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private AssessmentService assessmentService;
 	
 	public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			Identity assessedIdentity, CurriculumRef curriculum, CurriculumSecurityCallback secCallback) {
+			Identity assessedIdentity, CurriculumRef curriculum, CurriculumElement rootElement,
+			CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculum_element_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		
 		this.curriculum = curriculum;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
+		this.rootElement = rootElement;
 		this.assessedIdentity = assessedIdentity;
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
@@ -203,17 +205,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 		tableModel = new CurriculumElementWithViewsDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
-		if(assessedIdentity.equals(getIdentity())) {
-			tableEl.setRendererType(FlexiTableRendererType.custom);
-		} else {
-			tableEl.setRendererType(FlexiTableRendererType.classic);
-		}
+		tableEl.setRendererType(FlexiTableRendererType.classic);
 		tableEl.setElementCssClass("o_curriculumtable");
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setCssDelegate(this);
-		tableEl.setFilters("activity", getFilters(), false);
-		tableEl.setSelectedFilterKey("active");
 		
 		VelocityContainer row = createVelocityContainer("curriculum_element_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
@@ -221,14 +217,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v4-"
 					+ (assessedIdentity.equals(getIdentity()) ? "" : "look-") + curriculum.getKey());
-	}
-	
-	private List<FlexiTableFilter> getFilters() {
-		List<FlexiTableFilter> filters = new ArrayList<>(5);
-		filters.add(new FlexiTableFilter(translate("filter.active"), "active"));
-		filters.add(FlexiTableFilter.SPACER);
-		filters.add(new FlexiTableFilter(translate("show.all"), "all", true));
-		return filters;
 	}
 
 	@Override
@@ -339,6 +327,21 @@ public class CurriculumElementListController extends FormBasicController impleme
 				}
 			}
 		});
+		
+		if(rootElement != null) {
+			for(Iterator<CurriculumElementWithViewsRow> it=rows.iterator(); it.hasNext(); ) {
+				boolean isRooted = false;
+				CurriculumElementWithViewsRow row = it.next();
+				for(CurriculumElementWithViewsRow parent=row; parent != null; parent=parent.getParent()) {
+					if(rootElement.getKey().equals(parent.getCurriculumElementKey())) {
+						isRooted=true;
+					}
+				}
+				if(!isRooted) {
+					it.remove();
+				}
+			}
+		}
 		
 		try {
 			Collections.sort(rows, new CurriculumElementViewsRowComparator(getLocale()));

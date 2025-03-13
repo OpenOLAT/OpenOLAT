@@ -40,7 +40,9 @@ import org.olat.modules.portfolio.ui.shared.InviteeBindersController;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.ui.list.RepositoryEntryListConfig;
 import org.olat.repository.ui.list.RepositoryEntryListController;
+import org.olat.repository.ui.list.RepositoryEntryListConfig.RepositoryEntryListPresets;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -99,8 +101,10 @@ public class InvitationsMainController extends MainLayoutBasicController impleme
 	        searchParams.setRuntimeType(RepositoryEntryRuntimeType.standalone);
 			
 			// Courses
+	        RepositoryEntryListConfig config = new RepositoryEntryListConfig(true, true, true,
+	        		new RepositoryEntryListPresets(false, true, true, true, true, true));
 	        RepositoryEntryListController repositoryEntryListCtrl = new RepositoryEntryListController(ureq, getWindowControl(),
-					searchParams, false, true, true, true, "entries-invitations", stackedPanel);
+					searchParams, false, config, "entries-invitations", stackedPanel);
 			listenTo(repositoryEntryListCtrl);
 			mainVC.put("entries", repositoryEntryListCtrl.getInitialComponent());
 			repositoryEntryListCtrl.selectFilterTab(ureq, repositoryEntryListCtrl.getMyEntriesPreset());

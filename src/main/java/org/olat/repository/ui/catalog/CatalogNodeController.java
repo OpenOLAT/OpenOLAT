@@ -50,13 +50,15 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.CatalogEntry;
-import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.CatalogEntry.Style;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.CatalogEntryImageMapper;
+import org.olat.repository.ui.list.RepositoryEntryListConfig;
+import org.olat.repository.ui.list.RepositoryEntryListConfig.RepositoryEntryListPresets;
 import org.olat.repository.ui.list.RepositoryEntryListController;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -173,7 +175,9 @@ public class CatalogNodeController extends BasicController implements Activateab
 		searchParams.setOfferValidAt(new Date());
 		searchParams.setRuntimeType(RepositoryEntryRuntimeType.standalone);
 		
-		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, false, false, "catalog", stackPanel);
+		RepositoryEntryListConfig config = new RepositoryEntryListConfig(false, false, false,
+				new RepositoryEntryListPresets(false, true, true, true, true, true));
+		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, config, "catalog", stackPanel);
 		if(!entryListController.isEmpty() || searchParams.getFilters() != null) {
 			mainVC.put("entries", entryListController.getInitialComponent());
 		}
@@ -185,8 +189,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		searchClosedParams.setParentEntry(catalogEntry);
 		searchClosedParams.setEntryStatus(RepositoryEntryStatusEnum.closed());
 		searchClosedParams.setRuntimeType(RepositoryEntryRuntimeType.standalone);
-		
-		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, false, false, false, "catalog-closed", stackPanel);
+		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, config, "catalog-closed", stackPanel);
 
 		if(!closedEntryListController.isEmpty() || searchClosedParams.getFilters() != null) {
 			mainVC.put("closedEntries", closedEntryListController.getInitialComponent());
@@ -205,8 +208,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(source instanceof Link) {
-			Link link = (Link)source;
+		if(source instanceof Link link) {
 			if("select_node".equals(link.getCommand())) {
 				Long categoryNodeKey = (Long)link.getUserObject();
 				CatalogEntry entry = catalogManager.getCatalogNodeByKey(categoryNodeKey);
