@@ -51,6 +51,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
@@ -202,7 +203,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
 		
-		tableModel = new CurriculumElementWithViewsDataModel(columnsModel);
+		tableModel = new CurriculumElementWithViewsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
@@ -210,6 +211,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmptyTableSettings("table.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setCssDelegate(this);
+		tableEl.setSearchEnabled(true);
 		
 		VelocityContainer row = createVelocityContainer("curriculum_element_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
@@ -591,6 +593,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 				} else {
 					doOpenDetails(ureq, row);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
+				tableEl.reset(true, true, false);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

@@ -19,8 +19,10 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,75 +32,75 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.ui.component.CurriculumElementViewsRowComparator;
 
 /**
  * 
  * Initial date: 11 mai 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CurriculumElementWithViewsRow> implements FlexiBusinessPathModel {
 	
-	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	
+	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 	}
 	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
-			FlexiTableFilter filter = filters.get(0);
-			if(filter == null || filter.isShowAll()) {
-				setUnfilteredObjects();
-			} else {
-				// curriculum element inactive -> all repo are inactives
-				Set<CurriculumElementWithViewsRow> activeRows = backupRows.stream()
-					.filter(this::active)
-					.collect(Collectors.toSet());
-				
-				// parent inactive, child is active -> parent is forced active
-				Set<CurriculumElementWithViewsRow> activeRowSet = new HashSet<>(activeRows);
-				for(CurriculumElementWithViewsRow row:activeRowSet) {
-					if(row.getParent() != null && !activeRows.contains(row.getParent())) {
-						for(CurriculumElementWithViewsRow parent=row.getParent(); parent != null; parent=parent.getParent()) {
-							activeRows.add(parent);
-						}
-					}
-				}
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			String lowerSearchString = searchString.toLowerCase();
+			Long searchKey = StringHelper.isLong(lowerSearchString) ? Long.valueOf(lowerSearchString) : null;
+			
+			List<CurriculumElementWithViewsRow> filteredRows = backupRows.stream()
+				.filter(row -> quickSearch(lowerSearchString, row) || searchKey(searchKey, row))
+				.collect(Collectors.toList());
 
-				List<CurriculumElementWithViewsRow> filteredRows =  backupRows.stream()
-						.filter(activeRows::contains)
-						.collect(Collectors.toList());
-				setFilteredObjects(filteredRows);
-			}
+			reconstructParentLine(filteredRows);
+			Collections.sort(filteredRows, new CurriculumElementViewsRowComparator(locale));
+			setFilteredObjects(filteredRows);
 		} else {
 			setUnfilteredObjects();
 		}
 	}
 	
-	private boolean active(CurriculumElementWithViewsRow row) {
-		boolean active = true;
-		if(row.isCurriculumElementOnly() || row.isCurriculumElementWithEntry()) {
-			active = isActive(row.getCurriculumElementStatus());
-		}
-		if(active) {
-			for(CurriculumElementWithViewsRow parent=row.getParent(); parent != null; parent=parent.getParent()) {
-				if(parent.isCurriculumElementOnly() || parent.isCurriculumElementWithEntry()) {
-					active &= isActive(row.getCurriculumElementStatus());
-				}
+	private void reconstructParentLine(List<CurriculumElementWithViewsRow> rows) {
+		Set<CurriculumElementWithViewsRow> rowSet = new HashSet<>(rows);
+		for(int i=0; i<rows.size(); i++) {
+			CurriculumElementWithViewsRow row = rows.get(i);
+			for(CurriculumElementWithViewsRow parent=row.getParent(); parent != null && !rowSet.contains(parent); parent=parent.getParent()) {
+				rows.add(i, parent);
+				rowSet.add(parent);	
 			}
 		}
-		return active;
 	}
 	
-	private boolean isActive(CurriculumElementStatus status) {
-		return status == CurriculumElementStatus.confirmed || status == CurriculumElementStatus.active;
+	private boolean searchKey(Long searchKey, CurriculumElementWithViewsRow row) {
+		if(searchKey == null) return false;
+		return (row.getCurriculumElementKey() != null && row.getCurriculumElementKey().equals(searchKey))
+				|| (row.getRepositoryEntryKey() != null && row.getRepositoryEntryKey().equals(searchKey));
 	}
+	
+	private boolean quickSearch(String searchString, CurriculumElementWithViewsRow row) {
+		if(!StringHelper.containsNonWhitespace(searchString)) {
+			return true;
+		}
+		return (row.getCurriculumElementDisplayName() != null && row.getCurriculumElementDisplayName().toLowerCase().contains(searchString))
+				|| (row.getCurriculumElementIdentifier() != null && row.getCurriculumElementIdentifier().toLowerCase().contains(searchString))
+				|| (row.getCurriculumElementExternalId() != null && row.getCurriculumElementExternalId().toLowerCase().contains(searchString))
+				|| (row.getRepositoryEntryDisplayName() != null && row.getRepositoryEntryDisplayName().toLowerCase().contains(searchString))
+				|| (row.getRepositoryEntryExternalRef() != null && row.getRepositoryEntryExternalRef().toLowerCase().contains(searchString))
+				|| (row.getRepositoryEntryAuthors() != null && row.getRepositoryEntryAuthors().toLowerCase().contains(searchString));
+	}
+	
 	
 	@Override
 	public String getUrl(Component source, Object object, String action) {
-		if("select".equals(action) && object instanceof CurriculumElementWithViewsRow) {
-			CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)object;
+		if("select".equals(action) && object instanceof CurriculumElementWithViewsRow row) {
 			if(row.getStartUrl() != null) {
 				return row.getStartUrl();
 			}
