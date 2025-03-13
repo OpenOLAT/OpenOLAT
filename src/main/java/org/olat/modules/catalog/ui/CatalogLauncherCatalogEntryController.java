@@ -132,7 +132,7 @@ public class CatalogLauncherCatalogEntryController extends BasicController imple
 			String id = "o_dml_" + CodeHelper.getRAMUniqueID();
 			Link displayNameLink = LinkFactory.createLink(id, id, "open", null, getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
 			displayNameLink.setCustomDisplayText(StringHelper.escapeHtml(entry.getDisplayname()));
-			displayNameLink.setUserObject(entry.getRepositoryEntryKey());
+			displayNameLink.setUserObject(entry.getOlatResource().getKey());
 			String url;
 			if (canLaunch(entry.getRepositoryEntryKey())) {
 				List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString("[RepositoryEntry:" + entry.getRepositoryEntryKey() + "]");
@@ -243,8 +243,7 @@ public class CatalogLauncherCatalogEntryController extends BasicController imple
 			fireEvent(ureq, new OpenSearchEvent(state, null));
 		} else if (source == showAllLink) {
 			fireEvent(ureq, new OpenSearchEvent(state, null));
-		} else if (source instanceof Link) {
-			Link link = (Link)source;
+		} else if (source instanceof Link link) {
 			if ("open".equals(link.getCommand())) {
 				Long repositoryEntryKey = (Long)link.getUserObject();
 				launchOrOpen(ureq, repositoryEntryKey);
@@ -255,7 +254,7 @@ public class CatalogLauncherCatalogEntryController extends BasicController imple
 	private void launchOrOpen(UserRequest ureq, Long resourceKey) {
 		CatalogEntry catalogEntry = resourceKeyToEntry.get(resourceKey);
 		
-		if (canLaunch(catalogEntry.getRepositoryEntryKey())) {
+		if (catalogEntry != null && canLaunch(catalogEntry.getRepositoryEntryKey())) {
 			boolean started = doStart(ureq, catalogEntry.getRepositoryEntryKey());
 			if (started) {
 				return;
