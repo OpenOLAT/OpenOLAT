@@ -31,6 +31,7 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.site.ComparableCurriculumElementRow;
+import org.olat.modules.curriculum.ui.component.MinMaxParticipants;
 import org.olat.repository.ui.PriceMethod;
 
 /**
@@ -54,6 +55,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	private final long numOfCurriculumElementOwners;
 	private final long numOfMasterCoaches;
 	private final long numOfPending;
+	private MinMaxParticipants minMaxParticipants;
 	private List<PriceMethod> accessPriceMethods;
 	
 	private final FormLink toolsLink;
@@ -82,6 +84,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		numOfCurriculumElementOwners = 0l;
 		numOfMasterCoaches = 0l;
 		numOfPending = 0l;
+		minMaxParticipants = new MinMaxParticipants(element.getMinParticipants(), element.getMaxParticipants());
 		toolsLink = null;
 		resourcesLink = null;
 		structureLink = null;
@@ -101,6 +104,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		this.numOfCurriculumElementOwners = numOfCurriculumElementOwners;
 		this.numOfMasterCoaches = numOfMasterCoaches;
 		this.numOfPending = numOfPending;
+		minMaxParticipants = new MinMaxParticipants(element.getMinParticipants(), element.getMaxParticipants());
 		this.resourcesLink = resourcesLink;
 		this.structureLink = structureLink;
 		elementType = element.getType();
@@ -118,6 +122,7 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 	
 	public void setCurriculumElement(CurriculumElement element) {
 		this.element = element;
+		minMaxParticipants = new MinMaxParticipants(element.getMinParticipants(), element.getMaxParticipants());
 	}
 	
 	public Long getCurriculumKey() {
@@ -280,6 +285,10 @@ public class CurriculumElementRow implements ComparableCurriculumElementRow {
 		return numOfPending;
 	}
 	
+	public MinMaxParticipants getMinMaxParticipants() {
+		return minMaxParticipants;
+	}
+
 	public List<PriceMethod> getAccessPriceMethods() {
 		return accessPriceMethods;
 	}

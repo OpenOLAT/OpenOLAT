@@ -100,6 +100,7 @@ import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.component.CurriculumStatusCellRenderer;
+import org.olat.modules.curriculum.ui.component.MinMaxParticipantsCellRenderer;
 import org.olat.modules.curriculum.ui.copy.CopyElement1SettingsStep;
 import org.olat.modules.curriculum.ui.copy.CopyElementCallback;
 import org.olat.modules.curriculum.ui.copy.CopyElementContext;
@@ -134,6 +135,13 @@ public class CurriculumComposerController extends FormBasicController implements
 	static final String FILTER_OFFER = "Offer";
 	static final String FILTER_STATUS = "Status";
 	static final String FILTER_CURRICULUM = "Curriculum";
+	static final String FILTER_OCCUPANCY_STATUS = "Occupancy";
+	static final String FILTER_OCCUPANCY_STATUS_NOT_SPECIFIED = "NotSpecified";
+	static final String FILTER_OCCUPANCY_STATUS_NOT_REACHED = "NotReached";
+	static final String FILTER_OCCUPANCY_STATUS_MIN_REACHED = "MinReached";
+	static final String FILTER_OCCUPANCY_STATUS_FREE_SEATS = "FreeSeats";
+	static final String FILTER_OCCUPANCY_STATUS_FULLY_BOOKED = "Full";
+	static final String FILTER_OCCUPANCY_STATUS_OVERBOOKED = "Overbooked";
 	
 	protected static final String CMD_MEMBERS = "members";
 	protected static final String CMD_PENDING = "pending";
@@ -321,6 +329,10 @@ public class CurriculumComposerController extends FormBasicController implements
 				ElementCols.numOfCurriculumElementOwners, CurriculumRoles.curriculumelementowner.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.status,
 				new CurriculumStatusCellRenderer(getTranslator())));
+		if(config.isWithMixMaxColumn()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.minMaxParticipants,
+				new MinMaxParticipantsCellRenderer()));
+		}
 		
 		boolean withOptions = curriculum != null;
 		DefaultFlexiColumnModel calendarsCol = new DefaultFlexiColumnModel(withOptions, ElementCols.calendars);
@@ -378,12 +390,12 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private String getTablePrefsId() {
 		if(rootElement != null) {
-			return "curriculum-composer-v6";
+			return "curriculum-composer-v7";
 		}
 		if(curriculum != null) {
-			return "cur-implementations-v6";
+			return "cur-implementations-v7";
 		}
-		return "cur-otherlist-v6";
+		return "cur-otherlist-v7";
 	}
 	
 	private void initFilters() {
@@ -429,6 +441,20 @@ public class CurriculumComposerController extends FormBasicController implements
 		FlexiTableMultiSelectionFilter typeFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
 				FILTER_TYPE, typesValues, true);
 		filters.add(typeFilter);
+		
+		if(config.isWithMixMaxColumn()) {
+			SelectionValues occupancyValues = new SelectionValues();
+			occupancyValues.add(SelectionValues.entry(FILTER_OCCUPANCY_STATUS_NOT_SPECIFIED, translate("filter.occupancy.status.not.specified")));
+			occupancyValues.add(SelectionValues.entry(FILTER_OCCUPANCY_STATUS_NOT_REACHED, translate("filter.occupancy.status.not.reached")));
+			occupancyValues.add(SelectionValues.entry(FILTER_OCCUPANCY_STATUS_MIN_REACHED, translate("filter.occupancy.status.min.reached")));
+			occupancyValues.add(SelectionValues.entry(FILTER_OCCUPANCY_STATUS_FREE_SEATS, translate("filter.occupancy.status.free.seats")));
+			occupancyValues.add(SelectionValues.entry(FILTER_OCCUPANCY_STATUS_FULLY_BOOKED, translate("filter.occupancy.status.fully.booked")));
+			occupancyValues.add(SelectionValues.entry(FILTER_OCCUPANCY_STATUS_OVERBOOKED, translate("filter.occupancy.status.overbooked")));
+			FlexiTableMultiSelectionFilter occupanyFilter = new FlexiTableMultiSelectionFilter(translate("filter.occupancy.status"),
+					FILTER_OCCUPANCY_STATUS, occupancyValues, true);
+			filters.add(occupanyFilter);
+			
+		}
 		
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -529,6 +555,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(row != null) {
 			row.setCurriculumElement(element);
 			row.setCurriculumElementType(element.getType());
+			
 		}
 	}
 	
@@ -747,7 +774,9 @@ public class CurriculumComposerController extends FormBasicController implements
 
 				toolbarPanel.popUpToController(this);
 				if(uctrl == this) {
-					// Do nothing, implementations level
+					if(pe.getController() instanceof CurriculumElementDetailsController detailsCtrl) {
+						reloadElement(detailsCtrl.getCurriculumElement());
+					}
 				} else if(uobject instanceof CurriculumElement curriculumElement) {
 					doOpenCurriculumElementDetails(ureq, curriculumElement, List.of());
 				}

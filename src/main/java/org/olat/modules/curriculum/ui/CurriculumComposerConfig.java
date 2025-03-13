@@ -35,6 +35,8 @@ public class CurriculumComposerConfig {
 	private int titleSize;
 	private String titleIconCssClass;
 	
+	private boolean withMixMaxColumn = false;
+	
 	public static CurriculumComposerConfig curriculumView() {
 		CurriculumComposerConfig config = new CurriculumComposerConfig();
 		config.setFlat(false);
@@ -46,6 +48,7 @@ public class CurriculumComposerConfig {
 		CurriculumComposerConfig config = new CurriculumComposerConfig();
 		config.setFlat(true);
 		config.setRootElementsOnly(true);
+		config.setWithMixMaxColumn(true);
 		return config;
 	}
 
@@ -89,5 +92,13 @@ public class CurriculumComposerConfig {
 		this.title = title;
 		this.titleSize = titleSize;
 		this.titleIconCssClass = titleIconCssClass;
+	}
+
+	public boolean isWithMixMaxColumn() {
+		return withMixMaxColumn;
+	}
+
+	public void setWithMixMaxColumn(boolean withMixMaxColumn) {
+		this.withMixMaxColumn = withMixMaxColumn;
 	}
 }

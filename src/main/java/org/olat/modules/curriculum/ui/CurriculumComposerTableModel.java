@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableOneClickSelectionFilter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.ui.component.MinMaxParticipants;
 
 /**
  * 
@@ -83,6 +84,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty() && filters.get(0) != null)) {	
 			List<Long> typesKeys = List.of();
 			List<Long> curriculumsKeys = List.of();
+			List<String> occupancyValues = List.of();
 			List<CurriculumElementStatus> status = List.of();
 			boolean withOffersOnly = false;
 			Long searchLong = StringHelper.isLong(searchString) ? Long.valueOf(searchString) : null;
@@ -120,13 +122,19 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 				withOffersOnly = extendedFilter.isSelected();
 			}
 			
+			FlexiTableFilter occupancyFilter = FlexiTableFilter.getFilter(filters, CurriculumComposerController.FILTER_OCCUPANCY_STATUS);
+			if (occupancyFilter instanceof FlexiTableExtendedFilter extendedFilter) {
+				occupancyValues = extendedFilter.getValues();
+			}
+			
 			List<CurriculumElementRow> filteredRows = new ArrayList<>(backupRows.size());
 			for(CurriculumElementRow row:backupRows) {
 				boolean accept = (accept(row, searchLong) || accept(row, searchString))
 						&& acceptCurriculum(row, curriculumsKeys)
 						&& acceptStatus(row, status)
 						&& acceptTypes(row, typesKeys)
-						&& acceptWithOffers(row, withOffersOnly);
+						&& acceptWithOffers(row, withOffersOnly)
+						&& acceptOccupancyStatus(row, occupancyValues);
 				
 				row.setAcceptedByFilter(accept);
 				if(accept) {
@@ -190,6 +198,42 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			return row.getAccessPriceMethods() != null && !row.getAccessPriceMethods().isEmpty();
 		}
 		return true;
+	}
+	
+	private boolean acceptOccupancyStatus(CurriculumElementRow row, List<String> statusList) {
+		if(statusList == null || statusList.isEmpty()) return true;
+		
+		for(String status:statusList) {
+			if(acceptOccupancyStatus(row, status)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean acceptOccupancyStatus(CurriculumElementRow row, String status) {
+		MinMaxParticipants minMax = row.getMinMaxParticipants();
+		long seats = row.getNumOfPending() + row.getNumOfParticipants();
+		if(CurriculumComposerController.FILTER_OCCUPANCY_STATUS_NOT_SPECIFIED.equalsIgnoreCase(status)) {
+			return minMax.min() == null && minMax.max() == null;
+		}
+		if(CurriculumComposerController.FILTER_OCCUPANCY_STATUS_NOT_REACHED.equalsIgnoreCase(status)) {
+			return minMax.min() != null && seats < minMax.min().longValue();
+		}
+		if(CurriculumComposerController.FILTER_OCCUPANCY_STATUS_MIN_REACHED.equalsIgnoreCase(status)) {
+			return minMax.min() != null && seats >= minMax.min().longValue()
+					&& (minMax.max() == null || seats < minMax.max().longValue());
+		}
+		if(CurriculumComposerController.FILTER_OCCUPANCY_STATUS_FREE_SEATS.equalsIgnoreCase(status)) {
+			return minMax.max() != null && seats < minMax.max().longValue();
+		}
+		if(CurriculumComposerController.FILTER_OCCUPANCY_STATUS_FULLY_BOOKED.equalsIgnoreCase(status)) {
+			return minMax.max() != null && seats == minMax.max().longValue();
+		}
+		if(CurriculumComposerController.FILTER_OCCUPANCY_STATUS_OVERBOOKED.equalsIgnoreCase(status)) {
+			return minMax.max() != null && seats > minMax.max().longValue();
+		}
+		return false;
 	}
 	
 	public CurriculumElementRow getCurriculumElementRowByKey(Long elementKey) {
@@ -263,6 +307,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 			case lectures -> element.getLecturesLink();
 			case qualityPreview -> element.getQualityPreviewLink();
 			case learningProgress -> element.getLearningProgressLink();
+			case minMaxParticipants -> element.getMinMaxParticipants();
 			default -> "ERROR";
 		};
 	}
@@ -299,7 +344,8 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 		learningProgress("table.header.learning.progress"),
 		status("table.header.status"),
 		offers("table.header.offers"),
-		tools("table.header.tools");
+		tools("table.header.tools"),
+		minMaxParticipants("table.header.minmax.participants");
 		
 		private final String i18nKey;
 		
