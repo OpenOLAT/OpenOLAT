@@ -120,13 +120,6 @@ public class ConfirmInstantiateTemplateController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(element.getIdentifier())) {
 			sb.append(element.getIdentifier());
 		}
-		
-		if(StringHelper.containsNonWhitespace(template.getExternalRef())) {
-			if(sb.length() > 0) {
-				sb.append("_");
-			}
-			sb.append(template.getExternalRef());
-		}
 		return sb.toString();
 	}
 	
