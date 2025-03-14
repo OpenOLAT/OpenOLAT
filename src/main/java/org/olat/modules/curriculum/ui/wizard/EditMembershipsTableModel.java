@@ -147,7 +147,7 @@ implements FlexiTableFooterModel {
 
 	public enum MembershipsCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		displayName("table.header.displayName"),
+		displayName("table.header.title"),
 		externalRef("table.header.external.ref"),
 		externalId("table.header.external.id");
 		

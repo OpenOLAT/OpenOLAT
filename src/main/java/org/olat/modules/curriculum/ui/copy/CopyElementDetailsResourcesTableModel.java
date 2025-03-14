@@ -78,7 +78,7 @@ implements SortableFlexiTableDataModel<CopyElementDetailsResourcesRow> {
 	public enum CopyResourcesCols implements FlexiSortableColumnDef {
 		activity("table.header.activity"),
 		key("table.header.key"),
-		displayname("table.header.displayname"),
+		displayname("table.header.title"),
 		externalId("table.header.external.id"),
 		externalRef("table.header.external.ref"),
 		access("table.header.access"),

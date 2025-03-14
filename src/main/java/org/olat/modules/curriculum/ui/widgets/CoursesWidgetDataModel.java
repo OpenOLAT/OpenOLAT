@@ -50,7 +50,7 @@ public class CoursesWidgetDataModel extends DefaultFlexiTableDataModel<CourseWid
 
 	public enum EntriesCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		displayName("table.header.displayName"),
+		displayName("table.header.title"),
 		externalRef("table.header.identifier");
 		
 		private final String i18nKey;

@@ -147,7 +147,7 @@ implements SortableFlexiTableDataModel<MemberHistoryDetailsRow>, FilterableFlexi
 		creationDate("table.header.date"),
 		member("table.header.member"),
 		role("table.header.role"),
-		curriculumElement("table.header.curriculum.element.displayName"),
+		curriculumElement("table.header.curriculum.element.display.name"),
 		activity("table.header.activity"),
 		previousStatus("table.header.original.value"),
 		status("table.header.new.value"),

@@ -75,7 +75,7 @@ class CurriculumElementListDataModel extends DefaultFlexiTableDataModel<Curricul
 	}
 	
 	public enum Cols implements FlexiSortableColumnDef {
-		displayName("curriculum.element.display.name"),
+		displayName("curriculum.element.title"),
 		identifier("curriculum.element.identifier"),
 		typeName("curriculum.element.type.name"),
 		begin("curriculum.element.begin"),

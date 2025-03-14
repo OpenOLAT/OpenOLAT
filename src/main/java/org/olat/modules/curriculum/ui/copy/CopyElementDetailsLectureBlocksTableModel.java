@@ -78,7 +78,7 @@ implements SortableFlexiTableDataModel<CopyElementDetailsLectureBlocksRow> {
 	public enum CopyLectureBlockCols implements FlexiSortableColumnDef {
 		activity("table.header.activity"),
 		key("table.header.key"),
-		title("table.header.displayname"),
+		title("table.header.title"),
 		externalId("table.header.external.id"),
 		externalRef("table.header.external.ref"),
 		resource("table.header.resource"),

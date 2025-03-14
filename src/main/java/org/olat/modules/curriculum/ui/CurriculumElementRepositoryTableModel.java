@@ -235,7 +235,7 @@ public class CurriculumElementRepositoryTableModel extends DefaultFlexiTableData
 	public enum RepoCols implements FlexiSortableColumnDef {
 		ac("table.header.ac"),
 		repoEntry("table.header.typeimg"),
-		displayname("table.header.displayname"),
+		displayname("table.header.title"),
 		author("table.header.author"),
 		access("table.header.access"),
 		creationDate("table.header.date"),

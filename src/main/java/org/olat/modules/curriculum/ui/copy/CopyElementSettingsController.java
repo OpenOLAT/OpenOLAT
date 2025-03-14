@@ -77,7 +77,7 @@ public class CopyElementSettingsController extends StepFormBasicController {
 		CurriculumElement elementToCopy = context.getCurriculumElement();
 		
 		String displayName = translate("to.copy", elementToCopy.getDisplayName());
-		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.displayName", 110, displayName, formLayout);
+		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.display.name", 110, displayName, formLayout);
 		displayNameEl.setMandatory(true);
 		
 		String identifier = translate("to.copy", elementToCopy.getIdentifier());

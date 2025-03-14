@@ -61,7 +61,7 @@ implements SortableFlexiTableDataModel<CurriculumElementRow> {
 	
 	public enum ElementCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		displayName("table.header.displayName"),
+		displayName("table.header.title"),
 		identifier("table.header.identifier");
 		
 		private final String i18nHeaderKey;

@@ -212,7 +212,7 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 
 	public enum ElementViewCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		displayName("table.header.curriculum.element.displayName"),
+		displayName("table.header.curriculum.element.display.name"),
 		identifier("table.header.curriculum.element.identifier"),
 		mark("table.header.mark"),
 		select("table.header.displayName"),

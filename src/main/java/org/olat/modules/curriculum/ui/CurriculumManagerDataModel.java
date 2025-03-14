@@ -162,7 +162,7 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 	public enum CurriculumCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		active("table.header.active"),
-		displayName("table.header.displayName"),
+		displayName("table.header.title"),
 		externalRef("table.header.external.ref"),
 		externalId("table.header.external.id"),
 		numOfElements("table.header.num.elements"),

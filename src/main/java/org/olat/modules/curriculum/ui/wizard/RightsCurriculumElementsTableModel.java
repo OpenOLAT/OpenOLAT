@@ -148,7 +148,7 @@ implements FlexiTableFooterModel {
 	public enum RightsElementsCols implements FlexiSortableColumnDef {
 		modifications("table.header.modification"),
 		key("table.header.key"),
-		displayName("table.header.displayName"),
+		displayName("table.header.title"),
 		externalRef("table.header.external.ref"),
 		externalId("table.header.external.id"),
 		roleToModify("table.header.external.id"),

@@ -109,7 +109,7 @@ public class EditCurriculumController extends FormBasicController {
 		}
 
 		String displayName = curriculum == null ? "" : curriculum.getDisplayName();
-		displayNameEl = uifactory.addTextElement("curriculum.displayName", "curriculum.displayName", 255, displayName, formLayout);
+		displayNameEl = uifactory.addTextElement("curriculum.display.name", "curriculum.display.name", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.displayName) && secCallback.canEditCurriculum());
 		displayNameEl.setMandatory(true);
 		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {

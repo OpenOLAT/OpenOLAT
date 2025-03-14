@@ -102,7 +102,7 @@ implements SortableFlexiTableDataModel<CurriculumElementSearchRow>, FlexiBusines
 	public enum SearchCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		curriculum("table.header.curriculum"),
-		displayName("table.header.curriculum.element.displayName"),
+		displayName("table.header.curriculum.element.display.name"),
 		externalRef("table.header.external.ref"),
 		externalId("table.header.external.id"),
 		beginDate("table.header.begin.date"),

@@ -322,7 +322,7 @@ implements FlexiBusinessPathModel, SortableFlexiTableDataModel<CurriculumElement
 	public enum ElementCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		numbering("table.header.numbering"),
-		displayName("table.header.displayName"),
+		displayName("table.header.title"),
 		externalRef("table.header.external.ref"),
 		externalId("table.header.external.id"),
 		curriculum("table.header.curriculum"),

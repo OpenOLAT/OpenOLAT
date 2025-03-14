@@ -183,7 +183,7 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		boolean canEdit = element == null || secCallback.canEditCurriculumElement(element);
 		
 		String displayName = element == null ? "" : element.getDisplayName();
-		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.displayName", 255, displayName, formLayout);
+		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.display.name", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && canEdit);
 		displayNameEl.setMandatory(true);
 		if(displayNameEl.isEnabled() && !StringHelper.containsNonWhitespace(displayName)) {

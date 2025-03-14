@@ -90,7 +90,7 @@ implements SortableFlexiTableDataModel<LectureCurriculumElementInfos> {
 		
 		key("table.header.key"),
 		curriculum("table.header.curriculum"),
-		displayName("table.header.curriculum.element.displayName"),
+		displayName("table.header.curriculum.element.display.name"),
 		identifier("table.header.curriculum.element.identifier"),
 		externalId("table.header.external.id"),
 		beginDate("table.header.begin.date"),

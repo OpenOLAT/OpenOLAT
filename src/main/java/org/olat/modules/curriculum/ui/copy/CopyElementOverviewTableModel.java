@@ -70,7 +70,7 @@ public class CopyElementOverviewTableModel extends DefaultFlexiTreeTableDataMode
 	
 	public enum CopyElementCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		displayName("table.header.displayName"),
+		displayName("table.header.title"),
 		identifier("table.header.external.ref"),
 		beginDate("table.header.begin.date"),
 		endDate("table.header.end.date"),

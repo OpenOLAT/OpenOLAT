@@ -78,7 +78,7 @@ public class ImportCurriculumController extends FormBasicController {
 		uploadFileEl.setMandatory(true);
 		uploadFileEl.addActionListener(FormEvent.ONCHANGE);
 		
-		displayNameEl = uifactory.addTextElement("curriculum.displayName", 255, "", formLayout);
+		displayNameEl = uifactory.addTextElement("curriculum.display.name", 255, "", formLayout);
 		displayNameEl.setMandatory(true);
 		
 		initFormOrganisations(formLayout, ureq.getUserSession());
