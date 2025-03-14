@@ -115,7 +115,7 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 			and exists (select template.key from repotemplatetogroup as template
 			  where curEl.group.key=template.group.key
 			)
-			and not exists (select course from repoentrytogroup as course
+			and not exists (select course.key from repoentrytogroup as course
 			  where curEl.group.key=course.group.key
 			)""";
 		
