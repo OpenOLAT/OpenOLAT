@@ -19,6 +19,9 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Date;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -28,13 +31,18 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRuntimeType;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,6 +62,8 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 	private CurriculumElement element;
 	private final CurriculumSecurityCallback secCallback;
 	
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private CurriculumService curriculumService;
 
@@ -172,6 +182,10 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String currentLocation = element.getLocation();
+		Date currentBeginDate = element.getBeginDate();
+		Date currentEndDate = element.getEndDate();
+		
 		element = curriculumService.getCurriculumElement(element);
 		element.setBeginDate(periodEl.getDate());
 		element.setEndDate(periodEl.getSecondDate());
@@ -190,7 +204,38 @@ public class EditCurriculumElementExecutionController extends FormBasicControlle
 		
 		element = curriculumService.updateCurriculumElement(element);
 		element = curriculumService.getCurriculumElement(element);
+		
+		syncCurricularCourses(currentLocation, currentBeginDate, currentEndDate);
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
+	
+	private void syncCurricularCourses(String currentLocation, Date currentBeginDate, Date currentEndDate) {
+		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(element);
+		for(RepositoryEntry entry:entries) {
+			if(entry.getRuntimeType() != RepositoryEntryRuntimeType.curricular) continue;
+			// empty string are null
 
+			String synchedLocation = equalsString(currentLocation, entry.getLocation())
+					? element.getLocation() : entry.getLocation();
+			RepositoryEntryLifecycle synchedLifecycle = entry.getLifecycle();
+			if(synchedLifecycle != null && synchedLifecycle.isPrivateCycle()
+					&& equalsDate(currentBeginDate, synchedLifecycle.getValidFrom())
+					&& equalsDate(currentEndDate, synchedLifecycle.getValidTo())) {
+				synchedLifecycle.setValidFrom(element.getBeginDate());
+				synchedLifecycle.setValidTo(element.getEndDate());
+			}
+			repositoryManager.setLocationAndLifecycle(entry, synchedLocation, synchedLifecycle);
+		}
+	}
+	
+	private boolean equalsString(String d1, String d2) {
+		if(!StringHelper.containsNonWhitespace(d1) && !StringHelper.containsNonWhitespace(d2)) return true;
+		return d1 != null && d2 != null && d1.equals(d2);
+	}
+	
+	private boolean equalsDate(Date d1, Date d2) {
+		if(d1 == null && d2 == null) return true;
+		return d1 != null && d2 != null && DateUtils.isSameDay(d1, d2);
+	}
 }

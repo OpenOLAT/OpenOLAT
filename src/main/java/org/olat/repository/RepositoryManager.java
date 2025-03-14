@@ -918,6 +918,40 @@ public class RepositoryManager {
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
+	
+	public RepositoryEntry setDisplayNameAndExternalRef(final RepositoryEntry re, String displayName, String externalRef) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		
+		reloadedRe.setDisplayname(displayName);
+		reloadedRe.setExternalRef(externalRef);
+		reloadedRe.setLastModified(new Date());
+		
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		updatedRe.getOlatResource().getKey();
+		dbInstance.commit();
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
+		return updatedRe;
+	}
+	
+	public RepositoryEntry setLocationAndLifecycle(final RepositoryEntry re, String location, RepositoryEntryLifecycle cycle) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		
+		reloadedRe.setLocation(location);
+		reloadedRe.setLifecycle(cycle);
+		reloadedRe.setLastModified(new Date());
+		
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		updatedRe.getOlatResource().getKey();
+		dbInstance.commit();
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
+		return updatedRe;
+	}
 
 	/**
 	 * This method doesn't update empty and null values! ( Reserved to unit tests

@@ -420,11 +420,11 @@ public class CourseToolbarController extends FormBasicController {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			buttonsCont.setRootForm(mainForm);
 			formLayout.add(buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			if(editable) {
 				FormSubmit saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
 				saveButton.setElementCssClass("o_sel_settings_save");
 			}
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 		
 		updateUI();

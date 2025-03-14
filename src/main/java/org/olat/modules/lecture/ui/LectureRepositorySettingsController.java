@@ -194,10 +194,10 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		FormCancel cancelButton = uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		cancelButton.setVisible(!readOnly);
 		saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
 		saveButton.setVisible((!lectureConfigManaged || overrideManaged) && !readOnly);
+		FormCancel cancelButton = uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		cancelButton.setVisible(!readOnly);
 	}
 	
 	protected boolean isAllowedToOverrideManaged(UserRequest ureq) {

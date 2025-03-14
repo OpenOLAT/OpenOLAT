@@ -60,7 +60,9 @@ import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -360,7 +362,11 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 		CurriculumElementType elementType = getSelectedType();
 		RepositoryEntryEducationalType educationalType = getEducationalType();
 		
+		
+		
 		boolean create = element == null;
+		String currentDisplayName = null;
+		String currentIdentifier = null;
 		if(create) {
 			//create a new one
 			element = curriculumService.createCurriculumElement(identifierEl.getValue(), displayNameEl.getValue(),
@@ -370,6 +376,9 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 				element = curriculumService.updateCurriculumElement(element);
 			}
 		} else {
+			currentDisplayName = element.getDisplayName();
+			currentIdentifier = element.getIdentifier();
+			
 			element = curriculumService.getCurriculumElement(element);
 			element.setIdentifier(identifierEl.getValue());
 			element.setDisplayName(displayNameEl.getValue());
@@ -415,7 +424,31 @@ public class EditCurriculumElementMetadataController extends FormBasicController
 			}
 		}
 		
+		if(!create) {
+			syncCurricularCourses(currentDisplayName, currentIdentifier);
+		}
+		
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private void syncCurricularCourses(String currentDisplayName, String currentIdentifier) {
+		List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(element);
+		for(RepositoryEntry entry:entries) {
+			if(entry.getRuntimeType() != RepositoryEntryRuntimeType.curricular) continue;
+			
+			String synchedDisplayName = equalsString(currentDisplayName, entry.getDisplayname()) ? element.getDisplayName() : null;
+			String synchedExternalRef = equalsString(currentIdentifier, entry.getExternalRef()) ? element.getIdentifier() : null;
+			if(synchedDisplayName != null || synchedExternalRef != null) {
+				synchedDisplayName = synchedDisplayName == null ? entry.getDisplayname() : synchedDisplayName;
+				synchedExternalRef = synchedExternalRef == null ? entry.getExternalRef() : synchedExternalRef;
+				repositoryManager.setDisplayNameAndExternalRef(entry, synchedDisplayName, synchedExternalRef);
+			}
+		}
+	}
+	
+	private boolean equalsString(String d1, String d2) {
+		if(!StringHelper.containsNonWhitespace(d1) && !StringHelper.containsNonWhitespace(d2)) return true;
+		return d1 != null && d2 != null && d1.equals(d2);
 	}
 	
 	private Curriculum getCurriculum() {
