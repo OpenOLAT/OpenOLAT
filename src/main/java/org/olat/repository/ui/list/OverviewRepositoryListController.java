@@ -308,7 +308,7 @@ public class OverviewRepositoryListController extends BasicController implements
 			inPreparationStackPanel.pushController(translate("search.mycourses.student"), inPreparationCtrl);
 			listenTo(inPreparationCtrl);
 		} else if(entriesDirty) {
-			//inPreparationCtrl.reloadRows();
+			inPreparationCtrl.reloadRows();
 		}
 		
 		entriesDirty = false;

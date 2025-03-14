@@ -138,6 +138,8 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 	public Object getValueAt(InPreparationRow row, int col) {
 		return switch(COLS[col]) {
 			case key -> (row.getRepositoryEntryKey() == null ? row.getCurriculumElementKey() : row.getRepositoryEntryKey());
+			case creationDate -> row.getCreationDate();
+			case lastModified -> row.getLastModified();
 			case displayName -> row.getDisplayName();
 			case externalId -> row.getExternalId();
 			case externalRef -> row.getExternalRef();
@@ -145,6 +147,7 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 			case lifecycleSoftkey -> row.getLifecycleSoftKey();
 			case lifecycleStart -> row.getLifecycleStart();
 			case lifecycleEnd -> row.getLifecycleEnd();
+			case authors -> row.getAuthors();
 			case location -> row.getLocation();
 			case educationalType -> row.getEducationalType();
 			case details -> row.getDetailsLink();
@@ -162,6 +165,8 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 
 	public enum InPreparationCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
+		creationDate("cif.displayname"),
+		lastModified("cif.displayname"),
 		displayName("cif.displayname"),
 		externalId("table.header.externalid"),
 		externalRef("table.header.externalref"),
@@ -169,6 +174,7 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 		lifecycleSoftkey("table.header.lifecycle.softkey"),
 		lifecycleStart("table.header.lifecycle.start"),
 		lifecycleEnd("table.header.lifecycle.end"),
+		authors("table.header.authors"),
 		location("table.header.location"),
 		educationalType("table.header.educational.type"),
 		details("table.header.learn.more"),

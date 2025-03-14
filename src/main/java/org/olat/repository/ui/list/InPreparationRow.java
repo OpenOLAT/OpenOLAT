@@ -42,6 +42,9 @@ public class InPreparationRow {
 	
 	private final Long repositoryEntryKey;
 	private final Long curriculumElementKey;
+	
+	private final Date creationDate;
+	private final Date lastModified;
 
 	private final String displayname;
 	private final String externalId;
@@ -68,6 +71,8 @@ public class InPreparationRow {
 	public InPreparationRow(RepositoryEntry re) {
 		repositoryEntryKey = re.getKey();
 		curriculumElementKey = null;
+		creationDate = re.getCreationDate();
+		lastModified = re.getLastModified();
 		externalId = re.getExternalId();
 		externalRef = re.getExternalRef();
 		displayname = re.getDisplayname();
@@ -89,6 +94,8 @@ public class InPreparationRow {
 	public InPreparationRow(CurriculumElement element) {
 		repositoryEntryKey = null;
 		curriculumElementKey = element.getKey();
+		creationDate = element.getCreationDate();
+		lastModified = element.getLastModified();
 		externalId = element.getExternalId();
 		externalRef = element.getIdentifier();
 		displayname = element.getDisplayName();
@@ -110,6 +117,14 @@ public class InPreparationRow {
 
 	public Long getCurriculumElementKey() {
 		return curriculumElementKey;
+	}
+	
+	public Date getCreationDate() {
+		return creationDate;
+	}
+	
+	public Date getLastModified() {
+		return lastModified;
 	}
 	
 	public RepositoryEntryStatusEnum getRepositoryEntryStatus() {

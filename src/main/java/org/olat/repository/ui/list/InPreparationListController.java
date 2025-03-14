@@ -24,6 +24,7 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -32,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -163,6 +166,9 @@ public class InPreparationListController extends FormBasicController implements 
 		
 		initFilterPresets(ureq);
 		initFilters();
+		initSorters(tableEl);
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-in-preparation-v1");
 	}
 	
 	private void initFilterPresets(UserRequest ureq) {
@@ -192,6 +198,23 @@ public class InPreparationListController extends FormBasicController implements 
 				FilterButton.EDUCATIONALTYPE.name(), educationalTypeKV, true));
 		
 		tableEl.setFilters(true, filters, true, false);
+	}
+	
+	private void initSorters(FlexiTableElement tableElement) {
+		List<FlexiTableSort> sorters = new ArrayList<>(14);
+		sorters.add(new FlexiTableSort(translate("orderby.title"), InPreparationCols.displayName.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.lifecycle"), InPreparationCols.lifecycleStart.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.author"), InPreparationCols.authors.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.creationDate"), InPreparationCols.creationDate.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.lastModified"), InPreparationCols.lastModified.name()));
+
+		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
+		options.setDefaultOrderBy(new SortKey(InPreparationCols.displayName.name(), true));
+		tableElement.setSortSettings(options);
+	}
+	
+	protected void reloadRows() {
+		loadModel();
 	}
 	
 	private void loadModel() {
