@@ -79,7 +79,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 	private static final String COACH_SCOPE = "coach";
 	private static final String PRINCIPAL_SCOPE = "principal";
 	private static final String LINE_MANAGER_SCOPE = "linemanager";
-	private static final String EDU_MANAGER_SCOPE = "edumanager";
+	private static final String EDU_MANAGER_SCOPE = "educationmanager";
 	private static final String RELATION_PREFIX_SCOPE = "rr_";
 	
 	private final VelocityContainer mainVC;
@@ -296,7 +296,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 	private void doOpenAsCoach(UserRequest ureq) {
 		cleanUp();
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("AsCoach", 0l);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(COACH_SCOPE, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		studentListCtrl = new StudentListController(ureq, bwControl, content);

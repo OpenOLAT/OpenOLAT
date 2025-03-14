@@ -153,6 +153,9 @@ public class CoachMainRootController extends BasicController implements Activate
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		content.popUpToController(this);
+		cleanUp();
+
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
