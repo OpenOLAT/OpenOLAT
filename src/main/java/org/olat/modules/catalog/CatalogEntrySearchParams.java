@@ -50,6 +50,7 @@ public class CatalogEntrySearchParams {
 	private Collection<String>launcherResourceTypes;
 	private Collection<Long> launcherEducationalTypeKeys;
 	private List<TaxonomyLevel> launcherTaxonomyLevels;
+	private boolean bookOnBehalfOf;
 
 	public boolean isWebPublish() {
 		return webPublish;
@@ -163,4 +164,11 @@ public class CatalogEntrySearchParams {
 		return copy;
 	}
 
+	public void setBookOnBehalfOf(boolean bookOnBehalfOf) {
+		this.bookOnBehalfOf = bookOnBehalfOf;
+	}
+
+	public boolean isBookOnBehalfOf() {
+		return bookOnBehalfOf;
+	}
 }

@@ -100,7 +100,7 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity, boolean bookOnBehalfOf) {
 		PaypalCheckoutModule paypalModule = CoreSpringFactory.getImpl(PaypalCheckoutModule.class);
 		if(paypalModule.isSmartButtons()) {
 			return new PaypalSmartButtonPaymentController(ureq, wControl, link);

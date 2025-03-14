@@ -72,6 +72,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	
 	private final CurriculumElement element;
 	private final Identity bookedIdentity;
+	private final boolean bookOnBehalfOf;
 	private final boolean isMember;
 	private final boolean preview;
 
@@ -83,10 +84,11 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	private AccessControlModule acModule;
 
 	public CurriculumElementInfosHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			Identity bookedIdentity, boolean isMember, boolean preview) {
+			Identity bookedIdentity, boolean isMember, boolean preview, boolean bookOnBehalfOf) {
 		super(ureq, wControl);
 		this.element = element;
 		this.bookedIdentity = preview? null: bookedIdentity;
+		this.bookOnBehalfOf = bookOnBehalfOf;
 		this.isMember = preview? false: isMember;
 		this.preview = preview;
 		
@@ -131,6 +133,11 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	@Override
 	protected RepositoryEntryEducationalType getEducationalType() {
 		return element.getEducationalType();
+	}
+
+	@Override
+	protected boolean isBookOnBehalfOf() {
+		return bookOnBehalfOf;
 	}
 
 	@Override

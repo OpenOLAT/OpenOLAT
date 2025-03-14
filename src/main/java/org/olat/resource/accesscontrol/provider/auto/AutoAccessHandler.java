@@ -77,7 +77,7 @@ public abstract class AutoAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
+	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity, boolean bookOnBehalfOf) {
 		return null;
 	}
 

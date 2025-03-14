@@ -120,6 +120,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 	protected abstract RepositoryEntryEducationalType getEducationalType();
 	
 	protected abstract boolean isPreview();
+	protected abstract boolean isBookOnBehalfOf();
 	protected abstract void initAccess(UserRequest ureq);
 	protected abstract String getStartLinkText();
 	protected abstract boolean tryAutoBooking(UserRequest ureq);
@@ -130,7 +131,7 @@ public abstract class AbstractDetailsHeaderController extends BasicController {
 			return;
 		}
 		
-		offersCtrl = new OffersController(ureq, getWindowControl(), bookedIdentity, offers, webPublish, false, isPreview());
+		offersCtrl = new OffersController(ureq, getWindowControl(), bookedIdentity, offers, webPublish, false, isPreview(), isBookOnBehalfOf());
 		listenTo(offersCtrl);
 		mainVC.put("offers", offersCtrl.getInitialComponent());
 	}

@@ -424,7 +424,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				needActivation = false;
 			}  else if (businessGroup != null && !acResult.getAvailableMethods().isEmpty()
 					&& !roles.isGuestOnly() && !roles.isInviteeOnly()) {
-				accessController = new OffersController(ureq, getWindowControl(), getIdentity(), acResult.getAvailableMethods(), false, true, false);
+				accessController = new OffersController(ureq, getWindowControl(), getIdentity(), acResult.getAvailableMethods(), false, true, false, false);
 				listenTo(accessController);
 				mainPanel.setContent(accessController.getInitialComponent());
 				bgTree.setTreeModel(new GenericTreeModel());
