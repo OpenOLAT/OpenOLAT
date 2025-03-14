@@ -424,7 +424,7 @@
 			</bean>
 		</property>
 		<property name="translationPackage" value="org.olat.admin" />
-		<property name="i18nActionKey" value="menu.i18n"/>
+		<property name="i18nActionKey" value="menu.language.and.region"/>
 		<property name="i18nDescriptionKey" value="menu.i18n.alt"/>
 		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
 		<property name="extensionPoints">
