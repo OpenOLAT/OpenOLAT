@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -240,8 +241,10 @@ public class UserDetailsController extends BasicController implements Activateab
 			RepositoryEntry entry = repositoryService.loadBy(statementEntry.getCourse());
 			UserCourseEnvironment coachCourseEnv = loadUserCourseEnvironment(ureq, entry);
 			AssessmentToolSecurityCallback secCallback = AssessmentToolSecurityCallback.nothing();
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean nodeSelectable = !roles.isLineManager() && !roles.isEducationManager();
 			assessmentCtrl = new AssessmentIdentityCourseController(ureq, getWindowControl(), stackPanel, entry, coachCourseEnv,
-					assessedIdentity, true, secCallback);
+					assessedIdentity, nodeSelectable, secCallback);
 			listenTo(assessmentCtrl);
 		}
 		mainVC.put("segmentCmp", assessmentCtrl.getInitialComponent());
