@@ -1,10 +1,11 @@
-<h2><i class="o_icon o_CourseModule_icon"> </i> $r.translate("search.course")</h2>
-
-#if($r.visible("scopes"))
-	$r.render("scopes")
-	<div class="o_segments_content clearfix">
+<div class="o_sel_my_courses">
+	<h2><i class="o_icon o_CourseModule_icon"> </i> $r.translate("search.course")</h2>
+	#if($r.visible("scopes"))
+		$r.render("scopes")
+		<div class="o_segments_content clearfix">
+			$r.render("component")
+		</div>
+	#else
 		$r.render("component")
-	</div>
-#else
-	$r.render("component")
-#end
+	#end
+</div>

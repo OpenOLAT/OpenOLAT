@@ -66,7 +66,7 @@ public class NavigationPage {
 	private	static final By groupsBy = By.cssSelector("li.o_site_groups > a");
 	private	static final By libraryBy = By.cssSelector("li.f_site_library > a");
 	
-	public static final By myCoursesAssertBy = By.xpath("//div[contains(@class,'o_segments')]//a[contains(@onclick,'search.mycourses.student')]");
+	public static final By myCoursesAssertBy = By.xpath("//div[contains(@class,'o_sel_my_repository_entries')]//div[@class='o_sel_my_courses']");
 	public static final By portalAssertBy = By.className("o_portal");
 	public static final By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
 	
