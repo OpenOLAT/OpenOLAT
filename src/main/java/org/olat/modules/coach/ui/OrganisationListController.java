@@ -172,7 +172,7 @@ public class OrganisationListController extends AbstactCoachListController {
 	private boolean allowedToManageUser(Identity user) {
 		Roles userRoles = securityManager.getRoles(user);
 
-		if (userRoles.isMoreThanUser()) {
+		if (userRoles.isSystemAdmin() || userRoles.isAdministrator() || userRoles.isPrincipal() || userRoles.isManager()) {
 			return false;
 		}
 
