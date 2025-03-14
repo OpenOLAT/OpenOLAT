@@ -229,7 +229,7 @@ public class UserOverviewController extends BasicController implements Activatea
 			}
 		}
 		
-		if (catalogV2Module.isEnabled() && roleSecurityCallback.canCreateBookingOnBehalfOf()) {
+		if (roleSecurityCallback.canCreateBookingOnBehalfOf()) {
 			bookOnBehalfOfLink = LinkFactory.createToolLink("book.on.behalf.of.link", 
 					translate("book.on.behalf.of.link"), this);
 			bookOnBehalfOfLink.setIconLeftCSS("o_icon o_icon_booking");
