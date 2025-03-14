@@ -99,13 +99,15 @@ public class LifecyclePublicHandler implements CatalogFilterHandler {
 	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogFilter catalogFilter,
 			List<CatalogEntry> catalogEntries, TaxonomyLevel launcherTaxonomyLevel) {
 		SelectionValues filterSV = new SelectionValues();
-		catalogEntries.stream()
-				.map(CatalogEntry::getLifecycle)
-				.filter(lifecycle -> lifecycle != null && !lifecycle.isPrivateCycle())
-				.distinct()
-				.forEach(lifecycle -> filterSV.add(new SelectionValue(
-						lifecycle.getSoftKey(),
-						StringHelper.escapeHtml(lifecycle.getLabel()))));
+		for (CatalogEntry catalogEntry : catalogEntries) {
+			if (StringHelper.containsNonWhitespace(catalogEntry.getLifecycleSoftKey())) {
+				if (!filterSV.containsKey(catalogEntry.getLifecycleSoftKey())) {
+					filterSV.add(new SelectionValue(
+							catalogEntry.getLifecycleSoftKey(),
+							StringHelper.escapeHtml(catalogEntry.getLifecycleLabel())));
+				}
+			}
+		}
 		
 		if (filterSV.isEmpty()) {
 			return null;

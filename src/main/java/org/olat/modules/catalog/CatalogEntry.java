@@ -27,7 +27,6 @@ import org.olat.core.commons.services.license.License;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 
@@ -63,8 +62,14 @@ public interface CatalogEntry {
 
 	String getExpenditureOfWork();
 
-	RepositoryEntryLifecycle getLifecycle();
+	String getLifecycleLabel();
 
+	String getLifecycleSoftKey();
+	
+	Date getLifecycleStart();
+	
+	Date getLifecycleEnd();
+	
 	RepositoryEntryStatusEnum getStatus();
 	
 	Date getPublishedDate();

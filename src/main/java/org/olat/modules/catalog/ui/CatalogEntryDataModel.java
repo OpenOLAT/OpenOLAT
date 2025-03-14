@@ -95,7 +95,7 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 			case expenditureOfWork: return catalogEntryRow.getExpenditureOfWork();
 			case educationalType: return catalogEntryRow.getEducationalType();
 			case taxonomyLevels: return catalogEntryRow.getTaxonomyLevelNamePaths();
-			case offers: return catalogEntryRow;
+			case offers: return catalogEntryRow.getAccessInfo();
 			case details: return catalogEntryRow.getDetailsLink();
 			case detailsSmall: return catalogEntryRow.getDetailsSmallLink();
 			case start: return catalogEntryRow.getStartLink();

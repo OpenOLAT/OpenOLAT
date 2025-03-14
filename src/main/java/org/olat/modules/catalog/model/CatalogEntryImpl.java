@@ -30,7 +30,6 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 
@@ -55,7 +54,10 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private final RepositoryEntryEducationalType educationalType;
 	private final String expenditureOfWork;
 	
-	private final RepositoryEntryLifecycle lifecycle;
+	private String lifecycleLabel;
+	private String lifecycleSoftKey;
+	private Date lifecycleStart;
+	private Date lifecycleEnd;
 	private final RepositoryEntryStatusEnum status;
 	private final Date publishedDate;
 	private final boolean publicVisible;
@@ -89,7 +91,14 @@ public class CatalogEntryImpl implements CatalogEntry {
 		educationalType = re.getEducationalType();
 		expenditureOfWork = re.getExpenditureOfWork();
 		
-		lifecycle = re.getLifecycle();
+		if(re.getLifecycle() != null) {
+			lifecycleStart = re.getLifecycle().getValidFrom();
+			lifecycleEnd = re.getLifecycle().getValidTo();
+			if(!re.getLifecycle().isPrivateCycle()) {
+				lifecycleLabel = re.getLifecycle().getLabel();
+				lifecycleSoftKey = re.getLifecycle().getSoftKey();
+			}
+		}
 		status = re.getEntryStatus();
 		publishedDate = re.getStatusPublishedDate();
 		publicVisible = re.isPublicVisible();
@@ -114,7 +123,8 @@ public class CatalogEntryImpl implements CatalogEntry {
 		location = element.getLocation();
 		educationalType = element.getEducationalType();
 		expenditureOfWork = element.getExpenditureOfWork();
-		lifecycle = null;
+		lifecycleStart = element.getBeginDate();
+		lifecycleEnd = element.getEndDate();
 		status = null;
 		publishedDate = null;
 		publicVisible = true;
@@ -185,10 +195,25 @@ public class CatalogEntryImpl implements CatalogEntry {
 	public String getExpenditureOfWork() {
 		return expenditureOfWork;
 	}
+	
+	@Override
+	public String getLifecycleLabel() {
+		return lifecycleLabel;
+	}
 
 	@Override
-	public RepositoryEntryLifecycle getLifecycle() {
-		return lifecycle;
+	public String getLifecycleSoftKey() {
+		return lifecycleSoftKey;
+	}
+
+	@Override
+	public Date getLifecycleStart() {
+		return lifecycleStart;
+	}
+
+	@Override
+	public Date getLifecycleEnd() {
+		return lifecycleEnd;
 	}
 
 	@Override

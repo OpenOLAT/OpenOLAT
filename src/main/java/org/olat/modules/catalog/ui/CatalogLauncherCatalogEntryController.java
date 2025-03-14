@@ -60,7 +60,6 @@ import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,26 +188,23 @@ public class CatalogLauncherCatalogEntryController extends BasicController imple
 			item.setLocation(entry.getLocation());
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.executionPeriod)) {
-			RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
-			if (lifecycle != null) {
-				String executionPeriod = null;
-				if(lifecycle.isPrivateCycle()) {
-					if (lifecycle.getValidFrom() != null) {
-						executionPeriod = Formatter.getInstance(getLocale()).formatDate(lifecycle.getValidFrom());
-					}
-					if (lifecycle.getValidTo() != null) {
-						if (StringHelper.containsNonWhitespace(executionPeriod)) {
-							executionPeriod += " - ";
-						}
-						executionPeriod += Formatter.getInstance(getLocale()).formatDate(lifecycle.getValidTo());
-					}
-				} else if (StringHelper.containsNonWhitespace(lifecycle.getSoftKey())) {
-					executionPeriod = lifecycle.getSoftKey();
-				} else if (StringHelper.containsNonWhitespace(lifecycle.getLabel())) {
-					executionPeriod = lifecycle.getLabel();
+			String executionPeriod = null;
+			if (StringHelper.containsNonWhitespace(entry.getLifecycleLabel())) {
+				executionPeriod = StringHelper.escapeHtml(entry.getLifecycleLabel());
+			} else if (StringHelper.containsNonWhitespace(entry.getLifecycleSoftKey())) {
+				executionPeriod = entry.getLifecycleSoftKey();
+			} else {
+				if (entry.getLifecycleStart() != null) {
+					executionPeriod = Formatter.getInstance(getLocale()).formatDate(entry.getLifecycleStart());
 				}
-				item.setExecutionPeriod(executionPeriod);
+				if (entry.getLifecycleEnd() != null) {
+					if (StringHelper.containsNonWhitespace(executionPeriod)) {
+						executionPeriod += " - ";
+					}
+					executionPeriod += Formatter.getInstance(getLocale()).formatDate(entry.getLifecycleEnd());
+				}
 			}
+			item.setExecutionPeriod(executionPeriod);
 		}
 		if (catalogModule.getCardView().contains(CatalogCardView.authors)) {
 			item.setAuthors(entry.getAuthors());

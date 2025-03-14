@@ -122,7 +122,6 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
-import org.olat.repository.ui.author.ACRenderer;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.accesscontrol.ACService;
@@ -290,7 +289,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.expenditureOfWork));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.educationalType, new EducationalTypeRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.taxonomyLevels, new TaxonomyLevelRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.offers, new ACRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.offers));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.detailsSmall));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.startSmall));
 
@@ -466,7 +465,6 @@ public class CatalogEntryListController extends FormBasicController implements A
 			
 			if (!accessMethodTypes.isEmpty()) {
 				row.setAccessMethodTypes(accessMethodTypes);
-				row.setAccessPriceMethods(priceMethods);
 				row.setAutoBooking(autoBooking);
 			}
 			

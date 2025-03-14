@@ -32,8 +32,6 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.repository.model.RepositoryEntryLifecycle;
-import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
 
@@ -58,12 +56,10 @@ public class CatalogEntryRow {
 	private final String expenditureOfWork;
 	private final RepositoryEntryStatusEnum status;
 	private final boolean publicVisible;
-	
-	private final RepositoryEntryLifecycle reLifecycle;
-	private String lifecycleLabel;
-	private String lifecycleSoftKey;
-	private Date lifecycleStart;
-	private Date lifecycleEnd;
+	private final String lifecycleLabel;
+	private final String lifecycleSoftKey;
+	private final Date lifecycleStart;
+	private final Date lifecycleEnd;
 	
 	private final Long curriculumKey;
 	private final String curriculumElementTypeName;
@@ -76,7 +72,6 @@ public class CatalogEntryRow {
 	private final boolean openAccess;
 	private final boolean guestAccess;
 	private Set<String> accessMethodTypes;
-	private List<PriceMethod> accessPriceMethods;
 	private boolean autoBooking;
 	private String accessInfo;
 	private String accessWarning;
@@ -106,6 +101,10 @@ public class CatalogEntryRow {
 		expenditureOfWork = catalogEntry.getExpenditureOfWork();
 		status = catalogEntry.getStatus();
 		publicVisible = catalogEntry.isPublicVisible();
+		lifecycleLabel = catalogEntry.getLifecycleLabel();
+		lifecycleSoftKey = catalogEntry.getLifecycleSoftKey();
+		lifecycleStart = catalogEntry.getLifecycleStart();
+		lifecycleEnd = catalogEntry.getLifecycleEnd();
 		olatResource = catalogEntry.getOlatResource();
 		taxonomyLevels = catalogEntry.getTaxonomyLevels();
 		member = catalogEntry.isMember();
@@ -115,16 +114,6 @@ public class CatalogEntryRow {
 		maxParticipants = catalogEntry.getMaxParticipants();
 		numParticipants = catalogEntry.getNumParticipants();
 		license = catalogEntry.getLicense();
-		
-		reLifecycle = catalogEntry.getLifecycle();
-		if(reLifecycle != null) {
-			setLifecycleStart(reLifecycle.getValidFrom());
-			setLifecycleEnd(reLifecycle.getValidTo());
-			if(!reLifecycle.isPrivateCycle()) {
-				setLifecycleLabel(reLifecycle.getLabel());
-				setLifecycleSoftKey(reLifecycle.getSoftKey());
-			}
-		}
 		
 		curriculumKey = catalogEntry.getCurriculumKey();
 		curriculumElementTypeName = catalogEntry.getCurriculumElementTypeName();
@@ -162,40 +151,20 @@ public class CatalogEntryRow {
 		return title;
 	}
 
-	public RepositoryEntryLifecycle getReLifecycle() {
-		return reLifecycle;
-	}
-
 	public String getLifecycleSoftKey() {
 		return lifecycleSoftKey;
-	}
-
-	public void setLifecycleSoftKey(String lifecycleSoftKey) {
-		this.lifecycleSoftKey = lifecycleSoftKey;
 	}
 
 	public String getLifecycleLabel() {
 		return lifecycleLabel;
 	}
 
-	public void setLifecycleLabel(String lifecycleLabel) {
-		this.lifecycleLabel = lifecycleLabel;
-	}
-
 	public Date getLifecycleStart() {
 		return lifecycleStart;
 	}
 
-	public void setLifecycleStart(Date lifecycleStart) {
-		this.lifecycleStart = lifecycleStart;
-	}
-
 	public Date getLifecycleEnd() {
 		return lifecycleEnd;
-	}
-
-	public void setLifecycleEnd(Date lifecycleEnd) {
-		this.lifecycleEnd = lifecycleEnd;
 	}
 
 	public Long getCurriculumKey() {
@@ -240,14 +209,6 @@ public class CatalogEntryRow {
 
 	public void setAccessMethodTypes(Set<String> accessMethodTypes) {
 		this.accessMethodTypes = accessMethodTypes;
-	}
-
-	public List<PriceMethod> getAccessPriceMethods() {
-		return accessPriceMethods;
-	}
-
-	public void setAccessPriceMethods(List<PriceMethod> accessPriceMethods) {
-		this.accessPriceMethods = accessPriceMethods;
 	}
 	
 	public String getAccessInfo() {
