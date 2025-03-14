@@ -95,7 +95,7 @@ public class TokenAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
-	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity, boolean bookOnBehalfOf) {
+	public Controller createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
 		return new TokenSubmitController(ureq, wControl, link, bookedIdentity);
 	}
 

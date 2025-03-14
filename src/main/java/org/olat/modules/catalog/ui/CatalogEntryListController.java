@@ -939,7 +939,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, searchParams.getMember(), false, searchParams.isBookOnBehalfOf());
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, searchParams.getMember(), false);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			

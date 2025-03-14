@@ -70,7 +70,6 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 
 	private final OfferAccess link;
 	private final Identity bookedIdentity;
-	private final boolean bookOnBehalfOf;
 	private BillingAddress billingAddress;
 	
 	@Autowired
@@ -78,12 +77,11 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	@Autowired
 	private ACService acService;
 
-	protected InvoiceSubmitDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity, boolean bookOnBehalfOf) {
+	protected InvoiceSubmitDetailsController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(BillingAddressController.class, getLocale(), getTranslator()));
 		this.link = link;
 		this.bookedIdentity = bookedIdentity;
-		this.bookOnBehalfOf = bookOnBehalfOf;
 		
 		initForm(ureq);
 	}
@@ -226,8 +224,7 @@ public class InvoiceSubmitDetailsController extends FormBasicController {
 	private void doSelectBillingAddress(UserRequest ureq) {
 		if (guardModalController(addressSelectionCtrl)) return;
 		
-		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), 
-				true, true, !bookOnBehalfOf, !bookOnBehalfOf,
+		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, true, true, true,
 				bookedIdentity, billingAddress);
 		listenTo(addressSelectionCtrl);
 		

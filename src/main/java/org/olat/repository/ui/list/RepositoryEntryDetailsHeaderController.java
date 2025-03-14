@@ -120,11 +120,6 @@ public class RepositoryEntryDetailsHeaderController extends AbstractDetailsHeade
 	}
 
 	@Override
-	protected boolean isBookOnBehalfOf() {
-		return false;
-	}
-
-	@Override
 	protected boolean isPreview() {
 		return false;
 	}

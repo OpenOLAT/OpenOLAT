@@ -45,13 +45,11 @@ public class InvoiceSubmitController extends FormBasicController implements Cont
 
 	private OfferAccess link;
 	private final Identity bookedIdentity;
-	private final boolean bookOnBehalfOf;
 
-	public InvoiceSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity, boolean bookOnBehalfOf) {
+	public InvoiceSubmitController(UserRequest ureq, WindowControl wControl, OfferAccess link, Identity bookedIdentity) {
 		super(ureq, wControl, "submit");
 		this.link = link;
 		this.bookedIdentity = bookedIdentity;
-		this.bookOnBehalfOf = bookOnBehalfOf;
 		initForm(ureq);
 	}
 
@@ -90,7 +88,7 @@ public class InvoiceSubmitController extends FormBasicController implements Cont
 	private void doOpenDetailsSubmit(UserRequest ureq) {
 		if (guardModalController(detailsCtrl)) return;
 		
-		detailsCtrl = new InvoiceSubmitDetailsController(ureq, getWindowControl(), link, bookedIdentity, bookOnBehalfOf);
+		detailsCtrl = new InvoiceSubmitDetailsController(ureq, getWindowControl(), link, bookedIdentity);
 		listenTo(detailsCtrl);
 		
 		String title = translate("access.invoice.details.title", StringHelper.escapeHtml(link.getOffer().getResourceDisplayName()));

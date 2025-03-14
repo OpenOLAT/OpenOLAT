@@ -89,7 +89,6 @@ public class BookOnBehalfOfController extends BasicController {
 		CatalogEntrySearchParams searchParams = new CatalogEntrySearchParams();
 		searchParams.setMember(identity);
 		searchParams.setOfferOrganisations(acService.getOfferOrganisations(identity));
-		searchParams.setBookOnBehalfOf(true);
 		return searchParams;
 	}
 

@@ -261,7 +261,7 @@ public class EditCurriculumElementController extends BasicController {
 	}
 
 	private void doOpenPreview(UserRequest ureq) {
-		previewCtrl = new CurriculumElementInfosController(ureq, getWindowControl(), element, getIdentity(), true, false);
+		previewCtrl = new CurriculumElementInfosController(ureq, getWindowControl(), element, getIdentity(), true);
 		listenTo(previewCtrl);
 		toolbarPanel.pushController(translate("preview.info"), previewCtrl);
 	}
