@@ -234,7 +234,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.totalAmount, new TotalAmountRenderer()));
 		if (isWithInvoice) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.cancellationFees, new CancellationFeesRenderer()));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.billingAddressIdentifier, new BillingAddressCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.billingAddressIdentifier, new BillingAddressCellRenderer(getLocale())));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterName));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.costCenterAccount));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrderCol.purchaseOrderNumber));

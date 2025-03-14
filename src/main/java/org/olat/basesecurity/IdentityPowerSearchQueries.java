@@ -48,6 +48,6 @@ public interface IdentityPowerSearchQueries {
 	 * 
 	 * @param rows The list of identities
 	 */
-	public void appendOrganisations(List<IdentityPropertiesRow> rows);
+	public void appendOrganisations(List<? extends IdentityOrganisationsRow> rows);
 
 }

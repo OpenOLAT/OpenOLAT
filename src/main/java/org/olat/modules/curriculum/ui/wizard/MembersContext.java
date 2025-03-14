@@ -21,7 +21,9 @@ package org.olat.modules.curriculum.ui.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.mail.MailTemplate;
@@ -46,6 +48,7 @@ public class MembersContext {
 	
 	private List<Identity> searchedIdentities;
 	private List<Identity> selectedIdentities;
+	private Map<Long, List<OrganisationWithParents>> identityKeyToUserOrganisations;
 	
 	private final Curriculum curriculum;
 	private final CurriculumElement curriculumElement;
@@ -53,7 +56,9 @@ public class MembersContext {
 	
 	private final List<Offer> offers;
 	private AccessInfos selectedOffer;
+	private boolean needBillingAddress;
 	private BillingAddress billingAddress;
+	private Map<Long, BillingAddress> identityKeyToBillingAddress;
 	private String purchaseOrderNumber;
 	private String orderComment;
 
@@ -93,6 +98,14 @@ public class MembersContext {
 
 	public void setSelectedIdentities(List<Identity> selectedIdentities) {
 		this.selectedIdentities = selectedIdentities;
+	}
+
+	public Map<Long, List<OrganisationWithParents>> getIdentityKeyToUserOrganisations() {
+		return identityKeyToUserOrganisations;
+	}
+
+	public void setIdentityKeyToUserOrganisations(Map<Long, List<OrganisationWithParents>> identityKeyToUserOrganisations) {
+		this.identityKeyToUserOrganisations = identityKeyToUserOrganisations;
 	}
 
 	public Curriculum getCurriculum() {
@@ -163,6 +176,14 @@ public class MembersContext {
 		this.orderComment = orderComment;
 	}
 	
+	public boolean isNeedBillingAddress() {
+		return needBillingAddress;
+	}
+
+	public void setNeedBillingAddress(boolean needBillingAddress) {
+		this.needBillingAddress = needBillingAddress;
+	}
+
 	public BillingAddress getBillingAddress() {
 		return billingAddress;
 	}
@@ -171,12 +192,30 @@ public class MembersContext {
 		this.billingAddress = billingAddress;
 	}
 	
+	public Map<Long, BillingAddress> getIdentityKeyToBillingAddress() {
+		return identityKeyToBillingAddress;
+	}
+
+	public void setIdentityKeyToBillingAddress(Map<Long, BillingAddress> identityKeyToBillingAddress) {
+		this.identityKeyToBillingAddress = identityKeyToBillingAddress;
+	}
+
 	/**
+	 * @param identity 
 	 * @param hasCode Has access code for Token Access Offer?
 	 * @return
 	 */
-	public OrderAdditionalInfos createOrderInfos(boolean hasCode) {
-		return new OrderAdditionalInfos(purchaseOrderNumber, orderComment, billingAddress, hasCode);
+	public OrderAdditionalInfos createOrderInfos(Identity identity, boolean hasCode) {
+		BillingAddress orderBillingAddress = null;
+		if (needBillingAddress) {
+			if (identityKeyToBillingAddress != null) {
+				orderBillingAddress = identityKeyToBillingAddress.get(identity.getKey());
+			}
+			if (orderBillingAddress == null) {
+				orderBillingAddress = billingAddress;
+			}
+		}
+		return new OrderAdditionalInfos(purchaseOrderNumber, orderComment, orderBillingAddress, hasCode);
 	}
 
 	public boolean hasModifications() {

@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.IdentityOrganisationsRow;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityLifecycle;
 import org.olat.user.UserPropertiesRow;
@@ -34,7 +35,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class IdentityPropertiesRow extends UserPropertiesRow implements IdentityLifecycle {
+public class IdentityPropertiesRow extends UserPropertiesRow implements IdentityLifecycle, IdentityOrganisationsRow {
 	
 	private final Integer status;
 	private final Date lastLogin;
@@ -126,6 +127,7 @@ public class IdentityPropertiesRow extends UserPropertiesRow implements Identity
 		return organisations;
 	}
 
+	@Override
 	public void setOrganisations(List<OrganisationWithParents> organisations) {
 		this.organisations = organisations;
 	}

@@ -71,7 +71,10 @@ implements SortableFlexiTableDataModel<UserRow> {
 			return switch(COLS[col]) {
 				case modifications -> row.getModificationSummary();
 				case role -> row.getRoles();
+				case organisation -> row.getOrganisations();
+				case billingAddress -> row;
 				case numOfModifications -> getNumOfModifications(row);
+				case tools -> row.getToolsLink();
 				default -> "ERROR";
 			};
 		}
@@ -91,7 +94,10 @@ implements SortableFlexiTableDataModel<UserRow> {
 	public enum UserOverviewCols implements FlexiSortableColumnDef {
 		modifications("table.header.activity"),
 		role("table.header.current.roles"),
-		numOfModifications("table.header.add.access");
+		organisation("table.header.organisations"),
+		billingAddress("table.header.billing.address"),
+		numOfModifications("table.header.add.access"),
+		tools("action.more");
 		
 		private final String i18nKey;
 		

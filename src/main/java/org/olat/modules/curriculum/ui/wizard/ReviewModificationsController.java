@@ -28,22 +28,31 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupMembershipStatus;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionsColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
@@ -68,13 +77,19 @@ import org.olat.modules.curriculum.ui.member.ModificationStatusSummary;
 import org.olat.modules.curriculum.ui.wizard.UsersOverviewTableModel.UserOverviewCols;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.BillingAddress;
+import org.olat.resource.accesscontrol.BillingAddressSearchParams;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
+import org.olat.resource.accesscontrol.ui.BillingAddressCellRenderer;
+import org.olat.resource.accesscontrol.ui.BillingAddressSelectionController;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.admin.IdentityOrganisationsCellRenderer;
+import org.olat.user.ui.organisation.OrganisationsSmallListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -85,11 +100,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ReviewModificationsController extends StepFormBasicController implements FlexiTableComponentDelegate {
 
+	private static final String CMD_TOOLS = "odtools";
 	private static final String TOGGLE_DETAILS_CMD = "toggle-details";
 	
 	private FlexiTableElement tableEl;
 	private UsersOverviewTableModel tableModel;
 	private final VelocityContainer detailsVC;
+	
+	private ToolsController toolsCtrl;
+	private CloseableModalController cmc;
+	private CloseableCalloutWindowController calloutCtrl;
+	private BillingAddressSelectionController addressSelectionCtrl;
+	private OrganisationsSmallListController organisationsSmallListCtrl;
 	
 	private final String avatarMapperBaseURL;
 	private final MembersContext membersContext;
@@ -125,6 +147,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 
 		initForm(ureq);
 		loadModel();
+		validateFormLogic(ureq);
 	}
 
 	@Override
@@ -145,10 +168,19 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			colIndex++;
 		}
 		
-		// Counts
+		if (membersContext.isNeedBillingAddress()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserOverviewCols.organisation, new IdentityOrganisationsCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserOverviewCols.billingAddress, new BillingAddressCellRenderer(getLocale(), true)));
+		}
+		
 		DefaultFlexiColumnModel numCol = new DefaultFlexiColumnModel(UserOverviewCols.numOfModifications,
 				new DualNumberCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(numCol);
+		
+		if (membersContext.isNeedBillingAddress()) {
+			ActionsColumnModel toolsColumn = new ActionsColumnModel(UserOverviewCols.tools);
+			columnsModel.addFlexiColumnModel(toolsColumn);
+		}
 		
 		tableModel = new UsersOverviewTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -199,6 +231,13 @@ public class ReviewModificationsController extends StepFormBasicController imple
 					membersContext.getModifications());
 			row.setModificationSummary(summary);
 			row.setModifications(membersContext.getModifications());
+			if (membersContext.isNeedBillingAddress()) {
+				row.setOrganisations(membersContext.getIdentityKeyToUserOrganisations().get(identity.getKey()));
+				setBillingAddress(row);
+				
+				forge(row);
+			}
+			
 			rows.add(row);
 		}
 		
@@ -232,6 +271,33 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		return new ModificationStatusSummary(modify, add, false, numOfModifications);
 	}
 
+	private void setBillingAddress(UserRow row) {
+		BillingAddress billingAddress = null;
+		if (membersContext.getIdentityKeyToBillingAddress() != null) {
+			billingAddress = membersContext.getIdentityKeyToBillingAddress().get(row.getIdentity().getKey());
+		}
+		if (billingAddress == null) {
+			billingAddress = membersContext.getBillingAddress();
+		}
+		if (billingAddress == null) {
+			BillingAddressSearchParams baSearchParams = new BillingAddressSearchParams();
+			baSearchParams.setOrganisations(row.getOrganisations());
+			List<BillingAddress> billingAddresses = acService.getBillingAddresses(baSearchParams);
+			if (billingAddresses.size() == 1) {
+				billingAddress = billingAddresses.get(0);
+			}
+		}
+		row.setBillingAddress(billingAddress);
+	}
+	
+	private void forge(UserRow row) {
+		if (membersContext.isNeedBillingAddress() && !row.isBillingAddressAvailable()) {
+			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), CMD_TOOLS);
+			toolsLink.setUserObject(row);
+			row.setToolsLink(toolsLink);
+		}
+	}
+
 	@Override
 	public boolean isDetailsRow(int row, Object rowObject) {
 		return true;
@@ -248,6 +314,40 @@ public class ReviewModificationsController extends StepFormBasicController imple
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (addressSelectionCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (addressSelectionCtrl.getUserObject() instanceof UserRow row) {
+					updateBillingAddress(ureq, row, addressSelectionCtrl.getBillingAddress());
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (organisationsSmallListCtrl == source) {
+			cleanUp();
+		} else if(toolsCtrl == source) {
+			calloutCtrl.deactivate();
+			cleanUp();	
+		} else if(cmc == source || calloutCtrl == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(organisationsSmallListCtrl);
+		removeAsListenerAndDispose(addressSelectionCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(cmc);
+		organisationsSmallListCtrl = null;
+		addressSelectionCtrl = null;
+		calloutCtrl = null;
+		toolsCtrl = null;
+		cmc = null;
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
@@ -261,6 +361,10 @@ public class ReviewModificationsController extends StepFormBasicController imple
 						doOpenMemberDetails(ureq, row);
 						tableEl.expandDetails(se.getIndex());
 					}
+				} else if(IdentityOrganisationsCellRenderer.CMD_OTHER_ORGANISATIONS.equals(cmd)) {
+					String targetId = IdentityOrganisationsCellRenderer.getOtherOrganisationsId(se.getIndex());
+					UserRow row = tableModel.getObject(se.getIndex());
+					doShowOrganisations(ureq, targetId, row);
 				}
 			} else if(event instanceof DetailsToggleEvent toggleEvent) {
 				UserRow row = tableModel.getObject(toggleEvent.getRowIndex());
@@ -270,8 +374,27 @@ public class ReviewModificationsController extends StepFormBasicController imple
 					doCloseMemberDetails(row);
 				}
 			}
+	 } else if(source instanceof FormLink link && CMD_TOOLS.equals(link.getCmd())
+				&& link.getUserObject() instanceof UserRow row) {
+			doOpenTools(ureq, row, link);
 		} 
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		tableEl.clearError();
+		if (membersContext.isNeedBillingAddress()) {
+			boolean missingBillingAddress = tableModel.getObjects().stream().anyMatch(row -> !row.isBillingAddressAvailable());
+			if (missingBillingAddress) {
+				allOk &= false;
+				tableEl.setErrorKey("error.missing.billing.address");
+			}
+		}
+		
+		return allOk;
 	}
 	
 	@Override
@@ -340,4 +463,90 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		return profileConfig;
 	}
+	
+	private void doShowOrganisations(UserRequest ureq, String elementId, UserRow row) {
+		List<OrganisationWithParents> organisations = row.getOrganisations();
+		organisationsSmallListCtrl = new OrganisationsSmallListController(ureq, getWindowControl(), organisations);
+		listenTo(organisationsSmallListCtrl);
+		
+		String title = translate("num.of.organisations", Integer.toString(organisations.size()));
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), organisationsSmallListCtrl.getInitialComponent(), elementId, title, true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
+	}
+	
+	private void doSelectBillingAddress(UserRequest ureq, UserRow row) {
+		if (guardModalController(addressSelectionCtrl)) return;
+		
+		addressSelectionCtrl = new BillingAddressSelectionController(ureq, getWindowControl(), true, false, false,
+				false, row.getIdentity(), row.getBillingAddress());
+		addressSelectionCtrl.setUserObject(row);
+		listenTo(addressSelectionCtrl);
+		
+		String title = translate("select.billing.address");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				addressSelectionCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void updateBillingAddress(UserRequest ureq, UserRow row, BillingAddress billingAddress) {
+		row.setBillingAddress(billingAddress);
+		membersContext.getIdentityKeyToBillingAddress().put(row.getIdentityKey(), billingAddress);
+		tableEl.reset(false, false, true);
+		validateFormLogic(ureq);
+	}
+	
+	private void doOpenTools(UserRequest ureq, UserRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
+	}
+
+	private class ToolsController extends BasicController {
+
+		private Link billingAddressLink;
+
+		private final VelocityContainer mainVC;
+		
+		private final UserRow row;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, UserRow row) {
+			super(ureq, wControl, Util.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
+			this.row = row;
+			mainVC = createVelocityContainer("tools");
+			
+			List<String> links = new ArrayList<>(1);
+			billingAddressLink = addLink("select.billing.address", "select.billing.address", "o_icon o_icon-fw o_icon_billing_address", links);
+			
+			mainVC.contextPut("links", links);
+			putInitialPanel(mainVC);
+		}
+		
+		private Link addLink(String name, String cmd, String iconCSS, List<String> links) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			if(iconCSS != null) {
+				link.setIconLeftCSS(iconCSS);
+			}
+			mainVC.put(name, link);
+			links.add(name);
+			return link;
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(billingAddressLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doSelectBillingAddress(ureq, row);
+			}
+		}
+	}
+	
 }

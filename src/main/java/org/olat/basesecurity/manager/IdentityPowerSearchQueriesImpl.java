@@ -36,6 +36,7 @@ import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityOrganisationsRow;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
@@ -161,21 +162,21 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	}
 
 	@Override
-	public void appendOrganisations(List<IdentityPropertiesRow> rows) {
+	public void appendOrganisations(List<? extends IdentityOrganisationsRow> rows) {
 		List<Long> rowKeys = rows.stream()
-				.map(IdentityPropertiesRow::getIdentityKey)
+				.map(IdentityOrganisationsRow::getIdentityKey)
 				.collect(Collectors.toList());
 		appendOrganisations(rows, rowKeys);
 	}
 	
-	private void appendOrganisations(List<IdentityPropertiesRow> rows, List<Long> rowsKeys) {
+	private void appendOrganisations(List<? extends IdentityOrganisationsRow> rows, List<Long> rowsKeys) {
 		
 		List<OrganisationWithParents> organisations = organisationTree.getOrderedOrganisationsWithParents();
 		Map<Long,OrganisationWithParents> organisationsMap = organisations.stream()
 				.collect(Collectors.toMap(OrganisationWithParents::getKey, org -> org, (u,v) -> u));
 		
 		Map<Long,List<Long>> identityToOorganisations = getOrganisations(rowsKeys);
-		for(IdentityPropertiesRow row:rows) {
+		for(IdentityOrganisationsRow row:rows) {
 			List<Long> organisationsKeysList = identityToOorganisations.get(row.getIdentityKey());
 			List<OrganisationWithParents> orgs;
 			if(organisationsKeysList == null) {

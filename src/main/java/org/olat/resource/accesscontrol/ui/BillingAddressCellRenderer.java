@@ -19,6 +19,8 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
+import java.util.Locale;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -26,6 +28,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 
 /**
  * 
@@ -34,21 +37,50 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class BillingAddressCellRenderer implements FlexiCellRenderer {
+	
+	private final Translator baTranslator;
+	private final boolean missingAddressWarningEnabled;
+	
+	public BillingAddressCellRenderer(Locale locale) {
+		this(locale, false);
+	}
+			
+	public BillingAddressCellRenderer(Locale locale, boolean missingAddressWarningEnabled) {
+		this.baTranslator = Util.createPackageTranslator(BillingAddressCellRenderer.class, locale);
+		this.missingAddressWarningEnabled = missingAddressWarningEnabled;
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof OrderTableRow orderRow) {
-			if (orderRow.isBillingAddressProposal()) {
-				if (renderer != null) {
-					// not in export
-					target.append("<i class=\"o_icon o_icon_important\"> </i> ");
-				}
-				target.append(translator.translate("billing.address.proposal"));
-			} else if (StringHelper.containsNonWhitespace(orderRow.getBillingAddressIdentifier())) {
-				target.append(orderRow.getBillingAddressIdentifier());
+		if (cellValue instanceof BillingAddressCellValue bacValue) {
+			if (missingAddressWarningEnabled && !bacValue.isBillingAddressAvailable()) {
+				appendWarningIcon(renderer, target);
+				target.append(baTranslator.translate("billing.address.not.available"));
+			} else if (bacValue.isBillingAddressProposal()) {
+				appendWarningIcon(renderer, target);
+				target.append(baTranslator.translate("billing.address.proposal"));
+			} else if (StringHelper.containsNonWhitespace(bacValue.getBillingAddressIdentifier())) {
+				target.append(bacValue.getBillingAddressIdentifier());
 			}
 		}
+	}
+
+	private void appendWarningIcon(Renderer renderer, StringOutput target) {
+		if (renderer != null) {
+			// not in export
+			target.append("<i class=\"o_icon o_icon_important\"> </i> ");
+		}
+	}
+	
+	public interface BillingAddressCellValue {
+		
+		boolean isBillingAddressAvailable();
+
+		boolean isBillingAddressProposal();
+		
+		String getBillingAddressIdentifier();
+		
 	}
 
 }

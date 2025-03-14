@@ -26,10 +26,12 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityPowerSearchQueries;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.model.OrganisationWithParents;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -45,7 +47,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
@@ -67,6 +71,8 @@ import org.olat.user.UserInfoProfileConfig;
 import org.olat.user.UserManager;
 import org.olat.user.UserPortraitService;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.admin.IdentityOrganisationsCellRenderer;
+import org.olat.user.ui.organisation.OrganisationsSmallListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -83,6 +89,9 @@ public class UsersOverviewController extends StepFormBasicController implements 
 	private UsersOverviewTableModel tableModel;
 	private final VelocityContainer detailsVC;
 	
+	private CloseableCalloutWindowController calloutCtrl;
+	private OrganisationsSmallListController organisationsSmallListCtrl;
+	
 	private final String avatarMapperBaseURL;
 	private final MembersContext membersContext;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -95,8 +104,12 @@ public class UsersOverviewController extends StepFormBasicController implements 
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
 	private UserPortraitService userPortraitService;
-	
+	@Autowired
+	private IdentityPowerSearchQueries IdentityPowerSearchQueries;
+
 	public UsersOverviewController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, MembersContext membersContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_overview");
@@ -132,7 +145,10 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserOverviewCols.role));
-				
+		if (organisationModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserOverviewCols.organisation, new IdentityOrganisationsCellRenderer()));
+		}
+		
 		tableModel = new UsersOverviewTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
@@ -150,6 +166,7 @@ public class UsersOverviewController extends StepFormBasicController implements 
 				.toList();
 		
 		loadMemberships(identities, rows);
+		IdentityPowerSearchQueries.appendOrganisations(rows);
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -157,7 +174,7 @@ public class UsersOverviewController extends StepFormBasicController implements 
 			tableEl.setMultiSelectedIndex(Set.of(Integer.valueOf(0)));
 		}
 	}
-	
+
 	private void loadMemberships(List<Identity> identities, List<UserRow> rows) {
 		List<CurriculumElementMembership> memberships = curriculumService
 				.getCurriculumElementMemberships(membersContext.getAllCurriculumElements(), identities);
@@ -213,6 +230,21 @@ public class UsersOverviewController extends StepFormBasicController implements 
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (calloutCtrl == source || organisationsSmallListCtrl == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(organisationsSmallListCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		organisationsSmallListCtrl = null;
+		calloutCtrl = null;
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent se) {
@@ -226,6 +258,10 @@ public class UsersOverviewController extends StepFormBasicController implements 
 						doOpenMemberDetails(ureq, row);
 						tableEl.expandDetails(se.getIndex());
 					}
+				} else if(IdentityOrganisationsCellRenderer.CMD_OTHER_ORGANISATIONS.equals(cmd)) {
+					String targetId = IdentityOrganisationsCellRenderer.getOtherOrganisationsId(se.getIndex());
+					UserRow row = tableModel.getObject(se.getIndex());
+					doShowOrganisations(ureq, targetId, row);
 				}
 			} else if(event instanceof DetailsToggleEvent toggleEvent) {
 				UserRow row = tableModel.getObject(toggleEvent.getRowIndex());
@@ -256,12 +292,18 @@ public class UsersOverviewController extends StepFormBasicController implements 
 	@Override
 	protected void formNext(UserRequest ureq) {
 		Set<Integer> indexes = tableEl.getMultiSelectedIndex();
-		List<Identity> selectedIdentities = indexes.stream()
-				.map(index -> tableModel.getObject(index.intValue()))
-				.filter(Objects::nonNull)
-				.map(UserRow::getIdentity)
-				.toList();
+		List<Identity> selectedIdentities = new ArrayList<>(indexes.size());
+		Map<Long, List<OrganisationWithParents>> identityKeyToUserOrganisations = new HashMap<>(indexes.size());
+		for (Integer index : indexes) {
+			UserRow userRow = tableModel.getObject(index.intValue());
+			if (userRow != null) {
+				Identity identity = userRow.getIdentity();
+				selectedIdentities.add(identity);
+				identityKeyToUserOrganisations.put(identity.getKey(), userRow.getOrganisations());
+			}
+		}
 		membersContext.setSelectedIdentities(selectedIdentities);
+		membersContext.setIdentityKeyToUserOrganisations(identityKeyToUserOrganisations);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
@@ -304,6 +346,17 @@ public class UsersOverviewController extends StepFormBasicController implements 
 		profileConfig.setAvatarMapper(avatarMapper);
 		profileConfig.setAvatarMapperBaseURL(avatarMapperBaseURL);
 		return profileConfig;
+	}
+	
+	private void doShowOrganisations(UserRequest ureq, String elementId, UserRow row) {
+		List<OrganisationWithParents> organisations = row.getOrganisations();
+		organisationsSmallListCtrl = new OrganisationsSmallListController(ureq, getWindowControl(), organisations);
+		listenTo(organisationsSmallListCtrl);
+		
+		String title = translate("num.of.organisations", Integer.toString(organisations.size()));
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), organisationsSmallListCtrl.getInitialComponent(), elementId, title, true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 
 }

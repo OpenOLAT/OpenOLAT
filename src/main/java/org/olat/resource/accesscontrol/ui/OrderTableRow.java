@@ -25,9 +25,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.ui.BillingAddressCellRenderer.BillingAddressCellValue;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
 
 /**
@@ -36,7 +38,7 @@ import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OrderTableRow {
+public class OrderTableRow implements BillingAddressCellValue {
 	
 	private final OrderTableItem item;
 	
@@ -150,11 +152,18 @@ public class OrderTableRow {
 	public String getCostCenterAccount() {
 		return item.getCostCenterAccount();
 	}
+
+	@Override
+	public boolean isBillingAddressAvailable() {
+		return StringHelper.containsNonWhitespace(getBillingAddressIdentifier()) || isBillingAddressProposal();
+	}
 	
+	@Override
 	public boolean isBillingAddressProposal() {
 		return item.isBillingAddressProposal();
 	}
 	
+	@Override
 	public String getBillingAddressIdentifier() {
 		return item.getBillingAddressIdentifier();
 	}

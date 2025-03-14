@@ -61,6 +61,10 @@ public class BillingAddressItem extends FormItemImpl {
 		//
 	}
 	
+	public BillingAddress getBillingAddress() {
+		return component.getBillingAddress();
+	}
+	
 	public void setBillingAddress(BillingAddress billingAddress) {
 		component.setBillingAddress(billingAddress);
 	}

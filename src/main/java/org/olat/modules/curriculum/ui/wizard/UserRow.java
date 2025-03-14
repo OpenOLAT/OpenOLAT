@@ -22,11 +22,16 @@ package org.olat.modules.curriculum.ui.wizard;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.IdentityOrganisationsRow;
+import org.olat.basesecurity.model.OrganisationWithParents;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.ui.member.MemberDetailsController;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.member.ModificationStatus;
 import org.olat.modules.curriculum.ui.member.ModificationStatusSummary;
+import org.olat.resource.accesscontrol.BillingAddress;
+import org.olat.resource.accesscontrol.ui.BillingAddressCellRenderer.BillingAddressCellValue;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -36,13 +41,17 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserRow extends UserPropertiesRow {
+public class UserRow extends UserPropertiesRow implements IdentityOrganisationsRow, BillingAddressCellValue {
 
 	private String roles;
 	private final Identity identity;
+	private List<OrganisationWithParents> organisations;
 	private ModificationStatus modificationStatus;
 	private List<MembershipModification> modifications;
 	private ModificationStatusSummary modificationSummary;
+	private BillingAddress billingAddress;
+	
+	private FormLink toolsLink;
 	
 	private MemberDetailsController detailsCtrl;
 	
@@ -61,6 +70,15 @@ public class UserRow extends UserPropertiesRow {
 
 	public void setRoles(String roles) {
 		this.roles = roles;
+	}
+
+	public List<OrganisationWithParents> getOrganisations() {
+		return organisations;
+	}
+
+	@Override
+	public void setOrganisations(List<OrganisationWithParents> organisations) {
+		this.organisations = organisations;
 	}
 
 	public List<MembershipModification> getModifications() {
@@ -85,6 +103,37 @@ public class UserRow extends UserPropertiesRow {
 
 	public void setModificationSummary(ModificationStatusSummary modificationSummary) {
 		this.modificationSummary = modificationSummary;
+	}
+
+	public BillingAddress getBillingAddress() {
+		return billingAddress;
+	}
+
+	public void setBillingAddress(BillingAddress billingAddress) {
+		this.billingAddress = billingAddress;
+	}
+
+	@Override
+	public boolean isBillingAddressAvailable() {
+		return billingAddress != null ;
+	}
+
+	@Override
+	public boolean isBillingAddressProposal() {
+		return billingAddress != null && (billingAddress.getOrganisation() == null && billingAddress.getIdentity() == null);
+	}
+
+	@Override
+	public String getBillingAddressIdentifier() {
+		return billingAddress != null? billingAddress.getIdentifier(): null;
+	}
+	
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 
 	public boolean isDetailsControllerAvailable() {

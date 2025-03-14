@@ -69,7 +69,7 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 		if(offer != null) {
 			String adminNote = membersContext.getAdminNote();
 			for(Identity identity:identities) {
-				OrderAdditionalInfos orderInfos = membersContext.createOrderInfos(true);
+				OrderAdditionalInfos orderInfos = membersContext.createOrderInfos(identity, true);
 				acService.accessResource(identity, offer.offerAccess(), OrderStatus.PREPAYMENT, orderInfos, mailPackage,
 						ureq.getIdentity(), adminNote);
 			}
