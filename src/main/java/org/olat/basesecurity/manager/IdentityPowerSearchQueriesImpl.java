@@ -809,7 +809,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		String[] valueArr = value.split("[,]");
 		List<String> values = new ArrayList<>(valueArr.length);
 		for(String val:valueArr) {
-			if(StringHelper.containsNonWhitespace(val)) {
+			if(StringHelper.containsNonWhitespace(val)
+					&& !GenericSelectionPropertyHandler.NO_SEL_KEY.equals(val)) {
 				values.add(val);
 			}
 		}
