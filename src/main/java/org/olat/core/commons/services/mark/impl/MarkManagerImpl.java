@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.Mark;
@@ -113,13 +114,13 @@ public class MarkManagerImpl implements MarkManager {
 	}
 
 	@Override
-	public List<Long> getMarksResourceId(Identity identity, String resourceTypeName) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select mrk.resId from mark mrk")
-		  .append(" where mrk.creator=:creator and mrk.resName =:resName");
+	public List<Long> getMarksResourceId(IdentityRef identity, String resourceTypeName) {
+		String sb = """
+				select mrk.resId from mark mrk
+				where mrk.creator.key=:creatorKey and mrk.resName =:resName""";
 
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
-				.setParameter("creator", identity)
+		return dbInstance.getCurrentEntityManager().createQuery(sb, Long.class)
+				.setParameter("creatorKey", identity.getKey())
 				.setParameter("resName", resourceTypeName)
 				.getResultList();
 	}

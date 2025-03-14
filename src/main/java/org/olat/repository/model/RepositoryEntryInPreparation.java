@@ -30,6 +30,6 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record RepositoryEntryInPreparation(RepositoryEntry entry, List<TaxonomyLevel> levels) {
+public record RepositoryEntryInPreparation(RepositoryEntry entry, boolean marked, List<TaxonomyLevel> levels) {
 	//
 }

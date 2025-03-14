@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.mark.Mark;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -60,6 +62,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryInfosController;
@@ -72,11 +75,15 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.manager.InPreparationQueries;
 import org.olat.repository.model.CurriculumElementInPreparation;
 import org.olat.repository.model.RepositoryEntryInPreparation;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
@@ -107,7 +114,9 @@ public class InPreparationListController extends FormBasicController implements 
 	private List<RepositoryEntryEducationalType> educationalTypes;
 	
 	private Controller infosCtrl;
-	
+
+	@Autowired
+	private MarkManager markManager;
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
@@ -234,9 +243,10 @@ public class InPreparationListController extends FormBasicController implements 
 	}
 	
 	private InPreparationRow forgeRow(RepositoryEntryInPreparation entry) {
-		InPreparationRow row = new InPreparationRow(entry.entry());
+		InPreparationRow row = new InPreparationRow(entry.entry(), entry.marked());
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
+		forgeMarkLink(row);
 		
 		List<TaxonomyLevelNamePath> taxonomyLevels = (entry.levels() != null) 
 				? TaxonomyUIFactory.getNamePaths(getTranslator(), entry.levels())
@@ -251,9 +261,10 @@ public class InPreparationListController extends FormBasicController implements 
 	}
 	
 	private InPreparationRow forgeRow(CurriculumElementInPreparation element) {
-		InPreparationRow row = new InPreparationRow(element.element());
+		InPreparationRow row = new InPreparationRow(element.element(), element.marked());
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
+		forgeMarkLink(row);
 		
 		List<TaxonomyLevelNamePath> taxonomyLevels = (element.levels() != null) 
 				? TaxonomyUIFactory.getNamePaths(getTranslator(), element.levels())
@@ -294,6 +305,15 @@ public class InPreparationListController extends FormBasicController implements 
 		selectLink.setUserObject(row);
 		row.setSelectLink(selectLink);
 	}
+	
+	private void forgeMarkLink(InPreparationRow row) {
+		FormLink markLink = uifactory.addFormLink("mark_" + row.getOlatResource().getKey(), "mark", "", tableEl, Link.NONTRANSLATED);
+		markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
+		markLink.setAriaLabel(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
+		markLink.setUserObject(row);
+		row.setMarkLink(markLink);
+	}
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
@@ -307,6 +327,9 @@ public class InPreparationListController extends FormBasicController implements 
 			}
 			if(inRow.getSelectLink() != null) {
 				cmps.add(inRow.getSelectLink().getComponent());
+			}
+			if(inRow.getMarkLink() != null) {
+				cmps.add(inRow.getMarkLink().getComponent());
 			}
 		}
 		return cmps;
@@ -324,11 +347,17 @@ public class InPreparationListController extends FormBasicController implements 
 				tableModel.filter(tableEl.getQuickSearchString(), tableEl.getFilters());
 				tableEl.reset(true, true, false);
 			}
-		} else if(source instanceof FormLink link
-				&& ("details".equals(link.getCmd()) || "select".equals(link.getCmd()))
-				&& link.getUserObject() instanceof InPreparationRow row) {
-			doOpenDetails(ureq, row);
-		}
+		} else if(source instanceof FormLink link && link.getUserObject() instanceof InPreparationRow row) {
+			if(("details".equals(link.getCmd()) || "select".equals(link.getCmd()))) {
+				doOpenDetails(ureq, row);
+			} else if("mark".equals(link.getCmd())) {
+				boolean marked = doMark(ureq, row);
+				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
+				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+				link.getComponent().setDirty(true);
+				row.setMarked(marked);
+			}
+		} 
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -385,6 +414,37 @@ public class InPreparationListController extends FormBasicController implements 
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			tableEl.reloadData();
+		}
+	}
+	
+	protected boolean doMark(UserRequest ureq, InPreparationRow row) {
+		String businessPath;
+		OLATResourceable item;
+		if(row.getRepositoryEntryKey() != null) {
+			item = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getRepositoryEntryKey());
+			businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
+		} else if(row.getCurriculumElementKey() != null) {
+			item = OresHelper.createOLATResourceableInstance("CurriculumElement", row.getCurriculumElementKey());
+			businessPath = "[CurriculumElement:" + item.getResourceableId() + "]";
+		} else {
+			return false;
+		}
+
+		if(markManager.isMarked(item, getIdentity(), null)) {
+			markManager.removeMark(item, getIdentity(), null);
+			sendBookmarkEvent(ureq, row, Change.removeBookmark);
+			return false;
+		} 
+		markManager.setMark(item, getIdentity(), null, businessPath);
+		sendBookmarkEvent(ureq, row, Change.addBookmark);
+		return true;
+	}
+	
+	private void sendBookmarkEvent(UserRequest ureq, InPreparationRow row, Change change) {
+		if(row.getRepositoryEntryKey() != null) {
+			RepositoryEntryRef ref = new RepositoryEntryRefImpl(row.getRepositoryEntryKey());
+			EntryChangedEvent e = new EntryChangedEvent(ref, getIdentity(), change, "re-list-in-preparation");
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 		}
 	}
 }

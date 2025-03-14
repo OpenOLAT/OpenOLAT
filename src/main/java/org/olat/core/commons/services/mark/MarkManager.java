@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 
@@ -39,7 +40,7 @@ public interface MarkManager {
 	
 	public List<Mark> getMarks(Identity identity, Collection<String> resourceTypeNames);
 	
-	public List<Long> getMarksResourceId(Identity identity, String resourceTypeName);
+	public List<Long> getMarksResourceId(IdentityRef identity, String resourceTypeName);
 	
 	public void filterMarks(Identity identity, String resourceTypeName, Collection<Long> resIds);
 	

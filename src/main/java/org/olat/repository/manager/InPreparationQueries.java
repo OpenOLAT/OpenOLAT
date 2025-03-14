@@ -22,6 +22,7 @@ package org.olat.repository.manager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.persistence.TypedQuery;
 
@@ -30,6 +31,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -66,6 +68,8 @@ public class InPreparationQueries {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private MarkManager markManager;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
 	@Autowired
@@ -142,10 +146,14 @@ public class InPreparationQueries {
 			levelsMap = Map.of();
 		}
 		
+		List<Long> marks = markManager.getMarksResourceId(identity, "RepositoryEntry");
+		Set<Long> marksSet = Set.copyOf(marks);
+		
 		List<RepositoryEntryInPreparation> list = new ArrayList<>(entries.size());
 		for(RepositoryEntry entry:entries) {
 			List<TaxonomyLevel> levels = levelsMap.get(entry.getKey());
-			list.add(new RepositoryEntryInPreparation(entry, levels));
+			boolean marked = marksSet.contains(entry.getKey());
+			list.add(new RepositoryEntryInPreparation(entry, marked, levels));
 		}
 		return list;
 	}
@@ -217,6 +225,9 @@ public class InPreparationQueries {
 	public List<CurriculumElementInPreparation> searchCurriculumElementsInPreparation(IdentityRef identity) {
 		List<CurriculumElement> curriculumElements = searchCurriculumElements(identity);
 		
+		List<Long> marks = markManager.getMarksResourceId(identity, "CurriculumElement");
+		Set<Long> marksSet = Set.copyOf(marks);
+		
 		Map<Long,List<TaxonomyLevel>> levelsMap;
 		if (!curriculumElements.isEmpty() && taxonomyModule.isEnabled()) {
 			levelsMap = curriculumService.getCurriculumElementKeyToTaxonomyLevels(curriculumElements);
@@ -225,8 +236,9 @@ public class InPreparationQueries {
 		}
 		List<CurriculumElementInPreparation> list = new ArrayList<>(curriculumElements.size());
 		for(CurriculumElement curriculumElement:curriculumElements) {
+			boolean marked = marksSet.contains(curriculumElement.getKey());
 			List<TaxonomyLevel> levels = levelsMap.get(curriculumElement.getKey());
-			list.add(new CurriculumElementInPreparation(curriculumElement, levels));
+			list.add(new CurriculumElementInPreparation(curriculumElement, marked, levels));
 		}
 		return list;
 	}

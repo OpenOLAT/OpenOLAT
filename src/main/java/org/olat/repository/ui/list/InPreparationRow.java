@@ -64,13 +64,17 @@ public class InPreparationRow {
 	private List<TaxonomyLevelNamePath> taxonomyLevels;
 	private final RepositoryEntryEducationalType educationalType;
 	
+	private boolean marked;
+
+	private FormLink markLink;
 	private FormLink selectLink;
 	private FormLink detailsLink;
 	private FormLink detailsSmallLink;
 	
-	public InPreparationRow(RepositoryEntry re) {
+	public InPreparationRow(RepositoryEntry re, boolean marked) {
 		repositoryEntryKey = re.getKey();
 		curriculumElementKey = null;
+		this.marked = marked;
 		creationDate = re.getCreationDate();
 		lastModified = re.getLastModified();
 		externalId = re.getExternalId();
@@ -91,9 +95,10 @@ public class InPreparationRow {
 		olatResource = re.getOlatResource();
 	}
 	
-	public InPreparationRow(CurriculumElement element) {
+	public InPreparationRow(CurriculumElement element, boolean marked) {
 		repositoryEntryKey = null;
 		curriculumElementKey = element.getKey();
+		this.marked = marked;
 		creationDate = element.getCreationDate();
 		lastModified = element.getLastModified();
 		externalId = element.getExternalId();
@@ -125,6 +130,14 @@ public class InPreparationRow {
 	
 	public Date getLastModified() {
 		return lastModified;
+	}
+	
+	public boolean isMarked() {
+		return marked;
+	}
+	
+	public void setMarked(boolean marked) {
+		this.marked = marked;
 	}
 	
 	public RepositoryEntryStatusEnum getRepositoryEntryStatus() {
@@ -218,6 +231,18 @@ public class InPreparationRow {
 	public void setThumbnailRelPath(String thumbnailRelPath) {
 		this.thumbnailRelPath = thumbnailRelPath;
 	}
+	
+	public FormLink getMarkLink() {
+		return markLink;
+	}
+	
+	public String getMarkLinkName() {
+		return markLink == null ? null : markLink.getComponent().getComponentName();
+	}
+	
+	public void setMarkLink(FormLink markLink) {
+		this.markLink = markLink;
+	}
 
 	public String getDetailsLinkName() {
 		return detailsLink.getComponent().getComponentName();
@@ -240,7 +265,7 @@ public class InPreparationRow {
 	}
 	
 	public String getSelectLinkName() {
-		return selectLink.getComponent().getComponentName();
+		return selectLink == null ? null : selectLink.getComponent().getComponentName();
 	}
 	
 	public FormLink getSelectLink() {
@@ -250,5 +275,4 @@ public class InPreparationRow {
 	public void setSelectLink(FormLink selectLink) {
 		this.selectLink = selectLink;
 	}
-
 }

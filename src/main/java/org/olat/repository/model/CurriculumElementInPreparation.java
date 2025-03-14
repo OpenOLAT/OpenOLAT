@@ -30,6 +30,6 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record CurriculumElementInPreparation(CurriculumElement element, List<TaxonomyLevel> levels) {
+public record CurriculumElementInPreparation(CurriculumElement element, boolean marked, List<TaxonomyLevel> levels) {
 	//
 }
