@@ -102,8 +102,10 @@ public class PriceFormat {
 		return format(price.getAmount());
 	}
 	
-	public static String format(BigDecimal value) {
-		return value.setScale(2).toString();
+	public static String format(BigDecimal amount) {
+		I18nModule i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+		PriceAmountFormat priceAmountFormat = i18nModule.getPriceAmountFormat();
+		return priceAmountFormat.format(amount.setScale(2, RoundingMode.HALF_EVEN));
 	}
 	
 	public static String fullFormat(Price price) {
@@ -116,13 +118,7 @@ public class PriceFormat {
 			isoCurrencyCode = "CHF";
 		}
 
-		return isoCurrencyCode + '\u00A0' + formatAmount(price.getAmount().setScale(2, RoundingMode.HALF_EVEN));
-	}
-	
-	private static String formatAmount(BigDecimal amount) {
-		I18nModule i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
-		PriceAmountFormat priceAmountFormat = i18nModule.getPriceAmountFormat();
-		return priceAmountFormat.format(amount);
+		return isoCurrencyCode + '\u00A0' + format(price.getAmount());
 	}
 	
 	public static String fullFormatVat(Translator translator, AccessControlModule acModule, Price price) {
