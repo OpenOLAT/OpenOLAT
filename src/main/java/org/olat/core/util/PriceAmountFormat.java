@@ -51,7 +51,7 @@ public enum PriceAmountFormat {
 	}
 
 	public String format(BigDecimal amount) {
-		DecimalFormat decimalFormat = new DecimalFormat("#,###.00", new DecimalFormatSymbols(Locale.ENGLISH));
+		DecimalFormat decimalFormat = new DecimalFormat("#,##0.00", new DecimalFormatSymbols(Locale.ENGLISH));
 		String formatted = decimalFormat.format(amount);
 		return formatted
 				.replace(',', 'G').replace('.', 'D')

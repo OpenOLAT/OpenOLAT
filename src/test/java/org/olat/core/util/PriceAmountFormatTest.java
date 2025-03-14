@@ -70,5 +70,22 @@ public class PriceAmountFormatTest extends OlatTestCase {
 		
 		String amountMillionsSpaceComma = PriceAmountFormat.spaceComma.format(amountMillions);
 		Assert.assertEquals("2 139 444,78", amountMillionsSpaceComma);
+		
+		String amountZeroApostrophePoint = PriceAmountFormat.apostrophePoint.format(BigDecimal.ZERO);
+		Assert.assertEquals("0.00", amountZeroApostrophePoint);
+		
+		BigDecimal amountVeryCheap = new BigDecimal("12.3");
+		String amountVeryCheapSpacePoint = PriceAmountFormat.spacePoint.format(amountVeryCheap);
+		Assert.assertEquals("12.30", amountVeryCheapSpacePoint);
+		
+		String amountVeryCheapPointComma = PriceAmountFormat.pointComma.format(amountVeryCheap);
+		Assert.assertEquals("12,30", amountVeryCheapPointComma);
+		
+		BigDecimal amountPracticallyFree = new BigDecimal("0.70");
+		String amountPracticallyFreeSpaceComma = PriceAmountFormat.spaceComma.format(amountPracticallyFree);
+		Assert.assertEquals("0,70", amountPracticallyFreeSpaceComma);
+		
+		String amountPracticallyFreeApostrophePoint = PriceAmountFormat.apostrophePoint.format(amountPracticallyFree);
+		Assert.assertEquals("0.70", amountPracticallyFreeApostrophePoint);
 	}
 }
