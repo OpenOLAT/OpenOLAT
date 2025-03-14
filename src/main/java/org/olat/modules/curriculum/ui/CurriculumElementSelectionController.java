@@ -212,7 +212,10 @@ public class CurriculumElementSelectionController extends FormBasicController {
 		List<CurriculumElementInfos> elements = curriculumService.getCurriculumElementsWithInfos(searchParams);
 		
 		// Should be move to getCurriculumElementsWithInfos().
-		List<OLATResource> resources = elements.stream().map(info -> info.curriculumElement().getResource()).toList();
+		List<OLATResource> resources = elements.stream()
+				.map(info -> info.curriculumElement().getResource())
+				.filter(Objects::nonNull)
+				.toList();
 		Map<OLATResource, List<OLATResourceAccess>> resourceToResourceAccess = catalogService.getResourceToResourceAccess(resources, null);
 		
 		List<CurriculumElementRow> rows = new ArrayList<>(elements.size());
