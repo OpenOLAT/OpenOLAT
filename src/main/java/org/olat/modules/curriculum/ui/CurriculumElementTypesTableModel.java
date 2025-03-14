@@ -68,8 +68,8 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 	
 	public enum TypesCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		identifier("table.type.header.type.identifier"),
 		displayName("table.type.header.type.displayName"),
+		identifier("table.type.header.type.identifier"),
 		externalId("table.type.header.type.externalId"),
 		tools("action.more");
 		

@@ -94,8 +94,10 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.key));
+		DefaultFlexiColumnModel displayNameCol = new DefaultFlexiColumnModel(TypesCols.displayName);
+		displayNameCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(displayNameCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.displayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TypesCols.externalId));
 		
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("edit", -1);
@@ -172,16 +174,13 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addRootTypeButton == source) {
 			doAddRootType(ureq);
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if("tools".equals(cmd)) {
-				CurriculumElementTypeRow row = (CurriculumElementTypeRow)link.getUserObject();
+			if("tools".equals(cmd) && link.getUserObject() instanceof CurriculumElementTypeRow row) {
 				doOpenTools(ureq, row, link);
 			} 
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if("edit".equals(cmd)) {
 					CurriculumElementTypeRow row = model.getObject(se.getIndex());
@@ -272,11 +271,12 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 			
 			mainVC = createVelocityContainer("tools");
 			List<String> links = new ArrayList<>();
-			
+			addLink("edit", "edit", "o_icon o_icon-fw o_icon_edit", links);
 			if(!CurriculumElementTypeManagedFlag.isManaged(type.getManagedFlags(), CurriculumElementTypeManagedFlag.copy)) {
 				addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", links);
 			}
 			if(!CurriculumElementTypeManagedFlag.isManaged(type.getManagedFlags(), CurriculumElementTypeManagedFlag.delete)) {
+				links.add("-");
 				addLink("details.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links);
 			}
 
@@ -296,10 +296,12 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if(source instanceof Link) {
-				Link link = (Link)source;
+			if(source instanceof Link link) {
 				String cmd = link.getCommand();
-				if("copy".equals(cmd)) {
+				if("edit".equals(cmd)) {
+					close();
+					doEditCurriculElementType(ureq, row);
+				} else if("copy".equals(cmd)) {
 					close();
 					doCopy(row);
 				} else if("delete".equals(cmd)) {

@@ -80,29 +80,20 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 			
 			List<RepositoryEntry> templates = curriculumService.getRepositoryTemplates(element);
 			for(RepositoryEntry template:templates) {
-				String externalRef = buildDefaultIdentifier(element, template);
+				String externalRef = buildDefaultIdentifier(element);
 				curriculumService.instantiateTemplate(template, element, element.getDisplayName(), externalRef,
 						element.getBeginDate(), element.getEndDate(), null);
 			}
 		}
 	}
 	
-	private String buildDefaultIdentifier(CurriculumElement element, RepositoryEntry template) {
+	private String buildDefaultIdentifier(CurriculumElement element) {
 		StringBuilder sb = new StringBuilder();
 		if(StringHelper.containsNonWhitespace(element.getIdentifier())) {
 			sb.append(element.getIdentifier());
 		}
-		
-		if(StringHelper.containsNonWhitespace(template.getExternalRef())) {
-			if(sb.length() > 0) {
-				sb.append("_");
-			}
-			sb.append(template.getExternalRef());
-		}
 		return sb.toString();
 	}
-	
-
 	
 	protected List<CurriculumElement> loadElementsInstantiate() {
 		String query = """
