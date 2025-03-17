@@ -154,8 +154,13 @@ public class OrderTableRow implements BillingAddressCellValue {
 	}
 
 	@Override
-	public boolean isBillingAddressAvailable() {
+	public boolean isNoBillingAddressAvailable() {
 		return StringHelper.containsNonWhitespace(getBillingAddressIdentifier()) || isBillingAddressProposal();
+	}
+
+	@Override
+	public boolean isMultiBillingAddressAvailable() {
+		return false;
 	}
 	
 	@Override

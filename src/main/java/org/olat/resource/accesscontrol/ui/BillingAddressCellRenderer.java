@@ -39,7 +39,7 @@ import org.olat.core.util.Util;
 public class BillingAddressCellRenderer implements FlexiCellRenderer {
 	
 	private final Translator baTranslator;
-	private final boolean missingAddressWarningEnabled;
+	private final boolean warningEnabled;
 	
 	public BillingAddressCellRenderer(Locale locale) {
 		this(locale, false);
@@ -47,16 +47,19 @@ public class BillingAddressCellRenderer implements FlexiCellRenderer {
 			
 	public BillingAddressCellRenderer(Locale locale, boolean missingAddressWarningEnabled) {
 		this.baTranslator = Util.createPackageTranslator(BillingAddressCellRenderer.class, locale);
-		this.missingAddressWarningEnabled = missingAddressWarningEnabled;
+		this.warningEnabled = missingAddressWarningEnabled;
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof BillingAddressCellValue bacValue) {
-			if (missingAddressWarningEnabled && !bacValue.isBillingAddressAvailable()) {
+			if (warningEnabled && bacValue.isNoBillingAddressAvailable()) {
 				appendWarningIcon(renderer, target);
 				target.append(baTranslator.translate("billing.address.not.available"));
+			} else if (warningEnabled && bacValue.isMultiBillingAddressAvailable()) {
+				appendWarningIcon(renderer, target);
+				target.append(baTranslator.translate("billing.address.multi.available"));
 			} else if (bacValue.isBillingAddressProposal()) {
 				appendWarningIcon(renderer, target);
 				target.append(baTranslator.translate("billing.address.proposal"));
@@ -75,7 +78,9 @@ public class BillingAddressCellRenderer implements FlexiCellRenderer {
 	
 	public interface BillingAddressCellValue {
 		
-		boolean isBillingAddressAvailable();
+		boolean isNoBillingAddressAvailable();
+		
+		boolean isMultiBillingAddressAvailable();
 
 		boolean isBillingAddressProposal();
 		

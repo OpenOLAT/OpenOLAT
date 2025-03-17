@@ -286,13 +286,15 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			if (billingAddresses.size() == 1) {
 				billingAddress = billingAddresses.get(0);
 				membersContext.getIdentityKeyToBillingAddress().put(row.getIdentity().getKey(), billingAddress);
+			} else {
+				row.setMultiBillingAddressAvailable(true);
 			}
 		}
 		row.setBillingAddress(billingAddress);
 	}
 	
 	private void forge(UserRow row) {
-		if (membersContext.isNeedBillingAddress() && !row.isBillingAddressAvailable()) {
+		if (membersContext.isNeedBillingAddress() && row.isNoBillingAddressAvailable()) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), CMD_TOOLS);
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
@@ -388,7 +390,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		
 		tableEl.clearError();
 		if (membersContext.isNeedBillingAddress()) {
-			boolean missingBillingAddress = tableModel.getObjects().stream().anyMatch(row -> !row.isBillingAddressAvailable());
+			boolean missingBillingAddress = tableModel.getObjects().stream().anyMatch(UserRow::isNoBillingAddressAvailable);
 			if (missingBillingAddress) {
 				allOk &= false;
 				tableEl.setErrorKey("error.missing.billing.address");

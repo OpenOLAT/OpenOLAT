@@ -50,6 +50,7 @@ public class UserRow extends UserPropertiesRow implements IdentityOrganisationsR
 	private List<MembershipModification> modifications;
 	private ModificationStatusSummary modificationSummary;
 	private BillingAddress billingAddress;
+	private boolean multiBillingAddressAvailable;
 	
 	private FormLink toolsLink;
 	
@@ -114,8 +115,17 @@ public class UserRow extends UserPropertiesRow implements IdentityOrganisationsR
 	}
 
 	@Override
-	public boolean isBillingAddressAvailable() {
-		return billingAddress != null ;
+	public boolean isNoBillingAddressAvailable() {
+		return billingAddress == null;
+	}
+
+	@Override
+	public boolean isMultiBillingAddressAvailable() {
+		return multiBillingAddressAvailable;
+	}
+
+	public void setMultiBillingAddressAvailable(boolean multiBillingAddressAvailable) {
+		this.multiBillingAddressAvailable = multiBillingAddressAvailable;
 	}
 
 	@Override
