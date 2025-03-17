@@ -54,6 +54,14 @@ public class CatalogPage {
 		return this;
 	}
 	
+	public CatalogPage selectCatalogEntry(String shortTitle) {
+		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]/div[contains(@class,'o_meta')]/h4/a[span[contains(.,'" + shortTitle + "')]]");
+		OOGraphene.waitElement(titleBy, browser);
+		browser.findElement(titleBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public CatalogPage select(String title) {
 		By titleLinkBy = By.xpath("//h4[contains(@class,'o_title')]//a[span[text()[contains(.,'" + title + "')]]]");
 		browser.findElement(titleLinkBy).click();

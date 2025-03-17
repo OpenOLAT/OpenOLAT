@@ -61,9 +61,9 @@ public class MyCoursesPage {
 	}
 	
 	public MyCoursesPage openInPreparation() {
-		By inPreparationBy = By.className("o_sel_mycourses_preparation");
-		browser.findElement(inPreparationBy).click();
-		By inPreparationActiveBy = By.cssSelector("ul.o_segments a.o_sel_mycourses_preparation.btn-primary");
+		By inPreparationScopeBy = By.xpath("//ul/li/button[contains(@class,'o_scope_toggle')][div/span/div/div/i[contains(@class,'o_ac_offer_pending_icon')]]");
+		browser.findElement(inPreparationScopeBy).click();
+		By inPreparationActiveBy = By.xpath("//ul/li/button[contains(@class,'o_scope_toggle') and contains(@class,'o_toggle_on')][div/span/div/div/i[contains(@class,'o_ac_offer_pending_icon')]]");
 		OOGraphene.waitElement(inPreparationActiveBy, browser);
 		By courseTableBy = By.className("o_coursetable");
 		OOGraphene.waitElement(courseTableBy, browser);

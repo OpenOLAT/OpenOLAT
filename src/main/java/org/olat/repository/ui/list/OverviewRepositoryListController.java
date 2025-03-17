@@ -53,19 +53,15 @@ import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.ui.CurriculumElementListController;
-import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntryRuntimeType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
-import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.manager.InPreparationQueries;
 import org.olat.repository.manager.RepositoryEntryMyImplementationsQueries;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
-import org.olat.repository.ui.catalog.CatalogNodeController;
 import org.olat.repository.ui.list.RepositoryEntryListConfig.RepositoryEntryListPresets;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -82,7 +78,6 @@ public class OverviewRepositoryListController extends BasicController implements
 	private static final String CMD_MY_COURSES = "MyCourses";
 	private static final String CMD_IN_PREPARATION = "InPreparation";
 	private static final String CMD_IMPLEMENTATION = "Implementation";
-	private static final String CMD_CATALOG = "Catalog";
 
 	private final List<Scope> scopes;
 	private final VelocityContainer mainVC;
@@ -92,7 +87,6 @@ public class OverviewRepositoryListController extends BasicController implements
 	private BreadcrumbedStackedPanel implementationStackPanel;
 	
 	private Controller currentCtrl;
-	private CatalogNodeController catalogCtrl;
 	private RepositoryEntryListController entriesCtrl;
 	private InPreparationListController inPreparationCtrl;
 	private CurriculumElementListController elementListCtrl;
@@ -105,13 +99,9 @@ public class OverviewRepositoryListController extends BasicController implements
 	@Autowired
 	private ACService acService;
 	@Autowired
-	private CatalogManager catalogManager;
-	@Autowired
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private RepositoryModule repositoryModule;
 	@Autowired
 	private InPreparationQueries inPreparationQueries;
 	@Autowired
@@ -146,11 +136,6 @@ public class OverviewRepositoryListController extends BasicController implements
 				null, "o_icon o_icon-fw o_ac_offer_pending_icon"));
 		}
 		
-		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled()) {
-			scopes.add(ScopeFactory.createScope(CMD_CATALOG, translate("search.catalog"),
-					null, "o_icon o_icon-fw o_icon_catalog"));
-		}
-		
 		scopesSelection = ScopeFactory.createScopeSelection("scopes", mainVC, this, scopes);
 		scopesSelection.setVisible(scopes.size() > 1);
 
@@ -181,9 +166,6 @@ public class OverviewRepositoryListController extends BasicController implements
 			} else if(CMD_IMPLEMENTATION.equalsIgnoreCase(scope) && hasImplementationScope(key)) {
 				doOpenImplementation(ureq, entry.getOLATResourceable().getResourceableId());
 				scopesSelection.setSelectedKey(CMD_IMPLEMENTATION + key.toString());
-			} else if(CMD_CATALOG.equalsIgnoreCase(scope) && hasScope(CMD_CATALOG)) {
-				doOpenCatalog(ureq);
-				scopesSelection.setSelectedKey(CMD_CATALOG + key.toString());
 			} else {
 				RepositoryEntryListController listCtrl = doOpenEntries(ureq);
 				scopesSelection.setSelectedKey(CMD_MY_COURSES);
@@ -238,13 +220,10 @@ public class OverviewRepositoryListController extends BasicController implements
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == scopesSelection) {
 			if(event instanceof ScopeEvent se) {
-				cleanUp();
 				if(CMD_MY_COURSES.equals(se.getSelectedKey())) {
 					activateMyEntries(ureq);
 				} else if(CMD_IN_PREPARATION.equals(se.getSelectedKey())) {
 					doOpenInPreparation(ureq);
-				} else if(CMD_CATALOG.equals(se.getSelectedKey())) {
-					doOpenCatalog(ureq);
 				} else if(se.getSelectedKey().startsWith(CMD_IMPLEMENTATION)) {
 					Long implementationKey = Long.valueOf(se.getSelectedKey().replace(CMD_IMPLEMENTATION, ""));
 					doOpenImplementation(ureq, implementationKey);
@@ -252,11 +231,6 @@ public class OverviewRepositoryListController extends BasicController implements
 				
 			}
 		}
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(catalogCtrl);
-		catalogCtrl = null;
 	}
 	
 	private RepositoryEntryListController doOpenEntries(UserRequest ureq) {
@@ -333,31 +307,5 @@ public class OverviewRepositoryListController extends BasicController implements
 		currentCtrl = elementListCtrl;
 		mainVC.put("component", implementationStackPanel);
 		return elementListCtrl;
-	}
-	
-	private CatalogNodeController doOpenCatalog(UserRequest ureq) {
-		if(!repositoryModule.isCatalogEnabled() || !repositoryModule.isCatalogBrowsingEnabled()) {
-			return null;
-		}
-		cleanUp();
-
-		List<CatalogEntry> entries = catalogManager.getRootCatalogEntries();
-		CatalogEntry rootEntry = null;
-		if(!entries.isEmpty()) {
-			rootEntry = entries.get(0);
-		}
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Catalog", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		BreadcrumbedStackedPanel catalogStackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
-		catalogCtrl = new CatalogNodeController(ureq, bwControl, getWindowControl(), rootEntry, catalogStackPanel, false);
-		catalogStackPanel.pushController(translate("search.catalog"), catalogCtrl);
-		listenTo(catalogCtrl);
-		currentCtrl = catalogCtrl;
-
-		addToHistory(ureq, catalogCtrl);
-		mainVC.put("component", catalogStackPanel);
-		return catalogCtrl;
 	}
 }

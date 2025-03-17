@@ -739,7 +739,6 @@ public class CourseTest extends Deployments {
 	
 	
 	/**
-	 * 
 	 * Create a catalog, create a course, while publishing add the
 	 * course to the catalog. Go to the catalog, find the course and
 	 * open it.
@@ -755,7 +754,6 @@ public class CourseTest extends Deployments {
 		
 		UserVO administrator = new UserRestClient(deploymentUrl).getOrCreateAdministrator();
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		
 		//administrator create the categories in the catalog
 		LoginPage adminLogin = LoginPage.load(browser, deploymentUrl);
@@ -795,22 +793,20 @@ public class CourseTest extends Deployments {
 		courseEditor
 			.publish()
 			.nextSelectNodes()
-			.selectAccess(UserAccess.registred)
+			.selectAccess(UserAccess.guest)
 			.nextAccess()
 			.selectCatalog(true)
 			.selectCategory(node1, node2_2)
 			//.nextCatalog() // -> no problem found
 			.finish();
 		
-		//User logs in, go to "My courses", navigate the catalog and start
-		//the course
-		LoginPage userLogin = LoginPage.load(browser, deploymentUrl);
-		userLogin
-			.loginAs(user.getLogin(), user.getPassword());
+		//Guest goes to "Catalog", navigate it and starts the course
+		LoginPage guestLogin = LoginPage.load(browser, deploymentUrl);
+		guestLogin
+			.asGuest();
 
-		NavigationPage userNavBar = NavigationPage.load(browser);
-		userNavBar
-			.openMyCourses()
+		NavigationPage guestNavBar = NavigationPage.load(browser);
+		guestNavBar
 			.openCatalog()
 			.selectCatalogEntry(node1Short)
 			.selectCatalogEntry(node2_2Short)
@@ -2009,6 +2005,8 @@ public class CourseTest extends Deployments {
 
 		CoursePageFragment userCourse = new CoursePageFragment(browser);
 		userCourse
+			.assertOnCourseStartPage()
+			.startCourse()
 			.assertOnCoursePage()
 			.edit()
 			.assertOnEditor();

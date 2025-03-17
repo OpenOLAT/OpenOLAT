@@ -121,14 +121,9 @@ public class NavigationPage {
 	}
 	
 	public MyCoursesPage openMyCourses() {
-		try {
-			navigate(myCoursesBy);
-			OOGraphene.waitElement(myCoursesAssertBy, browser);
-			return new MyCoursesPage(browser);
-		} catch (Error | Exception e) {
-			OOGraphene.takeScreenshot("Open my courses", browser);
-			throw e;
-		}
+		navigate(myCoursesBy);
+		OOGraphene.waitElement(myCoursesAssertBy, browser);
+		return new MyCoursesPage(browser);
 	}
 	
 	public UserAdminPage openUserManagement() {

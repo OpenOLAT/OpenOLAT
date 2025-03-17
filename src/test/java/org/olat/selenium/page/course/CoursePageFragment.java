@@ -79,6 +79,20 @@ public class CoursePageFragment {
 		return new CoursePageFragment(browser);
 	}
 	
+	public CoursePageFragment assertOnCourseStartPage() {
+		By startBy = By.cssSelector(".o_repo_details a.btn.o_start");
+		OOGraphene.waitElement(startBy, browser);
+		return this;
+	}
+	
+	public CoursePageFragment startCourse() {
+		By startBy = By.cssSelector(".o_repo_details a.btn.o_start");
+		OOGraphene.waitElement(startBy, browser);
+		browser.findElement(startBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public CoursePageFragment assertOnCoursePage() {
 		WebElement treeContainer = browser.findElement(treeContainerBy);
 		Assert.assertTrue(treeContainer.isDisplayed());

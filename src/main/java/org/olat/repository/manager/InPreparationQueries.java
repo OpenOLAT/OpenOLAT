@@ -110,7 +110,7 @@ public class InPreparationQueries {
 		// check participants
 		sb.append(" exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
 		  .append("  where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-		  .append("  and membership.role=:participantRole")
+		  .append("  and membership.role in (:roles)")
 		  .append(" )");
 		
 		// checks reservation
@@ -124,7 +124,7 @@ public class InPreparationQueries {
 			.createQuery(sb.toString(), RepositoryEntry.class)
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("status", IN_PREPARATION_STATUS)
-			.setParameter("participantRole", GroupRoles.participant.name());
+			.setParameter("roles", List.of(GroupRoles.participant.name(), GroupRoles.owner.name()));
 		
 		if(maxResults > 0) {
 			query
