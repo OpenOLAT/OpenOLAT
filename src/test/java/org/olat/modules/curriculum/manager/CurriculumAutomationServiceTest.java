@@ -26,6 +26,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.modules.curriculum.AutomationUnit;
 import org.olat.modules.curriculum.Curriculum;
@@ -34,8 +35,12 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLearningProgress;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.AutomationImpl;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.test.JunitTestHelper;
@@ -54,6 +59,8 @@ public class CurriculumAutomationServiceTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private CurriculumDAO curriculumDao;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -105,7 +112,7 @@ public class CurriculumAutomationServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void instatiate() {
+	public void instantiate() {
 		Date beginDate = DateUtils.addDays(DateUtils.getStartOfDay(new Date()), -2);
 		Date endDate = DateUtils.addDays(beginDate, 10);
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-automation-2", "Curriculum for automation", "Curriculum", false, null);
@@ -140,7 +147,7 @@ public class CurriculumAutomationServiceTest extends OlatTestCase {
 	
 	
 	@Test
-	public void instatiateSameDay() {
+	public void instantiateSameDay() {
 		Date beginDate = DateUtils.getStartOfDay(new Date());
 		Date endDate = DateUtils.addDays(beginDate, 10);
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-automation-2b", "Curriculum for automation same day", "Curriculum", false, null);
@@ -171,6 +178,63 @@ public class CurriculumAutomationServiceTest extends OlatTestCase {
 		Assert.assertNotNull(course);
 		Assert.assertTrue(course.getExternalRef().contains("Element-2-b-1"));
 		Assert.assertEquals("2.b.1 Element", course.getDisplayname());
+	}
+	
+	@Test
+	public void instantiateLectures() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-15-participant");
+		
+		Date beginDate = DateUtils.getStartOfDay(new Date());
+		Date endDate = DateUtils.addDays(beginDate, 10);
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-automation-15", "Curriculum for lectures", "Curriculum", false, null);
+		CurriculumElement implementation = curriculumElementDao.createCurriculumElement("Element-15", "15 Element Same Day",
+				CurriculumElementStatus.confirmed, beginDate, endDate, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		implementation.setAutoInstantiation(AutomationImpl.valueOf(null, AutomationUnit.SAME_DAY));
+		implementation = curriculumElementDao.update(implementation);
+		dbInstance.commit();
+		
+		// save 1 child with a participant
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-15-1", "15.1 Element",
+				CurriculumElementStatus.active, null, null, implementation, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		
+		curriculumService.addMember(element1, participant, CurriculumRoles.participant, null);
+		
+		// Add a lecture to the element
+		LectureBlock lectureBlock = lectureService.createLectureBlock(element1, null);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setExternalId("ORIGINAL-EL-ID");
+		lectureBlock.setExternalRef("ORIGINAL-EL-1-EV-1");
+		lectureBlock.setTitle("Hello curriculum 15");
+		lectureBlock = lectureService.save(lectureBlock, null);
+		dbInstance.commit();
+		
+		RepositoryEntry template = JunitTestHelper.createRandomRepositoryEntry(JunitTestHelper.getDefaultActor());
+		curriculumService.addRepositoryTemplate(element1, template);
+		dbInstance.commit();
+		
+		// Run the instantiation process
+		automationService.instantiate();
+		
+		List<RepositoryEntry> courses = curriculumService.getRepositoryEntries(element1);
+		Assertions.assertThat(courses)
+			.hasSize(1);
+		
+		RepositoryEntry course = courses.get(0);
+		Assert.assertNotNull(course);
+		Assert.assertTrue(course.getExternalRef().contains("Element-15-1"));
+		Assert.assertEquals("15.1 Element", course.getDisplayname());
+		
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setParticipant(participant);
+		searchParams.setLectureConfiguredRepositoryEntry(false);
+		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, 0, Boolean.TRUE);
+		Assertions.assertThat(lectureBlocks)
+			.hasSize(1)
+			.containsExactly(lectureBlock);
 	}
 	
 	

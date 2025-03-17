@@ -1541,7 +1541,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks(curriculumElement);
 		for(LectureBlock lectureBlock:lectureBlocks) {
 			((LectureBlockImpl)lectureBlock).setEntry(entry);
-			lectureBlockDao.update(lectureBlock);
+			lectureBlock = lectureBlockDao.update(lectureBlock);
+			lectureBlockDao.addGroupToLectureBlock(lectureBlock, curriculumElement.getGroup());
 			moved |= true;
 		}
 		return moved;
