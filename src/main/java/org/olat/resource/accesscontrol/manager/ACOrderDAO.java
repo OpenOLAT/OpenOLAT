@@ -567,9 +567,9 @@ public class ACOrderDAO {
 	public List<Order> findOrdersBy(IdentityRef identity, OLATResource resource, OrderStatus... status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(o) from acorder o")
-			.append(" inner join o.parts orderPart")
-			.append(" inner join orderPart.lines orderLine")
-			.append(" inner join orderLine.offer offer")
+			.append(" inner join fetch o.parts orderPart")
+			.append(" inner join fetch orderPart.lines orderLine")
+			.append(" inner join fetch orderLine.offer offer")
 			.append(" inner join offer.resource rsrc")
 			.append(" where o.delivery.key=:deliveryKey and rsrc.key=:resourceKey");
 		if(status != null && status.length > 0) {
