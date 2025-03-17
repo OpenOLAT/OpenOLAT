@@ -225,7 +225,7 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 	
 	@Override
 	public void close() {
-		Date now = DateUtils.getStartOfDay(new Date());
+		Date now = DateUtils.getEndOfDay(new Date());
 		List<CurriculumElement> elements = loadElementsToClose();
 		for(CurriculumElement element:elements) {
 			tryClose(element, now);
@@ -242,15 +242,18 @@ public class CurriculumAutomationServiceImpl implements CurriculumAutomationServ
 		
 		CurriculumElement implementation = curriculumService.getImplementationOf(element);
 		Date date = implementation.getAutoClosed().getDateAfter(endDate);
-		if(date != null && date.compareTo(referenceDate) <= 0) {
-			List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(element);
-			for(RepositoryEntry entry:entries) {
-				RepositoryEntryStatusEnum status = entry.getEntryStatus();
-				if(status == RepositoryEntryStatusEnum.preparation
-						|| status == RepositoryEntryStatusEnum.review 
-						|| status == RepositoryEntryStatusEnum.coachpublished
-						|| status == RepositoryEntryStatusEnum.published) {
-					repositoryService.closeRepositoryEntry(entry, null, true);
+		if(date != null) {
+			date = DateUtils.getEndOfDay(date);
+			if(date.compareTo(referenceDate) < 0) {
+				List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(element);
+				for(RepositoryEntry entry:entries) {
+					RepositoryEntryStatusEnum status = entry.getEntryStatus();
+					if(status == RepositoryEntryStatusEnum.preparation
+							|| status == RepositoryEntryStatusEnum.review 
+							|| status == RepositoryEntryStatusEnum.coachpublished
+							|| status == RepositoryEntryStatusEnum.published) {
+						repositoryService.closeRepositoryEntry(entry, null, true);
+					}
 				}
 			}
 		}

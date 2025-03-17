@@ -437,6 +437,78 @@ public class CurriculumAutomationServiceTest extends OlatTestCase {
 		Assert.assertEquals(RepositoryEntryStatusEnum.preparation, element11Course.getEntryStatus());
 	}
 	
+	/**
+	 * Don't close a course the same day but the day after
+	 */
+	@Test
+	public void closeSameDayDont() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-automation-12", "Curriculum for automation", "Curriculum", false, null);
+		CurriculumElement implementation = curriculumElementDao.createCurriculumElement("Element-12", "12. Element",
+				CurriculumElementStatus.confirmed, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		implementation.setAutoPublished(AutomationImpl.valueOf(0, AutomationUnit.SAME_DAY));
+		implementation.setAutoClosed(AutomationImpl.valueOf(0, AutomationUnit.SAME_DAY));
+		implementation = curriculumElementDao.update(implementation);
+		dbInstance.commit();
+		// save 2 children
+		Date beginDate = DateUtils.addDays(DateUtils.getStartOfDay(new Date()), -30);
+		Date endDate = DateUtils.getStartOfDay(new Date());
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-12-1", "12.1 Element",
+				CurriculumElementStatus.active, beginDate, endDate, implementation, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		
+		RepositoryEntry course = JunitTestHelper.createRandomRepositoryEntry(JunitTestHelper.getDefaultActor());
+		curriculumService.addRepositoryEntry(element1, course, false);
+		Assert.assertEquals(RepositoryEntryStatusEnum.preparation, course.getEntryStatus());
+		
+		// Try to change courses status to published for coach
+		automationService.publish();
+		automationService.close();
+		
+		List<RepositoryEntry> courses = curriculumService.getRepositoryEntries(element1);
+		Assertions.assertThat(courses)
+			.hasSize(1);
+		RepositoryEntry element1Course = courses.get(0);
+		Assert.assertEquals(RepositoryEntryStatusEnum.published, element1Course.getEntryStatus());
+	}
+	
+	/**
+	 * Close a course the day after
+	 */
+	@Test
+	public void closeSameDay() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-automation-14", "Curriculum for automation", "Curriculum", false, null);
+		CurriculumElement implementation = curriculumElementDao.createCurriculumElement("Element-14", "14. Element",
+				CurriculumElementStatus.confirmed, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		implementation.setAutoPublished(AutomationImpl.valueOf(0, AutomationUnit.SAME_DAY));
+		implementation.setAutoClosed(AutomationImpl.valueOf(0, AutomationUnit.SAME_DAY));
+		implementation = curriculumElementDao.update(implementation);
+		dbInstance.commit();
+		// save 2 children
+		Date beginDate = DateUtils.addDays(DateUtils.getStartOfDay(new Date()), -30);
+		Date endDate = DateUtils.addDays(DateUtils.getStartOfDay(new Date()), -1);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-14-1", "14.1 Element",
+				CurriculumElementStatus.active, beginDate, endDate, implementation, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commit();
+		
+		RepositoryEntry course = JunitTestHelper.createRandomRepositoryEntry(JunitTestHelper.getDefaultActor());
+		curriculumService.addRepositoryEntry(element1, course, false);
+		Assert.assertEquals(RepositoryEntryStatusEnum.preparation, course.getEntryStatus());
+		
+		// Try to change courses status to published for coach
+		automationService.publish();
+		automationService.close();
+		
+		List<RepositoryEntry> courses = curriculumService.getRepositoryEntries(element1);
+		Assertions.assertThat(courses)
+			.hasSize(1);
+		RepositoryEntry element1Course = courses.get(0);
+		Assert.assertEquals(RepositoryEntryStatusEnum.closed, element1Course.getEntryStatus());
+	}
+	
 	@Test
 	public void getBeginDate() {
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-automation-11", "Curriculum for automation", "Curriculum", false, null);

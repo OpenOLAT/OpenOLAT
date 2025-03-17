@@ -165,7 +165,7 @@ public class CurriculumElementResourcesController extends BasicController {
 		}
 
 		String text = translate(i18n, timeText);
-		String dateFormatted = Formatter.getInstance(getLocale()).formatDate(effectiveDate);
+		String dateFormatted = Formatter.getInstance(getLocale()).formatDateWithDay(effectiveDate);
 		String elementTitle = buildLinkTitle(dateElement);
 		
 		Link link = LinkFactory.createLink("link." + status, elementTitle, CMD_OPEN_ELEMENT, elementTitle, getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);

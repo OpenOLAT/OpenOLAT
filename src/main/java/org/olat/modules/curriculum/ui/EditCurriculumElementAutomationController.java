@@ -214,9 +214,45 @@ public class EditCurriculumElementAutomationController extends FormBasicControll
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk &= validateFormLogic(instantiationContainer, instantiationEnabledEl, instantiationValueEl, instantiationUnitEl);
-		allOk &= validateFormLogic(accessForCoachContainer, accessForCoachEnabledEl, accessForCoachValueEl, accessForCoachUnitEl);
-		allOk &= validateFormLogic(publishedContainer, publishedEnabledEl, publishedValueEl, publishedUnitEl);
+		allOk &= validateFormLogic(accessForCoachContainer, accessForCoachEnabledEl, accessForCoachValueEl, accessForCoachUnitEl)
+				&& validateAccessForCoachFormLogic(ureq, accessForCoachContainer, accessForCoachEnabledEl, accessForCoachValueEl, accessForCoachUnitEl);
+		allOk &= validateFormLogic(publishedContainer, publishedEnabledEl, publishedValueEl, publishedUnitEl)
+				&& validatePublishedFormLogic(ureq, publishedContainer, publishedEnabledEl, publishedValueEl, publishedUnitEl);
 		allOk &= validateFormLogic(finishedContainer, finishedEnabledEl, finishedValueEl, finishedUnitEl);
+		
+		return allOk;
+	}
+	
+	private boolean validateAccessForCoachFormLogic(UserRequest ureq, FormLayoutContainer container, FormToggle enabledEl, TextElement valueEl, SingleSelection unitEl) {
+		boolean allOk = true;
+		
+		Automation instantiationAutomation = getAutomationFor(instantiationEnabledEl, instantiationValueEl, instantiationUnitEl);
+		Automation accessForCoachAutomation = getAutomationFor(enabledEl, valueEl, unitEl);
+		if(instantiationAutomation != null && accessForCoachAutomation != null
+				&& instantiationAutomation.getDateBefore(ureq.getRequestTimestamp()).after(accessForCoachAutomation.getDateBefore(ureq.getRequestTimestamp()))) {
+			container.setErrorKey("error.access.for.coach.after.instantiation");
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+	
+	private boolean validatePublishedFormLogic(UserRequest ureq, FormLayoutContainer container, FormToggle enabledEl, TextElement valueEl, SingleSelection unitEl) {
+		boolean allOk = true;
+		
+		Automation instantiationAutomation = getAutomationFor(instantiationEnabledEl, instantiationValueEl, instantiationUnitEl);
+		Automation accessForCoachAutomation = getAutomationFor(accessForCoachEnabledEl, accessForCoachValueEl, accessForCoachUnitEl);
+		
+		Automation publishAutomation = getAutomationFor(enabledEl, valueEl, unitEl);
+		if(instantiationAutomation != null && publishAutomation != null
+				&& instantiationAutomation.getDateBefore(ureq.getRequestTimestamp()).after(publishAutomation.getDateBefore(ureq.getRequestTimestamp()))) {
+			container.setErrorKey("error.publish.after.instantiation");
+			allOk &= false;
+		} else if(accessForCoachAutomation != null && publishAutomation != null
+				&& accessForCoachAutomation.getDateBefore(ureq.getRequestTimestamp()).after(publishAutomation.getDateBefore(ureq.getRequestTimestamp()))) {
+			container.setErrorKey("error.publish.after.access.for.coach");
+			allOk &= false;
+		}
 		
 		return allOk;
 	}
