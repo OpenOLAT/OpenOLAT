@@ -284,14 +284,14 @@ public class InPreparationListController extends FormBasicController implements 
 	
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getOlatResource().getKey(), "details", "learn.more", null, flc, Link.LINK);
 		detailsLink.setIconRightCSS("o_icon o_icon_details");
-		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details");
+		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-primary o_details o_in_preparation");
 		detailsLink.setTitle("details");
 		detailsLink.setUrl(url);
 		detailsLink.setUserObject(row);
 		row.setDetailsLink(detailsLink);
 		
 		FormLink detailsSmallLink = uifactory.addFormLink("details_small_" + row.getOlatResource().getKey(), "details", "learn.more", null, null, Link.LINK);
-		detailsSmallLink.setCustomEnabledLinkCSS("btn btn-xs btn-default o_details");
+		detailsSmallLink.setCustomEnabledLinkCSS("btn btn-xs btn-primary o_details o_in_preparation");
 		detailsSmallLink.setTitle("details");
 		detailsSmallLink.setUrl(url);
 		detailsSmallLink.setUserObject(row);

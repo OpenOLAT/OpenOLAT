@@ -213,7 +213,6 @@
 			}
 			
 			.o_access {
-				flex: 0 0 auto;
 				height: $o-coursesite-rowelem-height-md;	
 				width: $o-coursesite-rowelem-width-md;
 				position: relative;
@@ -271,6 +270,7 @@
 					display: grid;
 					grid-template-columns: 1fr 1fr;
 					bottom: 0;
+					right: 0;
 					
 					a {
 						@include text-overflow();
@@ -293,6 +293,13 @@
 				.o_details {
 					margin-right: 5px;
 					@include text-overflow();
+				}
+				
+				.o_details.o_in_preparation {
+					padding-left: 3em;
+					padding-right: 3em;
+					grid-column: span 2;
+					width: calc($o-coursesite-rowelem-width-md - 5px);
 				}
 				
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 

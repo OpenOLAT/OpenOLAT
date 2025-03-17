@@ -279,7 +279,7 @@ public class OverviewRepositoryListController extends BasicController implements
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			inPreparationStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
 			inPreparationCtrl = new InPreparationListController(ureq, bwControl, inPreparationStackPanel);
-			inPreparationStackPanel.pushController(translate("search.mycourses.student"), inPreparationCtrl);
+			inPreparationStackPanel.pushController(translate("search.preparation"), inPreparationCtrl);
 			listenTo(inPreparationCtrl);
 		} else if(entriesDirty) {
 			inPreparationCtrl.reloadRows();
