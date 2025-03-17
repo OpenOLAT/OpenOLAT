@@ -221,6 +221,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 			}
 			cancellingFeeAmountEl.setValue(newFeeValue);
 			cancellingEnabledEl.toggle(currentFeeDefault != null);
+			updateCancellingUI();
 		}
 		
 		currencyCode = selectedCurreny;
