@@ -55,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 11 mai 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class EditCurriculumElementTypeController extends FormBasicController {
@@ -131,7 +131,14 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		CurriculumLearningProgress learningProgressEnabled =  curriculumElementType == null ? null : curriculumElementType.getLearningProgress();
 		featuresEnabledEl.select(LEARNING_PROGRESS, learningProgressEnabled == CurriculumLearningProgress.enabled);
 		
-		int maxRelations = curriculumElementType == null ? 0 : curriculumElementType.getMaxRepositoryEntryRelations();
+		SelectionValues rootPK = new SelectionValues();
+		rootPK.add(SelectionValues.entry(ROOT, translate("type.allow.as.root.value")));
+		allowedAsRootEl = uifactory.addCheckboxesHorizontal("type.allow.as.root", formLayout, rootPK.keys(), rootPK.values());
+		allowedAsRootEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.allowAsRoot));
+		boolean allowAsRoot = curriculumElementType == null ? true : curriculumElementType.isAllowedAsRootElement();
+		allowedAsRootEl.select(ROOT, allowAsRoot);
+		
+		int maxRelations = curriculumElementType == null ? 1 : curriculumElementType.getMaxRepositoryEntryRelations();
 		
 		// Max course references
 		withContentEl = uifactory.addToggleButton("type.with.content", "type.with.content", translate("on"), translate("off"), formLayout);
@@ -157,16 +164,9 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		compositePK.add(SelectionValues.entry(COMPOSITE, translate("type.composite.multiple")));
 		compositeTypeEl = uifactory.addToggleButton("type.composite", "type.composite", translate("on"), translate("off"), formLayout);
 		compositeTypeEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.composite));
-		boolean singleElement = curriculumElementType != null && curriculumElementType.isSingleElement();
+		boolean singleElement = curriculumElementType == null || curriculumElementType.isSingleElement();
 		compositeTypeEl.toggle(!singleElement);
 		compositeTypeEl.addActionListener(FormEvent.ONCHANGE);
-		
-		SelectionValues rootPK = new SelectionValues();
-		rootPK.add(SelectionValues.entry(ROOT, translate("type.allow.as.root.value")));
-		allowedAsRootEl = uifactory.addCheckboxesHorizontal("type.allow.as.root", formLayout, rootPK.keys(), rootPK.values());
-		allowedAsRootEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.allowAsRoot));
-		boolean allowAsRoot = curriculumElementType == null ? true : curriculumElementType.isAllowedAsRootElement();
-		allowedAsRootEl.select(ROOT, allowAsRoot);
 		
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
 		if(types.size() > 1) {
@@ -198,7 +198,11 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		boolean multipleElements = compositeTypeEl.isOn();
 		allowedSubTypesEl.setVisible(multipleElements);
 		
-		maxRepositoryEntryRelationsEl.setVisible(withContentEl.isOn());
+		boolean withContent = withContentEl.isOn();
+		maxRepositoryEntryRelationsEl.setVisible(withContent);
+		if(withContent && !maxRepositoryEntryRelationsEl.isOneSelected()) {
+			maxRepositoryEntryRelationsEl.select("1", true);
+		}
 	}
 
 	@Override
