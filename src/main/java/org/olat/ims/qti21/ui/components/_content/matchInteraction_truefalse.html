@@ -49,9 +49,17 @@
 					#set($responseValue = $set1Identifier + " " + $set2Identifier)
 					#set($responseChecked = $r.getResponseValue($interaction.responseIdentifier))
                 	<td class="#if($foreach.index == 0) o_match_true_false_unanswered #elseif($foreach.index == 1) o_match_true_false_right #else o_match_true_false_wrong #end">
-                  	<input id="oo_${set1Identifier}_${set2Identifier}" aria-labelledby="${set2Identifier} ${set1Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked, $responseValue) || $r.trueFalseDefault($responseChecked, $set2Identifier, $interaction)) checked="checked" #end #if($r.isItemSessionEnded()) disabled #end><i> </i>
-                		$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
-                		$r.renderDirectedScoreAttribute($interaction, $choice1.identifier, $choice2.identifier)
+						#if($r.isItemSessionEnded())
+							#if($r.valueContains($responseChecked, $responseValue) || $r.trueFalseDefault($responseChecked, $set2Identifier, $interaction))
+								<i class="o_icon o_icon_check_on" alt="$translate("check.on")"> </i>
+							#else
+								<i class="o_icon o_icon_check_off" alt="$translate("check.off")"> </i>
+						 	#end
+						#else
+							<input id="oo_${set1Identifier}_${set2Identifier}" aria-labelledby="${set2Identifier} ${set1Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked, $responseValue) || $r.trueFalseDefault($responseChecked, $set2Identifier, $interaction)) checked="checked" #end #if($r.isItemSessionEnded()) disabled #end><i> </i>
+                			$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
+						#end
+						$r.renderDirectedScoreAttribute($interaction, $choice1.identifier, $choice2.identifier)
                 	</td>
 				#end
 				

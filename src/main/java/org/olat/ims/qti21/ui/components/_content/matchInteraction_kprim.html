@@ -39,8 +39,17 @@
 				#set($responseValue = $set1Identifier + " " + $set2Identifier)
 				#set($responseChecked = $r.getResponseValue($interaction.responseIdentifier))
                	<td class="o_qti_item_kprim_input o_qti_item_kprim_input_${set2Identifier}">
-                 		<input id="oo_${set1Identifier}_${set2Identifier}" aria-labelledby="${set2Identifier} ${set1Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked="checked" #end #if($r.isItemSessionEnded()) disabled #end><i> </i>
-               		$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
+
+					#if($r.isItemSessionEnded())
+						#if($r.valueContains($responseChecked,$responseValue)) 
+							<i class="o_icon o_icon_check_on" alt="$translate("check.on")"> </i>
+						#else
+							<i class="o_icon o_icon_check_off" alt="$translate("check.off")"> </i>
+						#end
+					#else
+						<input id="oo_${set1Identifier}_${set2Identifier}" aria-labelledby="${set2Identifier} ${set1Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked="checked" #end #if($r.isItemSessionEnded()) disabled #end><i> </i>
+						$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
+					#end
                	</td>
 			#end	
 			#if(!$r.classContains($interaction,"choiceright"))

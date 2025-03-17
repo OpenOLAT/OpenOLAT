@@ -1155,37 +1155,53 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		HottextInteraction interaction = null;
 		for(QtiNode parentNode=hottext.getParent(); parentNode.getParent() != null; parentNode = parentNode.getParent()) {
-			if(parentNode instanceof HottextInteraction) {
-				interaction = (HottextInteraction)parentNode;
+			if(parentNode instanceof HottextInteraction hottextInteraction) {
+				interaction = hottextInteraction;
 				break;
 			}
 		}
 		
 		if(interaction != null) {
-			sb.append("<span class='hottext'><input type='");
-			if(interaction.getMaxChoices() == 1) {
-				sb.append("radio");
-			} else {
-				sb.append("checkbox");
-			}
-			String guid = "oo_" + CodeHelper.getRAMUniqueID();
-			String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
-			sb.append("' id='").append(guid).append("' name='qtiworks_response_").append(responseUniqueId).append("'")
-			  .append(" value='").append(hottext.getIdentifier().toString()).append("'");
-			if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
-				sb.append(" disabled");
-			}
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 			Value responseValue = getResponseValue(assessmentItem, itemSessionState, interaction.getResponseIdentifier(), renderer.isSolutionMode());
-			if(valueContains(responseValue, hottext.getIdentifier())) {
-				sb.append(" checked");
+			
+			if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
+				boolean checked = valueContains(responseValue, hottext.getIdentifier());
+				sb.append("<span class='hottext o_disabled").append(" o_checked", "", checked).append("'>");
+				String alt = checked ? translator.translate("check.on") : translator.translate("check.off");
+				sb.append("<i class='o_icon o_icon_")
+				  .append("radio", "check", interaction.getMaxChoices() == 1)
+				  .append("_")
+				  .append("on", "off", checked)
+				  .append("' alt='").append(alt)
+				  .append("'> </i> <strong>");
+				hottext.getInlineStatics().forEach(inline
+						-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
+				sb.append("</strong></span>");
+			} else {
+				sb.append("<span class='hottext'><input type='");
+				if(interaction.getMaxChoices() == 1) {
+					sb.append("radio");
+				} else {
+					sb.append("checkbox");
+				}
+				String guid = "oo_" + CodeHelper.getRAMUniqueID();
+				String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
+				sb.append("' id='").append(guid).append("' name='qtiworks_response_").append(responseUniqueId).append("'")
+				  .append(" value='").append(hottext.getIdentifier().toString()).append("'");
+				if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
+					sb.append(" disabled");
+				}
+				if(valueContains(responseValue, hottext.getIdentifier())) {
+					sb.append(" checked");
+				}
+				sb.append(" />");
+				sb.append("<label for='").append(guid).append("'>");
+				hottext.getInlineStatics().forEach(inline
+						-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
+				FormJSHelper.appendFlexiFormDirtyOn(sb, component.getQtiItem().getRootForm(), "change click", guid, false);
+				sb.append("</label></span>");
 			}
-			sb.append(" /><i></i>");
-			sb.append("<label for='").append(guid).append("'>");
-			hottext.getInlineStatics().forEach(inline
-					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
-			FormJSHelper.appendFlexiFormDirtyOn(sb, component.getQtiItem().getRootForm(), "change click", guid, false);
-			sb.append("</label></span>");
 			
 			if(component.isScorePerAnswers()) {
 				String score = AssessmentObjectVelocityRenderDecorator.renderScorePerChoice(assessmentItem, interaction, hottext, translator);

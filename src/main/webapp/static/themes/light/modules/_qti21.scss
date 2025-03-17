@@ -1228,12 +1228,33 @@ table.o_qti_item_kprim {
 	margin: -2px 0.15em -2px 0.15em;
 	white-space: nowrap;
 
+	&.o_disabled {
+		display: inline;
+		padding: 0 0.2em 0 0.2em;
+		background: $o-qti-hottext-bg;
+		border: 1px solid $o-qti-hottext-border-color;
+		border-radius: $o-qti-hottext-border-radius;
+		
+		color: $o-qti-hottext-color;
+		font-weight: normal;
+		white-space: normal;
+	}
+	
+	&.o_disabled.o_checked {
+		color: $o-qti-hottext-checked-color;
+		background: $o-qti-hottext-checked-bg;
+		border: 1px solid $o-qti-hottext-checked-border-color;
+	}
+
 	input {
 		margin: 0 3px 0 2px;
 		position: absolute;
 		top: 0.1em;
 		left: 0.05em;
-		+i+label {
+	}
+
+	> input {
+		+label {
 			display: inline;
 			padding: 0 0.1em 0 1.2em;
 			background: $o-qti-hottext-bg;
@@ -2047,68 +2068,7 @@ div.o_qti_statistics {
 			font-weight: normal;
 		}
 	}
-	
-	.choiceinteraction input[type="radio"][disabled],
-	.choiceinteraction input[type="checkbox"][disabled],
-	.o_qti_item_choice_option_flow input[type="radio"][disabled],
-	.o_qti_item_choice_option_flow input[type="checkbox"][disabled],
-	.matchInteraction input[type="radio"][disabled],
-	.matchInteraction input[type="checkbox"][disabled],
-	.hottextInteraction .hottext input[type="radio"][disabled],
-	.hottextInteraction .hottext input[type="checkbox"][disabled],
-	.inlineChoiceInteraction input[type="radio"][disabled] {
-		display: none;
-	}
-	
-	.choiceinteraction input + i:before,
-	.o_qti_item_choice_option_flow input + i,
-	.matchInteraction input + i,
-	.hottextInteraction .hottext input + i,
-	.inlineChoiceInteraction input + i {
-  		display: inline;
-		font-family: $fa-style-family;
-		font-weight: 400;
-		font-style: normal;
-		font-variant: normal;
-		line-height: 1;
-	}
-	
-	.hottextInteraction .hottext input + i  {
-		margin: 0 3px 0 2px;
-		position: absolute;
-		top: 0em;
-		left: 0.05em;
-	}
-	
-	.choiceInteraction input[type="radio"][disabled] + i,
-	.matchInteraction input[type="radio"][disabled] + i,
-	.matchInteraction.match_true_false input[type="checkbox"][disabled] + i,
-	.hottextInteraction .hottext input[type="radio"][disabled] + i,
-	.inlineChoiceInteraction input[type="radio"][disabled] + i {
-		@include o-add-icon('circle',false);
-  		display: inline;
-	}
-	.choiceInteraction input[type="radio"][disabled]:checked + i,
-	.matchInteraction input[type="radio"][disabled]:checked + i,
-	.matchInteraction.match_true_false input[type="checkbox"][disabled]:checked + i,
-	.hottextInteraction .hottext input[type="radio"][disabled]:checked + i,
-	.inlineChoiceInteraction input[type="radio"][disabled]:checked + i {
-		@include o-add-icon('dot-circle',false);
-  		display: inline;
-	}
-	.choiceInteraction input[type="checkbox"][disabled] + i,
-	.matchInteraction input[type="checkbox"][disabled] + i,
-	.hottextInteraction .hottext input[type="checkbox"][disabled] + i {
-		@include o-add-icon('square',false);
-  		display: inline;
-	}
-	.choiceInteraction input[type="checkbox"][disabled]:checked + i,
-	.matchInteraction input[type="checkbox"][disabled]:checked + i,
-	.hottextInteraction .hottext input[type="checkbox"][disabled]:checked + i {
-		@include o-add-icon('check-square',false);
-  		display: inline;
-	}
-	
+
 	span.inlineChoiceInteraction.o_qti_offline {
 		border: 1px solid $o-qti-inline-choice-print-border-color;
 		padding: 0 2px 0 2px;

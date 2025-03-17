@@ -22,11 +22,16 @@
 			#if($r.valueContains($responseValue,$choice.identifier))
 				#set($checked = "checked")
 			#end
-        	<input name="o_dummy_${responseIdentifier}"
-				   value="${choice.identifier}"
-				   type="radio"
-				   #if($r.isItemSessionEnded()) disabled #end
-				   $checked><i></i>
+			
+			#if($r.isItemSessionEnded()) 
+				#if($r.valueContains($responseValue,$choice.identifier))
+					<i class="o_icon o_icon_radio_on" alt="$translate("check.on")"> </i>
+				#else
+					<i class="o_icon o_icon_radio_off" alt="$translate("check.off")"> </i>
+				#end
+			#else
+				<input name="o_dummy_${responseIdentifier}" value="${choice.identifier}" type="radio" #if($r.isItemSessionEnded()) disabled #end $checked>
+			#end
         	$r.renderTextOrVariables($choice.getTextOrVariables())
         #end
     #else
