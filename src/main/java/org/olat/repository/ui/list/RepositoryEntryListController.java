@@ -294,8 +294,6 @@ public class RepositoryEntryListController extends FormBasicController
 			SortKey sortKey = new SortKey(OrderBy.custom.name(), true);
 			tableEl.sort(sortKey);
 		}
-		
-		loadFilterPreferences(ureq);
 	}
 
 	private void initSmallFilters(FlexiTableElement tableElement) {
@@ -471,16 +469,6 @@ public class RepositoryEntryListController extends FormBasicController
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
 		options.setDefaultOrderBy(new SortKey(OrderBy.title.name(), true));
 		tableElement.setSortSettings(options);
-	}
-	
-	private void loadFilterPreferences(UserRequest ureq) {
-		FilterPreferences prefs = (FilterPreferences)ureq.getUserSession().getGuiPreferences()
-			.get(RepositoryEntryListController.class, "rev-filters-".concat(name));
-		if(prefs != null && prefs.getSelectedFilters() != null) {
-			for(String selectedFilter:prefs.getSelectedFilters()) {
-				tableEl.setSelectedFilterKey(selectedFilter);
-			}
-		}
 	}
 	
 	private void saveFilterPreferences(UserRequest ureq, List<FlexiTableFilter> filters) {
