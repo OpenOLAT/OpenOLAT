@@ -150,8 +150,13 @@ public class OverviewRepositoryListController extends BasicController implements
 		if(entries == null || entries.isEmpty()) {
 			if(currentCtrl == null) {
 				activateMyEntries(ureq);
-			} else if(entriesCtrl != null) {
-				entriesCtrl.reloadRows();
+			} else {
+				if(entriesCtrl != null) {
+					entriesCtrl.reloadRows();
+				}
+				if(inPreparationCtrl != null) {
+					inPreparationCtrl.reloadRows();
+				}
 				addToHistory(ureq, this);
 			}
 		} else {
