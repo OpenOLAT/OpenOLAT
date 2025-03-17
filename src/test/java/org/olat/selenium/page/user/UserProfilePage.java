@@ -87,7 +87,7 @@ public class UserProfilePage {
 	public UserProfilePage changeEmail(String newEmail) {
 		By changeEmailBy = By.cssSelector(".o_user_profile_form a.o_sel_user_change_mail");
 		OOGraphene.waitElement(changeEmailBy, browser);
-        browser.findElement(changeEmailBy).click();
+		OOGraphene.click(changeEmailBy, browser);
 		
 		// Modal to change the E-mail
 		OOGraphene.waitModalDialog(browser);

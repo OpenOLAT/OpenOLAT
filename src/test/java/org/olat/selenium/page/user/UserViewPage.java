@@ -48,6 +48,13 @@ public class UserViewPage {
 		return this;
 	}
 	
+	public UserViewPage assertOnUserEditProfil() {
+		By profileFormBy = By.cssSelector(".o_segments_content .o_user_profile_form");
+		OOGraphene.waitElement(profileFormBy, browser);
+		OOGraphene.waitTinymce(browser);
+		return this;
+	}
+	
 	/**
 	 * Click the tool to delete the user.
 	 * 

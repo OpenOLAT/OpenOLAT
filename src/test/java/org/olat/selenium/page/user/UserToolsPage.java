@@ -128,6 +128,7 @@ public class UserToolsPage {
 		OOGraphene.waitBusy(browser);
 		By userFormBy =  By.cssSelector("div.o_user_profile_form");
 		OOGraphene.waitElement(userFormBy, browser);
+		OOGraphene.waitTinymce(browser);
 		return new UserProfilePage(browser);
 	}
 	

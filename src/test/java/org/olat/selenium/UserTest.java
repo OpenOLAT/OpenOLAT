@@ -696,6 +696,7 @@ public class UserTest extends Deployments {
 			.selectByUsername(user.getLogin());
 		String pwChangeLink = userViewPage
 			.assertOnUserEditView(user.getLogin())
+			.assertOnUserEditProfil()
 			.openPasswordsTab()
 			.sendPasswordLink();
 		
@@ -967,7 +968,8 @@ public class UserTest extends Deployments {
 			.searchByUsername(username)
 			.assertOnUserInList(username)
 			.selectByUsername(username)
-			.assertOnUserEditView(username);
+			.assertOnUserEditView(username)
+			.assertOnUserEditProfil();
 		
 		//user log in
 		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
