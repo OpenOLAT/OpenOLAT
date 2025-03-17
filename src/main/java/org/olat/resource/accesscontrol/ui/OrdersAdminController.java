@@ -78,6 +78,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.reports.AccountingReportConfiguration;
 import org.olat.modules.curriculum.reports.AccountingReportResource;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -782,12 +783,14 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	private void doExport(UserRequest ureq) {
 		MediaResource reportResource;
 		if(resource == null) {
-			reportResource = new AccountingReportResource(getIdentity(), getLocale());
+			AccountingReportConfiguration config = new AccountingReportConfiguration();
+			reportResource = new AccountingReportResource(config, getIdentity(), getLocale());
 		} else {
 			ACResourceInfo infos = acService.getResourceInfos(List.of(resource)).get(0);
 			String filename = "Orders_" + StringHelper.transformDisplayNameToFileSystemName(infos.getName())
 				+ "_" + Formatter.formatDatetimeWithMinutes(new Date());
-			reportResource = new AccountingReportResource(filename, resource, getLocale());
+			AccountingReportConfiguration config = new AccountingReportConfiguration();
+			reportResource = new AccountingReportResource(config, filename, resource, getLocale());
 		}
 		ureq.getDispatchResult().setResultingMediaResource(reportResource);
 	}

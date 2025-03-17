@@ -45,21 +45,22 @@ public class AccountingReportResource extends OpenXMLWorkbookResource {
 	private final Locale locale;
 	private final Identity manager;
 	private final OLATResource resource;
+	private final AccountingReportConfiguration config;
 	
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private AccountingReportConfiguration accountingReportConfiguration;
-	
-	public AccountingReportResource(String filename, OLATResource resource, Locale locale) {
+
+	public AccountingReportResource(AccountingReportConfiguration config, String filename, OLATResource resource, Locale locale) {
 		super(filename);
+		this.config = config;
 		this.locale = locale;
 		this.resource = resource;
 		this.manager = null;
 	}
 	
-	public AccountingReportResource(Identity manager, Locale locale) {
+	public AccountingReportResource(AccountingReportConfiguration config, Identity manager, Locale locale) {
 		super("AccountBooking");
+		this.config = config;
 		this.locale = locale;
 		this.resource = null;
 		this.manager = manager;
@@ -75,12 +76,12 @@ public class AccountingReportResource extends OpenXMLWorkbookResource {
 				CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
 				searchParams.setCurriculum(element.getCurriculum());
 				searchParams.setCurriculumElement(element);
-				accountingReportConfiguration.generateReport(searchParams, curriculums, implementations, locale, out);
+				config.generateReport(searchParams, curriculums, implementations, locale, out);
 			}
 		} else {
 			CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
 			searchParams.setIdentity(manager);
-			accountingReportConfiguration.generateReport(searchParams, curriculums, implementations, locale, out);
+			config.generateReport(searchParams, curriculums, implementations, locale, out);
 		}
 	}
 }
