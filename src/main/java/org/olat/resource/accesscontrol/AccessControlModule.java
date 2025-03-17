@@ -62,7 +62,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 			return switch (value) {
 			case "true" -> VAT.inclusive; // legacy
 			case "inclusive" -> VAT.inclusive;
-			case "exclusiv" -> VAT.exclusive;
+			case "exclusive" -> VAT.exclusive;
 			default -> VAT.disabled;
 			};
 		}
