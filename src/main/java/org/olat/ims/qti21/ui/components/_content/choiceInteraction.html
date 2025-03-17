@@ -237,8 +237,25 @@
 					<td class="choiceInteraction"><label for="oo_$r.toString($simpleChoice.identifier)">$r.renderFlowStatics($simpleChoice.getFlowStatics())</label></td>
 					#end
 					<td class="control">
-						<input id="oo_$r.toString($simpleChoice.identifier)" name="qtiworks_response_${responseIdentifier}" value="$r.toString($simpleChoice.identifier)" #if($r.isSingleChoice($interaction)) type="radio" #else type="checkbox" #end #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier)) checked="checked" #end><i> </i>
-						$r.appendFlexiFormDirtyForCheckbox("oo_$r.toString($simpleChoice.identifier)")
+						#if($r.isItemSessionEnded())
+							
+							#if($r.isSingleChoice($interaction))
+								#if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier))
+									<i class="o_icon o_icon_radio_on" alt="$translate("check.on")"> </i>
+								#else
+									<i class="o_icon o_icon_radio_off" alt="$translate("check.off")"> </i>
+								#end
+							#else
+								#if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier))
+									<i class="o_icon o_icon_check_on" alt="$translate("check.on")"> </i>
+								#else
+									<i class="o_icon o_icon_check_off" alt="$translate("check.off")"> </i>
+								#end
+							#end						
+						#else
+							<input id="oo_$r.toString($simpleChoice.identifier)" name="qtiworks_response_${responseIdentifier}" value="$r.toString($simpleChoice.identifier)" #if($r.isSingleChoice($interaction)) type="radio" #else type="checkbox" #end #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier)) checked="checked" #end>
+							$r.appendFlexiFormDirtyForCheckbox("oo_$r.toString($simpleChoice.identifier)")
+						#end
 					</td>
 					#if(!$r.classContains($interaction,"choiceright"))
 					<td class="choiceInteraction"><label for="oo_$r.toString($simpleChoice.identifier)">$r.renderFlowStatics($simpleChoice.getFlowStatics())</label></td>
