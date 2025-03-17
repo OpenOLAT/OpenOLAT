@@ -223,6 +223,12 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
 		Step startReg = new RegistrationLangStep00(ureq, invitation, registrationModule.isDisclaimerEnabled(),
 				registrationModule.isEmailValidationEnabled(), isAdditionalRegistrationFormEnabled, registrationModule.isAllowRecurringUserEnabled());
+		// Skip the language step if there is only one language enabled - default
+		// language will be used. Use the calculated next step as start step instead.
+		if (i18nModule.getEnabledLanguageKeys().size() == 1) {	
+			startReg = startReg.nextStep();			
+		}
+		
 		registrationWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startReg, new RegisterFinishCallback(),
 				new RegCancelCallback(), translate("menu.register"), "o_sel_registration_start_wizard");
 		listenTo(registrationWizardCtrl);
@@ -687,6 +693,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 			// Set user configured language
 			Preferences preferences = user.getPreferences();
+			// can be null if language step is skipped - in this case the default language
+			// is used in the preferences.setLanguage() method
 			preferences.setLanguage((String) runContext.get(RegWizardConstants.CHOSEN_LANG));
 			user.setPreferences(preferences);
 
