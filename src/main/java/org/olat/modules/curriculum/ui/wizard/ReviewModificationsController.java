@@ -285,6 +285,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			List<BillingAddress> billingAddresses = acService.getBillingAddresses(baSearchParams);
 			if (billingAddresses.size() == 1) {
 				billingAddress = billingAddresses.get(0);
+				membersContext.getIdentityKeyToBillingAddress().put(row.getIdentity().getKey(), billingAddress);
 			}
 		}
 		row.setBillingAddress(billingAddress);
