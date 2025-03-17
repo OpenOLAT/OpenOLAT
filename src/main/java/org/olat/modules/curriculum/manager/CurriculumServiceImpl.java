@@ -561,8 +561,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 						Date start = settings.shiftDate(blockToCopy.getStartDate());
 						Date end = settings.shiftDate(blockToCopy.getEndDate());
 						String externalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
-						lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
+						LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
 						lectureBlocksCloned.add(blockToCopy.getKey());
+						lectureBlockDao.addGroupToLectureBlock(copiedBlock, clone.getGroup());
 					}
 				}
 			} else {
@@ -617,8 +618,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					Date start = settings.shiftDate(blockToCopy.getStartDate());
 					Date end = settings.shiftDate(blockToCopy.getEndDate());
 					String externalRef = settings.evaluateIdentifier(blockToCopy.getExternalRef());
-					lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
+					LectureBlock copiedBlock = lectureService.copyLectureBlock(blockToCopy, blockToCopy.getTitle(), externalRef, start, end, null, clone);
 					lectureBlocksCloned.add(blockToCopy.getKey());
+					lectureBlockDao.addGroupToLectureBlock(copiedBlock, clone.getGroup());
 				}
 			}
 		}

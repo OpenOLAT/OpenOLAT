@@ -53,6 +53,7 @@ import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.manager.QualityTestHelper;
@@ -376,7 +377,9 @@ public class CurriculumServiceTest extends OlatTestCase {
 	
 	@Test
 	public void copyCurriculumElementAndLectureBlock() {
-		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-5");
+		Identity actor = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-25");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("copy-cur-25-participant");
+		
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-25", "Curriculum 25", "Curriculum", false, null);
 		CurriculumElement element = curriculumService.createCurriculumElement("ORIGINAL-1", "Element to copy 1",
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
@@ -389,7 +392,6 @@ public class CurriculumServiceTest extends OlatTestCase {
 		lectureBlock.setExternalRef("ORIGINAL-1-EV-1");
 		lectureBlock.setTitle("Hello curriculum 25");
 		lectureBlock = lectureService.save(lectureBlock, null);
-
 		dbInstance.commit();
 		
 		CurriculumCopySettings copySettings = new CurriculumCopySettings();
@@ -400,16 +402,29 @@ public class CurriculumServiceTest extends OlatTestCase {
 		CurriculumElement copiedElement = curriculumService.copyCurriculumElement(curriculum, null, element, copySettings, actor);
 		dbInstance.commit();
 		
+		// Add a participant to the copied element
+		curriculumService.addMember(copiedElement, participant, CurriculumRoles.participant, actor);
+		dbInstance.commit();
+		
 		List<LectureBlock> copiedLectureBlocks = lectureService.getLectureBlocks(copiedElement, false);
 		Assertions.assertThat(copiedLectureBlocks)
 			.hasSize(1);
-		
+
 		LectureBlock copiedLectureBlock = copiedLectureBlocks.get(0);
 		Assert.assertNotNull(copiedLectureBlock.getStartDate());
 		Assert.assertNotNull(copiedLectureBlock.getEndDate());
 		Assert.assertEquals("Hello curriculum 25", copiedLectureBlock.getTitle());
 		Assert.assertEquals("COPY-1-EV-1", copiedLectureBlock.getExternalRef());
 		Assert.assertNull(copiedLectureBlock.getExternalId());
+		
+		// Check participant
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setParticipant(participant);
+		searchParams.setLectureConfiguredRepositoryEntry(false);
+		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams, 0, Boolean.FALSE);
+		Assertions.assertThat(lectureBlocks)
+			.hasSize(1)
+			.containsExactly(copiedLectureBlock);
 	}
 	
 	/**
