@@ -19,11 +19,8 @@
  */
 package org.olat.modules.coach.security;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
 
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RightProvider;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -43,8 +40,6 @@ public class CreateBookingOnBehalfOfRightProvider implements RightProvider {
 	private ResourcesAndBookingsRightProvider parentRight;
 
 	public static final String RELATION_RIGHT = "createBookingOnBehalfOf";
-
-	private static final Collection<OrganisationRoles> educationManagerRole = Collections.singleton(OrganisationRoles.educationmanager);
 
 	@Override
 	public String getRight() {
@@ -75,10 +70,5 @@ public class CreateBookingOnBehalfOfRightProvider implements RightProvider {
 	public String getTranslatedName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(CoachMainController.class, locale);
 		return translator.translate("relation.right.create.booking.on.behalf.of");
-	}
-
-	@Override
-	public Collection<OrganisationRoles> getOrganisationRoles() {
-		return educationManagerRole;
 	}
 }

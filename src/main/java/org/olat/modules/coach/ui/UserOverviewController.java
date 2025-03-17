@@ -346,7 +346,7 @@ public class UserOverviewController extends BasicController implements Activatea
 			calendarTabIndex = functionsTabbedPane.addTab(ureq, translate("calendar"), uureq -> doOpenCalendar(uureq).getInitialComponent());
 		}
 
-		if (roleSecurityCallback.canViewAndEditProfile() || roleSecurityCallback.canEditProfile()) {
+		if (roleSecurityCallback.canEditProfile()) {
 			profileTabIndex = functionsTabbedPane.addTab(ureq, translate("profile"), uureq -> {
 				WindowControl bwControl = addToHistory(uureq, OresHelper.createOLATResourceableType(CMD_PROFILE), null);
 				profileAndHomePageEditController =  new ProfileAndHomePageEditController(uureq, bwControl, mentee, roleSecurityCallback.isAdministrativeUser());

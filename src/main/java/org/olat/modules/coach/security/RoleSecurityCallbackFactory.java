@@ -155,11 +155,6 @@ public class RoleSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canViewAndEditProfile() {
-			return roleRights.contains(ViewAndEditProfileRightProvider.RELATION_RIGHT);
-		}
-
-		@Override
 		public boolean canViewProfile() {
 			return roleRights.contains(ViewProfileRightProvider.RELATION_RIGHT);
 		}

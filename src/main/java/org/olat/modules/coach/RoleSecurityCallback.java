@@ -118,13 +118,6 @@ public interface RoleSecurityCallback {
 	public boolean canCreateBookingOnBehalfOf();
 	
 	/**
-	 * Is this role allowed to view and edit a profile?
-	 * 
-	 * @return
-	 */
-	public boolean canViewAndEditProfile();
-	
-	/**
 	 * Is this role allowed to view a profile?
 	 * 
 	 * @return

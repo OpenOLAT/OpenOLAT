@@ -163,28 +163,38 @@ public class CoachPeopleController extends BasicController implements Activateab
 		mainVC.put("activate.pending.accounts", activatePendingAccountsButton);
 
 		Roles roles = ureq.getUserSession().getRoles();
-		if (roles.isEducationManager()) {
-			List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), OrganisationRoles.educationmanager);
-			if (orgs.isEmpty()) {
-				return;
-			}
-			Organisation org = orgs.get(0);
-			RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.create(
-					organisationService.getGrantedOrganisationRights(org, OrganisationRoles.educationmanager));
-			if (!roleSecurityCallback.canActivatePendingAccounts()) {
-				return;
-			}
-			
-			SearchIdentityParams params = new SearchIdentityParams();
-			params.setOrganisations(orgs);
-			params.setUserPropertiesAsIntersectionSearch(true);
-			params.setExactStatusList(List.of(Identity.STATUS_PENDING));
-			if (identityPowerSearchQueries.countIdentitiesByPowerSearch(params) == 0) {
-				return;
-			}
+		setActivatePendingAccountsButtonVisibility(roles);
+	}
 
-			activatePendingAccountsButton.setVisible(true);
+	private void setActivatePendingAccountsButtonVisibility(Roles roles) {
+		if (roles.isEducationManager()) {
+			setActivatePendingAccountsButtonVisibility(OrganisationRoles.educationmanager);
+		} else if (roles.isLineManager()) {
+			setActivatePendingAccountsButtonVisibility(OrganisationRoles.linemanager);
 		}
+	}
+
+	private void setActivatePendingAccountsButtonVisibility(OrganisationRoles orgRole) {
+		List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), orgRole);
+		if (orgs.isEmpty()) {
+			return;
+		}
+		Organisation org = orgs.get(0);
+		RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.create(
+				organisationService.getGrantedOrganisationRights(org, orgRole));
+		if (!roleSecurityCallback.canActivatePendingAccounts()) {
+			return;
+		}
+
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setOrganisations(orgs);
+		params.setUserPropertiesAsIntersectionSearch(true);
+		params.setExactStatusList(List.of(Identity.STATUS_PENDING));
+		if (identityPowerSearchQueries.countIdentitiesByPowerSearch(params) == 0) {
+			return;
+		}
+
+		activatePendingAccountsButton.setVisible(true);
 	}
 
 	private void addCreateAccountButton(UserRequest ureq) {
@@ -194,19 +204,29 @@ public class CoachPeopleController extends BasicController implements Activateab
 		mainVC.put("create.account", createAccountButton);
 
 		Roles roles = ureq.getUserSession().getRoles();
+		setCreateAccountButtonVisibility(roles);
+	}
+
+	private void setCreateAccountButtonVisibility(Roles roles) {
 		if (roles.isEducationManager()) {
-			List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), OrganisationRoles.educationmanager);
-			if (orgs.isEmpty()) {
-				return;
-			}
-			Organisation org = orgs.get(0);
-			RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.create(
-					organisationService.getGrantedOrganisationRights(org, OrganisationRoles.educationmanager));
-			if (!roleSecurityCallback.canCreateAccounts()) {
-				return;
-			}
-			createAccountButton.setVisible(true);
+			setCreateAccountButtonVisibility(OrganisationRoles.educationmanager);
+		} else if (roles.isLineManager()) {
+			setCreateAccountButtonVisibility(OrganisationRoles.linemanager);
 		}
+	}
+
+	private void setCreateAccountButtonVisibility(OrganisationRoles orgRole) {
+		List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), orgRole);
+		if (orgs.isEmpty()) {
+			return;
+		}
+		Organisation org = orgs.get(0);
+		RoleSecurityCallback roleSecurityCallback = RoleSecurityCallbackFactory.create(
+				organisationService.getGrantedOrganisationRights(org, orgRole));
+		if (!roleSecurityCallback.canCreateAccounts()) {
+			return;
+		}
+		createAccountButton.setVisible(true);
 	}
 
 	@Override
@@ -354,7 +374,8 @@ public class CoachPeopleController extends BasicController implements Activateab
 	private void doCreateAccount(UserRequest ureq) {
 		cleanUp();
 		
-		List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), OrganisationRoles.educationmanager);
+		List<Organisation> orgs = organisationService.getOrganisations(getIdentity(), OrganisationRoles.linemanager, 
+				OrganisationRoles.educationmanager);
 		if (orgs.isEmpty()) {
 			return;
 		}
