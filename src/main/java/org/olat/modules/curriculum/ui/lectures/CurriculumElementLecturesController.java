@@ -147,10 +147,6 @@ public class CurriculumElementLecturesController extends BasicController {
 			if(element.getEndDate() != null) {
 				mainVC.contextPut("elementEnd", formatter.formatDate(element.getEndDate()));
 			}
-			
-			List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
-			parentLine.remove(element);
-			mainVC.contextPut("parentLine", parentLine);
 		}
 
 		putInitialPanel(mainVC);

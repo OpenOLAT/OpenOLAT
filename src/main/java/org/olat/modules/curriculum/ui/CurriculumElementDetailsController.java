@@ -471,7 +471,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		// Events / lectures blocks
 		if(lectureModule.isEnabled()) {
-			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), uureq -> {
+			lecturesTab = tabPane.addTab(ureq, translate("tab.lectureblocks"), "o_sel_curriculum_lectures", uureq -> {
 				WindowControl subControl = addToHistory(uureq, OresHelper
 						.createOLATResourceableType(CurriculumListManagerController.CONTEXT_LECTURES), null);
 				LectureListRepositoryConfig config = LectureListRepositoryConfig.curriculumElementConfig();
@@ -481,7 +481,7 @@ public class CurriculumElementDetailsController extends BasicController implemen
 				List<ContextEntry> allFilter = BusinessControlFactory.getInstance().createCEListFromString("[Relevant:0]");
 				lectureBlocksCtrl.activate(uureq, allFilter, null);
 				return lectureBlocksCtrl.getInitialComponent();
-			});
+			}, true);
 		}
 		
 		// User management
@@ -497,12 +497,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		// Offers
 		if (acModule.isEnabled() && catalogV2Module.isEnabled() && curriculumElement.getParent() == null) {
-			offersTab = tabPane.addTab(ureq, translate("tab.offers"), uureq -> {
+			offersTab = tabPane.addTab(ureq, translate("tab.offers"), "o_sel_curriculum_offers", uureq -> {
 				offersCtrl = new CurriculumElementOffersController(uureq, getWindowControl(),
 						curriculumElement, secCallback);
 				listenTo(offersCtrl);
 				return offersCtrl.getInitialComponent();
-			});
+			}, true);
 		}
 		
 		// Metadata
@@ -515,12 +515,12 @@ public class CurriculumElementDetailsController extends BasicController implemen
 		
 		// Absences
 		if(CurriculumLectures.isEnabled(curriculumElement, curriculumElement.getType())) {
-			absencesTab = tabPane.addTab(ureq, translate("tab.absences"), uureq -> {
+			absencesTab = tabPane.addTab(ureq, translate("tab.absences"), "o_sel_curriculum_absences", uureq -> {
 				absencesCtrl = new CurriculumElementLecturesController(uureq, getWindowControl(), toolbarPanel,
 						curriculum, curriculumElement, false, secCallback);
 				listenTo(absencesCtrl);
 				return absencesCtrl.getInitialComponent();
-			});
+			}, true);
 		}
 		
 		// Reports
