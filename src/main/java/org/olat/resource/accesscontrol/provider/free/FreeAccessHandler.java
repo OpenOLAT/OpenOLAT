@@ -87,7 +87,7 @@ public class FreeAccessHandler implements AccessMethodHandler {
 	@Override
 	public String getDescription(Locale locale) {
 		Translator translator = Util.createPackageTranslator(FreeSubmitController.class, locale);
-		return translator.translate("free.method.desc");
+		return translator.translate("free.method.description");
 	}
 	
 	@Override

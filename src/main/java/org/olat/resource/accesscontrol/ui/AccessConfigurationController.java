@@ -790,6 +790,7 @@ public class AccessConfigurationController extends FormBasicController {
 		guardModalController(newMethodCtrl);
 		
 		Offer offer = acService.createOffer(resource, displayName);
+		offer.setConfirmationEmail(true);
 		OfferAccess link = acService.createOfferAccess(offer, method);
 		
 		removeAsListenerAndDispose(newMethodCtrl);

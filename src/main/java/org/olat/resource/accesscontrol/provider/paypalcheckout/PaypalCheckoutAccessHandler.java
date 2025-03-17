@@ -91,7 +91,7 @@ public class PaypalCheckoutAccessHandler implements AccessMethodHandler {
 	@Override
 	public String getDescription(Locale locale) {
 		Translator translator = Util.createPackageTranslator(PaypalSubmitController.class, locale);
-		return translator.translate("paypal.method.desc");
+		return translator.translate("paypal.method.description");
 	}
 	
 	@Override

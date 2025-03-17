@@ -85,7 +85,7 @@ public class InvoiceAccessHandler implements AccessMethodHandler {
 	@Override
 	public String getDescription(Locale locale) {
 		Translator translator = Util.createPackageTranslator(InvoiceSubmitController.class, locale);
-		return translator.translate("invoice.method.desc");
+		return translator.translate("invoice.method.description");
 	}
 	
 	@Override

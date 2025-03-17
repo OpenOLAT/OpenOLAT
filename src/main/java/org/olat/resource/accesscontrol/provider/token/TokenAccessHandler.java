@@ -86,7 +86,7 @@ public class TokenAccessHandler implements AccessMethodHandler {
 	@Override
 	public String getDescription(Locale locale) {
 		Translator translator = Util.createPackageTranslator(TokenSubmitController.class, locale);
-		return translator.translate("token.method.desc");
+		return translator.translate("token.method.description");
 	}
 	
 	@Override

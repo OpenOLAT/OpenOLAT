@@ -155,8 +155,8 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			confirmationByManagerEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationByManagerRequired());
 		}
 		
-		confirmationEmailEl = uifactory.addCheckboxesHorizontal("confirmation.email", formLayout, onKeys,
-				new String[] { translate("confirmation.email.selfregistered") });
+		confirmationEmailEl = uifactory.addCheckboxesHorizontal("email.confirmation", formLayout, onKeys,
+				new String[] { translate("email.confirmation.self") });
 		confirmationEmailEl.select(onKeys[0], link.getOffer() != null && link.getOffer().isConfirmationEmail());
 		
 		uifactory.addSpacerElement("others", formLayout, false);

@@ -926,7 +926,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_group_icon { @include o-add-icon('users', false);}
 .o_ac_membersonly_icon { @include o-add-icon('lock');}
 .o_ac_guests_icon { @include o-add-icon('user-circle', false);}
-.o_ac_openaccess_icon { @include o-add-icon('user-secret');}
+.o_ac_openaccess_icon { @include o-add-icon('door-open');}
 .o_ac_paypal_icon { @include o-add-brand-icon('cc-paypal');}
 .o_ac_status_canceled_icon { @include o-add-icon('minus'); color: $brand-warning;}
 .o_ac_status_error_icon { @include o-add-icon('times'); color: $brand-danger;}

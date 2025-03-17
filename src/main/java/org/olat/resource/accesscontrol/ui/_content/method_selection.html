@@ -1,0 +1,27 @@
+<div class="o_ac_billing_address_selection o_form">
+	<div class="o_block">
+		$r.translate("create.offer.info")
+	</div>
+	#if($r.available("create.offer.membership.none"))
+		<fieldset class="o_block_large_bottom">
+			<legend>$r.translate("create.offer.membership.none")</legend>
+			$r.render("create.offer.membership.none")
+		</fieldset>
+	#end
+	#if($r.available("create.offer.membership"))
+		<fieldset class="o_block_large_bottom">
+			<legend>$r.translate("create.offer.membership")</legend>
+			$r.render("create.offer.membership")
+		</fieldset>
+	#end
+	#if($r.available("create.offer.membership.pay"))
+		<fieldset class="o_block_large_bottom">
+			<legend>$r.translate("create.offer.membership.pay")</legend>
+			$r.render("create.offer.membership.pay")
+		</fieldset>
+	#end
+	#if($r.visible("error"))
+		$r.render("error")
+	#end
+	$r.render("buttons")
+<div>
