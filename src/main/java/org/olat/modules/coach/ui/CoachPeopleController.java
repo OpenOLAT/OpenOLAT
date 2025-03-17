@@ -214,22 +214,28 @@ public class CoachPeopleController extends BasicController implements Activateab
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		List<ContextEntry> subEntries = entries.subList(1, entries.size());
 		if(COACH_SCOPE.equalsIgnoreCase(type)) {
-			doOpenAsCoach(ureq);
+			doOpenAsCoach(ureq)
+					.activate(ureq, subEntries, entries.get(0).getTransientState());
 			searchScopes.setSelectedKey(COACH_SCOPE);
 		} else if(PRINCIPAL_SCOPE.equalsIgnoreCase(type)) {
-			doOrganisationsWithRole(ureq, OrganisationRoles.principal);
+			doOrganisationsWithRole(ureq, OrganisationRoles.principal)
+					.activate(ureq, subEntries, entries.get(0).getTransientState());
 			searchScopes.setSelectedKey(PRINCIPAL_SCOPE);
 		} else if(LINE_MANAGER_SCOPE.equalsIgnoreCase(type)) {
-			doOrganisationsWithRole(ureq, OrganisationRoles.linemanager);
+			doOrganisationsWithRole(ureq, OrganisationRoles.linemanager)					
+					.activate(ureq, subEntries, entries.get(0).getTransientState());
 			searchScopes.setSelectedKey(LINE_MANAGER_SCOPE);
 		} else if(EDU_MANAGER_SCOPE.equals(type)) {
-			doOrganisationsWithRole(ureq, OrganisationRoles.educationmanager);
+			doOrganisationsWithRole(ureq, OrganisationRoles.educationmanager)
+					.activate(ureq, subEntries, entries.get(0).getTransientState());
 			searchScopes.setSelectedKey(EDU_MANAGER_SCOPE);
 		} else {
 			for(RelationRole role:userRelationRoles) {
 				if((RELATION_PREFIX_SCOPE + role.getRole()).equalsIgnoreCase(type)) {
-					doOpenRelation(ureq, role);
+					doOpenRelation(ureq, role)
+							.activate(ureq, subEntries, entries.get(0).getTransientState());
 					searchScopes.setSelectedKey(RELATION_PREFIX_SCOPE + role.getRole());
 					break;
 				}
@@ -293,7 +299,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 		}
 	}
 	
-	private void doOpenAsCoach(UserRequest ureq) {
+	private Activateable2 doOpenAsCoach(UserRequest ureq) {
 		cleanUp();
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(COACH_SCOPE, 0l);
@@ -302,9 +308,10 @@ public class CoachPeopleController extends BasicController implements Activateab
 		studentListCtrl = new StudentListController(ureq, bwControl, content);
 		listenTo(studentListCtrl);
 		mainVC.put(MAIN_CONTROLLER, studentListCtrl.getInitialComponent());
+		return studentListCtrl;
 	}
 	
-	private void doOpenRelation(UserRequest ureq, RelationRole relationRole) {
+	private Activateable2 doOpenRelation(UserRequest ureq, RelationRole relationRole) {
 		cleanUp();
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Relations", relationRole.getKey());
@@ -313,9 +320,10 @@ public class CoachPeopleController extends BasicController implements Activateab
 		userRelationsListController = new UserRelationListController(ureq, bwControl, content, relationRole);
 		listenTo(userRelationsListController);
 		mainVC.put(MAIN_CONTROLLER, userRelationsListController.getInitialComponent());
+		return userRelationsListController;
 	}
 	
-	private void doOrganisationsWithRole(UserRequest ureq, OrganisationRoles role) {
+	private Activateable2 doOrganisationsWithRole(UserRequest ureq, OrganisationRoles role) {
 		cleanUp();
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(role.name(), 0l);
@@ -324,6 +332,7 @@ public class CoachPeopleController extends BasicController implements Activateab
 		organisationListCtrl = new OrganisationListController(ureq, bwControl, content, role);
 		listenTo(organisationListCtrl);
 		mainVC.put(MAIN_CONTROLLER, organisationListCtrl.getInitialComponent());
+		return organisationListCtrl;
 	}
 
 	private void doActivatePendingAccounts(UserRequest ureq) {
