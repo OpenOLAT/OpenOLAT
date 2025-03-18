@@ -1023,7 +1023,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 	public enum CurriculumCols implements FlexiSortableColumnDef {
 		curriculum("table.header.curriculum"),
 		curriculumElement("table.header.curriculum.element"),
-		curriculumElementIdentifier("table.header.identifier"),
+		curriculumElementIdentifier("table.header.external.ref"),
 		masterCoach("table.header.mastercoachs"),
 		elementOwner("table.header.elementowners"),
 		owner("table.header.owners"),
