@@ -20,6 +20,9 @@
 
 package org.olat.resource.accesscontrol.provider.paypal.ui;
 
+import java.util.Date;
+
+import org.apache.commons.lang3.time.DateUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -91,7 +94,8 @@ public class PaypalSubmitController extends FormBasicController implements FormC
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(acService.reserveAccessToResource(getIdentity(), link.getOffer(), link.getMethod(), null, getIdentity(), null)) {
+		Date expirationDate = DateUtils.addHours(ureq.getRequestTimestamp(), 1);
+		if(acService.reserveAccessToResource(getIdentity(), link.getOffer(), link.getMethod(), expirationDate, null, getIdentity(), null)) {
 			PayResponse response = paypalManager.request(getIdentity(), link, mapperUri, ureq.getHttpReq().getSession().getId());
 			if(response == null) {
 				setFormWarning("paypal.before.redirect.error");

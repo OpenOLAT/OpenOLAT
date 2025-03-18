@@ -21,6 +21,7 @@
 package org.olat.resource.accesscontrol;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -28,6 +29,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.resource.accesscontrol.manager.ACMethodDAO;
@@ -441,5 +443,10 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 			}
 		}
 		return null;
+	}
+	
+	public Date getDefaultExpirationDate(Date now) {
+		Date expiration = DateUtils.addMonth(now, 6);
+		return DateUtils.getEndOfDay(expiration);
 	}
 }

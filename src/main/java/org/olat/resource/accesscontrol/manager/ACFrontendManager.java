@@ -78,6 +78,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
+import org.olat.modules.curriculum.ui.member.ResourceToRoleKey;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -740,14 +741,14 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method, MailPackage mailing, Identity doer, String adminNote) {
+	public boolean reserveAccessToResource(Identity identity, Offer offer, AccessMethod method, Date expirationDate, MailPackage mailing, Identity doer, String adminNote) {
 		OLATResource resource = offer.getResource();
 		String resourceType = resource.getResourceableTypeName();
 		if("BusinessGroup".equals(resourceType)) {
-			return reserveAccessToBusinessGroup(identity, offer, resource, method);
+			return reserveAccessToBusinessGroup(identity, offer, resource, method, expirationDate);
 		}
 		if("CurriculumElement".equals(resourceType)) {
-			return reserveAccessToCurriculumElement(identity, offer, resource, mailing, doer, adminNote);
+			return reserveAccessToCurriculumElement(identity, offer, resource, expirationDate, mailing, doer, adminNote);
 		}
 		RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
 		if (entry != null) {
@@ -756,14 +757,15 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
 						GroupRoles.participant.name(), GroupMembershipStatus.reservation, true, null, null,
 						identity, null);
-				reservationDao.createReservation(identity, "repo_participant", null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
+				reservationDao.createReservation(identity, "repo_participant", expirationDate,
+						Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
 			}
 			return true;
 		}
 		return false;
 	}
 
-	private boolean reserveAccessToCurriculumElement(Identity identity, Offer offer, OLATResource resource, MailPackage mailing,
+	private boolean reserveAccessToCurriculumElement(Identity identity, Offer offer, OLATResource resource, Date expirationDate, MailPackage mailing,
 			Identity doer, String adminNote) {
 		boolean reserved = false;
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
@@ -775,7 +777,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 						GroupRoles.participant.name(), GroupMembershipStatus.reservation, true, null, null,
 						doer, adminNote);
 				reservationDao.createReservation(identity, CurriculumService.RESERVATION_PREFIX.concat("participant"),
-						null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
+						expirationDate, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
 				
 				if(mailing != null && mailing.isSendEmail()) {
 					Curriculum curriculum = curriculumElement.getCurriculum();
@@ -792,7 +794,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		return reserved;
 	}
 	
-	private boolean reserveAccessToBusinessGroup(Identity identity, Offer offer, OLATResource resource, AccessMethod method) {
+	private boolean reserveAccessToBusinessGroup(Identity identity, Offer offer, OLATResource resource, AccessMethod method, Date expirationDate) {
 		boolean reserved = false;
 		final BusinessGroup group = businessGroupDao.loadForUpdate(resource.getResourceableId());
 		if(group.getMaxParticipants() == null || group.getMaxParticipants().intValue() <= 0) {
@@ -810,7 +812,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				groupMembershipHistoryDao.createMembershipHistory(group.getBaseGroup(), identity,
 						GroupRoles.participant.name(), GroupMembershipStatus.reservation, true, null, null,
 						identity, null);
-				reservationDao.createReservation(identity, method.getType(), null, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
+				reservationDao.createReservation(identity, method.getType(), expirationDate, Boolean.valueOf(!offer.isConfirmationByManagerRequired()), resource);
 				reserved = true;
 			}
 		}
@@ -825,7 +827,39 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		List<ResourceReservation> oldReservations = reservationDao.loadExpiredReservation(oneHourTimeout);
 		for(ResourceReservation reservation:oldReservations) {
 			log.info(Tracing.M_AUDIT, "Remove reservation: {}", reservation);
+			logCleanupReservation(reservation);
 			reservationDao.deleteReservation(reservation);
+		}
+	}
+	
+	protected void logCleanupReservation(ResourceReservation reservation) {
+		Identity identity = reservation.getIdentity();
+		OLATResource resource = reservation.getResource();
+		String resourceType = resource.getResourceableTypeName();
+		if("BusinessGroup".equals(resourceType)) {
+			BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(resource);
+			GroupRoles role = reservation.getType().contains("participant") ? GroupRoles.participant : GroupRoles.coach;
+			if(businessGroup != null) {
+				groupMembershipHistoryDao.createMembershipHistory(businessGroup.getBaseGroup(), identity,
+						role.name(), GroupMembershipStatus.removed, true, null, null,
+						null, null);
+			}
+		} else if("CurriculumElement".equals(resourceType)) {
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(resource);
+			CurriculumRoles role = ResourceToRoleKey.reservationToRole(reservation.getType());
+			if(curriculumElement != null && role != null) {
+				groupMembershipHistoryDao.createMembershipHistory(curriculumElement.getGroup(), identity,
+						role.name(), GroupMembershipStatus.removed, true, null, null,
+						null, null);
+			}
+		} else {
+			RepositoryEntry entry = repositoryEntryDao.loadByResource(resource);
+			if (entry != null) {
+				Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(entry);
+				groupMembershipHistoryDao.createMembershipHistory(defaultGroup, identity,
+						GroupRoles.participant.name(), GroupMembershipStatus.removed, true, null, null,
+						null, null);
+			}
 		}
 	}
 
@@ -864,7 +898,8 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		}
 		
 		if (offer.isConfirmationByManagerRequired()) {
-			return reserveAccessToResource(identity, offer, method, mailing, doer, adminNote);
+			Date expirationDate = accessModule.getDefaultExpirationDate(new Date());
+			return reserveAccessToResource(identity, offer, method, expirationDate, mailing, doer, adminNote);
 		}
 
 		String resourceType = resource.getResourceableTypeName();

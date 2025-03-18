@@ -28,6 +28,7 @@ import static org.olat.test.JunitTestHelper.createRandomResource;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.BusinessGroup;
@@ -314,7 +316,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//id1 start payment process
-		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), null, null, null);
+		Date expirationDate = DateUtils.addHours(new Date(), 1);
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, null, null, null);
 		Assert.assertTrue(reserved);
 		dbInstance.commitAndCloseSession();
 
@@ -370,7 +373,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//id1 try to reserve a place before the payment process
-		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), null, id1, null);
+		Date expirationDate = DateUtils.addHours(new Date(), 1);
+		boolean reserved = acService.reserveAccessToResource(id1, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, null, id1, null);
 		Assert.assertFalse(reserved);
 
 		if(!enabled) {
@@ -404,7 +408,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//id try to reserve a place before the payment process, no problem, no limit
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), null, id, null);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), null, null, id, null);
 		Assert.assertTrue(reserved);
 	}
 	
@@ -435,7 +439,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		
 		//id try to reserve a place before the payment process, no problem, no limit
 		MailPackage mailing = new MailPackage(false);
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), mailing, id, null);
+		Date expirationDate = DateUtils.addDays(new Date(), 2);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, mailing, id, null);
 		Assert.assertTrue(reserved);
 		
 		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
@@ -463,7 +468,8 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		MailPackage mailing = new MailPackage(true);
-		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), mailing, id, null);
+		Date expirationDate = DateUtils.addDays(new Date(), 2);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, mailing, id, null);
 		Assert.assertTrue(reserved);
 		
 		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
@@ -650,4 +656,45 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		assertThat(acService.getOfferOrganisations(offer)).isEmpty();
 	}
 	
+	@Test
+	public void cleanupReservation() {
+		// Create a curriculum with an element and an invoice offer
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pay-30");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-AC-30", "Curriculum AC 30", "Curriculum", false, null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element to clean up a reservation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		
+		Offer offer = acService.createOffer(element.getResource(), "Invoice curriculum element");
+		offer.setConfirmationByManagerRequired(true);
+		offer = acService.save(offer);
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(InvoiceAccessMethod.class);
+		Assert.assertFalse(methods.isEmpty());
+		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
+		offerAccess = acService.saveOfferAccess(offerAccess);
+		dbInstance.commitAndCloseSession();
+		
+		MailPackage mailing = new MailPackage(true);
+		Date expirationDate = DateUtils.addDays(new Date(), -1);
+		boolean reserved = acService.reserveAccessToResource(id, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, mailing, id, null);
+		Assert.assertTrue(reserved);
+
+		List<ResourceReservation> reservations = acService.getReservations(List.of(element.getResource()));
+		Assertions.assertThat(reservations)
+			.hasSize(1);
+		
+		// Clean up the reservations
+		acService.cleanupReservations();
+		
+		List<ResourceReservation> cleanReservations = acService.getReservations(List.of(element.getResource()));
+		Assertions.assertThat(cleanReservations)
+			.isEmpty();
+		
+		List<GroupMembershipHistory> removeHistory = groupMembershipHistoryDao.loadMembershipHistory(element.getGroup(), id);
+		Assertions.assertThat(removeHistory)
+			.hasSize(2)
+			.filteredOn(point -> GroupMembershipStatus.removed == point.getStatus())
+			.hasSize(1);
+	}
 }

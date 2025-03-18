@@ -106,6 +106,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.SearchReservationParameters;
@@ -152,6 +153,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
+	@Autowired
+	private AccessControlModule acModule;
 	@Autowired
 	private DB dbInstance;
 
@@ -853,8 +856,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private boolean internalAddCoachReservation(Identity identityToAdd, BusinessGroup businessGroup, Identity actor) {
 		ResourceReservation olderReservation = reservationDao.loadReservation(identityToAdd, businessGroup.getResource());
 		if(olderReservation == null) {
-			Date expiration = DateUtils.addMonth(new Date(), 6);
-			expiration = DateUtils.getEndOfDay(expiration);
+			Date expiration = acModule.getDefaultExpirationDate(new Date());
 			ResourceReservation reservation =
 					reservationDao.createReservation(identityToAdd, BusinessGroupService.GROUP_COACH, expiration, Boolean.TRUE, businessGroup.getResource());
 			if(reservation != null) {

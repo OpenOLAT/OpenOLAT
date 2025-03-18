@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
@@ -152,8 +153,8 @@ public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 	public CreateSmartOrder createOrder(Identity delivery, OfferAccess offerAccess) {
 		Offer offer = offerAccess.getOffer();
 		Price amount = offer.getPrice();
-
-		if(acService.reserveAccessToResource(delivery, offerAccess.getOffer(), offerAccess.getMethod(), null, delivery, null)) {
+		Date expirationDate = DateUtils.addHours(new Date(), 1);
+		if(acService.reserveAccessToResource(delivery, offerAccess.getOffer(), offerAccess.getMethod(), expirationDate, null, delivery, null)) {
 			Order order = orderManager.saveOneClick(delivery, offerAccess, OrderStatus.PREPAYMENT, null, null, null);
 			PaypalCheckoutTransaction trx = transactionDao.createTransaction(amount, order, order.getParts().get(0), offerAccess.getMethod());
 			trx = checkoutProvider.createOrder(order, trx);
