@@ -189,6 +189,9 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		String nodeIdS = nodeId.toString();
 		CourseNode courseNode = course.getRunStructure().getNode(nodeIdS);
 		if (debug) log.debug("courseNode={}", courseNode);
+		if(courseNode == null) {
+			return false;
+		}
 		
 		TreeNode treeNode = CoreSpringFactory.getImpl(NodeAccessService.class)
 				.getCourseTreeModelBuilder(userCourseEnv)
