@@ -143,12 +143,12 @@ public class CoachMainRootController extends BasicController implements Activate
 		coursesButton = LinkFactory.createLink("courses.menu.title", "courses.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		coursesButton.setIconLeftCSS("o_icon o_icon-xl o_CourseModule_icon");
 		coursesButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_courses");
-		coursesButton.setVisible(coachingSec.isTeacher());
+		coursesButton.setVisible(coachingSec.isCoach());
 	
 		businessGroupsButton = LinkFactory.createLink("groups.menu.title", "groups.menu.title", getTranslator(), mainVC, this, Link.LINK_CUSTOM_CSS);
 		businessGroupsButton.setIconLeftCSS("o_icon o_icon-xl o_icon_group");
 		businessGroupsButton.setElementCssClass("btn btn-default o_button_mega o_sel_coaching_groups");
-		businessGroupsButton.setVisible(coachingSec.isTeacher());	
+		businessGroupsButton.setVisible(coachingSec.isCoach());	
 	}
 	
 	@Override
