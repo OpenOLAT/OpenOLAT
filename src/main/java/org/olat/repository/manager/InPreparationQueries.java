@@ -26,12 +26,13 @@ import java.util.Set;
 
 import jakarta.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -56,14 +57,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class InPreparationQueries {
 	
+	private static final Logger log = Tracing.createLoggerFor(InPreparationQueries.class);
+	
 	private static final List<String> IN_PREPARATION_STATUS = List.of(RepositoryEntryStatusEnum.preparation.name(),
 			RepositoryEntryStatusEnum.review.name(), RepositoryEntryStatusEnum.coachpublished.name());
 	
-	private static final List<String> IN_PREPARATION_CURRICULUM_STATUS = List.of(CurriculumElementStatus.preparation.name(),
-			CurriculumElementStatus.provisional.name(), CurriculumElementStatus.confirmed.name(),
-			CurriculumElementStatus.active.name());
-	
-	private static final List<CurriculumElementStatus> IN_PREPARATION_AS_PARTICIPANT_CURRICULUM_STATUS = List.of(CurriculumElementStatus.preparation,
+	public static final List<CurriculumElementStatus> IN_PREPARATION_AS_PARTICIPANT_CURRICULUM_STATUS = List.of(CurriculumElementStatus.preparation,
 			CurriculumElementStatus.provisional);
 	
 	@Autowired
@@ -80,7 +79,6 @@ public class InPreparationQueries {
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
-	
 
 	public boolean hasInPreparation(IdentityRef identity) {
 		List<RepositoryEntry> entries = searchRepositoryEntries(identity, 0, 1);
@@ -88,7 +86,7 @@ public class InPreparationQueries {
 			return true;
 		}
 		if(curriculumModule.isEnabled()) {
-			List<CurriculumElement> elements = searchCurriculumElements(identity);
+			List<CurriculumElementAndRepositoryEntry> elements = searchCurriculumElements(identity);
 			if(!elements.isEmpty()) {
 				return true;
 			}
@@ -158,32 +156,28 @@ public class InPreparationQueries {
 		return list;
 	}
 	
-	private List<CurriculumElement> searchCurriculumElements(IdentityRef identity) {
+	private List<CurriculumElementAndRepositoryEntry> searchCurriculumElements(IdentityRef identity) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select el,")
-		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
-		  .append("  where reToGroup.group.key=baseGroup.key")
-		  .append(" ) as numOfCourses,")
-		  .append(" (select count(distinct reservation.key) from resourcereservation as reservation")
-		  .append("  where reservation.resource.key=el.resource.key and reservation.identity.key=:identityKey")
-		  .append(" ) as numOfReservations,")
-		  .append(" (select count(distinct participants.identity.key) from bgroupmember as participants")
-		  .append("  where participants.group.key=baseGroup.key and participants.role=:participantRole")
-		  .append("  and participants.identity.key=:identityKey")
-		  .append(" ) as numOfParticipants")
+		sb.append("select el, v")
 		  .append(" from curriculumelement as el")
 		  .append(" inner join fetch el.curriculum as curriculum")
 		  .append(" inner join fetch el.group as baseGroup")
 		  .append(" left join fetch el.resource as rsrc")
 		  .append(" left join fetch el.type as type")
+		  .append(" left join repoentrytogroup as rel on (baseGroup.key =  rel.group.key)")
+		  .append(" left join rel.entry as v")
+		  .append(" left join fetch v.olatResource as res")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" left join fetch v.educationalType as educationalType")
 		  .where()
-		  .append(" el.parent.key is null and el.status in (:status)");
+		  .append(" el.parent.key is null");
 
 		sb.and().append("(");
 		// check participants
 		sb.append("exists (select membership.key from bgroupmember as membership")
 		  .append(" where baseGroup.key=membership.group.key and membership.identity.key=:identityKey")
 		  .append(" and membership.role=:participantRole")
+		  .append(" and (v.key is null or v.status in (:repoStatus))")
 		  .append(")");
 		// checks reservation
 		sb.append(" or exists (select reservation.key from resourcereservation as reservation")
@@ -195,51 +189,50 @@ public class InPreparationQueries {
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
 			.setParameter("identityKey", identity.getKey())
-			.setParameter("status", IN_PREPARATION_CURRICULUM_STATUS)
+			.setParameter("repoStatus", IN_PREPARATION_STATUS)
 			.setParameter("participantRole", GroupRoles.participant.name());
 
 		List<Object[]> elements = query.getResultList();
-		List<CurriculumElement> list = new ArrayList<>();
+		List<CurriculumElementAndRepositoryEntry> list = new ArrayList<>();
 		for(Object[] objects: elements) {
 			CurriculumElement element = (CurriculumElement)objects[0];
 			CurriculumElementType type = element.getType();
-			long numOfCourse = PersistenceHelper.extractPrimitiveLong(objects, 1);
-			long numOfReservation = PersistenceHelper.extractPrimitiveLong(objects, 2);
-			long numAsParticipant = PersistenceHelper.extractPrimitiveLong(objects, 3);
-			
-			if(type.isSingleElement() && type.getMaxRepositoryEntryRelations() == 1) {
-				if(numOfCourse == 0) {
-					list.add(element);
-				}
-			} else if(!type.isSingleElement() || type.getMaxRepositoryEntryRelations() == -1) {
-				if(numOfReservation > 0l
-						|| (numAsParticipant > 0l && IN_PREPARATION_AS_PARTICIPANT_CURRICULUM_STATUS.contains(element.getElementStatus()))) {
-					list.add(element);
-				}
-			}
+			RepositoryEntry entry = (RepositoryEntry)objects[1];
+
+			log.debug("{} with type {} (single: {}, relations: {}) and entry: {}", element.getDisplayName(), (type == null ? "-" : type.getDisplayName()),
+					(type == null ? "-" : type.isSingleElement()), (type == null ? "-" : type.getMaxRepositoryEntryRelations()), (entry == null ? "-" : entry.getDisplayname()));
+
+			list.add(new CurriculumElementAndRepositoryEntry(element, entry));
 		}
 		
 		return list;
 	}
 	
 	public List<CurriculumElementInPreparation> searchCurriculumElementsInPreparation(IdentityRef identity) {
-		List<CurriculumElement> curriculumElements = searchCurriculumElements(identity);
+		List<CurriculumElementAndRepositoryEntry> curriculumElements = searchCurriculumElements(identity);
 		
 		List<Long> marks = markManager.getMarksResourceId(identity, "CurriculumElement");
 		Set<Long> marksSet = Set.copyOf(marks);
 		
 		Map<Long,List<TaxonomyLevel>> levelsMap;
 		if (!curriculumElements.isEmpty() && taxonomyModule.isEnabled()) {
-			levelsMap = curriculumService.getCurriculumElementKeyToTaxonomyLevels(curriculumElements);
+			List<CurriculumElement> elements = curriculumElements.stream()
+					.map(CurriculumElementAndRepositoryEntry::element)
+					.toList();
+			levelsMap = curriculumService.getCurriculumElementKeyToTaxonomyLevels(elements);
 		} else {
 			levelsMap = Map.of();
 		}
 		List<CurriculumElementInPreparation> list = new ArrayList<>(curriculumElements.size());
-		for(CurriculumElement curriculumElement:curriculumElements) {
-			boolean marked = marksSet.contains(curriculumElement.getKey());
-			List<TaxonomyLevel> levels = levelsMap.get(curriculumElement.getKey());
-			list.add(new CurriculumElementInPreparation(curriculumElement, marked, levels));
+		for(CurriculumElementAndRepositoryEntry curriculumElement:curriculumElements) {
+			boolean marked = marksSet.contains(curriculumElement.element().getKey());
+			List<TaxonomyLevel> levels = levelsMap.get(curriculumElement.element().getKey());
+			list.add(new CurriculumElementInPreparation(curriculumElement.element(), curriculumElement.entry(), marked, levels));
 		}
 		return list;
+	}
+	
+	private record CurriculumElementAndRepositoryEntry(CurriculumElement element, RepositoryEntry entry) {
+		//
 	}
 }

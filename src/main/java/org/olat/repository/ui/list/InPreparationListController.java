@@ -22,7 +22,9 @@ package org.olat.repository.ui.list;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.Mark;
@@ -228,14 +230,22 @@ public class InPreparationListController extends FormBasicController implements 
 	
 	private void loadModel() {
 		List<InPreparationRow> rows = new ArrayList<>();
-		List<RepositoryEntryInPreparation> entries = inPreparationQueries.searchRepositoryEntriesInPreparation(getIdentity());
-		for(RepositoryEntryInPreparation entry:entries) {
-			rows.add(forgeRow(entry));
-		}
-				
+		
 		List<CurriculumElementInPreparation> elements = inPreparationQueries.searchCurriculumElementsInPreparation(getIdentity());
+		Set<Long> entriesKeys = new HashSet<>();
 		for(CurriculumElementInPreparation element:elements) {
 			rows.add(forgeRow(element));
+			if(element.entry() != null) {
+				entriesKeys.add(element.entry().getKey());
+			}
+		}
+		
+		List<RepositoryEntryInPreparation> entries = inPreparationQueries.searchRepositoryEntriesInPreparation(getIdentity());
+		for(RepositoryEntryInPreparation entry:entries) {
+			if(entriesKeys.contains(entry.entry().getKey())) {
+				continue;
+			}
+			rows.add(forgeRow(entry));
 		}
 		
 		tableModel.setObjects(rows);
@@ -261,7 +271,7 @@ public class InPreparationListController extends FormBasicController implements 
 	}
 	
 	private InPreparationRow forgeRow(CurriculumElementInPreparation element) {
-		InPreparationRow row = new InPreparationRow(element.element(), element.marked());
+		InPreparationRow row = new InPreparationRow(element.element(), element.entry(), element.marked());
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
 		forgeMarkLink(row);

@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -30,6 +31,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public record CurriculumElementInPreparation(CurriculumElement element, boolean marked, List<TaxonomyLevel> levels) {
+public record CurriculumElementInPreparation(CurriculumElement element, RepositoryEntry entry,
+		boolean marked, List<TaxonomyLevel> levels) {
 	//
 }

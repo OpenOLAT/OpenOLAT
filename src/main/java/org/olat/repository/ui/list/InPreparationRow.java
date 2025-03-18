@@ -96,8 +96,8 @@ public class InPreparationRow {
 		olatResource = re.getOlatResource();
 	}
 	
-	public InPreparationRow(CurriculumElement element, boolean marked) {
-		repositoryEntryKey = null;
+	public InPreparationRow(CurriculumElement element, RepositoryEntry entry, boolean marked) {
+		repositoryEntryKey = entry == null ? null : entry.getKey();
 		curriculumElementKey = element.getKey();
 		this.marked = marked;
 		creationDate = element.getCreationDate();
