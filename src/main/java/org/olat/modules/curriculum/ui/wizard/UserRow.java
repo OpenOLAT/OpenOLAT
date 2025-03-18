@@ -50,6 +50,7 @@ public class UserRow extends UserPropertiesRow implements IdentityOrganisationsR
 	private List<MembershipModification> modifications;
 	private ModificationStatusSummary modificationSummary;
 	private BillingAddress billingAddress;
+	private boolean noBillingAddressAvailable;
 	private boolean multiBillingAddressAvailable;
 	
 	private FormLink toolsLink;
@@ -113,13 +114,18 @@ public class UserRow extends UserPropertiesRow implements IdentityOrganisationsR
 	public void setBillingAddress(BillingAddress billingAddress) {
 		this.billingAddress = billingAddress;
 		if (billingAddress != null) {
+			noBillingAddressAvailable = false;
 			multiBillingAddressAvailable = false;
 		}
 	}
 
 	@Override
 	public boolean isNoBillingAddressAvailable() {
-		return billingAddress == null;
+		return noBillingAddressAvailable;
+	}
+	
+	public void setNoBillingAddressAvailable(boolean noBillingAddressAvailable) {
+		this.noBillingAddressAvailable = noBillingAddressAvailable;
 	}
 
 	@Override

@@ -231,7 +231,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 					membersContext.getModifications());
 			row.setModificationSummary(summary);
 			row.setModifications(membersContext.getModifications());
-			if (membersContext.isNeedBillingAddress()) {
+			if (membersContext.isNeedBillingAddress() && row.getModificationSummary().addition()) {
 				row.setOrganisations(membersContext.getIdentityKeyToUserOrganisations().get(identity.getKey()));
 				setBillingAddress(row);
 				
@@ -272,6 +272,10 @@ public class ReviewModificationsController extends StepFormBasicController imple
 	}
 
 	private void setBillingAddress(UserRow row) {
+		if (!row.getModificationSummary().addition()) {
+			return;
+		}
+		
 		BillingAddress billingAddress = null;
 		if (membersContext.getIdentityKeyToBillingAddress() != null) {
 			billingAddress = membersContext.getIdentityKeyToBillingAddress().get(row.getIdentity().getKey());
@@ -288,13 +292,17 @@ public class ReviewModificationsController extends StepFormBasicController imple
 				membersContext.getIdentityKeyToBillingAddress().put(row.getIdentity().getKey(), billingAddress);
 			} else if (billingAddresses.size() > 1) {
 				row.setMultiBillingAddressAvailable(true);
+				row.setNoBillingAddressAvailable(false);
+				return;
 			}
 		}
 		row.setBillingAddress(billingAddress);
+		row.setNoBillingAddressAvailable(billingAddress == null);
 	}
 	
 	private void forge(UserRow row) {
-		if (membersContext.isNeedBillingAddress() && row.isNoBillingAddressAvailable()) {
+		if (membersContext.isNeedBillingAddress() && row.getModificationSummary().addition()
+				&& (row.isNoBillingAddressAvailable() || row.isMultiBillingAddressAvailable())) {
 			FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator(), CMD_TOOLS);
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
