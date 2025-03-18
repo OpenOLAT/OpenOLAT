@@ -243,6 +243,7 @@ public class RepositoryMailing {
 		private static final String COURSE_DESCRIPTION = "courseDescription";
 		private static final String COURSE_URL = "courseUrl";
 		private static final String COURSE_REF = "courseRef";
+		private static final String COURSE_LOCATION = "courseLocation";
 		
 		private final Locale locale;
 		private final RepositoryEntry re;
@@ -267,6 +268,7 @@ public class RepositoryMailing {
 			variableNames.add(COURSE_DESCRIPTION);
 			variableNames.add(COURSE_URL);
 			variableNames.add(COURSE_REF);
+			variableNames.add(COURSE_LOCATION);
 			return variableNames;
 		}
 		
@@ -300,6 +302,10 @@ public class RepositoryMailing {
 			String courseRef = re.getExternalRef() == null ? "" : re.getExternalRef();
 			context.put(COURSE_REF, courseRef);
 			context.put("courseref", courseRef);
+			
+			String courseLocation = re.getLocation() == null ? "" : re.getLocation();
+			context.put(COURSE_LOCATION, courseLocation);
+			context.put("courselocation", courseLocation);
 		}
 		
 		private static String createCourseUrl(RepositoryEntry repositoryEntry) {
