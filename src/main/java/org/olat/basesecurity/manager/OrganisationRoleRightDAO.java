@@ -56,6 +56,14 @@ public class OrganisationRoleRightDAO {
                 .getResultList();
     }
 
+    public Collection<OrganisationRoleRight> getOrganisationRoleRights(OrganisationRoles orgRole) {
+		String sb = "select roleRight from organisationroleright as roleRight where roleRight.role = :orgRole";
+        return dbInstance.getCurrentEntityManager()
+                .createQuery(sb, OrganisationRoleRight.class)
+                .setParameter("orgRole", orgRole)
+                .getResultList();
+    }
+
     public void deleteGrantedOrganisationRights(Organisation organisation, OrganisationRoles role, Collection<String> deleteRights) {
         StringBuilder sb = new StringBuilder(128);
         sb.append("delete from organisationroleright as orgRight")
@@ -69,6 +77,10 @@ public class OrganisationRoleRightDAO {
                 .setParameter("deleteRights", deleteRights)
                 .setParameter("orgRole", role)
                 .executeUpdate();
+    }
+    
+    public void deleteOrganisationRoleRight(OrganisationRoleRight orgRoleRight) {
+        dbInstance.getCurrentEntityManager().remove(orgRoleRight);
     }
 
     public OrganisationRoleRight createOrganisationRoleRight(Organisation organisation, OrganisationRoles role, String right) {

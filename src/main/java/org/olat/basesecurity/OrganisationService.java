@@ -382,4 +382,8 @@ public interface OrganisationService {
 	 */
 	public void setGrantedOrganisationRights(Organisation organisation, OrganisationRoles role, Collection<String> rights);
 
+	/**
+	 * Upgrade line manager roles to the new configuration (same as educationmanager) used in release 20, if needed.
+	 */
+	public void upgradeLineManagerRoles();
 }

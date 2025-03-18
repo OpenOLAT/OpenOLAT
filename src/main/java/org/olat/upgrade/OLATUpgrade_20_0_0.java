@@ -22,6 +22,7 @@ package org.olat.upgrade;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
@@ -51,6 +52,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 	private static final String UPDATE_CURRICULUM_ELEMENT = "UPDATE CURRICULUM ELEMENT";
 	private static final String UPDATE_CURRICULUM_ELEMENT_RESOURCE = "UPDATE CURRICULUM ELEMENT RESOURCE";
 	private static final String UPDATE_CURRICULUM_ELEMENT_NUMBERING = "UPDATE CURRICULUM ELEMENT NUMBERING";
+	private static final String UPDATE_MANAGER_ROLES = "UPDATE MANAGER ROLES";
 	
 	private static final int BATCH_SIZE = 1000;
 	
@@ -62,6 +64,8 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 	private OLATResourceManager olatResourceManager;
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
+	@Autowired
+	private OrganisationService organisationService;
 
 	public OLATUpgrade_20_0_0() {
 		super();
@@ -86,6 +90,7 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 		allOk &= updateCurriculumElement(upgradeManager, uhd);
 		allOk &= updateCurriculumElementResource(upgradeManager, uhd);
 		allOk &= updateCurriculumElementNumbering(upgradeManager, uhd);
+		allOk &= updateManagerRoles(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -248,5 +253,22 @@ public class OLATUpgrade_20_0_0 extends OLATUpgrade {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, CurriculumElement.class)
 				.getResultList();
+	}
+	
+	private boolean updateManagerRoles(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(UPDATE_MANAGER_ROLES)) {
+			try {
+				log.info("Start updating manager roles.");
+				organisationService.upgradeLineManagerRoles();
+				log.info("End updating manager roles.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(UPDATE_MANAGER_ROLES, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
 	}
 }

@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,7 @@ import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationEmailDomain;
 import org.olat.basesecurity.OrganisationEmailDomainSearchParams;
 import org.olat.basesecurity.OrganisationManagedFlag;
+import org.olat.basesecurity.OrganisationRoleRight;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
@@ -73,6 +75,11 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.coach.security.CreateAccountsRightProvider;
+import org.olat.modules.coach.security.DeactivateAccountsRightProvider;
+import org.olat.modules.coach.security.EditProfileRightProvider;
+import org.olat.modules.coach.security.PendingAccountActivationRightProvider;
+import org.olat.modules.coach.security.ViewProfileRightProvider;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -890,5 +897,61 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		for (String right : addRights) {
 			organisationRoleRightDAO.createOrganisationRoleRight(organisation, role, right);
 		}
+	}
+
+	@Override
+	public void upgradeLineManagerRoles() {
+		Collection<OrganisationRoleRight> lineManagerRights = organisationRoleRightDAO.getOrganisationRoleRights(OrganisationRoles.linemanager);
+		
+		Map<Long, Collection<OrganisationRoleRight>> orgKeyToRight = new HashMap<>();
+		for (OrganisationRoleRight lineManagerRight : lineManagerRights) {
+			Collection<OrganisationRoleRight> rightsForOrg = 
+					orgKeyToRight.getOrDefault(lineManagerRight.getOrganisation().getKey(), new HashSet<>());
+			rightsForOrg.add(lineManagerRight);
+			orgKeyToRight.put(lineManagerRight.getOrganisation().getKey(), rightsForOrg);
+		}
+		
+		Set<OrganisationRoleRight> rightsToDelete = new HashSet<>();
+		Set<OrganisationRoleRight> rightsToRenameToViewProfile = new HashSet<>();
+		
+		for (OrganisationRoleRight lineManagerRight : lineManagerRights) {
+			Organisation org = lineManagerRight.getOrganisation();
+			Long orgKey = org.getKey();
+			if ("viewAndEditProfile".equals(lineManagerRight.getRight())) {
+				Optional<OrganisationRoleRight> viewProfileRight = findRight(orgKeyToRight, orgKey, ViewProfileRightProvider.RELATION_RIGHT);
+				if (viewProfileRight.isPresent()) {
+					rightsToDelete.add(lineManagerRight);
+				} else {
+					rightsToRenameToViewProfile.add(lineManagerRight);
+				}
+				createRightIfMissing(orgKeyToRight, org, EditProfileRightProvider.RELATION_RIGHT);
+				createRightIfMissing(orgKeyToRight, org, CreateAccountsRightProvider.RELATION_RIGHT);
+				createRightIfMissing(orgKeyToRight, org, PendingAccountActivationRightProvider.RELATION_RIGHT);
+				createRightIfMissing(orgKeyToRight, org, DeactivateAccountsRightProvider.RELATION_RIGHT);
+			}
+		}
+		
+		for (OrganisationRoleRight rightToDelete : rightsToDelete) {
+			organisationRoleRightDAO.deleteOrganisationRoleRight(rightToDelete);
+		}
+		for (OrganisationRoleRight rightToRename : rightsToRenameToViewProfile) {
+			organisationRoleRightDAO.createOrganisationRoleRight(rightToRename.getOrganisation(), OrganisationRoles.linemanager, ViewProfileRightProvider.RELATION_RIGHT);
+			organisationRoleRightDAO.deleteOrganisationRoleRight(rightToRename);
+		}
+		dbInstance.commit();
+	}
+
+	private void createRightIfMissing(Map<Long, Collection<OrganisationRoleRight>> orgKeyToRight, Organisation org, String right) {
+		if (findRight(orgKeyToRight, org.getKey(), right).isEmpty()) {
+			organisationRoleRightDAO.createOrganisationRoleRight(org, OrganisationRoles.linemanager, right);
+		}
+	}
+
+	private Optional<OrganisationRoleRight> findRight(Map<Long, Collection<OrganisationRoleRight>> orgKeyToRight, 
+													  Long orgKey, String right) {
+		return orgKeyToRight.getOrDefault(orgKey, new HashSet<>())
+				.stream()
+				.filter((r) -> right.equals(r.getRight()))
+				.findFirst();
 	}
 }
