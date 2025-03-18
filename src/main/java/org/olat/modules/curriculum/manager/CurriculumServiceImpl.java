@@ -71,6 +71,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -529,6 +530,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		CurriculumElement clone = curriculumElementDao.copyCurriculumElement(elementToClone,
 				identifier, displayName, beginDate, endDate, parentElement, curriculum);
+		copyCurriculumElemenFiles(elementToClone, clone, doer);
 		
 		boolean hasTemplates = false;
 		if(settings.getCopyResources() == CopyResources.relation
@@ -637,6 +639,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			copyCurriculumElementRec(curriculum, clone, childToClone, settings, doer, depth);
 		}
 		return clone;
+	}
+	
+	private void copyCurriculumElemenFiles(CurriculumElement elementToClone, CurriculumElement clone, Identity doer) {
+		for(CurriculumElementFileType type:CurriculumElementFileType.values()) {
+			VFSLeaf file = getCurriculumElemenFile(elementToClone, type);
+			if(file != null && file.exists() && file instanceof LocalFileImpl localFile) {
+				storeCurriculumElemenFile(clone, type, localFile.getBasefile(), localFile.getBasefile().getName(), doer);
+			}
+		}
 	}
 
 	@Override
