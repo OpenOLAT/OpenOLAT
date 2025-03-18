@@ -44,9 +44,12 @@
 				<div class="o_lifecycle #if ($row.isActive()) o_active #end o_flex_block_one_line_left">
 					#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
 						<div class="o_lifecycle_date o_flex_item_fix"><i class="o_icon o_icon-fw o_icon_lifecycle_date"> </i>
-						#if(($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) || ($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()))
-							#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) $r.escapeHtml($row.lifecycleSoftKey)
-							#else $r.escapeHtml($row.lifecycleLabel) #end
+						#if($r.isNotEmpty($row.lifecycleSoftKey) || $r.isNotEmpty($row.lifecycleLabel))
+							#if($r.isNotEmpty($row.lifecycleSoftKey))
+								$r.escapeHtml($row.lifecycleSoftKey)
+							#else
+								$r.escapeHtml($row.lifecycleLabel)
+							#end
 						#else
 							#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
 							#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end

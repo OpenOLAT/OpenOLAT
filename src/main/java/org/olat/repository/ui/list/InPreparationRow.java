@@ -83,10 +83,11 @@ public class InPreparationRow {
 		authors = re.getAuthors();
 		teaser = re.getTeaser();
 		entryStatus = re.getEntryStatus();
-		
 		if(re.getLifecycle() != null) {
-			lifecycleLabel = re.getLifecycle().getLabel();
-			lifecycleSoftKey = re.getLifecycle().getSoftKey();
+			if(!re.getLifecycle().isPrivateCycle()) {
+				lifecycleLabel = re.getLifecycle().getLabel();
+				lifecycleSoftKey = re.getLifecycle().getSoftKey();
+			}
 			lifecycleStart = re.getLifecycle().getValidFrom();
 			lifecycleEnd = re.getLifecycle().getValidTo();
 		}
