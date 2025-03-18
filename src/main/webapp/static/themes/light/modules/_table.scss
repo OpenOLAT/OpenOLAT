@@ -325,8 +325,7 @@ table.table.o_table_nowrap>tbody>tr>td {
 			flex: 1;
 
 			>li {
-				margin-left: 0px;
-				margin-right: 2px;
+				margin: 0px 2px 2px 0px;
 			}
 			.o_table_filter, .o_table_add_filter {
 				width: 200px;
@@ -356,7 +355,7 @@ table.table.o_table_nowrap>tbody>tr>td {
 			}
 			
 			>li>fieldset.o_table_filter {
-				margin: 0 1px 0 0;
+				margin: 0px 1px 0 0;
 				padding-right: 0;
 				border: 1px solid transparent;
 				border-radius: $btn-border-radius-base;
@@ -364,7 +363,7 @@ table.table.o_table_nowrap>tbody>tr>td {
 				
 				.checkbox {
 					width: 100%;
-					margin: 0;
+					margin: 0px;
 					
 					> div > label {
 						width: 100%;
@@ -383,8 +382,6 @@ table.table.o_table_nowrap>tbody>tr>td {
 		
 		a.btn {
 			padding: 6px 12px;
-			margin-right: 2px;
-			margin-bottom: 2px;
 			background-image: none;
 			filter: none;
 		}

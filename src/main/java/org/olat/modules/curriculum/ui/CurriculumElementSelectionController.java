@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -88,6 +89,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CurriculumElementSelectionController extends FormBasicController {
 	
 	private static final String ALL_TAB_ID = "All";
+	private static final String RELEVANT_TAB_ID = "Relevant";
 	
 	private FlexiTableElement tableEl;
 	private CurriculumComposerTableModel tableModel;
@@ -100,7 +102,7 @@ public class CurriculumElementSelectionController extends FormBasicController {
 	private AccessControlModule acModule;
 
 	public CurriculumElementSelectionController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		initForm(ureq);
 		loadModel();
 	}
@@ -193,8 +195,8 @@ public class CurriculumElementSelectionController extends FormBasicController {
 	}
 	
 	private void initFiltersPresets(UserRequest ureq) {
-		List<FlexiFiltersTab> tabs = new ArrayList<>();
-		Map<String,FlexiFiltersTab> map = new HashMap<>();
+		List<FlexiFiltersTab> tabs = new ArrayList<>(2);
+		Map<String,FlexiFiltersTab> map = new HashMap<>(2);
 		
 		FlexiFiltersTab allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
 				TabSelectionBehavior.nothing, List.of());
@@ -202,8 +204,16 @@ public class CurriculumElementSelectionController extends FormBasicController {
 		tabs.add(allTab);
 		map.put(ALL_TAB_ID.toLowerCase(), allTab);
 		
+		FlexiFiltersTab relevantTab = FlexiFiltersTabFactory.tabWithImplicitFilters(RELEVANT_TAB_ID, translate("filter.relevant"),
+				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(CurriculumComposerController.FILTER_STATUS,
+						List.of(CurriculumElementStatus.preparation.name(), CurriculumElementStatus.provisional.name(),
+								CurriculumElementStatus.confirmed.name(), CurriculumElementStatus.active.name() ))));
+		relevantTab.setFiltersExpanded(true);
+		tabs.add(relevantTab);
+		map.put(RELEVANT_TAB_ID.toLowerCase(), relevantTab);
+		
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, allTab);
+		tableEl.setSelectedFilterTab(ureq, relevantTab);
 	}
 	
 	void loadModel() {
