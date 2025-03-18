@@ -355,20 +355,23 @@
 			order: 2;
 		}
 		.o_ac_order_details_content_right {
+			margin-right: auto;
+		
 			display: grid;
 			grid-template-columns: 1fr;
 			gap: 20px;
+			
+			.o_ac_billing_address {
+				max-width: unset;
+			}
 		}
 	}
 	
 	@container o_ac_order_details_container (min-width: 700px) {
 		.o_ac_order_details_content {
 			.o_ac_order_details_content_right {
+				margin-right: unset;
 				grid-template-columns: 1fr 1fr;
-			
-				.o_ac_billing_address {
-					max-width: unset;
-				}
 			}
 		}
 	}
@@ -464,6 +467,7 @@
 }
 
 .o_ac_billing_address {
+	background-color: $o-ac-ba-bg-color;
 	border: $o-ac-ba-border;
 	border-radius: $o-ac-ba-border-radius;
 	padding: $o-ac-ba-padding;
