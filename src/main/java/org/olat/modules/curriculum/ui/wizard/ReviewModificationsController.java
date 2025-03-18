@@ -276,6 +276,18 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			return;
 		}
 		
+		BillingAddress uniqueUserBillingAddress = null;
+		BillingAddressSearchParams baSearchParams = new BillingAddressSearchParams();
+		baSearchParams.setOrganisations(row.getOrganisations());
+		List<BillingAddress> billingAddresses = acService.getBillingAddresses(baSearchParams);
+		if (billingAddresses.size() == 1) {
+			uniqueUserBillingAddress = billingAddresses.get(0);
+		} else if (billingAddresses.size() > 1) {
+			row.setMultiBillingAddressAvailable(true);
+		} else if (billingAddresses.size() == 0) {
+			row.setNoBillingAddressAvailable(true);
+		}
+		
 		BillingAddress billingAddress = null;
 		if (membersContext.getIdentityKeyToBillingAddress() != null) {
 			billingAddress = membersContext.getIdentityKeyToBillingAddress().get(row.getIdentity().getKey());
@@ -283,21 +295,11 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		if (billingAddress == null) {
 			billingAddress = membersContext.getBillingAddress();
 		}
-		if (billingAddress == null) {
-			BillingAddressSearchParams baSearchParams = new BillingAddressSearchParams();
-			baSearchParams.setOrganisations(row.getOrganisations());
-			List<BillingAddress> billingAddresses = acService.getBillingAddresses(baSearchParams);
-			if (billingAddresses.size() == 1) {
-				billingAddress = billingAddresses.get(0);
-				membersContext.getIdentityKeyToBillingAddress().put(row.getIdentity().getKey(), billingAddress);
-			} else if (billingAddresses.size() > 1) {
-				row.setMultiBillingAddressAvailable(true);
-				row.setNoBillingAddressAvailable(false);
-				return;
-			}
+		if (billingAddress == null && uniqueUserBillingAddress != null) {
+			billingAddress = uniqueUserBillingAddress;
+			membersContext.getIdentityKeyToBillingAddress().put(row.getIdentity().getKey(), uniqueUserBillingAddress);
 		}
 		row.setBillingAddress(billingAddress);
-		row.setNoBillingAddressAvailable(billingAddress == null);
 	}
 	
 	private void forge(UserRow row) {
@@ -398,7 +400,8 @@ public class ReviewModificationsController extends StepFormBasicController imple
 		
 		tableEl.clearError();
 		if (membersContext.isNeedBillingAddress()) {
-			boolean missingBillingAddress = tableModel.getObjects().stream().anyMatch(UserRow::isNoBillingAddressAvailable);
+			boolean missingBillingAddress = tableModel.getObjects().stream()
+					.anyMatch(row -> row.getModificationSummary().addition() && row.getBillingAddress() == null);
 			if (missingBillingAddress) {
 				allOk &= false;
 				tableEl.setErrorKey("error.missing.billing.address");

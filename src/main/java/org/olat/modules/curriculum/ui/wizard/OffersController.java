@@ -58,6 +58,8 @@ import org.olat.modules.curriculum.ui.CurriculumManagerController;
 import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.BillingAddress;
+import org.olat.resource.accesscontrol.BillingAddressSearchParams;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.accesscontrol.Price;
@@ -94,7 +96,8 @@ public class OffersController extends StepFormBasicController {
 	
 	private final MembersContext membersContext;
 	private final List<AccessInfos> validOffers;
-	private final boolean allIdentitiesInSameOrganisations;
+	private boolean allIdentitiesInSameOrganisations;
+	private BillingAddress uniqueUserBillingAddress;
 	private boolean needBillingAddress;
 	
 	@Autowired
@@ -108,7 +111,7 @@ public class OffersController extends StepFormBasicController {
 		setTranslator(Util.createPackageTranslator(CurriculumManagerController.class, ureq.getLocale()));
 		this.membersContext = membersContext;
 		validOffers = validOffers(membersContext);
-		allIdentitiesInSameOrganisations = allIdentitiesInSameOrganisations();
+		updateIdentitiesInSameOrganisations();
 		initForm(ureq);
 		updateUI();
 	}
@@ -145,7 +148,7 @@ public class OffersController extends StepFormBasicController {
 		return accessList;
 	}
 	
-	private boolean allIdentitiesInSameOrganisations() {
+	private void updateIdentitiesInSameOrganisations() {
 		Set<Organisation> refOrganisations = null;
 		for (List<OrganisationWithParents> userOrganisations : membersContext.getIdentityKeyToUserOrganisations().values()) {
 			if (refOrganisations == null) {
@@ -157,11 +160,23 @@ public class OffersController extends StepFormBasicController {
 						.map(OrganisationWithParents::getOrganisation)
 						.collect(Collectors.toSet());
 				if (!refOrganisations.equals(currentOrganisations)) {
-					return false;
+					allIdentitiesInSameOrganisations = false;
+					uniqueUserBillingAddress = null;
+					return;
 				}
 			}
 		}
-		return true;
+		
+		allIdentitiesInSameOrganisations = true;
+		
+		BillingAddressSearchParams baSearchParams = new BillingAddressSearchParams();
+		baSearchParams.setOrganisations(refOrganisations);
+		List<BillingAddress> billingAddresses = acService.getBillingAddresses(baSearchParams);
+		if (billingAddresses.size() == 1) {
+			uniqueUserBillingAddress = billingAddresses.get(0);
+		} else {
+			uniqueUserBillingAddress = null;
+		}
 	}
 	
 	/**
@@ -220,6 +235,9 @@ public class OffersController extends StepFormBasicController {
 		billingAddressEl = new BillingAddressItem("billing,address", getLocale());
 		billingAddressEl.setLabel("booking.billing.address", null);
 		formLayout.add(billingAddressEl);
+		if (allIdentitiesInSameOrganisations && uniqueUserBillingAddress != null) {
+			billingAddressEl.setBillingAddress(uniqueUserBillingAddress);
+		}
 		
 		billingAdresseSelectLink = uifactory.addFormLink("select.billing.address", formLayout, Link.BUTTON);
 		
@@ -228,7 +246,6 @@ public class OffersController extends StepFormBasicController {
 		
 		purchaseOrderNumberEl = uifactory.addTextElement("booking.po.number", 128, "", formLayout);
 		commentEl = uifactory.addTextAreaElement("booking.offer.comment", "booking.offer.comment", 4000, 3, 60, false, false, false, "", formLayout);
-		
 	}
 	
 	private SelectionValue forgeOfferAccess(Offer offer, OfferAccess offerAccess, List<Organisation> offerOrganisations) {
