@@ -372,6 +372,13 @@
 			.o_ac_order_details_content_right {
 				margin-right: unset;
 				grid-template-columns: 1fr 1fr;
+				
+				>div {
+					width: 100%;
+					.o_user_info_profile {
+						width: 100%;
+					}
+				}
 			}
 		}
 	}
@@ -389,10 +396,6 @@
 				flex-wrap: wrap;
 				align-content: start;
 				max-width: 350px;
-				
-				>div:not(.o_ac_order_user) {
-					width: 100%;
-				}
 			}
 		}
 	}
