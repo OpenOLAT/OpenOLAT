@@ -99,7 +99,6 @@ import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
-import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
@@ -955,8 +954,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 	
 	private RepositoryEntry getSingleCourse(CurriculumElement curriculumElement) {
-		CurriculumElementType type = curriculumElement.getType();
-		if(curriculumElement.getParent() == null && type != null && type.isSingleElement() && type.getMaxRepositoryEntryRelations() == 1) {	
+		if(curriculumElement.isSingleCourseImplementation()) {	
 			List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
 			if(entries.size() == 1) {
 				return entries.get(0);

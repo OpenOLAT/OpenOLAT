@@ -158,6 +158,14 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	public boolean hasAutomation();
 	
 	/**
+	 * The method check the type and the parent.
+	 * 
+	 * @return true if the element is a root element (an implementation)
+	 *  with no structure (single element) and a maximum of one course
+	 */
+	public boolean isSingleCourseImplementation();
+	
+	/**
 	 * @return The position of an element as child of a parent element
 	 */
 	public Integer getPos();

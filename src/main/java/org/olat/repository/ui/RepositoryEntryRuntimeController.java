@@ -74,7 +74,6 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementRuntimeDetailsController;
 import org.olat.repository.RepositoryEntry;
@@ -1074,12 +1073,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	// Perhaps check 
 	private CurriculumElement isInSingleCourseImplementation(RepositoryEntry entry) {
 		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
-		if(elements.size() == 1) {
-			CurriculumElement element = elements.get(0);
-			CurriculumElementType type = element.getType();
-			if(element.getParent() == null && type != null && type.isSingleElement() && type.getMaxRepositoryEntryRelations() == 1) {
-				return element;
-			}
+		if(elements.size() == 1 && elements.get(0).isSingleCourseImplementation()) {
+			return elements.get(0);
 		}
 		return null;
 	}

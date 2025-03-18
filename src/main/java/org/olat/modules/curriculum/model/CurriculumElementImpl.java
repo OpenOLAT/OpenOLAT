@@ -650,6 +650,14 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 				|| getAutoClosed() != null && getAutoClosed().getUnit() != null;
 	}
 
+	@Transient
+	@Override
+	public boolean isSingleCourseImplementation() {
+		CurriculumElement p = getParent();
+		CurriculumElementType t = getType();
+		return p == null && t != null && t.isSingleElement() && t.getMaxRepositoryEntryRelations() == 1;
+	}
+
 	@Override
 	public Integer getPos() {
 		return pos;
