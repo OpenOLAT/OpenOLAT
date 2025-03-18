@@ -54,12 +54,12 @@ public class BillingAddressCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof BillingAddressCellValue bacValue) {
-			if (warningEnabled && bacValue.isNoBillingAddressAvailable()) {
+			if (warningEnabled && bacValue.isMultiBillingAddressAvailable()) {
+				appendWarningIcon(renderer, target);
+				target.append(baTranslator.translate("billing.address.select.call"));
+			} else if (warningEnabled && bacValue.isNoBillingAddressAvailable()) {
 				appendWarningIcon(renderer, target);
 				target.append(baTranslator.translate("billing.address.not.available"));
-			} else if (warningEnabled && bacValue.isMultiBillingAddressAvailable()) {
-				appendWarningIcon(renderer, target);
-				target.append(baTranslator.translate("billing.address.multi.available"));
 			} else if (bacValue.isBillingAddressProposal()) {
 				appendWarningIcon(renderer, target);
 				target.append(baTranslator.translate("billing.address.proposal"));

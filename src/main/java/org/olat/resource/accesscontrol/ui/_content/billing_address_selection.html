@@ -8,6 +8,9 @@
 					$r.render("organsiation.address")
 				</div>
 			#end
+			#if($r.available("organsiation.empty.state") && $r.visible("organsiation.empty.state"))
+				$r.render("organsiation.empty.state")
+			#end
 		</fieldset>
 	#end
 	#if($r.available("user.addresses"))

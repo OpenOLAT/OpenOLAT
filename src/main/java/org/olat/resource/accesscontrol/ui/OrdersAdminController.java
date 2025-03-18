@@ -543,7 +543,9 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		} else if (addressSelectionCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				if (addressSelectionCtrl.getUserObject() instanceof OrderTableRow row) {
-					updateBillingAddress(ureq, row, addressSelectionCtrl.getBillingAddress());
+					if (addressSelectionCtrl.getBillingAddress() != null) {
+						updateBillingAddress(ureq, row, addressSelectionCtrl.getBillingAddress());
+					}
 				}
 			}
 			cmc.deactivate();

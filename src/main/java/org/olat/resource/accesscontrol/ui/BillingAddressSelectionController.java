@@ -25,6 +25,7 @@ import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.emptystate.EmptyStateItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -58,6 +59,7 @@ public class BillingAddressSelectionController extends FormBasicController {
 	private static final String KEY_NEW_ADDRESS_USER = "new.user";
 	
 	private SingleSelection organisationAddressesEl;
+	private EmptyStateItem organisationEmptyState;
 	private SingleSelection userAddressesEl;
 	
 	private BillingAddressForm organisationAddressForm;
@@ -128,6 +130,12 @@ public class BillingAddressSelectionController extends FormBasicController {
 						formLayout, organisationBillingAddressSV);
 				organisationAddressesEl.setAllowNoSelection(true);
 				organisationAddressesEl.addActionListener(FormEvent.ONCHANGE);
+				
+				if (organisationBillingAddressSV.isEmpty()) {
+					organisationEmptyState = uifactory.addEmptyState("organsiation.empty.state", null, formLayout);
+					organisationEmptyState.setMessageI18nKey("billing.address.create.organisation.empty");
+					organisationEmptyState.setIconCss("o_icon_billing_address");
+				}
 				
 				// Temporary address is displayed as organisation address
 				if (preselectedAddress != null && preselectedAddress.getKey() == null && preselectedAddress.getIdentity() == null) {

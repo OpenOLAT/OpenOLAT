@@ -233,7 +233,9 @@ public class OrdersController extends FormBasicController implements Activateabl
 		} else if (addressSelectionCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				if (addressSelectionCtrl.getUserObject() instanceof OrderTableRow row) {
-					updateBillingAddress(row, addressSelectionCtrl.getBillingAddress());
+					if (addressSelectionCtrl.getBillingAddress() != null) {
+						updateBillingAddress(row, addressSelectionCtrl.getBillingAddress());
+					}
 				}
 			}
 			cmc.deactivate();

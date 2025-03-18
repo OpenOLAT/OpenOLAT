@@ -112,6 +112,9 @@ public class UserRow extends UserPropertiesRow implements IdentityOrganisationsR
 
 	public void setBillingAddress(BillingAddress billingAddress) {
 		this.billingAddress = billingAddress;
+		if (billingAddress != null) {
+			multiBillingAddressAvailable = false;
+		}
 	}
 
 	@Override

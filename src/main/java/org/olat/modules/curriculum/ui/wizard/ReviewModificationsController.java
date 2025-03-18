@@ -286,7 +286,7 @@ public class ReviewModificationsController extends StepFormBasicController imple
 			if (billingAddresses.size() == 1) {
 				billingAddress = billingAddresses.get(0);
 				membersContext.getIdentityKeyToBillingAddress().put(row.getIdentity().getKey(), billingAddress);
-			} else {
+			} else if (billingAddresses.size() > 1) {
 				row.setMultiBillingAddressAvailable(true);
 			}
 		}
