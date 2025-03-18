@@ -76,7 +76,7 @@ implements SortableFlexiTableDataModel<LectureBlockParticipantGroupRow> {
 		title("table.header.for"),
 		status("table.header.status"),
 		numParticipants("table.header.participants"),
-		tools("table.header.actions");
+		tools("action.more");
 		
 		private final String i18nKey;
 		
