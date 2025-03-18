@@ -47,6 +47,7 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -798,15 +799,21 @@ public class LectureBlockDAO {
 		}
 		
 		if(searchParams.getCurriculums() != null && !searchParams.getCurriculums().isEmpty()) {
-			sb.and().append(" (cur.key in (:curriculumKeys) or entry.key in (select crel.entry.key from repoentrytogroup as crel")
+			sb.and()
+			  .append("((cur.key in (:curriculumKeys) and curEl.status ").in(CurriculumElementStatus.notDeleted()).append(")")
+			  .append(" or entry.key in (select crel.entry.key from repoentrytogroup as crel")
 			  .append(" inner join curriculumelement centryEl on (centryEl.group.key=crel.group.key)")
 			  .append(" where centryEl.curriculum.key in (:curriculumKeys)")
+			  .append(" and centryEl.status ").in(CurriculumElementStatus.notDeleted())
 			  .append("))");
 		}
 		
 		if(searchParams.isInSomeCurriculum()) {
-			sb.and().append(" (cur.key is not null or entry.key in (select screl.entry.key from repoentrytogroup as screl")
-			  .append(" inner join curriculumelement scentryEl on (scentryEl.group.key=screl.group.key)")
+			sb.and()
+			  .append("((curEl.key is not null and curEl.status ").in(CurriculumElementStatus.notDeleted()).append(")")
+			  .append(" or entry.key in (select screl.entry.key from repoentrytogroup as screl")
+			  .append("  inner join curriculumelement scentryEl on (scentryEl.group.key=screl.group.key)")
+			  .append("  and scentryEl.status ").in(CurriculumElementStatus.notDeleted())
 			  .append("))");
 		}
 		
