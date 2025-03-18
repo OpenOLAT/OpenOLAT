@@ -36,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
+import org.olat.course.CorruptedCourseException;
 import org.olat.modules.catalog.ui.BookEvent;
 import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -45,6 +46,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureBlocksTimelineController;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.MediaContainerFilter;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.repository.ui.list.RepositoryEntryDetailsHeaderController;
@@ -68,8 +70,10 @@ public class CurriculumElementInfosController extends BasicController {
 	private LectureBlocksTimelineController lectureBlocksCtrl;
 
 	private final CurriculumElement element;
+	private final RepositoryEntry entry;
 	private VFSContainer mediaContainer;
 	private final String baseUrl;
+	private boolean isMember;
 	private Boolean descriptionOpen = Boolean.TRUE;
 	private Boolean objectivesOpen = Boolean.TRUE;
 	private Boolean requirementsOpen = Boolean.TRUE;
@@ -85,16 +89,18 @@ public class CurriculumElementInfosController extends BasicController {
 	private LectureService lectureService;
 
 	public CurriculumElementInfosController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			Identity bookedIdentity, boolean preview) {
+			RepositoryEntry entry, Identity bookedIdentity, boolean preview) {
 		super(ureq, wControl);
 		this.element = element;
+		this.entry = entry;
 		mainVC = createVelocityContainer("curriculum_element_infos");
 		putInitialPanel(mainVC);
 		
-		Boolean isMember = Boolean.FALSE;
 		bookedIdentity = bookedIdentity != null ? bookedIdentity : getIdentity();
 		if (bookedIdentity != null) {
 			isMember = !curriculumService.getCurriculumElementMemberships(List.of(element), List.of(bookedIdentity)).isEmpty();
+		} else {
+			isMember = false;
 		}
 		
 		List<LectureBlock> lectureBlocks = List.of();
@@ -107,7 +113,7 @@ public class CurriculumElementInfosController extends BasicController {
 		
 		
 		// Header
-		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, bookedIdentity, isMember, preview);
+		headerCtrl = new CurriculumElementInfosHeaderController(ureq, getWindowControl(), element, entry, bookedIdentity, isMember, preview);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
@@ -239,9 +245,18 @@ public class CurriculumElementInfosController extends BasicController {
 		}
 	}
 	
-	private void doStart(UserRequest ureq) {
-		String businessPath = "[MyCoursesSite:0][Curriculum:0][Curriculum:" + element.getCurriculum().getKey() + "]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	protected void doStart(UserRequest ureq) {
+		if(isMember && entry != null) {
+			try {
+				String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			} catch (CorruptedCourseException e) {
+				logError("Course corrupted: " + entry.getKey() + " (" + entry.getOlatResource().getResourceableId() + ")", e);
+				showError("cif.error.corrupted");
+			}
+		} else {
+			String businessPath = "[MyCoursesSite:0][Curriculum:0][Curriculum:" + element.getCurriculum().getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		}
 	}
-
 }

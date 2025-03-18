@@ -73,6 +73,10 @@ import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumElementRuntimeDetailsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryImportExportLinkEnum;
@@ -96,7 +100,6 @@ import org.olat.repository.ui.author.ConfirmDeleteSoftlyController;
 import org.olat.repository.ui.author.ConfirmRestoreController;
 import org.olat.repository.ui.author.RepositoryMembersController;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
-import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryInfosController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.resource.OLATResource;
@@ -134,7 +137,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private ConfirmCloseController confirmCloseCtrl;
 	private ConfirmRestoreController confirmRestoreCtrl;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
-	private RepositoryEntryDetailsController detailsCtrl;
+	private Controller detailsCtrl;
 	private RepositoryMembersController membersEditController;
 	protected RepositoryEntrySettingsController settingsCtrl;
 	
@@ -199,6 +202,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected UserManager userManager;
 	@Autowired
 	protected MarkManager markManager;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	protected RepositoryModule repositoryModule;
 	@Autowired
@@ -1054,10 +1059,29 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		WindowControl bwControl = getSubWindowControl("Infos");
 		
 		RepositoryEntry entry = loadRepositoryEntry();
-		RepositoryEntryInfosController ctrl = new RepositoryEntryInfosController(ureq, addToHistory(ureq, bwControl), entry, true);
+		Controller ctrl;
+		CurriculumElement curriculumElement = isInSingleCourseImplementation(entry);
+		if(curriculumElement != null) {
+			ctrl = new CurriculumElementRuntimeDetailsController(ureq, bwControl, curriculumElement, entry, getIdentity(), false);
+		} else {
+			ctrl = new RepositoryEntryInfosController(ureq, addToHistory(ureq, bwControl), entry, true);
+		}
 		listenTo(ctrl);
 		detailsCtrl = pushController(ureq, translate("details.header"), ctrl);
 		currentToolCtr = detailsCtrl;
+	}
+	
+	// Perhaps check 
+	private CurriculumElement isInSingleCourseImplementation(RepositoryEntry entry) {
+		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
+		if(elements.size() == 1) {
+			CurriculumElement element = elements.get(0);
+			CurriculumElementType type = element.getType();
+			if(element.getParent() == null && type != null && type.isSingleElement() && type.getMaxRepositoryEntryRelations() == 1) {
+				return element;
+			}
+		}
+		return null;
 	}
 	
 	protected Activateable2 doSettings(UserRequest ureq, List<ContextEntry> entries) {

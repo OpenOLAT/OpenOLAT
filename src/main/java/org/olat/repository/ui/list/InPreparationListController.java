@@ -70,6 +70,7 @@ import org.olat.modules.catalog.ui.CatalogBCFactory;
 import org.olat.modules.catalog.ui.CatalogRepositoryEntryInfosController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
@@ -377,13 +378,22 @@ public class InPreparationListController extends FormBasicController implements 
 	}
 	
 	private void doOpenDetails(UserRequest ureq, InPreparationRow row) {
-		if (row.getRepositoryEntryKey() != null) {
+		if (row.getCurriculumElementKey() != null) {
+			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(row::getCurriculumElementKey);
+			CurriculumElementType type = curriculumElement.getType();
+			RepositoryEntry entry = row.getRepositoryEntryKey() != null
+					? repositoryService.loadByKey(row.getRepositoryEntryKey())
+					: null;
+			// Show single course implementation in implementation info, course info otherwise
+			if(entry != null && (type == null || type.getMaxRepositoryEntryRelations() == -1 || !type.isSingleElement())) {
+				doOpenDetails(ureq, entry);
+			} else {
+				doOpenDetails(ureq, curriculumElement, entry);
+			}
+		} else if (row.getRepositoryEntryKey() != null) {
 			RepositoryEntry entry = repositoryService.loadByKey(row.getRepositoryEntryKey());
 			doOpenDetails(ureq, entry);
-		} else if (row.getCurriculumElementKey() != null) {
-			CurriculumElement curriculumElement = curriculumService.getCurriculumElement(row::getCurriculumElementKey);
-			doOpenDetails(ureq, curriculumElement);
-		}
+		} 
 	}
 	
 	private void doOpenDetails(UserRequest ureq, RepositoryEntry entry) {
@@ -406,13 +416,13 @@ public class InPreparationListController extends FormBasicController implements 
 		}
 	}
 	
-	private void doOpenDetails(UserRequest ureq, CurriculumElement curriculumElement) {
+	private void doOpenDetails(UserRequest ureq, CurriculumElement curriculumElement, RepositoryEntry entry) {
 		if (curriculumElement != null) {
 			removeAsListenerAndDispose(infosCtrl);
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, getIdentity(), false);
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, getIdentity(), false);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			

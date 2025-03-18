@@ -99,6 +99,7 @@ import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.CatalogEntryDataModel.CatalogEntryCols;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementFileType;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumElementImageMapper;
 import org.olat.modules.curriculum.ui.CurriculumElementInfosController;
@@ -937,7 +938,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 			OLATResourceable ores = CatalogBCFactory.createOfferOres(curriculumElement.getResource());
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			
-			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, searchParams.getMember(), false);
+			RepositoryEntry entry = getSingleCourse(curriculumElement);
+			infosCtrl = new CurriculumElementInfosController(ureq, bwControl, curriculumElement, entry, searchParams.getMember(), false);
 			listenTo(infosCtrl);
 			addToHistory(ureq, infosCtrl);
 			
@@ -950,6 +952,17 @@ public class CatalogEntryListController extends FormBasicController implements A
 		} else {
 			tableEl.reloadData();
 		}
+	}
+	
+	private RepositoryEntry getSingleCourse(CurriculumElement curriculumElement) {
+		CurriculumElementType type = curriculumElement.getType();
+		if(curriculumElement.getParent() == null && type != null && type.isSingleElement() && type.getMaxRepositoryEntryRelations() == 1) {	
+			List<RepositoryEntry> entries = curriculumService.getRepositoryEntries(curriculumElement);
+			if(entries.size() == 1) {
+				return entries.get(0);
+			}
+		}
+		return null;
 	}
 	
 	private void doBook(UserRequest ureq, Long resourceKey) {

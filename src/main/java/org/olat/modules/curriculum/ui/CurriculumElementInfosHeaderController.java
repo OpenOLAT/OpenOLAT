@@ -45,7 +45,9 @@ import org.olat.modules.curriculum.CurriculumElementFileType;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.list.AbstractDetailsHeaderController;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -71,6 +73,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	private ConfirmationController leaveConfirmationCtrl;
 	
 	private final CurriculumElement element;
+	private final RepositoryEntry entry;
 	private final Identity bookedIdentity;
 	private final boolean isMember;
 	private final boolean preview;
@@ -83,8 +86,9 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	private AccessControlModule acModule;
 
 	public CurriculumElementInfosHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
-			Identity bookedIdentity, boolean isMember, boolean preview) {
+			RepositoryEntry entry, Identity bookedIdentity, boolean isMember, boolean preview) {
 		super(ureq, wControl);
+		this.entry = entry;
 		this.element = element;
 		this.bookedIdentity = preview? null: bookedIdentity;
 		this.isMember = preview? false: isMember;
@@ -151,6 +155,13 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			setWarning(translate("access.denied.not.published"), translate("access.denied.not.published.hint"));
 			initLeaveButton();
 		} else if (isMember) {
+			if(entry == null) {
+				setWarning(translate("access.denied.not.instance.course"), translate("access.denied.not.instance.course.hint"));
+				startCtrl.getStartLink().setEnabled(false);
+			} else if(entry != null && entry.getEntryStatus().ordinal() < RepositoryEntryStatusEnum.published.ordinal()) {
+				setWarning(translate("access.denied.not.published"), translate("access.denied.not.published.hint"));
+				startCtrl.getStartLink().setEnabled(false);
+			}
 			startCtrl.getInitialComponent().setVisible(true);
 			initLeaveButton();
 		} else {
