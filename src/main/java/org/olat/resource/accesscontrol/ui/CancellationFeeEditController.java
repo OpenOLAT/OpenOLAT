@@ -79,9 +79,7 @@ public class CancellationFeeEditController extends FormBasicController {
 		
 		cancellationFeeEl.clearError();
 		if (StringHelper.containsNonWhitespace(cancellationFeeEl.getValue())) {
-			try {
-				Double.parseDouble(cancellationFeeEl.getValue());
-			} catch (NumberFormatException e) {
+			if (!PriceFormat.validateMoney(cancellationFeeEl.getValue())) {
 				cancellationFeeEl.setErrorKey("form.error.nofloat");
 				allOk &= false;
 			}

@@ -113,24 +113,8 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		String priceStr = priceEl.getValue();
-		Double priceDbl = 0d;
-		
 		priceEl.clearError();
-		try {
-			priceDbl = Double.parseDouble(priceStr);
-			if(priceDbl <= 0.0d) {
-				priceEl.setErrorKey("price.error");
-				allOk = false;
-			} 			
-		} catch(Exception e) {
-			priceEl.setErrorKey("price.error");
-			allOk = false;
-		}
-		
-		try {
-			PriceFormat.format(BigDecimal.valueOf(priceDbl));
-		} catch (Exception e) {
+		if (!PriceFormat.validateMoney(priceEl.getValue())) {
 			priceEl.setErrorKey("price.error");
 			allOk = false;
 		}

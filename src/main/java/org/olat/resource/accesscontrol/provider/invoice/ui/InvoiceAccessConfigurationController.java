@@ -246,12 +246,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		
 		priceAmountEl.clearError();
 		if (StringHelper.containsNonWhitespace(priceAmountEl.getValue())) {
-			try {
-				if (Double.valueOf(priceAmountEl.getValue()) < 0) {
-					priceAmountEl.setErrorKey("form.error.nofloat");
-					allOk &= false;
-				}
-			} catch (Exception e) {
+			if (!PriceFormat.validateMoney(priceAmountEl.getValue())) {
 				priceAmountEl.setErrorKey("form.error.nofloat");
 				allOk &= false;
 			}
@@ -263,12 +258,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		cancellingFeeAmountEl.clearError();
 		if (cancellingFeeAmountEl.isVisible()) {
 			if (StringHelper.containsNonWhitespace(cancellingFeeAmountEl.getValue())) {
-				try {
-					if (Double.valueOf(cancellingFeeAmountEl.getValue()) < 0) {
-						cancellingFeeAmountEl.setErrorKey("form.error.nofloat");
-						allOk &= false;
-					}
-				} catch (Exception e) {
+				if (!PriceFormat.validateMoney(cancellingFeeAmountEl.getValue())) {
 					cancellingFeeAmountEl.setErrorKey("form.error.nofloat");
 					allOk &= false;
 				}

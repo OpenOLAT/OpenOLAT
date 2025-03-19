@@ -112,6 +112,26 @@ public class PriceFormat {
 		return value.setScale(2, RoundingMode.HALF_EVEN).toString();
 	}
 	
+	public static boolean validateMoney(String value) {
+		if (!StringHelper.containsNonWhitespace(value)) {
+			return false;
+		}
+		
+		try {
+			double doubleValue = Double.parseDouble(value);
+			if (doubleValue < 0) {
+				return false;
+			}
+			if (BigDecimal.valueOf(doubleValue).stripTrailingZeros().scale() > 2) {
+				return false;
+			}
+		} catch (Exception e) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public static String fullFormat(Price price) {
 		if(price == null || price.getAmount() == null) {
 			return "";

@@ -79,9 +79,7 @@ public class PriceEditController extends FormBasicController {
 		
 		priceEl.clearError();
 		if (StringHelper.containsNonWhitespace(priceEl.getValue())) {
-			try {
-				Double.parseDouble(priceEl.getValue());
-			} catch (NumberFormatException e) {
+			if (!PriceFormat.validateMoney(priceEl.getValue())) {
 				priceEl.setErrorKey("form.error.nofloat");
 				allOk &= false;
 			}
