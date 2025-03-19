@@ -196,7 +196,7 @@ public class CurriculumDetailsController extends BasicController implements Acti
 		}
 		
 		// User management
-		tabPane.addTab(ureq, translate("tab.user.management"), uureq -> {
+		tabPane.addTab(ureq, translate("tab.owner.management"), uureq -> {
 			userManagementCtrl = new CurriculumUserManagementController(uureq, getWindowControl(), curriculum, secCallback);
 			listenTo(userManagementCtrl);
 			return userManagementCtrl.getInitialComponent();
