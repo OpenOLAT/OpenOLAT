@@ -66,6 +66,7 @@ public class UserRelationListController extends AbstactCoachListController {
         tableEl.reloadData();
     }
 
+    @Override
     protected UserOverviewController selectStudent(UserRequest ureq, StudentStatEntry studentStat) {
         Identity student = securityManager.loadIdentityByKey(studentStat.getIdentityKey());
         OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, student.getKey());

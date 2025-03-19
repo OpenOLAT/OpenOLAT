@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -237,6 +238,7 @@ public class SupervisorRosterForm extends FormBasicController implements Generic
 	private SupervisedRosterEntry forgeEntryRow(RosterEntry entry, RosterChannelInfos infos) {
 		String name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();
 		FormLink link = uifactory.addFormLink("entry_" + (++count), "entry", name, null, null, Link.LINK | Link.NONTRANSLATED);
+		link.setEscapeMode(EscapeMode.html);
 		setOnlineStatus(entry.getIdentityKey(), link);
 		long unreadMessages = infos.getUnreadMessages() == null ? 0l : infos.getUnreadMessages().longValue();
 		return new SupervisedRosterEntry(entry, link, unreadMessages);

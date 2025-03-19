@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 21 févr. 2022<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class IQCommunicationController extends BasicController implements Activateable2 {

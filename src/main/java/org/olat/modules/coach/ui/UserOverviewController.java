@@ -236,8 +236,8 @@ public class UserOverviewController extends BasicController implements Activatea
 		// Add user's name and relation
 		StringBuilder relationAndName = new StringBuilder(256);
 		relationAndName.append(role != null ? role + " " : "");
-		relationAndName.append(mentee.getUser().getFirstName()).append(" ");
-		relationAndName.append(mentee.getUser().getLastName());
+		relationAndName.append(StringHelper.escapeHtml(mentee.getUser().getFirstName())).append(" ");
+		relationAndName.append(StringHelper.escapeHtml(mentee.getUser().getLastName()));
 		mainVC.contextPut("relationAndName", relationAndName);
 
 		// Add user details
