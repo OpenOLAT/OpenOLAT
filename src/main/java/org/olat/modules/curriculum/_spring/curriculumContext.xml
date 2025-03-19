@@ -57,6 +57,7 @@
 		<property name="i18nDescriptionKey" value="report.booking.new.last.seven.days.desc" />
 		<property name="durationUnit" value="day" />
 		<property name="duration" value="7" />
+		<property name="excludeDeletedCurriculumElements" value="true" />
 	</bean>
 
 	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
@@ -65,6 +66,7 @@
 		<property name="i18nDescriptionKey" value="report.booking.new.last.four.weeks.desc" />
 		<property name="durationUnit" value="week" />
 		<property name="duration" value="4" />
+		<property name="excludeDeletedCurriculumElements" value="true" />
 	</bean>
 
 	<bean class="org.olat.modules.curriculum.reports.AccountingReportConfiguration">
@@ -73,6 +75,7 @@
 		<property name="i18nDescriptionKey" value="report.booking.new.last.twelve.months.desc" />
 		<property name="durationUnit" value="month" />
 		<property name="duration" value="12" />
+		<property name="excludeDeletedCurriculumElements" value="true" />
 	</bean>
 	
 	<bean id="curriculumAutomationTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">

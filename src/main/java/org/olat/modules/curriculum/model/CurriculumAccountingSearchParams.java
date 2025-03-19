@@ -41,6 +41,7 @@ public class CurriculumAccountingSearchParams {
 	private Date fromDate;
 	private Date toDate;
 	private List<CurriculumRef> curriculums;
+	private boolean excludeDeletedCurriculumElements;
 
 	public Identity getIdentity() {
 		return identity;
@@ -88,5 +89,13 @@ public class CurriculumAccountingSearchParams {
 
 	public List<CurriculumRef> getCurriculums() {
 		return curriculums;
+	}
+
+	public boolean isExcludeDeletedCurriculumElements() {
+		return excludeDeletedCurriculumElements;
+	}
+
+	public void setExcludeDeletedCurriculumElements(boolean excludeDeletedCurriculumElements) {
+		this.excludeDeletedCurriculumElements = excludeDeletedCurriculumElements;
 	}
 }

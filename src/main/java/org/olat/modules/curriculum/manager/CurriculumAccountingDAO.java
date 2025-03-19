@@ -90,6 +90,9 @@ public class CurriculumAccountingDAO {
 		if(searchParams.getToDate() != null) {
 			sb.and().append("o.creationDate < :toDate");
 		}
+		if(searchParams.isExcludeDeletedCurriculumElements()) {
+			sb.and().append("ce.status <> 'deleted'");
+		}
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);

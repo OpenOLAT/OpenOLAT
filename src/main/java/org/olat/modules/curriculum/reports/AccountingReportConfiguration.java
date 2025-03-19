@@ -63,6 +63,16 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class AccountingReportConfiguration extends TimeBoundReportConfiguration implements CurriculumReportConfiguration {
 
+	private Boolean excludeDeletedCurriculumElements;
+
+	public void setExcludeDeletedCurriculumElements(Boolean excludeDeletedCurriculumElements) {
+		this.excludeDeletedCurriculumElements = excludeDeletedCurriculumElements;
+	}
+
+	public Boolean getExcludeDeletedCurriculumElements() {
+		return excludeDeletedCurriculumElements;
+	}
+
 	@Override
 	public boolean hasAccess(ReportConfigurationAccessSecurityCallback secCallback) {
 		if (!secCallback.isCurriculumContext()) {
@@ -136,6 +146,9 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
 			searchParams.setFromDate(getDurationTimeUnit().fromDate(new Date(), duration));
 			searchParams.setToDate(getDurationTimeUnit().toDate(new Date()));
+		}
+		if (getExcludeDeletedCurriculumElements() != null) {
+			searchParams.setExcludeDeletedCurriculumElements(getExcludeDeletedCurriculumElements());
 		}
 		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
 		for (BookingOrder bookingOrder : bookingOrders) {
@@ -217,6 +230,9 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 				int duration = getDuration() != null ? Integer.parseInt(getDuration()) : 0;
 				searchParams.setFromDate(getDurationTimeUnit().fromDate(new Date(), duration));
 				searchParams.setToDate(getDurationTimeUnit().toDate(new Date()));
+			}
+			if (getExcludeDeletedCurriculumElements() != null) {
+				searchParams.setExcludeDeletedCurriculumElements(getExcludeDeletedCurriculumElements());
 			}
 			generateReport(searchParams, curriculums, implementations, locale, out);
 		} catch (IOException e) {
