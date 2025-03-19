@@ -759,7 +759,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		
 		if(!membersToNotify.isEmpty()) {
-			MailTemplate template = CurriculumMailing.getRemoveMailTemplate(reloadedElement.getCurriculum(), reloadedElement, doer);
+			MailTemplate template = CurriculumMailing.getMembershipRemovedByAdminTemplate(reloadedElement.getCurriculum(), reloadedElement, doer);
 			MailPackage mailing = new MailPackage(template, null, "[CurriculumElement:" + reloadedElement.getKey(), true);
 			for(Identity member:membersToNotify) {
 				CurriculumMailing.sendEmail(doer, member, reloadedElement.getCurriculum(), reloadedElement, mailing);

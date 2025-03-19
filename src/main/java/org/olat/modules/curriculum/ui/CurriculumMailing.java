@@ -59,7 +59,7 @@ import org.olat.user.UserManager;
 /**
  * 
  * Initial date: 7 mai 2020<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
 public class CurriculumMailing {
@@ -144,6 +144,8 @@ public class CurriculumMailing {
 	/**
 	 * 1.3. BOOKING BY ADMINISTRATIVE ROLE - WITHOUT CONFIRMATION BY ADMINISTRATIVE ROLES (OFFER SETTING)
 	 * 
+	 * @see <a href="https://track.frentix.com/issue/OO-8389">OO-8389</a>
+	 * 
 	 * @param curriculum The curriculum
 	 * @param curriculumElement The curriculum element
 	 * @param actor The user which send the mail
@@ -157,6 +159,8 @@ public class CurriculumMailing {
 	
 	/**
 	 * 1.4. BOOKING BY ADMINISTRATIVE ROLE - WITH CONFIRMATION BY ADMINISTRATIVE ROLES (OFFER SETTING)
+	 * 
+	 * @see <a href="https://track.frentix.com/issue/OO-8389">OO-8389</a>
 	 * 
 	 * @param curriculum The curriculum
 	 * @param curriculumElement The curriculum element
@@ -188,9 +192,10 @@ public class CurriculumMailing {
 	}
 	
 	/**
-	 * 2.1 INVITED - STANDARD (WITHOUT CONFIMRATION)
-	 * 
+	 * 2.1 INVITED - STANDARD (WITHOUT CONFIMRATION)<br>
 	 * Administrator add a member without confirmation
+	 * 
+	 * @see <a href="https://track.frentix.com/issue/OO-8389">OO-8389</a>
 	 * 
 	 * @param curriculum The curriculum
 	 * @param curriculumElement The curriculum element
@@ -205,6 +210,8 @@ public class CurriculumMailing {
 	
 	/**
 	 * 2.2 INVITED - WITH CONFIRMATION BY ADMINISTRATIVE ROLES
+	 * 
+	 * @see <a href="https://track.frentix.com/issue/OO-8389">OO-8389</a>
 	 * 
 	 * Administrator add a member with confirmation by an administrative roles
 	 * 
@@ -221,6 +228,8 @@ public class CurriculumMailing {
 	
 	/**
 	 * 2.3. INVITED - WITH CONFIRMATION BY PARTICIPANT
+	 * 
+	 * @see <a href="https://track.frentix.com/issue/OO-8389">OO-8389</a>
 	 * 
 	 * @param curriculum The curriculum
 	 * @param curriculumElement The curriculum element
@@ -263,6 +272,22 @@ public class CurriculumMailing {
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
+	/**
+	 * 6.3 REMOVED BY ADMINISTRATIVE ROLE
+	 * 
+	 * @see <a href="https://track.frentix.com/issue/OO-8389">OO-8389</a>
+	 * 
+	 * @param curriculum The curriculum
+	 * @param curriculumElement The curriculum element
+	 * @param actor The user which send the mail
+	 * @return A template
+	 */
+	public static MailTemplate getMembershipRemovedByAdminTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.removed.by.admin.subject";
+		String bodyKey = "notification.mail.member.removed.by.admin.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
 	public static MailTemplate getMembershipChangedTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
 		String subjectKey = "notification.mail.member.changed.subject";
 		String bodyKey = "notification.mail.member.changed.body";
@@ -279,12 +304,6 @@ public class CurriculumMailing {
 	public static MailTemplate getDefaultMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
 		String subjectKey = "notification.mail.added.subject";
 		String bodyKey = "notification.mail.added.body";
-		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
-	}
-	
-	public static MailTemplate getRemoveMailTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
-		String subjectKey = "notification.mail.removed.subject";
-		String bodyKey = "notification.mail.removed.body";
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
