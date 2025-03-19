@@ -108,6 +108,10 @@ public class PriceFormat {
 		return priceAmountFormat.format(amount.setScale(2, RoundingMode.HALF_EVEN));
 	}
 	
+	public static String formatMoneyForTextInput(BigDecimal value) {
+		return value.setScale(2).toString();
+	}
+	
 	public static String fullFormat(Price price) {
 		if(price == null || price.getAmount() == null) {
 			return "";

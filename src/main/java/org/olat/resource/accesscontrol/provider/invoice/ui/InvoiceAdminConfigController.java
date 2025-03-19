@@ -69,7 +69,7 @@ public class InvoiceAdminConfigController extends FormBasicController {
 		cancellingFeeDefaultEls = new ArrayList<>(currencies.size());
 		for (String currency : currencies) {
 			BigDecimal feeDefault = invoiceModule.getCancellingFeeDefaults().get(currency);
-			String feeDefaultValue = feeDefault != null ? PriceFormat.format(feeDefault) : null;
+			String feeDefaultValue = feeDefault != null ? PriceFormat.formatMoneyForTextInput(feeDefault) : null;
 			TextElement cancellingFeeEl = uifactory.addTextElement("fee_" + currency, null, 10, feeDefaultValue, formLayout);
 			cancellingFeeEl.setLabel("config.cancelling.fee.default", new String[] { StringHelper.escapeHtml(currency) });
 			cancellingFeeEl.setUserObject(currency);

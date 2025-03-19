@@ -63,7 +63,7 @@ public class CancellationFeeEditController extends FormBasicController {
 		
 		String cancellationFee = null;
 		if (order.getCancellationFees()!= null && order.getCancellationFees().getAmount() != null) {
-			cancellationFee = PriceFormat.format(order.getCancellationFees().getAmount());
+			cancellationFee = PriceFormat.formatMoneyForTextInput(order.getCancellationFees().getAmount());
 		}
 		cancellationFeeEl = uifactory.addTextElement("order.cancellation.fee", 10, cancellationFee, formLayout);
 		

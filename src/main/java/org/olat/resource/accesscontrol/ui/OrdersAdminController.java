@@ -177,7 +177,8 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		avatarMapperBaseURL = registerCacheableMapper(ureq, "users-avatars", avatarMapper);
 		methods = acService.getAvailableMethods();
 		
-		isWithInvoice = resource.getResourceableTypeName().equals(OresHelper.calculateTypeName(CurriculumElement.class))
+		isWithInvoice = resource != null 
+				&& resource.getResourceableTypeName().equals(OresHelper.calculateTypeName(CurriculumElement.class))
 				&& acService.isMethodAvailable(InvoiceAccessHandler.METHOD_TYPE);
 		
 		detailsVC = createVelocityContainer("order_details");

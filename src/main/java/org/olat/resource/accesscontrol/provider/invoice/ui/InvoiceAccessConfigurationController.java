@@ -97,7 +97,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		if (offer != null && offer.getKey() != null) {
 			if (offer.getPrice() != null) {
 				if (offer.getPrice().getAmount() != null) {
-					priceAmount = PriceFormat.format(offer.getPrice().getAmount());
+					priceAmount = PriceFormat.formatMoneyForTextInput(offer.getPrice().getAmount());
 				}
 				if (offer.getPrice().getCurrencyCode() != null) {
 					currencyCode = offer.getPrice().getCurrencyCode();
@@ -107,7 +107,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 			}
 			
 			if (offer.getCancellingFee() != null && offer.getCancellingFee().getAmount() != null) {
-				cancellingFeeAmount = PriceFormat.format(offer.getCancellingFee().getAmount());
+				cancellingFeeAmount = PriceFormat.formatMoneyForTextInput(offer.getCancellingFee().getAmount());
 			}
 			
 			if (offer.getCancellingFeeDeadlineDays() != null) {
@@ -119,7 +119,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 			if (StringHelper.containsNonWhitespace(currencyCode)) {
 				BigDecimal defaultCancellingFee = invoiceModule.getCancellingFeeDefaults().get(currencyCode);
 				if (defaultCancellingFee != null) {
-					cancellingFeeAmount = PriceFormat.format(defaultCancellingFee);
+					cancellingFeeAmount = PriceFormat.formatMoneyForTextInput(defaultCancellingFee);
 				}
 			}
 			if (invoiceModule.getCancellingFeeDeadlineDaysDefault() != null) {
@@ -209,7 +209,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 		BigDecimal previousFeeDefault = invoiceModule.getCancellingFeeDefaults().get(currencyCode);
 		String perviousFeeValue = "";
 		if (previousFeeDefault != null) {
-			perviousFeeValue = PriceFormat.format(previousFeeDefault);
+			perviousFeeValue = PriceFormat.formatMoneyForTextInput(previousFeeDefault);
 		}
 		
 		String currentFeeValue = cancellingFeeAmountEl.getValue();
@@ -217,7 +217,7 @@ public class InvoiceAccessConfigurationController extends AbstractConfigurationM
 			String newFeeValue = null;
 			BigDecimal currentFeeDefault = invoiceModule.getCancellingFeeDefaults().get(selectedCurreny);
 			if (currentFeeDefault != null) {
-				newFeeValue = PriceFormat.format(currentFeeDefault);
+				newFeeValue = PriceFormat.formatMoneyForTextInput(currentFeeDefault);
 			}
 			cancellingFeeAmountEl.setValue(newFeeValue);
 			cancellingEnabledEl.toggle(currentFeeDefault != null);

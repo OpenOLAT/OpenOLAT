@@ -63,7 +63,7 @@ public class PriceEditController extends FormBasicController {
 		
 		String price = null;
 		if (order.getTotal() != null && order.getTotal().getAmount() != null) {
-			price = PriceFormat.format(order.getTotal().getAmount());
+			price = PriceFormat.formatMoneyForTextInput(order.getTotal().getAmount());
 		}
 		priceEl = uifactory.addTextElement("access.info.price", 10, price, formLayout);
 		

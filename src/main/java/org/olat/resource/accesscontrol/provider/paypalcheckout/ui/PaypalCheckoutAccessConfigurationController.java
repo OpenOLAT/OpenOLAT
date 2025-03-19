@@ -70,7 +70,7 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 		
 		String amount = null;
 		if(price != null && price.getAmount() != null) {
-			amount = PriceFormat.format(price.getAmount());
+			amount = PriceFormat.formatMoneyForTextInput(price.getAmount());
 		}
 		priceEl = uifactory.addTextElement("price", "price", 32, amount, formLayout);
 		
