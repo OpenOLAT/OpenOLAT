@@ -24,6 +24,7 @@ import java.util.Iterator;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.user.UserManager;
 
@@ -60,7 +61,7 @@ public class StudentListProvider implements ListProvider {
 			if(contains(searchValue, entry)) {
 				maxEntries--;
 				String key = entry.getIdentityKey().toString();
-				String displayText = userManager.getUserDisplayName(entry.getIdentityKey());
+				String displayText = StringHelper.escapeHtml(userManager.getUserDisplayName(entry.getIdentityKey()));
 				receiver.addEntry(key, null, displayText, CSSHelper.CSS_CLASS_USER);
 			}
 		}					

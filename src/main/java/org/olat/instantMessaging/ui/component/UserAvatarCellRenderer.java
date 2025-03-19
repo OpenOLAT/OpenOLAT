@@ -50,14 +50,13 @@ public class UserAvatarCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof RosterChannelInfos) {
-			RosterChannelInfos infos = (RosterChannelInfos)cellValue;
+		if(cellValue instanceof RosterChannelInfos infos) {
 			List<RosterEntry> entries = infos.getNonVipEntries();
 			if(!entries.isEmpty()) {
 				RosterEntry entry = entries.get(0);
-				String name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();
+				String name = entry.isAnonym()? entry.getNickName() : entry.getFullName();
 				target.append("<span class=\"o_portrait\"><img src=\"").append(transparentGif).append("\"")
-				      .append(" alt=\"").append(name).append("\" title=\"").append(name).append("\"")
+				      .append(" alt=\"").appendHtmlAttributeEscaped(name).append("\" title=\"").appendHtmlAttributeEscaped(name).append("\"")
 				      .append(" class=\"o_portrait_avatar_small\"")
 				      .append(" style=\"background-image: url('").append(avatarBaseURL).append("/").append(entry.getIdentityKey().toString()).append("/portrait_small.jpg')\"></span>");
 			}

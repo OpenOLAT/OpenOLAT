@@ -50,8 +50,7 @@ public class LastActivityCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof Date) {
-			Date lastActivity = (Date)cellValue;
+		if(cellValue instanceof Date lastActivity) {
 			if(DateUtils.isSameDay(lastActivity, now)) {
 				String time = formatter.formatTimeShort(lastActivity);
 				target.append(translator.translate("today.time", time));

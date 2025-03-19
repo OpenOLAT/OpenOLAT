@@ -446,12 +446,11 @@ public class SupervisorChatController extends FormBasicController implements Gen
 			doConfirmComplete(ureq);
 		} else if(bulkSendMessageButton == source) {
 			doSendMessages(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if("im".equals(link.getCmd()) && link.getUserObject() instanceof RosterRow) {
-				doJoin(ureq, (RosterRow)link.getUserObject());
-			} else if("tools".equals(link.getCmd()) && link.getUserObject() instanceof RosterRow) {
-				doOpenTools(ureq, link, (RosterRow)link.getUserObject());
+		} else if(source instanceof FormLink link) {
+			if("im".equals(link.getCmd()) && link.getUserObject() instanceof RosterRow rosterRow) {
+				doJoin(ureq, rosterRow);
+			} else if("tools".equals(link.getCmd()) && link.getUserObject() instanceof RosterRow rosterRow) {
+				doOpenTools(ureq, link, rosterRow);
 			}
 		} else if(source == flc && "activity".equals(ureq.getParameter("last"))) {
 			loadModel(false);

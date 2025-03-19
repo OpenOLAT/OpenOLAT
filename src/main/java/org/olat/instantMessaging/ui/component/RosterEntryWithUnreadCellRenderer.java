@@ -27,6 +27,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.instantMessaging.RosterEntry;
 import org.olat.instantMessaging.model.RosterChannelInfos;
 
@@ -68,7 +69,7 @@ public class RosterEntryWithUnreadCellRenderer implements FlexiCellRenderer {
 			if(sb.length() > 0) sb.append("; ");
 			String val = getVisibleName(entry);
 			if(val != null) {
-				sb.append(val);
+				sb.append(StringHelper.escapeHtml(val));
 			}
 		}
 		return sb.toString();
@@ -83,7 +84,4 @@ public class RosterEntryWithUnreadCellRenderer implements FlexiCellRenderer {
 		}
 		return val;
 	}
-	
-	
-
 }

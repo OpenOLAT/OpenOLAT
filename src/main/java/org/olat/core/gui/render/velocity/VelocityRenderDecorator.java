@@ -685,6 +685,10 @@ public class VelocityRenderDecorator implements Closeable {
 				(arg2 == null ? "" : arg2.toString())
 			});
 	}
+	
+	public String translateEscapeHtmlAttribute(String key, String arg1) {
+		return translate(key, new String[] { StringHelper.escapeForHtmlAttribute(arg1) });
+	}
 
 	/**
 	 * Method to translate a key that comes from another package. This should be

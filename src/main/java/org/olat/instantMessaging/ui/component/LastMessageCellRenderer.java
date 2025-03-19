@@ -38,12 +38,12 @@ public class LastMessageCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof String) {
+		if(cellValue instanceof String stringValue) {
 			Object obj = source.getFormItem().getTableDataModel().getObject(row);
-			if(obj instanceof RosterRow && ((RosterRow)obj).hasUnreadMessages()) {
-				target.append("<strong>").append((String)cellValue).append("</strong>");
+			if(obj instanceof RosterRow roster && roster.hasUnreadMessages()) {
+				target.append("<strong>").appendHtmlEscaped(stringValue).append("</strong>");
 			} else {
-				target.append((String)cellValue);
+				target.appendHtmlEscaped(stringValue);
 			}
 		}
 	}
