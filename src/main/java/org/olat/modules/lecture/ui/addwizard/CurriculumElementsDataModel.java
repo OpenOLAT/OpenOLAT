@@ -71,7 +71,7 @@ public class CurriculumElementsDataModel extends DefaultFlexiTreeTableDataModel<
 
 	public enum ElementCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		displayName("table.header.displayName"),
+		displayName("table.header.title"),
 		identifier("table.header.identifier"),
 		beginDate("table.header.begin.date"),
 		endDate("table.header.end.date"),
