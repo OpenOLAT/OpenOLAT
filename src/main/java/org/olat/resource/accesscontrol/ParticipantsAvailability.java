@@ -30,7 +30,7 @@ public enum ParticipantsAvailability {
 		if (availabilityNum == null) return null;
 		
 		return switch (availabilityNum.availability) {
-		case fullyBooked -> translator.translate("book.fully.booked.unfortunately");
+		case fullyBooked -> translator.translate("book.fully.booked");
 		case fewLeft -> availabilityNum.numAvailable == 1
 					? translator.translate("book.participants.left.single")
 					: translator.translate("book.participants.left.multi", String.valueOf(availabilityNum.numAvailable));
