@@ -39,6 +39,7 @@ import org.olat.modules.curriculum.ui.member.MembershipModification;
 import org.olat.modules.curriculum.ui.wizard.MembersContext.AccessInfos;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.ResourceReservation;
+import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OrderAdditionalInfos;
 
 /**
@@ -67,10 +68,11 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 		MailPackage mailPackage = new MailPackage(template, result, (MailContext)null, template != null);
 		
 		if(offer != null) {
+			OrderStatus orderStatus = getOrderStatus(offer);
 			String adminNote = membersContext.getAdminNote();
 			for(Identity identity:identities) {
 				OrderAdditionalInfos orderInfos = membersContext.createOrderInfos(identity, true);
-				acService.accessResource(identity, offer.offerAccess(), OrderStatus.PREPAYMENT, orderInfos, mailPackage,
+				acService.accessResource(identity, offer.offerAccess(), orderStatus, orderInfos, mailPackage,
 						ureq.getIdentity(), adminNote);
 			}
 		} else {
@@ -82,6 +84,14 @@ public class AddMemberFinishCallback extends AbstractMemberCallback {
 			}
 		}
 		return StepsMainRunController.DONE_MODIFIED;
+	}
+	
+	private OrderStatus getOrderStatus(AccessInfos offer) {
+		AccessMethod method = offer.offerAccess().getMethod();
+		if(method != null && method.isPaymentMethod()) {
+			return OrderStatus.PREPAYMENT;
+		}
+		return OrderStatus.PAYED;
 	}
 	
 	@Override
