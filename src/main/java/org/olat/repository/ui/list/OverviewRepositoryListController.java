@@ -42,6 +42,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
@@ -126,8 +127,9 @@ public class OverviewRepositoryListController extends BasicController implements
 		if(!guestOnly && curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
 			List<CurriculumElement> implementations = myImplementationsQueries.searchImplementations(getIdentity());
 			for(CurriculumElement implementation:implementations) {
+				String name = StringHelper.escapeHtml(implementation.getDisplayName());
 				scopes.add(ScopeFactory.createScope(CMD_IMPLEMENTATION + implementation.getKey().toString(),
-					implementation.getDisplayName(), null, "o_icon o_icon-fw o_icon_curriculum"));
+					name, null, "o_icon o_icon-fw o_icon_curriculum"));
 			}
 		}
 		
