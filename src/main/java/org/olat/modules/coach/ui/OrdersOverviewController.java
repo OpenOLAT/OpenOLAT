@@ -193,7 +193,7 @@ public class OrdersOverviewController extends BasicController implements Activat
 		if(assessmentApplyGradeCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("ApplyGrade"), null);
 			assessmentApplyGradeCtrl = new AssessmentApplyGradeListController(ureq, swControl, stackPanel,
-					new AssessmentCoachingListOptions(courseEntry, true, translate("orders.apply.grade")));
+					new AssessmentCoachingListOptions(courseEntry, true, null));
 			listenTo(assessmentApplyGradeCtrl);
 		} else {
 			assessmentApplyGradeCtrl.reload();
