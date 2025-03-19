@@ -408,9 +408,7 @@ public class InPreparationListController extends FormBasicController implements 
 			
 			String displayName = entry.getDisplayname();
 			stackPanel.pushController(displayName, infosCtrl);
-			
-			String windowTitle = translate("window.title.infos", displayName);
-			getWindow().setTitle(windowTitle);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			tableEl.reloadData();
 		}
@@ -428,9 +426,6 @@ public class InPreparationListController extends FormBasicController implements 
 			
 			String displayName = curriculumElement.getDisplayName();
 			stackPanel.pushController(displayName, infosCtrl);
-			
-			String windowTitle = translate("window.title.infos", displayName);
-			getWindow().setTitle(windowTitle);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		} else {
 			tableEl.reloadData();

@@ -122,7 +122,7 @@ public class InPreparationQueries {
 			.createQuery(sb.toString(), RepositoryEntry.class)
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("status", IN_PREPARATION_STATUS)
-			.setParameter("roles", List.of(GroupRoles.participant.name(), GroupRoles.owner.name()));
+			.setParameter("roles", List.of(GroupRoles.participant.name(), GroupRoles.coach.name(), GroupRoles.owner.name()));
 		
 		if(maxResults > 0) {
 			query
