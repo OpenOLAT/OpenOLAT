@@ -147,7 +147,7 @@ public class RepositoryAccessPage {
 		
 		// save
 		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary");
-		browser.findElement(saveBy).click();
+		OOGraphene.click(saveBy, browser);
 		
 		// wait second popup
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_open_form");
@@ -167,8 +167,8 @@ public class RepositoryAccessPage {
 		browser.findElement(openBy).click();
 		
 		// save
-		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn.btn-primary");
-		browser.findElement(saveBy).click();
+		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary");
+		OOGraphene.click(saveBy, browser);
 		
 		// wait second popup
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_free_form");
@@ -188,8 +188,8 @@ public class RepositoryAccessPage {
 		browser.findElement(openBy).click();
 		
 		// save
-		By saveBy = By.cssSelector("div.modal-content div.o_button_group button.btn.btn-primary");
-		browser.findElement(saveBy).click();
+		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary");
+		OOGraphene.click(saveBy, browser);
 		
 		// wait second popup
 		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_token_form");
