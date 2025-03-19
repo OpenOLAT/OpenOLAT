@@ -127,6 +127,8 @@ import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.ParticipantsAvailability;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
@@ -290,6 +292,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.educationalType, new EducationalTypeRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CatalogEntryCols.taxonomyLevels, new TaxonomyLevelRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.offers));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.availability, new ParticipantsAvailabilityRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.detailsSmall));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CatalogEntryCols.startSmall));
 
@@ -531,22 +534,19 @@ public class CatalogEntryListController extends FormBasicController implements A
 			return;
 		}
 		
-		if (row.getNumParticipants() != null) {
-			if (row.getNumParticipants() >= row.getMaxParticipants()) {
-				row.setAccessError("<i class=\"o_icon o_ac_offer_fully_booked_icon\"> </i> " + translate("book.fully.booked"));
-			} else {
-				Double participantsLeftMessagePercentage = acModule.getParticipantsLeftMessagePercentage();
-				if (participantsLeftMessagePercentage != null) {
-					long leftParticipants = row.getMaxParticipants() - row.getNumParticipants();
-					double leftParticipantsPercentage = leftParticipants * 100l / row.getMaxParticipants();
-					if (leftParticipants == 1) {
-						row.setAccessWarning("<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.single"));
-					} else if (leftParticipantsPercentage < participantsLeftMessagePercentage) {
-						row.setAccessWarning("<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.multi", String.valueOf(leftParticipants)));
-					}
-				}
-			}
+		ParticipantsAvailabilityNum participantsAvailabilityNum = acService.getParticipantsAvailability(row.getMaxParticipants(), row.getNumParticipants());
+		row.setParticipantsAvailabilityNum(participantsAvailabilityNum);
+		
+		if (participantsAvailabilityNum.availability() == ParticipantsAvailability.fullyBooked) {
+			row.setAccessError(getAvailabilityText(participantsAvailabilityNum));
+		} else if (participantsAvailabilityNum.availability() == ParticipantsAvailability.fewLeft) {
+			row.setAccessWarning(getAvailabilityText(participantsAvailabilityNum));
 		}
+	}
+	
+	private String getAvailabilityText(ParticipantsAvailabilityNum participantsAvailabilityNum) {
+		return "<i class=\"o_icon " + ParticipantsAvailability.getIconCss(participantsAvailabilityNum) + "\"> </i> " 
+				+ ParticipantsAvailability.getText(getTranslator(), participantsAvailabilityNum);
 	}
 
 	private PriceMethod toPriceMethod(PriceMethodBundle bundle) {
@@ -1135,6 +1135,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			User volatileUser = userManager.createUser(firstName, lastName, email);
 
 			// create an identity with the given username / pwd and the user object
+			@SuppressWarnings("unchecked")
 			List<Authentication> passkeys = (List<Authentication>) runContext.get(RegWizardConstants.PASSKEYS);
 
 			// if organisation module and emailDomain is enabled, then set the selected orgaKey
@@ -1150,6 +1151,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 			return identity;
 		}
 
+		@SuppressWarnings("unchecked")
 		private void updateUserData(Identity identity, StepsRunContext runContext) {
 			User user = identity.getUser();
 

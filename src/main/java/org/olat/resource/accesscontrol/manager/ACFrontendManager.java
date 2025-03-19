@@ -106,6 +106,8 @@ import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ParticipantsAvailability;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
@@ -1419,6 +1421,35 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 			}
 		}
 		return false;
+	}
+	
+	@Override
+	public ParticipantsAvailabilityNum getParticipantsAvailability(Long maxParticipants, Long numParticipants) {
+		if (maxParticipants == null) {
+			return new ParticipantsAvailabilityNum(ParticipantsAvailability.manyLeft, Integer.MAX_VALUE);
+		}
+		if (numParticipants == null) {
+			numParticipants = Long.valueOf(0);
+		}
+		
+		if (numParticipants >= maxParticipants) {
+			return new ParticipantsAvailabilityNum(ParticipantsAvailability.fullyBooked, 0);
+		}
+		
+		long leftParticipants = maxParticipants - numParticipants;
+		if (leftParticipants == 1) {
+			return new ParticipantsAvailabilityNum(ParticipantsAvailability.fewLeft, 1);
+		}
+		
+		Double participantsLeftMessagePercentage = accessModule.getParticipantsLeftMessagePercentage();
+		if (participantsLeftMessagePercentage != null) {
+			double leftParticipantsPercentage = leftParticipants * 100l / maxParticipants;
+			if (leftParticipantsPercentage < participantsLeftMessagePercentage) {
+				return new ParticipantsAvailabilityNum(ParticipantsAvailability.fewLeft, leftParticipants);
+			}
+		}
+		
+		return new ParticipantsAvailabilityNum(ParticipantsAvailability.manyLeft, leftParticipants);
 	}
 
 	@Override

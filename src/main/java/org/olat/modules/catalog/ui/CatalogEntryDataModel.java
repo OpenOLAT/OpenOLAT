@@ -96,6 +96,7 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 			case educationalType: return catalogEntryRow.getEducationalType();
 			case taxonomyLevels: return catalogEntryRow.getTaxonomyLevelNamePaths();
 			case offers: return catalogEntryRow.getAccessInfo();
+			case availability: return catalogEntryRow;
 			case details: return catalogEntryRow.getDetailsLink();
 			case detailsSmall: return catalogEntryRow.getDetailsSmallLink();
 			case start: return catalogEntryRow.getStartLink();
@@ -121,6 +122,7 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 		educationalType("table.header.educational.type"),
 		taxonomyLevels("table.header.taxonomy.levels"),
 		offers("table.header.offers"),
+		availability("table.header.availability"),
 		details("table.header.learn.more"),
 		detailsSmall("table.header.learn.more"),
 		start("table.header.start"),
@@ -138,6 +140,7 @@ public class CatalogEntryDataModel extends DefaultFlexiTableDataModel<CatalogEnt
 					&& this != educationalType
 					&& this != taxonomyLevels
 					&& this != offers
+					&& this != availability
 					&& this != details
 					&& this != detailsSmall
 					&& this != start

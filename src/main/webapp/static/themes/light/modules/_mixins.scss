@@ -32,6 +32,10 @@
 	color: $color;
 	padding: $o-message-line-padding;
 	border-radius: $o-message-line-radius;
+	
+	&:is(td *) {
+		padding: $o-message-line-padding-table;
+	}
 }
 
 /* bootstrap override */

@@ -34,6 +34,7 @@ import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 
 /**
  * 
@@ -78,6 +79,7 @@ public class CatalogEntryRow {
 	private String accessError;
 	private final Long maxParticipants;
 	private final Long numParticipants;
+	private ParticipantsAvailabilityNum participantsAvailabilityNum;
 	private final License license;
 	
 	private String thumbnailRelPath;
@@ -201,6 +203,14 @@ public class CatalogEntryRow {
 
 	public Long getNumParticipants() {
 		return numParticipants;
+	}
+
+	public ParticipantsAvailabilityNum getParticipantsAvailabilityNum() {
+		return participantsAvailabilityNum;
+	}
+
+	public void setParticipantsAvailabilityNum(ParticipantsAvailabilityNum participantsAvailabilityNum) {
+		this.participantsAvailabilityNum = participantsAvailabilityNum;
 	}
 
 	public Set<String> getAccessMethodTypes() {

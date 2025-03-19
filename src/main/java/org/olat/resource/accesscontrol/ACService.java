@@ -37,6 +37,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
@@ -354,5 +355,7 @@ public interface ACService {
 	public Date getBeginDate(OLATResource resource);
 	
 	public Price getCancellationFee(OLATResource recource, Date resourceBeginDate, List<Order> orders);
+	
+	public ParticipantsAvailabilityNum getParticipantsAvailability(Long maxParticipants, Long numParticipants);
 
 }

@@ -50,10 +50,11 @@ import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.list.AbstractDetailsHeaderController;
 import org.olat.repository.ui.list.LeavingEvent;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.ParticipantsAvailability;
+import org.olat.resource.accesscontrol.ParticipantsAvailability.ParticipantsAvailabilityNum;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
@@ -82,9 +83,7 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 	private CurriculumService curriculumService;
 	@Autowired
 	private ACReservationDAO reservationDao;
-	@Autowired
-	private AccessControlModule acModule;
-
+	
 	public CurriculumElementInfosHeaderController(UserRequest ureq, WindowControl wControl, CurriculumElement element,
 			RepositoryEntry entry, Identity bookedIdentity, boolean isMember, boolean preview) {
 		super(ureq, wControl);
@@ -184,27 +183,27 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		if (acResult.isAccessible()) {
 			startCtrl.getInitialComponent().setVisible(true);
 		} else if (!acResult.getAvailableMethods().isEmpty()) {
-			ParticipantsLeftResult result = updateAccessMaxParticipants();
-			if (result.left == ParticipantsLeft.fullyBooked) {
+			ParticipantsAvailabilityNum availabilityNum = getParticipantsAvailabilityNum();
+			if (availabilityNum.availability() == ParticipantsAvailability.fullyBooked) {
 				startCtrl.getInitialComponent().setVisible(true);
 				startCtrl.getStartLink().setEnabled(false);
 				startCtrl.getStartLink().setIconRightCSS(null);
 				startCtrl.getStartLink().setCustomDisplayText(translate("book"));
-				startCtrl.setError(result.message);
+				startCtrl.setError(getAvailabilityText(availabilityNum));
 				return;
 			}
 			
 			if (!preview && acResult.getAvailableMethods().size() == 1 && acResult.getAvailableMethods().get(0).getOffer().isAutoBooking()) {
 				startCtrl.getInitialComponent().setVisible(true);
 				startCtrl.setAutoBooking(true);
-				if (result.left == ParticipantsLeft.almostFullyBooked) {
-					startCtrl.setWarning(result.message);
+				if (availabilityNum.availability() == ParticipantsAvailability.fewLeft) {
+					startCtrl.setWarning(getAvailabilityText(availabilityNum));
 				}
 			} else {
 				showOffers(ureq, acResult.getAvailableMethods(), false, webPublish != null && webPublish, bookedIdentity);
-				if (result.left == ParticipantsLeft.almostFullyBooked) {
+				if (availabilityNum.availability() == ParticipantsAvailability.fewLeft) {
 					if (offersCtrl != null) {
-						offersCtrl.setWarning(result.message);
+						offersCtrl.setWarning(getAvailabilityText(availabilityNum));
 					}
 				}
 			}
@@ -272,37 +271,20 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		return false;
 	}
 	
-	private ParticipantsLeftResult updateAccessMaxParticipants() {
+	private ParticipantsAvailabilityNum getParticipantsAvailabilityNum() {
 		if (isMember || element.getMaxParticipants() == null) {
-			return new ParticipantsLeftResult(ParticipantsLeft.many, null);
+			return new ParticipantsAvailabilityNum(ParticipantsAvailability.manyLeft, Integer.MAX_VALUE);
 		}
 		
 		Long numParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(List.of(element), true).get(element.getKey());
-		if (numParticipants != null) {
-			if (numParticipants >= element.getMaxParticipants()) {
-				return new ParticipantsLeftResult(ParticipantsLeft.fullyBooked,
-						"<i class=\"o_icon o_ac_offer_fully_booked_icon\"> </i> " + translate("book.fully.booked.unfortunately"));
-			}
-			Double participantsLeftMessagePercentage = acModule.getParticipantsLeftMessagePercentage();
-			if (participantsLeftMessagePercentage != null) {
-				long leftParticipants = element.getMaxParticipants() - numParticipants;
-				double leftParticipantsPercentage = leftParticipants * 100l / element.getMaxParticipants();
-				if (leftParticipants == 1) {
-					return new ParticipantsLeftResult(ParticipantsLeft.almostFullyBooked,
-							"<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.single"));
-				} else if (leftParticipantsPercentage < participantsLeftMessagePercentage) {
-					return new ParticipantsLeftResult(ParticipantsLeft.almostFullyBooked,
-							"<i class=\"o_icon o_ac_offer_almost_fully_booked_icon\"> </i> " + translate("book.participants.left.multi", String.valueOf(leftParticipants)));
-				}
-			}
-		}
-		
-		return new ParticipantsLeftResult(ParticipantsLeft.many, null);
+		return acService.getParticipantsAvailability(element.getMaxParticipants(), numParticipants);
 	}
 	
-	private record ParticipantsLeftResult(ParticipantsLeft left, String message) {}
-	private enum ParticipantsLeft { fullyBooked, almostFullyBooked, many }
-
+	private String getAvailabilityText(ParticipantsAvailabilityNum participantsAvailabilityNum) {
+		return "<i class=\"o_icon " + ParticipantsAvailability.getIconCss(participantsAvailabilityNum) + "\"> </i> " 
+				+ ParticipantsAvailability.getText(getTranslator(), participantsAvailabilityNum);
+	}
+	
 	@Override
 	protected String getStartLinkText() {
 		return translate("open.with.type", element.getType().getDisplayName());
