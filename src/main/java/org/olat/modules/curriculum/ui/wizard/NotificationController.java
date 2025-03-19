@@ -37,6 +37,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumMailing;
 import org.olat.modules.curriculum.ui.CurriculumManagerController;
+import org.olat.modules.curriculum.ui.member.ConfirmationByEnum;
 import org.olat.modules.curriculum.ui.member.MembershipModification;
 
 /**
@@ -64,21 +65,56 @@ public class NotificationController extends StepFormBasicController {
 		initForm(ureq);
 	}
 	
+	/**
+	 * See: https://track.frentix.com/issue/OO-8389
+	 * 
+	 * @param context The wizard context
+	 * @return The best possible template for your case
+	 */
 	private MailTemplate findBestMailTemplate(MembersContext context) {
 		CurriculumElement curriculumElement = context.getCurriculumElement();
 		Curriculum curriculum = curriculumElement.getCurriculum();
 		
 		GroupMembershipStatus nextStatus = null;
+		ConfirmationByEnum confirmationBy = null;
+		boolean withOffers = context.getSelectedOffer() != null && context.getSelectedOffer().offer() != null;
 		List<MembershipModification> modifications = membersContext.getModifications();
 		if(modifications != null && !modifications.isEmpty()) {
 			nextStatus = modifications.get(0).nextStatus();
+			confirmationBy = modifications.get(0).confirmationBy();
 		}
 		
 		MailTemplate template = null;
 		if(nextStatus == GroupMembershipStatus.active) {
-			template = CurriculumMailing.getMembershipAddTemplate(curriculum, curriculumElement, getIdentity());
-		} else if(context.getSelectedOffer() != null || nextStatus == GroupMembershipStatus.reservation) {
-			template = CurriculumMailing.getMembershipBookedByAdminTemplate(curriculum, curriculumElement, getIdentity());
+			if(withOffers) {
+				// 1.3. BOOKING BY ADMINISTRATIVE ROLE - WITHOUT CONFIRMATION BY ADMINISTRATIVE ROLES (OFFER SETTING)
+				template = CurriculumMailing.getMembershipBookedByAdminTemplate(curriculum, curriculumElement, getIdentity());
+			} else {
+				// 2.1 INVITED - STANDARD (WITHOUT CONFIMRATION)
+				template = CurriculumMailing.getMembershipAddTemplate(curriculum, curriculumElement, getIdentity());
+			}
+		} else if(nextStatus == GroupMembershipStatus.reservation) {
+			if(withOffers) {
+				if(confirmationBy == ConfirmationByEnum.ADMINISTRATIVE_ROLE || confirmationBy == ConfirmationByEnum.PARTICIPANT
+						|| context.getSelectedOffer().offer().isConfirmationByManagerRequired()) {
+					// 1.4. BOOKING BY ADMINISTRATIVE ROLE - WITH CONFIRMATION BY ADMINISTRATIVE ROLES (OFFER SETTING)
+					template = CurriculumMailing.getMembershipBookedByAdminTemplateConfirmation(curriculum, curriculumElement, getIdentity());
+				} else {
+					// Not possible but... fallback to 1.3
+					template = CurriculumMailing.getMembershipBookedByAdminTemplate(curriculum, curriculumElement, getIdentity());
+				}
+			} else {
+				if(confirmationBy == ConfirmationByEnum.ADMINISTRATIVE_ROLE) {
+					// 2.2 INVITED - WITH CONFIRMATION BY ADMINISTRATIVE ROLES
+					template = CurriculumMailing.getMembershipAddWithAdminConfirmationTemplate(curriculum, curriculumElement, getIdentity());
+				} else if(confirmationBy == ConfirmationByEnum.PARTICIPANT) {
+					// 2.3. INVITED - WITH CONFIRMATION BY PARTICIPANT
+					template = CurriculumMailing.getMembershipAddWithParticipantConfirmationTemplate(curriculum, curriculumElement, getIdentity());
+				} else {
+					// Not possible but... fallback to 1.3
+					template = CurriculumMailing.getMembershipBookedByAdminTemplate(curriculum, curriculumElement, getIdentity());
+				}
+			}
 		} else {
 			template = CurriculumMailing.getMembershipAcceptedTemplate(curriculum, curriculumElement, getIdentity());
 		}

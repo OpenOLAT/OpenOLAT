@@ -141,9 +141,31 @@ public class CurriculumMailing {
 		return null;
 	}
 	
+	/**
+	 * 1.3. BOOKING BY ADMINISTRATIVE ROLE - WITHOUT CONFIRMATION BY ADMINISTRATIVE ROLES (OFFER SETTING)
+	 * 
+	 * @param curriculum The curriculum
+	 * @param curriculumElement The curriculum element
+	 * @param actor The user which send the mail
+	 * @return A template
+	 */
 	public static MailTemplate getMembershipBookedByAdminTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
 		String subjectKey = "notification.mail.member.booked.by.admin.subject";
 		String bodyKey = "notification.mail.member.booked.by.admin.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	/**
+	 * 1.4. BOOKING BY ADMINISTRATIVE ROLE - WITH CONFIRMATION BY ADMINISTRATIVE ROLES (OFFER SETTING)
+	 * 
+	 * @param curriculum The curriculum
+	 * @param curriculumElement The curriculum element
+	 * @param actor The user which send the mail
+	 * @return A template
+	 */
+	public static MailTemplate getMembershipBookedByAdminTemplateConfirmation(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.booked.by.admin.confirm.subject";
+		String bodyKey = "notification.mail.member.booked.by.admin.confirm.body";
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
@@ -165,9 +187,49 @@ public class CurriculumMailing {
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
+	/**
+	 * 2.1 INVITED - STANDARD (WITHOUT CONFIMRATION)
+	 * 
+	 * Administrator add a member without confirmation
+	 * 
+	 * @param curriculum The curriculum
+	 * @param curriculumElement The curriculum element
+	 * @param actor The user which send the mail
+	 * @return A template
+	 */
 	public static MailTemplate getMembershipAddTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
 		String subjectKey = "notification.mail.member.invited.subject";
 		String bodyKey = "notification.mail.member.invited.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	/**
+	 * 2.2 INVITED - WITH CONFIRMATION BY ADMINISTRATIVE ROLES
+	 * 
+	 * Administrator add a member with confirmation by an administrative roles
+	 * 
+	 * @param curriculum The curriculum
+	 * @param curriculumElement The curriculum element
+	 * @param actor The user which send the mail
+	 * @return A template
+	 */
+	public static MailTemplate getMembershipAddWithAdminConfirmationTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.invited.confirm.admin.subject";
+		String bodyKey = "notification.mail.member.invited.confirm.admin.body";
+		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
+	}
+	
+	/**
+	 * 2.3. INVITED - WITH CONFIRMATION BY PARTICIPANT
+	 * 
+	 * @param curriculum The curriculum
+	 * @param curriculumElement The curriculum element
+	 * @param actor The user which send the mail
+	 * @return A template
+	 */
+	public static MailTemplate getMembershipAddWithParticipantConfirmationTemplate(Curriculum curriculum, CurriculumElement curriculumElement, Identity actor) {
+		String subjectKey = "notification.mail.member.invited.confirm.participant.subject";
+		String bodyKey = "notification.mail.member.invited.confirm.participant.body";
 		return createMailTemplate(curriculum, curriculumElement, actor, subjectKey, bodyKey);
 	}
 	
