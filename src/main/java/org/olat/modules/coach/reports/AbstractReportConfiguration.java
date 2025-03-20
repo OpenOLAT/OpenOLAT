@@ -127,7 +127,7 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 			OpenXMLWorksheet sheet = workbook.nextWorksheet();
 			sheet.setHeaderRows(1);
 			generateHeader(sheet, userPropertyHandlers, locale);
-			generateData(workbook, coach, sheet, userPropertyHandlers);
+			generateData(workbook, coach, sheet, userPropertyHandlers, locale);
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
 			return;
@@ -155,7 +155,7 @@ public abstract class AbstractReportConfiguration implements ReportConfiguration
 
 	protected abstract int generateCustomHeaderColumns(Row header, int pos, Translator translator);
 	
-	protected abstract void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers);
+	protected abstract void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
 
 	protected abstract List<UserPropertyHandler> getUserPropertyHandlers();
 

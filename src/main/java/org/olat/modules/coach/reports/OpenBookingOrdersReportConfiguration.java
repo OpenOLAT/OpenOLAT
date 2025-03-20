@@ -22,6 +22,7 @@ package org.olat.modules.coach.reports;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -99,7 +100,7 @@ public class OpenBookingOrdersReportConfiguration extends TimeBoundReportConfigu
 	}
 
 	@Override
-	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers) {
+	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		List<UserOrder> bookings = loadBookings(coach, userPropertyHandlers);
 		for (UserOrder booking : bookings) {
 			generateDataRow(workbook, sheet, userPropertyHandlers, booking);

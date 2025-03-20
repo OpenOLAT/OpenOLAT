@@ -295,8 +295,8 @@ public class CertificatesReportConfiguration extends TimeBoundReportConfiguratio
 	}
 
 	@Override
-	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, 
-								List<UserPropertyHandler> userPropertyHandlers) {
+	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet,
+								List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		// Unused.
 		// Two worksheets used, this hook is for a single worksheet.
 	}

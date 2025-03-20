@@ -21,6 +21,7 @@ package org.olat.modules.coach.reports;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -58,7 +59,7 @@ public class AbsencesReportConfiguration extends TimeBoundReportConfiguration {
 	}
 
 	@Override
-	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers) {
+	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		LectureStatisticsSearchParameters params = new LectureStatisticsSearchParameters();
 		if (getDurationTimeUnit() != null) {

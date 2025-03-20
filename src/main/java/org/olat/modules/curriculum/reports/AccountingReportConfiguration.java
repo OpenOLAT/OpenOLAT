@@ -22,9 +22,11 @@ package org.olat.modules.curriculum.reports;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,10 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerRootController;
+import org.olat.repository.RepositoryEntryEducationalType;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -137,8 +143,9 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	}
 
 	@Override
-	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet, 
-								List<UserPropertyHandler> userPropertyHandlers) {
+	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet,
+								List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		Map<String, String> educationalTypeIdToName = getEducationalTypeIdToName(locale);
 		CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
 		CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
 		searchParams.setIdentity(coach);
@@ -152,12 +159,13 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		}
 		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
 		for (BookingOrder bookingOrder : bookingOrders) {
-			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder);
-		}		
+			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, educationalTypeIdToName);
+		}
 	}
 
-	private void generateDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet, 
-								 List<UserPropertyHandler> userPropertyHandlers, BookingOrder bookingOrder) {
+	private void generateDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet,
+								 List<UserPropertyHandler> userPropertyHandlers, BookingOrder bookingOrder,
+								 Map<String, String> educationalTypeIdToName) {
 		OpenXMLWorksheet.Row row = sheet.newRow();
 		int pos = 0;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -172,7 +180,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getImplementationIdentifier());
 		row.addCell(pos++, bookingOrder.getImplementationType());
 		row.addCell(pos++, bookingOrder.getImplementationStatus());
-		row.addCell(pos++, bookingOrder.getImplementationFormat());
+		row.addCell(pos++, educationalTypeIdToName.get(bookingOrder.getImplementationFormat()));
 		row.addCell(pos++, "" + bookingOrder.getBeginDate(), workbook.getStyles().getDateTimeStyle());
 		row.addCell(pos++, "" + bookingOrder.getEndDate(), workbook.getStyles().getDateTimeStyle());
 		row.addCell(pos++, "" + bookingOrder.getOrder().getKey());
@@ -209,8 +217,8 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	}
 
 	@Override
-	public ReportContent generateReport(Curriculum curriculum, CurriculumElement curriculumElement, 
-			Identity doer, Locale locale, VFSLeaf file) {
+	public ReportContent generateReport(Curriculum curriculum, CurriculumElement curriculumElement,
+										Identity doer, Locale locale, VFSLeaf file) {
 		final CurriculumService curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 
 		Set<CurriculumRef> curriculums = new HashSet<>();
@@ -249,12 +257,14 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		return new ReportContent(curriculumList, implementationList);
 	}
 	
-	public void generateReport(CurriculumAccountingSearchParams searchParams, 
-			Set<CurriculumRef> curriculumsInReport, Set<CurriculumElementRef> implementationsInReport,
-			Locale locale, OutputStream out) {
+	public void generateReport(CurriculumAccountingSearchParams searchParams,
+							   Set<CurriculumRef> curriculumsInReport, Set<CurriculumElementRef> implementationsInReport,
+							   Locale locale, OutputStream out) {
 		final CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
 		
 		Translator translator = getTranslator(locale);
+		Map<String, String> educationalTypeIdToName = getEducationalTypeIdToName(locale);
+
 		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
 		List<String> worksheetNames = List.of(translator.translate("report.booking"));
 		
@@ -264,7 +274,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			generateHeader(sheet, userPropertyHandlers, locale);
 			List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
 			for (BookingOrder bookingOrder : bookingOrders) {
-				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder);
+				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, educationalTypeIdToName);
 				
 				if(curriculumsInReport != null && bookingOrder.getCurriculumKey() != null) {
 					curriculumsInReport.add(new CurriculumRefImpl(bookingOrder.getCurriculumKey()));
@@ -276,5 +286,17 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		} catch (IOException e) {
 			log.error("Unable to generate export", e);
 		}
+	}
+
+	private Map<String, String> getEducationalTypeIdToName(Locale locale) {
+		Translator repositoyTranslator = Util.createPackageTranslator(RepositoryService.class, locale);
+		List<RepositoryEntryEducationalType> educationalTypes = CoreSpringFactory.getImpl(RepositoryManager.class).getAllEducationalTypes();
+		HashMap<String, String> educationalTypeIdToName = new HashMap<>();
+		for (RepositoryEntryEducationalType educationalType : educationalTypes) {
+			String i18nKey = RepositoyUIFactory.getI18nKey(educationalType);
+			String name = repositoyTranslator.translate(i18nKey);
+			educationalTypeIdToName.put(educationalType.getIdentifier(), name);
+		}
+		return educationalTypeIdToName;
 	}
 }
