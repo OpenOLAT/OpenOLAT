@@ -151,7 +151,11 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 		if (isMember && acService.isAccessRefusedByStatus(element, bookedIdentity)) {
 			startCtrl.getInitialComponent().setVisible(true);
 			startCtrl.getStartLink().setEnabled(false);
-			setWarning(translate("access.denied.not.published"), translate("access.denied.not.published.hint"));
+			if(entry == null && element.isSingleCourseImplementation()) {
+				setWarning(translate("access.denied.not.instance.course"), translate("access.denied.not.instance.course.hint"));
+			} else {
+				setWarning(translate("access.denied.not.published"), translate("access.denied.not.published.hint"));
+			}
 			initLeaveButton();
 		} else if (isMember) {
 			if(entry == null && element.isSingleCourseImplementation()) {
