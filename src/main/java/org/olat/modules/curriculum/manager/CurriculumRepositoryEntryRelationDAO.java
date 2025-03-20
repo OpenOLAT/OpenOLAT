@@ -121,7 +121,8 @@ public class CurriculumRepositoryEntryRelationDAO {
 				.getResultList();
 	}
 	
-	public List<RepositoryEntry> getRepositoryEntries(CurriculumRef curriculum, List<CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status,
+	public List<RepositoryEntry> getRepositoryEntries(CurriculumRef curriculum,
+			Collection<? extends CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status,
 			boolean onlyWithLectures, IdentityRef identity, List<String> roles) {
 		if((elements == null || elements.isEmpty()) && curriculum == null) return new ArrayList<>();
 		
@@ -167,6 +168,35 @@ public class CurriculumRepositoryEntryRelationDAO {
 			query.setParameter("roles", roles);
 		}
 		return query.getResultList();
+	}
+	
+	public Map<Long, Set<RepositoryEntry>> getCurriculumElementKeyToRepositoryEntries(Collection<? extends CurriculumElementRef> elements) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select el.key")
+		  .append("     , v")
+		  .append("  from repositoryentry as v")
+		  .append(" inner join v.groups as rel")
+		  .append(" inner join curriculumelement as el on (el.group.key=rel.group.key)");
+		if(elements != null && !elements.isEmpty()) {
+			sb.append(" and el.key in (:elementKeys)");
+		}
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class);
+		if(elements != null && !elements.isEmpty()) {
+			query.setParameter("elementKeys", elements.stream().map(CurriculumElementRef::getKey).collect(Collectors.toList()));
+		}
+		
+		List<Object[]> resultList = query.getResultList();
+		
+		Map<Long, Set<RepositoryEntry>> curriculumElementKeyRepositoryEntries = new HashMap<>();
+		for (Object[] result : resultList) {
+			Long curriculumElementKey = (Long)result[0];
+			RepositoryEntry repositoryEntry = (RepositoryEntry)result[1];
+			curriculumElementKeyRepositoryEntries.computeIfAbsent(curriculumElementKey, key -> new HashSet<>()).add(repositoryEntry);
+		}
+		
+		return curriculumElementKeyRepositoryEntries;
 	}
 	
 	public List<CurriculumElementWebDAVInfos> getCurriculumElementInfosForWebDAV(IdentityRef identity, List<String> roles) {

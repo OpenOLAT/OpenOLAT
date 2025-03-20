@@ -30,6 +30,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogEntry;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -81,6 +82,8 @@ public class CatalogEntryRow {
 	private final Long numParticipants;
 	private ParticipantsAvailabilityNum participantsAvailabilityNum;
 	private final License license;
+	private boolean singleCourseImplementation;
+	private RepositoryEntry singleCourse;
 	
 	private String thumbnailRelPath;
 	private FormLink selectLink;
@@ -116,6 +119,8 @@ public class CatalogEntryRow {
 		maxParticipants = catalogEntry.getMaxParticipants();
 		numParticipants = catalogEntry.getNumParticipants();
 		license = catalogEntry.getLicense();
+		singleCourseImplementation = catalogEntry.isSingleCourseImplementation();
+		singleCourse = catalogEntry.getSingleCourse();
 		
 		curriculumKey = catalogEntry.getCurriculumKey();
 		curriculumElementTypeName = catalogEntry.getCurriculumElementTypeName();
@@ -359,6 +364,20 @@ public class CatalogEntryRow {
 
 	public void setDetailsSmallLink(FormLink detailsSmallLink) {
 		this.detailsSmallLink = detailsSmallLink;
+	}
+
+	public boolean isSingleCourseImplementation() {
+		return singleCourseImplementation;
+	}
+
+	public RepositoryEntry getSingleCourse() {
+		return singleCourse;
+	}
+
+	public boolean isUnpublishedSingleCourseImplementation() {
+		return isSingleCourseImplementation() 
+				&& (	getSingleCourse() == null 
+					|| !RepositoryEntryStatusEnum.isInArray(getSingleCourse().getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed()));
 	}
 	
 }

@@ -1470,6 +1470,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
+	public Map<Long, Set<RepositoryEntry>> getCurriculumElementKeyToRepositoryEntries(Collection<? extends CurriculumElementRef> elements) {
+		return curriculumRepositoryEntryRelationDao.getCurriculumElementKeyToRepositoryEntries(elements);
+	}
+	
+	@Override
 	public List<RepositoryEntryInfos> getRepositoryEntriesWithInfos(CurriculumElementRef element) {
 		return curriculumRepositoryEntryRelationDao.getRepositoryEntriesWithInfos(element);
 	}

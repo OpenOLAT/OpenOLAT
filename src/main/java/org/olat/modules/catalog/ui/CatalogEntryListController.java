@@ -117,6 +117,7 @@ import org.olat.registration.RegistrationPersonalDataController;
 import org.olat.registration.SelfRegistrationAdvanceOrderInput;
 import org.olat.registration.TemporaryKey;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -621,7 +622,7 @@ public class CatalogEntryListController extends FormBasicController implements A
 		linkSmall.setUrl(url);
 		row.setStartSmallLink(linkSmall);
 		
-		if (StringHelper.containsNonWhitespace(row.getAccessError()) || row.isReservationAvailable()) {
+		if (StringHelper.containsNonWhitespace(row.getAccessError()) || row.isReservationAvailable() || row.isUnpublishedSingleCourseImplementation()) {
 			link.setEnabled(false);
 			linkSmall.setEnabled(false);
 		}
@@ -864,7 +865,9 @@ public class CatalogEntryListController extends FormBasicController implements A
 		} else {
 			try {
 				String businessPath = getStartBusinessPath(row);
-				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+				if (StringHelper.containsNonWhitespace(businessPath)) {
+					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+				}
 			} catch (CorruptedCourseException e) {
 				showError("error.corrupted");
 			}
@@ -877,6 +880,10 @@ public class CatalogEntryListController extends FormBasicController implements A
 	
 	private String getStartUrl(CatalogEntryRow row, boolean guest) {
 		String businessPath = getStartBusinessPath(row);
+		if (!StringHelper.containsNonWhitespace(businessPath)) {
+			return null;
+		}
+		
 		String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
 		if (guest) {
 			url += "?guest=true";
@@ -885,11 +892,19 @@ public class CatalogEntryListController extends FormBasicController implements A
 	}
 
 	private String getStartBusinessPath(CatalogEntryRow row) {
-		String businessPath = "";
+		String businessPath = null;
 		if (row.getRepositotyEntryKey() != null) {
 			businessPath = "[RepositoryEntry:" + row.getRepositotyEntryKey() + "]";
 		} else if (row.getCurriculumElementKey() != null) {
-			businessPath = "[MyCoursesSite:0][Curriculum:0][Curriculum:" + row.getCurriculumKey() + "]";
+			if (row.isSingleCourseImplementation()) {
+				if (row.getSingleCourse() != null) {
+					if (RepositoryEntryStatusEnum.isInArray(row.getSingleCourse().getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())) {
+						businessPath = "[RepositoryEntry:" + row.getSingleCourse().getKey() + "]";
+					}
+				}
+			} else {
+				businessPath = "[MyCoursesSite:0][Implementation:" + row.getCurriculumElementKey() + "]";
+			}
 		}
 		return businessPath;
 	}

@@ -76,6 +76,8 @@ public class CatalogEntryImpl implements CatalogEntry {
 	private final Long maxParticipants;
 	private Long numParticipants;
 	private License license;
+	private final boolean singleCourseImplementation;
+	private RepositoryEntry singleCourse;
 
 	public CatalogEntryImpl(RepositoryEntry re) {
 		repositotyEntryKey = re.getKey();
@@ -106,6 +108,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		
 		curriculumKey = null;
 		curriculumElementTypeName = null;
+		singleCourseImplementation = false;
 		
 		olatResource = re.getOlatResource();
 	}
@@ -132,6 +135,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		
 		curriculumKey = element.getCurriculum().getKey();
 		curriculumElementTypeName = element.getType().getDisplayName();
+		singleCourseImplementation = element.isSingleCourseImplementation();
 		
 		olatResource = element.getResource();
 	}
@@ -321,6 +325,20 @@ public class CatalogEntryImpl implements CatalogEntry {
 
 	public void setLicense(License license) {
 		this.license = license;
+	}
+
+	@Override
+	public boolean isSingleCourseImplementation() {
+		return singleCourseImplementation;
+	}
+
+	@Override
+	public RepositoryEntry getSingleCourse() {
+		return singleCourse;
+	}
+
+	public void setSingleCourse(RepositoryEntry singleCourse) {
+		this.singleCourse = singleCourse;
 	}
 	
 }

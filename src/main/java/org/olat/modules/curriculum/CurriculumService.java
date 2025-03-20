@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.GroupMembershipStatus;
 import org.olat.basesecurity.IdentityRef;
@@ -540,6 +541,8 @@ public interface CurriculumService {
 	 * @return A list of repository entries
 	 */
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element);
+	
+	public Map<Long, Set<RepositoryEntry>> getCurriculumElementKeyToRepositoryEntries(Collection<? extends CurriculumElementRef> elements);
 	
 	public List<RepositoryEntryInfos> getRepositoryEntriesWithInfos(CurriculumElementRef element);
 	

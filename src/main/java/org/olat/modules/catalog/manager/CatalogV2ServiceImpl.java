@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -201,7 +202,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 			
 			Map<Long, List<TaxonomyLevel>> ceKeyTaxonomyLevels = loadCurriculumElementToTaxonomyLevels(curriculumElements);
 			Map<Long, Long> ceKeyToNumParticipants = curriculumService.getCurriculumElementKeyToNumParticipants(curriculumElements, true);
-			
+			Map<Long, RepositoryEntry> ceKeySingleCourse = loadCurriculumElementToSingleCourse(curriculumElements);
 			Set<Long> ceMembershipKeys = loadCurriculumElementMembershipKeys(curriculumElements, searchParams.getMember());
 			
 			for (CurriculumElement curriculumElement : curriculumElements) {
@@ -210,6 +211,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 				List<TaxonomyLevel> levels = ceKeyTaxonomyLevels.get(curriculumElement.getKey());
 				catalogEntry.setTaxonomyLevels(levels != null ? new HashSet<>(levels): null);
 				catalogEntry.setNumParticipants(ceKeyToNumParticipants.get(curriculumElement.getKey()));
+				catalogEntry.setSingleCourse(ceKeySingleCourse.get(curriculumElement.getKey()));
 				catalogEntry.setMember(ceMembershipKeys.contains(curriculumElement.getKey()));
 				
 				catalogEntries.add(catalogEntry);
@@ -267,6 +269,25 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 			return curriculumService.getCurriculumElementKeyToTaxonomyLevels(curriculumElements);
 		}
 		return Map.of();
+	}
+
+	private Map<Long, RepositoryEntry> loadCurriculumElementToSingleCourse(List<CurriculumElement> curriculumElements) {
+		if (curriculumElements == null || curriculumElements.isEmpty()) {
+			return Map.of();
+		}
+		
+		List<CurriculumElement> singleCourseElements = curriculumElements.stream()
+				.filter(CurriculumElement::isSingleCourseImplementation)
+				.toList();
+		if (singleCourseElements.isEmpty()) {
+			return Map.of();
+		}
+		
+		return curriculumService.getCurriculumElementKeyToRepositoryEntries(singleCourseElements).entrySet().stream()
+				.filter(curriculumElementKeyToRepositoryEntries -> curriculumElementKeyToRepositoryEntries.getValue().size() == 1)
+				.collect(Collectors.toMap(
+						Entry::getKey,
+						entry -> new ArrayList<>(entry.getValue()).get(0)));
 	}
 
 	private Set<Long> loadCurriculumElementMembershipKeys(List<CurriculumElement> curriculumElements, Identity member) {
