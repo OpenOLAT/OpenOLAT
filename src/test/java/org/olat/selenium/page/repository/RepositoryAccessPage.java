@@ -146,7 +146,8 @@ public class RepositoryAccessPage {
 		browser.findElement(openBy).click();
 		
 		// save
-		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary");
+		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary.o_button_dirty");
+		OOGraphene.waitElement(saveBy, browser);
 		OOGraphene.click(saveBy, browser);
 		
 		// wait second popup
@@ -167,7 +168,8 @@ public class RepositoryAccessPage {
 		browser.findElement(openBy).click();
 		
 		// save
-		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary");
+		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary.o_button_dirty");
+		OOGraphene.waitElement(saveBy, browser);
 		OOGraphene.click(saveBy, browser);
 		
 		// wait second popup
@@ -188,7 +190,8 @@ public class RepositoryAccessPage {
 		browser.findElement(openBy).click();
 		
 		// save
-		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary");
+		By saveBy = By.cssSelector("div.o_ac_billing_address_selection div.buttons button.btn.btn-primary.o_button_dirty");
+		OOGraphene.waitElement(saveBy, browser);
 		OOGraphene.click(saveBy, browser);
 		
 		// wait second popup
