@@ -24,7 +24,6 @@
 */
 package org.olat.portal.calendar;
 
-import java.text.DateFormat;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
@@ -34,23 +33,20 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 
 /**
  * @author Christian Guretzki
  */
 class PortletDateColumnDescriptor extends DefaultColumnDescriptor {
 
-	private DateFormat timeFormat;
-	private DateFormat dateOnlyFormat;
-	private DateFormat dateFormat;
+	private Formatter formatter;
 	private Translator translator;
 
 	public PortletDateColumnDescriptor(String headerKey, int dataColumn, Translator translator) {
 		super(headerKey, dataColumn, null, translator.getLocale());
 		this.translator = translator;
-		timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
-		dateOnlyFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
-		dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
+		formatter = Formatter.getInstance(translator.getLocale());
 	}
 	
 	/**
@@ -60,7 +56,6 @@ class PortletDateColumnDescriptor extends DefaultColumnDescriptor {
 	 * 30.03.10 all day
 	 * 30.03.10 - 31.03.10 all day
 	 * 30.03.10 07:00 - 08:00
-	 * @see org.olat.core.gui.components.table.DefaultColumnDescriptor#renderValue(org.olat.core.gui.render.StringOutput, int, org.olat.core.gui.render.Renderer)
 	 */
 	@Override
 	public void renderValue(StringOutput sb, int row, Renderer renderer) {
@@ -69,7 +64,7 @@ class PortletDateColumnDescriptor extends DefaultColumnDescriptor {
 			if (event.isToday() && event.isAllDayEvent()) {
 				sb.append( translator.translate("calendar.today.all.day") );
 			} else if (event.isToday()) {
-				sb.append( translator.translate("calendar.title") +" "+ timeFormat.format(event.getBegin()) + " - " + timeFormat.format(event.getEnd()) );
+				sb.append( translator.translate("calendar.title") +" "+ formatter.formatTimeShort(event.getBegin()) + " - " + formatter.formatTimeShort(event.getEnd()));
 			} else if (event.isAllDayEvent()) {
 				ZonedDateTime now = DateUtils.toZonedDateTime(new Date());
 				ZonedDateTime tomorrow = now.plusDays(1);
@@ -78,21 +73,21 @@ class PortletDateColumnDescriptor extends DefaultColumnDescriptor {
 					sb.append( translator.translate("calendar.today.all.day") );
 					if ( event.getEnd().isAfter(tomorrow) ) {
 						sb.append( " - ");
-						sb.append( dateOnlyFormat.format(event.getEnd()));
+						sb.append( formatter.formatDateWithDay(event.getEnd()));
 					}
 				} else {
-					sb.append( dateOnlyFormat.format(event.getBegin()));
+					sb.append( formatter.formatDateWithDay(event.getBegin()));
 					if ( event.getEnd().isAfter(tomorrow) ) {
 						sb.append( " - ");
-						sb.append( dateOnlyFormat.format(event.getEnd()));
+						sb.append( formatter.formatDateWithDay(event.getEnd()));
 					}
 					sb.append(" ");
 					sb.append( translator.translate("calendar.tomorrow.all.day") );
 				}
 			} else if (event.isWithinOneDay()) {
-				sb.append( dateOnlyFormat.format(event.getBegin()) +" "+ timeFormat.format(event.getBegin()) + " - " + timeFormat.format(event.getEnd()) );
+				sb.append( formatter.formatDateWithDay(event.getBegin()) +" "+ formatter.formatTimeShort(event.getBegin()) + " - " + formatter.formatTimeShort(event.getEnd()) );
 			} else {
-				sb.append( dateFormat.format(event.getBegin()) + " - " + dateFormat.format(event.getEnd()) );
+				sb.append( formatter.formatDateWithDay(event.getBegin()) + " - " + formatter.formatDateWithDay(event.getEnd()) );
 			}
 		} else {
 			sb.append(val.toString());
