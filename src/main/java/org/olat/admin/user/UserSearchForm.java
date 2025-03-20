@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -170,9 +171,10 @@ public class UserSearchForm extends FormBasicController {
 			
 			// DO NOT validate email field => see OLAT-3324, OO-155, OO-222
 			if ((userPropertyHandler instanceof EmailProperty || userPropertyHandler.getName().equals(UserConstants.NICKNAME)) 
-					&& fi instanceof TextElement) {
-				TextElement textElement = (TextElement)fi;
+					&& fi instanceof TextElement textElement) {
 				textElement.setItemValidatorProvider(null);
+			} else if(fi instanceof SingleSelection selection) {
+				selection.setAllowNoSelection(true);
 			}
 
 			fi.setElementCssClass("o_sel_user_search_".concat(userPropertyHandler.getName().toLowerCase()));
