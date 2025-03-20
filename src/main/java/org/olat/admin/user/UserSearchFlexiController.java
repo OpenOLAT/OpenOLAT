@@ -252,9 +252,10 @@ public class UserSearchFlexiController extends FormBasicController {
 				}
 				
 				// DO NOT validate email field => see OLAT-3324, OO-155, OO-222
-				if (userPropertyHandler instanceof EmailProperty && fi instanceof TextElement) {
-					TextElement textElement = (TextElement)fi;
+				if (userPropertyHandler instanceof EmailProperty && fi instanceof TextElement textElement) {
 					textElement.setItemValidatorProvider(null);
+				} else if(fi instanceof SingleSelection selection) {
+					selection.setAllowNoSelection(true);
 				}
 
 				propFormItems.put(userPropertyHandler.getName(), fi);
