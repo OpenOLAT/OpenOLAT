@@ -601,9 +601,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 			return;
 		}
 		
-		if (!searchParams.isGuestOnly() && !row.isMember() && !row.isReservationAvailable() && row.isPublicVisible() && !row.isOpenAccess() && !row.isAutoBooking()) {
+		if (!searchParams.isGuestOnly() && !row.isMember() && !row.isReservationAvailable() && row.isPublicVisible() && !row.isOpenAccess()) {
 			cmd = "book";
-			label = "book";
+			if (!row.isAutoBooking()) {
+				label = "book";
+			}
 		}
 		
 		FormLink link = uifactory.addFormLink("start_" + row.getOlatResource().getKey(), cmd, label, null, flc, Link.BUTTON_SMALL);
