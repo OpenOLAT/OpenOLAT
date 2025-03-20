@@ -58,6 +58,7 @@ import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.OLATResourceable;
@@ -114,6 +115,7 @@ public class InPreparationListController extends FormBasicController implements 
 	private final String curriculumElementImageMapperUrl;
 	private final CurriculumElementImageMapper curriculumElementImageMapper;
 
+	private int count = 0;
 	private List<RepositoryEntryEducationalType> educationalTypes;
 	
 	private Controller infosCtrl;
@@ -254,7 +256,7 @@ public class InPreparationListController extends FormBasicController implements 
 	}
 	
 	private InPreparationRow forgeRow(RepositoryEntryInPreparation entry) {
-		InPreparationRow row = new InPreparationRow(entry.entry(), entry.marked());
+		InPreparationRow row = new InPreparationRow(Long.valueOf(++count), entry.entry(), entry.marked());
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
 		forgeMarkLink(row);
@@ -272,7 +274,7 @@ public class InPreparationListController extends FormBasicController implements 
 	}
 	
 	private InPreparationRow forgeRow(CurriculumElementInPreparation element) {
-		InPreparationRow row = new InPreparationRow(element.element(), element.entry(), element.marked());
+		InPreparationRow row = new InPreparationRow(Long.valueOf(++count), element.element(), element.entry(), element.marked());
 		forgeDetailsLink(row);
 		forgeSelectLink(row);
 		forgeMarkLink(row);
@@ -346,6 +348,27 @@ public class InPreparationListController extends FormBasicController implements 
 		return cmps;
 	}
 	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == mainForm.getInitialComponent()) {
+			if("ONCLICK".equals(event.getCommand())) {
+				String rowKeyStr = ureq.getParameter("select_row");
+				if(StringHelper.isLong(rowKeyStr)) {
+					try {
+						Long rowKey = Long.valueOf(rowKeyStr);
+						InPreparationRow row = tableModel.getObjectByKey(rowKey);
+						if(row != null) {
+							doOpenDetails(ureq, row);
+						}
+					} catch (NumberFormatException e) {
+						logWarn("Not a valid long: " + rowKeyStr, e);
+					}
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//do not update the 

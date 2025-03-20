@@ -71,9 +71,12 @@ public class InPreparationRow {
 	private FormLink detailsLink;
 	private FormLink detailsSmallLink;
 	
-	public InPreparationRow(RepositoryEntry re, boolean marked) {
+	private Long key;
+	
+	public InPreparationRow(Long key, RepositoryEntry re, boolean marked) {
 		repositoryEntryKey = re.getKey();
 		curriculumElementKey = null;
+		this.key = key;
 		this.marked = marked;
 		creationDate = re.getCreationDate();
 		lastModified = re.getLastModified();
@@ -96,9 +99,10 @@ public class InPreparationRow {
 		olatResource = re.getOlatResource();
 	}
 	
-	public InPreparationRow(CurriculumElement element, RepositoryEntry entry, boolean marked) {
+	public InPreparationRow(Long key, CurriculumElement element, RepositoryEntry entry, boolean marked) {
 		repositoryEntryKey = entry == null ? null : entry.getKey();
 		curriculumElementKey = element.getKey();
+		this.key = key;
 		this.marked = marked;
 		creationDate = element.getCreationDate();
 		lastModified = element.getLastModified();
@@ -115,6 +119,10 @@ public class InPreparationRow {
 		location = element.getLocation();
 		educationalType = element.getEducationalType();
 		olatResource = element.getResource();
+	}
+	
+	public Long getKey() {
+		return key;
 	}
 
 	public Long getRepositoryEntryKey() {

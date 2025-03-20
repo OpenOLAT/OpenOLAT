@@ -128,6 +128,18 @@ implements SortableFlexiTableDataModel<InPreparationRow>, FilterableFlexiTableMo
 				|| (row.getAuthors() != null && row.getAuthors().toLowerCase().contains(searchString));
 	}
 	
+	public InPreparationRow getObjectByKey(Long key) {
+		if(key == null) return null;
+		
+		List<InPreparationRow> rows = getObjects();
+		for(InPreparationRow row:rows) {
+			if(key.equals(row.getKey())) {
+				return row;
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public Object getValueAt(int row, int col) {
 		InPreparationRow entryRow = getObject(row);
