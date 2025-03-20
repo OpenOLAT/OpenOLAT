@@ -73,7 +73,7 @@ public class BookOnBehalfOfController extends BasicController {
 
 		Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
 		String userDisplayName = reloadedIdentity.getUser().getFirstName() + " " + reloadedIdentity.getUser().getLastName();
-		String title = translate("book.on.behalf.of", StringHelper.xssScan(userDisplayName));
+		String title = translate("book.on.behalf.of", StringHelper.escapeHtml(userDisplayName));
 
 		mainVC = createVelocityContainer("book_on_behalf_of");
 		mainVC.contextPut("title", title);
