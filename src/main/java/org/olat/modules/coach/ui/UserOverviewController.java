@@ -444,13 +444,14 @@ public class UserOverviewController extends BasicController implements Activatea
 	private void doDisplayInfo(BookedEvent bookedEvent) {
 		if (bookedEvent.getCurriculumElement() != null) {
 			Identity reloadedIdentity = securityManager.loadIdentityByKey(mentee.getKey());
-			String userDisplayName = reloadedIdentity.getUser().getFirstName() + " " + reloadedIdentity.getUser().getLastName();
+			String curriculumElementDisplayName = StringHelper.xssScan(bookedEvent.getCurriculumElement().getDisplayName());
+			String userDisplayName = StringHelper.xssScan(reloadedIdentity.getUser().getFirstName() + " " + reloadedIdentity.getUser().getLastName());
 			if (reservationDAO.loadReservation(mentee, bookedEvent.getCurriculumElement().getResource()) == null) {
 				showInfo("booked.on.behalf.of", 
-						new String[] {bookedEvent.getCurriculumElement().getDisplayName(), userDisplayName});	
+						new String[] {curriculumElementDisplayName, userDisplayName});	
 			} else {
 				showInfo("reserved.on.behalf.of", 
-						new String[] {bookedEvent.getCurriculumElement().getDisplayName(), userDisplayName});
+						new String[] {curriculumElementDisplayName, userDisplayName});
 			}
 		}
 	}
