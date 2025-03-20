@@ -148,24 +148,17 @@ public class CurriculumElementInfosHeaderController extends AbstractDetailsHeade
 			return;
 		}
 		
-		if (isMember && acService.isAccessRefusedByStatus(element, bookedIdentity)) {
+		if (isMember) {
 			startCtrl.getInitialComponent().setVisible(true);
-			startCtrl.getStartLink().setEnabled(false);
 			if(entry == null && element.isSingleCourseImplementation()) {
 				setWarning(translate("access.denied.not.instance.course"), translate("access.denied.not.instance.course.hint"));
+				startCtrl.getStartLink().setEnabled(false);
+			} else if(entry != null && RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.publishedAndClosed())) {
+				startCtrl.getStartLink().setEnabled(true);
 			} else {
 				setWarning(translate("access.denied.not.published"), translate("access.denied.not.published.hint"));
-			}
-			initLeaveButton();
-		} else if (isMember) {
-			if(entry == null && element.isSingleCourseImplementation()) {
-				setWarning(translate("access.denied.not.instance.course"), translate("access.denied.not.instance.course.hint"));
-				startCtrl.getStartLink().setEnabled(false);
-			} else if(entry != null && entry.getEntryStatus().ordinal() < RepositoryEntryStatusEnum.published.ordinal()) {
-				setWarning(translate("access.denied.not.published"), translate("access.denied.not.published.hint"));
 				startCtrl.getStartLink().setEnabled(false);
 			}
-			startCtrl.getInitialComponent().setVisible(true);
 			initLeaveButton();
 		} else {
 			if (!preview && (acService.isAccessToResourcePending(element.getResource(), bookedIdentity) 
