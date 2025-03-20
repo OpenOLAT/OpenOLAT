@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.catalog.CatalogEntrySearchParams;
 import org.olat.modules.catalog.ui.BookedEvent;
 import org.olat.modules.catalog.ui.CatalogEntryListController;
@@ -72,7 +73,7 @@ public class BookOnBehalfOfController extends BasicController {
 
 		Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
 		String userDisplayName = reloadedIdentity.getUser().getFirstName() + " " + reloadedIdentity.getUser().getLastName();
-		String title = translate("book.on.behalf.of", userDisplayName);
+		String title = translate("book.on.behalf.of", StringHelper.xssScan(userDisplayName));
 
 		mainVC = createVelocityContainer("book_on_behalf_of");
 		mainVC.contextPut("title", title);
