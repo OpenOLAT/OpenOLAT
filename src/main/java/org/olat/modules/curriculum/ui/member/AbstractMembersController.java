@@ -117,7 +117,7 @@ public abstract class AbstractMembersController extends FormBasicController impl
 	protected final List<UserPropertyHandler> userPropertyHandlers;
 
 	protected final Curriculum curriculum;
-	protected List<CurriculumElement> descendants;
+	protected final List<CurriculumElement> descendants;
 	protected final CurriculumElement curriculumElement;
 	
 	protected ContactFormController contactCtrl;

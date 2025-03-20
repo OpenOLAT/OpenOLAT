@@ -67,6 +67,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
@@ -506,21 +507,21 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		doOpenCurriculumElementDetails(ureq, row.getCurriculumElement(), overview, false);
 	}
 	
-	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElement row, List<ContextEntry> entries, boolean addIntermediatePath) {
-		CurriculumElement element = curriculumService.getCurriculumElement(row);
+	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElementRef ref, List<ContextEntry> entries, boolean addIntermediatePath) {
+		CurriculumElement element = curriculumService.getCurriculumElement(ref);
 		if(element == null) {
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
 		} else {
-			Curriculum curriculum = row.getCurriculum();
-			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, row.getKey()), null);
+			Curriculum curriculum = element.getCurriculum();
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey()), null);
 			CurriculumElementDetailsController editCtrl = new CurriculumElementDetailsController(ureq, swControl, toolbarPanel, curriculum, element,
 					secCallback, lecturesSecCallback);
 			listenTo(editCtrl);
 			if(addIntermediatePath) {
 				addIntermediatePath(element);
 			}
-			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
+			toolbarPanel.pushController(element.getDisplayName(), editCtrl);
 			editCtrl.activate(ureq, entries, null);
 		}
 	}

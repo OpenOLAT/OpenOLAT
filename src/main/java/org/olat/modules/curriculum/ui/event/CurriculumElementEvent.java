@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 
 /**
  * 
@@ -37,10 +37,10 @@ public class CurriculumElementEvent extends Event {
 
 	public static final String SELECT_ELEMENT = "select-curriculum-element";
 	
-	private final CurriculumElement curriculumElement;
+	private final CurriculumElementRef curriculumElement;
 	private final List<ContextEntry> entries;
 	
-	public CurriculumElementEvent(CurriculumElement curriculumElement, List<ContextEntry> entries) {
+	public CurriculumElementEvent(CurriculumElementRef curriculumElement, List<ContextEntry> entries) {
 		super(SELECT_ELEMENT);
 		this.entries = entries;
 		this.curriculumElement = curriculumElement;
@@ -50,7 +50,7 @@ public class CurriculumElementEvent extends Event {
 		return entries;
 	}
 	
-	public CurriculumElement getCurriculumElement() {
+	public CurriculumElementRef getCurriculumElement() {
 		return curriculumElement;
 	}
 }

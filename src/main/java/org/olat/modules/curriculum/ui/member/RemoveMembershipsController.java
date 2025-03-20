@@ -100,7 +100,7 @@ public class RemoveMembershipsController extends FormBasicController implements 
 	private final Curriculum curriculum;
 	private final String avatarMapperBaseURL;
 	private final GroupMembershipStatus nextStatus;
-	private List<CurriculumElement> curriculumElements;
+	private final List<CurriculumElement> curriculumElements;
 	private final CurriculumElement selectedCurriculumElement;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final UserAvatarMapper avatarMapper = new UserAvatarMapper(true);

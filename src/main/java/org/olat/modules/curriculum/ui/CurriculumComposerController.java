@@ -87,6 +87,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
@@ -938,7 +939,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		doOpenCurriculumElementDetails(ureq, row, overview);
 	}
 	
-	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElementRow row, List<ContextEntry> entries) {
+	private void doOpenCurriculumElementDetails(UserRequest ureq, CurriculumElementRef row, List<ContextEntry> entries) {
 		CurriculumElement element = curriculumService.getCurriculumElement(row);
 		doOpenCurriculumElementDetails(ureq, element, entries);
 	}
