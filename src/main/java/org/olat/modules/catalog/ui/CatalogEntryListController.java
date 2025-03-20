@@ -624,7 +624,10 @@ public class CatalogEntryListController extends FormBasicController implements A
 		linkSmall.setUrl(url);
 		row.setStartSmallLink(linkSmall);
 		
-		if (StringHelper.containsNonWhitespace(row.getAccessError()) || row.isReservationAvailable() || row.isUnpublishedSingleCourseImplementation()) {
+		if (StringHelper.containsNonWhitespace(
+				row.getAccessError()) ||
+				row.isReservationAvailable() ||
+				(row.isMember() && row.isUnpublishedSingleCourseImplementation())) {
 			link.setEnabled(false);
 			linkSmall.setEnabled(false);
 		}
