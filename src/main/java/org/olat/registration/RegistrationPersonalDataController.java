@@ -322,6 +322,10 @@ public class RegistrationPersonalDataController extends FormBasicController {
 		} else if(languageKeys.length > 0) {
 			lang.select(languageKeys[0], true);
 		}
+		// hide language in UI if only one key is available anyway 
+		if (languageKeys.length == 1) {	
+			lang.setVisible(false);
+		}
 
 		if (organisationModule.isEnabled() && organisationModule.isEmailDomainEnabled()) {
 
