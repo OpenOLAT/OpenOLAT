@@ -85,6 +85,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.login.LoginModule;
@@ -211,6 +212,8 @@ public class CatalogEntryListController extends FormBasicController implements A
 	private UserPropertiesConfig userPropertiesConfig;
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private I18nModule i18nModule;
 
 	public CatalogEntryListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel, 
 			CatalogEntrySearchParams searchParams, CatalogEntryListParams listParams) {
@@ -1024,6 +1027,11 @@ public class CatalogEntryListController extends FormBasicController implements A
 				.getUserPropertyHandlersFor(RegistrationAdditionalPersonalDataController.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
 		Step startReg = new RegistrationLangStep00(ureq, null, registrationModule.isDisclaimerEnabled(),
 				registrationModule.isEmailValidationEnabled(), isAdditionalRegistrationFormEnabled, registrationModule.isAllowRecurringUserEnabled());
+		// Skip the language step if there is only one language enabled - default
+		// language will be used. Use the calculated next step as start step instead.
+		if (i18nModule.getEnabledLanguageKeys().size() == 1) {	
+			startReg = startReg.nextStep();			
+		}
 		registrationWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), startReg, new RegisterFinishCallback(),
 				new RegCancelCallback(), translate("menu.register"), "o_sel_registration_start_wizard");
 		listenTo(registrationWizardCtrl);
