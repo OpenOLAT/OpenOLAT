@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,9 @@ import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.resource.accesscontrol.ui.OrdersDataModel;
@@ -166,14 +169,30 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			searchParams.setExcludeDeletedCurriculumElements(getExcludeDeletedCurriculumElements());
 		}
 		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
+		Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
 		for (BookingOrder bookingOrder : bookingOrders) {
-			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, educationalTypeIdToName, statusTranslator);
+			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName,
+					educationalTypeIdToName, statusTranslator);
 		}
+	}
+
+	private Map<String, String> getAccessTypeToName(List<BookingOrder> bookingOrders, Locale locale) {
+		Set<String> accessTypes = bookingOrders.stream().map(BookingOrder::getAccessMethod).filter(Objects::nonNull)
+				.map(AccessMethod::getType).collect(Collectors.toSet());
+		AccessControlModule accessControlModule = CoreSpringFactory.getImpl(AccessControlModule.class);
+		Map<String, String> accessTypeToName = new HashMap<>();
+		for (String accessType : accessTypes) {
+			AccessMethodHandler accessMethodHandler = accessControlModule.getAccessMethodHandler(accessType);
+			if (accessMethodHandler != null) {
+				accessTypeToName.put(accessType, accessMethodHandler.getMethodName(locale));
+			}
+		}
+		return accessTypeToName;
 	}
 
 	private void generateDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet,
 								 List<UserPropertyHandler> userPropertyHandlers, BookingOrder bookingOrder,
-								 Map<String, String> educationalTypeIdToName,
+								 Map<String, String> accessTypeToName, Map<String, String> educationalTypeIdToName,
 								 Translator statusTranslator) {
 		OpenXMLWorksheet.Row row = sheet.newRow();
 		int pos = 0;
@@ -195,7 +214,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, "" + bookingOrder.getOrder().getKey());
 		row.addCell(pos++, getStatusString(bookingOrder, statusTranslator));
 		row.addCell(pos++, bookingOrder.getOfferName());
-		row.addCell(pos++, bookingOrder.getOfferType());
+		row.addCell(pos++, getOfferType(bookingOrder, accessTypeToName));
 		row.addCell(pos++, bookingOrder.getOfferCostCenter());
 		row.addCell(pos++, bookingOrder.getOfferAccount());
 		row.addCell(pos++, bookingOrder.getOrder().getPurchaseOrderNumber());
@@ -244,6 +263,14 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		OrderTableItem.Status status = OrderTableItem.Status.getStatus(orderStatusString, cancellationFees, trxStatus, 
 				pspTrxStatus, orderMethods);
 		return statusTranslator.translate(OrderTableItem.Status.getI18nKey(status));
+	}
+
+	private String getOfferType(BookingOrder bookingOrder, Map<String, String> accessTypeToName) {
+		AccessMethod accessMethod = bookingOrder.getAccessMethod();
+		if (accessMethod == null) {
+			return null;
+		}
+		return accessTypeToName.get(accessMethod.getType());
 	}
 
 	@Override
@@ -309,8 +336,10 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			sheet.setHeaderRows(1);
 			generateHeader(sheet, userPropertyHandlers, locale);
 			List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
+			Map<String, String> accessTypeToName = getAccessTypeToName(bookingOrders, locale);
 			for (BookingOrder bookingOrder : bookingOrders) {
-				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, educationalTypeIdToName, statusTranslator);
+				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, accessTypeToName, 
+						educationalTypeIdToName, statusTranslator);
 				
 				if(curriculumsInReport != null && bookingOrder.getCurriculumKey() != null) {
 					curriculumsInReport.add(new CurriculumRefImpl(bookingOrder.getCurriculumKey()));
