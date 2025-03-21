@@ -227,7 +227,11 @@ public class OrderTableItem {
 		OPEN,
 		CANCELED,
 		CANCELED_WITH_FEE;
-		
+
+		public static String getI18nKey(Status status) {
+			return "order.status." + status.name().toLowerCase().replace('_', '.');
+		}
+
 		public static final Status getStatus(String orderStatus, Price cancellationFee, String trxStatus, String pspTrxStatus, List<AccessMethod> orderMethods) {
 			boolean warning = false;
 			boolean error = false;

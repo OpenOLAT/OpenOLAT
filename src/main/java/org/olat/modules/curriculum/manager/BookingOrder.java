@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.id.User;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.model.AccessMethod;
 
 /**
  * Initial date: 2025-02-07<br>
@@ -56,6 +57,10 @@ public class BookingOrder {
 	private BillingAddress billingAddress;
 	private String billingAddressOrgId;
 	private String billingAddressOrgName;
+	private AccessMethod accessMethod;
+	private String transactionStatus;
+	private String paypalTransactionStatus;
+	private String checkoutTransactionStatus;
 
 	public User getUser() {
 		return user;
@@ -252,5 +257,37 @@ public class BookingOrder {
 
 	public void setBillingAddressOrgName(String billingAddressOrgName) {
 		this.billingAddressOrgName = billingAddressOrgName;
+	}
+
+	public void setAccessMethod(AccessMethod accessMethod) {
+		this.accessMethod = accessMethod;
+	}
+
+	public AccessMethod getAccessMethod() {
+		return accessMethod;
+	}
+
+	public void setTransactionStatus(String transactionStatus) {
+		this.transactionStatus = transactionStatus;
+	}
+
+	public String getTransactionStatus() {
+		return transactionStatus;
+	}
+
+	public void setPaypalTransactionStatus(String paypalTransactionStatus) {
+		this.paypalTransactionStatus = paypalTransactionStatus;
+	}
+
+	public String getPaypalTransactionStatus() {
+		return paypalTransactionStatus;
+	}
+
+	public void setCheckoutTransactionStatus(String checkoutTransactionStatus) {
+		this.checkoutTransactionStatus = checkoutTransactionStatus;
+	}
+
+	public String getCheckoutTransactionStatus() {
+		return checkoutTransactionStatus;
 	}
 }

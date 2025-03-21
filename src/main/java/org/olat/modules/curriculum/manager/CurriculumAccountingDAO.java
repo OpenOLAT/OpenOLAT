@@ -30,6 +30,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.model.CurriculumAccountingSearchParams;
 import org.olat.resource.accesscontrol.BillingAddress;
 import org.olat.resource.accesscontrol.Order;
+import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,7 @@ public class CurriculumAccountingDAO {
 		sb.append(" curOrg.identifier, curOrg.displayName, ");
 		sb.append(" ce.key, ce.displayName, ce.identifier, ceType.identifier, ce.status, ceEduType.identifier, ce.beginDate, ce.endDate, ");
 		sb.append(" o, billingAddress, billingAddressOrg.identifier, billingAddressOrg.displayName, ");
+		sb.append(" trx.statusStr, p_trx.status, c_trx.status, m, ");
 		sb.append(" offer.resourceDisplayName, offer.resourceTypeName, offerCostCenter.name, offerCostCenter.account ");
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
@@ -69,6 +71,10 @@ public class CurriculumAccountingDAO {
 		sb.append(" inner join o.delivery orderer");
 		sb.append(" inner join orderer.user user");
 		sb.append(" left join billingAddress.organisation billingAddressOrg");
+		sb.append(" left join actransaction trx on trx.order.key = o.key");
+		sb.append(" left join paypaltransaction p_trx on p_trx.orderId = o.key");
+		sb.append(" left join paypalcheckouttransaction c_trx on c_trx.orderId = o.key");
+		sb.append(" left join trx.method m");
 		if(searchParams.getIdentity() != null) {
 			// Check membership of curriculum
 			sb.and().append("exists (select member.group.key from bgroupmember member")
@@ -186,6 +192,23 @@ public class CurriculumAccountingDAO {
 		
 		if (objects[srcIdx++] instanceof String billingAddressOrgName) {
 			bookingOrder.setBillingAddressOrgName(billingAddressOrgName);
+		}
+		
+		// transaction
+		if (objects[srcIdx++] instanceof String transactionStatus) {
+			bookingOrder.setTransactionStatus(transactionStatus);
+		}
+
+		if (objects[srcIdx++] instanceof String paypalTransactionStatus) {
+			bookingOrder.setPaypalTransactionStatus(paypalTransactionStatus);
+		}
+
+		if (objects[srcIdx++] instanceof String checkoutTransactionStatus) {
+			bookingOrder.setCheckoutTransactionStatus(checkoutTransactionStatus);
+		}
+
+		if (objects[srcIdx++] instanceof AccessMethod accessMethod) {
+			bookingOrder.setAccessMethod(accessMethod);
 		}
 		
 		// offer

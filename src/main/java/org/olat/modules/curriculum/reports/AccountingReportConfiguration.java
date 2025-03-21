@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.reports;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +34,8 @@ import java.util.stream.Collectors;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -58,6 +61,10 @@ import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.resource.accesscontrol.Price;
+import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.ui.OrderTableItem;
+import org.olat.resource.accesscontrol.ui.OrdersDataModel;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -145,6 +152,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 	@Override
 	protected void generateData(OpenXMLWorkbook workbook, Identity coach, OpenXMLWorksheet sheet,
 								List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		Translator statusTranslator = Util.createPackageTranslator(OrdersDataModel.class, locale);
 		Map<String, String> educationalTypeIdToName = getEducationalTypeIdToName(locale);
 		CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
 		CurriculumAccountingSearchParams searchParams = new CurriculumAccountingSearchParams();
@@ -159,13 +167,14 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		}
 		List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
 		for (BookingOrder bookingOrder : bookingOrders) {
-			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, educationalTypeIdToName);
+			generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, educationalTypeIdToName, statusTranslator);
 		}
 	}
 
 	private void generateDataRow(OpenXMLWorkbook workbook, OpenXMLWorksheet sheet,
 								 List<UserPropertyHandler> userPropertyHandlers, BookingOrder bookingOrder,
-								 Map<String, String> educationalTypeIdToName) {
+								 Map<String, String> educationalTypeIdToName,
+								 Translator statusTranslator) {
 		OpenXMLWorksheet.Row row = sheet.newRow();
 		int pos = 0;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -181,17 +190,17 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getImplementationType());
 		row.addCell(pos++, bookingOrder.getImplementationStatus());
 		row.addCell(pos++, educationalTypeIdToName.get(bookingOrder.getImplementationFormat()));
-		row.addCell(pos++, "" + bookingOrder.getBeginDate(), workbook.getStyles().getDateTimeStyle());
-		row.addCell(pos++, "" + bookingOrder.getEndDate(), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, formatDatetime(bookingOrder.getBeginDate()), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, formatDatetime(bookingOrder.getEndDate()), workbook.getStyles().getDateTimeStyle());
 		row.addCell(pos++, "" + bookingOrder.getOrder().getKey());
-		row.addCell(pos++, bookingOrder.getOrder().getOrderStatus().name());
+		row.addCell(pos++, getStatusString(bookingOrder, statusTranslator));
 		row.addCell(pos++, bookingOrder.getOfferName());
 		row.addCell(pos++, bookingOrder.getOfferType());
 		row.addCell(pos++, bookingOrder.getOfferCostCenter());
 		row.addCell(pos++, bookingOrder.getOfferAccount());
 		row.addCell(pos++, bookingOrder.getOrder().getPurchaseOrderNumber());
 		row.addCell(pos++, bookingOrder.getOrder().getComment());
-		row.addCell(pos++, "" + bookingOrder.getOrder().getCreationDate(), workbook.getStyles().getDateTimeStyle());
+		row.addCell(pos++, formatDatetime(bookingOrder.getOrder().getCreationDate()), workbook.getStyles().getDateTimeStyle());
 		row.addCell(pos++, PriceFormat.fullFormat(bookingOrder.getOrder().getTotal()));
 		row.addCell(pos++, PriceFormat.fullFormat(bookingOrder.getOrder().getCancellationFees()));
 		row.addCell(pos++, bookingOrder.getBillingAddress().getIdentifier());
@@ -208,6 +217,33 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 		row.addCell(pos++, bookingOrder.getBillingAddress().getCountry());
 		row.addCell(pos++, bookingOrder.getBillingAddressOrgId());
 		row.addCell(pos++, bookingOrder.getBillingAddressOrgName());
+	}
+	
+	private static String formatDatetime(Date d) {
+		if (d == null) {
+			return null;
+		}
+		return Formatter.formatDatetime(d);
+	}
+	
+	private String getStatusString(BookingOrder bookingOrder, Translator statusTranslator) {
+		String orderStatusString = bookingOrder.getOrder().getOrderStatus().name();
+		Price cancellationFees = bookingOrder.getOrder().getCancellationFees();
+		String trxStatus = bookingOrder.getTransactionStatus();
+		String pspTrxStatus = null;
+		if (StringHelper.containsNonWhitespace(bookingOrder.getPaypalTransactionStatus())) {
+			pspTrxStatus = bookingOrder.getPaypalTransactionStatus();
+		} else if (StringHelper.containsNonWhitespace(bookingOrder.getCheckoutTransactionStatus())) {
+			pspTrxStatus = bookingOrder.getCheckoutTransactionStatus();
+		}
+
+		List<AccessMethod> orderMethods = new ArrayList<>();
+		if (bookingOrder.getAccessMethod() != null) {
+			orderMethods.add(bookingOrder.getAccessMethod());
+		}
+		OrderTableItem.Status status = OrderTableItem.Status.getStatus(orderStatusString, cancellationFees, trxStatus, 
+				pspTrxStatus, orderMethods);
+		return statusTranslator.translate(OrderTableItem.Status.getI18nKey(status));
 	}
 
 	@Override
@@ -261,8 +297,8 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 							   Set<CurriculumRef> curriculumsInReport, Set<CurriculumElementRef> implementationsInReport,
 							   Locale locale, OutputStream out) {
 		final CurriculumAccountingDAO curriculumAccountingDao = CoreSpringFactory.getImpl(CurriculumAccountingDAO.class);
-		
 		Translator translator = getTranslator(locale);
+		Translator statusTranslator = Util.createPackageTranslator(OrdersDataModel.class, locale);
 		Map<String, String> educationalTypeIdToName = getEducationalTypeIdToName(locale);
 
 		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlers();
@@ -274,7 +310,7 @@ public class AccountingReportConfiguration extends TimeBoundReportConfiguration 
 			generateHeader(sheet, userPropertyHandlers, locale);
 			List<BookingOrder> bookingOrders = curriculumAccountingDao.bookingOrders(searchParams, userPropertyHandlers);
 			for (BookingOrder bookingOrder : bookingOrders) {
-				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, educationalTypeIdToName);
+				generateDataRow(workbook, sheet, userPropertyHandlers, bookingOrder, educationalTypeIdToName, statusTranslator);
 				
 				if(curriculumsInReport != null && bookingOrder.getCurriculumKey() != null) {
 					curriculumsInReport.add(new CurriculumRefImpl(bookingOrder.getCurriculumKey()));
