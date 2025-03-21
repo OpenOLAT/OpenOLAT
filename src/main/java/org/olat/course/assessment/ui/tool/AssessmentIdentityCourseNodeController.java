@@ -26,12 +26,16 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.timeline.TimelineBuilder;
+import org.olat.core.gui.components.timeline.TimelineController;
+import org.olat.core.gui.components.timeline.TimelineModel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -54,6 +58,8 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
+import org.olat.properties.LogEntry;
+import org.olat.properties.LogFormatter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,9 +77,9 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	
 	private AssessmentEditController assessmentEditCtrl;
 	private AssessmentViewController assessmentViewCtrl;
-	private Controller identityInfosCtrl;
 	private Controller subDetailsController;
 	private Controller detailsEditController;
+	private TimelineController timelineCtrl;
 
 	private LockResult lockEntry;
 	private final CourseNode courseNode;
@@ -111,8 +117,8 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		
 		identityAssessmentVC = createVelocityContainer("identity_personal_node_infos");
 		initDetails();
-		
-		identityInfosCtrl = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course, courseNode);
+
+		Controller identityInfosCtrl = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course, courseNode);
 		identityInfosCtrl.getInitialComponent().setVisible(identityDetails);
 		listenTo(identityInfosCtrl);
 		identityAssessmentVC.put("identityInfos", identityInfosCtrl.getInitialComponent());
@@ -139,12 +145,25 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 			
 			if(assessmentLog) {
 				String nodeLog = courseAssessmentService.getAuditLog(courseNode, assessedUserCourseEnvironment);
-				if(StringHelper.containsNonWhitespace(nodeLog)) {
-					identityAssessmentVC.contextPut("log", StringHelper.escapeHtml(nodeLog));
+				if (StringHelper.containsNonWhitespace(nodeLog)) {
+					LogFormatter logFormatter = new LogFormatter();
+					List<LogEntry> logEntries = logFormatter.parseLog(nodeLog).validEntries();
+					if(StringHelper.containsNonWhitespace(nodeLog)) {
+						doShowLogs(ureq, logEntries);
+					}
 				}
 			}
 		}
 		putInitialPanel(identityAssessmentVC);
+	}
+
+	private void doShowLogs(UserRequest ureq, List<LogEntry> logEntries) {
+		List<TimelineModel.TimelineYear> logTimeline = TimelineBuilder.buildLogEntriesTimeline(logEntries, getLocale());
+
+		timelineCtrl = new TimelineController(
+				ureq, getWindowControl(), getTranslator(), logTimeline, logTimeline, false, true);
+		listenTo(timelineCtrl);
+		identityAssessmentVC.put("log", timelineCtrl.getInitialComponent());
 	}
 	
 	public static String lockKey(CourseNode node, IdentityRef identity) {
@@ -231,8 +250,36 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				}
 			}
 			fireEvent(ureq, event);
+		} else if (timelineCtrl == source && "downloadTimeline".equals(event.getCommand())) {
+			doDownloadLog(ureq);
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void doDownloadLog(UserRequest ureq) {
+		String nodeLog = courseAssessmentService.getAuditLog(courseNode, assessedUserCourseEnvironment);
+		String fileTitle = courseNode.getShortTitle() + "-" + assessedIdentity.getKey();
+
+		StringMediaResource resource = createLogMediaResource(nodeLog, fileTitle);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+
+
+	public static StringMediaResource createLogMediaResource(String nodeLog, String nodeTitle) {
+		StringMediaResource resource = new StringMediaResource();
+
+		resource.setData(nodeLog);
+		resource.setDownloadable(true, createLogFilename(nodeTitle));
+
+		resource.setContentType("text/plain");
+		resource.setEncoding("UTF-8");
+
+		return resource;
+	}
+
+	private static String createLogFilename(String nodeTitle) {
+		String sanitizedTitle = nodeTitle.replaceAll("[^a-zA-Z0-9\\-_]", "_");
+		return sanitizedTitle + "_log.txt";
 	}
 
 	@Override
