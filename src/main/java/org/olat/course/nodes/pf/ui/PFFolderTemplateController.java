@@ -66,7 +66,6 @@ public class PFFolderTemplateController extends FormBasicController {
     private final Map<String, PFFolderTemplateRow> keyToRows = new HashMap<>();
     private final PFCourseNode pfNode;
     private List<String> elements = new ArrayList<>();
-    private String folderToDelete;
     private PFFolderTemplateTreeTableModel tableDataModel;
     private FlexiTableElement tableEl;
     private PFCreateFolderTemplateController createFolderTemplateCtrl;
@@ -131,8 +130,8 @@ public class PFFolderTemplateController extends FormBasicController {
             deactivateCmc();
             cleanUp();
         } else if (source == deleteDialogCtrl) {
-            if (DialogBoxUIFactory.isOkEvent(event)) {
-                doDelete();
+            if (DialogBoxUIFactory.isOkEvent(event) && deleteDialogCtrl.getUserObject() instanceof PFFolderTemplateRow row) {
+                doDelete(row);
                 fireEvent(ureq, Event.CHANGED_EVENT);
                 readTemplateStructure(ureq, false, true);
             }
@@ -162,7 +161,7 @@ public class PFFolderTemplateController extends FormBasicController {
     private PFFolderTemplateRow forgeRow(String folderName, String folderPath) {
         FormLink createSubFolderLink = uifactory.addFormLink("subFolderLink_" + folderPath, TEMPLATE_CREATE_SUBFOLDER, TEMPLATE_CREATE_SUBFOLDER, null, null, Link.LINK);
         FormLink toolsLink = ActionsColumnModel.createLink(uifactory, getTranslator());
-        PFFolderTemplateRow row = new PFFolderTemplateRow(folderName, toolsLink, createSubFolderLink, getTranslator());
+        PFFolderTemplateRow row = new PFFolderTemplateRow(folderName, folderPath, toolsLink, createSubFolderLink, getTranslator());
         createSubFolderLink.setUserObject(row);
         toolsLink.setUserObject(row);
         return row;
@@ -257,7 +256,7 @@ public class PFFolderTemplateController extends FormBasicController {
     }
 
     private void doOpenTools(UserRequest ureq, FormLink link) {
-        toolsCtrl = new ToolsController(ureq, getWindowControl(), link.getName().replaceAll(".+?_", ""));
+        toolsCtrl = new ToolsController(ureq, getWindowControl(), (PFFolderTemplateRow)link.getUserObject());
         listenTo(toolsCtrl);
 
         toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -266,9 +265,8 @@ public class PFFolderTemplateController extends FormBasicController {
         toolsCalloutCtrl.activate();
     }
 
-    private void doConfirmDelete(UserRequest ureq, String folder) {
-        folderToDelete = folder;
-        folder = folder
+    private void doConfirmDelete(UserRequest ureq, PFFolderTemplateRow row) {
+        String folderName = row.getFolderName()
                 .replaceAll(PFManager.FILENAME_RETURNBOX, translate(PFCourseNode.FOLDER_RETURN_BOX))
                 .replaceAll(PFManager.FILENAME_DROPBOX, translate(PFCourseNode.FOLDER_DROP_BOX));
 
@@ -276,10 +274,11 @@ public class PFFolderTemplateController extends FormBasicController {
         buttons.add(translate("delete"));
         buttons.add(translate("cancel"));
 
-        deleteDialogCtrl = activateGenericDialog(ureq, translate("table.elementDeleteFolder"), translate("confirmation.delete.element.title", folder), buttons, deleteDialogCtrl);
+        deleteDialogCtrl = activateGenericDialog(ureq, translate("table.elementDeleteFolder"), translate("confirmation.delete.element.title", folderName), buttons, deleteDialogCtrl);
+        deleteDialogCtrl.setUserObject(row);
     }
 
-    private void doDelete() {
+    private void doDelete(PFFolderTemplateRow row) {
         ModuleConfiguration moduleConfiguration = pfNode.getModuleConfiguration();
         List<String> folderElements = new ArrayList<>();
 
@@ -289,7 +288,8 @@ public class PFFolderTemplateController extends FormBasicController {
                     .split(",")));
         }
         if (!folderElements.isEmpty()) {
-            folderElements.removeIf(el -> el.matches(folderToDelete));
+			String folderToDelete = row.getFolderPath();
+			folderElements.removeIf(folder -> folder.startsWith(folderToDelete));
         }
 
         String updatedElements = folderElements.stream()
@@ -331,11 +331,11 @@ public class PFFolderTemplateController extends FormBasicController {
 
         private final VelocityContainer mainVC;
         private final Link deleteLink;
-        private final String folderToDelete;
+        private final PFFolderTemplateRow row;
 
-        public ToolsController(UserRequest ureq, WindowControl wControl, String folderToDelete) {
+        public ToolsController(UserRequest ureq, WindowControl wControl, PFFolderTemplateRow row) {
             super(ureq, wControl);
-            this.folderToDelete = folderToDelete;
+            this.row = row;
 
             mainVC = createVelocityContainer("tools");
 
@@ -359,7 +359,7 @@ public class PFFolderTemplateController extends FormBasicController {
         protected void event(UserRequest ureq, Component source, Event event) {
             if (deleteLink == source) {
                 close();
-                doConfirmDelete(ureq, folderToDelete);
+                doConfirmDelete(ureq, row);
             }
         }
 
