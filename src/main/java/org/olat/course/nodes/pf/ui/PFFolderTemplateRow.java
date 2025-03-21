@@ -30,14 +30,16 @@ import org.olat.course.nodes.PFCourseNode;
 public class PFFolderTemplateRow implements FlexiTreeTableNode {
 
     private final String folderName;
+    private final String folderPath;
     private final FormLink createSubFolderLink;
     private final FormLink toolsLink;
     private String path;
     private int numOfChildren = 0;
     private PFFolderTemplateRow parent;
 
-    public PFFolderTemplateRow(String folderName, FormLink toolsLink, FormLink createSubFolderLink, Translator translator) {
+    public PFFolderTemplateRow(String folderName, String folderPath, FormLink toolsLink, FormLink createSubFolderLink, Translator translator) {
         this.folderName = folderName;
+        this.folderPath = folderPath;
         this.createSubFolderLink = createSubFolderLink;
         if (!folderName.equals(translator.translate(PFCourseNode.FOLDER_RETURN_BOX))
                 && !folderName.equals(translator.translate(PFCourseNode.FOLDER_DROP_BOX))) {
@@ -59,7 +61,11 @@ public class PFFolderTemplateRow implements FlexiTreeTableNode {
         return folderName;
     }
 
-    public void setNumOfChildren(int numOfChildren) {
+	public String getFolderPath() {
+		return folderPath;
+	}
+
+	public void setNumOfChildren(int numOfChildren) {
         this.numOfChildren = numOfChildren;
     }
 
