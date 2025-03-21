@@ -86,7 +86,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
-		AccessResult accessResult = createOrder(id, element.getResource());
+		AccessResult accessResult = createOrder(id, element.getResource(), "offer-1");
 		Assert.assertTrue(accessResult.isAccessible());
 		
 		List<UserPropertyHandler> handlers = new ArrayList<>();
@@ -97,6 +97,9 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 			.hasSize(1)
 			.map(BookingOrder::getOrder)
 			.containsExactly(accessResult.getOrder());
+		
+		BookingOrder bookingOrder = bookingOrders.get(0);
+		Assert.assertEquals(accessResult.getOrder().getParts().get(0).getOrderLines().get(0).getOffer().getLabel(), bookingOrder.getOfferName());
 	}
 	
 	@Test
@@ -114,7 +117,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
-		AccessResult accessResult = createOrder(id, element.getResource());
+		AccessResult accessResult = createOrder(id, element.getResource(), null);
 		Assert.assertTrue(accessResult.isAccessible());
 		
 		// Buyer has not access to the report.
@@ -141,7 +144,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
-		AccessResult accessResult = createOrder(id, element.getResource());
+		AccessResult accessResult = createOrder(id, element.getResource(), null);
 		Assert.assertTrue(accessResult.isAccessible());
 		
 		List<UserPropertyHandler> handlers = new ArrayList<>();
@@ -167,7 +170,7 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
 				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
 		
-		AccessResult accessResult = createOrder(id, element.getResource());
+		AccessResult accessResult = createOrder(id, element.getResource(), null);
 		Assert.assertTrue(accessResult.isAccessible());
 		
 		List<UserPropertyHandler> handlers = new ArrayList<>();
@@ -180,9 +183,10 @@ public class CurriculumAccountingDAOTest extends OlatTestCase {
 			.containsExactly(accessResult.getOrder());
 	}
 	
-	private AccessResult createOrder(Identity delivery, OLATResource resource) {
+	private AccessResult createOrder(Identity delivery, OLATResource resource, String offerLabel) {
 		// Make an offer
 		Offer offer = acService.createOffer(resource, "Access curriculum element");
+		offer.setLabel(offerLabel);
 		offer = acService.save(offer);
 		List<AccessMethod> methods = acService.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
