@@ -38,7 +38,6 @@ import org.olat.course.learningpath.obligation.OrganisationExceptionalObligation
 import org.olat.course.learningpath.obligation.TestingObligationContext;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.assessment.model.AssessmentObligation;
-import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -48,12 +47,10 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public class ExceptionalObligationEvaluatorTest {
 	
-	private RepositoryEntryRef courseEntry = () -> Long.valueOf(1);
-	
 	@Test
 	public void filterShouldIgnoreRegularObligations() {
 		Identity identity = new TransientIdentity();
-		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, courseEntry, null, null);
+		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, null, null, null);
 		TestingObligationContext obligationContext = new TestingObligationContext();
 		sut.setObligationContext(obligationContext);
 		LearningPathService learningPathService = mock(LearningPathService.class);
@@ -85,7 +82,7 @@ public class ExceptionalObligationEvaluatorTest {
 	@Test
 	public void filterShouldTestByHandler() {
 		Identity identity = new TransientIdentity();
-		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, courseEntry, null, null);
+		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, null, null, null);
 		TestingObligationContext obligationContext = new TestingObligationContext();
 		sut.setObligationContext(obligationContext);
 		LearningPathService learningPathService = mock(LearningPathService.class);
@@ -117,7 +114,7 @@ public class ExceptionalObligationEvaluatorTest {
 	@Test
 	public void filterShouldIgnoreIfNoHandler() {
 		Identity identity = new TransientIdentity();
-		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, courseEntry, null, null);
+		ExceptionalObligationEvaluator sut = new ExceptionalObligationEvaluator(identity, null, null, null);
 		TestingObligationContext obligationContext = new TestingObligationContext();
 		sut.setObligationContext(obligationContext);
 		LearningPathService learningPathService = mock(LearningPathService.class);

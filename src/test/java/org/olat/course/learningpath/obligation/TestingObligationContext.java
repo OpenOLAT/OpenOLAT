@@ -20,13 +20,16 @@
 package org.olat.course.learningpath.obligation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.course.run.scoring.ObligationContext;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -36,9 +39,10 @@ import org.olat.modules.curriculum.CurriculumElementRef;
  */
 public class TestingObligationContext implements ObligationContext {
 	
-	private List<BusinessGroupRef> businessGroupRefs = new ArrayList<>();
-	private List<OrganisationRef> organisationRefs = new ArrayList<>();
-	private List<CurriculumElementRef> curriculumElementRefs = new ArrayList<>();
+	private List<BusinessGroupRef> businessGroupRefs = new ArrayList<>(1);
+	private List<OrganisationRef> organisationRefs = new ArrayList<>(1);
+	private List<CurriculumElementRef> curriculumElementRefs = new ArrayList<>(1);
+	private Map<Long, Long> identityKeyToCourseRun = new HashMap<>(1);
 	
 	public void addBusinessGroupRef(BusinessGroupRef businessGroupRef) {
 		businessGroupRefs.add(businessGroupRef);
@@ -50,6 +54,10 @@ public class TestingObligationContext implements ObligationContext {
 	
 	public void addCurriculumElementRef(CurriculumElementRef curriculumElementRef) {
 		curriculumElementRefs.add(curriculumElementRef);
+	}
+	
+	public void addCourseRun(Identity identity, Long courseRun) {
+		identityKeyToCourseRun.put(identity.getKey(), courseRun);
 	}
 	
 	@Override
@@ -65,6 +73,11 @@ public class TestingObligationContext implements ObligationContext {
 	@Override
 	public boolean isParticipant(Identity identity, CurriculumElementRef curriculumElementRef) {
 		return curriculumElementRefs.stream().anyMatch(ref -> ref.getKey().equals(curriculumElementRef.getKey()));
+	}
+
+	@Override
+	public Long getCourseRun(Identity identity, RepositoryEntry courseEntry) {
+		return identityKeyToCourseRun.get(identity.getKey());
 	}
 
 }

@@ -34,6 +34,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.curriculum.Curriculum;
@@ -41,6 +42,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,8 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private UserCourseInformationsManager userCourseInformationsManager;
 	
 	@Before
 	public void setUp() {
@@ -152,6 +156,27 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 		softly.assertThat(sutCoach.isParticipant(coach, curriculumElement)).isFalse();
 		softly.assertThat(sutParticipantOther.isParticipant(participantOther, curriculumElement)).isFalse();
 		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldGetCourseRun() {
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		dbInstance.commitAndCloseSession();
+		
+		SingleUserObligationContext sut = new SingleUserObligationContext();
+		assertThat(sut.getCourseRun(participant, courseEntry)).isNull();
+		
+		userCourseInformationsManager.updateUserCourseInformations(courseEntry.getOlatResource(), participant);
+		dbInstance.commitAndCloseSession();
+		sut = new SingleUserObligationContext();
+		assertThat(sut.getCourseRun(participant, courseEntry)).isEqualTo(1);
+		
+		userCourseInformationsManager.incrementUserCourseInformationsRun(courseEntry.getOlatResource(), participant);
+		userCourseInformationsManager.incrementUserCourseInformationsRun(courseEntry.getOlatResource(), participant);
+		dbInstance.commitAndCloseSession();
+		sut = new SingleUserObligationContext();
+		assertThat(sut.getCourseRun(participant, courseEntry)).isEqualTo(3);
 	}
 	
 }

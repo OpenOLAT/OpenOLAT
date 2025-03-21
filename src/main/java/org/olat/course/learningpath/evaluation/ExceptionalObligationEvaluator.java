@@ -33,7 +33,7 @@ import org.olat.course.learningpath.obligation.ExceptionalObligationHandler;
 import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.modules.assessment.model.AssessmentObligation;
-import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -44,14 +44,14 @@ import org.olat.repository.RepositoryEntryRef;
 public class ExceptionalObligationEvaluator {
 
 	private final Identity identity;
-	private final RepositoryEntryRef courseEntry;
+	private final RepositoryEntry courseEntry;
 	private final Structure runStructure;
 	private final ScoreAccounting scoreAccounting;
 	private ObligationContext obligationContext;
 
 	private LearningPathService learningPathService;
 	
-	public ExceptionalObligationEvaluator(Identity identity, RepositoryEntryRef courseEntry, Structure runStructure, ScoreAccounting scoreAccounting) {
+	public ExceptionalObligationEvaluator(Identity identity, RepositoryEntry courseEntry, Structure runStructure, ScoreAccounting scoreAccounting) {
 		this.identity = identity;
 		this.courseEntry = courseEntry;
 		this.runStructure = runStructure;

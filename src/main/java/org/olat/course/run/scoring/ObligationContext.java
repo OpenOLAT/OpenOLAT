@@ -23,6 +23,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -59,5 +60,7 @@ public interface ObligationContext {
 	 * @return
 	 */
 	boolean isParticipant(Identity identity, CurriculumElementRef curriculumElementRef);
+	
+	Long getCourseRun(Identity identity, RepositoryEntry courseEntry);
 
 }

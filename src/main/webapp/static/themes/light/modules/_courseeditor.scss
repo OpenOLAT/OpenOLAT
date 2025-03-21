@@ -111,7 +111,11 @@
 		display: none;
 	}
 }
-
+.o_lp_exobli_courserun_config {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
 
 /* Copy */
 .o_import_course_nodes {

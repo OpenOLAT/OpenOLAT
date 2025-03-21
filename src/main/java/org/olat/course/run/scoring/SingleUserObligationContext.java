@@ -31,11 +31,13 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.AssertException;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -49,10 +51,12 @@ public class SingleUserObligationContext implements ObligationContext {
 	private Map<Long, Boolean> businessGroupKeyToParticipant;
 	private Map<Long, Boolean> organisationKeyToMember;
 	private Map<Long, Boolean> curriculumElementToParticipant;
+	private Map<Long, Map<Long, Long>> courseKeyToidentityKeyToCourseRun;
 	
 	private BusinessGroupService businessGroupService;
 	private OrganisationService organisationService;
 	private CurriculumService curriculumService;
+	private UserCourseInformationsManager userCourseInformationsManager;
 	
 	private void checkIdentity(Identity identity) {
 		if (contextIdentity == null) {
@@ -128,6 +132,33 @@ public class SingleUserObligationContext implements ObligationContext {
 			curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		}
 		return curriculumService;
+	}
+
+	@Override
+	public Long getCourseRun(Identity identity, RepositoryEntry courseEntry) {
+		checkIdentity(identity);
+		if (courseKeyToidentityKeyToCourseRun == null) {
+			courseKeyToidentityKeyToCourseRun = new HashMap<>(1);
+		}
+		
+		Map<Long, Long> identityKeyToCourseRun = courseKeyToidentityKeyToCourseRun.computeIfAbsent(courseEntry.getKey(), key -> new HashMap<>(1));
+		
+		Long courseRun = null;
+		if (identityKeyToCourseRun.containsKey(identity.getKey())) {
+			courseRun = identityKeyToCourseRun.get(identity.getKey());
+		} else {
+			courseRun = getUserCourseInformationsManager().getCourseRuns(courseEntry.getOlatResource(), List.of(identity)).get(identity.getKey());
+			identityKeyToCourseRun.put(identity.getKey(), courseRun);
+		}
+		
+		return courseRun;
+	}
+	
+	private UserCourseInformationsManager getUserCourseInformationsManager() {
+		if (userCourseInformationsManager == null) {
+			userCourseInformationsManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
+		}
+		return userCourseInformationsManager;
 	}
 
 }
