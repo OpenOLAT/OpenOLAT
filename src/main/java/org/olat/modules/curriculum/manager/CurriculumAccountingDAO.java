@@ -53,7 +53,7 @@ public class CurriculumAccountingDAO {
 		sb.append(" ce.key, ce.displayName, ce.identifier, ceType.identifier, ce.status, ceEduType.identifier, ce.beginDate, ce.endDate, ");
 		sb.append(" o, billingAddress, billingAddressOrg.identifier, billingAddressOrg.displayName, ");
 		sb.append(" trx.statusStr, p_trx.status, c_trx.status, m, ");
-		sb.append(" offer.resourceDisplayName, offer.resourceTypeName, offerCostCenter.name, offerCostCenter.account ");
+		sb.append(" offer.label, offer.resourceTypeName, offerCostCenter.name, offerCostCenter.account ");
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			sb.append(", user.").append(userPropertyHandler.getName()).append(" as p_").append(userPropertyHandler.getName());
 		}
