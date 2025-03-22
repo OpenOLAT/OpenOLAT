@@ -87,6 +87,7 @@ public class TimelineController extends BasicController {
 			downloadLink.setIconLeftCSS("o_icon o_icon_download");
 			downloadLink.setElementCssClass("o_sel_timeline_download");
 			downloadLink.setGhost(true);
+			downloadLink.setAriaLabel("download.timeline");
 			mainVC.put("downloadLink", downloadLink);
 		}
 

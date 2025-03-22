@@ -37,12 +37,12 @@
 								<div class="o_vertical_timeline_day_time">$timelineEntry.getTimePeriod()</div>
 
 								#if($r.isNotEmpty($timelineEntry.getTranslatedAction()))
-									<div class="o_vertical_timeline_action_details">
+									<div class="o_vertical_timeline_action">
 										#set($actions = $timelineEntry.getTranslatedAction().split("\n"))
 										#set($details = $timelineEntry.getDetails().split("\n"))
 										#set($idx = 0)
 										#foreach($action in $actions)
-											<div class="o_vertical_timeline_action_detail_pair">
+											<div class="o_vertical_timeline_details">
 												$r.escapeHtml($action)
 												#if($details.size() > $idx && $r.isNotEmpty($details.get($idx)))
 													<strong>$details.get($idx)</strong>
