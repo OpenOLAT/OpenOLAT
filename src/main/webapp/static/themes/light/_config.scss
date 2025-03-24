@@ -1825,3 +1825,15 @@ $o-cns-status-done-color						: $brand-success !default;
 
 /* Not available visual */
 $o-not-available-bg: 		linear-gradient(40deg, rgba($brand-primary,1), rgba(#fff, 0.5) 90%), linear-gradient(160deg, rgba(#000,1), rgba($brand-primary, 0.3) 40%), linear-gradient(280deg, rgba($brand-primary,0.7), rgba(#000, 0.6) 80%);
+
+/* Vertical timeline */
+$o-v-timeline-rows-gap								: 5px !default;
+$o-v-timeline-row-bg								: #F2F2F2 !default;
+$o-v-timeline-row-border-radius						: $border-radius-base !default;
+$o-v-timeline-row-padding							: 15px !default;
+$o-v-timeline-day-width								: 90px !default;
+$o-v-timeline-path-width							: 30px !default;
+$o-v-timeline-path-color							: $o-coursesite-sidecol-border !default;
+$o-v-timeline-path-stroke-width						: 0.3rem !default;
+$o-v-timeline-path-top-height						: $o-v-timeline-row-padding !default;
+

@@ -477,11 +477,11 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 
 	@Override
 	public Map<Long, Long> getCourseRuns(OLATResource resource, List<Identity> identities) {
-		if(identities == null || identities.isEmpty()) {
+		if(identities != null && identities.isEmpty()) {
 			return new HashMap<>();
 		}
 		try {
-			List<Long> identityKeys = PersistenceHelper.toKeys(identities);
+			List<Long> identityKeys = identities != null? PersistenceHelper.toKeys(identities): null;
 
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos.identity.key, infos.run from usercourseinfos as infos ")
@@ -489,7 +489,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			  .append(" where resource.key=:resKey and resource.resName='CourseModule'");
 			
 			Set<Long> identityKeySet = null;
-			if(identityKeys.size() < 100) {
+			if(identityKeys != null && identityKeys.size() < 100) {
 				sb.append(" and infos.identity.key in (:identityKeys)");
 				identityKeySet = new HashSet<>(identityKeys);
 			}
@@ -497,7 +497,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Object[].class)
 					.setParameter("resKey", resource.getKey());
-			if(identityKeys.size() < 100) {
+			if(identityKeys != null &&identityKeys.size() < 100) {
 				query.setParameter("identityKeys", identityKeys);
 			}
 

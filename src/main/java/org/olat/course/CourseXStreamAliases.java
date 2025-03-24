@@ -42,6 +42,7 @@ import org.olat.course.condition.operators.LowerThanOperator;
 import org.olat.course.condition.operators.Operator;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.obligation.BusinessGroupExceptionalObligation;
+import org.olat.course.learningpath.obligation.CourseRunExceptionalObligation;
 import org.olat.course.learningpath.obligation.CurriculumElementExceptionalObligation;
 import org.olat.course.learningpath.obligation.IdentityExceptionalObligation;
 import org.olat.course.learningpath.obligation.OrganisationExceptionalObligation;
@@ -131,7 +132,7 @@ public class CourseXStreamAliases {
 			// learning path
 			BusinessGroupExceptionalObligation.class, CurriculumElementExceptionalObligation.class,
 			IdentityExceptionalObligation.class, OrganisationExceptionalObligation.class, PassedExceptionalObligation.class,
-			UserPropertyExceptionalObligation.class,
+			CourseRunExceptionalObligation.class, UserPropertyExceptionalObligation.class,
 			// course node password
 			PasswordCondition.class, PasswordStore.class,
 			// group task element

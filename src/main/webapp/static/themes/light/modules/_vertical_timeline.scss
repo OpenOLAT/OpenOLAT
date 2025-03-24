@@ -1,0 +1,167 @@
+@use "sass:math";
+
+.o_vertical_timeline {
+    .o_vertical_timeline_header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .o_vertical_timeline_rows {
+        display: flex;
+        flex-direction: column;
+        gap: $o-v-timeline-rows-gap;
+
+        .o_vertical_timeline_row {
+            background-color: $o-v-timeline-row-bg;
+            border-radius: $o-v-timeline-row-border-radius;
+
+            display: flex;
+
+            .o_vertical_timeline_year {
+                display: flex;
+                align-items: center;
+
+                h5 {
+                    font-size: $font-size-h4;
+                    font-weight: bold;
+                    color: #111;
+                    padding-bottom: 4px;
+                    margin-bottom: 4px;
+                }
+            }
+
+            .o_vertical_timeline_day {
+                padding: $o-v-timeline-row-padding;
+                min-width: $o-v-timeline-day-width;
+
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+
+                .o_vertical_timeline_day_name {
+                    font-size: 14px;
+                    font-weight: 500;
+                    line-height: 1;
+                }
+
+                .o_vertical_timeline_day_number {
+                    font-size: 36px;
+                    font-weight: 500;
+                    line-height: 1;
+                }
+
+                .o_vertical_timeline_month_name {
+                    font-size: 14px;
+                    font-weight: 500;
+                    line-height: 1;
+                    text-transform: uppercase;
+                }
+            }
+
+            .o_vertical_timeline_path_items {
+                display: flex;
+                flex-direction: column;
+
+                .o_vertical_timeline_path_item {
+                    display: flex;
+                    height: 100%;
+                }
+
+                >.o_vertical_timeline_path_item:last-child {
+                    .o_vertical_timeline_item {
+                        >div:last-child {
+                            // If item is smaller than the day
+                            margin-bottom: $o-v-timeline-row-padding;
+                        }
+                    }
+                }
+            }
+
+            .o_vertical_timeline_path {
+                width: $o-v-timeline-path-width;
+                min-width: $o-v-timeline-path-width;
+                display: flex;
+                flex-direction: column;
+
+                .o_vertical_timeline_path_top,
+                .o_vertical_timeline_path_bottom {
+                    border-left: $o-v-timeline-path-stroke-width solid $o-v-timeline-path-color;
+                    transform: translateX(1rem);
+                }
+
+                .o_vertical_timeline_path_top {
+                    height: $o-v-timeline-path-top-height;
+                }
+
+                .o_vertical_timeline_path_center {
+                    border: $o-v-timeline-path-stroke-width solid $o-v-timeline-path-color;
+                    border-radius: 99999px;
+                    width: 2rem;
+                    height: 2rem;
+                    margin-left: math.div($o-v-timeline-path-stroke-width, 2);
+                }
+
+                .o_vertical_timeline_path_bottom {
+                    flex-grow: 2;
+                }
+            }
+
+            .o_vertical_timeline_item {
+                padding-right: $o-v-timeline-row-padding;
+                display: flex;
+                flex-direction: column;
+
+                .o_vertical_timeline_items_top {
+                    height: ($o-v-timeline-path-top-height - 2px);
+                }
+
+                .o_vertical_timeline_title {
+                    font-size: 18px;
+                    line-height: 1.5;
+                }
+
+                .o_vertical_timeline_day_time,
+                .o_vertical_timeline_location {
+                    font-size: 14px;
+                    line-height: 1.5;
+                }
+
+                .o_vertical_timeline_action {
+                    font-size: 14px;
+                    color: #333; // slightly darker than details for visual hierarchy
+                    padding-top: 4px;
+                    line-height: 1.3;
+                }
+
+                .o_vertical_timeline_details {
+                    font-size: 95%;
+                    color: #444;
+                    margin-top: 4px;
+                }
+            }
+        }
+
+        // Do not show a path before the first event (first child = year)
+        > .o_vertical_timeline_row:nth-child(2) {
+            .o_vertical_timeline_path_item:first-child {
+                .o_vertical_timeline_path {
+                    .o_vertical_timeline_path_top {
+                        border-left: none;
+                    }
+                }
+            }
+        }
+
+        // Do not show a path before the last event if complete timeline is displayed
+        &.o_vertical_timeline_complete > .o_vertical_timeline_row:last-child {
+            .o_vertical_timeline_path_item:last-child {
+                .o_vertical_timeline_path {
+                    .o_vertical_timeline_path_bottom {
+                        border-left: none;
+                    }
+                }
+            }
+        }
+    }
+}

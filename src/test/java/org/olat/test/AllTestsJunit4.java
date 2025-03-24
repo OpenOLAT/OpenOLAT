@@ -706,6 +706,7 @@ import org.junit.runners.Suite;
 	org.olat.course.learningpath.manager.LearningPathNodeAccessProviderTest.class,
 	org.olat.course.learningpath.model.ModuleLearningPathConfigsTest.class,
 	org.olat.course.learningpath.obligation.BusinessGroupExceptionalObligationHandlerTest.class,
+	org.olat.course.learningpath.obligation.CourseRunExceptionalObligationHandlerTest.class,
 	org.olat.course.learningpath.obligation.CurriculumElementExceptionalObligationHandlerTest.class,
 	org.olat.course.learningpath.obligation.OrganisationExceptionalObligationHandlerTest.class,
 	org.olat.course.learningpath.obligation.PassedExceptionalObligationHandlerTest.class,

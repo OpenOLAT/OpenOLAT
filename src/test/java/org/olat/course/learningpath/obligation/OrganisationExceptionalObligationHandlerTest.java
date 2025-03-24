@@ -25,7 +25,6 @@ import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.assessment.model.AssessmentObligation;
-import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -34,8 +33,6 @@ import org.olat.repository.RepositoryEntryRef;
  *
  */
 public class OrganisationExceptionalObligationHandlerTest {
-	
-	private RepositoryEntryRef courseEntry = () -> Long.valueOf(1);
 	
 	@Test
 	public void shouldMatchIdentiyByOrganisation() {
@@ -53,8 +50,8 @@ public class OrganisationExceptionalObligationHandlerTest {
 		miss.setObligation(AssessmentObligation.excluded);
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(sut.matchesIdentity(hit, identity, obligationContext, courseEntry, null, null)).isTrue();
-		softly.assertThat(sut.matchesIdentity(miss, identity, obligationContext, courseEntry, null, null)).isFalse();
+		softly.assertThat(sut.matchesIdentity(hit, identity, obligationContext, null, null, null)).isTrue();
+		softly.assertThat(sut.matchesIdentity(miss, identity, obligationContext, null, null, null)).isFalse();
 		softly.assertAll();
 	}
 

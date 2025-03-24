@@ -29,7 +29,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -72,7 +71,7 @@ public interface ExceptionalObligationHandler {
 	public ScoreAccountingTriggerData getScoreAccountingTriggerData(ExceptionalObligation exceptionalObligation);
 	
 	boolean matchesIdentity(ExceptionalObligation exceptionalObligation, Identity identity,
-			ObligationContext obligationContext, RepositoryEntryRef courseEntry, Structure runStructure,
+			ObligationContext obligationContext, RepositoryEntry courseEntry, Structure runStructure,
 			ScoreAccounting scoreAccounting);
 	
 	public ExceptionalObligationController createCreationController(UserRequest ureq, WindowControl wControl,

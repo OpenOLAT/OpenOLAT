@@ -3,12 +3,224 @@
 <head>
 	<meta content="text/html; charset=utf-8" />
 	<title>Documentation</title>
+
+	<style>
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			border: 1px solid #000;
+		}
+		th, td {
+			border: 1px solid #000;
+			padding: 8px;
+			text-align: left;
+		}
+		th {
+			background-color: #f2f2f2;
+		}
+	</style>
 </head>
 <body>
-<p>The package properties is used for collecting different properties in one place 
-insted of generating for each properties a new table entry in the database.</P>
+	<p>The package properties is used for collecting different properties in one place
+	insted of generating for each properties a new table entry in the database.</P>
 
-<p>Use it as a generic collection of properties for security reasons on users, groups, courses...</p>
+	<p>Use it as a generic collection of properties for security reasons on users, groups, courses...</p>
+
+	<p>Below is a list of actions and their corresponding descriptions, detailing various workflow and task management activities in assessment, which are extracted from the LOG files:</p>
+	<table>
+		<thead>
+		<tr>
+			<th>Action</th>
+			<th>Possible Detail</th>
+			<th>Description</th>
+			<th>Datatype</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td>ASSESSMENT_ID set to:</td>
+			<td>&lt;id&gt;</td>
+			<td>Anomaly action, sets assessment identifier.</td>
+			<td>int</td>
+		</tr>
+		<tr>
+			<td>ATTEMPTS set to:</td>
+			<td>&lt;int&gt;</td>
+			<td>Records how many attempts have been made.</td>
+			<td>int</td>
+		</tr>
+		<tr>
+			<td>Allow reset task of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Allows the user to reset the specified task.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Assignment of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Assigns a specific task or document.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Back to submission of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Reverts the task back to submission status.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>COMMENT set to:</td>
+			<td>&lt;comment&gt;</td>
+			<td>A comment was set.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Collect of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Collects a specific document.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Collect revision of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Collects a revision of a specific document.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Corrections of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Submits corrections or updates for a document.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Deadline extension for</td>
+			<td>&lt;filename&gt;</td>
+			<td>Extends the deadline for a specific assignment.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Evaluation deleted</td>
+			<td>-</td>
+			<td>Deletes an evaluation.</td>
+			<td>-</td>
+		</tr>
+		<tr>
+			<td>Evaluation finshed</td>
+			<td>-</td>
+			<td>Marks evaluation as finished (typo error in original logs).</td>
+			<td>-</td>
+		</tr>
+		<tr>
+			<td>Evaluation reopened</td>
+			<td>-</td>
+			<td>Reopens an evaluation for further action.</td>
+			<td>-</td>
+		</tr>
+		<tr>
+			<td>Evaluation started</td>
+			<td>-</td>
+			<td>Marks the start of an evaluation.</td>
+			<td>-</td>
+		</tr>
+		<tr>
+			<td>FILE ADDED:</td>
+			<td>&lt;filename&gt;</td>
+			<td>A file was added (dropbox).</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>FILE DELETED:</td>
+			<td>&lt;filename&gt;</td>
+			<td>A file was deleted.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>FILE UPLOADED:</td>
+			<td>&lt;filename&gt;</td>
+			<td>A file was uploaded.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Peer reopen of</td>
+			<td>&lt;filename&gt;</td>
+			<td>The file got reopened for peer review.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Peer review of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Invalidates or performs peer review on the file.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Reopen peer-review of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Reopens a previously submitted peer-review task or document.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Reset task of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Resets progress of a specific task.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Review of</td>
+			<td>&lt;filename&gt;</td>
+			<td>A review was performed on the document.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Revision of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Handles revisions for a specific document.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>Submit of</td>
+			<td>&lt;filename&gt;</td>
+			<td>Submits the specified document or task. Could be either upload, update, delete, create or edit - see SubmitEvent class.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>assessment document added:</td>
+			<td>&lt;filename&gt;</td>
+			<td>A document was added for assessment purposes.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>assessmentId set to:</td>
+			<td>&lt;id&gt;</td>
+			<td>Sets the assessment identifier.</td>
+			<td>int</td>
+		</tr>
+		<tr>
+			<td>grade set to:</td>
+			<td>&lt;grade&gt;</td>
+			<td>A grade value was assigned.</td>
+			<td>double/string</td>
+		</tr>
+		<tr>
+			<td>passed set to:</td>
+			<td>&lt;status&gt;</td>
+			<td>Sets the status to true, false, or undefined.</td>
+			<td>boolean/string</td>
+		</tr>
+		<tr>
+			<td>reset course element</td>
+			<td>-</td>
+			<td>Resets the assessment or course element.</td>
+			<td>string</td>
+		</tr>
+		<tr>
+			<td>score set to:</td>
+			<td>&lt;score&gt;</td>
+			<td>Assigns or updates the score.</td>
+			<td>double/null</td>
+		</tr>
+		</tbody>
+	</table>
+
 </body>
 </html>
 

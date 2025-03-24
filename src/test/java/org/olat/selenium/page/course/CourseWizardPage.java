@@ -79,15 +79,20 @@ public class CourseWizardPage {
 	}
 	
 	public CourseWizardPage selectAllCourseElements() {
-		By checkAllBy = By.cssSelector("dialog.modal div.form-group input[type='checkbox']");
+		By elementslBy = By.cssSelector("dialog.modal div.o_sel_course_elements");
+		OOGraphene.waitElement(elementslBy, browser);
+		
+		By checkAllBy = By.cssSelector("dialog.modal div.o_sel_course_elements input[type='checkbox']");
 		List<WebElement> checkAll = browser.findElements(checkAllBy);
 		Assert.assertFalse(checkAll.isEmpty());
 		int numOfCheckbox = checkAll.size();
 		for(int i=0;i<numOfCheckbox; i++) {
-			By checkbox = By.xpath("//dialog[contains(@class,'modal')]//div[contains(@class,'form-group')]//div[" + (i+1) + "]/div/label/input[@type='checkbox']");
+			By checkbox = By.xpath("//dialog[contains(@class,'modal')]//div[contains(@class,'o_sel_course_elements')]//td/div/div[" + (i+1) + "]/div/label/input[@type='checkbox']");
 			OOGraphene.waitElement(checkbox, browser);
 			browser.findElement(checkbox).click();
 			OOGraphene.waitBusy(browser);
+			By checkedBox = By.xpath("//dialog[contains(@class,'modal')]//div[contains(@class,'o_sel_course_elements')]//td/div/div[" + (i+1) + "]/div/label/input[@type='checkbox'][@checked='checked']");
+			OOGraphene.waitElement(checkedBox, browser);
 		}
 		return this;
 	}

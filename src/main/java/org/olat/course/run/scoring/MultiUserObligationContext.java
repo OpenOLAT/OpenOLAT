@@ -31,10 +31,12 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -47,15 +49,17 @@ public class MultiUserObligationContext implements ObligationContext {
 	private Map<Long, Set<Long>> businessGroupKeyToParticipantIdentityKeys;
 	private Map<Long, Set<Long>> organisationKeyToMembersIdentityKeys;
 	private Map<Long, Set<Long>> curriculumElementKeyToParticipantIdentityKeys;
+	private Map<Long, Map<Long, Long>> courseKeyToIdentityKeyToCourseRun;
 	
 	private BusinessGroupService businessGroupService;
 	private OrganisationService organisationService;
 	private CurriculumService curriculumService;
+	private UserCourseInformationsManager userCourseInformationsManager;
 
 	@Override
 	public boolean isParticipant(Identity identity, BusinessGroupRef businessGroupRef) {
 		if (businessGroupKeyToParticipantIdentityKeys == null) {
-			businessGroupKeyToParticipantIdentityKeys = new HashMap<>();
+			businessGroupKeyToParticipantIdentityKeys = new HashMap<>(1);
 		}
 		businessGroupKeyToParticipantIdentityKeys.computeIfAbsent(businessGroupRef.getKey(),
 				key -> getBusinessGroupService()
@@ -75,7 +79,7 @@ public class MultiUserObligationContext implements ObligationContext {
 	@Override
 	public boolean isMember(Identity identity, OrganisationRef organisationRef) {
 		if (organisationKeyToMembersIdentityKeys == null) {
-			organisationKeyToMembersIdentityKeys = new HashMap<>();
+			organisationKeyToMembersIdentityKeys = new HashMap<>(1);
 		}
 		organisationKeyToMembersIdentityKeys.computeIfAbsent(organisationRef.getKey(),
 				key -> getOrganisationService()
@@ -95,7 +99,7 @@ public class MultiUserObligationContext implements ObligationContext {
 	@Override
 	public boolean isParticipant(Identity identity, CurriculumElementRef curriculumElementRef) {
 		if (curriculumElementKeyToParticipantIdentityKeys == null) {
-			curriculumElementKeyToParticipantIdentityKeys = new HashMap<>();
+			curriculumElementKeyToParticipantIdentityKeys = new HashMap<>(1);
 		}
 		curriculumElementKeyToParticipantIdentityKeys.computeIfAbsent(curriculumElementRef.getKey(),
 				key -> getCurriculumService()
@@ -110,6 +114,25 @@ public class MultiUserObligationContext implements ObligationContext {
 			curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		}
 		return curriculumService;
+	}
+
+	@Override
+	public Long getCourseRun(Identity identity, RepositoryEntry courseEntry) {
+		if (courseKeyToIdentityKeyToCourseRun == null) {
+			courseKeyToIdentityKeyToCourseRun = new HashMap<>(1);
+		}
+		
+		return courseKeyToIdentityKeyToCourseRun
+				.computeIfAbsent(courseEntry.getKey(),
+						key -> getUserCourseInformationsManager().getCourseRuns(courseEntry.getOlatResource(), null))
+				.get(identity.getKey());
+	}
+	
+	private UserCourseInformationsManager getUserCourseInformationsManager() {
+		if (userCourseInformationsManager == null) {
+			userCourseInformationsManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
+		}
+		return userCourseInformationsManager;
 	}
 
 }

@@ -23,6 +23,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -55,6 +56,11 @@ public class NullObligationContext implements ObligationContext {
 	@Override
 	public boolean isParticipant(Identity identity, CurriculumElementRef curriculumElementRef) {
 		return false;
+	}
+
+	@Override
+	public Long getCourseRun(Identity identity, RepositoryEntry courseEntry) {
+		return null;
 	}
 	
 }

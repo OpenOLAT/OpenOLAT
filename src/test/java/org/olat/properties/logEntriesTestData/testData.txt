@@ -1,0 +1,92 @@
+-------------------------------------------------------------------
+Date: 2025-03-19 10:02
+Identity: Max Mustermann (4554789) (coach)
+Submit of Homework1.zip: submit documents
+-------------------------------------------------------------------
+Date: 2024-03-19 10:02
+Identity: Max Mustermann (4554789) (coach)
+Review of PeerReview1.pdf: documents reviewed
+-------------------------------------------------------------------
+Date: 2025-03-12 10:02
+Identity: Identity: automatic
+COMMENT set to: All students should review section 5.
+-------------------------------------------------------------------
+Date: 2025-03-19 10:03
+Identity: John Doe (1231234) (coach)
+Submit of null: upload document Aufgabe2.pdf
+-------------------------------------------------------------------
+Date: 2025-03-20 10:05
+Identity: Jane Smith (12321312) (coach)
+Revision of null: upload document Chapter3.docx
+-------------------------------------------------------------------
+Date: 2025-03-23 10:06
+Identity: Alice Admin (1231235) (admin)
+SCORE set to: null
+-------------------------------------------------------------------
+Date: 2025-03-23 10:07
+Identity: Bob Reviewer (5433423) (reviewer)
+SCORE set to: 85.5
+-------------------------------------------------------------------
+Date: 2025-03-23 10:07
+Identity: Bob Reviewer (5433423) (reviewer)
+passed set to: true
+-------------------------------------------------------------------
+Date: 2025-03-23 10:07
+Identity: Bob Reviewer (5433423) (reviewer)
+passed set to: true
+-------------------------------------------------------------------
+Date: 2025-03-19 10:08
+Identity: Charlie Coach (1235453) (coach)
+Corrections of Task2.docx: submit documents
+-------------------------------------------------------------------
+Date: 2025-03-19 10:09
+Identity: Emily Editor (76765434) (editor)
+Evaluation finshed
+-------------------------------------------------------------------
+Date: 2023-03-23 10:07
+Identity: Bob Rev (5433423) (coach)
+passed set to: true
+-------------------------------------------------------------------
+Date: 2025-03-11 10:10
+Identity: Frank Facilitator (4564623) (coach)
+Allow reset task of Project1.zip: allow reset
+-------------------------------------------------------------------
+Date: 2025-03-19 10:11
+Identity: George Grader (654645) (grader)
+Back to submission of Homework2.pdf: revert status
+-------------------------------------------------------------------
+Date: 2025-03-19 10:17
+Identity: Arnold Kieser (424116228) (coach)   
+Deadline extension for assignment of 1408270341: Standard date 11.07.2024, 13:00 to 11.07.2024, 13:05 
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+Date: 2022-04-14 10:24
+Identity: Simone Hoffmann (13991936)
+COMMENT set to: Wie es weitergeht: Weil zuvor schon der Ständerat dem Geschäft zugestimmt hatte, muss der Bundesrat nun einen entsprechenden Vorschlag ausarbeiten.
+Über diesen wird dann erneut das Parlament befinden.
+-------------------------------------------------------------------
+Date: 2025-03-19 10:12
+Identity: Invalid Line here without proper format
+-------------------------------------------------------------------
+Date: 2023-10-24 14:55
+Identity: Simone Langenegger (424116224)
+Submit of Aufgabe_2.docx: upload document Simone-Langenegger-2023-10-24-14-55-52.mp4
+-------------------------------------------------------------------
+Date: 2023-09-19 16:01
+Identity: Arnold Hoffmann (32079872) (coach)
+Back to submission of Arnold-Hoffmann-2023-09-19-15-53-07.m4a: revert status of task back to submission
+-------------------------------------------------------------------
+Date: 2024-04-09 13:13
+Identity: Sebastian Schmitt (1997734216) (coach)
+reset course element
+-------------------------------------------------------------------
+Date: 2017-15-11 11:45
+User: mhoffmann
+COMMENT set to: Herzlichen Glückwunsch! Sie haben mit 13 von 18 Punkten bestanden.
+
+Viele Grüße
+Max Hoffmann
+-------------------------------------------------------------------
+Date: 2023-09-19 16:07
+Identity: Max Doe (OrgUnit) (15845124) (coach)
+attempts set to: 3

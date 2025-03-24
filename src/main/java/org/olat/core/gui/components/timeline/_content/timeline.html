@@ -1,0 +1,72 @@
+<div class="o_vertical_timeline o_repo_info_panel o_lightbox_modal_form">
+	<div class="o_vertical_timeline_header">
+		<h4>$r.translate("timeline.title")</h4>
+		#if($r.available("downloadLink"))
+			<div class="o_vertical_timeline_download_btn">
+				$r.render("downloadLink")
+			</div>
+		#end
+	</div>
+	<div class="o_vertical_timeline_rows #if($timelineComplete)o_vertical_timeline_complete #end">
+		#foreach($year in $years)
+			<div class="o_vertical_timeline_row">
+				<div class="o_vertical_timeline_day"></div>
+				<div class="o_vertical_timeline_year"><h5>$year.getYear()</h5></div>
+			</div>
+			#foreach($day in $year.getDays())
+			<div class="o_vertical_timeline_row">
+				<div class="o_vertical_timeline_day">
+					<div class="o_vertical_timeline_day_name">$day.getDayName()</div>
+					<div class="o_vertical_timeline_day_number">$day.getDayOfMonth()</div>
+					<div class="o_vertical_timeline_month_name">$day.getMonthName()</div>
+				</div>
+				<div class="o_vertical_timeline_path_items">
+					#foreach($timelineEntry in $day.getEntries())
+						<div class="o_vertical_timeline_path_item">
+							<div class="o_vertical_timeline_path">
+								<div class="o_vertical_timeline_path_top"></div>
+								<div class="o_vertical_timeline_path_center">&nbsp;</div>
+								<div class="o_vertical_timeline_path_bottom"></div>
+							</div>
+							<div class="o_vertical_timeline_item">
+								<div class="o_vertical_timeline_items_top"></div>
+								#if($r.isNotEmpty($timelineEntry.getTitle()))
+									<div class="o_vertical_timeline_title">$r.escapeHtml($timelineEntry.getTitle())</div>
+								#end
+
+								<div class="o_vertical_timeline_day_time">$timelineEntry.getTimePeriod()</div>
+
+								#if($r.isNotEmpty($timelineEntry.getTranslatedAction()))
+									<div class="o_vertical_timeline_action">
+										#set($actions = $timelineEntry.getTranslatedAction().split("\n"))
+										#set($details = $timelineEntry.getDetails().split("\n"))
+										#set($idx = 0)
+										#foreach($action in $actions)
+											<div class="o_vertical_timeline_details">
+												$r.escapeHtml($action)
+												#if($details.size() > $idx && $r.isNotEmpty($details.get($idx)))
+													<strong>$details.get($idx)</strong>
+												#end
+											</div>
+											#set($idx = $idx + 1)
+										#end
+									</div>
+								#end
+
+								#if($r.isNotEmpty($timelineEntry.getLocation()))
+									<div class="o_vertical_timeline_location"><i class="o_icon o_icon-fw o_icon_location"> </i> $r.escapeHtml($timelineEntry.getLocation())</div>
+								#end
+							</div>
+						</div>
+					#end
+				</div>
+			</div>
+			#end
+		#end
+	</div>
+	#if($r.available("show.all.events"))
+		<div class="o_button_group o_button_group_left o_button_group_bottom">
+			$r.render("show.all.events")
+		</div>
+	#end
+</div>

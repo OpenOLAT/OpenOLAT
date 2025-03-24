@@ -43,7 +43,6 @@ import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -173,7 +172,7 @@ public class PassedExceptionalObligationHandler implements ExceptionalObligation
 
 	@Override
 	public boolean matchesIdentity(ExceptionalObligation exceptionalObligation, Identity identity,
-			ObligationContext obligationContext, RepositoryEntryRef courseEntry, Structure runStructure, ScoreAccounting scoreAccounting) {
+			ObligationContext obligationContext, RepositoryEntry courseEntry, Structure runStructure, ScoreAccounting scoreAccounting) {
 		if (exceptionalObligation instanceof PassedExceptionalObligation) {
 			PassedExceptionalObligation passedExceptionalObligation = (PassedExceptionalObligation)exceptionalObligation;
 			

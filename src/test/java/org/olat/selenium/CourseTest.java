@@ -358,11 +358,16 @@ public class CourseTest extends Deployments {
 		OOGraphene.waitElement(elementsBy, browser);
 		
 		for(int i=0; i<5; i++) {
-			By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li[" + (i+1) + "]/div/span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l1')][contains(@class,'o_tree_level_label_leaf')]/a[span]");
-			OOGraphene.waitElement(linkBy, browser);
-			browser.findElement(linkBy).click();
-			By activeLinkBy = By.xpath("//div[contains(@class,'o_tree')]//li[" + (i+1) + "][contains(@class,'active')]/div/span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l1')][contains(@class,'o_tree_level_label_leaf')]/a[span]");
-			OOGraphene.waitElement(activeLinkBy, browser);
+			try {
+				By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li[" + (i+1) + "]/div/span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l1')][contains(@class,'o_tree_level_label_leaf')]/a[span]");
+				OOGraphene.waitElement(linkBy, browser);
+				browser.findElement(linkBy).click();
+				By activeLinkBy = By.xpath("//div[contains(@class,'o_tree')]//li[" + (i+1) + "][contains(@class,'active')]/div/span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l1')][contains(@class,'o_tree_level_label_leaf')]/a[span]");
+				OOGraphene.waitElement(activeLinkBy, browser);
+			} catch (Exception e) {
+				OOGraphene.takeScreenshot("Classicwizard", browser);
+				throw e;
+			}
 		}
 	}
 	

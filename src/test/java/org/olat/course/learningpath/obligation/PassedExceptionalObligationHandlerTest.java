@@ -39,7 +39,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
-import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -52,7 +52,7 @@ public class PassedExceptionalObligationHandlerTest {
 	@Mock
 	private CourseAssessmentService courseAssessmentService;
 	@Mock
-	private RepositoryEntryRef courseEntry;
+	private RepositoryEntry courseEntry;
 	
 	@InjectMocks
 	private PassedExceptionalObligationHandler sut;
