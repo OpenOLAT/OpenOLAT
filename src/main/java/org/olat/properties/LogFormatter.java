@@ -25,12 +25,12 @@ import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -582,12 +582,12 @@ public class LogFormatter {
 	/**
 	 * Filters out logEntries by eliminating all duplicates based on key data points,
 	 * regardless of their position in the list.
-	 * <p>
-	 * This method uses a Set to track a unique key generated from the log entry’s
-	 * "action" and "details". Only the first occurrence of a particular key is kept.
+	 * Filters also redundant state transitions in a list of log entries.
+	 * This method removes consecutive log entries where the "state" (i.e., details) of a particular action
+	 * remains unchanged across the timeline, regardless of the actor or the date.
 	 *
-	 * @param logEntries
-	 * @return a new List of LogEntry objects containing only unique logEntries.
+	 * @param logEntries The original list of log entries to be filtered
+	 * @return a new List of LogEntry objects containing only unique logEntries and where redundant state transitions have been removed
 	 */
 	public List<LogEntry> filterAllDuplicates(List<LogEntry> logEntries) {
 		// If logEntries are null or empty, return immediately -> because nothing to filter
@@ -595,23 +595,29 @@ public class LogFormatter {
 			return logEntries;
 		}
 
-		List<LogEntry> uniqueEntries = new ArrayList<>();
-		// Use a Set to store a unique key for each entry based on action and details
-		Set<String> seenKeys = new HashSet<>();
+		// Sort chronologically
+		List<LogEntry> sortedEntries = logEntries.stream()
+				.sorted(Comparator.comparing(LogEntry::timestamp))
+				.toList();
 
-		// Iterate over each entry
-		for (LogEntry entry : logEntries) {
-			// Create a key that uniquely represents the important data points
-			String key = entry.action() + "|" + entry.details();
-			// If this key hasn't been seen yet, add it and include the entry in the result
-			if (!seenKeys.contains(key)) {
-				seenKeys.add(key);
-				uniqueEntries.add(entry);
+		List<LogEntry> filteredEntries = new ArrayList<>();
+		Map<String, String> lastKnownState = new HashMap<>(); // action -> last detail
+
+		for (LogEntry entry : sortedEntries) {
+			String action = entry.action();
+			String details = entry.details();
+
+			String previous = lastKnownState.get(action);
+			if (!details.equalsIgnoreCase(previous)) {
+				// State changed, keep this entry
+				filteredEntries.add(entry);
+				lastKnownState.put(action, details);
 			}
 		}
 
-		return uniqueEntries;
+		return filteredEntries;
 	}
+
 
 	/**
 	 * Helper class to hold the parsed action and details.
