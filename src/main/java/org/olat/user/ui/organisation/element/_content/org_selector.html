@@ -1,0 +1,94 @@
+<div class="o_org_selector">
+	<div class="clearfix">
+		<div id="$r.getId('org_search')" class="input-group o_org_selector_search">
+			<div class="input-group-btn">
+				$r.render("quickSearchButton")
+			</div>
+			$r.render("quickSearch")
+			<div class="input-group-btn">
+				$r.render("resetQuickSearch")
+			</div>
+		</div>
+	</div>
+
+	<div class="clearfix o_filter_search_list_values o_org_selector_selection">
+		#if($r.visible("selector.selection.none"))
+		$r.render("selector.selection.none", "label")
+		<div class="o_org_selection_none">
+			$r.render("selector.selection.none")
+		</div>
+		#end
+
+		#if($r.visible("selector.selection.num"))
+		$r.render("selector.selection.num", "label")
+		#end
+
+		<div class="o_org_selector_selected">
+			<div class="o_org_selector_rows">
+				#foreach($selectedRow in $selectedRows)
+				<div class="o_org_selector_row">
+					<div class="o_org_selector_checkbox">
+						<input type="checkbox" checked id="org_sel_${selectedRow.key()}" name="org_sel_${selectedRow.key()}" 
+							   onchange="$f.ffXHREvent("unselect", "${selectedRow.key()}");"
+							   value="org_sel_${selectedRow.key()}" title="$r.translate("select")" aria-labelledby="org_sel_${selectedRow.key()}_label">
+					</div>
+					<div class="o_org_selector_text">
+						<div class="o_org_selector_status">${selectedRow.path()}</div>
+						<div id="org_sel_${selectedRow.key()}_label" class="o_org_selector_title_version">
+							${selectedRow.title()} 
+							#if($selectedRow.location()) &middot ${selectedRow.location()}#end
+						</div>
+					</div>
+				</div>
+				#end
+			</div>
+		</div>
+
+		<div class="o_org_selector_unselected">
+			<div class="o_org_selector_rows">
+				#foreach($unselectedRow in $unselectedRows)
+				<div class="o_org_selector_row">
+					<div class="o_org_selector_checkbox">
+						<input type="checkbox"
+							   onchange="$f.ffXHREvent("select", "${unselectedRow.key()}");"
+							   id="org_sel_${unselectedRow.key()}" name="org_sel_${unselectedRow.key()}"
+							   value="org_sel_${unselectedRow.key()}" title="$r.translate("select")" aria-labelledby="org_sel_${unselectedRow.key()}_label">
+					</div>
+					<div class="o_org_selector_text">
+						<div class="o_org_selector_status">${unselectedRow.path()}</div>
+						<div id="org_sel_${unselectedRow.key()}_label" class="o_org_selector_title_version">
+							${unselectedRow.title()} 
+							#if($unselectedRow.location()) &middot; ${unselectedRow.location()}#end
+						</div>
+					</div>
+				</div>
+				#end
+			</div>
+		</div>
+
+		<small>$r.render("selector.results.more")</small>
+	</div>
+
+	<div class="o_button_group o_button_group_right o_button_group_bottom">
+		#if($r.available("apply") && $r.visible("apply"))
+		$r.render("apply")
+		#end
+	</div>
+</div>
+
+<script>
+	"use strict";
+	jQuery(function() {
+		var searchField = jQuery('#$r.getId("org_search") input');
+		if (!searchField.length) {
+			return;
+		}
+		var searchFieldEl = searchField.get(0);
+		var elemLen = searchFieldEl.value.length;
+		if (searchFieldEl.selectionStart || searchFieldEl.selectionStart == '0') {
+			searchFieldEl.selectionStart = elemLen;
+			searchFieldEl.selectionEnd = elemLen;
+			searchFieldEl.focus();
+		}
+	});
+</script>

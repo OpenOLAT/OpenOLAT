@@ -454,3 +454,96 @@ div.o_skype_button {
 }
 
 
+/* Organisation */
+
+dialog.popover {
+	.popover-content {
+		&:has(.o_org_selector) {
+			margin-top: 0;
+		}
+	}
+}
+
+.o_org_selector_selection {
+	overflow-y: auto;
+	min-height: 140px;
+	max-height: 240px;
+	padding-right: 4px;
+
+	label.control-label {
+		color: $text-color;
+		font-weight: bold;
+	}
+	
+	.o_org_selection_none {
+		height: 18px;
+	}
+}
+
+.o_org_selector_button {
+	display: flex;
+	min-height: 34px;
+
+	span.o_org_selector_span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		padding-right: 4px;
+	}
+
+	.o_icon {
+		margin: auto 0 auto auto;
+	}
+
+	&:is(.form-group *) {
+		width: 100%;
+		max-width: 100%;
+		min-width: $input-height-base;
+	}
+}
+
+.o_org_selector_selected {
+	margin-top: 15px;
+}
+
+.o_org_selector_unselected {
+	margin-top: 20px;
+}
+
+.o_org_selector_rows {
+	width: 100%;
+
+	.o_org_selector_row {
+		display: flex;
+		width: 100%;
+		margin-top: 5px;
+		margin-bottom: 5px;
+
+		.o_org_selector_checkbox {
+			width: 26px;
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: start;
+
+			input[type=checkbox] {
+				margin: 0;
+			}
+		}
+
+		.o_org_selector_text {
+			flex-grow: 1;
+
+			.o_org_selector_status {
+				height: 16px;
+				line-height: 16px;
+				font-size: 12px;
+				color: #999;
+			}
+
+			.o_org_selector_title_version {
+				height: 24px;
+				line-height: 24px;
+			}
+		}
+	}
+}
