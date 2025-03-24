@@ -127,84 +127,85 @@ public class LogFormatterTest {
 		// expecting 13 instead of 16, because some entries get grouped
 		Assert.assertEquals(15, entries.size());
 
-		Assert.assertEquals("OpenOLAT Administrator", entries.get(0).author());
-		Assert.assertEquals("coach", entries.get(0).role());
-		Assert.assertEquals("passed set to\nassessmentId set to\nCOMMENT set to", entries.get(0).action());
-		Assert.assertEquals("true\n2711\nSuper", entries.get(0).details());
-
-		Assert.assertEquals("Anna Schmidt", entries.get(1).author());
-		Assert.assertEquals("submission set to", entries.get(1).action());
-		Assert.assertEquals("uploaded", entries.get(1).details());
-
-		Assert.assertEquals("Michael Berger", entries.get(2).author());
-		Assert.assertEquals("review set to", entries.get(2).action());
-		Assert.assertEquals("completed", entries.get(2).details());
-
-		Assert.assertEquals("Lisa Meier", entries.get(3).author());
-		Assert.assertEquals("visibility set to", entries.get(3).action());
-		Assert.assertEquals("visible", entries.get(3).details());
-
-		Assert.assertEquals("Jonas Keller", entries.get(4).author());
-		Assert.assertEquals("attempts set to", entries.get(4).action());
-		Assert.assertEquals("3", entries.get(4).details());
-
-		Assert.assertEquals("Sarah Fischer", entries.get(5).author());
-		Assert.assertEquals("grade set to", entries.get(5).action());
-		Assert.assertEquals("A", entries.get(5).details());
-
-		Assert.assertEquals("David Braun", entries.get(6).author());
-		Assert.assertEquals("feedback set to", entries.get(6).action());
-		Assert.assertEquals("Excellent work!", entries.get(6).details());
-
-		Assert.assertEquals("Julia Hoffmann", entries.get(7).author());
-		Assert.assertEquals("reset course element", entries.get(7).action());
-		Assert.assertEquals("", entries.get(7).details());
-
-		Assert.assertEquals("Arnold Kieser", entries.get(8).author());
-		Assert.assertEquals("coach", entries.get(8).role());
-		Assert.assertEquals("Deadline extension for assignment", entries.get(8).action());
-		Assert.assertEquals("userId=1408270341;from=11.07.2024, 13:00;to=11.07.2024, 13:05", entries.get(8).details());
-
-		Assert.assertEquals("Simone Langenegger", entries.get(9).author());
-		Assert.assertEquals("", entries.get(9).role());
-		Assert.assertEquals("Submit of", entries.get(9).action());
-		Assert.assertEquals("Aufgabe_2.docx: upload document Simone-Langenegger-2023-10-24-14-55-52.mp4", entries.get(9).details());
-
-		Assert.assertEquals("Arnold Hoffmann", entries.get(10).author());
-		Assert.assertEquals("coach", entries.get(10).role());
-		Assert.assertEquals("Back to submission of", entries.get(10).action());
-		Assert.assertEquals("Arnold-Hoffmann-2023-09-19-15-53-07.m4a", entries.get(10).details());
-
-		Assert.assertEquals("Simone Hoffmann", entries.get(11).author());
-		Assert.assertEquals("", entries.get(11).role());
-		Assert.assertEquals("COMMENT set to", entries.get(11).action());
 		String commentText =
-				"""
-						ksadfjg
-						sliajsdf
-						lksdjliasdjfli""";
-		Assert.assertEquals(commentText, entries.get(11).details());
-
-		String commentText2 =
 				"""
 						Herzlichen Glückwunsch! Sie haben mit 13 von 18 Punkten bestanden.
 						
 						Viele Grüße
 						Max Hoffmann""";
 
-		Assert.assertEquals("mhoffmann", entries.get(12).author());
-		Assert.assertEquals("", entries.get(12).orgUnit());
-		Assert.assertEquals("", entries.get(12).userId());
-		Assert.assertEquals("", entries.get(12).role());
-		Assert.assertEquals("COMMENT set to", entries.get(12).action());
-		Assert.assertEquals(commentText2, entries.get(12).details());
+		Assert.assertEquals("mhoffmann", entries.get(0).author());
+		Assert.assertEquals("", entries.get(0).orgUnit());
+		Assert.assertEquals("", entries.get(0).userId());
+		Assert.assertEquals("", entries.get(0).role());
+		Assert.assertEquals("COMMENT set to", entries.get(0).action());
+		Assert.assertEquals(commentText, entries.get(0).details());
 
-		Assert.assertEquals("Max Doe", entries.get(13).author());
-		Assert.assertEquals("OrgUnit", entries.get(13).orgUnit());
-		Assert.assertEquals("15845124", entries.get(13).userId());
+		String commentText2 =
+				"""
+						ksadfjg
+						sliajsdf
+						lksdjliasdjfli""";
+
+		Assert.assertEquals("Simone Hoffmann", entries.get(1).author());
+		Assert.assertEquals("", entries.get(1).role());
+		Assert.assertEquals("COMMENT set to", entries.get(1).action());
+		Assert.assertEquals(commentText2, entries.get(1).details());
+
+		Assert.assertEquals("Arnold Hoffmann", entries.get(2).author());
+		Assert.assertEquals("coach", entries.get(2).role());
+		Assert.assertEquals("Back to submission of", entries.get(2).action());
+		Assert.assertEquals("Arnold-Hoffmann-2023-09-19-15-53-07.m4a", entries.get(2).details());
+
+		Assert.assertEquals("Max Doe", entries.get(3).author());
+		Assert.assertEquals("OrgUnit", entries.get(3).orgUnit());
+		Assert.assertEquals("15845124", entries.get(3).userId());
+		Assert.assertEquals("coach", entries.get(3).role());
+		Assert.assertEquals("attempts set to", entries.get(3).action());
+		Assert.assertEquals("4", entries.get(3).details());
+
+		Assert.assertEquals("Simone Langenegger", entries.get(4).author());
+		Assert.assertEquals("", entries.get(4).role());
+		Assert.assertEquals("Submit of", entries.get(4).action());
+		Assert.assertEquals("Aufgabe_2.docx: upload document Simone-Langenegger-2023-10-24-14-55-52.mp4", entries.get(4).details());
+
+		Assert.assertEquals("OpenOLAT Administrator", entries.get(5).author());
+		Assert.assertEquals("coach", entries.get(5).role());
+		Assert.assertEquals("passed set to\nassessmentId set to\nCOMMENT set to", entries.get(5).action());
+		Assert.assertEquals("true\n2711\nSuper", entries.get(5).details());
+
+		Assert.assertEquals("Anna Schmidt", entries.get(6).author());
+		Assert.assertEquals("submission set to", entries.get(6).action());
+		Assert.assertEquals("uploaded", entries.get(6).details());
+
+		Assert.assertEquals("Michael Berger", entries.get(7).author());
+		Assert.assertEquals("review set to", entries.get(7).action());
+		Assert.assertEquals("completed", entries.get(7).details());
+
+		Assert.assertEquals("Lisa Meier", entries.get(8).author());
+		Assert.assertEquals("visibility set to", entries.get(8).action());
+		Assert.assertEquals("visible", entries.get(8).details());
+
+		Assert.assertEquals("Jonas Keller", entries.get(9).author());
+		Assert.assertEquals("attempts set to", entries.get(9).action());
+		Assert.assertEquals("3", entries.get(9).details());
+
+		Assert.assertEquals("Sarah Fischer", entries.get(10).author());
+		Assert.assertEquals("grade set to", entries.get(10).action());
+		Assert.assertEquals("A", entries.get(10).details());
+
+		Assert.assertEquals("David Braun", entries.get(11).author());
+		Assert.assertEquals("feedback set to", entries.get(11).action());
+		Assert.assertEquals("Excellent work!", entries.get(11).details());
+
+		Assert.assertEquals("Julia Hoffmann", entries.get(12).author());
+		Assert.assertEquals("reset course element", entries.get(12).action());
+		Assert.assertEquals("", entries.get(12).details());
+
+		Assert.assertEquals("Arnold Kieser", entries.get(13).author());
 		Assert.assertEquals("coach", entries.get(13).role());
-		Assert.assertEquals("attempts set to", entries.get(13).action());
-		Assert.assertEquals("4", entries.get(13).details());
+		Assert.assertEquals("Deadline extension for assignment", entries.get(13).action());
+		Assert.assertEquals("userId=1408270341;from=11.07.2024, 13:00;to=11.07.2024, 13:05", entries.get(13).details());
 
 		Assert.assertEquals("OpenOLAT Administrator", entries.get(14).author());
 		Assert.assertEquals("", entries.get(14).orgUnit());
@@ -510,7 +511,7 @@ public class LogFormatterTest {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
 			String line;
 			int lineCount = 0;
-			while ((line = reader.readLine()) != null && lineCount < 3000000) { // limit to 1M lines, for really large test files
+			while ((line = reader.readLine()) != null && lineCount < 3000000) { // limit to 3M lines, for really large test files
 				logBuilder.append(line).append('\n');
 				lineCount++;
 			}
@@ -524,103 +525,7 @@ public class LogFormatterTest {
 		List<LogEntry> entries = result.validEntries();
 
 		// Bob reviewer gets grouped and Bob rev gets discarded because redundant information (passed set to true from true)
-		Assert.assertEquals(18, entries.size());
-
-		LogEntry e0 = entries.get(0);
-		Assert.assertEquals("Max Mustermann", e0.author());
-		Assert.assertEquals("coach", e0.role());
-		Assert.assertEquals("Submit of", e0.action());
-		Assert.assertEquals("Homework1.zip: submit documents", e0.details());
-
-		LogEntry e1 = entries.get(1);
-		Assert.assertEquals("Max Mustermann", e1.author());
-		Assert.assertEquals("coach", e1.role());
-		Assert.assertEquals("Review of", e1.action());
-		Assert.assertEquals("PeerReview1.pdf", e1.details());
-
-		LogEntry e2 = entries.get(2);
-		Assert.assertEquals("Identity", e2.author());
-		Assert.assertEquals("automatic", e2.role());
-		Assert.assertEquals("COMMENT set to", e2.action());
-		Assert.assertTrue(e2.details().contains("All students should review section 5."));
-
-		LogEntry e3 = entries.get(3);
-		Assert.assertEquals("John Doe", e3.author());
-		Assert.assertEquals("coach", e3.role());
-		Assert.assertEquals("Submit of:", e3.action());
-		Assert.assertEquals("Aufgabe2.pdf", e3.details());
-
-		LogEntry e4 = entries.get(4);
-		Assert.assertEquals("Jane Smith", e4.author());
-		Assert.assertEquals("coach", e4.role());
-		Assert.assertEquals("Revision of:", e4.action());
-		Assert.assertEquals("Chapter3.docx", e4.details());
-
-		LogEntry e5 = entries.get(5);
-		Assert.assertEquals("Alice Admin", e5.author());
-		Assert.assertEquals("admin", e5.role());
-		Assert.assertEquals("score reset", e5.action());
-		Assert.assertEquals("", e5.details());
-
-		LogEntry e6 = entries.get(6);
-		Assert.assertEquals("Bob Reviewer", e6.author());
-		Assert.assertEquals("reviewer", e6.role());
-		Assert.assertEquals("SCORE set to\npassed set to", e6.action());
-		Assert.assertEquals("85.5\ntrue", e6.details());
-
-		LogEntry e7 = entries.get(7);
-		Assert.assertEquals("Charlie Coach", e7.author());
-		Assert.assertEquals("coach", e7.role());
-		Assert.assertEquals("Corrections of", e7.action());
-		Assert.assertEquals("Task2.docx", e7.details());
-
-		LogEntry e8 = entries.get(8);
-		Assert.assertEquals("Emily Editor", e8.author());
-		Assert.assertEquals("editor", e8.role());
-		Assert.assertEquals("Evaluation finshed", e8.action());
-		Assert.assertEquals("", e8.details());
-
-		LogEntry e9 = entries.get(9);
-		Assert.assertEquals("Frank Facilitator", e9.author());
-		Assert.assertEquals("coach", e9.role());
-		Assert.assertEquals("Allow reset task of", e9.action());
-		Assert.assertEquals("Project1.zip", e9.details());
-
-		LogEntry e10 = entries.get(10);
-		Assert.assertEquals("George Grader", e10.author());
-		Assert.assertEquals("grader", e10.role());
-		Assert.assertEquals("Back to submission of", e10.action());
-		Assert.assertEquals("Homework2.pdf", e10.details());
-
-		LogEntry e11 = entries.get(11);
-		Assert.assertEquals("Arnold Kieser", e11.author());
-		Assert.assertEquals("coach", e11.role());
-		Assert.assertEquals("Deadline extension for assignment", e11.action());
-		Assert.assertEquals("userId=1408270341;from=11.07.2024, 13:00;to=11.07.2024, 13:05", e11.details());
-
-		LogEntry e12 = entries.get(12);
-		Assert.assertEquals("Simone Hoffmann", e12.author());
-		Assert.assertEquals("", e12.role());
-		Assert.assertEquals("COMMENT set to", e12.action());
-		Assert.assertTrue(e12.details().contains("Wie es weitergeht: Weil zuvor schon der Ständerat dem Geschäft zugestimmt hatte"));
-
-		LogEntry e13 = entries.get(13);
-		Assert.assertEquals("Simone Langenegger", e13.author());
-		Assert.assertEquals("", e13.role());
-		Assert.assertEquals("Submit of", e13.action());
-		Assert.assertEquals("Aufgabe_2.docx: upload document Simone-Langenegger-2023-10-24-14-55-52.mp4", e13.details());
-
-		LogEntry e14 = entries.get(14);
-		Assert.assertEquals("Arnold Hoffmann", e14.author());
-		Assert.assertEquals("coach", e14.role());
-		Assert.assertEquals("Back to submission of", e14.action());
-		Assert.assertEquals("Arnold-Hoffmann-2023-09-19-15-53-07.m4a", e14.details());
-
-		LogEntry e15 = entries.get(15);
-		Assert.assertEquals("Sebastian Schmitt", e15.author());
-		Assert.assertEquals("coach", e15.role());
-		Assert.assertEquals("reset course element", e15.action());
-		Assert.assertEquals("", e15.details());
+		Assert.assertEquals(19, entries.size());
 
 		String commentText =
 				"""
@@ -629,20 +534,122 @@ public class LogFormatterTest {
 						Viele Grüße
 						Max Hoffmann""";
 
+		LogEntry e0 = entries.get(0);
+		Assert.assertEquals("mhoffmann", e0.author());
+		Assert.assertEquals("", e0.orgUnit());
+		Assert.assertEquals("", e0.userId());
+		Assert.assertEquals("", e0.role());
+		Assert.assertEquals("COMMENT set to", e0.action());
+		Assert.assertEquals(commentText, e0.details());
+
+		LogEntry e1 = entries.get(1);
+		Assert.assertEquals("Simone Hoffmann", e1.author());
+		Assert.assertEquals("", e1.role());
+		Assert.assertEquals("COMMENT set to", e1.action());
+		Assert.assertTrue(e1.details().contains("Wie es weitergeht: Weil zuvor schon der Ständerat dem Geschäft zugestimmt hatte"));
+
+		LogEntry e2 = entries.get(2);
+		Assert.assertEquals("Bob Rev", e2.author());
+		Assert.assertEquals("coach", e2.role());
+		Assert.assertEquals("passed set to", e2.action());
+		Assert.assertEquals("true", e2.details());
+
+		LogEntry e3 = entries.get(3);
+		Assert.assertEquals("Arnold Hoffmann", e3.author());
+		Assert.assertEquals("coach", e3.role());
+		Assert.assertEquals("Back to submission of", e3.action());
+		Assert.assertEquals("Arnold-Hoffmann-2023-09-19-15-53-07.m4a", e3.details());
+
+		LogEntry e4 = entries.get(4);
+		Assert.assertEquals("Max Doe", e4.author());
+		Assert.assertEquals("OrgUnit", e4.orgUnit());
+		Assert.assertEquals("15845124", e4.userId());
+		Assert.assertEquals("coach", e4.role());
+		Assert.assertEquals("attempts set to", e4.action());
+		Assert.assertEquals("3", e4.details());
+
+		LogEntry e5 = entries.get(5);
+		Assert.assertEquals("Simone Langenegger", e5.author());
+		Assert.assertEquals("", e5.role());
+		Assert.assertEquals("Submit of", e5.action());
+		Assert.assertEquals("Aufgabe_2.docx: upload document Simone-Langenegger-2023-10-24-14-55-52.mp4", e5.details());
+
+		LogEntry e6 = entries.get(6);
+		Assert.assertEquals("Max Mustermann", e6.author());
+		Assert.assertEquals("coach", e6.role());
+		Assert.assertEquals("Review of", e6.action());
+		Assert.assertEquals("PeerReview1.pdf", e6.details());
+
+		LogEntry e7 = entries.get(7);
+		Assert.assertEquals("Sebastian Schmitt", e7.author());
+		Assert.assertEquals("coach", e7.role());
+		Assert.assertEquals("reset course element", e7.action());
+		Assert.assertEquals("", e7.details());
+
+		LogEntry e8 = entries.get(8);
+		Assert.assertEquals("Frank Facilitator", e8.author());
+		Assert.assertEquals("coach", e8.role());
+		Assert.assertEquals("Allow reset task of", e8.action());
+		Assert.assertEquals("Project1.zip", e8.details());
+
+		LogEntry e9 = entries.get(9);
+		Assert.assertEquals("Identity", e9.author());
+		Assert.assertEquals("automatic", e9.role());
+		Assert.assertEquals("COMMENT set to", e9.action());
+		Assert.assertTrue(e9.details().contains("All students should review section 5."));
+
+		LogEntry e10 = entries.get(10);
+		Assert.assertEquals("Max Mustermann", e10.author());
+		Assert.assertEquals("coach", e10.role());
+		Assert.assertEquals("Submit of", e10.action());
+		Assert.assertEquals("Homework1.zip: submit documents", e10.details());
+
+		LogEntry e11 = entries.get(11);
+		Assert.assertEquals("John Doe", e11.author());
+		Assert.assertEquals("coach", e11.role());
+		Assert.assertEquals("Submit of:", e11.action());
+		Assert.assertEquals("Aufgabe2.pdf", e11.details());
+
+		LogEntry e12 = entries.get(12);
+		Assert.assertEquals("Charlie Coach", e12.author());
+		Assert.assertEquals("coach", e12.role());
+		Assert.assertEquals("Corrections of", e12.action());
+		Assert.assertEquals("Task2.docx", e12.details());
+
+		LogEntry e13 = entries.get(13);
+		Assert.assertEquals("Emily Editor", e13.author());
+		Assert.assertEquals("editor", e13.role());
+		Assert.assertEquals("Evaluation finshed", e13.action());
+		Assert.assertEquals("", e13.details());
+
+		LogEntry e14 = entries.get(14);
+		Assert.assertEquals("George Grader", e14.author());
+		Assert.assertEquals("grader", e14.role());
+		Assert.assertEquals("Back to submission of", e14.action());
+		Assert.assertEquals("Homework2.pdf", e14.details());
+
+		LogEntry e15 = entries.get(15);
+		Assert.assertEquals("Arnold Kieser", e15.author());
+		Assert.assertEquals("coach", e15.role());
+		Assert.assertEquals("Deadline extension for assignment", e15.action());
+		Assert.assertEquals("userId=1408270341;from=11.07.2024, 13:00;to=11.07.2024, 13:05", e15.details());
+
 		LogEntry e16 = entries.get(16);
-		Assert.assertEquals("mhoffmann", e16.author());
-		Assert.assertEquals("", e16.orgUnit());
-		Assert.assertEquals("", e16.userId());
-		Assert.assertEquals("", e16.role());
-		Assert.assertEquals("COMMENT set to", e16.action());
-		Assert.assertEquals(commentText, e16.details());
+		Assert.assertEquals("Jane Smith", e16.author());
+		Assert.assertEquals("coach", e16.role());
+		Assert.assertEquals("Revision of:", e16.action());
+		Assert.assertEquals("Chapter3.docx", e16.details());
 
 		LogEntry e17 = entries.get(17);
-		Assert.assertEquals("Max Doe", e17.author());
-		Assert.assertEquals("OrgUnit", e17.orgUnit());
-		Assert.assertEquals("15845124", e17.userId());
-		Assert.assertEquals("coach", e17.role());
-		Assert.assertEquals("attempts set to", e17.action());
-		Assert.assertEquals("3", e17.details());
+		Assert.assertEquals("Alice Admin", e17.author());
+		Assert.assertEquals("admin", e17.role());
+		Assert.assertEquals("score reset", e17.action());
+		Assert.assertEquals("", e17.details());
+
+		LogEntry e18 = entries.get(18);
+		Assert.assertEquals("Bob Reviewer", e18.author());
+		Assert.assertEquals("reviewer", e18.role());
+		Assert.assertEquals("SCORE set to", e18.action());
+		Assert.assertEquals("85.5", e18.details());
 	}
 }
