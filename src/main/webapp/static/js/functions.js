@@ -2750,7 +2750,8 @@ function o_ffSetFocus(type, formId, formItemId) {
 		let tagName = el.tagName;
 		let focusApplied = false;
 		let buttonWithFocus = tagName == "BUTTON" && el.classList.contains('o_can_have_focus');
-		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION" || buttonWithFocus) {
+		let linkWithFocus = tagName === "A" && el.classList.contains('o_can_have_focus') && el.classList.contains('btn');
+		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION" || buttonWithFocus || linkWithFocus) {
 			
 			if(el.classList.contains('o_date_day')) {
 				const datepicker = el.datepicker;
